@@ -1,9 +1,9 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { AppDropdown } from '@nubitio/ui';
 import {
-  ColumnPresetSelector,
+  ColumnChooserButton,
   DataGridView,
-  useColumnPreset,
+  useColumnChooser,
   type DataGridViewOptions,
   type GridHandle,
   type ResourceConfig,
@@ -121,12 +121,12 @@ function downloadBlob(blob: Blob, filename: string): void {
 export const SaleConsultPage = () => {
   const { t } = useCoreTranslation();
   const gridRef = useRef<GridHandle>(null);
-  const presetState = useColumnPreset(SALE_CONSULT_PRESET_RESOURCE);
   const [selectedReport, setSelectedReport] = useState('detailed-sales');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fields = useMemo(() => SaleFields(null), []);
+  const columnChooserState = useColumnChooser(SALE_CONSULT_PRESET_RESOURCE, fields);
   const canGenerate = !!selectedReport;
 
   const handleGenerateReport = useCallback(async () => {
@@ -208,16 +208,14 @@ export const SaleConsultPage = () => {
           setError(null);
         }}
       />
-      <ColumnPresetSelector
-        resourceId={SALE_CONSULT_PRESET_RESOURCE.id}
-        presets={SALE_CONSULT_COLUMN_PRESETS}
-        activePreset={presetState.activePreset}
-        onPresetChange={presetState.setPreset}
-        columnsLabel={t('crudPage.columnsLabel')}
-        allColumnsLabel={t('crudPage.allColumns')}
+      <ColumnChooserButton
+        state={columnChooserState}
+        triggerLabel={t('crudPage.columnChooserLabel')}
+        selectAllLabel={t('crudPage.columnChooserSelectAll')}
+        resetLabel={t('crudPage.columnChooserReset')}
       />
     </>
-  ), [loading, presetState.activePreset, presetState.setPreset, selectedReport, t]);
+  ), [loading, columnChooserState, selectedReport, t]);
 
   return (
     <div className="sale-consult-page">
@@ -234,7 +232,7 @@ export const SaleConsultPage = () => {
         allowEdit={false}
         allowDelete={false}
         selectionMode="single"
-        visibleColumns={presetState.visibleColumns}
+        visibleColumns={columnChooserState.visibleColumns}
         errorMessage={error}
         onDismissError={() => setError(null)}
       />

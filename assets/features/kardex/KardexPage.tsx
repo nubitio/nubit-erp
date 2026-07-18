@@ -4,14 +4,14 @@ import { useCallback, useMemo } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import {
-  ColumnPresetSelector,
+  ColumnChooserButton,
   DataGridView,
   identityField,
   textField,
   datetimeField,
   entityField,
   enumField,
-  useColumnPreset,
+  useColumnChooser,
   type ColumnGroupDef,
   type Field,
   type GridCellContext,
@@ -273,7 +273,6 @@ export const KardexPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { currentBranchId } = useSessionInfo();
   const { warehouses } = useWarehouses({ branchId: currentBranchId });
-  const presetState = useColumnPreset(KARDEX_PRESET_RESOURCE);
   const inInventoryHub = location.pathname.startsWith('/inventory');
 
   const productId = searchParams.get('product');
@@ -315,7 +314,12 @@ export const KardexPage = () => {
     [productId, warehouseId, from, to, valuation],
   );
   const showValuation = true;
-  const gridKey = `${productId ?? 'all'}-${warehouseId ?? 'all'}-${from ?? ''}-${to ?? ''}-${valuation}-${presetState.activePreset}`;
+  const gridFields = useMemo(
+    () => buildFields(Boolean(productId), showValuation),
+    [productId, showValuation],
+  );
+  const columnChooserState = useColumnChooser(KARDEX_PRESET_RESOURCE, gridFields);
+  const gridKey = `${productId ?? 'all'}-${warehouseId ?? 'all'}-${from ?? ''}-${to ?? ''}-${valuation}-${columnChooserState.visibleColumns.join(',')}`;
 
   const kardexToolbar = useMemo(
     () => ({
@@ -345,18 +349,16 @@ export const KardexPage = () => {
     [productId, warehouseId, from, to, valuation],
   );
 
-  const renderPresetSelector = useCallback(
+  const renderColumnChooser = useCallback(
     () => (
-      <ColumnPresetSelector
-        resourceId={KARDEX_PRESET_RESOURCE.id}
-        presets={KARDEX_COLUMN_PRESETS}
-        activePreset={presetState.activePreset}
-        onPresetChange={presetState.setPreset}
-        columnsLabel={t('crudPage.columnsLabel')}
-        allColumnsLabel={t('crudPage.allColumns')}
+      <ColumnChooserButton
+        state={columnChooserState}
+        triggerLabel={t('crudPage.columnChooserLabel')}
+        selectAllLabel={t('crudPage.columnChooserSelectAll')}
+        resetLabel={t('crudPage.columnChooserReset')}
       />
     ),
-    [presetState.activePreset, presetState.setPreset, t],
+    [columnChooserState, t],
   );
 
   const kardexDashboard = (
@@ -386,7 +388,7 @@ export const KardexPage = () => {
         title={inInventoryHub ? '' : 'Kardex'}
         mode={inInventoryHub ? 'normal' : undefined}
         url={gridUrl}
-        fields={buildFields(Boolean(productId), showValuation)}
+        fields={gridFields}
         filter={urlFilters}
         columnGroupDefs={KARDEX_COLUMN_GROUP_DEFS}
         toolbar={kardexToolbar}
@@ -396,8 +398,8 @@ export const KardexPage = () => {
         allowDelete={false}
         manualLoad={!productId}
         filterRow={false}
-        visibleColumns={presetState.visibleColumns}
-        beforeToolbar={renderPresetSelector}
+        visibleColumns={columnChooserState.visibleColumns}
+        beforeToolbar={renderColumnChooser}
         aboveGrid={kardexDashboard}
         emptyState={
           productId

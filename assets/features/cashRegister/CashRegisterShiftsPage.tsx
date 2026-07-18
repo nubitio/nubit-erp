@@ -2,9 +2,9 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import {
-  ColumnPresetSelector,
+  ColumnChooserButton,
   DataGridView,
-  useColumnPreset,
+  useColumnChooser,
   type GridHandle,
   type ResourceConfig,
 } from '@nubitio/crud';
@@ -52,8 +52,8 @@ export const CashRegisterShiftsPage = () => {
   const { id } = useParams<CashRegisterShiftParams>();
   const { t } = useCoreTranslation();
   const gridRef = useRef<GridHandle>(null);
-  const presetState = useColumnPreset(CASH_REGISTER_SHIFTS_PRESET_RESOURCE);
   const fields = useMemo(() => CashRegisterShiftsFields(), []);
+  const columnChooserState = useColumnChooser(CASH_REGISTER_SHIFTS_PRESET_RESOURCE, fields);
   const API_URL = `${API}cash-registers/${id}/shifts`;
 
   const toolbar = createCashRegisterShiftsToolbar({
@@ -64,18 +64,16 @@ export const CashRegisterShiftsPage = () => {
     },
   });
 
-  const renderPresetSelector = useCallback(
+  const renderColumnChooser = useCallback(
     () => (
-      <ColumnPresetSelector
-        resourceId={CASH_REGISTER_SHIFTS_PRESET_RESOURCE.id}
-        presets={CASH_REGISTER_SHIFTS_COLUMN_PRESETS}
-        activePreset={presetState.activePreset}
-        onPresetChange={presetState.setPreset}
-        columnsLabel={t('crudPage.columnsLabel')}
-        allColumnsLabel={t('crudPage.allColumns')}
+      <ColumnChooserButton
+        state={columnChooserState}
+        triggerLabel={t('crudPage.columnChooserLabel')}
+        selectAllLabel={t('crudPage.columnChooserSelectAll')}
+        resetLabel={t('crudPage.columnChooserReset')}
       />
     ),
-    [presetState.activePreset, presetState.setPreset, t],
+    [columnChooserState, t],
   );
 
   return (
@@ -90,8 +88,8 @@ export const CashRegisterShiftsPage = () => {
         events={{}}
         toolbar={toolbar}
         hasBackButton
-        visibleColumns={presetState.visibleColumns}
-        beforeToolbar={renderPresetSelector}
+        visibleColumns={columnChooserState.visibleColumns}
+        beforeToolbar={renderColumnChooser}
         emptyState={{
           title: 'Sin turnos registrados',
           description: 'Los turnos de caja aparecerán aquí cuando se abra y cierre la caja.',

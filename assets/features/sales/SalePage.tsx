@@ -1,13 +1,13 @@
 /* eslint-disable react-hooks/refs -- CRUD action adapters intentionally read Grid/Form refs inside callbacks, not during render. */
 import './SalePage.scss';
 import {
-  ColumnPresetSelector,
+  ColumnChooserButton,
   DataGridView,
   DrawerView,
   FormView,
   FORM_EVENTS,
   PageView,
-  useColumnPreset,
+  useColumnChooser,
   type DetailSummaryOptions,
   type FormHandle,
   type GridHandle,
@@ -93,7 +93,6 @@ export const SalePage = () => {
   const invoicePrinterRef = useRef(createInvoicePrinter());
   const saleFieldStateRef = useRef<SaleFieldStateRef>({ priceList: [], warehouseId: '' });
   const salePrintPreview = useSalePrintPreview();
-  const presetState = useColumnPreset(SALE_PRESET_RESOURCE);
   const [printEnabled, setPrintEnabled] = useState<boolean>(false);
   const [cloneEnabled, setCloneEnabled] = useState<boolean>(false);
   const [replaceEnabled, setReplaceEnabled] = useState<boolean>(false);
@@ -164,6 +163,7 @@ export const SalePage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [formHandleProxy],
   );
+  const columnChooserState = useColumnChooser(SALE_PRESET_RESOURCE, fields);
 
   const itemDiscountCallbacks = useMemo(
     () => ({
@@ -378,18 +378,16 @@ export const SalePage = () => {
     ];
   };
 
-  const renderPresetSelector = useCallback(
+  const renderColumnChooser = useCallback(
     () => (
-      <ColumnPresetSelector
-        resourceId={SALE_PRESET_RESOURCE.id}
-        presets={SALE_COLUMN_PRESETS}
-        activePreset={presetState.activePreset}
-        onPresetChange={presetState.setPreset}
-        columnsLabel={t('crudPage.columnsLabel')}
-        allColumnsLabel={t('crudPage.allColumns')}
+      <ColumnChooserButton
+        state={columnChooserState}
+        triggerLabel={t('crudPage.columnChooserLabel')}
+        selectAllLabel={t('crudPage.columnChooserSelectAll')}
+        resetLabel={t('crudPage.columnChooserReset')}
       />
     ),
-    [presetState.activePreset, presetState.setPreset, t],
+    [columnChooserState, t],
   );
 
   return (
@@ -411,8 +409,8 @@ export const SalePage = () => {
           detailFields={gridDetailFields}
           events={saleEvents}
           sort={[{ selector: 'createdAt', desc: true }]}
-          visibleColumns={presetState.visibleColumns}
-          beforeToolbar={renderPresetSelector}
+          visibleColumns={columnChooserState.visibleColumns}
+          beforeToolbar={renderColumnChooser}
           emptyState={{
             title: 'Sin ventas registradas',
             description: 'Crea una venta con el botón Nuevo.',
