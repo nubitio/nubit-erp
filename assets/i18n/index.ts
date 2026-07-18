@@ -5,7 +5,9 @@ import en from './locales/en.json';
 import { initCoreI18n } from '@nubitio/core';
 
 void i18n.use(initReactI18next).init({
-  lng: (typeof navigator !== 'undefined' && navigator.language?.split('-')[0]) || 'es',
+  // The rest of the app hardcodes Spanish copy directly (not via t()), so following
+  // the browser's language here just produces a mixed-language UI. Pin to 'es'.
+  lng: 'es',
   fallbackLng: 'es',
   supportedLngs: ['es', 'en'],
   resources: { es: { translation: es }, en: { translation: en } },
