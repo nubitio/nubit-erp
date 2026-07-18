@@ -638,6 +638,12 @@
   scrollbar-width: none;
   flex-shrink: 0;
 
+  // Native scrollbar is hidden above, so fade the trailing edge instead —
+  // otherwise there's no visual cue that the chip row scrolls (~30 categories
+  // routinely overflow the viewport).
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
+
   &::-webkit-scrollbar { display: none; }
 }
 
@@ -2075,6 +2081,27 @@
   // Show/hide based on active panel
   .pos-shell[data-active-panel='catalog'] .pos-cart-panel { display: none; }
   .pos-shell[data-active-panel='cart'] .pos-catalog { display: none; }
+
+  // The operator header carries too much content (sucursal, caja, almacén,
+  // cajero, plus action icons) to ever fit a phone width without either
+  // hiding controls or letting it scroll. Scroll it as one strip rather than
+  // clipping the tail invisibly — nothing becomes unreachable.
+  .pos-operator-header {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    justify-content: flex-start;
+  }
+
+  .pos-operator-header__left,
+  .pos-operator-header__right {
+    flex-shrink: 0;
+    min-width: max-content;
+  }
+
+  .pos-operator-header__right {
+    margin-left: var(--space-3);
+  }
 }
 
 // ── Mobile (≤ 768px) ────────────────────────────────────────────────────────
