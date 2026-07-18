@@ -5,6 +5,7 @@ import {
   FieldType,
   type DataRecord,
   type FormHandle,
+  type GridCellContext,
 } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
@@ -63,7 +64,14 @@ const customerResource = defineResource<CustomerRecord>(customerApiUrl, {
       {
         kind: 'override',
         key: 'isActive',
-        patch: { order: 5, width: 100, layoutHint: 'short', label: 'Activo', type: FieldType.SWITCH },
+        patch: {
+          order: 5,
+          width: 100,
+          layoutHint: 'short',
+          label: 'Activo',
+          type: FieldType.SWITCH,
+          formatter: (cell: GridCellContext) => SharedUtils.booleanFormatter(Boolean(cell.value)),
+        },
       },
       {
         kind: 'override',

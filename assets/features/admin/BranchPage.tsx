@@ -1,5 +1,13 @@
-import { SchemaCrudPage, defineFields, defineResource, FieldType, type DataRecord } from '@nubitio/crud';
+import {
+  SchemaCrudPage,
+  defineFields,
+  defineResource,
+  FieldType,
+  type DataRecord,
+  type GridCellContext,
+} from '@nubitio/crud';
 import { branchEndpoints } from './api/adminEndpoints';
+import { SharedUtils } from '@shared/lib/SharedUtils';
 
 interface BranchRecord extends DataRecord {
   id: string;
@@ -54,7 +62,14 @@ const resource = defineResource<BranchRecord>(branchEndpoints.list(), {
       {
         kind: 'override',
         key: 'isActive',
-        patch: { order: 3, width: 100, layoutHint: 'short', label: 'Activo', type: FieldType.SWITCH },
+        patch: {
+          order: 3,
+          width: 100,
+          layoutHint: 'short',
+          label: 'Activo',
+          type: FieldType.SWITCH,
+          formatter: (cell: GridCellContext) => SharedUtils.booleanFormatter(Boolean(cell.value)),
+        },
       },
       { kind: 'override', key: 'company', patch: { order: 4, layoutHint: 'lookup', label: 'Empresa' } },
     ],

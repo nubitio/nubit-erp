@@ -1,6 +1,13 @@
-import { defineFields, defineResource, FieldType, type DataRecord } from '@nubitio/crud';
+import {
+  defineFields,
+  defineResource,
+  FieldType,
+  type DataRecord,
+  type GridCellContext,
+} from '@nubitio/crud';
 import { SchemaCrudPage } from '@nubitio/crud';
 import { paymentMethodEndpoints } from './api/catalogEndpoints';
+import { SharedUtils } from '@shared/lib/SharedUtils';
 
 interface PaymentMethodRecord extends DataRecord {
   id: string;
@@ -30,6 +37,7 @@ const resource = defineResource<PaymentMethodRecord>(paymentMethodEndpoints.list
           width: 100,
           label: 'Activo',
           type: FieldType.SWITCH,
+          formatter: (cell: GridCellContext) => SharedUtils.booleanFormatter(Boolean(cell.value)),
         },
       },
     ],

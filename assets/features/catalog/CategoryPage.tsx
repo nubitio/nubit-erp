@@ -1,5 +1,13 @@
-import { SchemaCrudPage, defineFields, defineResource, FieldType, type DataRecord } from '@nubitio/crud';
+import {
+  SchemaCrudPage,
+  defineFields,
+  defineResource,
+  FieldType,
+  type DataRecord,
+  type GridCellContext,
+} from '@nubitio/crud';
 import { categoryEndpoints } from './api/catalogEndpoints';
+import { SharedUtils } from '@shared/lib/SharedUtils';
 
 interface CategoryRecord extends DataRecord {
   id: string;
@@ -24,7 +32,13 @@ const resource = defineResource<CategoryRecord>(categoryEndpoints.list(), {
       {
         kind: 'override',
         key: 'isActive',
-        patch: { order: 1, width: 100, label: 'Activo', type: FieldType.SWITCH },
+        patch: {
+          order: 1,
+          width: 100,
+          label: 'Activo',
+          type: FieldType.SWITCH,
+          formatter: (cell: GridCellContext) => SharedUtils.booleanFormatter(Boolean(cell.value)),
+        },
       },
     ],
   }),

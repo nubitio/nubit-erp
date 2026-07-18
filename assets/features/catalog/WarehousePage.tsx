@@ -1,5 +1,12 @@
-import { SchemaCrudPage, defineResource, defineFieldContract, FieldType } from '@nubitio/crud';
+import {
+  SchemaCrudPage,
+  defineResource,
+  defineFieldContract,
+  FieldType,
+  type GridCellContext,
+} from '@nubitio/crud';
 import { warehouseEndpoints } from './api/catalogEndpoints';
+import { SharedUtils } from '@shared/lib/SharedUtils';
 
 const resource = defineResource(warehouseEndpoints.list(), {
   id: 'warehouse',
@@ -20,7 +27,13 @@ const resource = defineResource(warehouseEndpoints.list(), {
       {
         kind: 'override',
         key: 'isActive',
-        patch: { order: 2, width: 100, label: 'Activo', type: FieldType.SWITCH },
+        patch: {
+          order: 2,
+          width: 100,
+          label: 'Activo',
+          type: FieldType.SWITCH,
+          formatter: (cell: GridCellContext) => SharedUtils.booleanFormatter(Boolean(cell.value)),
+        },
       },
     ],
   }),

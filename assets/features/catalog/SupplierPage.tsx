@@ -5,6 +5,7 @@ import {
   defineResource,
   type DataRecord,
   type FormHandle,
+  type GridCellContext,
 } from '@nubitio/crud';
 import { supplierEndpoints } from './api/catalogEndpoints';
 import { consultService } from '@features/consult';
@@ -74,7 +75,14 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
       {
         kind: 'override',
         key: 'isActive',
-        patch: { order: 4, width: 100, layoutHint: 'short', label: 'Activo', type: FieldType.SWITCH },
+        patch: {
+          order: 4,
+          width: 100,
+          layoutHint: 'short',
+          label: 'Activo',
+          type: FieldType.SWITCH,
+          formatter: (cell: GridCellContext) => SharedUtils.booleanFormatter(Boolean(cell.value)),
+        },
       },
       {
         kind: 'override',

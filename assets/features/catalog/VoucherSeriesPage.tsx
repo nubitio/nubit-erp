@@ -1,5 +1,13 @@
-import { SchemaCrudPage, defineFields, defineResource, FieldType, type DataRecord } from '@nubitio/crud';
+import {
+  SchemaCrudPage,
+  defineFields,
+  defineResource,
+  FieldType,
+  type DataRecord,
+  type GridCellContext,
+} from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
+import { SharedUtils } from '@shared/lib/SharedUtils';
 
 const API = getCoreApiBaseUrl();
 
@@ -28,7 +36,13 @@ const resource = defineResource<VoucherSeriesRecord>(API + 'voucher-series', {
       {
         kind: 'override',
         key: 'isActive',
-        patch: { order: 2, width: 100, label: 'Activo', type: FieldType.SWITCH },
+        patch: {
+          order: 2,
+          width: 100,
+          label: 'Activo',
+          type: FieldType.SWITCH,
+          formatter: (cell: GridCellContext) => SharedUtils.booleanFormatter(Boolean(cell.value)),
+        },
       },
     ],
   }),
