@@ -6,6 +6,7 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 const API = getCoreApiBaseUrl();
 import { useNavigate } from 'react-router-dom';
 import { useRef } from 'react';
+import { CashRegisterSummaryCards } from './CashRegisterSummaryCards';
 
 export const CashRegisterDashboard = () => {
   const url = API + 'cash-registers/dashboard';
@@ -17,6 +18,7 @@ export const CashRegisterDashboard = () => {
 
   return (
     <div className="cash-register-dashboard-page">
+      <CashRegisterSummaryCards />
       <DataGridView
         ref={gridRef}
         id="cashbox"
