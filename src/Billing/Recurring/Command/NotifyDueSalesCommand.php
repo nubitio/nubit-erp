@@ -151,12 +151,7 @@ final class NotifyDueSalesCommand extends PerTenantCommand
     {
         $lines = [];
         foreach (array_slice($rows, 0, 10) as $row) {
-            $lines[] = sprintf(
-                '%s — S/ %s (vence %s)',
-                $row['customer_name'],
-                $row['balance_due'],
-                $row['due_date'],
-            );
+            $lines[] = sprintf('%s — S/ %s (vence %s)', $row['customer_name'], $row['balance_due'], $row['due_date']);
         }
 
         if (count($rows) > 10) {

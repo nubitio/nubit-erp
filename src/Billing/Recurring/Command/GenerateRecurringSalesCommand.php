@@ -67,7 +67,8 @@ final class GenerateRecurringSalesCommand extends PerTenantCommand
             $today = new DateTimeImmutable('today', new DateTimeZone('America/Lima'));
 
             /** @var list<CustomerSubscription> $dueSubscriptions */
-            $dueSubscriptions = $this->entityManager->getRepository(CustomerSubscription::class)
+            $dueSubscriptions = $this->entityManager
+                ->getRepository(CustomerSubscription::class)
                 ->createQueryBuilder('cs')
                 ->andWhere('cs.status = :status')
                 ->andWhere('cs.nextBillingDate <= :today')

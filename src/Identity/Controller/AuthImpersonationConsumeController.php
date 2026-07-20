@@ -37,11 +37,7 @@ final class AuthImpersonationConsumeController extends AbstractController
         private readonly ?TenantContext $tenantContext = null,
     ) {}
 
-    #[Route(
-        '/api/auth/impersonate/consume',
-        name: 'api_auth_impersonate_consume',
-        methods: ['POST'],
-    )]
+    #[Route('/api/auth/impersonate/consume', name: 'api_auth_impersonate_consume', methods: ['POST'])]
     public function __invoke(Request $request): JsonResponse
     {
         /** @var array<string, mixed> $payload */

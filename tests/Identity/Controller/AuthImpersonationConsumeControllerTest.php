@@ -30,12 +30,14 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
 
     public function testReturnsBadRequestWhenTokenMissing(): void
     {
-        $controller = $this->withContainer(new AuthImpersonationConsumeController(
-            $this->createStub(JWTManagerInterface::class),
-            $this->createStub(UserProvider::class),
-            new CookieFactory(),
-            $this->createStub(TokenClaimsProviderInterface::class),
-        ));
+        $controller = $this->withContainer(
+            new AuthImpersonationConsumeController(
+                $this->createStub(JWTManagerInterface::class),
+                $this->createStub(UserProvider::class),
+                new CookieFactory(),
+                $this->createStub(TokenClaimsProviderInterface::class),
+            ),
+        );
 
         $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode([]));
         $response = $controller($request);
@@ -48,14 +50,18 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
         $jwtManager = $this->createStub(JWTManagerInterface::class);
         $jwtManager->method('decode')->willThrowException(new ExpiredException());
 
-        $controller = $this->withContainer(new AuthImpersonationConsumeController(
-            $jwtManager,
-            $this->createStub(UserProvider::class),
-            new CookieFactory(),
-            $this->createStub(TokenClaimsProviderInterface::class),
-        ));
+        $controller = $this->withContainer(
+            new AuthImpersonationConsumeController(
+                $jwtManager,
+                $this->createStub(UserProvider::class),
+                new CookieFactory(),
+                $this->createStub(TokenClaimsProviderInterface::class),
+            ),
+        );
 
-        $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode(['token' => 'expired.jwt']));
+        $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode([
+            'token' => 'expired.jwt',
+        ]));
         $response = $controller($request);
 
         self::assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
@@ -66,14 +72,18 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
         $jwtManager = $this->createStub(JWTManagerInterface::class);
         $jwtManager->method('decode')->willReturn(['username' => 'jdoe']);
 
-        $controller = $this->withContainer(new AuthImpersonationConsumeController(
-            $jwtManager,
-            $this->createStub(UserProvider::class),
-            new CookieFactory(),
-            $this->createStub(TokenClaimsProviderInterface::class),
-        ));
+        $controller = $this->withContainer(
+            new AuthImpersonationConsumeController(
+                $jwtManager,
+                $this->createStub(UserProvider::class),
+                new CookieFactory(),
+                $this->createStub(TokenClaimsProviderInterface::class),
+            ),
+        );
 
-        $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode(['token' => 'regular.jwt']));
+        $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode([
+            'token' => 'regular.jwt',
+        ]));
         $response = $controller($request);
 
         self::assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
@@ -82,24 +92,30 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
     public function testReturnsUnauthorizedOnTenantMismatch(): void
     {
         $jwtManager = $this->createStub(JWTManagerInterface::class);
-        $jwtManager->method('decode')->willReturn([
-            'username' => 'jdoe',
-            'impersonatedBy' => 'root',
-            'tenantName' => 'acme',
-        ]);
+        $jwtManager
+            ->method('decode')
+            ->willReturn([
+                'username' => 'jdoe',
+                'impersonatedBy' => 'root',
+                'tenantName' => 'acme',
+            ]);
 
         $tenantContext = new TenantContext();
         $tenantContext->setTenant(1, 'other-tenant', 'other-tenant.example.com', null);
 
-        $controller = $this->withContainer(new AuthImpersonationConsumeController(
-            $jwtManager,
-            $this->createStub(UserProvider::class),
-            new CookieFactory(),
-            $this->createStub(TokenClaimsProviderInterface::class),
-            $tenantContext,
-        ));
+        $controller = $this->withContainer(
+            new AuthImpersonationConsumeController(
+                $jwtManager,
+                $this->createStub(UserProvider::class),
+                new CookieFactory(),
+                $this->createStub(TokenClaimsProviderInterface::class),
+                $tenantContext,
+            ),
+        );
 
-        $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode(['token' => 'cross.tenant.jwt']));
+        $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode([
+            'token' => 'cross.tenant.jwt',
+        ]));
         $response = $controller($request);
 
         self::assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
@@ -108,22 +124,28 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
     public function testReturnsNotFoundWhenUserMissing(): void
     {
         $jwtManager = $this->createStub(JWTManagerInterface::class);
-        $jwtManager->method('decode')->willReturn([
-            'username' => 'ghost',
-            'impersonatedBy' => 'root',
-        ]);
+        $jwtManager
+            ->method('decode')
+            ->willReturn([
+                'username' => 'ghost',
+                'impersonatedBy' => 'root',
+            ]);
 
         $userProvider = $this->createStub(UserProvider::class);
         $userProvider->method('loadUserByIdentifier')->willThrowException(new UserNotFoundException());
 
-        $controller = $this->withContainer(new AuthImpersonationConsumeController(
-            $jwtManager,
-            $userProvider,
-            new CookieFactory(),
-            $this->createStub(TokenClaimsProviderInterface::class),
-        ));
+        $controller = $this->withContainer(
+            new AuthImpersonationConsumeController(
+                $jwtManager,
+                $userProvider,
+                new CookieFactory(),
+                $this->createStub(TokenClaimsProviderInterface::class),
+            ),
+        );
 
-        $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode(['token' => 'valid.jwt']));
+        $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode([
+            'token' => 'valid.jwt',
+        ]));
         $response = $controller($request);
 
         self::assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
@@ -133,11 +155,13 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
     {
         $expiresAt = time() + 900;
         $jwtManager = $this->createStub(JWTManagerInterface::class);
-        $jwtManager->method('decode')->willReturn([
-            'username' => 'jdoe',
-            'impersonatedBy' => 'root',
-            'exp' => $expiresAt,
-        ]);
+        $jwtManager
+            ->method('decode')
+            ->willReturn([
+                'username' => 'jdoe',
+                'impersonatedBy' => 'root',
+                'exp' => $expiresAt,
+            ]);
 
         $targetUser = $this->createStub(User::class);
         $targetUser->method('getUserIdentifier')->willReturn('jdoe');
@@ -148,14 +172,13 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
         $claimsProvider = $this->createStub(TokenClaimsProviderInterface::class);
         $claimsProvider->method('userData')->willReturn(['username' => 'jdoe', 'roles' => ['ROLE_USER']]);
 
-        $controller = $this->withContainer(new AuthImpersonationConsumeController(
-            $jwtManager,
-            $userProvider,
-            new CookieFactory(),
-            $claimsProvider,
-        ));
+        $controller = $this->withContainer(
+            new AuthImpersonationConsumeController($jwtManager, $userProvider, new CookieFactory(), $claimsProvider),
+        );
 
-        $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode(['token' => 'valid.jwt']));
+        $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode([
+            'token' => 'valid.jwt',
+        ]));
         $response = $controller($request);
 
         self::assertSame(Response::HTTP_OK, $response->getStatusCode());
