@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { authService } from '@features/auth';
 import { branchService } from '@features/branch';
@@ -23,6 +23,7 @@ function extractErrorMessage(err: unknown, fallback: string): string {
 
 export const ImpersonateBridgePage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [branchOptions, setBranchOptions] = useState<BranchOption[]>([]);
@@ -43,14 +44,11 @@ export const ImpersonateBridgePage = () => {
   );
 
   useEffect(() => {
-    const rawHash = window.location.hash.startsWith('#')
-      ? window.location.hash.slice(1)
-      : window.location.hash;
-    const token = new URLSearchParams(rawHash).get('token');
+    const token = searchParams.get('token');
 
     // Strip the token from the URL immediately so it never lingers in
     // browser history or gets shared accidentally, even if consume fails.
-    window.history.replaceState(null, '', window.location.pathname);
+    setSearchParams({}, { replace: true });
 
     if (!token) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- synchronous validation of a URL fragment read at mount, not a derived-state anti-pattern
@@ -97,6 +95,7 @@ export const ImpersonateBridgePage = () => {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally read the token only once on mount, not on every searchParams identity change
   }, [finishWithBranch]);
 
   return (

@@ -25,7 +25,10 @@ export const ImpersonateModal = ({
   const impersonate = useMutation({
     mutationFn: () => controlPlaneClient.impersonateTenantUser(tenantId, username.trim()),
     onSuccess: (result) => {
-      const bridgeUrl = `https://${primaryDomain}/impersonate#token=${encodeURIComponent(result.token)}`;
+      const port = window.location.port ? `:${window.location.port}` : '';
+      // HashRouter app: everything after "#" is client-side routing, never sent
+      // to the server, so the token never appears in a real HTTP request.
+      const bridgeUrl = `${window.location.protocol}//${primaryDomain}${port}/#/impersonate?token=${encodeURIComponent(result.token)}`;
       window.open(bridgeUrl, '_blank', 'noopener,noreferrer');
       handleClose();
     },
