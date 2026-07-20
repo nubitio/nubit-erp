@@ -7987,6 +7987,12 @@ message = "Inconsistent assertions style."
 count = 5
 
 [[issues]]
+file = "tests/Identity/Controller/AuthImpersonationConsumeControllerTest.php"
+code = "no-literal-password"
+message = "Literal passwords or sensitive data should not be stored in code."
+count = 5
+
+[[issues]]
 file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
