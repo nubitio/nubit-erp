@@ -39,7 +39,11 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
             ),
         );
 
-        $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode([]));
+        $request = Request::create(
+            '/api/auth/impersonate/consume',
+            'POST',
+            content: json_encode([], JSON_THROW_ON_ERROR),
+        );
         $response = $controller($request);
 
         self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
@@ -61,7 +65,7 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
 
         $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode([
             'token' => 'expired.jwt',
-        ]));
+        ], JSON_THROW_ON_ERROR));
         $response = $controller($request);
 
         self::assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
@@ -83,7 +87,7 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
 
         $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode([
             'token' => 'regular.jwt',
-        ]));
+        ], JSON_THROW_ON_ERROR));
         $response = $controller($request);
 
         self::assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
@@ -115,7 +119,7 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
 
         $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode([
             'token' => 'cross.tenant.jwt',
-        ]));
+        ], JSON_THROW_ON_ERROR));
         $response = $controller($request);
 
         self::assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
@@ -145,7 +149,7 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
 
         $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode([
             'token' => 'valid.jwt',
-        ]));
+        ], JSON_THROW_ON_ERROR));
         $response = $controller($request);
 
         self::assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
@@ -178,7 +182,7 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
 
         $request = Request::create('/api/auth/impersonate/consume', 'POST', content: json_encode([
             'token' => 'valid.jwt',
-        ]));
+        ], JSON_THROW_ON_ERROR));
         $response = $controller($request);
 
         self::assertSame(Response::HTTP_OK, $response->getStatusCode());

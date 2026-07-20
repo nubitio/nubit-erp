@@ -10,7 +10,6 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use App\Billing\Recurring\Entity\CustomerSubscription;
 use App\Catalog\Entity\PaymentMethod;
 use App\Contacts\Entity\Customer;
 use App\Contacts\Entity\Supplier;
@@ -193,11 +192,12 @@ class SaleRecord
     #[ApiProperty(description: 'sale_record.due_date.label')]
     private ?\DateTimeImmutable $dueDate = null;
 
+    // Plain FK id, not an ORM relation: Sales must not depend on Billing's
+    // CustomerSubscription entity (see tests/Architecture/ContextBoundaryTest).
     #[Groups(['sale_record:read'])]
-    #[ORM\ManyToOne(targetEntity: CustomerSubscription::class)]
-    #[ORM\JoinColumn(name: 'customer_subscription_id', referencedColumnName: 'id', nullable: true)]
-    #[ApiProperty(description: 'sale_record.customer_subscription.label', readableLink: true)]
-    private ?CustomerSubscription $customerSubscription = null;
+    #[ORM\Column(name: 'customer_subscription_id', type: Types::STRING, length: 255, nullable: true)]
+    #[ApiProperty(description: 'sale_record.customer_subscription.label')]
+    private ?string $customerSubscriptionId = null;
 
     #[Groups(['sale_record:read'])]
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true, options: [
@@ -694,14 +694,14 @@ class SaleRecord
         return $this;
     }
 
-    public function getCustomerSubscription(): ?CustomerSubscription
+    public function getCustomerSubscriptionId(): ?string
     {
-        return $this->customerSubscription;
+        return $this->customerSubscriptionId;
     }
 
-    public function setCustomerSubscription(?CustomerSubscription $customerSubscription): static
+    public function setCustomerSubscriptionId(?string $customerSubscriptionId): static
     {
-        $this->customerSubscription = $customerSubscription;
+        $this->customerSubscriptionId = $customerSubscriptionId;
 
         return $this;
     }

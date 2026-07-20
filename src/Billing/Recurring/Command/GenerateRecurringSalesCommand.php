@@ -131,7 +131,7 @@ final class GenerateRecurringSalesCommand extends PerTenantCommand
 
         $sale = new SaleRecord();
         $sale->setCustomer($subscription->getCustomer());
-        $sale->setCustomerSubscription($subscription);
+        $sale->setCustomerSubscriptionId($subscription->getId());
         $sale->setBranch($plan->getBranch());
         $sale->setWarehouse($plan->getWarehouse());
         $sale->setSellerUserId($sellerUserId);
