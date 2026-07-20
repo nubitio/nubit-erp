@@ -34,7 +34,7 @@ class Customer implements ActivatableInterface
     private string $ruc;
 
     #[Assert\NotBlank]
-    #[Groups(['sale:read', 'invoice:read', 'sale_record:read'])]
+    #[Groups(['sale:read', 'invoice:read', 'sale_record:read', 'customer_subscription:read'])]
     #[ApiProperty(description: 'customer.business_name.label')]
     #[ORM\Column(name: 'razon_social', length: 255)]
     private string $businessName;

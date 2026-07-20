@@ -166,7 +166,7 @@ class SubscriptionPlan
         return $this;
     }
 
-    public function isActive(): bool
+    public function getIsActive(): bool
     {
         return $this->isActive;
     }

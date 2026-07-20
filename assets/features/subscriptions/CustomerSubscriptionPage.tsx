@@ -1,11 +1,13 @@
 import {
   SchemaCrudPage,
+  dateField,
   defineFields,
   defineResource,
   enumField,
   FieldType,
   type DataRecord,
   type Field,
+  type GridCellContext,
   type SmartCrudFieldPatch,
 } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
@@ -17,6 +19,7 @@ import {
   customerSubscriptionFormLayout,
 } from './model/constants';
 import { subscriptionPlanApiUrl } from './model/constants';
+import { SharedUtils } from '@shared/lib/SharedUtils';
 import { useTranslation } from 'react-i18next';
 
 interface CustomerSubscriptionRecord extends DataRecord {
@@ -47,6 +50,26 @@ const statusPatch = toPatch(
     .name('status')
     .label('Estado')
     .required(true)
+    .build(),
+);
+
+const startDatePatch = toPatch(
+  dateField()
+    .name('startDate')
+    .label('Fecha de inicio')
+    .required(true)
+    .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
+    .valueType('date')
+    .build(),
+);
+
+const nextBillingDatePatch = toPatch(
+  dateField()
+    .name('nextBillingDate')
+    .label('Próximo cobro')
+    .required(true)
+    .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
+    .valueType('date')
     .build(),
 );
 
@@ -101,17 +124,23 @@ const customerSubscriptionResource = defineResource<CustomerSubscriptionRecord>(
         key: 'status',
         patch: { ...statusPatch, order: 2, layoutHint: 'short' },
       },
-      { kind: 'override', key: 'startDate', patch: { order: 3, layoutHint: 'short', label: 'Fecha de inicio' } },
+      {
+        kind: 'override',
+        key: 'startDate',
+        patch: { ...startDatePatch, order: 3, layoutHint: 'short' },
+      },
       {
         kind: 'override',
         key: 'nextBillingDate',
-        patch: { order: 4, layoutHint: 'short', label: 'Próximo cobro' },
+        patch: { ...nextBillingDatePatch, order: 4, layoutHint: 'short' },
       },
       {
         kind: 'override',
         key: 'autoRenew',
         patch: { order: 5, layoutHint: 'short', label: 'Renovación automática', type: FieldType.SWITCH },
       },
+      { kind: 'remove', key: 'currentPeriodStart' },
+      { kind: 'remove', key: 'currentPeriodEnd' },
     ],
   }),
 });
