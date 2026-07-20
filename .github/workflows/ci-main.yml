@@ -49,10 +49,20 @@ jobs:
         run: |
           docker compose exec -T web sh -lc "php -m | grep -q '^pcov$' || (printf '\n' | pecl install pcov && echo extension=pcov.so > /usr/local/etc/php/conf.d/zz-pcov.ini)"
 
+      - name: Create and migrate test database
+        run: |
+          docker compose exec -T database mariadb -uroot -pchangeme -e "CREATE DATABASE IF NOT EXISTS demo_test CHARACTER SET utf8mb4;"
+          docker compose exec -T \
+            -e APP_ENV=test \
+            -e DATABASE_URL="mysql://root:changeme@database:3306/demo_test?serverVersion=10.7.1-MariaDB&charset=utf8mb4" \
+            web php bin/console doctrine:migrations:migrate --no-interaction
+
       - name: Run PHPUnit with coverage
         run: |
           docker compose exec -T \
             -e OTEL_SDK_DISABLED=true \
+            -e APP_ENV=test \
+            -e DATABASE_URL="mysql://root:changeme@database:3306/demo_test?serverVersion=10.7.1-MariaDB&charset=utf8mb4" \
             web php -d pcov.enabled=1 -d pcov.directory=/app/src ./vendor/bin/phpunit -c phpunit.coverage.xml
 
       - name: Enforce backend coverage threshold

@@ -89,10 +89,11 @@
     "symfony/yaml": "7.4.*"
   },
   "require-dev": {
+    "dama/doctrine-test-bundle": "^8.6",
     "friendsofphp/php-cs-fixer": "^3.57",
     "pdepend/pdepend": "^3@dev",
+    "pestphp/pest": "^4.7",
     "phpmd/phpmd": "^3@dev",
-
     "phpstan/phpstan": "^2.1",
     "phpstan/phpstan-doctrine": "^2.0",
     "phpunit/phpunit": "^12.0",
@@ -113,7 +114,8 @@
       "phpro/grumphp": true,
       "symfony/flex": true,
       "symfony/runtime": true,
-      "tbachert/spi": true
+      "tbachert/spi": true,
+      "pestphp/pest-plugin": true
     },
     "sort-packages": true
   },

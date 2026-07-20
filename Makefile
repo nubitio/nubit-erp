@@ -6,6 +6,12 @@ DC := docker compose
 SERVICES := database redis otel-collector web vite mercure
 EXEC_WEB := $(DC) exec -T web sh -lc
 EXEC_VITE := $(DC) exec -T --user root vite sh -lc
+# docker-compose.yml bakes DATABASE_URL=...demo into the web container, which
+# always outranks .env.test in Symfony's Dotenv resolution — so APP_ENV=test
+# alone never switches the DB. Override it explicitly for test runs so kernel
+# tests hit demo_test, not the dev database.
+TEST_DATABASE_URL := mysql://root:$${MYSQL_ROOT_PASSWORD:-changeme}@database:3306/demo_test?serverVersion=10.7.1-MariaDB&charset=utf8mb4
+EXEC_WEB_TEST := $(DC) exec -T -e APP_ENV=test -e DATABASE_URL="$(TEST_DATABASE_URL)" web sh -lc
 PHP_DEV := php -d memory_limit=256M
 
 .DEFAULT_GOAL := help
@@ -107,7 +113,7 @@ format-php:
 test: test-back test-front
 
 test-back:
-	$(EXEC_WEB) 'cd /app && ./vendor/bin/phpunit'
+	$(EXEC_WEB_TEST) 'cd /app && ./vendor/bin/pest'
 
 test-front:
 	$(EXEC_VITE) 'cd /home/node/app && corepack enable && yarn test'

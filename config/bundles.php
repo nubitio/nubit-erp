@@ -18,4 +18,5 @@ return [
     Symfony\AI\AiBundle\AiBundle::class => ['all' => true],
     Symfony\Bundle\MercureBundle\MercureBundle::class => ['all' => true],
     Nubit\AdminBundle\NubitAdminBundle::class => ['all' => true],
+    DAMA\DoctrineTestBundle\DAMADoctrineTestBundle::class => ['test' => true],
 ];

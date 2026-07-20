@@ -39,8 +39,12 @@ doctrine:
 when@test:
   doctrine:
     dbal:
-      # "TEST_TOKEN" is typically set by ParaTest
-      dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+      # dbname_suffix was removed: it's incompatible with url-based connection
+      # config in this DoctrineBundle version — combining the two silently
+      # drops host/dbname/password resolution entirely (falls back to
+      # localhost with no dbname), rather than raising an error. The test DB
+      # name is set explicitly via DATABASE_URL at invocation time instead
+      # (see Makefile's EXEC_WEB_TEST / CI's "Create and migrate test database").
 
 when@prod:
   doctrine:
