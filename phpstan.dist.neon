@@ -12,6 +12,9 @@ parameters:
         - migrations/
         - migrations_control_plane/
         - tests/Unit/CashRegister/CashSessionDomainTest.php
+        # Pest-style test: $this/static bind to the test closure at runtime
+        # (Pest\PendingCalls\TestCall), which phpstan can't resolve statically.
+        - tests/Billing/Recurring/Command/GenerateRecurringSalesCommandTest.php
     ignoreErrors:
         # ApiPlatform ProcessorInterface requires generic types T1,T2 — safe to suppress at this level
         - { message: '#ProcessorInterface but does not specify its types#', path: src/Inventory/State/StockEntryProcessor.php }
