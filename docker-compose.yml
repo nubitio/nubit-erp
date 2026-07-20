@@ -69,6 +69,13 @@ services:
       S3_ACCESS_KEY: '${S3_ACCESS_KEY:-minioadmin}'
       S3_ACCESS_SECRET: '${S3_ACCESS_SECRET:-minioadmin}'
       S3_USE_PATH_STYLE_ENDPOINT: '${S3_USE_PATH_STYLE_ENDPOINT:-true}'
+    depends_on:
+      database:
+        condition: service_started
+      mercure:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
     healthcheck:
       test: ['CMD', 'curl', '-sf', 'http://localhost/health/live']
       interval: 5s
@@ -162,7 +169,7 @@ services:
       - '5174:5173'
 
   redis:
-    image: redis:6.2.6
+    image: redis:8-alpine
     ports:
       - '6379:6379'
 

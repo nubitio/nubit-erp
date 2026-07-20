@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # Dockerfile for Efact application
 # Using multi-stage builds with FrankenPHP for development, staging, and production environments
 
@@ -31,12 +32,17 @@ LABEL org.opencontainers.image.version="1.0"
 LABEL org.opencontainers.image.vendor="Nubit"
 
 # Install system dependencies
+# libpango/cairo/gdk-pixbuf are runtime-only (no -dev headers) — WeasyPrint
+# links against the shared libs, it doesn't compile anything against them.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     curl \
     python3 \
     python3-pip \
-    libpango1.0-dev \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf-2.0-0 \
+    libcairo2 \
     mariadb-client \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -60,11 +66,15 @@ RUN pip3 install --break-system-packages WeasyPrint \
     && rm -rf ~/.cache/pip
 
 # Install Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --link --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Entrypoint
-COPY docker/entrypoint.sh /entrypoint.sh
+COPY --link docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+# Caddy's TLS storage / admin autosave dirs — owned by www-data so they stay
+# writable once stg/prod drop root privileges (see docker/entrypoint.sh).
+RUN chown -R www-data:www-data /data /config
 
 # Set working directory
 WORKDIR /app
@@ -87,9 +97,9 @@ FROM node:20-alpine AS frontend-builder
 WORKDIR /app
 
 # Copy package files and assets (needed for postinstall script)
-COPY package.json yarn.lock ./
-COPY assets ./assets
-COPY scripts ./scripts
+COPY --link package.json yarn.lock ./
+COPY --link assets ./assets
+COPY --link scripts ./scripts
 
 # Create public/themes directory for theme compilation
 RUN mkdir -p public/themes
@@ -106,9 +116,9 @@ RUN corepack enable && \
 RUN yarn build:themes
 
 # Copy remaining source files needed for build
-COPY vite.config.js ./
-COPY tsconfig.json ./
-COPY postcss.config.mjs ./
+COPY --link vite.config.js ./
+COPY --link tsconfig.json ./
+COPY --link postcss.config.mjs ./
 
 # Build frontend assets
 RUN yarn build
@@ -137,10 +147,10 @@ COPY --from=mago /usr/local/bin/mago /usr/local/bin/mago
 #RUN install-php-extensions xdebug
 
 # Configure PHP for development
-COPY docker/php/php.dev.ini $PHP_INI_DIR/conf.d/99-app.ini
+COPY --link docker/php/php.dev.ini $PHP_INI_DIR/conf.d/99-app.ini
 
 # Copy Caddyfile
-COPY docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
+COPY --link docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
 
 # Mount application code
 VOLUME /app
@@ -157,20 +167,25 @@ FROM base AS stg
 ENV APP_ENV=staging
 
 # Configure PHP for staging
-COPY docker/php/php.dev.ini $PHP_INI_DIR/conf.d/99-app.ini
+COPY --link docker/php/php.dev.ini $PHP_INI_DIR/conf.d/99-app.ini
 
 # Copy Caddyfile
-COPY docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
+COPY --link docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
+
+# Copy dependency manifests first so `composer install` is cached across
+# source-only changes, then install without the autoloader/scripts (both
+# need the full app source, which isn't copied in yet).
+COPY --link composer.json composer.lock symfony.lock ./
+RUN composer install --no-interaction --no-scripts --no-autoloader --prefer-dist
 
 # Copy application code
-COPY --chown=www-data:www-data . /app
+COPY --link --chown=33:33 . /app
 
 # Copy built frontend assets from frontend-builder stage
-COPY --from=frontend-builder --chown=www-data:www-data /app/public/build /app/public/build
-COPY --from=frontend-builder --chown=www-data:www-data /app/public/themes /app/public/themes
+COPY --link --from=frontend-builder --chown=33:33 /app/public/build /app/public/build
+COPY --link --from=frontend-builder --chown=33:33 /app/public/themes /app/public/themes
 
-# Install dependencies
-RUN composer install --no-interaction --no-scripts
+RUN composer dump-autoload
 
 # Set permissions and create required directories
 RUN mkdir -p var/cache/dev var/log \
@@ -190,21 +205,26 @@ FROM base AS prod
 ENV APP_ENV=prod
 
 # Configure PHP for production
-COPY docker/php/php.prod.ini $PHP_INI_DIR/conf.d/99-app.ini
+COPY --link docker/php/php.prod.ini $PHP_INI_DIR/conf.d/99-app.ini
 
 # Copy Caddyfile
-COPY docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
+COPY --link docker/frankenphp/Caddyfile /etc/caddy/Caddyfile
+
+# Copy dependency manifests first so `composer install` is cached across
+# source-only changes, then install without the autoloader/scripts (both
+# need the full app source, which isn't copied in yet).
+COPY --link composer.json composer.lock symfony.lock ./
+RUN composer install --no-dev --no-interaction --no-scripts --no-autoloader --prefer-dist
 
 # Copy application code
-COPY --chown=www-data:www-data . /app
+COPY --link --chown=33:33 . /app
 
 # Copy built frontend assets from frontend-builder stage
-COPY --from=frontend-builder --chown=www-data:www-data /app/public/build /app/public/build
-COPY --from=frontend-builder --chown=www-data:www-data /app/public/themes /app/public/themes
+COPY --link --from=frontend-builder --chown=33:33 /app/public/build /app/public/build
+COPY --link --from=frontend-builder --chown=33:33 /app/public/themes /app/public/themes
 
-# Install dependencies and optimize autoloader
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts \
-    && composer dump-autoload --no-dev --classmap-authoritative \
+# Generate optimized autoloader now that the full source is present
+RUN composer dump-autoload --no-dev --classmap-authoritative \
     && composer dump-env prod \
     && rm -rf /root/.composer/cache
 

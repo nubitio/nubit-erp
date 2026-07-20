@@ -42,4 +42,14 @@ if [ "${RUN_MIGRATIONS}" = "true" ]; then
     echo "Migrations completed"
 fi
 
+# Drop root privileges before starting the actual process. Skipped in dev:
+# /app is a bind mount of the host source tree (arbitrary host UID), and
+# staying root there keeps it writable regardless of who owns it on the
+# host. stg/prod copy the source into the image at build time and chown it
+# to www-data, so dropping privileges is safe — frankenphp already carries
+# cap_net_bind_service, so it can still bind :80/:443 as a non-root user.
+if [ "${APP_ENV:-prod}" != "dev" ]; then
+    exec setpriv --reuid=www-data --regid=www-data --init-groups "$@"
+fi
+
 exec "$@"
