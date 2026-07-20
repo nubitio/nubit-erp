@@ -36,9 +36,10 @@ echo "==> [backend] phpstan"
 docker exec -e OTEL_SDK_DISABLED=true "$WEB_CONTAINER" \
   php -d memory_limit=1G vendor/bin/phpstan analyse --configuration=phpstan.dist.neon --no-progress
 
-echo "==> [backend] phpunit"
-docker exec -e OTEL_SDK_DISABLED=true "$WEB_CONTAINER" \
-  php vendor/bin/phpunit --no-coverage
+echo "==> [backend] pest"
+TEST_DATABASE_URL="mysql://root:${MYSQL_ROOT_PASSWORD:-changeme}@database:3306/demo_test?serverVersion=10.7.1-MariaDB&charset=utf8mb4"
+docker exec -e OTEL_SDK_DISABLED=true -e APP_ENV=test -e DATABASE_URL="$TEST_DATABASE_URL" "$WEB_CONTAINER" \
+  php vendor/bin/pest --no-coverage
 
 echo "==> [frontend] eslint"
 yarn lint
