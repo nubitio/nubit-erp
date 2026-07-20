@@ -6463,12 +6463,6 @@ message = "Call to `base64_decode` must enforce strict comparison."
 count = 2
 
 [[issues]]
-file = "tests/Billing/Recurring/Command/GenerateRecurringSalesCommandTest.php"
-code = "no-literal-password"
-message = "Literal passwords or sensitive data should not be stored in code."
-count = 1
-
-[[issues]]
 file = "tests/Billing/Sale/SaleVoidUseCaseTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."

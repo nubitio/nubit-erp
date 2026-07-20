@@ -11,6 +11,10 @@ excludes = [
   "public/**",
   "migrations/**",
   "node_modules/**",
+  # Pest-style tests bind `$this`/`self`/`static` inside closures at runtime
+  # (via Closure::bind); mago analyzes them as plain functions and floods
+  # false positives (undefined-variable, self/static-outside-class-scope).
+  "tests/Billing/Recurring/Command/GenerateRecurringSalesCommandTest.php",
 ]
 extensions = ["php"]
 
