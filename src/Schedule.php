@@ -37,6 +37,19 @@ readonly class Schedule implements ScheduleProviderInterface
                 '0 */6 * * *',
                 new RunCommandMessage('app:notification:generate-stock', throwOnFailure: false),
                 'America/Lima',
+            ))
+            // Recurring billing — generates a pending sale for every subscription
+            // whose billing period is due, runs daily at 06:00 America/Lima.
+            ->add(RecurringMessage::cron(
+                '0 6 * * *',
+                new RunCommandMessage('app:billing:generate-recurring-sales', throwOnFailure: false),
+                'America/Lima',
+            ))
+            // Due/overdue sale notifications — runs daily at 08:00 America/Lima.
+            ->add(RecurringMessage::cron(
+                '0 8 * * *',
+                new RunCommandMessage('app:billing:notify-due-sales', throwOnFailure: false),
+                'America/Lima',
             ));
     }
 }

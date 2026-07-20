@@ -112,6 +112,15 @@ final class PermissionCatalog
                     'roles.assign' => 'Asignar permisos',
                 ],
             ],
+            'subscriptions' => [
+                'label' => 'Suscripciones y cobranzas',
+                'permissions' => [
+                    'subscriptions.view' => 'Ver suscripciones',
+                    'subscriptions.create' => 'Crear suscripciones',
+                    'subscriptions.edit' => 'Editar suscripciones',
+                    'subscriptions.cancel' => 'Cancelar suscripciones',
+                ],
+            ],
         ];
     }
 

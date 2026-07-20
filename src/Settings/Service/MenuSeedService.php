@@ -101,11 +101,20 @@ class MenuSeedService
             'icon' => 'ph ph-cash-register',
             'parent_id' => null,
         ],
+        [
+            'id' => 750,
+            'order_index' => 8,
+            'key_name' => 'Suscripciones',
+            'type' => 'route',
+            'route' => 'subscriptions',
+            'icon' => 'ph ph-arrows-clockwise',
+            'parent_id' => null,
+        ],
 
         // ── Nivel 3: enterprise (filtrado por runtime config) ─────────────
         [
             'id' => 700,
-            'order_index' => 8,
+            'order_index' => 9,
             'key_name' => 'Impuestos',
             'type' => 'route',
             'route' => 'taxes',
@@ -114,7 +123,7 @@ class MenuSeedService
         ],
         [
             'id' => 601,
-            'order_index' => 9,
+            'order_index' => 10,
             'key_name' => 'Exportación PLE',
             'type' => 'route',
             'route' => 'ple',
@@ -123,7 +132,7 @@ class MenuSeedService
         ],
         [
             'id' => 909,
-            'order_index' => 10,
+            'order_index' => 11,
             'key_name' => 'Configuración',
             'type' => 'route',
             'route' => 'config',

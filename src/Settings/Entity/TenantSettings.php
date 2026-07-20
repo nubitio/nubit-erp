@@ -80,6 +80,15 @@ class TenantSettings
     #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
     private DefaultCurrency $defaultCurrency = DefaultCurrency::PEN;
 
+    /**
+     * Default number of days between a recurring charge being generated and
+     * its due date, used when a SubscriptionPlan does not override it.
+     */
+    #[ORM\Column]
+    #[Assert\Range(min: 0, max: 365)]
+    #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
+    private int $defaultPaymentTermDays = 15;
+
     // ── Inventory ─────────────────────────────────────────────────────────────
 
     #[ORM\Column(enumType: StockPolicy::class)]
@@ -187,6 +196,17 @@ class TenantSettings
     public function setDefaultCurrency(DefaultCurrency $defaultCurrency): static
     {
         $this->defaultCurrency = $defaultCurrency;
+        return $this;
+    }
+
+    public function getDefaultPaymentTermDays(): int
+    {
+        return $this->defaultPaymentTermDays;
+    }
+
+    public function setDefaultPaymentTermDays(int $defaultPaymentTermDays): static
+    {
+        $this->defaultPaymentTermDays = $defaultPaymentTermDays;
         return $this;
     }
 

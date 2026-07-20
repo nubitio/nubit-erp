@@ -54,6 +54,11 @@ const SALE_COLUMN_PRESETS = [
       'status',
     ],
   },
+  {
+    key: 'receivable',
+    label: 'Por cobrar',
+    columns: ['issuedDate', 'customer', 'dueDate', 'grandTotal', 'balanceDue', 'status'],
+  },
 ];
 
 const SALE_PRESET_RESOURCE: ResourceConfig = {

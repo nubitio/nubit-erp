@@ -397,6 +397,26 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .build(),
   );
   fields.push(
+    dateField()
+      .name('dueDate')
+      .label('Vencimiento')
+      .visibleOnForm(false)
+      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
+      .valueType('date')
+      .build(),
+  );
+  fields.push(
+    currencyField()
+      .name('balanceDue')
+      .label('Saldo pendiente')
+      .visibleOnForm(false)
+      .disabled(true)
+      .formatter((cell: GridCellContext) =>
+        NumberUtils.formatCurrency(cell.value as number, cell.data.currency as string ?? 'PEN'),
+      )
+      .build(),
+  );
+  fields.push(
     noneField()
       .name('status')
       .label('Estado')

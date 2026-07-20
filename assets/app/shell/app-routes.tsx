@@ -6,6 +6,7 @@ import { catalogRoutes } from '@features/catalog/routes';
 import { inventoryRoutes } from '@features/inventory/routes';
 import { posRoutes } from '@features/pos/routes';
 import { salesRoutes } from '@features/sales/routes';
+import { subscriptionsRoutes } from '@features/subscriptions/routes';
 import { taxesRoutes } from '@features/taxes/routes';
 
 export const appRoutes: AppRouteDefinition[] = [
@@ -16,5 +17,6 @@ export const appRoutes: AppRouteDefinition[] = [
   ...inventoryRoutes,
   ...posRoutes,
   ...salesRoutes,
+  ...subscriptionsRoutes,
   ...taxesRoutes,
 ];

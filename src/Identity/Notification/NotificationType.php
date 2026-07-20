@@ -17,4 +17,6 @@ final class NotificationType
     public const string QUOTA_WARNING = 'quota_warning';
     public const string DAILY_BRIEFING = 'daily_briefing';
     public const string CERTIFICATE_EXPIRING = 'certificate_expiring';
+    public const string SALE_DUE_SOON = 'sale_due_soon';
+    public const string SALE_OVERDUE = 'sale_overdue';
 }
