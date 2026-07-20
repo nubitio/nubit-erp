@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { Button } from '@nubitio/ui';
@@ -8,6 +9,7 @@ import { BackupsTab } from '../components/tenant/BackupsTab';
 import { CertificatesTab } from '../components/tenant/CertificatesTab';
 import { DomainsTab } from '../components/tenant/DomainsTab';
 import { GeneralTab } from '../components/tenant/GeneralTab';
+import { ImpersonateModal } from '../components/tenant/ImpersonateModal';
 import { ProvisioningTab } from '../components/tenant/ProvisioningTab';
 import { SubscriptionTab } from '../components/tenant/SubscriptionTab';
 import { FeaturesTab } from '../components/tenant/FeaturesTab';
@@ -40,6 +42,7 @@ export const TenantDetailPage = () => {
   const queryClient = useQueryClient();
   const { isAdmin, isSuperAdmin } = useControlPlaneRoles();
   const { ask, ConfirmHost } = useConfirm();
+  const [impersonateVisible, setImpersonateVisible] = useState(false);
 
   const activeTab = isTenantTab(searchParams.get('tab')) ? searchParams.get('tab')! : 'general';
   const certificateParam = Number(searchParams.get('certificate'));
@@ -122,6 +125,15 @@ export const TenantDetailPage = () => {
             actions={
               <>
                 <TenantStatusBadge status={tenant.status} />
+                {isSuperAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setImpersonateVisible(true)}
+                  >
+                    {CP_STRINGS.tenantDetail.impersonate}
+                  </Button>
+                )}
                 {isAdmin &&
                   (tenant.status === 'suspended' ? (
                     <Button
@@ -233,6 +245,13 @@ export const TenantDetailPage = () => {
         </div>
       </div>
       <ConfirmHost />
+      <ImpersonateModal
+        visible={impersonateVisible}
+        onClose={() => setImpersonateVisible(false)}
+        tenantId={tenantId}
+        tenantName={tenant.name}
+        primaryDomain={detail.data.primaryDomain}
+      />
     </CpPage>
   );
 };

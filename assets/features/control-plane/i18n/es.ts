@@ -99,6 +99,16 @@ export const CP_STRINGS = {
     tabsAria: 'Secciones del tenant',
     suspendConfirm: (name: string) => `¿Suspender tenant ${name}?`,
     suspendConfirmTitle: 'Suspender tenant',
+    impersonate: 'Impersonar',
+    impersonateTitle: 'Iniciar sesión de soporte',
+    impersonateDescription: (name: string) =>
+      `Se abrirá una nueva pestaña con una sesión activa como el usuario indicado, dentro del tenant ${name}. La acción queda registrada en auditoría.`,
+    impersonateUsernameLabel: 'Usuario',
+    impersonateUsernamePlaceholder: 'usuario@ejemplo.com',
+    impersonateSubmit: 'Iniciar sesión',
+    impersonateUsernameRequired: 'El usuario es requerido.',
+    impersonateNoDomain: 'Este tenant no tiene un dominio principal configurado.',
+    impersonateError: 'No se pudo iniciar la sesión de soporte.',
   },
   tabs: {
     general: 'General',

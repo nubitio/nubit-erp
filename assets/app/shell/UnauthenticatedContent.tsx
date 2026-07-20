@@ -4,6 +4,10 @@ import { lazyNamed } from '@app/router/lazy';
 import { buildLoginRedirectSearch } from '@shared/lib/authRedirect';
 
 const LoginPage = lazyNamed(() => import('@features/auth/LoginPage'), 'LoginPage');
+const ImpersonateBridgePage = lazyNamed(
+  () => import('@features/auth/ImpersonateBridgePage'),
+  'ImpersonateBridgePage',
+);
 
 const AuthRouteLoading = () => (
   <div className="app-loading" role="status" aria-label="Cargando login">
@@ -22,6 +26,14 @@ export const UnauthenticatedContent = () => {
         element={(
           <Suspense fallback={<AuthRouteLoading />}>
             <LoginPage />
+          </Suspense>
+        )}
+      />
+      <Route
+        path="/impersonate"
+        element={(
+          <Suspense fallback={<AuthRouteLoading />}>
+            <ImpersonateBridgePage />
           </Suspense>
         )}
       />

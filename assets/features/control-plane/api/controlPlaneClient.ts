@@ -210,6 +210,11 @@ export const controlPlaneClient = {
     cpFetch<{ ok: boolean }>(`${tenantPath(id)}/suspend`, { method: 'POST' }),
   unsuspendTenant: (id: number) =>
     cpFetch<{ ok: boolean }>(`${tenantPath(id)}/unsuspend`, { method: 'POST' }),
+  impersonateTenantUser: (id: number, username: string) =>
+    cpFetch<{ ok: boolean; token: string; expiresAt: number; user: Record<string, unknown> }>(
+      `${tenantPath(id)}/impersonate`,
+      { method: 'POST', body: JSON.stringify({ username }) },
+    ),
   addDomain: (id: number, domain: string, isPrimary: boolean) =>
     cpFetch<{ ok: boolean }>(`${tenantPath(id)}/domains`, {
       method: 'POST',

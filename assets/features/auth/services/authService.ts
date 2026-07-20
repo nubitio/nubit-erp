@@ -1,6 +1,7 @@
 import { httpClient } from '@shared/api/HttpClient';
 import AuthResponse from '@shared/api/AuthResponse';
 import { getCoreApiBaseUrl } from '@nubitio/core';
+import type { DataRecord } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 
@@ -10,6 +11,13 @@ class AuthService {
       username,
       password,
     });
+  }
+
+  consumeImpersonationToken(token: string) {
+    return httpClient.post<{ ok: boolean; user?: DataRecord }>(
+      API + 'auth/impersonate/consume',
+      { token },
+    );
   }
 
   selectBranch(branchId: string) {

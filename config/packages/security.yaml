@@ -85,6 +85,7 @@ security:
         - { path: ^/webhook/mercadopago, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/refresh, roles: PUBLIC_ACCESS }
+        - { path: ^/api/auth/impersonate/consume, roles: PUBLIC_ACCESS }
         # E2E seed/reset routes — only registered in dev/test (config/routes/e2e.yaml),
         # so this rule is a no-op in prod (routes 404 before access_control is checked).
         - { path: '^/api/test/e2e/(seed|reset)', roles: PUBLIC_ACCESS }
