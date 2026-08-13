@@ -41,7 +41,7 @@
     "nelmio/cors-bundle": "^2.3",
     "nubitio/admin-bundle": "0.*",
     "nubitio/api-platform": "0.*",
-    "nubitio/platform": "^0.11",
+    "nubitio/platform": "^0.12",
     "oneup/flysystem-bundle": "^4.9",
     "open-telemetry/exporter-otlp": "^1.3",
     "open-telemetry/opentelemetry-auto-doctrine": "^0.3.1",
