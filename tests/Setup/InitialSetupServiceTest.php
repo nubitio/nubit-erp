@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Setup;
 
+use App\AccountsPayable\Entity\ExpenseCategory;
+use App\AccountsPayable\Repository\ExpenseCategoryRepository;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Repository\CashMovementCategoryRepository;
+use App\CashRegister\Repository\CashRegisterRepository;
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\SunatCatalog;
@@ -142,6 +145,8 @@ final class InitialSetupServiceTest extends TestCase
         $paymentRepo->method('findOneBy')->willReturn(new PaymentMethod());
         $cashRepo = $this->createStub(CashMovementCategoryRepository::class);
         $cashRepo->method('findOneBy')->willReturn(new CashMovementCategory());
+        $expenseCategoryRepo = $this->createStub(ExpenseCategoryRepository::class);
+        $expenseCategoryRepo->method('findOneBy')->willReturn(new ExpenseCategory());
         $voucherRepo = $this->createStub(VoucherTypeRepository::class);
         $voucherRepo->method('find')->willReturn(new VoucherType());
         $unitRepo = $this->createStub(UnitOfMeasureRepository::class);
@@ -158,6 +163,7 @@ final class InitialSetupServiceTest extends TestCase
             logisticOperationRepository: $logisticRepo,
             paymentMethodRepository: $paymentRepo,
             cashMovementCategoryRepository: $cashRepo,
+            expenseCategoryRepository: $expenseCategoryRepo,
             voucherTypeRepository: $voucherRepo,
             unitOfMeasureRepository: $unitRepo,
             categoryRepository: $categoryRepo,
@@ -179,6 +185,8 @@ final class InitialSetupServiceTest extends TestCase
         ?LogisticOperationRepository $logisticOperationRepository = null,
         ?PaymentMethodRepository $paymentMethodRepository = null,
         ?CashMovementCategoryRepository $cashMovementCategoryRepository = null,
+        ?CashRegisterRepository $cashRegisterRepository = null,
+        ?ExpenseCategoryRepository $expenseCategoryRepository = null,
         ?VoucherTypeRepository $voucherTypeRepository = null,
         ?VoucherSeriesRepository $voucherSeriesRepository = null,
         ?UnitOfMeasureRepository $unitOfMeasureRepository = null,
@@ -200,6 +208,8 @@ final class InitialSetupServiceTest extends TestCase
             $logisticOperationRepository ?? $this->createMock(LogisticOperationRepository::class),
             $paymentMethodRepository ?? $this->createMock(PaymentMethodRepository::class),
             $cashMovementCategoryRepository ?? $this->createMock(CashMovementCategoryRepository::class),
+            $cashRegisterRepository ?? $this->createMock(CashRegisterRepository::class),
+            $expenseCategoryRepository ?? $this->createMock(ExpenseCategoryRepository::class),
             $voucherTypeRepository ?? $this->createMock(VoucherTypeRepository::class),
             $voucherSeriesRepository ?? $this->createMock(VoucherSeriesRepository::class),
             $unitOfMeasureRepository ?? $this->createMock(UnitOfMeasureRepository::class),

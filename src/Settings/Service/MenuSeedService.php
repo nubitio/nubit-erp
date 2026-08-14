@@ -110,11 +110,29 @@ class MenuSeedService
             'icon' => 'ph ph-arrows-clockwise',
             'parent_id' => null,
         ],
+        [
+            'id' => 760,
+            'order_index' => 9,
+            'key_name' => 'Cuentas por pagar',
+            'type' => 'route',
+            'route' => 'accounts-payable',
+            'icon' => 'ph ph-invoice',
+            'parent_id' => null,
+        ],
+        [
+            'id' => 765,
+            'order_index' => 10,
+            'key_name' => 'Cuentas por cobrar',
+            'type' => 'route',
+            'route' => 'accounts-receivable',
+            'icon' => 'ph ph-hand-coins',
+            'parent_id' => null,
+        ],
 
         // ── Nivel 3: enterprise (filtrado por runtime config) ─────────────
         [
             'id' => 700,
-            'order_index' => 9,
+            'order_index' => 11,
             'key_name' => 'Impuestos',
             'type' => 'route',
             'route' => 'taxes',
@@ -123,7 +141,7 @@ class MenuSeedService
         ],
         [
             'id' => 601,
-            'order_index' => 10,
+            'order_index' => 12,
             'key_name' => 'Exportación PLE',
             'type' => 'route',
             'route' => 'ple',
@@ -132,7 +150,7 @@ class MenuSeedService
         ],
         [
             'id' => 909,
-            'order_index' => 11,
+            'order_index' => 13,
             'key_name' => 'Configuración',
             'type' => 'route',
             'route' => 'config',

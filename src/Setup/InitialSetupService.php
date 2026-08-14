@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Setup;
 
+use App\AccountsPayable\Entity\ExpenseCategory;
+use App\AccountsPayable\Repository\ExpenseCategoryRepository;
 use App\CashRegister\Entity\CashMovementCategory;
+use App\CashRegister\Entity\CashRegister;
 use App\CashRegister\Enum\CashMovementType;
 use App\CashRegister\Repository\CashMovementCategoryRepository;
+use App\CashRegister\Repository\CashRegisterRepository;
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\SunatCatalog;
@@ -60,6 +64,8 @@ readonly class InitialSetupService
         private LogisticOperationRepository $logisticOperationRepository,
         private PaymentMethodRepository $paymentMethodRepository,
         private CashMovementCategoryRepository $cashMovementCategoryRepository,
+        private CashRegisterRepository $cashRegisterRepository,
+        private ExpenseCategoryRepository $expenseCategoryRepository,
         private VoucherTypeRepository $voucherTypeRepository,
         private VoucherSeriesRepository $voucherSeriesRepository,
         private UnitOfMeasureRepository $unitOfMeasureRepository,
@@ -139,6 +145,7 @@ readonly class InitialSetupService
             $this->seedTimeDimension();
             $this->menuSeedService->seed();
             $this->ensureVoucherSeriesForBranch($branch);
+            $this->ensureCashRegisterForBranch($branch);
             $this->assignFullMenuToRole(intval($superAdminRole->getId()));
 
             $this->connection->commit();
@@ -271,6 +278,18 @@ readonly class InitialSetupService
         ];
         foreach ($cashMovementCategories as [$code, $name, $type]) {
             $this->getOrCreateCashMovementCategory($code, $name, $type);
+        }
+
+        // Expense categories (accounts payable)
+        $expenseCategories = [
+            ['bank_fees',               'Comisiones bancarias'],
+            ['utilities',               'Servicios básicos'],
+            ['rent',                    'Alquiler'],
+            ['taxes',                   'Impuestos y tasas'],
+            ['other_operating_expense', 'Otros gastos operativos'],
+        ];
+        foreach ($expenseCategories as [$code, $name]) {
+            $this->getOrCreateExpenseCategory($code, $name);
         }
 
         // Voucher types (SUNAT)
@@ -431,6 +450,23 @@ readonly class InitialSetupService
         $this->entityManager->flush();
     }
 
+    private function getOrCreateExpenseCategory(string $code, string $name): void
+    {
+        $existing = $this->expenseCategoryRepository->findOneBy(['code' => $code]);
+        if ($existing instanceof ExpenseCategory) {
+            return;
+        }
+
+        $category = new ExpenseCategory()
+            ->setCode($code)
+            ->setName($name)
+            ->setIsSystem(true)
+            ->setActive(true);
+
+        $this->entityManager->persist($category);
+        $this->entityManager->flush();
+    }
+
     private function getOrCreateVoucherType(string $code, string $name): void
     {
         $existing = $this->voucherTypeRepository->find($code);
@@ -574,5 +610,25 @@ readonly class InitialSetupService
         if ($needsFlush) {
             $this->entityManager->flush();
         }
+    }
+
+    /**
+     * seedSettings() turns on requireCashRegister, which blocks POS sales
+     * until a register is open — without this, a freshly provisioned tenant
+     * has no CashRegister at all and no way to sell.
+     */
+    private function ensureCashRegisterForBranch(Branch $branch): void
+    {
+        $existing = $this->cashRegisterRepository->findRealByBranchId((int) $branch->getId());
+        if ($existing !== []) {
+            return;
+        }
+
+        $cashRegister = new CashRegister()
+            ->setBranch($branch)
+            ->setName('Caja Principal');
+
+        $this->entityManager->persist($cashRegister);
+        $this->entityManager->flush();
     }
 }

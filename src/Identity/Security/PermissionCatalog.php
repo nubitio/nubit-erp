@@ -121,6 +121,15 @@ final class PermissionCatalog
                     'subscriptions.cancel' => 'Cancelar suscripciones',
                 ],
             ],
+            'accounts_payable' => [
+                'label' => 'Cuentas por pagar',
+                'permissions' => [
+                    'accounts_payable.view' => 'Ver facturas de proveedor',
+                    'accounts_payable.create' => 'Registrar facturas de proveedor',
+                    'accounts_payable.pay' => 'Registrar pagos',
+                    'accounts_payable.void' => 'Anular facturas de proveedor',
+                ],
+            ],
         ];
     }
 
