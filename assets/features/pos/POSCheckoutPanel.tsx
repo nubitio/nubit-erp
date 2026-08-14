@@ -42,6 +42,8 @@ interface POSCheckoutPanelProps {
   setPaymentLines: (lines: SalePaymentLineDraft[]) => void;
   emitInvoice: boolean;
   setEmitInvoice: (checked: boolean) => void;
+  creditSale: boolean;
+  setCreditSale: (checked: boolean) => void;
   currency: 'PEN' | 'USD';
   setCurrency: (value: 'PEN' | 'USD') => void;
   exchangeRate: string;
@@ -91,6 +93,8 @@ export function POSCheckoutPanel({
   setPaymentLines,
   emitInvoice,
   setEmitInvoice,
+  creditSale,
+  setCreditSale,
   currency,
   setCurrency: _setCurrency,
   exchangeRate,
@@ -484,6 +488,15 @@ export function POSCheckoutPanel({
               </div>
 
               <div className="pos-footer-option-row">
+                <span className="pos-discount-label">Venta a crédito</span>
+                <Toggle
+                  checked={creditSale}
+                  onChange={setCreditSale}
+                  aria-label="Venta a crédito"
+                />
+              </div>
+
+              <div className="pos-footer-option-row">
                 <span className="pos-discount-label">Descuento</span>
                 <div className="pos-discount-presets" role="group" aria-label="Descuento">
                   <Chip
@@ -559,6 +572,7 @@ export function POSCheckoutPanel({
           onChange={setPaymentLines}
           variant="pos"
           layout="drawer"
+          allowPartial={creditSale}
         />
 
         {changeAmount > 0 && (

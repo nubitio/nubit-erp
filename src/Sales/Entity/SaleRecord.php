@@ -19,8 +19,10 @@ use App\Sales\Controller\Api\MakeSaleInvoice;
 use App\Sales\Controller\Api\PrintSaleInvoice;
 use App\Sales\Controller\Api\ReplaceRejectedSaleDocument;
 use App\Sales\Controller\Api\VoidSale;
+use App\Sales\Dto\SaleCollectPaymentDto;
 use App\Sales\Dto\VoidSaleDto;
 use App\Sales\Repository\SaleRecordRepository;
+use App\Sales\State\SaleCollectPaymentProcessor;
 use App\Sales\State\SaleProcessor;
 use App\Sales\State\SaleV2Provider;
 use DateTimeInterface;
@@ -75,6 +77,20 @@ use Symfony\Component\Serializer\Attribute\Groups;
             read: false,
             deserialize: false,
             name: 'sale_replace_rejected',
+        ),
+        new Post(
+            uriTemplate: '/sales/{id}/collect',
+            normalizationContext: ['groups' => ['sale_record:read']],
+            // SaleCollectPaymentDto has no serialization groups of its own —
+            // without this override, the class-level denormalizationContext
+            // below (sale_record:write group) strips every property before
+            // the DTO constructor runs, same bug hit on
+            // /supplier-bills/{id}/pay.
+            denormalizationContext: [],
+            input: SaleCollectPaymentDto::class,
+            output: SaleRecord::class,
+            processor: SaleCollectPaymentProcessor::class,
+            name: 'sale_collect_payment',
         ),
     ],
     normalizationContext: ['groups' => ['sale_record:read']],
@@ -364,6 +380,14 @@ class SaleRecord
      */
     #[Groups(['sale_record:write'])]
     private array $writeItems = [];
+
+    /**
+     * When true, SalePaymentPlanService::resolveForWrite() allows the sum of
+     * payment lines to be less than the total (balanceDue > 0) instead of
+     * requiring an exact match — the explicit "venta a crédito" opt-in.
+     */
+    #[Groups(['sale_record:write'])]
+    private bool $creditSale = false;
 
     // ── Legacy-pipeline transient fields (no ORM mapping) ────────────────────
 
@@ -1117,6 +1141,18 @@ class SaleRecord
     public function setWriteItems(array $writeItems): static
     {
         $this->writeItems = $writeItems;
+
+        return $this;
+    }
+
+    public function isCreditSale(): bool
+    {
+        return $this->creditSale;
+    }
+
+    public function setCreditSale(bool $creditSale): static
+    {
+        $this->creditSale = $creditSale;
 
         return $this;
     }

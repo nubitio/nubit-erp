@@ -24,6 +24,7 @@ interface SalePaymentsFieldProps {
 export function SalePaymentsField({ form, total, currency = 'PEN' }: SalePaymentsFieldProps) {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodOption[]>([]);
   const [paymentLines, setPaymentLines] = useState<SalePaymentLineDraft[]>([]);
+  const creditSale = Boolean(form?.getFieldValue('creditSale'));
 
   useEffect(() => {
     let cancelled = false;
@@ -112,6 +113,7 @@ export function SalePaymentsField({ form, total, currency = 'PEN' }: SalePayment
       onChange={setPaymentLines}
       variant="admin"
       layout="drawer"
+      allowPartial={creditSale}
     />
   );
 }

@@ -235,6 +235,7 @@ readonly class SaleProcessor implements ProcessorInterface
                 $data,
                 strtoupper(trim($data->getCurrency())) ?: 'PEN',
                 $data->getTotal() ?? '0.00',
+                $data->isCreditSale(),
             );
         }
 
@@ -328,6 +329,7 @@ readonly class SaleProcessor implements ProcessorInterface
             $cashCollected = $this->salePaymentPlanService->resolveCashCollectedAmount(
                 $data,
                 $data->getTotal() ?? '0.00',
+                $data->isCreditSale(),
             );
             if (Money::money($cashCollected)->isGreaterThan(BigDecimal::zero())) {
                 if ($resolvedCashSessionId !== null) {

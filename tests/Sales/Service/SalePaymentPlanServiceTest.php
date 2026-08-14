@@ -73,6 +73,32 @@ final class SalePaymentPlanServiceTest extends TestCase
         $this->service->resolveForWrite($sale, 'PEN', '30.00');
     }
 
+    public function testAllowPartialAcceptsPaymentsBelowTotal(): void
+    {
+        $sale = new SaleRecord();
+        $sale->setPayments([
+            ['payment_method_id' => 1, 'amount' => '30.00'],
+        ]);
+
+        $plan = $this->service->resolveForWrite($sale, 'PEN', '100.00', true);
+
+        $this->assertCount(1, $plan);
+        $this->assertSame('30.00', $plan[0]['amount']);
+    }
+
+    public function testAllowPartialStillRejectsPaymentsAboveTotal(): void
+    {
+        $sale = new SaleRecord();
+        $sale->setPayments([
+            ['payment_method_id' => 1, 'amount' => '150.00'],
+        ]);
+
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage('no puede exceder el total');
+
+        $this->service->resolveForWrite($sale, 'PEN', '100.00', true);
+    }
+
     public function testCashCollectedAmountOnlyAddsCashLines(): void
     {
         $sale = new SaleRecord();

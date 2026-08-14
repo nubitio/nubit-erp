@@ -3,6 +3,7 @@ import { Button, Drawer } from '@nubitio/ui';
 import {
   createSinglePaymentLine,
   paymentsMatchTotal,
+  paymentsWithinTotal,
   remainingPaymentAmount,
   summarizePaymentLines,
   updatePaymentLineMethod,
@@ -22,6 +23,8 @@ export interface SplitPaymentsFieldProps {
   variant?: 'admin' | 'pos';
   /** Inline form (admin) or compact trigger + drawer (POS). */
   layout?: 'inline' | 'drawer';
+  /** "Venta a crédito": accepts a sum below total instead of requiring an exact match. */
+  allowPartial?: boolean;
 }
 
 export function SplitPaymentsField({
@@ -32,6 +35,7 @@ export function SplitPaymentsField({
   onChange,
   variant = 'admin',
   layout = 'inline',
+  allowPartial = false,
 }: SplitPaymentsFieldProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const summary = useMemo(
@@ -39,7 +43,7 @@ export function SplitPaymentsField({
     [paymentMethods, value],
   );
   const primaryLine = value[0];
-  const isBalanced = paymentsMatchTotal(value, total);
+  const isBalanced = allowPartial ? paymentsWithinTotal(value, total) : paymentsMatchTotal(value, total);
   const remaining = remainingPaymentAmount(value, total);
 
   const handleQuickMethod = (methodId: number) => {
@@ -60,6 +64,7 @@ export function SplitPaymentsField({
         value={value}
         onChange={onChange}
         variant={variant}
+        allowPartial={allowPartial}
       />
     );
   }
@@ -153,6 +158,7 @@ export function SplitPaymentsField({
             onChange={onChange}
             variant={variant}
             showMethodPicker={false}
+            allowPartial={allowPartial}
           />
 
           <div className="split-payments-drawer__actions">

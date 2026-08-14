@@ -170,6 +170,16 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .build(),
   );
   fields.push(
+    switchField()
+      .name('creditSale')
+      .label('Venta a crédito')
+      .valueType('boolean')
+      .defaultValue(false)
+      .visibleOnForm(true)
+      .visible(false)
+      .build(),
+  );
+  fields.push(
     dateField()
       .name('issuedDate')
       .label('Fecha')

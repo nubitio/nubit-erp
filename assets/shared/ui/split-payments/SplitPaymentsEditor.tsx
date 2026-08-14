@@ -6,6 +6,7 @@ import {
   enableSplitPaymentLines,
   parseMoneyInput,
   paymentsMatchTotal,
+  paymentsWithinTotal,
   remainingPaymentAmount,
   removePaymentLine,
   roundMoney,
@@ -28,6 +29,8 @@ export interface SplitPaymentsEditorProps {
   variant?: 'admin' | 'pos';
   /** Hide quick method chips (e.g. when shown outside a drawer). */
   showMethodPicker?: boolean;
+  /** "Venta a crédito": accepts a sum below total instead of requiring an exact match. */
+  allowPartial?: boolean;
 }
 
 const formatMoney = (value: number, currency: string) =>
@@ -57,6 +60,7 @@ export function SplitPaymentsEditor({
   onChange,
   variant = 'admin',
   showMethodPicker = true,
+  allowPartial = false,
 }: SplitPaymentsEditorProps) {
   const [splitEnabled, setSplitEnabled] = useState(value.length > 1);
 
@@ -73,7 +77,7 @@ export function SplitPaymentsEditor({
   const assigned = sumPaymentAmounts(lines);
   const remaining = remainingPaymentAmount(value, total);
   const overAssigned = Math.max(0, roundMoney(assigned - roundMoney(total)));
-  const isBalanced = paymentsMatchTotal(value, total);
+  const isBalanced = allowPartial ? paymentsWithinTotal(value, total) : paymentsMatchTotal(value, total);
   const canAddLine = splitEnabled && value.length < paymentMethods.length;
   const showActions = splitEnabled && value.length > 1;
 
@@ -202,7 +206,7 @@ export function SplitPaymentsEditor({
               const method = paymentMethods.find((item) => item.id === line.methodId) ?? null;
               const isLastSplitLine = splitEnabled && index === lines.length - 1 && lines.length > 1;
               const options = methodOptionsForLine(index);
-              const amountValue = splitEnabled
+              const amountValue = splitEnabled || allowPartial
                 ? line.amount
                 : roundMoney(total).toFixed(2);
 
@@ -249,7 +253,7 @@ export function SplitPaymentsEditor({
                         max={total}
                         step="0.01"
                         value={amountValue}
-                        readOnly={!splitEnabled}
+                        readOnly={!splitEnabled && !allowPartial}
                         onChange={(event) =>
                           onChange(updatePaymentLineAmount(value, index, event.target.value, total))
                         }

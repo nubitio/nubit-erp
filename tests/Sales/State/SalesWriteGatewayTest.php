@@ -230,6 +230,52 @@ class SalesWriteGatewayTest extends TestCase
         $gateway->write($sale, 1);
     }
 
+    public function testWriteSetsFormaPagoCreditoWhenCreditSaleLeavesBalance(): void
+    {
+        $sale = $this->buildMinimalSale('100.00');
+        $sale->setCreditSale(true);
+        $sale->setPayments([[
+            'payment_method_id' => 1,
+            'amount' => '40.00',
+            'tendered_amount' => '40.00',
+            'change_amount' => null,
+        ]]);
+        $this->stubCurrencyResolver();
+
+        $tenantSettingsEntity = $this->createStub(\App\Settings\Entity\TenantSettings::class);
+        $tenantSettingsEntity->method('getDefaultPaymentTermDays')->willReturn(15);
+        $tenantSettings = $this->createStub(TenantSettingsService::class);
+        $tenantSettings->method('getIgv')->willReturn(18.0);
+        $tenantSettings->method('get')->willReturn($tenantSettingsEntity);
+
+        $gateway = new SalesWriteGateway(
+            $this->connection,
+            $this->createStub(EntityManagerInterface::class),
+            $this->currencyResolver,
+            new SalePaymentPlanService(),
+            $this->createStub(DashboardRepository::class),
+            $tenantSettings,
+        );
+
+        $gateway->write($sale, 1);
+
+        self::assertSame('60.00', $sale->getBalanceDue());
+        self::assertSame(2, $sale->getFormaPago());
+        self::assertSame('2024-01-16', $sale->getDueDate()?->format('Y-m-d'));
+    }
+
+    public function testWriteSetsFormaPagoContadoWhenFullyPaid(): void
+    {
+        $sale = $this->buildMinimalSale();
+        $this->stubCurrencyResolver();
+
+        $this->gateway->write($sale, 1);
+
+        self::assertSame('0.00', $sale->getBalanceDue());
+        self::assertSame(1, $sale->getFormaPago());
+        self::assertNull($sale->getDueDate());
+    }
+
     public function testWriteBackfillsIssuedAtWhenOnlyIssuedDateIsProvided(): void
     {
         $sale = $this->buildMinimalSale();

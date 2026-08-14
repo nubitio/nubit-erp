@@ -80,6 +80,7 @@ readonly class SalesWriteGateway
             $sale,
             $currencyData['currency'],
             Money::toString($grandTotal),
+            $sale->isCreditSale(),
         );
         $paidTotal = BigDecimal::zero();
         $changeTotal = BigDecimal::zero();
@@ -131,6 +132,27 @@ readonly class SalesWriteGateway
         $sale->setPaidTotal(Money::toString($paidTotal));
         $sale->setChangeTotal(Money::toString($changeTotal));
         $sale->setBalanceDue(Money::toString($balanceDue));
+
+        // formaPago drives the SUNAT "Forma de Pago" tag (Contado=1/Crédito=2).
+        // SaleUtils::fillSaleValues() sets an initial guess from the chosen
+        // payment method label, but that's a cosmetic pick independent of
+        // whether money is actually owed — a cashier could pick "Credito" and
+        // still pay in full, or pay partially with "Efectivo". balanceDue is
+        // the actual source of truth, so it wins here: the SUNAT tag and the
+        // real pending balance must never disagree.
+        if ($balanceDue->isGreaterThan(BigDecimal::zero())) {
+            $sale->setFormaPago(2);
+        } else {
+            $sale->setFormaPago(1);
+        }
+
+        // Credit sale left a balance: give it a due date (same calculation as
+        // GenerateRecurringSalesCommand) so it shows up in Cuentas por Cobrar
+        // with a real vencimiento instead of null.
+        if ($sale->isCreditSale() && $balanceDue->isGreaterThan(BigDecimal::zero())) {
+            $termDays = $this->tenantSettingsService->get()->getDefaultPaymentTermDays();
+            $sale->setDueDate($issuedDate->modify(sprintf('+%d days', $termDays)));
+        }
         $sale->setDiscountTotal(Money::toString($discountAmount));
         $sale->setCurrency($currencyData['currency']);
         $sale->setExchangeRate((string) $currencyData['exchange_rate']);

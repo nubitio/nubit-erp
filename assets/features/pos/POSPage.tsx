@@ -146,6 +146,8 @@ const POSPage = () => {
     lastSaleCode,
     emitInvoice,
     setEmitInvoice,
+    creditSale,
+    setCreditSale,
     currency,
     setCurrency,
     exchangeRate,
@@ -488,6 +490,8 @@ const POSPage = () => {
         setPaymentLines={setPaymentLines}
         emitInvoice={emitInvoice}
         setEmitInvoice={setEmitInvoice}
+        creditSale={creditSale}
+        setCreditSale={setCreditSale}
         currency={currency}
         setCurrency={setCurrency}
         exchangeRate={exchangeRate}

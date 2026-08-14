@@ -7,6 +7,14 @@ const SalePage = lazyNamed(() => import('@features/sales/SalePage'), 'SalePage')
 const InvoicePage = lazyNamed(() => import('@features/sales/InvoicePage'), 'InvoicePage');
 const CreditNotePage = lazyNamed(() => import('@features/sales/CreditNotePage'), 'CreditNotePage');
 const SaleConsultPage = lazyNamed(() => import('@features/sales/SaleConsultPage'), 'SaleConsultPage');
+const AccountsReceivablePage = lazyNamed(
+  () => import('@features/sales/AccountsReceivablePage'),
+  'AccountsReceivablePage',
+);
+const SaleCollectPayment = lazyNamed(
+  () => import('@features/sales/SaleCollectPayment'),
+  'SaleCollectPayment',
+);
 
 const SalesRedirect = () => <Navigate to="/billing/sales" replace />;
 const ConsultRedirect = () => <Navigate to="/billing/consult" replace />;
@@ -19,6 +27,8 @@ const LegacyCrudRedirect = ({ basePath }: { basePath: string }) => {
 export const billingRoutes: AppRouteDefinition[] = [
   { path: '/sale', element: SalesRedirect },
   { path: '/sale-consult', element: ConsultRedirect },
+  { path: '/accounts-receivable', element: AccountsReceivablePage },
+  { path: '/sale/:id/collect', element: SaleCollectPayment },
   { path: '/invoice', element: () => <LegacyCrudRedirect basePath="/billing/documents" /> },
   { path: '/invoice/:id?', element: () => <LegacyCrudRedirect basePath="/billing/documents" /> },
   { path: '/credit-note', element: () => <LegacyCrudRedirect basePath="/billing/credit-notes" /> },

@@ -26,8 +26,12 @@ final class SalePaymentPlanService
      *
      * @throws ServiceException
      */
-    public function resolveForWrite(SaleRecord $sale, string $currency, string $grandTotal): array
-    {
+    public function resolveForWrite(
+        SaleRecord $sale,
+        string $currency,
+        string $grandTotal,
+        bool $allowPartial = false,
+    ): array {
         $total = Money::money($grandTotal);
         $payments = $sale->getPayments();
         if ($payments === []) {
@@ -72,8 +76,17 @@ final class SalePaymentPlanService
         }
 
         $sumMoney = Money::money($sum);
+
+        if ($allowPartial && $sumMoney->isGreaterThan($total->plus(Money::money('0.01')))) {
+            throw new ServiceException(sprintf(
+                'La suma de pagos (%s) no puede exceder el total de la venta (%s).',
+                Money::toString($sumMoney),
+                Money::toString($total),
+            ));
+        }
+
         $diff = Money::money($total->minus($sumMoney));
-        if (!$diff->abs()->isLessThanOrEqualTo(Money::money('0.01'))) {
+        if (!$allowPartial && !$diff->abs()->isLessThanOrEqualTo(Money::money('0.01'))) {
             throw new ServiceException(sprintf(
                 'La suma de pagos (%s) no coincide con el total de la venta (%s).',
                 Money::toString($sumMoney),
@@ -87,10 +100,10 @@ final class SalePaymentPlanService
     /**
      * @throws ServiceException
      */
-    public function resolveCashCollectedAmount(SaleRecord $sale, string $grandTotal): string
+    public function resolveCashCollectedAmount(SaleRecord $sale, string $grandTotal, bool $allowPartial = false): string
     {
         $currency = strtoupper(trim($sale->getCurrency()));
-        $payments = $this->resolveForWrite($sale, $currency !== '' ? $currency : 'PEN', $grandTotal);
+        $payments = $this->resolveForWrite($sale, $currency !== '' ? $currency : 'PEN', $grandTotal, $allowPartial);
 
         $cash = BigDecimal::zero();
         foreach ($payments as $payment) {

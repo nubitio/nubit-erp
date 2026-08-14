@@ -27,6 +27,7 @@ final class PermissionCatalog
                     'sales.create' => 'Emitir comprobantes',
                     'sales.void' => 'Anular comprobantes',
                     'sales.export' => 'Exportar ventas',
+                    'sales.collect' => 'Registrar cobros',
                 ],
             ],
             'pos' => [

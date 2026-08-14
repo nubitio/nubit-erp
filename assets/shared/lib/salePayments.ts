@@ -35,6 +35,10 @@ export const paymentsMatchTotal = (lines: SalePaymentLineDraft[], total: number)
   return diff <= MONEY_TOLERANCE;
 };
 
+/** Like paymentsMatchTotal, but also accepts a sum below the total — the "venta a crédito" case. */
+export const paymentsWithinTotal = (lines: SalePaymentLineDraft[], total: number): boolean =>
+  sumPaymentAmounts(lines) <= roundMoney(total) + MONEY_TOLERANCE;
+
 export const remainingPaymentAmount = (lines: SalePaymentLineDraft[], total: number): number => {
   const remaining = roundMoney(total) - sumPaymentAmounts(lines);
   return remaining > MONEY_TOLERANCE ? remaining : 0;
@@ -263,6 +267,7 @@ export const validatePaymentLines = (
   lines: SalePaymentLineDraft[],
   paymentMethods: PaymentMethodOption[],
   total: number,
+  allowPartial = false,
 ): PaymentValidationResult => {
   if (total <= 0) {
     return { valid: false, message: 'El total debe ser mayor a cero.' };
@@ -296,7 +301,15 @@ export const validatePaymentLines = (
     }
   }
 
-  if (!paymentsMatchTotal(lines, total)) {
+  if (allowPartial) {
+    if (!paymentsWithinTotal(lines, total)) {
+      const paid = sumPaymentAmounts(lines);
+      return {
+        valid: false,
+        message: `La suma de pagos (${paid.toFixed(2)}) no puede superar el total (${roundMoney(total).toFixed(2)}).`,
+      };
+    }
+  } else if (!paymentsMatchTotal(lines, total)) {
     const paid = sumPaymentAmounts(lines);
     return {
       valid: false,

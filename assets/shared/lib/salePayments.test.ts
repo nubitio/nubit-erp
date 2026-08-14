@@ -5,6 +5,7 @@ import {
   createSplitPaymentLines,
   enableSplitPaymentLines,
   paymentsMatchTotal,
+  paymentsWithinTotal,
   rebalancePaymentLines,
   summarizePaymentLines,
   validatePaymentLines,
@@ -97,6 +98,34 @@ describe('salePayments', () => {
     expect(result.valid).toBe(false);
     if (!result.valid) {
       expect(result.message).toContain('No repitas');
+    }
+  });
+
+  it('allowPartial: accepts a sum below total ("venta a crédito")', () => {
+    const lines = [{ methodId: 1, amount: '30.00' }];
+
+    expect(paymentsWithinTotal(lines, 100)).toBe(true);
+    expect(validatePaymentLines(lines, methods, 100, true)).toEqual({ valid: true });
+  });
+
+  it('allowPartial: still rejects a sum above total', () => {
+    const lines = [{ methodId: 1, amount: '150.00' }];
+
+    expect(paymentsWithinTotal(lines, 100)).toBe(false);
+    const result = validatePaymentLines(lines, methods, 100, true);
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.message).toContain('no puede superar');
+    }
+  });
+
+  it('without allowPartial, a sum below total is still rejected (default POS behavior unchanged)', () => {
+    const lines = [{ methodId: 1, amount: '30.00' }];
+    const result = validatePaymentLines(lines, methods, 100);
+
+    expect(result.valid).toBe(false);
+    if (!result.valid) {
+      expect(result.message).toContain('no coincide con el total');
     }
   });
 });

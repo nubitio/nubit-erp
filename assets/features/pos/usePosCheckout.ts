@@ -87,6 +87,7 @@ export const usePosCheckout = ({
   const [lastCheckoutSucceeded, setLastCheckoutSucceeded] = useState(false);
   const [lastSaleCode, setLastSaleCode] = useState<string | null>(null);
   const [emitInvoice, setEmitInvoice] = useState(false);
+  const [creditSale, setCreditSale] = useState(false);
   const { currency, exchangeRate, setCurrency, setExchangeRate } = useCurrencySettings();
   const { igvRate } = useTenantIgvRate();
   const [scaleReady, setScaleReady] = useState(false);
@@ -402,7 +403,7 @@ export const usePosCheckout = ({
     });
   }, [paymentMethods, total]);
 
-  const paymentValidation = validatePaymentLines(paymentLines, paymentMethods, total);
+  const paymentValidation = validatePaymentLines(paymentLines, paymentMethods, total, creditSale);
   const resolvedPayments = buildPaymentPayload(paymentLines, paymentMethods, total);
   const primaryPaymentMethodId = paymentLines[0]?.methodId ?? null;
   const changeAmount = totalCashChangeAmount(paymentLines, paymentMethods, total);
@@ -446,6 +447,7 @@ export const usePosCheckout = ({
         note: note.trim() || null,
         discountPercent: discountPercent.toFixed(2),
         emitInvoice,
+        creditSale,
         currency,
         exchangeRate: currency === 'USD' ? exchangeRate : '1.000000',
         grandTotal: total.toFixed(2),
@@ -558,6 +560,8 @@ export const usePosCheckout = ({
     lastSaleCode,
     emitInvoice,
     setEmitInvoice,
+    creditSale,
+    setCreditSale,
     currency,
     setCurrency,
     exchangeRate,
