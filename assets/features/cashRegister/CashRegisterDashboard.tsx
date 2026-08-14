@@ -15,6 +15,17 @@ export const CashRegisterDashboard = () => {
 
   const EVENTS = {};
 
+  const TOOLBAR = {
+    utility: [
+      {
+        text: 'Nueva caja',
+        icon: 'ph-plus-circle',
+        hint: 'Crear una caja para esta sucursal',
+        onClick: () => navigate('/cash-register'),
+      },
+    ],
+  };
+
   return (
     <div className="cash-register-dashboard-page">
       <DataGridView
@@ -24,6 +35,7 @@ export const CashRegisterDashboard = () => {
         url={url}
         fields={fields}
         events={EVENTS}
+        toolbar={TOOLBAR}
         paging={false}
       />
     </div>
