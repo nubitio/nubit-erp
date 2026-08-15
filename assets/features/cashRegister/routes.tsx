@@ -1,5 +1,7 @@
+import { Navigate } from 'react-router-dom';
 import { lazyNamed } from '@app/router/lazy';
 import type { AppRouteDefinition } from '@app/router/types';
+import { CashRegisterHubLayout } from './CashRegisterHubLayout';
 
 const CashRegisterDashboard = lazyNamed(
   () => import('./CashRegisterDashboard'),
@@ -18,14 +20,26 @@ const CashRegisterShiftsPage = lazyNamed(
   'CashRegisterShiftsPage',
 );
 
+// Legacy standalone paths: kept as redirects so old bookmarks/links still resolve.
+const RegistersRedirect = () => <Navigate to="/cashbox/registers" replace />;
+const CategoriesRedirect = () => <Navigate to="/cashbox/categories" replace />;
+
 export const cashRegisterRoutes: AppRouteDefinition[] = [
-  { path: '/cashbox', element: CashRegisterDashboard },
-  { path: '/cash-register', element: CashRegisterPage },
+  { path: '/cash-register', element: RegistersRedirect },
+  { path: '/cash-movement-category', element: CategoriesRedirect },
   { path: '/cash-register/:id/open', element: CashRegisterOpen },
   { path: '/cash-session/:id/close', element: CashRegisterClose },
   { path: '/cash-register/:id/close', element: CashRegisterClose },
   { path: '/cash-session/:id/movements', element: CashMovements },
   { path: '/cash-shift/:id/movements', element: CashMovements },
   { path: '/cash-register/:id/shifts', element: CashRegisterShiftsPage },
-  { path: '/cash-movement-category', element: CashMovementCategoryPage },
+  {
+    path: '/cashbox',
+    element: CashRegisterHubLayout,
+    children: [
+      { path: 'dashboard', element: CashRegisterDashboard },
+      { path: 'registers', element: CashRegisterPage },
+      { path: 'categories', element: CashMovementCategoryPage },
+    ],
+  },
 ];

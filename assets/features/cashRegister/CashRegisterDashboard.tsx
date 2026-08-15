@@ -21,7 +21,7 @@ export const CashRegisterDashboard = () => {
         text: 'Nueva caja',
         icon: 'ph-plus-circle',
         hint: 'Crear una caja para esta sucursal',
-        onClick: () => navigate('/cash-register'),
+        onClick: () => navigate('/cashbox/registers'),
       },
     ],
   };
