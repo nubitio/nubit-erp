@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   DataGridView,
@@ -9,6 +9,7 @@ import {
   type FormHandle,
   type GridHandle,
 } from '@nubitio/crud';
+import { useEvents } from '@nubitio/core';
 import toast from '@shared/lib/SharedUtils';
 import { purchaseOrderEndpoints } from './api/purchaseOrderEndpoints';
 import { PurchaseOrderFields, PurchaseOrderDetailFields } from './PurchaseOrderFields';
@@ -39,9 +40,21 @@ export const PurchaseOrderPage = () => {
   const gridRef = useRef<GridHandle>(null);
   const formRef = useRef<FormHandle>(null);
   const [orderFormOpen, setOrderFormOpen] = useState(false);
+  const [on] = useEvents();
 
   const fields = useMemo(() => PurchaseOrderFields(), []);
   const detailFields = useMemo(() => PurchaseOrderDetailFields(), []);
+
+  useEffect(() => {
+    const subscriptions = [
+      on(purchaseOrderEvents.ADD, () => setOrderFormOpen(true)),
+      on(purchaseOrderEvents.EDIT, () => setOrderFormOpen(true)),
+      on(purchaseOrderEvents.CANCEL, () => setOrderFormOpen(false)),
+      on(purchaseOrderEvents.SUCCESS, () => setOrderFormOpen(false)),
+    ];
+
+    return () => subscriptions.forEach((subscription) => subscription.unsubscribe());
+  }, [on]);
 
   const API_URL = purchaseOrderEndpoints.list();
 

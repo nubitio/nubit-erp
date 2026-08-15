@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   DataGridView,
@@ -9,6 +9,7 @@ import {
   type FormHandle,
   type GridHandle,
 } from '@nubitio/crud';
+import { useEvents } from '@nubitio/core';
 import toast from '@shared/lib/SharedUtils';
 import { saleQuoteEndpoints } from './api/saleQuoteEndpoints';
 import { SaleQuoteFields, SaleQuoteDetailFields } from './SaleQuoteFields';
@@ -43,9 +44,21 @@ export const SaleQuotePage = () => {
   const formRef = useRef<FormHandle>(null);
   const [quoteFormOpen, setQuoteFormOpen] = useState(false);
   const [convertQuote, setConvertQuote] = useState<SaleQuoteRow | null>(null);
+  const [on] = useEvents();
 
   const fields = useMemo(() => SaleQuoteFields(), []);
   const detailFields = useMemo(() => SaleQuoteDetailFields(), []);
+
+  useEffect(() => {
+    const subscriptions = [
+      on(saleQuoteEvents.ADD, () => setQuoteFormOpen(true)),
+      on(saleQuoteEvents.EDIT, () => setQuoteFormOpen(true)),
+      on(saleQuoteEvents.CANCEL, () => setQuoteFormOpen(false)),
+      on(saleQuoteEvents.SUCCESS, () => setQuoteFormOpen(false)),
+    ];
+
+    return () => subscriptions.forEach((subscription) => subscription.unsubscribe());
+  }, [on]);
 
   const API_URL = saleQuoteEndpoints.list();
 
