@@ -11,9 +11,13 @@ use Doctrine\DBAL\Exception;
 class MenuSeedService
 {
     /**
-     * Menú operativo por capas: operación diaria, crecimiento y enterprise.
-     * Las rutas avanzadas siguen registradas en el frontend; la visibilidad
-     * final se refina con TenantRuntimeConfig en menuService.ts.
+     * Menú operativo agrupado: uso diario sin acordeón, y tres grupos
+     * colapsables (Compras, Finanzas, Cumplimiento) que unifican pantallas
+     * hermanas hoy dispersas como ítems planos. Un ítem "grupo" tiene
+     * route=null y solo actúa como toggle (ver MenuProvider::buildMenuForRole);
+     * las rutas de sus hijos no cambian, así que RBAC y bookmarks existentes
+     * siguen funcionando. La visibilidad final se refina con
+     * TenantRuntimeConfig en menuService.ts.
      *
      * @var list<array{
      *     id: int,
@@ -26,7 +30,7 @@ class MenuSeedService
      * }>
      */
     private const array MENUS = [
-        // ── Nivel 1: operación diaria ───────────────────────────────────────
+        // ── Uso diario (siempre un clic, sin acordeón) ──────────────────────
         [
             'id' => 1,
             'order_index' => 0,
@@ -55,16 +59,35 @@ class MenuSeedService
             'parent_id' => null,
         ],
 
-        // ── Nivel 2: crecimiento ────────────────────────────────────────────
+        // ── Grupo: Compras (recepción directa + con orden de compra) ───────
         [
-            'id' => 500,
+            'id' => 510,
             'order_index' => 3,
             'key_name' => 'Compras',
-            'type' => 'route',
-            'route' => 'purchases',
+            'type' => 'group',
+            'route' => null,
             'icon' => 'ph ph-shopping-bag',
             'parent_id' => null,
         ],
+        [
+            'id' => 500,
+            'order_index' => 0,
+            'key_name' => 'Recepción de mercadería',
+            'type' => 'route',
+            'route' => 'purchases',
+            'icon' => 'ph ph-shopping-bag',
+            'parent_id' => 510,
+        ],
+        [
+            'id' => 780,
+            'order_index' => 1,
+            'key_name' => 'Órdenes de compra',
+            'type' => 'route',
+            'route' => 'purchase-orders',
+            'icon' => 'ph ph-clipboard-text',
+            'parent_id' => 510,
+        ],
+
         [
             'id' => 101,
             'order_index' => 4,
@@ -110,74 +133,87 @@ class MenuSeedService
             'icon' => 'ph ph-arrows-clockwise',
             'parent_id' => null,
         ],
+
+        // ── Grupo: Finanzas (cuentas por pagar/cobrar + conciliación) ──────
+        [
+            'id' => 790,
+            'order_index' => 9,
+            'key_name' => 'Finanzas',
+            'type' => 'group',
+            'route' => null,
+            'icon' => 'ph ph-wallet',
+            'parent_id' => null,
+        ],
         [
             'id' => 760,
-            'order_index' => 9,
+            'order_index' => 0,
             'key_name' => 'Cuentas por pagar',
             'type' => 'route',
             'route' => 'accounts-payable',
             'icon' => 'ph ph-invoice',
-            'parent_id' => null,
+            'parent_id' => 790,
         ],
         [
             'id' => 765,
-            'order_index' => 10,
+            'order_index' => 1,
             'key_name' => 'Cuentas por cobrar',
             'type' => 'route',
             'route' => 'accounts-receivable',
             'icon' => 'ph ph-hand-coins',
-            'parent_id' => null,
+            'parent_id' => 790,
         ],
         [
             'id' => 770,
-            'order_index' => 11,
+            'order_index' => 2,
             'key_name' => 'Conciliación bancaria',
             'type' => 'route',
             'route' => 'bank-reconciliation',
             'icon' => 'ph ph-arrows-left-right',
-            'parent_id' => null,
+            'parent_id' => 790,
         ],
+
         [
             'id' => 775,
-            'order_index' => 12,
+            'order_index' => 10,
             'key_name' => 'Cotizaciones',
             'type' => 'route',
             'route' => 'sale-quotes',
             'icon' => 'ph ph-file-text',
             'parent_id' => null,
         ],
+
+        // ── Grupo: Cumplimiento (obligaciones periódicas SUNAT) ─────────────
         [
-            'id' => 780,
-            'order_index' => 13,
-            'key_name' => 'Órdenes de compra',
-            'type' => 'route',
-            'route' => 'purchase-orders',
-            'icon' => 'ph ph-clipboard-text',
+            'id' => 795,
+            'order_index' => 11,
+            'key_name' => 'Cumplimiento',
+            'type' => 'group',
+            'route' => null,
+            'icon' => 'ph ph-shield-check',
             'parent_id' => null,
         ],
-
-        // ── Nivel 3: enterprise (filtrado por runtime config) ─────────────
         [
             'id' => 700,
-            'order_index' => 14,
+            'order_index' => 0,
             'key_name' => 'Impuestos',
             'type' => 'route',
             'route' => 'taxes',
             'icon' => 'ph ph-receipt',
-            'parent_id' => null,
+            'parent_id' => 795,
         ],
         [
             'id' => 601,
-            'order_index' => 15,
+            'order_index' => 1,
             'key_name' => 'Exportación PLE',
             'type' => 'route',
             'route' => 'ple',
             'icon' => 'ph ph-export',
-            'parent_id' => null,
+            'parent_id' => 795,
         ],
+
         [
             'id' => 909,
-            'order_index' => 16,
+            'order_index' => 12,
             'key_name' => 'Configuración',
             'type' => 'route',
             'route' => 'config',
