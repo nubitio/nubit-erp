@@ -50,11 +50,11 @@ final class UnreconciledMovementsController extends AbstractController
         );
 
         $salePayments = array_map(
-            static fn(SalePayment $p): array => [
+            fn(SalePayment $p): array => [
                 'id' => $p->getId(),
                 'amount' => $p->getAmount(),
                 'date' => $p->getPaidAt()?->format('Y-m-d'),
-                'label' => 'Cobro venta #' . $p->getSaleRecord()->getId(),
+                'label' => $this->matchingService->formatSaleLabel($p->getSaleRecord()),
             ],
             $this->matchingService->unreconciledSalePayments($from, $to),
         );

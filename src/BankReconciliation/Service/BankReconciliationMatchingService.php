@@ -12,8 +12,10 @@ use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Enum\CashMovementType;
 use App\Efact\Domain\Money;
 use App\Sales\Entity\SalePayment;
+use App\Sales\Entity\SaleRecord;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityNotFoundException;
 
 /**
  * Read-only suggestion/query logic for reconciling a BankStatementLine
@@ -37,6 +39,30 @@ final readonly class BankReconciliationMatchingService
     public function __construct(
         private EntityManagerInterface $em,
     ) {}
+
+    /**
+     * Human-friendly label for a sale in reconciliation lists. The customer
+     * name is what a user actually recognizes a bank movement by; a
+     * truncated id is only a fallback identifier, since the full UUID
+     * primary key is meaningless to skim in a match list.
+     *
+     * $sale is frequently an unitialized proxy here (it's only ever touched
+     * for its id/customer, never queried directly), and the underlying row
+     * can be gone if the sale was hard-deleted after the payment was made —
+     * initializing the proxy then throws instead of returning null.
+     */
+    public function formatSaleLabel(SaleRecord $sale): string
+    {
+        $shortId = '#' . substr($sale->getId() ?? '', offset: 0, length: 8);
+
+        try {
+            $customerName = $sale->getCustomer()?->getBusinessName();
+        } catch (EntityNotFoundException) {
+            $customerName = null;
+        }
+
+        return 'Cobro venta ' . $shortId . ($customerName !== null ? ' — ' . $customerName : '');
+    }
 
     /**
      * Cascading suggestion tiers:
@@ -218,11 +244,11 @@ final readonly class BankReconciliationMatchingService
             ->getQuery()
             ->getResult();
 
-        return array_map(static fn(SalePayment $p): array => [
+        return array_map(fn(SalePayment $p): array => [
             'sourceType' => 'sale_payment',
             'sourceId' => $p->getId(),
             'date' => DateTimeImmutable::createFromInterface($p->getPaidAt()),
-            'label' => 'Cobro venta #' . $p->getSaleRecord()->getId(),
+            'label' => $this->formatSaleLabel($p->getSaleRecord()),
         ], $payments);
     }
 

@@ -7,6 +7,6 @@ namespace App\BankReconciliation\Dto;
 class BankStatementLineUnmatchDto
 {
     public function __construct(
-        public string $id,
+        public int|string $id,
     ) {}
 }

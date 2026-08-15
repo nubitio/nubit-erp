@@ -7,6 +7,6 @@ namespace App\BankReconciliation\Dto;
 class BankStatementLineIgnoreDto
 {
     public function __construct(
-        public string $id,
+        public int|string $id,
     ) {}
 }

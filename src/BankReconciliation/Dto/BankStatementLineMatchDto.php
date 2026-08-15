@@ -7,7 +7,7 @@ namespace App\BankReconciliation\Dto;
 class BankStatementLineMatchDto
 {
     public function __construct(
-        public string $id,
+        public int|string $id,
         public string $sourceType,
         public int|string $sourceId,
     ) {}
