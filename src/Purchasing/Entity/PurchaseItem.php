@@ -50,6 +50,18 @@ class PurchaseItem
     #[ORM\JoinColumn(name: 'goods_receipt_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     private ?Purchase $purchase = null;
 
+    /**
+     * Links this receipt line back to the PurchaseOrder line it fulfills,
+     * so App\Purchasing\Service\PurchaseOrderReceiptService knows which
+     * PurchaseOrderItem.receivedQty to update. Left null for direct-intake
+     * items with no PO (the default, unchanged flow) and for extra items
+     * added during receiving that weren't on the original order.
+     */
+    #[Groups(['purchase_item:read', 'purchase:write'])]
+    #[ORM\ManyToOne(targetEntity: PurchaseOrderItem::class)]
+    #[ORM\JoinColumn(name: 'purchase_order_item_id', nullable: true)]
+    private ?PurchaseOrderItem $purchaseOrderItem = null;
+
     #[Groups(['purchase_item:read'])]
     #[ORM\Column(name: 'legacy_movimiento_detalle_id', type: 'integer', nullable: true)]
     #[ApiProperty(description: 'purchase_item.legacy_movimiento_detalle_id.label', openapiContext: ['x-crud' => [
@@ -253,6 +265,18 @@ class PurchaseItem
     public function setPurchase(?Purchase $purchase): static
     {
         $this->purchase = $purchase;
+
+        return $this;
+    }
+
+    public function getPurchaseOrderItem(): ?PurchaseOrderItem
+    {
+        return $this->purchaseOrderItem;
+    }
+
+    public function setPurchaseOrderItem(?PurchaseOrderItem $purchaseOrderItem): static
+    {
+        $this->purchaseOrderItem = $purchaseOrderItem;
 
         return $this;
     }

@@ -130,7 +130,7 @@ count = 1
 file = "src/AI/Service/SessionContextBuilder.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
+count = 3
 
 [[issues]]
 file = "src/AI/State/ApiDocsProvider.php"
@@ -208,7 +208,7 @@ count = 2
 file = "src/AI/Tool/CustomerIntelligenceTool.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
-count = 6
+count = 4
 
 [[issues]]
 file = "src/AI/Tool/ProductTools.php"
@@ -238,6 +238,156 @@ count = 3
 file = "src/AI/Tool/SunatStatusTool.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "mixed-argument"
+message = "Invalid argument type for argument #1 of `strtolower`: expected `string`, but found `mixed`."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #3 of `App\BankReconciliation\Service\BankStatementImportService::startImport`: expected `string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #5 of `App\BankReconciliation\Message\BankStatementImportMessage::__construct`: expected `null|string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #7 of `App\BankReconciliation\Message\BankStatementImportMessage::__construct`: expected `null|string`, but found `nonnull`.'
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "mixed-assignment"
+message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "mixed-method-access"
+message = "Attempting to access a method on a non-object type (`nonnull`)."
+count = 4
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "possibly-null-operand"
+message = "Possibly null left operand used in string concatenation (type `null|string`)."
+count = 2
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "possibly-null-operand"
+message = "Possibly null right operand used in string concatenation (type `null|string`)."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Controller/UnreconciledMovementsController.php"
+code = "possibly-null-operand"
+message = "Possibly null right operand used in string concatenation (type `null|string`)."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Repository/BankStatementLineRepository.php"
+code = "mixed-return-statement"
+message = 'Could not infer a precise return type for function `App\BankReconciliation\Repository\BankStatementLineRepository::findUnmatchedByImportBatch`. Saw type `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "invalid-return-statement"
+message = '''Invalid return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::cashMovementCandidates`: expected `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|string, 'sourceType': string}>`, but found `array<array-key, array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|null, 'sourceType': string('cash_movement')}>|list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|null, 'sourceType': string('cash_movement')}>`.'''
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "invalid-return-statement"
+message = '''Invalid return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::salePaymentCandidates`: expected `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|string, 'sourceType': string}>`, but found `array<array-key, array{'date': DateTimeImmutable&static, 'label': truthy-string, 'sourceId': int|null, 'sourceType': string('sale_payment')}>|list<array{'date': DateTimeImmutable&static, 'label': truthy-string, 'sourceId': int|null, 'sourceType': string('sale_payment')}>`.'''
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "invalid-return-statement"
+message = '''Invalid return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::supplierPaymentCandidates`: expected `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|string, 'sourceType': string}>`, but found `array<array-key, array{'date': DateTimeImmutable&static, 'label': string, 'sourceId': int|null, 'sourceType': string('supplier_payment')}>|list<array{'date': DateTimeImmutable&static, 'label': string, 'sourceId': int|null, 'sourceType': string('supplier_payment')}>`.'''
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "mixed-argument"
+message = '''Invalid argument type for argument #2 of `array_map`: expected `array<('K.array_map() extends array-key), App\AccountsPayable\Entity\SupplierPayment>`, but found `mixed`.'''
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "mixed-argument"
+message = '''Invalid argument type for argument #2 of `array_map`: expected `array<('K.array_map() extends array-key), App\CashRegister\Entity\CashMovement>`, but found `mixed`.'''
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "mixed-argument"
+message = '''Invalid argument type for argument #2 of `array_map`: expected `array<('K.array_map() extends array-key), App\Sales\Entity\SalePayment>`, but found `mixed`.'''
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 3
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "mixed-return-statement"
+message = 'Could not infer a precise return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::unreconciledCashMovements`. Saw type `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "mixed-return-statement"
+message = 'Could not infer a precise return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::unreconciledSalePayments`. Saw type `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "mixed-return-statement"
+message = 'Could not infer a precise return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::unreconciledSupplierPayments`. Saw type `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "possibly-null-argument"
+message = "Argument #1 of function `mb_strtolower` is possibly `null`, but parameter type `string` does not accept it."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "possibly-null-argument"
+message = "Argument #1 of method `DateTimeImmutable::createFromInterface` is possibly `null`, but parameter type `DateTimeInterface` does not accept it."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "possibly-null-operand"
+message = "Possibly null right operand used in string concatenation (type `null|string`)."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankStatementParserService.php"
+code = "possibly-invalid-argument"
+message = '''Possible argument type mismatch for argument #6 of `App\BankReconciliation\Service\BankStatementParserService::buildLine`: expected `array{'amountMode': string('debit_credit')|string('single'), 'dateFormat': string}`, but possibly received `array{'amountColumn': null|string, 'amountMode': string('debit_credit')|string('single'), 'creditColumn': null|string, 'dateColumn': string, 'dateFormat': string, 'debitColumn': null|string, 'glosaColumn': string, 'headerRow': int, 'referenceColumn': null|string}`.'''
 count = 1
 
 [[issues]]
@@ -796,6 +946,18 @@ count = 4
 file = "src/Billing/Receipt/ReceiptPayload.php"
 code = "possibly-false-argument"
 message = "Argument #1 of function `base64_encode` is possibly `false`, but parameter type `string` does not accept it."
+count = 1
+
+[[issues]]
+file = "src/Billing/Recurring/Command/GenerateRecurringSalesCommand.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 1
+
+[[issues]]
+file = "src/Billing/Recurring/Command/NotifyDueSalesCommand.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
 
 [[issues]]
@@ -1465,12 +1627,6 @@ message = "Redundant cast to `(string)`: the expression already has this type."
 count = 2
 
 [[issues]]
-file = "src/CashRegister/State/CashRegisterCloseProcessor.php"
-code = "redundant-null-coalesce"
-message = "Redundant null coalesce: left-hand side can never be `null` or undefined."
-count = 1
-
-[[issues]]
 file = "src/CashRegister/State/CashRegisterDashboardProvider.php"
 code = "docblock-type-mismatch"
 message = 'Docblock return type `ApiPlatform\State\Pagination\PartialPaginatorInterface<App\CashRegister\Dto\CashRegisterDashboardDto>|App\CashRegister\Dto\CashRegisterDashboardDto|iterable<mixed, App\CashRegister\Dto\CashRegisterDashboardDto>|null` is incompatible with native return type `array<array-key, mixed>|null|object`.'
@@ -1814,21 +1970,9 @@ count = 1
 
 [[issues]]
 file = "src/ControlPlane/Billing/Feature/FeatureKernelListener.php"
-code = "redundant-condition"
-message = "Redundant ternary operator: condition is always truthy."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Billing/Feature/FeatureKernelListener.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$instance`."
 count = 2
-
-[[issues]]
-file = "src/ControlPlane/Billing/Feature/FeatureKernelListener.php"
-code = "redundant-type-comparison"
-message = "Redundant type assertion: `$method` is already `non-empty-string`."
-count = 1
 
 [[issues]]
 file = "src/ControlPlane/Billing/Feature/TenantFeatureChecker.php"
@@ -2582,21 +2726,9 @@ count = 1
 
 [[issues]]
 file = "src/ControlPlane/Tenant/Service/TenantNotificationService.php"
-code = "mixed-argument"
-message = "Invalid argument type for argument #3 of `sprintf`: expected `Stringable|null|scalar`, but found `mixed`."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantNotificationService.php"
-code = "mixed-array-access"
-message = "Unsafe array access on type `mixed`."
-count = 3
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Service/TenantNotificationService.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 5
+count = 4
 
 [[issues]]
 file = "src/ControlPlane/Tenant/Service/TenantNotificationService.php"
@@ -2846,14 +2978,8 @@ count = 1
 
 [[issues]]
 file = "src/Efact/Service/LogoProvider.php"
-code = "mixed-operand"
-message = "Invalid right operand: type `mixed` cannot be reliably used in string concatenation."
-count = 1
-
-[[issues]]
-file = "src/Efact/Service/LogoProvider.php"
-code = "possibly-null-operand"
-message = "Possibly null left operand used in string concatenation (type `null|string`)."
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 1
 
 [[issues]]
@@ -3020,6 +3146,12 @@ count = 1
 
 [[issues]]
 file = "src/Identity/Auth/EfactTokenClaimsProvider.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 3
+
+[[issues]]
+file = "src/Identity/Controller/AuthImpersonationConsumeController.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 2
@@ -3763,6 +3895,24 @@ message = "Redundant cast to `(float)`: the expression already has this type."
 count = 4
 
 [[issues]]
+file = "src/Purchasing/Service/PurchaseOrderService.php"
+code = "invalid-type-cast"
+message = "Casting `mixed` to `float`."
+count = 2
+
+[[issues]]
+file = "src/Purchasing/Service/PurchaseOrderService.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/Purchasing/Service/PurchaseOrderService.php"
+code = "mixed-assignment"
+message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
 file = "src/Purchasing/Service/PurchaseSupplierDocumentValidator.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
@@ -3772,6 +3922,12 @@ count = 3
 file = "src/Purchasing/State/PurchaseInventoryService.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
+count = 1
+
+[[issues]]
+file = "src/Purchasing/State/PurchaseOrderCancelProcessor.php"
+code = "impossible-condition"
+message = "This condition (type `false`) will always evaluate to false."
 count = 1
 
 [[issues]]
@@ -3979,12 +4135,6 @@ message = "Non numeric string of type `string` implicitly cast to `float`."
 count = 2
 
 [[issues]]
-file = "src/Sales/Entity/SaleRecord.php"
-code = "redundant-null-coalesce"
-message = "Redundant null coalesce: left-hand side can never be `null` or undefined."
-count = 2
-
-[[issues]]
 file = "src/Sales/Repository/DashboardRepository.php"
 code = "invalid-iterator"
 message = "The expression provided to `foreach` is not iterable. It resolved to type `mixed`, which is not iterable."
@@ -4126,6 +4276,30 @@ count = 3
 file = "src/Sales/Service/SalePaymentPlanService.php"
 code = "reference-to-undefined-variable"
 message = "Reference created from a previously undefined variable `$matches`."
+count = 1
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteService.php"
+code = "invalid-type-cast"
+message = "Casting `mixed` to `float`."
+count = 3
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteService.php"
+code = "mixed-argument"
+message = "Invalid argument type for argument #2 of `sprintf`: expected `Stringable|null|scalar`, but found `nonnull`."
+count = 1
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteService.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteService.php"
+code = "mixed-assignment"
+message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
 count = 1
 
 [[issues]]
@@ -4274,12 +4448,6 @@ count = 2
 
 [[issues]]
 file = "src/Sales/State/SaleProcessor.php"
-code = "mixed-operand"
-message = "Casting `mixed` to `bool`."
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleProcessor.php"
 code = "possible-method-access-on-null"
 message = "Attempting to call a method on `null`."
 count = 1
@@ -4289,24 +4457,6 @@ file = "src/Sales/State/SaleProcessor.php"
 code = "possibly-null-argument"
 message = "Argument #1 of method `DateTimeImmutable::createFromInterface` is possibly `null`, but parameter type `DateTimeInterface` does not accept it."
 count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleProcessor.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `App\Sales\State\SaleInventoryOrchestrator::process` is possibly `null`, but parameter type `App\Identity\Dto\AuthUserDto` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleProcessor.php"
-code = "possibly-null-argument"
-message = 'Argument #3 of method `App\Sales\State\SalesWriteGateway::writeCashSaleMovement` is possibly `null`, but parameter type `int` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleProcessor.php"
-code = "possibly-null-property-access"
-message = "Attempting to access a property on a possibly `null` value."
-count = 5
 
 [[issues]]
 file = "src/Sales/State/SaleProcessor.php"
@@ -4342,6 +4492,36 @@ count = 5
 file = "src/Sales/State/SaleProvider.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/Sales/State/SaleQuoteProvider.php"
+code = "docblock-type-mismatch"
+message = 'Docblock return type `ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|iterable<mixed, object>|null|object` is incompatible with native return type `array<array-key, mixed>|null|object`.'
+count = 1
+
+[[issues]]
+file = "src/Sales/State/SaleQuoteProvider.php"
+code = "generic-object-iteration"
+message = "Iterating over a generic `object`. This will iterate its public properties."
+count = 1
+
+[[issues]]
+file = "src/Sales/State/SaleQuoteProvider.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/Sales/State/SaleQuoteProvider.php"
+code = "possibly-invalid-argument"
+message = 'Possible argument type mismatch for argument #1 of `App\Sales\State\SaleQuoteProvider::expireStaleQuotes`: expected `array<array-key, App\Sales\Entity\SaleQuote>`, but possibly received `list{ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|App\Sales\Entity\SaleQuote}`.'
+count = 1
+
+[[issues]]
+file = "src/Sales/State/SaleQuoteProvider.php"
+code = "possibly-null-iterator"
+message = 'Expression being iterated (type `ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|iterable<mixed, object>|null|object`) might be `null` at runtime.'
 count = 1
 
 [[issues]]
@@ -4449,6 +4629,12 @@ count = 1
 [[issues]]
 file = "src/Sales/State/SalesWriteGateway.php"
 code = "mixed-argument"
+message = 'Invalid argument type for argument #1 of `App\Sales\Entity\SaleRecord::setDueDate`: expected `DateTimeImmutable|null`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Sales/State/SalesWriteGateway.php"
+code = "mixed-argument"
 message = 'Invalid argument type for argument #1 of `App\Sales\Entity\SaleRecord::setIdempotencyKey`: expected `null|string`, but found `mixed`.'
 count = 1
 
@@ -4468,7 +4654,7 @@ count = 1
 file = "src/Sales/State/SalesWriteGateway.php"
 code = "possible-method-access-on-null"
 message = "Attempting to call a method on `null`."
-count = 4
+count = 5
 
 [[issues]]
 file = "src/Sales/State/SalesWriteGateway.php"
@@ -4543,54 +4729,6 @@ message = 'Docblock return type `ApiPlatform\State\Pagination\PartialPaginatorIn
 count = 1
 
 [[issues]]
-file = "src/Settings/State/MenuProvider.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `App\Settings\Dto\MenuDto::__construct`: expected `string`, but found `mixed`.'
-count = 2
-
-[[issues]]
-file = "src/Settings/State/MenuProvider.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `App\Settings\Dto\SubMenuDto::__construct`: expected `string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Settings/State/MenuProvider.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `App\Settings\Dto\MenuDto::__construct`: expected `string`, but found `mixed`.'
-count = 2
-
-[[issues]]
-file = "src/Settings/State/MenuProvider.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `App\Settings\Dto\SubMenuDto::__construct`: expected `string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Settings/State/MenuProvider.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #3 of `App\Settings\Dto\MenuDto::__construct`: expected `string`, but found `truthy-mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Settings/State/MenuProvider.php"
-code = "mixed-operand"
-message = "Left operand in `==` comparison has `mixed` type."
-count = 1
-
-[[issues]]
-file = "src/Settings/State/MenuProvider.php"
-code = "mixed-operand"
-message = "Right operand in `==` comparison has `mixed` type."
-count = 3
-
-[[issues]]
-file = "src/Settings/State/MenuProvider.php"
-code = "redundant-logical-operation"
-message = "Redundant `&&` operation: left operand is evaluated and right operand is always truthy."
-count = 1
-
-[[issues]]
 file = "src/Settings/State/RoleMenuProcessor.php"
 code = "incompatible-parameter-type"
 message = 'Parameter `$data` of `App\Settings\State\RoleMenuProcessor::process()` expects type `App\Settings\ApiResource\RoleMenuResource` but parent `ApiPlatform\State\ProcessorInterface::process()` expects type `mixed`'
@@ -4601,42 +4739,6 @@ file = "src/Settings/State/RoleMenuProvider.php"
 code = "docblock-type-mismatch"
 message = 'Docblock return type `ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|iterable<mixed, object>|null|object` is incompatible with native return type `array<array-key, mixed>|null|object`.'
 count = 1
-
-[[issues]]
-file = "src/Settings/State/RoleMenuProvider.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `App\Settings\Dto\RoleMenuDto::__construct`: expected `string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Settings/State/RoleMenuProvider.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `App\Settings\Dto\RoleMenuItemDto::__construct`: expected `string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Settings/State/RoleMenuProvider.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
-file = "src/Settings/State/RoleMenuProvider.php"
-code = "mixed-operand"
-message = "Casting `mixed` to `bool`."
-count = 1
-
-[[issues]]
-file = "src/Settings/State/RoleMenuProvider.php"
-code = "mixed-operand"
-message = "Left operand in `==` comparison has `mixed` type."
-count = 1
-
-[[issues]]
-file = "src/Settings/State/RoleMenuProvider.php"
-code = "mixed-operand"
-message = "Right operand in `==` comparison has `mixed` type."
-count = 2
 
 [[issues]]
 file = "src/Settings/State/SunatStatePatchProcessor.php"
@@ -4810,7 +4912,7 @@ count = 2
 file = "src/Setup/Service/TestDataSeeder.php"
 code = "possible-method-access-on-null"
 message = "Attempting to call a method on `null`."
-count = 6
+count = 4
 
 [[issues]]
 file = "src/Setup/Service/TestDataSeeder.php"
@@ -4919,6 +5021,12 @@ file = "tests/AI/ToolCoherenceTest.php"
 code = "reference-to-undefined-variable"
 message = "Reference created from a previously undefined variable `$sectionMatch`."
 count = 1
+
+[[issues]]
+file = "tests/BankReconciliation/Entity/BankStatementLineApiResourceTest.php"
+code = "possibly-null-iterator"
+message = 'Expression being iterated (type `ApiPlatform\Metadata\Operations<ApiPlatform\Metadata\HttpOperation>|null`) might be `null` at runtime.'
+count = 2
 
 [[issues]]
 file = "tests/Billing/Adapter/SaleInvoicingAdapterTest.php"
@@ -5623,6 +5731,12 @@ message = "Assigning `mixed` type to a variable may lead to unexpected behavior.
 count = 1
 
 [[issues]]
+file = "tests/ControlPlane/Operator/Api/ImpersonationApiControllerTest.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
 file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
 code = "deprecated-method"
 message = 'Call to deprecated method: `PHPUnit\Framework\Assert::isType`.'
@@ -5753,6 +5867,12 @@ file = "tests/Identity/Auth/UserProviderTest.php"
 code = "property-type-coercion"
 message = 'A value of a less specific type `PHPUnit\Framework\MockObject\MockObject&Doctrine\ORM\EntityRepository` is being assigned to property `$$repository` (Doctrine\ORM\EntityRepository<App\Identity\Entity\User>).'
 count = 4
+
+[[issues]]
+file = "tests/Identity/Controller/AuthImpersonationConsumeControllerTest.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
 
 [[issues]]
 file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
@@ -5947,6 +6067,12 @@ message = "Assigning `mixed` type to a variable may lead to unexpected behavior.
 count = 1
 
 [[issues]]
+file = "tests/Purchasing/State/PurchaseVoidProcessorTest.php"
+code = "too-few-arguments"
+message = 'Too few arguments provided for method `App\Purchasing\State\PurchaseVoidProcessor::__construct`.'
+count = 1
+
+[[issues]]
 file = "tests/Purchasing/State/PurchaseVoidServiceTest.php"
 code = "invalid-type-cast"
 message = "Casting `mixed` to `float`."
@@ -5980,6 +6106,12 @@ count = 1
 file = "tests/Sales/Controller/Api/VoidSaleControllerTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "tests/Sales/Entity/SaleQuoteApiResourceTest.php"
+code = "possibly-null-iterator"
+message = 'Expression being iterated (type `ApiPlatform\Metadata\Operations<ApiPlatform\Metadata\HttpOperation>|null`) might be `null` at runtime.'
 count = 1
 
 [[issues]]
@@ -6214,48 +6346,6 @@ count = 1
 file = "tests/Settings/Runtime/TenantRuntimeConfigProviderTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$warehouseRepository`."
-count = 1
-
-[[issues]]
-file = "tests/Settings/State/SettingsStateTest.php"
-code = "docblock-type-mismatch"
-message = "Docblock type mismatch for variable `$inventario`."
-count = 1
-
-[[issues]]
-file = "tests/Settings/State/SettingsStateTest.php"
-code = "docblock-type-mismatch"
-message = "Docblock type mismatch for variable `$ventas`."
-count = 1
-
-[[issues]]
-file = "tests/Settings/State/SettingsStateTest.php"
-code = "invalid-array-access"
-message = 'Cannot access array index on object `ApiPlatform\State\Pagination\PartialPaginatorInterface<object>` that does not implement `ArrayAccess`.'
-count = 2
-
-[[issues]]
-file = "tests/Settings/State/SettingsStateTest.php"
-code = "possibly-invalid-array-access"
-message = "Cannot perform array access on value of type `iterable<mixed, object>`."
-count = 2
-
-[[issues]]
-file = "tests/Settings/State/SettingsStateTest.php"
-code = "possibly-invalid-array-access"
-message = "Cannot perform array access on value of type `object`."
-count = 2
-
-[[issues]]
-file = "tests/Settings/State/SettingsStateTest.php"
-code = "possibly-null-array-access"
-message = "Cannot perform array access on possibly `null` value."
-count = 2
-
-[[issues]]
-file = "tests/Settings/State/SettingsStateTest.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$facturacion`."
 count = 1
 
 [[issues]]

@@ -95,6 +95,17 @@ class Purchase
     #[ApiProperty(description: 'purchase.supplier.label')]
     private ?Supplier $supplier = null;
 
+    /**
+     * Set when this Purchase is a receipt against a PurchaseOrder — receiving
+     * still flows through the exact same direct-intake path (this field is
+     * purely informational + drives PurchaseOrderReceiptService bookkeeping).
+     */
+    #[Groups(['purchase:read', 'purchase:write'])]
+    #[ORM\ManyToOne(targetEntity: PurchaseOrder::class)]
+    #[ORM\JoinColumn(name: 'purchase_order_id', nullable: true)]
+    #[ApiProperty(description: 'purchase.purchase_order.label')]
+    private ?PurchaseOrder $purchaseOrder = null;
+
     #[Groups(['purchase:read', 'purchase:write'])]
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'buyer_user_id', referencedColumnName: 'usuario_id', nullable: true)]
@@ -322,6 +333,18 @@ class Purchase
     public function setSupplier(?Supplier $supplier): static
     {
         $this->supplier = $supplier;
+
+        return $this;
+    }
+
+    public function getPurchaseOrder(): ?PurchaseOrder
+    {
+        return $this->purchaseOrder;
+    }
+
+    public function setPurchaseOrder(?PurchaseOrder $purchaseOrder): static
+    {
+        $this->purchaseOrder = $purchaseOrder;
 
         return $this;
     }

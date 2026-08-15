@@ -7,6 +7,7 @@ namespace App\Tests\Purchasing\State;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\State\ProcessorInterface;
 use App\Purchasing\Entity\Purchase;
+use App\Purchasing\Service\PurchaseOrderReceiptService;
 use App\Purchasing\State\PurchaseVoidProcessor;
 use App\Purchasing\State\PurchaseVoidServiceInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -33,15 +34,23 @@ final class PurchaseVoidProcessorTest extends TestCase
     /** @var PurchaseVoidServiceInterface&MockObject */
     private MockObject $voidService;
 
+    /** @var PurchaseOrderReceiptService&MockObject */
+    private MockObject $purchaseOrderReceiptService;
+
     protected function setUp(): void
     {
         $this->persist = $this->createMock(ProcessorInterface::class);
         $this->voidService = $this->createMock(PurchaseVoidServiceInterface::class);
+        $this->purchaseOrderReceiptService = $this->createMock(PurchaseOrderReceiptService::class);
     }
 
     public function testVoidsAndPersistsPurchase(): void
     {
         $purchase = new Purchase();
+
+        // Regression guard: a purchase with no linked PurchaseOrder must
+        // never trigger PO receipt-quantity bookkeeping.
+        $this->purchaseOrderReceiptService->expects(self::never())->method('revertReceipt');
 
         $reverseCalledWith = null;
         $this->voidService
@@ -126,6 +135,6 @@ final class PurchaseVoidProcessorTest extends TestCase
 
     private function processor(): PurchaseVoidProcessor
     {
-        return new PurchaseVoidProcessor($this->persist, $this->voidService);
+        return new PurchaseVoidProcessor($this->persist, $this->voidService, $this->purchaseOrderReceiptService);
     }
 }

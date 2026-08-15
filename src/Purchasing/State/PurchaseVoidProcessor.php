@@ -7,6 +7,7 @@ namespace App\Purchasing\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Purchasing\Entity\Purchase;
+use App\Purchasing\Service\PurchaseOrderReceiptService;
 use App\Purchasing\State\PurchaseVoidServiceInterface;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -36,6 +37,7 @@ final readonly class PurchaseVoidProcessor implements ProcessorInterface
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $persistProcessor,
         private PurchaseVoidServiceInterface $purchaseVoidService,
+        private PurchaseOrderReceiptService $purchaseOrderReceiptService,
     ) {}
 
     #[Override]
@@ -51,6 +53,10 @@ final readonly class PurchaseVoidProcessor implements ProcessorInterface
 
         // Reverse stock first — if it fails, the purchase record stays intact
         $this->purchaseVoidService->reverse($data);
+
+        if ($data->getPurchaseOrder() !== null) {
+            $this->purchaseOrderReceiptService->revertReceipt($data);
+        }
 
         // Mark as voided
         $data->setStatus('VOIDED');

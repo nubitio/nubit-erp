@@ -131,6 +131,37 @@ final class PermissionCatalog
                     'accounts_payable.void' => 'Anular facturas de proveedor',
                 ],
             ],
+            'bank_reconciliation' => [
+                'label' => 'Conciliación bancaria',
+                'permissions' => [
+                    'bank_reconciliation.view' => 'Ver conciliación bancaria',
+                    'bank_reconciliation.import' => 'Importar extractos bancarios',
+                    'bank_reconciliation.match' => 'Conciliar movimientos',
+                    'bank_reconciliation.void' => 'Deshacer conciliaciones',
+                ],
+            ],
+            'sale_quotes' => [
+                'label' => 'Cotizaciones',
+                'permissions' => [
+                    'sale_quotes.view' => 'Ver cotizaciones',
+                    'sale_quotes.create' => 'Crear cotizaciones',
+                    'sale_quotes.edit' => 'Editar cotizaciones',
+                    'sale_quotes.send' => 'Enviar cotizaciones',
+                    'sale_quotes.convert' => 'Convertir a venta',
+                    'sale_quotes.void' => 'Eliminar cotizaciones',
+                ],
+            ],
+            'purchase_orders' => [
+                'label' => 'Órdenes de compra',
+                'permissions' => [
+                    'purchase_orders.view' => 'Ver órdenes de compra',
+                    'purchase_orders.create' => 'Crear órdenes de compra',
+                    'purchase_orders.edit' => 'Editar órdenes de compra',
+                    'purchase_orders.send' => 'Enviar órdenes de compra al proveedor',
+                    'purchase_orders.receive' => 'Recibir mercadería contra una orden de compra',
+                    'purchase_orders.cancel' => 'Cancelar órdenes de compra',
+                ],
+            ],
         ];
     }
 

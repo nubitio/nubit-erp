@@ -22,3 +22,5 @@ parameters:
         - { message: '#Instanceof between.*StockEntry.*will always evaluate to true#', path: src/Inventory/State/StockEntryProcessor.php }
         # Same pattern for Purchase void processor
         - { message: '#Instanceof between.*Purchase.*will always evaluate to true#', path: src/Purchasing/State/PurchaseVoidProcessor.php }
+        # Same pattern for PurchaseOrder cancel processor
+        - { message: '#Instanceof between.*PurchaseOrder.*will always evaluate to true#', path: src/Purchasing/State/PurchaseOrderCancelProcessor.php }

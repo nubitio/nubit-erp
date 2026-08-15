@@ -12,6 +12,7 @@ use App\Identity\Entity\User;
 use App\Organization\Entity\Branch;
 use App\Organization\Repository\BranchRepository;
 use App\Purchasing\Entity\Purchase;
+use App\Purchasing\Service\PurchaseOrderReceiptService;
 use App\Purchasing\Service\PurchaseReceiptSequenceService;
 use App\Purchasing\Service\PurchaseSupplierDocumentValidator;
 use Override;
@@ -38,6 +39,7 @@ readonly class PurchaseProcessor implements ProcessorInterface
         private PurchaseReceiptSequenceService $purchaseReceiptSequenceService,
         private PurchaseSupplierDocumentValidator $purchaseSupplierDocumentValidator,
         private ActiveReferenceGuard $activeReferenceGuard,
+        private PurchaseOrderReceiptService $purchaseOrderReceiptService,
     ) {}
 
     #[Override]
@@ -106,6 +108,9 @@ readonly class PurchaseProcessor implements ProcessorInterface
 
         if ($isNewPurchase) {
             $this->purchaseInventoryService->recordPurchaseReceipt($data);
+            if ($data->getPurchaseOrder() !== null) {
+                $this->purchaseOrderReceiptService->applyReceipt($data);
+            }
         }
 
         return $result;

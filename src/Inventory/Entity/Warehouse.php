@@ -54,6 +54,8 @@ class Warehouse implements ActivatableInterface
         'outbound:read',
         'purchase:read',
         'stock_item:read',
+        'sale_quote:read',
+        'purchase_order:read',
     ])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
@@ -67,6 +69,8 @@ class Warehouse implements ActivatableInterface
         'outbound:read',
         'purchase:read',
         'stock_item:read',
+        'sale_quote:read',
+        'purchase_order:read',
     ])]
     #[ApiProperty(description: 'warehouse.name.label')]
     #[ORM\Column(name: 'descripcion', length: 255)]

@@ -128,11 +128,38 @@ class MenuSeedService
             'icon' => 'ph ph-hand-coins',
             'parent_id' => null,
         ],
+        [
+            'id' => 770,
+            'order_index' => 11,
+            'key_name' => 'Conciliación bancaria',
+            'type' => 'route',
+            'route' => 'bank-reconciliation',
+            'icon' => 'ph ph-arrows-left-right',
+            'parent_id' => null,
+        ],
+        [
+            'id' => 775,
+            'order_index' => 12,
+            'key_name' => 'Cotizaciones',
+            'type' => 'route',
+            'route' => 'sale-quotes',
+            'icon' => 'ph ph-file-text',
+            'parent_id' => null,
+        ],
+        [
+            'id' => 780,
+            'order_index' => 13,
+            'key_name' => 'Órdenes de compra',
+            'type' => 'route',
+            'route' => 'purchase-orders',
+            'icon' => 'ph ph-clipboard-text',
+            'parent_id' => null,
+        ],
 
         // ── Nivel 3: enterprise (filtrado por runtime config) ─────────────
         [
             'id' => 700,
-            'order_index' => 11,
+            'order_index' => 14,
             'key_name' => 'Impuestos',
             'type' => 'route',
             'route' => 'taxes',
@@ -141,7 +168,7 @@ class MenuSeedService
         ],
         [
             'id' => 601,
-            'order_index' => 12,
+            'order_index' => 15,
             'key_name' => 'Exportación PLE',
             'type' => 'route',
             'route' => 'ple',
@@ -150,7 +177,7 @@ class MenuSeedService
         ],
         [
             'id' => 909,
-            'order_index' => 13,
+            'order_index' => 16,
             'key_name' => 'Configuración',
             'type' => 'route',
             'route' => 'config',

@@ -261,7 +261,7 @@ count = 1
 [[issues]]
 file = "src/AI/Tool/CustomerIntelligenceTool.php"
 code = "halstead"
-message = "Method has a high halstead volume and effort"
+message = "Method has a high halstead effort"
 count = 1
 
 [[issues]]
@@ -346,6 +346,78 @@ count = 1
 file = "src/AI/Tool/SunatStatusTool.php"
 code = "literal-named-argument"
 message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "cyclomatic-complexity"
+message = "Class has high complexity."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "halstead"
+message = "Method has a high halstead volume and effort"
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "literal-named-argument"
+message = "Literal argument `0o755` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 4
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "no-else-clause"
+message = "Avoid `else` clauses."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "no-isset"
+message = "Use of the `isset` construct."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Controller/BankStatementImportController.php"
+code = "no-shorthand-ternary"
+message = "Use of the shorthand ternary operator."
+count = 2
+
+[[issues]]
+file = "src/BankReconciliation/MessageHandler/BankStatementImportMessageHandler.php"
+code = "literal-named-argument"
+message = "Literal argument `'/'` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/MessageHandler/BankStatementImportMessageHandler.php"
+code = "no-error-control-operator"
+message = "Unsafe use of error control operator `@`."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankStatementParserService.php"
+code = "cyclomatic-complexity"
+message = "Class has high complexity."
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankStatementParserService.php"
+code = "halstead"
+message = "Method has a high halstead effort"
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankStatementParserService.php"
+code = "literal-named-argument"
+message = "Literal argument `''` should be passed as a named argument for clarity."
 count = 1
 
 [[issues]]
@@ -982,6 +1054,30 @@ count = 3
 file = "src/Billing/Receipt/Application/ReceiptController.php"
 code = "strict-behavior"
 message = "Call to `base64_decode` must enforce strict comparison."
+count = 1
+
+[[issues]]
+file = "src/Billing/Recurring/Command/NotifyDueSalesCommand.php"
+code = "inline-variable-return"
+message = "Variable assignment can be inlined into the return statement."
+count = 1
+
+[[issues]]
+file = "src/Billing/Recurring/Command/NotifyDueSalesCommand.php"
+code = "literal-named-argument"
+message = "Literal argument `0` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Billing/Recurring/Command/NotifyDueSalesCommand.php"
+code = "literal-named-argument"
+message = "Literal argument `10` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Billing/Recurring/Command/NotifyDueSalesCommand.php"
+code = "no-boolean-flag-parameter"
+message = "Avoid boolean flag parameters."
 count = 1
 
 [[issues]]
@@ -2563,6 +2659,12 @@ message = "Literal argument `true` should be passed as a named argument for clar
 count = 3
 
 [[issues]]
+file = "src/ControlPlane/Operator/Api/ImpersonationApiController.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
 file = "src/ControlPlane/Operator/Api/PlanApiController.php"
 code = "literal-named-argument"
 message = "Literal argument `true` should be passed as a named argument for clarity."
@@ -3997,6 +4099,18 @@ message = "Parameters that may contain sensitive information should be marked wi
 count = 1
 
 [[issues]]
+file = "src/Identity/Controller/AuthImpersonationConsumeController.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Identity/Controller/AuthImpersonationConsumeController.php"
+code = "no-isset"
+message = "Use of the `isset` construct."
+count = 1
+
+[[issues]]
 file = "src/Identity/Controller/AuthSelectBranchController.php"
 code = "final-controller"
 message = "Controller classes should be declared as `final`."
@@ -4067,6 +4181,12 @@ file = "src/Identity/Notification/UserNotificationServiceInterface.php"
 code = "readable-literal"
 message = "Numeric literal could use underscore separators for readability."
 count = 2
+
+[[issues]]
+file = "src/Identity/Security/PermissionCatalog.php"
+code = "halstead"
+message = "Method has a high halstead volume"
+count = 1
 
 [[issues]]
 file = "src/Identity/Security/SecurityService.php"
@@ -4801,6 +4921,48 @@ message = "Class has too many properties."
 count = 1
 
 [[issues]]
+file = "src/Purchasing/Service/PurchaseOrderService.php"
+code = "literal-named-argument"
+message = "Literal argument `''` should be passed as a named argument for clarity."
+count = 2
+
+[[issues]]
+file = "src/Purchasing/Service/PurchaseOrderService.php"
+code = "literal-named-argument"
+message = "Literal argument `'.'` should be passed as a named argument for clarity."
+count = 2
+
+[[issues]]
+file = "src/Purchasing/Service/PurchaseOrderService.php"
+code = "literal-named-argument"
+message = "Literal argument `0` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Purchasing/Service/PurchaseOrderService.php"
+code = "literal-named-argument"
+message = "Literal argument `255` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Purchasing/Service/PurchaseOrderService.php"
+code = "literal-named-argument"
+message = "Literal argument `3` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Purchasing/Service/PurchaseOrderService.php"
+code = "literal-named-argument"
+message = "Literal argument `4` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Purchasing/Service/PurchaseOrderService.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
 file = "src/Purchasing/State/PurchaseInventoryService.php"
 code = "literal-named-argument"
 message = "Literal argument `''` should be passed as a named argument for clarity."
@@ -4816,6 +4978,24 @@ count = 1
 file = "src/Purchasing/State/PurchaseInventoryService.php"
 code = "literal-named-argument"
 message = "Literal argument `6` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Purchasing/State/PurchaseOrderCancelProcessor.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Purchasing/State/PurchaseOrderProcessor.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Purchasing/State/PurchaseOrderProcessor.php"
+code = "no-else-clause"
+message = "Avoid `else` clauses."
 count = 1
 
 [[issues]]
@@ -5089,6 +5269,12 @@ message = "Class has too many properties."
 count = 1
 
 [[issues]]
+file = "src/Sales/Entity/SaleQuote.php"
+code = "too-many-properties"
+message = "Class has too many properties."
+count = 1
+
+[[issues]]
 file = "src/Sales/Entity/SaleRecord.php"
 code = "literal-named-argument"
 message = "Literal argument `4` should be passed as a named argument for clarity."
@@ -5240,9 +5426,75 @@ count = 1
 
 [[issues]]
 file = "src/Sales/Service/SalePaymentPlanService.php"
+code = "no-boolean-flag-parameter"
+message = "Avoid boolean flag parameters."
+count = 1
+
+[[issues]]
+file = "src/Sales/Service/SalePaymentPlanService.php"
 code = "prefer-early-continue"
 message = "Consider using early continue pattern to reduce nesting."
 count = 1
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteConversionService.php"
+code = "halstead"
+message = "Method has a high halstead effort"
+count = 1
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteService.php"
+code = "cyclomatic-complexity"
+message = "Class has high complexity."
+count = 1
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteService.php"
+code = "halstead"
+message = "Method has a high halstead effort"
+count = 1
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteService.php"
+code = "literal-named-argument"
+message = "Literal argument `''` should be passed as a named argument for clarity."
+count = 2
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteService.php"
+code = "literal-named-argument"
+message = "Literal argument `'.'` should be passed as a named argument for clarity."
+count = 2
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteService.php"
+code = "literal-named-argument"
+message = "Literal argument `0` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteService.php"
+code = "literal-named-argument"
+message = "Literal argument `255` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteService.php"
+code = "literal-named-argument"
+message = "Literal argument `3` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteService.php"
+code = "literal-named-argument"
+message = "Literal argument `4` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "src/Sales/Service/SaleQuoteService.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 2
 
 [[issues]]
 file = "src/Sales/State/CashSessionResolver.php"
@@ -5443,6 +5695,18 @@ message = "Use of the `isset` construct."
 count = 2
 
 [[issues]]
+file = "src/Sales/State/SaleQuoteProcessor.php"
+code = "no-else-clause"
+message = "Avoid `else` clauses."
+count = 1
+
+[[issues]]
+file = "src/Sales/State/SaleQuoteProvider.php"
+code = "prefer-early-continue"
+message = "Consider using early continue pattern to reduce nesting."
+count = 2
+
+[[issues]]
 file = "src/Sales/State/SaleUtils.php"
 code = "no-else-clause"
 message = "Avoid `else` clauses."
@@ -5542,7 +5806,7 @@ count = 2
 file = "src/Sales/State/SalesWriteGateway.php"
 code = "no-else-clause"
 message = "Avoid `else` clauses."
-count = 2
+count = 3
 
 [[issues]]
 file = "src/Sales/State/SalesWriteGateway.php"
@@ -5636,39 +5900,21 @@ count = 2
 
 [[issues]]
 file = "src/Settings/State/MenuProvider.php"
-code = "identity-comparison"
-message = "Use identity comparison `===` instead of equality comparison `==`."
-count = 3
-
-[[issues]]
-file = "src/Settings/State/MenuProvider.php"
 code = "no-else-clause"
 message = "Avoid `elseif` clauses."
 count = 1
 
 [[issues]]
 file = "src/Settings/State/MenuProvider.php"
-code = "no-empty"
-message = "Use of the `empty` construct."
-count = 2
-
-[[issues]]
-file = "src/Settings/State/MenuProvider.php"
 code = "prefer-early-continue"
 message = "Consider using early continue pattern to reduce nesting."
 count = 1
 
 [[issues]]
 file = "src/Settings/State/RoleMenuProvider.php"
-code = "identity-comparison"
-message = "Use identity comparison `===` instead of equality comparison `==`."
-count = 2
-
-[[issues]]
-file = "src/Settings/State/RoleMenuProvider.php"
 code = "prefer-early-continue"
 message = "Consider using early continue pattern to reduce nesting."
-count = 2
+count = 1
 
 [[issues]]
 file = "src/Settings/State/TenantSettingsPatchProcessor.php"
@@ -6125,6 +6371,30 @@ file = "tests/Architecture/ControlPlaneBoundaryTest.php"
 code = "literal-named-argument"
 message = "Literal argument `''` should be passed as a named argument for clarity."
 count = 1
+
+[[issues]]
+file = "tests/BankReconciliation/Entity/BankStatementLineApiResourceTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 4
+
+[[issues]]
+file = "tests/BankReconciliation/Enum/BankImportProfileTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 13
+
+[[issues]]
+file = "tests/BankReconciliation/Enum/BankImportProfileTest.php"
+code = "literal-named-argument"
+message = "Literal argument `9999` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "tests/BankReconciliation/Service/BankReconciliationMatchServiceTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 6
 
 [[issues]]
 file = "tests/Billing/Adapter/SaleInvoicingAdapterTest.php"
@@ -7477,6 +7747,24 @@ message = "Literal argument `true` should be passed as a named argument for clar
 count = 1
 
 [[issues]]
+file = "tests/ControlPlane/Operator/Api/ImpersonationApiControllerTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 7
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/ImpersonationApiControllerTest.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "tests/ControlPlane/Operator/Api/ImpersonationApiControllerTest.php"
+code = "readable-literal"
+message = "Numeric literal could use underscore separators for readability."
+count = 2
+
+[[issues]]
 file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
@@ -7988,6 +8276,18 @@ count = 5
 
 [[issues]]
 file = "tests/Identity/Controller/AuthImpersonationConsumeControllerTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 13
+
+[[issues]]
+file = "tests/Identity/Controller/AuthImpersonationConsumeControllerTest.php"
+code = "literal-named-argument"
+message = "Literal argument `true` should be passed as a named argument for clarity."
+count = 1
+
+[[issues]]
+file = "tests/Identity/Controller/AuthImpersonationConsumeControllerTest.php"
 code = "no-literal-password"
 message = "Literal passwords or sensitive data should not be stored in code."
 count = 5
@@ -7996,13 +8296,7 @@ count = 5
 file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
-count = 2
-
-[[issues]]
-file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
-code = "no-redundant-use"
-message = "Unused import: `Branch`."
-count = 1
+count = 3
 
 [[issues]]
 file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
@@ -8033,6 +8327,12 @@ file = "tests/Identity/Entity/RoleTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
 count = 4
+
+[[issues]]
+file = "tests/Identity/Entity/UserRolesTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 5
 
 [[issues]]
 file = "tests/Identity/Entity/UserTest.php"
@@ -8080,13 +8380,7 @@ count = 1
 file = "tests/Identity/Repository/UserNotificationRepositoryTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
-count = 8
-
-[[issues]]
-file = "tests/Identity/Repository/UserNotificationRepositoryTest.php"
-code = "prefer-arrow-function"
-message = "This closure can be simplified to a more concise arrow function."
-count = 1
+count = 7
 
 [[issues]]
 file = "tests/Identity/Security/AccessControlTest.php"
@@ -8116,7 +8410,7 @@ count = 1
 file = "tests/Identity/State/UserNotificationStateTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
-count = 7
+count = 8
 
 [[issues]]
 file = "tests/Identity/State/UserNotificationStateTest.php"
@@ -8434,13 +8728,19 @@ count = 2
 file = "tests/Organization/Entity/BranchTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
-count = 9
+count = 12
 
 [[issues]]
 file = "tests/Organization/Entity/CompanyTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
 count = 14
+
+[[issues]]
+file = "tests/Pest.php"
+code = "no-redundant-file"
+message = "Redundant file with no executable code or declarations."
+count = 1
 
 [[issues]]
 file = "tests/Purchasing/Entity/PurchaseEntityTest.php"
@@ -8453,6 +8753,18 @@ file = "tests/Purchasing/Entity/PurchaseItemEntityTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
 count = 51
+
+[[issues]]
+file = "tests/Purchasing/Service/PurchaseOrderReceiptServiceTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 17
+
+[[issues]]
+file = "tests/Purchasing/Service/PurchaseOrderServiceTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 12
 
 [[issues]]
 file = "tests/Purchasing/Service/PurchaseReceiptSequenceServiceTest.php"
@@ -8471,6 +8783,12 @@ file = "tests/Purchasing/State/PurchaseInventoryServiceTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
 count = 13
+
+[[issues]]
+file = "tests/Purchasing/State/PurchaseOrderCancelProcessorTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 4
 
 [[issues]]
 file = "tests/Purchasing/State/PurchaseSoftDeleteProcessorTest.php"
@@ -8593,6 +8911,12 @@ message = "Inconsistent assertions style."
 count = 24
 
 [[issues]]
+file = "tests/Sales/Entity/SaleQuoteApiResourceTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 2
+
+[[issues]]
 file = "tests/Sales/Report/SalesReportSpreadsheetColumnsTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
@@ -8638,7 +8962,19 @@ count = 1
 file = "tests/Sales/Service/SalePaymentPlanServiceTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
-count = 11
+count = 13
+
+[[issues]]
+file = "tests/Sales/Service/SaleQuoteConversionServiceTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 4
+
+[[issues]]
+file = "tests/Sales/Service/SaleQuoteServiceTest.php"
+code = "assertion-style"
+message = "Inconsistent assertions style."
+count = 19
 
 [[issues]]
 file = "tests/Sales/State/CashSessionResolverTest.php"
@@ -8818,7 +9154,7 @@ count = 2
 file = "tests/Sales/State/SalesWriteGatewayTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
-count = 13
+count = 19
 
 [[issues]]
 file = "tests/Sales/State/SalesWriteGatewayTest.php"
@@ -8947,12 +9283,6 @@ message = "Inconsistent assertions style."
 count = 29
 
 [[issues]]
-file = "tests/Settings/State/SettingsStateTest.php"
-code = "assertion-style"
-message = "Inconsistent assertions style."
-count = 26
-
-[[issues]]
 file = "tests/Settings/State/TenantSettingsPatchProcessorTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
@@ -8996,6 +9326,12 @@ count = 5
 
 [[issues]]
 file = "tests/Setup/InitialSetupServiceTest.php"
+code = "cyclomatic-complexity"
+message = "Class has high complexity."
+count = 1
+
+[[issues]]
+file = "tests/Setup/InitialSetupServiceTest.php"
 code = "excessive-parameter-list"
 message = "Parameter list is too long."
 count = 1
@@ -9005,6 +9341,12 @@ file = "tests/Setup/Service/E2eTestSeedServiceTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
 count = 4
+
+[[issues]]
+file = "tests/Setup/Service/E2eTestSeedServiceTest.php"
+code = "halstead"
+message = "Method has a high halstead volume"
+count = 1
 
 [[issues]]
 file = "tests/Setup/Service/E2eTestSeedServiceTest.php"
