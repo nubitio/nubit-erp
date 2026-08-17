@@ -52,7 +52,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface, EquatableInterface
 {
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'expense_report:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(name: 'usuario_id')]
@@ -63,6 +63,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         'user:read',
         'user:create',
         'user:update',
+        'expense_report:read',
     ])]
     #[ApiProperty(description: 'user.username.label')]
     #[ORM\Column(length: 255)]

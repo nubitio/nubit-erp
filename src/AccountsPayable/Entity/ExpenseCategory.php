@@ -23,16 +23,16 @@ class ExpenseCategory
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['Default', 'supplier_bill:read'])]
+    #[Groups(['Default', 'supplier_bill:read', 'expense_report:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50, unique: true)]
-    #[Groups(['Default', 'supplier_bill:read'])]
+    #[Groups(['Default', 'supplier_bill:read', 'expense_report:read'])]
     #[ApiProperty(description: 'expense_category.code.label')]
     private string $code;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['Default', 'supplier_bill:read'])]
+    #[Groups(['Default', 'supplier_bill:read', 'expense_report:read'])]
     #[ApiProperty(description: 'expense_category.name.label')]
     private string $name;
 

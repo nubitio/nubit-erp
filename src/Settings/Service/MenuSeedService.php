@@ -180,6 +180,15 @@ class MenuSeedService
             'icon' => 'ph ph-chart-pie-slice',
             'parent_id' => 790,
         ],
+        [
+            'id' => 799,
+            'order_index' => 4,
+            'key_name' => 'Gastos de personal',
+            'type' => 'route',
+            'route' => 'expense-reports',
+            'icon' => 'ph ph-airplane-tilt',
+            'parent_id' => 790,
+        ],
 
         [
             'id' => 775,

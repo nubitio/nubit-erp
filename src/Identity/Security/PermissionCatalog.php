@@ -131,6 +131,15 @@ final class PermissionCatalog
                     'accounts_payable.void' => 'Anular facturas de proveedor',
                 ],
             ],
+            'expense_reports' => [
+                'label' => 'Gastos de personal',
+                'permissions' => [
+                    'expense_reports.view' => 'Ver gastos de personal',
+                    'expense_reports.create' => 'Registrar gastos de personal',
+                    'expense_reports.approve' => 'Aprobar o rechazar gastos de personal',
+                    'expense_reports.reimburse' => 'Marcar gastos como reembolsados',
+                ],
+            ],
             'bank_reconciliation' => [
                 'label' => 'Conciliación bancaria',
                 'permissions' => [

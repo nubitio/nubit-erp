@@ -5,6 +5,7 @@ import { bankReconciliationRoutes } from '@features/bankReconciliation/routes';
 import { billingRoutes } from '@features/billing/routes';
 import { cashRegisterRoutes } from '@features/cashRegister/routes';
 import { catalogRoutes } from '@features/catalog/routes';
+import { expenseReportsRoutes } from '@features/expenseReports/routes';
 import { financialReportsRoutes } from '@features/financialReports/routes';
 import { inventoryRoutes } from '@features/inventory/routes';
 import { posRoutes } from '@features/pos/routes';
@@ -21,6 +22,7 @@ export const appRoutes: AppRouteDefinition[] = [
   ...billingRoutes,
   ...cashRegisterRoutes,
   ...catalogRoutes,
+  ...expenseReportsRoutes,
   ...financialReportsRoutes,
   ...inventoryRoutes,
   ...posRoutes,

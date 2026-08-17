@@ -28,6 +28,7 @@ class Branch implements ActivatableInterface
         'cash_register:read',
         'sale_quote:read',
         'purchase_order:read',
+        'expense_report:read',
     ])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
@@ -42,6 +43,7 @@ class Branch implements ActivatableInterface
         'cash_register:read',
         'sale_quote:read',
         'purchase_order:read',
+        'expense_report:read',
     ])]
     #[ApiProperty(description: 'branch.name.label')]
     #[ORM\Column(name: 'descripcion', length: 255)]
