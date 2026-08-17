@@ -27,6 +27,12 @@ readonly class AppExtension
         return $this->logoProvider->__invoke();
     }
 
+    #[AsTwigFunction('embedded_logo')]
+    public function getEmbeddedLogo(): string
+    {
+        return $this->logoProvider->embedded();
+    }
+
     #[AsTwigFunction('base_url')]
     public function getBaseUrl(): string
     {

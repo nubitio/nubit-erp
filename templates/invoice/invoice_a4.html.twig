@@ -264,9 +264,12 @@
             {# HEADER #}
             <div class="row align-items-stretch g-3 mb-3">
                 <div class="col-7">
-                    <div class="logo-wrap mb-2">
-                        <img src="{{ logo() }}" alt="Logo" style="max-height: 64px">
-                    </div>
+                    {% set invoice_logo = printLogo|default(false) ? embedded_logo() : '' %}
+                    {% if invoice_logo %}
+                        <div class="logo-wrap mb-2">
+                            <img src="{{ invoice_logo }}" alt="Logo" style="max-height: 64px">
+                        </div>
+                    {% endif %}
 
                     <div class="card">
                         <div class="brand-name text-center">{{ voucher.company_name }}</div>
