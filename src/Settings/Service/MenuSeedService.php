@@ -171,6 +171,15 @@ class MenuSeedService
             'icon' => 'ph ph-arrows-left-right',
             'parent_id' => 790,
         ],
+        [
+            'id' => 785,
+            'order_index' => 3,
+            'key_name' => 'Reportes financieros',
+            'type' => 'route',
+            'route' => 'financial-reports',
+            'icon' => 'ph ph-chart-pie-slice',
+            'parent_id' => 790,
+        ],
 
         [
             'id' => 775,
@@ -181,20 +190,11 @@ class MenuSeedService
             'icon' => 'ph ph-file-text',
             'parent_id' => null,
         ],
-        [
-            'id' => 785,
-            'order_index' => 11,
-            'key_name' => 'Reportes financieros',
-            'type' => 'route',
-            'route' => 'financial-reports',
-            'icon' => 'ph ph-chart-pie-slice',
-            'parent_id' => null,
-        ],
 
         // ── Grupo: Cumplimiento (obligaciones periódicas SUNAT) ─────────────
         [
             'id' => 795,
-            'order_index' => 12,
+            'order_index' => 11,
             'key_name' => 'Cumplimiento',
             'type' => 'group',
             'route' => null,
@@ -222,7 +222,7 @@ class MenuSeedService
 
         [
             'id' => 909,
-            'order_index' => 13,
+            'order_index' => 12,
             'key_name' => 'Configuración',
             'type' => 'route',
             'route' => 'config',
