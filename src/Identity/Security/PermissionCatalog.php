@@ -140,6 +140,14 @@ final class PermissionCatalog
                     'expense_reports.reimburse' => 'Marcar gastos como reembolsados',
                 ],
             ],
+            'fixed_assets' => [
+                'label' => 'Activos fijos',
+                'permissions' => [
+                    'fixed_assets.view' => 'Ver activos fijos',
+                    'fixed_assets.create' => 'Registrar activos fijos',
+                    'fixed_assets.dispose' => 'Dar de baja activos fijos',
+                ],
+            ],
             'bank_reconciliation' => [
                 'label' => 'Conciliación bancaria',
                 'permissions' => [

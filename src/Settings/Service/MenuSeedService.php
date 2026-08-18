@@ -189,6 +189,15 @@ class MenuSeedService
             'icon' => 'ph ph-airplane-tilt',
             'parent_id' => 790,
         ],
+        [
+            'id' => 800,
+            'order_index' => 5,
+            'key_name' => 'Activos fijos',
+            'type' => 'route',
+            'route' => 'fixed-assets',
+            'icon' => 'ph ph-buildings',
+            'parent_id' => 790,
+        ],
 
         [
             'id' => 775,

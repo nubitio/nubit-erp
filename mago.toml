@@ -15,6 +15,7 @@ excludes = [
   # (via Closure::bind); mago analyzes them as plain functions and floods
   # false positives (undefined-variable, self/static-outside-class-scope).
   "tests/Billing/Recurring/Command/GenerateRecurringSalesCommandTest.php",
+  "tests/FixedAssets/Command/GenerateDepreciationEntriesCommandTest.php",
 ]
 extensions = ["php"]
 

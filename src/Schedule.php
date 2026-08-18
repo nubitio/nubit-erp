@@ -50,6 +50,13 @@ readonly class Schedule implements ScheduleProviderInterface
                 '0 8 * * *',
                 new RunCommandMessage('app:billing:notify-due-sales', throwOnFailure: false),
                 'America/Lima',
+            ))
+            // Fixed-asset depreciation — generates due straight-line entries,
+            // runs monthly on day 1 at 06:00 America/Lima.
+            ->add(RecurringMessage::cron(
+                '0 6 1 * *',
+                new RunCommandMessage('app:accounting:generate-depreciation-entries', throwOnFailure: false),
+                'America/Lima',
             ));
     }
 }
