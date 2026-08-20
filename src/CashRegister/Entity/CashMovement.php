@@ -13,6 +13,7 @@ use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashSession;
 use App\CashRegister\Enum\CashMovementType;
 use App\CashRegister\Repository\CashMovementRepository;
+use App\CashRegister\State\CashMovementCollectionProvider;
 use App\CashRegister\State\CashMovementItemProvider;
 use App\CashRegister\State\CashMovementWriteProcessor;
 use App\Organization\Entity\Branch;
@@ -28,7 +29,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     normalizationContext: ['groups' => ['cash_movement:read']],
     filters: [DataGridFilter::class],
     operations: [
-        new GetCollection(),
+        new GetCollection(provider: CashMovementCollectionProvider::class),
         new Get(provider: CashMovementItemProvider::class),
         new Post(processor: CashMovementWriteProcessor::class),
     ],

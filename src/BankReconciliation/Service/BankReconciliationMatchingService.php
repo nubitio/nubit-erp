@@ -10,10 +10,14 @@ use App\BankReconciliation\Entity\BankReconciliationMatch;
 use App\BankReconciliation\Entity\BankStatementLine;
 use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Enum\CashMovementType;
+use App\CashRegister\Service\CashMovementHydrator;
 use App\Efact\Domain\Money;
 use App\Sales\Entity\SalePayment;
 use App\Sales\Entity\SaleRecord;
 use DateTimeImmutable;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\ParameterType;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityNotFoundException;
 
@@ -38,6 +42,8 @@ final readonly class BankReconciliationMatchingService
 
     public function __construct(
         private EntityManagerInterface $em,
+        private Connection $connection,
+        private CashMovementHydrator $cashMovementHydrator,
     ) {}
 
     /**
@@ -168,28 +174,49 @@ final readonly class BankReconciliationMatchingService
         return $qb->orderBy('sp.paidAt', 'DESC')->setMaxResults(self::UNRECONCILED_LIST_LIMIT)->getQuery()->getResult();
     }
 
-    /** @return list<CashMovement> */
+    /**
+     * Reads from the v2 `cash_movements` table via raw DBAL, like
+     * CashMovementItemProvider/CashMovementCollectionProvider — the ORM
+     * entity `CashMovement` maps to the frozen legacy `cash_movement`
+     * (singular) table, which nothing has written to since the CashRegister
+     * v2 cutover (see ADR-004's amendment). Querying it here would silently
+     * return zero/stale candidates instead of any real cash movement.
+     *
+     * @throws Exception
+     * @return list<CashMovement>
+     */
     public function unreconciledCashMovements(?DateTimeImmutable $from, ?DateTimeImmutable $to): array
     {
-        $qb = $this->em
-            ->createQueryBuilder()
-            ->select('cm')
-            ->from(CashMovement::class, 'cm')
-            ->leftJoin(BankReconciliationMatch::class, 'm', 'WITH', 'm.cashMovement = cm')
-            ->andWhere('m.id IS NULL');
+        $conditions = ['m.id IS NULL'];
+        $params = [];
+        $types = [];
 
         if ($from !== null) {
-            $qb->andWhere('cm.createdAt >= :from')->setParameter('from', $from);
+            $conditions[] = 'cm.created_at >= ?';
+            $params[] = $from->format('Y-m-d H:i:s');
+            $types[] = ParameterType::STRING;
         }
         if ($to !== null) {
-            $qb->andWhere('cm.createdAt <= :to')->setParameter('to', $to);
+            $conditions[] = 'cm.created_at <= ?';
+            $params[] = $to->format('Y-m-d H:i:s');
+            $types[] = ParameterType::STRING;
         }
 
-        return $qb
-            ->orderBy('cm.createdAt', 'DESC')
-            ->setMaxResults(self::UNRECONCILED_LIST_LIMIT)
-            ->getQuery()
-            ->getResult();
+        $params[] = self::UNRECONCILED_LIST_LIMIT;
+        $types[] = ParameterType::INTEGER;
+
+        $rows = $this->connection->fetchAllAssociative(
+            sprintf('SELECT cm.id, cm.cash_session_id, cm.movement_type, cm.category_id, cm.amount, cm.description, cm.created_at
+                 FROM cash_movements cm
+                 LEFT JOIN bank_reconciliation_match m ON m.cash_movement_id = cm.id
+                 WHERE %s
+                 ORDER BY cm.created_at DESC
+                 LIMIT ?', implode(' AND ', $conditions)),
+            $params,
+            $types,
+        );
+
+        return array_map($this->cashMovementHydrator->fromRow(...), $rows);
     }
 
     /**
@@ -253,6 +280,11 @@ final readonly class BankReconciliationMatchingService
     }
 
     /**
+     * Same v2-table caveat as unreconciledCashMovements() above — reads
+     * `cash_movements` via raw DBAL rather than the ORM `CashMovement`
+     * entity, which maps to the frozen legacy `cash_movement` table.
+     *
+     * @throws Exception
      * @return list<array{sourceType: string, sourceId: int|string, date: DateTimeImmutable, label: string}>
      */
     private function cashMovementCandidates(
@@ -261,27 +293,30 @@ final readonly class BankReconciliationMatchingService
         DateTimeImmutable $to,
         CashMovementType $type,
     ): array {
-        $movements = $this->em
-            ->createQueryBuilder()
-            ->select('cm')
-            ->from(CashMovement::class, 'cm')
-            ->leftJoin(BankReconciliationMatch::class, 'm', 'WITH', 'm.cashMovement = cm')
-            ->andWhere('m.id IS NULL')
-            ->andWhere('cm.amount = :amount')
-            ->andWhere('cm.type = :type')
-            ->andWhere('cm.createdAt BETWEEN :from AND :to')
-            ->setParameter('amount', Money::toString($absAmount))
-            ->setParameter('type', $type)
-            ->setParameter('from', $from)
-            ->setParameter('to', $to)
-            ->getQuery()
-            ->getResult();
+        $movementType = $type === CashMovementType::EXPENSE ? 'CASH_OUT' : 'CASH_IN';
 
-        return array_map(static fn(CashMovement $cm): array => [
-            'sourceType' => 'cash_movement',
-            'sourceId' => $cm->getId(),
-            'date' => $cm->getCreatedAt(),
-            'label' => $cm->getDescription(),
-        ], $movements);
+        $rows = $this->connection->fetchAllAssociative('SELECT cm.id, cm.cash_session_id, cm.movement_type, cm.category_id, cm.amount, cm.description, cm.created_at
+             FROM cash_movements cm
+             LEFT JOIN bank_reconciliation_match m ON m.cash_movement_id = cm.id
+             WHERE m.id IS NULL
+               AND cm.amount = ?
+               AND cm.movement_type = ?
+               AND cm.created_at BETWEEN ? AND ?', [
+            Money::toString($absAmount),
+            $movementType,
+            $from->format('Y-m-d H:i:s'),
+            $to->format('Y-m-d H:i:s'),
+        ]);
+
+        return array_map(function (array $row): array {
+            $movement = $this->cashMovementHydrator->fromRow($row);
+
+            return [
+                'sourceType' => 'cash_movement',
+                'sourceId' => $movement->getId(),
+                'date' => $movement->getCreatedAt(),
+                'label' => $movement->getDescription(),
+            ];
+        }, $rows);
     }
 }

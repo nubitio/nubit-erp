@@ -9,6 +9,7 @@ use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashSession;
 use App\CashRegister\Enum\CashMovementType;
+use App\CashRegister\Service\CashMovementHydrator;
 use App\CashRegister\State\CashSessionMovementsProvider;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -69,7 +70,7 @@ final class CashSessionMovementsProviderTest extends TestCase
             return null;
         });
 
-        return new CashSessionMovementsProvider($conn, $em);
+        return new CashSessionMovementsProvider($conn, new CashMovementHydrator($em, $conn));
     }
 
     // ── Happy path ────────────────────────────────────────────────────────────

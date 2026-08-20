@@ -7,13 +7,9 @@ namespace App\CashRegister\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Entity\CashMovement;
-use App\CashRegister\Entity\CashMovementCategory;
-use App\CashRegister\Entity\CashSession;
-use App\CashRegister\Enum\CashMovementType;
-use DateTimeImmutable;
+use App\CashRegister\Service\CashMovementHydrator;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
-use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -24,7 +20,7 @@ readonly class CashSessionMovementsProvider implements ProviderInterface
 {
     public function __construct(
         private Connection $connection,
-        private EntityManagerInterface $entityManager,
+        private CashMovementHydrator $hydrator,
     ) {}
 
     /**
@@ -56,37 +52,6 @@ readonly class CashSessionMovementsProvider implements ProviderInterface
              WHERE cash_session_id = ?
              ORDER BY created_at ASC', [$sessionId]);
 
-        $idProp = new \ReflectionProperty(CashMovement::class, 'id');
-        $cashSessionEntity = $this->entityManager->find(CashSession::class, $sessionId);
-
-        /** @var CashMovement[] $movements */
-        $movements = [];
-        foreach ($rows as $row) {
-            $movement = new CashMovement();
-            $type = match ($row['movement_type']) {
-                'CASH_OUT' => CashMovementType::EXPENSE,
-                default => CashMovementType::INCOME,
-            };
-            $movement->setType($type);
-            $movement->setAmount((string) $row['amount']);
-            $movement->setDescription((string) ($row['description'] ?? 'Movimiento de caja'));
-            $movement->setCreatedAt(new DateTimeImmutable((string) $row['created_at']));
-            $idProp->setValue($movement, (int) $row['id']);
-
-            if ($cashSessionEntity instanceof CashSession) {
-                $movement->setCashSession($cashSessionEntity);
-            }
-
-            if ($row['category_id'] !== null) {
-                $category = $this->entityManager->find(CashMovementCategory::class, (int) $row['category_id']);
-                if ($category instanceof CashMovementCategory) {
-                    $movement->setCategory($category);
-                }
-            }
-
-            $movements[] = $movement;
-        }
-
-        return $movements;
+        return array_map($this->hydrator->fromRow(...), $rows);
     }
 }
