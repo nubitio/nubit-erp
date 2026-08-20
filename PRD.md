@@ -433,7 +433,7 @@ A spec is **done** when all of the following are true:
 
 1. **PHP coverage target** — `COVERAGE_MIN_PHP` in CI is currently `8.0` (8 %), which functions only as a regression floor. Should this be raised to a meaningful target (e.g., 60 %)? Who owns this decision?
 
-2. **PayPal vs MercadoPago gateways** — Both payment gateways are implemented under `src/ControlPlane/Subscription/Payment/`, with `PaymentGatewayInterface` currently aliased to `PayPalGateway`. Are both active in production? What is the primary gateway for Peruvian tenants?
+2. ~~**PayPal vs MercadoPago gateways**~~ — **Resolved:** MercadoPago is the primary gateway for Peruvian tenants (`PaymentGatewayInterface` aliased to `MercadoPagoGateway` in `config/services.yaml`; onboarding/plan-change endpoints default the `gateway` field to `mercadopago`). PayPal stays implemented and tagged `app.payment_gateway` as a selectable fallback, not because both are equally primary.
 
 3. **BOM/recipe explosion in production** — `BomExplosionService` is wired as an inventory movement enricher for COMPOSITE products. Is this GA for restaurant/recipe flows, or should it remain behind a plan/vertical feature gate?
 

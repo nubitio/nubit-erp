@@ -56,7 +56,7 @@ final class AccountTenantApiController extends AbstractController
 
         $payload = $this->decodeJson($request);
         $newPlan = mb_strtolower(trim((string) ($payload['plan'] ?? '')));
-        $gateway = mb_strtolower(trim((string) ($payload['gateway'] ?? 'paypal')));
+        $gateway = mb_strtolower(trim((string) ($payload['gateway'] ?? 'mercadopago')));
         $billingCycleRaw = mb_strtolower(trim((string) ($payload['billingCycle'] ?? 'monthly')));
         $billingCycle = BillingCycle::tryFrom($billingCycleRaw) ?? BillingCycle::Monthly;
 

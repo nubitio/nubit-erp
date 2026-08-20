@@ -205,8 +205,12 @@ services:
   App\ControlPlane\Certificate\TenantCertificateRepositoryInterface:
     class: App\ControlPlane\Certificate\TenantCertificateRepository
 
+  # MercadoPago is the primary gateway for eFact's Peruvian tenant base —
+  # PayPal stays wired and tagged app.payment_gateway (see WebhookController,
+  # which dispatches by gateway name rather than this alias) as a fallback
+  # option, not because both are equally "primary".
   App\ControlPlane\Subscription\Payment\PaymentGatewayInterface:
-    alias: App\ControlPlane\Subscription\Payment\PayPalGateway
+    alias: App\ControlPlane\Subscription\Payment\MercadoPagoGateway
 
   App\ControlPlane\Subscription\Payment\PayPalGateway:
     arguments:

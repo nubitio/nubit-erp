@@ -27,7 +27,7 @@ export function TenantDetailPage() {
   const currentPlan = (detail.data?.tenant.plan ?? 'free') as PlanKey;
   const [selectedPlan, setSelectedPlan] = useState<PlanKey>(currentPlan);
   const [gateway, setGateway] = useState<PaymentGateway>(
-    (detail.data?.subscription?.gateway as PaymentGateway) ?? 'paypal',
+    (detail.data?.subscription?.gateway as PaymentGateway) ?? 'mercadopago',
   );
   const [billingCycle, setBillingCycle] = useState<BillingCycle>(
     detail.data?.subscription?.billing_cycle === 'annual' ? 'annual' : 'monthly',

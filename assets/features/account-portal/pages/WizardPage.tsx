@@ -26,7 +26,7 @@ export function WizardPage() {
   const [tenantName, setTenantName] = useState('');
   const [subdomain, setSubdomain] = useState('');
   const [plan, setPlan] = useState<PlanKey>('free');
-  const [gateway, setGateway] = useState<PaymentGateway>('paypal');
+  const [gateway, setGateway] = useState<PaymentGateway>('mercadopago');
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const [adminPassword, setAdminPassword] = useState('');
   const [adminPasswordConfirm, setAdminPasswordConfirm] = useState('');

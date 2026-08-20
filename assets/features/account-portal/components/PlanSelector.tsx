@@ -76,7 +76,7 @@ export function PlanSelector({
         <div className="ap-plans__gateways">
           <p className="ap-plans__gateways-label">Medio de pago</p>
           <div className="ap-plans__gateways-grid">
-            {(['paypal', 'mercadopago'] as const).map((value) => (
+            {(['mercadopago', 'paypal'] as const).map((value) => (
               <button
                 key={value}
                 type="button"

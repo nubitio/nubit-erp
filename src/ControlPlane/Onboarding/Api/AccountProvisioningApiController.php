@@ -57,7 +57,7 @@ final class AccountProvisioningApiController extends AbstractController
         $tenantName = trim((string) ($payload['tenantName'] ?? ''));
         $subdomain = trim((string) ($payload['subdomain'] ?? ''));
         $plan = mb_strtolower(trim((string) ($payload['plan'] ?? 'free')));
-        $gateway = mb_strtolower(trim((string) ($payload['gateway'] ?? 'paypal')));
+        $gateway = mb_strtolower(trim((string) ($payload['gateway'] ?? 'mercadopago')));
         $billingCycleRaw = mb_strtolower(trim((string) ($payload['billingCycle'] ?? 'monthly')));
         $billingCycle = BillingCycle::tryFrom($billingCycleRaw) ?? BillingCycle::Monthly;
         $adminPassword = (string) ($payload['adminPassword'] ?? '');
