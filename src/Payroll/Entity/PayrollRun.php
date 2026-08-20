@@ -30,9 +30,9 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * A payroll processing batch for one Company and period. `type` decides
  * which formula PayrollCalculationService applies — regular monthly
- * salary, or one of the two seasonal benefits (gratificación, CTS) that
- * Peruvian labor law requires on fixed semesters. No `branch` relation,
- * same reasoning as FixedAsset/Employee.
+ * salary, one of the two seasonal benefits (gratificación, CTS) that
+ * Peruvian labor law requires on fixed semesters, or a termination
+ * liquidación. No `branch` relation, same reasoning as FixedAsset/Employee.
  */
 #[ORM\Entity(repositoryClass: PayrollRunRepository::class)]
 #[ORM\Table(name: 'payroll_run')]
@@ -98,6 +98,14 @@ class PayrollRun
     public const string CTS_MAY = 'CTS_MAY';
 
     public const string CTS_NOVEMBER = 'CTS_NOVEMBER';
+
+    /**
+     * Liquidación de beneficios sociales — computed for TERMINATED
+     * employees whose terminationDate falls within this run's period
+     * month. Covers vacaciones truncas, gratificación trunca and CTS
+     * trunca (see PayrollCalculationService::calculateLiquidacion).
+     */
+    public const string LIQUIDACION = 'LIQUIDACION';
 
     #[Groups(['payroll_run:read'])]
     #[ORM\Id]

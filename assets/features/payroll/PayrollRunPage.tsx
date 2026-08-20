@@ -20,7 +20,7 @@ interface PayrollRunRecord extends DataRecord {
   id: string;
   company: unknown;
   period: string;
-  type: 'REGULAR' | 'GRATIFICATION_JULY' | 'GRATIFICATION_DECEMBER' | 'CTS_MAY' | 'CTS_NOVEMBER';
+  type: 'REGULAR' | 'GRATIFICATION_JULY' | 'GRATIFICATION_DECEMBER' | 'CTS_MAY' | 'CTS_NOVEMBER' | 'LIQUIDACION';
   status: 'DRAFT' | 'CALCULATED' | 'APPROVED' | 'PAID';
 }
 
@@ -37,6 +37,7 @@ const TYPE_TEXT: Record<PayrollRunRecord['type'], string> = {
   GRATIFICATION_DECEMBER: 'Gratificación diciembre',
   CTS_MAY: 'CTS mayo',
   CTS_NOVEMBER: 'CTS noviembre',
+  LIQUIDACION: 'Liquidación de beneficios sociales',
 };
 
 const STATUS_BADGE: Record<PayrollRunRecord['status'], { variant: 'success' | 'warning' | 'secondary' | 'danger'; text: string }> = {

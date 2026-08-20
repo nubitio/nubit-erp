@@ -104,22 +104,48 @@ export const PayrollRunDetailPage = () => {
 
         <table>
           <thead>
-            <tr>
-              <th>Empleado</th>
-              <th>Bruto</th>
-              <th>AFP/ONP</th>
-              <th>EsSalud (empleador)</th>
-              <th>Bonif. extraordinaria</th>
-              <th>Neto</th>
-            </tr>
+            {run.type === 'LIQUIDACION' ? (
+              <tr>
+                <th>Empleado</th>
+                <th>Vacaciones truncas</th>
+                <th>Gratificación trunca</th>
+                <th>CTS trunca</th>
+                <th>Total</th>
+              </tr>
+            ) : (
+              <tr>
+                <th>Empleado</th>
+                <th>Bruto</th>
+                <th>AFP/ONP</th>
+                <th>EsSalud (empleador)</th>
+                <th>Bonif. extraordinaria</th>
+                <th>Retención 5ta</th>
+                <th>Neto</th>
+              </tr>
+            )}
           </thead>
           <tbody>
             {entries.length === 0 ? (
               <tr>
-                <td colSpan={6}>Sin boletas — usa &quot;Calcular&quot; para generarlas.</td>
+                <td colSpan={run.type === 'LIQUIDACION' ? 5 : 7}>Sin boletas — usa &quot;Calcular&quot; para generarlas.</td>
               </tr>
             ) : (
               entries.map((entry) => {
+                const iri = employeeIri(entry.employee);
+                const employeeName = (iri && employeeNames[iri]) || '—';
+
+                if (run.type === 'LIQUIDACION') {
+                  return (
+                    <tr key={entry.id}>
+                      <td>{employeeName}</td>
+                      <td>{entry.vacationTruncaAmount}</td>
+                      <td>{entry.gratificacionTruncaAmount}</td>
+                      <td>{entry.ctsTruncaAmount}</td>
+                      <td>{entry.netPay}</td>
+                    </tr>
+                  );
+                }
+
                 const pension = (
                   Number(entry.afpMandatoryContribution) +
                   Number(entry.afpInsurancePremium) +
@@ -127,15 +153,14 @@ export const PayrollRunDetailPage = () => {
                   Number(entry.onpAmount)
                 ).toFixed(2);
 
-                const iri = employeeIri(entry.employee);
-
                 return (
                   <tr key={entry.id}>
-                    <td>{(iri && employeeNames[iri]) || '—'}</td>
+                    <td>{employeeName}</td>
                     <td>{entry.grossSalary}</td>
                     <td>{pension}</td>
                     <td>{entry.essaludEmployerContribution}</td>
                     <td>{entry.bonificacionExtraordinaria}</td>
+                    <td>{entry.quintaCategoriaRetention}</td>
                     <td>{entry.netPay}</td>
                   </tr>
                 );

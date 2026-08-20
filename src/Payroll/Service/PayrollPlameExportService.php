@@ -63,6 +63,18 @@ final readonly class PayrollPlameExportService
 
     private const string CONCEPT_BONIFICACION_EXTRAORDINARIA = '0312'; // Bonificación extraordinaria temporal – Ley 29351 (modificada por Ley 30334).
 
+    /**
+     * Retención de renta de quinta categoría. UNVERIFIED against Tabla 22 —
+     * unlike the codes above (each cross-checked against the Anexo 3 text
+     * for this phase), this one is a best-effort placeholder and must be
+     * confirmed against the current Tabla 22 before it's relied on for a
+     * real PLAME declaration.
+     */
+    private const string CONCEPT_QUINTA_CATEGORIA = '0605';
+
+    /** Vacaciones truncas — Conceptos varios / Indemnizaciones (Tabla 22). UNVERIFIED, same caveat as above. */
+    private const string CONCEPT_VACACIONES_TRUNCAS = '0602';
+
     public function __construct(
         private PayslipEntryRepository $payslipEntryRepository,
     ) {}
@@ -88,6 +100,29 @@ final readonly class PayrollPlameExportService
             $docType = '01'; // Tabla 3: only DNI is modeled on Employee today.
             $docNumber = $employee->getDni();
 
+            if ($payrollRun->getType() === PayrollRun::LIQUIDACION) {
+                $content .= $this->earningsLine(
+                    $docType,
+                    $docNumber,
+                    self::CONCEPT_VACACIONES_TRUNCAS,
+                    $entry->getVacationTruncaAmount(),
+                );
+                $content .= $this->earningsLine(
+                    $docType,
+                    $docNumber,
+                    self::CONCEPT_EARNINGS_GRATIFICATION,
+                    $entry->getGratificacionTruncaAmount(),
+                );
+                $content .= $this->earningsLine(
+                    $docType,
+                    $docNumber,
+                    self::CONCEPT_EARNINGS_CTS,
+                    $entry->getCtsTruncaAmount(),
+                );
+
+                continue;
+            }
+
             $earningsCode = match ($payrollRun->getType()) {
                 PayrollRun::GRATIFICATION_JULY,
                 PayrollRun::GRATIFICATION_DECEMBER,
@@ -102,6 +137,12 @@ final readonly class PayrollPlameExportService
                 $docNumber,
                 self::CONCEPT_BONIFICACION_EXTRAORDINARIA,
                 $entry->getBonificacionExtraordinaria(),
+            );
+            $content .= $this->deductionLine(
+                $docType,
+                $docNumber,
+                self::CONCEPT_QUINTA_CATEGORIA,
+                $entry->getQuintaCategoriaRetention(),
             );
 
             // EsSalud is the employer's own contribution, not the worker's

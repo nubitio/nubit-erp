@@ -100,6 +100,38 @@ class PayslipEntry
     ])]
     private string $bonificacionExtraordinaria = '0.00';
 
+    /** Only set on REGULAR runs — deducted from netPay, see PayrollCalculationService::calculateQuintaCategoria. */
+    #[Groups(['payslip_entry:read'])]
+    #[ApiProperty(description: 'payslip_entry.quinta_categoria_retention.label')]
+    #[ORM\Column(name: 'quinta_categoria_retention', type: Types::DECIMAL, precision: 12, scale: 2, options: [
+        'default' => '0.00',
+    ])]
+    private string $quintaCategoriaRetention = '0.00';
+
+    /** Only set on LIQUIDACION runs — vacaciones truncas, added on top of netPay. */
+    #[Groups(['payslip_entry:read'])]
+    #[ApiProperty(description: 'payslip_entry.vacation_trunca_amount.label')]
+    #[ORM\Column(name: 'vacation_trunca_amount', type: Types::DECIMAL, precision: 12, scale: 2, options: [
+        'default' => '0.00',
+    ])]
+    private string $vacationTruncaAmount = '0.00';
+
+    /** Only set on LIQUIDACION runs — gratificación trunca INCLUDING bonificación extraordinaria, added on top of netPay. */
+    #[Groups(['payslip_entry:read'])]
+    #[ApiProperty(description: 'payslip_entry.gratificacion_trunca_amount.label')]
+    #[ORM\Column(name: 'gratificacion_trunca_amount', type: Types::DECIMAL, precision: 12, scale: 2, options: [
+        'default' => '0.00',
+    ])]
+    private string $gratificacionTruncaAmount = '0.00';
+
+    /** Only set on LIQUIDACION runs — CTS trunca, added on top of netPay. */
+    #[Groups(['payslip_entry:read'])]
+    #[ApiProperty(description: 'payslip_entry.cts_trunca_amount.label')]
+    #[ORM\Column(name: 'cts_trunca_amount', type: Types::DECIMAL, precision: 12, scale: 2, options: [
+        'default' => '0.00',
+    ])]
+    private string $ctsTruncaAmount = '0.00';
+
     #[Groups(['payslip_entry:read'])]
     #[ApiProperty(description: 'payslip_entry.net_pay.label')]
     #[ORM\Column(name: 'net_pay', type: Types::DECIMAL, precision: 12, scale: 2)]
@@ -228,6 +260,54 @@ class PayslipEntry
     public function setBonificacionExtraordinaria(string $bonificacionExtraordinaria): static
     {
         $this->bonificacionExtraordinaria = $bonificacionExtraordinaria;
+
+        return $this;
+    }
+
+    public function getQuintaCategoriaRetention(): string
+    {
+        return $this->quintaCategoriaRetention;
+    }
+
+    public function setQuintaCategoriaRetention(string $quintaCategoriaRetention): static
+    {
+        $this->quintaCategoriaRetention = $quintaCategoriaRetention;
+
+        return $this;
+    }
+
+    public function getVacationTruncaAmount(): string
+    {
+        return $this->vacationTruncaAmount;
+    }
+
+    public function setVacationTruncaAmount(string $vacationTruncaAmount): static
+    {
+        $this->vacationTruncaAmount = $vacationTruncaAmount;
+
+        return $this;
+    }
+
+    public function getGratificacionTruncaAmount(): string
+    {
+        return $this->gratificacionTruncaAmount;
+    }
+
+    public function setGratificacionTruncaAmount(string $gratificacionTruncaAmount): static
+    {
+        $this->gratificacionTruncaAmount = $gratificacionTruncaAmount;
+
+        return $this;
+    }
+
+    public function getCtsTruncaAmount(): string
+    {
+        return $this->ctsTruncaAmount;
+    }
+
+    public function setCtsTruncaAmount(string $ctsTruncaAmount): static
+    {
+        $this->ctsTruncaAmount = $ctsTruncaAmount;
 
         return $this;
     }

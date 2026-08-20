@@ -10,7 +10,7 @@ export interface PayrollRunRecord {
   id: string;
   company: unknown;
   period: string;
-  type: 'REGULAR' | 'GRATIFICATION_JULY' | 'GRATIFICATION_DECEMBER' | 'CTS_MAY' | 'CTS_NOVEMBER';
+  type: 'REGULAR' | 'GRATIFICATION_JULY' | 'GRATIFICATION_DECEMBER' | 'CTS_MAY' | 'CTS_NOVEMBER' | 'LIQUIDACION';
   status: 'DRAFT' | 'CALCULATED' | 'APPROVED' | 'PAID';
   calculatedAt: string | null;
   approvedAt: string | null;
@@ -27,6 +27,10 @@ export interface PayslipEntryRecord {
   onpAmount: string;
   essaludEmployerContribution: string;
   bonificacionExtraordinaria: string;
+  quintaCategoriaRetention: string;
+  vacationTruncaAmount: string;
+  gratificacionTruncaAmount: string;
+  ctsTruncaAmount: string;
   netPay: string;
 }
 

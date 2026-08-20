@@ -7,8 +7,11 @@ namespace App\Tests\Payroll\Service;
 use App\Payroll\Entity\AfpRate;
 use App\Payroll\Entity\Employee;
 use App\Payroll\Repository\AfpRateRepository;
+use App\Payroll\Repository\PayslipEntryRepository;
 use App\Payroll\Service\PayrollCalculationService;
+use Brick\Math\BigDecimal;
 use DateTimeImmutable;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class PayrollCalculationServiceTest extends TestCase
@@ -16,7 +19,7 @@ final class PayrollCalculationServiceTest extends TestCase
     public function testCalculateRegularWithOnp(): void
     {
         $employee = $this->makeEmployee(baseSalary: '3000.00', pensionScheme: Employee::PENSION_ONP);
-        $service = new PayrollCalculationService($this->afpRateRepository());
+        $service = new PayrollCalculationService($this->afpRateRepository(), $this->payslipEntryRepository());
 
         $entry = $service->calculateRegular($employee, new DateTimeImmutable('2026-06-01'));
 
@@ -34,14 +37,17 @@ final class PayrollCalculationServiceTest extends TestCase
             pensionScheme: Employee::PENSION_AFP,
             afpProvider: 'HABITAT',
         );
-        $service = new PayrollCalculationService($this->afpRateRepository(
-            new AfpRate()
-                ->setAfpProvider('HABITAT')
-                ->setMandatoryContributionRate('10.00')
-                ->setInsurancePremiumRate('1.37')
-                ->setCommissionRate('1.47')
-                ->setEffectiveFrom(new DateTimeImmutable('2026-01-01')),
-        ));
+        $service = new PayrollCalculationService(
+            $this->afpRateRepository(
+                new AfpRate()
+                    ->setAfpProvider('HABITAT')
+                    ->setMandatoryContributionRate('10.00')
+                    ->setInsurancePremiumRate('1.37')
+                    ->setCommissionRate('1.47')
+                    ->setEffectiveFrom(new DateTimeImmutable('2026-01-01')),
+            ),
+            $this->payslipEntryRepository(),
+        );
 
         $entry = $service->calculateRegular($employee, new DateTimeImmutable('2026-06-01'));
 
@@ -59,7 +65,7 @@ final class PayrollCalculationServiceTest extends TestCase
             pensionScheme: Employee::PENSION_AFP,
             afpProvider: 'INTEGRA',
         );
-        $service = new PayrollCalculationService($this->afpRateRepository());
+        $service = new PayrollCalculationService($this->afpRateRepository(), $this->payslipEntryRepository());
 
         $entry = $service->calculateRegular($employee, new DateTimeImmutable('2026-06-01'));
 
@@ -75,7 +81,7 @@ final class PayrollCalculationServiceTest extends TestCase
             hireDate: '2020-01-01',
             epsAffiliated: false,
         );
-        $service = new PayrollCalculationService($this->afpRateRepository());
+        $service = new PayrollCalculationService($this->afpRateRepository(), $this->payslipEntryRepository());
 
         $entry = $service->calculateGratification(
             $employee,
@@ -98,7 +104,7 @@ final class PayrollCalculationServiceTest extends TestCase
             hireDate: '2026-04-01',
             epsAffiliated: true,
         );
-        $service = new PayrollCalculationService($this->afpRateRepository());
+        $service = new PayrollCalculationService($this->afpRateRepository(), $this->payslipEntryRepository());
 
         $entry = $service->calculateGratification(
             $employee,
@@ -121,7 +127,7 @@ final class PayrollCalculationServiceTest extends TestCase
             hireDate: '2020-01-01',
             terminationDate: '2026-03-15',
         );
-        $service = new PayrollCalculationService($this->afpRateRepository());
+        $service = new PayrollCalculationService($this->afpRateRepository(), $this->payslipEntryRepository());
 
         $entry = $service->calculateGratification(
             $employee,
@@ -137,7 +143,7 @@ final class PayrollCalculationServiceTest extends TestCase
     public function testCalculateCtsForFullSemester(): void
     {
         $employee = $this->makeEmployee(baseSalary: '3000.00', hireDate: '2020-01-01');
-        $service = new PayrollCalculationService($this->afpRateRepository());
+        $service = new PayrollCalculationService($this->afpRateRepository(), $this->payslipEntryRepository());
 
         $entry = $service->calculateCts(
             $employee,
@@ -155,7 +161,7 @@ final class PayrollCalculationServiceTest extends TestCase
     public function testCalculateCtsProratesFractionalMonths(): void
     {
         $employee = $this->makeEmployee(baseSalary: '3000.00', hireDate: '2026-05-16');
-        $service = new PayrollCalculationService($this->afpRateRepository());
+        $service = new PayrollCalculationService($this->afpRateRepository(), $this->payslipEntryRepository());
 
         $entry = $service->calculateCts(
             $employee,
@@ -167,10 +173,78 @@ final class PayrollCalculationServiceTest extends TestCase
         static::assertSame('1604.17', $entry->getGrossSalary());
     }
 
+    public function testCalculateQuintaCategoriaWithheldForHighEarner(): void
+    {
+        // Sueldo 15000/mes, calculado en enero: proyección anual = 15000*12 = 180000
+        // (13 UIT ~= 69550). Deducción 7 UIT = 37450. Renta neta = 142550.
+        // Tramos: 5 UIT (26750) al 8% = 2140; 8 UIT (42800) al 14% = 5992;
+        // resto (72992 hasta 15 UIT=80250... realmente 20 UIT=107000, tramo
+        // hasta 20 UIT cubre hasta 107000) -> ya cubierto por segundo tramo
+        // solo hasta 107000-26750=80250 de base, pero renta neta 142550 excede
+        // 107000, así que sigue al tercer tramo (17%) por 142550-107000=35550.
+        $employee = $this->makeEmployee(baseSalary: '15000.00', pensionScheme: Employee::PENSION_ONP);
+        $service = new PayrollCalculationService($this->afpRateRepository(), $this->payslipEntryRepository());
+
+        $entry = $service->calculateRegular($employee, new DateTimeImmutable('2026-01-01'));
+
+        static::assertNotSame('0.00', $entry->getQuintaCategoriaRetention());
+        static::assertTrue(
+            BigDecimal::of($entry->getQuintaCategoriaRetention())->isPositive(),
+            'Un sueldo alto proyectado por encima de 7 UIT debe generar retención de quinta categoría.',
+        );
+    }
+
+    public function testCalculateQuintaCategoriaIsZeroBelowSevenUit(): void
+    {
+        // 3000/mes proyectado a 12 meses = 36000, muy por debajo de 7 UIT (37450).
+        $employee = $this->makeEmployee(baseSalary: '3000.00', pensionScheme: Employee::PENSION_ONP);
+        $service = new PayrollCalculationService($this->afpRateRepository(), $this->payslipEntryRepository());
+
+        $entry = $service->calculateRegular($employee, new DateTimeImmutable('2026-01-01'));
+
+        static::assertSame('0.00', $entry->getQuintaCategoriaRetention());
+    }
+
+    public function testCalculateLiquidacionSumsTruncaBenefits(): void
+    {
+        $employee = $this->makeEmployee(
+            baseSalary: '3000.00',
+            pensionScheme: Employee::PENSION_ONP,
+            hireDate: '2020-01-01',
+            terminationDate: '2026-03-15',
+        );
+        $service = new PayrollCalculationService($this->afpRateRepository(), $this->payslipEntryRepository());
+
+        $entry = $service->calculateLiquidacion($employee);
+
+        static::assertSame('1362.50', $entry->getGratificacionTruncaAmount()); // 1250 (2.5/6 meses) + 9% bonificación extraordinaria (no EPS)
+        static::assertNotSame('0.00', $entry->getVacationTruncaAmount());
+        static::assertNotSame('0.00', $entry->getCtsTruncaAmount());
+        static::assertSame('0.00', $entry->getOnpAmount()); // liquidación no afecta AFP/ONP/EsSalud
+    }
+
+    public function testCalculateLiquidacionThrowsWithoutTerminationDate(): void
+    {
+        $employee = $this->makeEmployee(baseSalary: '3000.00');
+        $service = new PayrollCalculationService($this->afpRateRepository(), $this->payslipEntryRepository());
+
+        $this->expectException(InvalidArgumentException::class);
+        $service->calculateLiquidacion($employee);
+    }
+
     private function afpRateRepository(?AfpRate $rate = null): AfpRateRepository
     {
         $repository = $this->createMock(AfpRateRepository::class);
         $repository->method('findEffectiveRate')->willReturn($rate);
+
+        return $repository;
+    }
+
+    private function payslipEntryRepository(): PayslipEntryRepository
+    {
+        $repository = $this->createMock(PayslipEntryRepository::class);
+        $repository->method('sumRegularGrossYtd')->willReturn(BigDecimal::zero());
+        $repository->method('sumQuintaCategoriaWithheldYtd')->willReturn(BigDecimal::zero());
 
         return $repository;
     }

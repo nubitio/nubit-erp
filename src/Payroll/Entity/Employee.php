@@ -135,6 +135,17 @@ class Employee
     #[ORM\Column(name: 'status', length: 20, options: ['default' => self::ACTIVE])]
     private string $status = self::ACTIVE;
 
+    /**
+     * Anchor date for the vacaciones truncas proration in
+     * PayrollCalculationService::calculateLiquidacion — the last date the
+     * employee's vacation accrual was settled (either taken or paid out).
+     * Null means never settled, so hireDate is used as the anchor instead.
+     */
+    #[Groups(['employee:read', 'employee:write'])]
+    #[ApiProperty(description: 'employee.last_vacation_taken_at.label')]
+    #[ORM\Column(name: 'last_vacation_taken_at', type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $lastVacationTakenAt = null;
+
     #[Groups(['employee:read'])]
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
     private DateTimeImmutable $createdAt;
@@ -308,5 +319,17 @@ class Employee
     public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function getLastVacationTakenAt(): ?DateTimeImmutable
+    {
+        return $this->lastVacationTakenAt;
+    }
+
+    public function setLastVacationTakenAt(?DateTimeImmutable $lastVacationTakenAt): static
+    {
+        $this->lastVacationTakenAt = $lastVacationTakenAt;
+
+        return $this;
     }
 }

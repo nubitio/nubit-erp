@@ -49,16 +49,9 @@ readonly class PayrollRunCalculateProcessor implements ProcessorInterface
 
         $this->deleteExistingEntries($payrollRun);
 
-        /** @var list<Employee> $employees */
-        $employees = $this->entityManager
-            ->getRepository(Employee::class)
-            ->createQueryBuilder('e')
-            ->andWhere('e.company = :company')
-            ->andWhere('e.status = :status')
-            ->setParameter('company', $payrollRun->getCompany())
-            ->setParameter('status', Employee::ACTIVE)
-            ->getQuery()
-            ->getResult();
+        $employees = $payrollRun->getType() === PayrollRun::LIQUIDACION
+            ? $this->findTerminatedInPeriod($payrollRun)
+            : $this->findActiveEmployees($payrollRun);
 
         foreach ($employees as $employee) {
             $entry = $this->calculateFor($employee, $payrollRun);
@@ -72,11 +65,65 @@ readonly class PayrollRunCalculateProcessor implements ProcessorInterface
         return $payrollRun;
     }
 
+    /**
+     * @return list<Employee>
+     */
+    private function findActiveEmployees(PayrollRun $payrollRun): array
+    {
+        /** @var list<Employee> $employees */
+        $employees = $this->entityManager
+            ->getRepository(Employee::class)
+            ->createQueryBuilder('e')
+            ->andWhere('e.company = :company')
+            ->andWhere('e.status = :status')
+            ->setParameter('company', $payrollRun->getCompany())
+            ->setParameter('status', Employee::ACTIVE)
+            ->getQuery()
+            ->getResult();
+
+        return $employees;
+    }
+
+    /**
+     * Employees terminated within the run's period month — a LIQUIDACION
+     * run settles exactly the ceses of that month, so re-running it later
+     * for a different period never re-liquidates the same employee twice.
+     *
+     * @return list<Employee>
+     */
+    private function findTerminatedInPeriod(PayrollRun $payrollRun): array
+    {
+        $period = $payrollRun->getPeriod();
+        $monthStart = new DateTimeImmutable(sprintf(
+            '%d-%02d-01',
+            (int) $period->format('Y'),
+            (int) $period->format('n'),
+        ));
+        $monthEnd = $monthStart->modify('last day of this month');
+
+        /** @var list<Employee> $employees */
+        $employees = $this->entityManager
+            ->getRepository(Employee::class)
+            ->createQueryBuilder('e')
+            ->andWhere('e.company = :company')
+            ->andWhere('e.status = :status')
+            ->andWhere('e.terminationDate BETWEEN :monthStart AND :monthEnd')
+            ->setParameter('company', $payrollRun->getCompany())
+            ->setParameter('status', Employee::TERMINATED)
+            ->setParameter('monthStart', $monthStart)
+            ->setParameter('monthEnd', $monthEnd)
+            ->getQuery()
+            ->getResult();
+
+        return $employees;
+    }
+
     private function calculateFor(Employee $employee, PayrollRun $payrollRun): PayslipEntry
     {
         $period = $payrollRun->getPeriod();
 
         return match ($payrollRun->getType()) {
+            PayrollRun::LIQUIDACION => $this->calculationService->calculateLiquidacion($employee),
             PayrollRun::GRATIFICATION_JULY => $this->calculationService->calculateGratification(
                 $employee,
                 new DateTimeImmutable(sprintf('%d-01-01', (int) $period->format('Y'))),
