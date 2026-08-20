@@ -179,6 +179,17 @@ final class PermissionCatalog
                     'purchase_orders.cancel' => 'Cancelar órdenes de compra',
                 ],
             ],
+            'payroll' => [
+                'label' => 'Planilla',
+                'permissions' => [
+                    'payroll.view' => 'Ver planilla',
+                    'payroll.manage_employees' => 'Registrar y editar empleados',
+                    'payroll.manage_rates' => 'Editar tasas de AFP',
+                    'payroll.run' => 'Calcular corridas de planilla',
+                    'payroll.approve' => 'Aprobar y marcar como pagadas las corridas de planilla',
+                    'payroll.export_plame' => 'Exportar archivos PLAME',
+                ],
+            ],
         ];
     }
 

@@ -209,10 +209,48 @@ class MenuSeedService
             'parent_id' => null,
         ],
 
+        // ── Grupo: Planilla (empleados, corridas de planilla, PLAME) ────────
+        [
+            'id' => 810,
+            'order_index' => 11,
+            'key_name' => 'Planilla',
+            'type' => 'group',
+            'route' => null,
+            'icon' => 'ph ph-users-three',
+            'parent_id' => null,
+        ],
+        [
+            'id' => 811,
+            'order_index' => 0,
+            'key_name' => 'Empleados',
+            'type' => 'route',
+            'route' => 'employees',
+            'icon' => 'ph ph-identification-card',
+            'parent_id' => 810,
+        ],
+        [
+            'id' => 812,
+            'order_index' => 1,
+            'key_name' => 'Corridas de planilla',
+            'type' => 'route',
+            'route' => 'payroll-runs',
+            'icon' => 'ph ph-calculator',
+            'parent_id' => 810,
+        ],
+        [
+            'id' => 813,
+            'order_index' => 2,
+            'key_name' => 'Tasas de AFP',
+            'type' => 'route',
+            'route' => 'afp-rates',
+            'icon' => 'ph ph-percent',
+            'parent_id' => 810,
+        ],
+
         // ── Grupo: Cumplimiento (obligaciones periódicas SUNAT) ─────────────
         [
             'id' => 795,
-            'order_index' => 11,
+            'order_index' => 12,
             'key_name' => 'Cumplimiento',
             'type' => 'group',
             'route' => null,
@@ -240,7 +278,7 @@ class MenuSeedService
 
         [
             'id' => 909,
-            'order_index' => 12,
+            'order_index' => 13,
             'key_name' => 'Configuración',
             'type' => 'route',
             'route' => 'config',
