@@ -31,4 +31,23 @@ class CashSessionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * Most recently opened session for a cash register, regardless of status
+     * (open, closed, or reconciling) — used to answer "what's the current/
+     * latest status of this register" rather than only "is it open now".
+     */
+    public function findLatestByCashRegister(int $cashRegisterId): ?CashSession
+    {
+        return $this
+            ->createQueryBuilder('cs')
+            ->addSelect('cr')
+            ->join('cs.cashRegister', 'cr')
+            ->where('cr.id = :id')
+            ->setParameter('id', $cashRegisterId)
+            ->orderBy('cs.openedAt', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

@@ -6,10 +6,8 @@ namespace App\AI\Tool;
 
 use App\AI\Dto\CashRegisterStatusDto;
 use App\CashRegister\Entity\CashRegister;
-use App\CashRegister\Entity\CashShift;
-use App\CashRegister\Enum\CashShiftStatus;
 use App\CashRegister\Repository\CashRegisterRepository;
-use App\CashRegister\Repository\CashShiftRepository;
+use App\CashRegister\Repository\CashSessionRepository;
 use DateTimeInterface;
 use Nubit\Platform\Exception\ServiceException;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
@@ -23,7 +21,7 @@ final readonly class CashRegisterTools
 {
     public function __construct(
         private CashRegisterRepository $cashRegisterRepository,
-        private CashShiftRepository $cashShiftRepository,
+        private CashSessionRepository $cashSessionRepository,
     ) {}
 
     public function cashRegisterStatus(int $cashRegisterId): CashRegisterStatusDto
@@ -34,33 +32,23 @@ final readonly class CashRegisterTools
             throw ServiceException::create('Caja no encontrada.');
         }
 
-        /** @var CashShift|null $latestShift */
-        $latestShift = $this->cashShiftRepository
-            ->createQueryBuilder('cs')
-            ->addSelect('cr')
-            ->join('cs.cashRegister', 'cr')
-            ->where('cr.id = :id')
-            ->setParameter('id', $cashRegisterId)
-            ->orderBy('cs.openedAt', 'DESC')
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
+        $latestSession = $this->cashSessionRepository->findLatestByCashRegister($cashRegisterId);
 
-        $status = $latestShift?->getStatus()->value ?? CashShiftStatus::CLOSED->value;
+        $status = $latestSession?->getStatus() ?? 'CLOSED';
 
-        $openingBalance = $latestShift?->getOpeningBalance();
-        $expectedAmount = $latestShift?->getExpectedAmount();
-        $countedAmount = $latestShift?->getCountedAmount();
-        $difference = $latestShift?->getDifference();
+        $openingBalance = $latestSession?->getOpeningAmount();
+        $expectedAmount = $latestSession?->getExpectedAmount();
+        $countedAmount = $latestSession?->getCountedAmount();
+        $difference = $latestSession?->getDifferenceAmount();
 
         return new CashRegisterStatusDto(
             $register->getId() ?? 0,
             $register->getName(),
             $status,
-            $latestShift?->getId(),
-            $latestShift?->getOpenedAt()?->format(DateTimeInterface::ATOM),
-            $latestShift?->getOpenedBy()?->getUsername(),
-            $latestShift?->getClosedAt()?->format(DateTimeInterface::ATOM),
+            $latestSession?->getId(),
+            $latestSession?->getOpenedAt()?->format(DateTimeInterface::ATOM),
+            $latestSession?->getOpenedBy()->getUsername(),
+            $latestSession?->getClosedAt()?->format(DateTimeInterface::ATOM),
             $openingBalance !== null ? (float) $openingBalance : null,
             $expectedAmount !== null ? (float) $expectedAmount : null,
             $countedAmount !== null ? (float) $countedAmount : null,
