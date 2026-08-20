@@ -17,6 +17,7 @@ use Override;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
  * Custom state processor that writes CashMovement records directly to the
@@ -61,25 +62,56 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
             throw new UnprocessableEntityHttpException('El campo cashSession es obligatorio.');
         }
 
-        $movementType = match ($data->getType()) {
-            CashMovementType::EXPENSE => 'CASH_OUT',
-            default => 'CASH_IN',
-        };
-
         $categoryId = $data->getCategory()?->getId();
         $amount = $data->getAmount() ?? '0.00';
+        if ($categoryId === null) {
+            throw new UnprocessableEntityHttpException('El campo category es obligatorio.');
+        }
+        if (!is_numeric($amount) || (float) $amount <= 0) {
+            throw new UnprocessableEntityHttpException('El monto debe ser un número mayor que cero.');
+        }
         $description = $data->getDescription();
 
-        $this->connection->executeStatement('INSERT INTO cash_movements
+        $this->connection->beginTransaction();
+        try {
+            $sessionRow = $this->connection->fetchAssociative(
+                'SELECT status, opened_by FROM cash_sessions WHERE id = :id FOR UPDATE',
+                ['id' => $cashSession->getId()],
+            );
+            if ($sessionRow === false || $sessionRow['status'] !== 'OPEN') {
+                throw new UnprocessableEntityHttpException('La sesión de caja no existe o está cerrada.');
+            }
+            if ((int) $sessionRow['opened_by'] !== $user->userId && !$this->security->hasPermission('cash.movement_any')) {
+                throw new AccessDeniedHttpException('No puedes registrar movimientos en la caja de otro usuario.');
+            }
+
+            $categoryRow = $this->connection->fetchAssociative(
+                'SELECT type, active FROM cash_movement_category WHERE id = :id',
+                ['id' => $categoryId],
+            );
+            if ($categoryRow === false || !(bool) $categoryRow['active']) {
+                throw new UnprocessableEntityHttpException('La categoría de movimiento no existe o está inactiva.');
+            }
+            $movementType = $categoryRow['type'] === CashMovementType::EXPENSE->value ? 'CASH_OUT' : 'CASH_IN';
+
+            $this->connection->executeStatement('INSERT INTO cash_movements
                 (cash_session_id, movement_type, category_id, amount, description, created_by, created_at)
              VALUES (?, ?, ?, ?, ?, ?, NOW())', [
-            $cashSession->getId(),
-            $movementType,
-            $categoryId,
-            $amount,
-            $description,
-            $user->userId,
-        ]);
+                $cashSession->getId(),
+                $movementType,
+                $categoryId,
+                $amount,
+                $description,
+                $user->userId,
+            ]);
+            $this->connection->commit();
+        } catch (\Throwable $exception) {
+            if ($this->connection->isTransactionActive()) {
+                $this->connection->rollBack();
+            }
+
+            throw $exception;
+        }
 
         $newId = (int) $this->connection->lastInsertId();
 

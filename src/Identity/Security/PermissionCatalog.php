@@ -36,6 +36,7 @@ final class PermissionCatalog
                     'pos.access' => 'Acceder al POS',
                     'pos.discount' => 'Aplicar descuentos',
                     'pos.price_override' => 'Modificar precios',
+                    'pos.offline_sale' => 'Sincronizar ventas offline',
                 ],
             ],
             'cash' => [
@@ -44,7 +45,10 @@ final class PermissionCatalog
                     'cash.view' => 'Ver caja',
                     'cash.open' => 'Abrir caja',
                     'cash.close' => 'Cerrar caja',
+                    'cash.close_any' => 'Cerrar cajas de otros usuarios',
                     'cash.movement' => 'Registrar movimientos',
+                    'cash.movement_any' => 'Registrar movimientos en cajas de otros usuarios',
+                    'cash.manage' => 'Administrar cajas',
                 ],
             ],
             'inventory' => [
@@ -79,6 +83,8 @@ final class PermissionCatalog
                 'permissions' => [
                     'purchases.view' => 'Ver ingresos de stock',
                     'purchases.create' => 'Registrar ingresos',
+                    'purchases.edit' => 'Editar compras',
+                    'purchases.void' => 'Anular compras',
                 ],
             ],
             'reports' => [

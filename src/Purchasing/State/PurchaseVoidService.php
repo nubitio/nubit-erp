@@ -89,6 +89,8 @@ final readonly class PurchaseVoidService implements PurchaseVoidServiceInterface
                     'product_id' => $product->getId(),
                     'error' => $e->getMessage(),
                 ]);
+
+                throw $e;
             }
         }
 

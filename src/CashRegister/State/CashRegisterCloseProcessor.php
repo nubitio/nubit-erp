@@ -20,6 +20,9 @@ use Doctrine\ORM\Exception\ORMException;
 use Override;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * @implements ProcessorInterface<CashRegisterCloseDto, CashRegisterCloseResponseDto>
@@ -47,32 +50,28 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         $closureItems = $data->closureItems;
         $notes = [];
 
+        $countedTotal = BigDecimal::zero();
         if (!empty($closureItems)) {
-            $expectedTotal = BigDecimal::zero();
-            $countedTotal = BigDecimal::zero();
             foreach ($closureItems as $item) {
-                $expectedTotal = $expectedTotal->plus(BigDecimal::of($item['expectedAmount'] ?? '0'));
-                $countedTotal = $countedTotal->plus(BigDecimal::of($item['countedAmount'] ?? '0'));
+                $countedAmount = $item['countedAmount'] ?? '0';
+                if (!is_numeric($countedAmount) || (float) $countedAmount < 0) {
+                    throw new UnprocessableEntityHttpException('El monto contado debe ser un número positivo.');
+                }
+                $countedTotal = $countedTotal->plus(BigDecimal::of($countedAmount));
                 if (!empty($item['note'])) {
                     $notes[] = trim((string) $item['note']);
                 }
             }
-
-            $differenceTotal = $countedTotal->minus($expectedTotal);
         } else {
-            $expectedTotal = BigDecimal::of($data->expectedAmount ?? '0');
-            $countedTotal = BigDecimal::of($data->countedAmount ?? '0');
-            $differenceTotal = isset($data->difference)
-                ? BigDecimal::of($data->difference)
-                : $countedTotal->minus($expectedTotal);
+            $countedAmount = $data->countedAmount ?? '0';
+            if (!is_numeric($countedAmount) || (float) $countedAmount < 0) {
+                throw new UnprocessableEntityHttpException('El monto contado debe ser un número positivo.');
+            }
+            $countedTotal = BigDecimal::of($countedAmount);
             if (!empty($data->note)) {
                 $notes[] = trim((string) $data->note);
             }
         }
-
-        $expectedStr = $expectedTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
-        $countedStr = $countedTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
-        $differenceStr = $differenceTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
 
         try {
             // Attempt 1: direct lookup by cash_sessions.id
@@ -91,6 +90,33 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
             if ($authUser === null) {
                 throw new UnauthorizedHttpException('Bearer', 'Usuario no autenticado.');
             }
+            if ($cashSession->getStatus() !== 'OPEN') {
+                throw new ConflictHttpException('La sesión de caja ya está cerrada.');
+            }
+            if (
+                $cashSession->getOpenedBy()->getId() !== $authUser->userId
+                && !$this->security->hasPermission('cash.close_any')
+            ) {
+                throw new AccessDeniedHttpException('No puedes cerrar la sesión de caja de otro usuario.');
+            }
+
+            $expectedAmount = $this->entityManager->getConnection()->fetchOne(
+                <<<'SQL'
+                    SELECT COALESCE(SUM(CASE
+                        WHEN movement_type IN ('OPENING', 'SALE_IN', 'CASH_IN') THEN amount
+                        WHEN movement_type IN ('REFUND_OUT', 'CASH_OUT') THEN -amount
+                        ELSE 0
+                    END), 0)
+                    FROM cash_movements
+                    WHERE cash_session_id = :sessionId
+                    SQL,
+                ['sessionId' => $cashSession->getId()],
+            );
+            $expectedTotal = BigDecimal::of((string) $expectedAmount);
+            $differenceTotal = $countedTotal->minus($expectedTotal);
+            $expectedStr = $expectedTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
+            $countedStr = $countedTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
+            $differenceStr = $differenceTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
 
             $userRef = $this->entityManager->getReference(User::class, $authUser->userId);
 

@@ -13,6 +13,7 @@ use App\Identity\Dto\AuthUserDto;
 use App\Identity\Entity\User;
 use App\Identity\Security\Security;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -46,10 +47,16 @@ final class CashRegisterCloseProcessorTest extends TestCase
     public function testClosureItemsAccumulatedWithBrickMath(): void
     {
         $cashSession = new CashSession();
+        $openedBy = new User();
+        (new \ReflectionProperty(User::class, 'id'))->setValue($openedBy, 1);
+        $cashSession->setOpenedBy($openedBy);
         $this->entityManager->method('find')->willReturn($cashSession);
         $this->entityManager->method('getReference')->willReturn(new User());
         $this->entityManager->method('persist')->willReturnCallback(fn() => null);
         $this->entityManager->method('flush')->willReturnCallback(fn() => null);
+        $connection = $this->createStub(Connection::class);
+        $connection->method('fetchOne')->willReturn('0.20');
+        $this->entityManager->method('getConnection')->willReturn($connection);
 
         $dto = new CashRegisterCloseDto();
         $dto->closureItems = [
@@ -75,10 +82,16 @@ final class CashRegisterCloseProcessorTest extends TestCase
     public function testSingleAmountPathUsesExactScale(): void
     {
         $cashSession = new CashSession();
+        $openedBy = new User();
+        (new \ReflectionProperty(User::class, 'id'))->setValue($openedBy, 1);
+        $cashSession->setOpenedBy($openedBy);
         $this->entityManager->method('find')->willReturn($cashSession);
         $this->entityManager->method('getReference')->willReturn(new User());
         $this->entityManager->method('persist')->willReturnCallback(fn() => null);
         $this->entityManager->method('flush')->willReturnCallback(fn() => null);
+        $connection = $this->createStub(Connection::class);
+        $connection->method('fetchOne')->willReturn('123.456');
+        $this->entityManager->method('getConnection')->willReturn($connection);
 
         $dto = new CashRegisterCloseDto();
         $dto->expectedAmount = '123.456';
@@ -91,6 +104,22 @@ final class CashRegisterCloseProcessorTest extends TestCase
         $this->assertSame('123.46', $cashSession->getExpectedAmount());
         $this->assertSame('100.00', $cashSession->getCountedAmount());
         $this->assertSame('-23.45', $cashSession->getDifferenceAmount());
+    }
+
+    public function testCannotCloseAnotherUsersSessionWithoutPermission(): void
+    {
+        $cashSession = new CashSession();
+        $openedBy = new User();
+        (new \ReflectionProperty(User::class, 'id'))->setValue($openedBy, 99);
+        $cashSession->setOpenedBy($openedBy);
+        $this->entityManager->method('find')->willReturn($cashSession);
+        $this->security->method('hasPermission')->willReturn(false);
+
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException::class);
+
+        $dto = new CashRegisterCloseDto();
+        $dto->countedAmount = '10.00';
+        $this->buildProcessor()->process($dto, new Put(), ['id' => 3]);
     }
 
     private function buildProcessor(): CashRegisterCloseProcessor

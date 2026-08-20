@@ -16,6 +16,7 @@ use App\Billing\State\TaxDocumentProcessor;
 use App\Identity\Auth\BranchContextService;
 use App\Organization\Repository\BranchRepository;
 use App\Settings\Service\TenantSettingsService;
+use App\Organization\Entity\Branch;
 use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
 use Nubit\AdminBundle\Auth\JWTManager;
 use Nubit\Platform\Exception\ServiceException;
@@ -165,6 +166,46 @@ final class TaxDocumentProcessorTest extends TestCase
         $processor->process($creditNote, new Post(), [], []);
     }
 
+    public function testPartialReturnsCannotExceedOriginalQuantityCumulatively(): void
+    {
+        $relatedDoc = $this->buildRelatedTaxDocument(isVoided: false, series: 'F001');
+        $creditNote = $this->buildNewCreditNote(relatedTaxDocument: $relatedDoc, reasonCode: '07');
+        $this->taxDocumentRepository
+            ->method('getTaxDocumentSeriesByBranch')
+            ->willReturn(new SeriesResultDto(series: 'BC01', associatedSeries: 'F001'));
+        $this->taxDocumentRepository->method('getNextSequenceNumber')->willReturn(1);
+        $this->taxDocumentRepository->method('getReturnedQuantity')->with($relatedDoc, 1)->willReturn(1.0);
+
+        $this->persistProcessor->expects(self::never())->method('process');
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage('no puede exceder');
+
+        $this->buildProcessor()->process($creditNote, new Post(), [], []);
+    }
+
+    public function testDuplicateRequestedLinesAreAggregatedBeforeValidatingQuantity(): void
+    {
+        $relatedDoc = $this->buildRelatedTaxDocument(isVoided: false, series: 'F001');
+        $creditNote = $this->buildNewCreditNote(relatedTaxDocument: $relatedDoc, reasonCode: '07');
+        $creditNote->getLines()->first()->setQuantity('0.600000');
+        $duplicate = new TaxDocumentLine();
+        $duplicate->setLineNumber(1);
+        $duplicate->setProductName('Test product');
+        $duplicate->setQuantity('0.600000');
+        $duplicate->setUnitPrice('100.000000');
+        $creditNote->addLine($duplicate);
+        $this->taxDocumentRepository
+            ->method('getTaxDocumentSeriesByBranch')
+            ->willReturn(new SeriesResultDto(series: 'BC01', associatedSeries: 'F001'));
+        $this->taxDocumentRepository->method('getNextSequenceNumber')->willReturn(1);
+
+        $this->persistProcessor->expects(self::never())->method('process');
+        $this->expectException(ServiceException::class);
+        $this->expectExceptionMessage('no puede exceder');
+
+        $this->buildProcessor()->process($creditNote, new Post(), [], []);
+    }
+
     // -------------------------------------------------------------------------
     // TC-4: Delete guard — cannot delete a processed (SUNAT-acknowledged) document
     // -------------------------------------------------------------------------
@@ -209,6 +250,9 @@ final class TaxDocumentProcessorTest extends TestCase
         $doc->setSeries($series);
         $doc->setNumber('00001');
         $doc->setTotal('118.00');
+        $branch = new Branch();
+        (new \ReflectionProperty(Branch::class, 'id'))->setValue($branch, 'branch-001');
+        $doc->setBranch($branch);
 
         // Add at least one line so prepareCreditNoteLines() doesn't throw.
         $line = new TaxDocumentLine();

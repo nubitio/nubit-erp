@@ -22,6 +22,7 @@ import { useTenantRuntimeConfig } from '@shared/hooks';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { OpenCajaDialog } from './OpenCajaDialog';
+import { hasPermission } from '@shared/permissions';
 
 const POSPage = () => {
   const themeContext = useContext(ThemeContext);
@@ -30,8 +31,11 @@ const POSPage = () => {
   const { currentBranchId, currentBranchName, currentUserName } = useSessionInfo();
   const branchId = String(currentBranchId ?? '');
   const { data: runtimeConfig } = useTenantRuntimeConfig();
-  const allowLinePriceOverride = runtimeConfig?.ui.pos?.allowLinePriceOverride ?? true;
-  const allowCatalogPriceEdit = runtimeConfig?.ui.pos?.allowCatalogPriceEdit ?? true;
+  const allowLinePriceOverride =
+    (runtimeConfig?.ui.pos?.allowLinePriceOverride ?? true) && hasPermission('pos.price_override');
+  const allowCatalogPriceEdit =
+    (runtimeConfig?.ui.pos?.allowCatalogPriceEdit ?? true) && hasPermission('catalog.edit');
+  const allowDiscount = hasPermission('pos.discount');
 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -482,6 +486,7 @@ const POSPage = () => {
         updateQuantity={updateQuantity}
         updateLinePrice={updateLinePrice}
         allowLinePriceOverride={allowLinePriceOverride}
+        allowDiscount={allowDiscount}
         updateLineDescription={updateLineDescription}
         removeFromCart={removeFromCart}
         formatMoney={formatMoney}

@@ -79,16 +79,27 @@ readonly class SaleVoidUseCase
         $documentType = $this->taxDocumentRepository->findDocumentTypeBySaleId($saleId) ?? DocType::NOTA_VENTA->value;
 
         if ($documentType === DocType::NOTA_VENTA->value) {
-            $sale->setGlosa($reason);
-            $sale->setStatus('VOIDED');
-            $sale->setUpdatedBy($userId);
-            $sale->setDateUpdated(new \DateTimeImmutable());
-            $this->cashRefundRegistrar->register($sale, $userId);
-            $this->entityManager->flush();
-            $this->syncVoidToSalesV2($sale, $reason);
+            $connection = $this->entityManager->getConnection();
+            $connection->beginTransaction();
+            try {
+                $sale->setGlosa($reason);
+                $sale->setStatus('VOIDED');
+                $sale->setUpdatedBy($userId);
+                $sale->setDateUpdated(new \DateTimeImmutable());
+                $this->cashRefundRegistrar->register($sale, $userId);
+                $this->syncVoidToSalesV2($sale, $reason);
 
-            if ($restoreStock) {
-                $this->stockVoidReverser->reverse($sale);
+                if ($restoreStock) {
+                    $this->stockVoidReverser->reverse($sale);
+                }
+                $this->entityManager->flush();
+                $connection->commit();
+            } catch (\Throwable $exception) {
+                if ($connection->isTransactionActive()) {
+                    $connection->rollBack();
+                }
+
+                throw $exception;
             }
 
             $this->auditLogger->log('sale.void.result', [

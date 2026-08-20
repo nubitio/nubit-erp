@@ -22,11 +22,11 @@ final readonly class AuditLogMessageHandler
     public function __invoke(AuditLogMessage $message): void
     {
         if (!$this->isControlPlaneReady()) {
-            $this->logger->warning('Control plane not ready, dropping audit log', [
+            $this->logger->warning('Control plane not ready, audit log will be retried', [
                 'action' => $message->action,
             ]);
 
-            return;
+            throw new \RuntimeException('Control plane audit storage is not ready.');
         }
 
         try {
@@ -44,13 +44,15 @@ final readonly class AuditLogMessageHandler
                 'action' => $message->action,
                 'exception' => $e->getMessage(),
             ]);
+
+            throw $e;
         }
     }
 
     private function isControlPlaneReady(): bool
     {
         return $this->cache->get('audit_control_plane_ready', function (ItemInterface $item): bool {
-            $item->expiresAfter(600);
+            $item->expiresAfter(5);
 
             return $this->connectionRegistry
                 ->getConnection('control_plane')

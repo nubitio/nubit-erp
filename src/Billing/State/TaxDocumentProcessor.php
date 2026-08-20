@@ -68,73 +68,109 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
             return $this->removeProcessor->process($data, $operation, $uriVariables, $context);
         }
 
-        if ($isNew && $data->getReasonCode() != null) {
-            $reason = CreditNoteReason::tryFrom((string) $data->getReasonCode());
-            if ($reason === null) {
-                throw new ServiceException('El motivo de la nota de crédito no es válido (catálogo SUNAT 09).');
-            }
-            // Source the official description from catalog 09 when the caller did
-            // not provide one, so the value sent to SUNAT is always canonical.
-            if (in_array(trim((string) $data->getReasonDescription()), ['', '0'], true)) {
-                $data->setReasonDescription($reason->description());
-            }
+        $lockName = $this->acquireCreditNoteLock($isNew ? $data : null);
+        $connection = $lockName !== null ? $this->entityManager->getConnection() : null;
+        $managesTransaction = $connection !== null && !$connection->isTransactionActive();
+        if ($managesTransaction) {
+            $connection->beginTransaction();
+        }
 
-            $related = $data->getRelatedTaxDocument();
-            $data->setDocumentType('07');
-            $data->setAffectedDocument($related->getFullNumber());
-            $data->setCustomer($related->getCustomer());
-            $data->setTotal($related->getTotal());
-            if ($related->isVoided()) {
-                throw new ServiceException('No se puede generar nota de crédito para un comprobante anulado.');
-            }
-            $branchId = $this->branchContextService->getCurrentBranchId();
-            $affectedSeries = substr($data->getAffectedDocument(), 0, 4);
-            $seriesResult = $this->taxDocumentRepository->getTaxDocumentSeriesByBranch(
-                $branchId,
-                '07',
-                $affectedSeries,
-            );
-            $number = $this->taxDocumentRepository->getNextSequenceNumber($branchId, '07');
-            if ($seriesResult === null || $seriesResult->associatedSeries != $affectedSeries) {
-                throw new ServiceException(
-                    'La serie de la nota de crédito no coincide con la serie del documento afectado.',
+        try {
+            if ($isNew && $data->getReasonCode() != null) {
+                $reason = CreditNoteReason::tryFrom((string) $data->getReasonCode());
+                if ($reason === null) {
+                    throw new ServiceException('El motivo de la nota de crédito no es válido (catálogo SUNAT 09).');
+                }
+                // Source the official description from catalog 09 when the caller did
+                // not provide one, so the value sent to SUNAT is always canonical.
+                if (in_array(trim((string) $data->getReasonDescription()), ['', '0'], true)) {
+                    $data->setReasonDescription($reason->description());
+                }
+
+                $related = $data->getRelatedTaxDocument();
+                if ($related === null) {
+                    throw new ServiceException('Debe seleccionar el comprobante afectado.');
+                }
+                $data->setDocumentType('07');
+                $data->setAffectedDocument($related->getFullNumber());
+                $data->setCustomer($related->getCustomer());
+                $data->setTotal($related->getTotal());
+                if ($related->isVoided()) {
+                    throw new ServiceException('No se puede generar nota de crédito para un comprobante anulado.');
+                }
+                if ($related->getSaleRecord()?->getStatus() === 'VOIDED') {
+                    throw new ServiceException('No se puede generar otra nota de crédito para una venta anulada.');
+                }
+                if ($this->taxDocumentRepository->hasAnnullingCreditNote($related)) {
+                    throw new ServiceException('No se puede generar otra nota de crédito para un comprobante ya anulado.');
+                }
+                $branchId = $this->branchContextService->getCurrentBranchId();
+                $relatedBranchId = $related->getBranch()?->getId() ?? $related->getSaleRecord()?->getBranch()?->getId();
+                if ($branchId === null || $relatedBranchId === null || $branchId !== $relatedBranchId) {
+                    throw new ServiceException('El comprobante afectado no pertenece a la sucursal actual.');
+                }
+                $affectedSeries = substr($data->getAffectedDocument(), 0, 4);
+                $seriesResult = $this->taxDocumentRepository->getTaxDocumentSeriesByBranch(
+                    $branchId,
+                    '07',
+                    $affectedSeries,
                 );
-            }
-            $data->setSeries($seriesResult->series);
-            $data->setNumber((string) $number);
-            $this->prepareCreditNoteLines($data);
+                $number = $this->taxDocumentRepository->getNextSequenceNumber($branchId, '07');
+                if ($seriesResult === null || $seriesResult->associatedSeries != $affectedSeries) {
+                    throw new ServiceException(
+                        'La serie de la nota de crédito no coincide con la serie del documento afectado.',
+                    );
+                }
+                $data->setSeries($seriesResult->series);
+                $data->setNumber((string) $number);
+                $this->prepareCreditNoteLines($data);
 
-            // Propagate sale reference from related document to new credit note
-            if ($related->getSaleRecord() !== null) {
-                $data->setSaleRecord($related->getSaleRecord());
+                // Propagate sale reference from related document to new credit note
+                if ($related->getSaleRecord() !== null) {
+                    $data->setSaleRecord($related->getSaleRecord());
+                }
+            }
+
+            if ($isNew) {
+                $data->setCreatedAt(new DateTime());
+
+                // Set the branch from the current user's session
+                $branchId = $this->branchContextService->getCurrentBranchId();
+                if ($branchId !== null) {
+                    $branch = $this->branchRepository->find($branchId);
+                    $data->setBranch($branch);
+                }
+            } else {
+                if ($data->isProcessed()) {
+                    throw new ServiceException('No se puede actualizar un documento procesado.');
+                }
+                $data->setUpdatedAt(new DateTime());
+            }
+
+            $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+
+            // If this is a new credit note with a void reason code, mark the linked sale as VOIDED.
+            if ($isNew && $data->getReasonCode() !== null) {
+                $this->voidSaleIfCreditNoteAnnuls($data);
+                $this->creditNoteStockReverser->reverse($data);
+            }
+
+            if ($managesTransaction) {
+                $connection->commit();
+            }
+
+            return $result;
+        } catch (\Throwable $exception) {
+            if ($managesTransaction && $connection?->isTransactionActive()) {
+                $connection->rollBack();
+            }
+
+            throw $exception;
+        } finally {
+            if ($lockName !== null && $connection !== null) {
+                $connection->fetchOne('SELECT RELEASE_LOCK(:lockName)', ['lockName' => $lockName]);
             }
         }
-
-        if ($isNew) {
-            $data->setCreatedAt(new DateTime());
-
-            // Set the branch from the current user's session
-            $branchId = $this->branchContextService->getCurrentBranchId();
-            if ($branchId !== null) {
-                $branch = $this->branchRepository->find($branchId);
-                $data->setBranch($branch);
-            }
-        } else {
-            if ($data->isProcessed()) {
-                throw new ServiceException('No se puede actualizar un documento procesado.');
-            }
-            $data->setUpdatedAt(new DateTime());
-        }
-
-        $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
-
-        // If this is a new credit note with a void reason code, mark the linked sale as VOIDED.
-        if ($isNew && $data->getReasonCode() !== null) {
-            $this->voidSaleIfCreditNoteAnnuls($data);
-            $this->creditNoteStockReverser->reverse($data);
-        }
-
-        return $result;
     }
 
     /**
@@ -150,11 +186,11 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
 
         $requestedLines = [];
         foreach ($data->getLines() as $line) {
-            $requestedLines[] = [
-                'lineNumber' => $line->getLineNumber(),
-                'quantity' => $line->getQuantity(),
-            ];
+            $lineNumber = $line->getLineNumber();
+            $requestedLines[$lineNumber] ??= ['lineNumber' => $lineNumber, 'quantity' => 0.0];
+            $requestedLines[$lineNumber]['quantity'] += (float) $line->getQuantity();
         }
+        $requestedLines = array_values($requestedLines);
 
         foreach ($data->getLines()->toArray() as $line) {
             $data->removeLine($line);
@@ -187,7 +223,10 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
                 throw new ServiceException('El ítem seleccionado no existe en el comprobante afectado.');
             }
             $originalQty = (float) $original->getQuantity();
-            if ($requestedQty > $originalQty) {
+            $alreadyReturned = in_array($data->getReasonCode(), ['01', '02', '06', '07'], true)
+                ? $this->taxDocumentRepository->getReturnedQuantity($related, $lineNumber)
+                : 0.0;
+            if (($requestedQty + $alreadyReturned) > $originalQty) {
                 throw new ServiceException('La cantidad a devolver no puede exceder la cantidad del comprobante.');
             }
             $selected[] = [
@@ -310,5 +349,31 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         } catch (\Throwable) {
             // V2 sync failure is non-fatal here; the ORM entity is already updated.
         }
+    }
+
+    private function acquireCreditNoteLock(?TaxDocument $document): ?string
+    {
+        if ($document?->getReasonCode() === null) {
+            return null;
+        }
+
+        $related = $document->getRelatedTaxDocument();
+        if (!$related instanceof TaxDocument) {
+            return null;
+        }
+        $relatedId = $related->getId();
+        if ($relatedId === null) {
+            return null;
+        }
+
+        $lockName = 'credit-note:' . $relatedId;
+        $acquired = $this->entityManager->getConnection()->fetchOne('SELECT GET_LOCK(:lockName, 5)', [
+            'lockName' => $lockName,
+        ]);
+        if ((int) $acquired !== 1) {
+            throw new ServiceException('No se pudo bloquear el comprobante para procesar la nota de crédito.');
+        }
+
+        return $lockName;
     }
 }

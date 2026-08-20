@@ -16,9 +16,9 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/financial-reports')]
-#[IsGranted('ROLE_USER')]
 final class FinancialReportController extends AbstractController
 {
+    #[IsGranted('perm:reports.view')]
     #[Route('/profit-and-loss', methods: ['GET'])]
     public function profitAndLoss(Request $request, ProfitAndLossQuery $query): JsonResponse
     {
@@ -27,6 +27,7 @@ final class FinancialReportController extends AbstractController
         return $this->json($query->compute($period));
     }
 
+    #[IsGranted('perm:reports.view')]
     #[Route('/cash-flow', methods: ['GET'])]
     public function cashFlow(Request $request, CashFlowQuery $query): JsonResponse
     {
@@ -37,6 +38,7 @@ final class FinancialReportController extends AbstractController
     }
 
     #[RequiresFeature('excel_export')]
+    #[IsGranted('perm:reports.export')]
     #[Route('/export.xlsx', methods: ['GET'])]
     public function export(
         Request $request,

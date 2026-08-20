@@ -39,15 +39,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'producto')]
 #[ApiResource(
     operations: [
-        new GetCollection(),
-        new Post(),
-        new Get(),
-        new Patch(),
-        new Delete(),
+        new GetCollection(security: "is_granted('perm:catalog.view')"),
+        new Post(security: "is_granted('perm:catalog.create')"),
+        new Get(security: "is_granted('perm:catalog.view')"),
+        new Patch(security: "is_granted('perm:catalog.edit')"),
+        new Delete(security: "is_granted('perm:catalog.delete')"),
         new Get(
             uriTemplate: 'products/{id}/stock/{warehouseId}',
             controller: ProductStockController::class,
             read: false,
+            security: "is_granted('perm:inventory.view')",
         ),
     ],
     normalizationContext: ['groups' => ['product:read']],

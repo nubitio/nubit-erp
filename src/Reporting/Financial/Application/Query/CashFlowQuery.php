@@ -37,6 +37,9 @@ final readonly class CashFlowQuery
     private function computeReal(string $from, string $to): array
     {
         $weeks = [];
+        $toExclusive = new DateTimeImmutable($to)
+            ->modify('+1 day')
+            ->format('Y-m-d');
 
         // Bucket by ISO year-week ('%x-%v') rather than DATE_SUB(..., INTERVAL
         // ... DAY) — the latter isn't valid SQLite syntax, and DATE_FORMAT is
@@ -44,10 +47,10 @@ final readonly class CashFlowQuery
         // unit tests (see TaxSummaryQueryTest).
         $inflows = $this->connection->fetchAllAssociative("SELECT DATE_FORMAT(paid_at, '%x-%v') AS week_key, SUM(amount) AS monto
              FROM sale_payments
-             WHERE paid_at IS NOT NULL AND paid_at BETWEEN :from AND :to
+             WHERE paid_at IS NOT NULL AND paid_at >= :from AND paid_at < :toExclusive
              GROUP BY week_key", [
             'from' => $from,
-            'to' => $to,
+            'toExclusive' => $toExclusive,
         ]);
         foreach ($inflows as $row) {
             $this->addToWeek($weeks, (string) $row['week_key'], 'entradas', (float) $row['monto']);
@@ -55,25 +58,38 @@ final readonly class CashFlowQuery
 
         $outflows = $this->connection->fetchAllAssociative("SELECT DATE_FORMAT(paid_at, '%x-%v') AS week_key, SUM(amount) AS monto
              FROM supplier_payment
-             WHERE paid_at BETWEEN :from AND :to
+             WHERE paid_at >= :from AND paid_at < :toExclusive
              GROUP BY week_key", [
             'from' => $from,
-            'to' => $to,
+            'toExclusive' => $toExclusive,
         ]);
         foreach ($outflows as $row) {
             $this->addToWeek($weeks, (string) $row['week_key'], 'salidas', (float) $row['monto']);
         }
 
-        $cashMovements = $this->connection->fetchAllAssociative("SELECT DATE_FORMAT(created_at, '%x-%v') AS week_key, type, SUM(amount) AS monto
-             FROM cash_movement
-             WHERE created_at BETWEEN :from AND :to
-             GROUP BY week_key, type", [
+        $cashMovements = $this->connection->fetchAllAssociative("SELECT DATE_FORMAT(created_at, '%x-%v') AS week_key, movement_type, SUM(amount) AS monto
+             FROM cash_movements
+             WHERE created_at >= :from AND created_at < :toExclusive
+               AND movement_type IN ('CASH_IN', 'CASH_OUT', 'REFUND_OUT')
+             GROUP BY week_key, movement_type", [
             'from' => $from,
-            'to' => $to,
+            'toExclusive' => $toExclusive,
         ]);
         foreach ($cashMovements as $row) {
-            $bucket = 'income' === $row['type'] ? 'entradas' : 'salidas';
+            $bucket = 'CASH_IN' === $row['movement_type'] ? 'entradas' : 'salidas';
             $this->addToWeek($weeks, (string) $row['week_key'], $bucket, (float) $row['monto']);
+        }
+
+        $reimbursements = $this->connection->fetchAllAssociative("SELECT DATE_FORMAT(reimbursed_at, '%x-%v') AS week_key, SUM(amount) AS monto
+             FROM expense_report
+             WHERE status = 'REIMBURSED'
+               AND reimbursed_at >= :from AND reimbursed_at < :toExclusive
+             GROUP BY week_key", [
+            'from' => $from,
+            'toExclusive' => $toExclusive,
+        ]);
+        foreach ($reimbursements as $row) {
+            $this->addToWeek($weeks, (string) $row['week_key'], 'salidas', (float) $row['monto']);
         }
 
         ksort($weeks);

@@ -28,6 +28,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
  * Integration tests for StockEntryProcessor.
@@ -72,6 +73,9 @@ final class StockEntryProcessorTest extends TestCase
 
     private UnitConversionService $unitConversion;
 
+    /** @var list<string> */
+    private array $grantedPermissions;
+
     protected function setUp(): void
     {
         $this->conn = DriverManager::getConnection([
@@ -85,6 +89,11 @@ final class StockEntryProcessorTest extends TestCase
         $this->em = $this->createMock(EntityManagerInterface::class);
         $this->security = $this->createMock(Security::class);
         $this->policy = $this->createMock(StockValidationPolicyInterface::class);
+        $this->grantedPermissions = [
+            'perm:inventory.adjust',
+            'perm:inventory.transfer',
+            'perm:inventory.cycle_count',
+        ];
 
         $this->unitConversion = new UnitConversionService($this->conn);
 
@@ -110,6 +119,9 @@ final class StockEntryProcessorTest extends TestCase
         // Security: return a stub user
         $user = $this->createStub(User::class);
         $this->security->method('getUser')->willReturn($user);
+        $this->security
+            ->method('isGranted')
+            ->willReturnCallback(fn(string $attribute): bool => in_array($attribute, $this->grantedPermissions, true));
 
         // Policy: allow by default
         $this->policy->method('validateSale')->willReturn(StockValidationResult::allowed());
@@ -377,6 +389,30 @@ final class StockEntryProcessorTest extends TestCase
         $this->expectExceptionMessageMatches('/item/i');
 
         $entry = $this->makeEntry(StockEntryType::RECEIPT, 'wh-1');
+        $this->processor()->process($entry, $this->stubOperation());
+    }
+
+    public function testTransferRequiresTransferPermission(): void
+    {
+        $this->grantedPermissions = ['perm:inventory.adjust'];
+        $entry = $this->makeTransferEntry('wh-1', 'wh-2');
+        $entry->addItem($this->makeItem('prod-a', '1.000000'));
+
+        $this->expectException(AccessDeniedException::class);
+        $this->expectExceptionMessage('inventory.transfer');
+
+        $this->processor()->process($entry, $this->stubOperation());
+    }
+
+    public function testCountCorrectionRequiresCycleCountPermission(): void
+    {
+        $this->grantedPermissions = ['perm:inventory.adjust'];
+        $entry = $this->makeAdjustment('wh-1', 'COUNT_CORRECTION');
+        $entry->addItem($this->makeItem('prod-a', '1.000000'));
+
+        $this->expectException(AccessDeniedException::class);
+        $this->expectExceptionMessage('inventory.cycle_count');
+
         $this->processor()->process($entry, $this->stubOperation());
     }
 

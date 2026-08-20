@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Catalog\Entity\PaymentMethod;
 use App\Contacts\Entity\Customer;
@@ -51,11 +50,15 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     shortName: 'Sale',
     operations: [
-        new GetCollection(),
-        new Get(),
-        new Post(),
-        new Patch(),
-        new Post(uriTemplate: '/sales/{id}/invoice', controller: MakeSaleInvoice::class, name: 'sale_make_invoice'),
+        new GetCollection(security: "is_granted('perm:sales.view')"),
+        new Get(security: "is_granted('perm:sales.view')"),
+        new Post(security: "is_granted('perm:sales.create')"),
+        new Post(
+            uriTemplate: '/sales/{id}/invoice',
+            controller: MakeSaleInvoice::class,
+            security: "is_granted('perm:sales.create')",
+            name: 'sale_make_invoice',
+        ),
         new Post(
             uriTemplate: '/sales/{id}/void',
             controller: VoidSale::class,
@@ -63,12 +66,14 @@ use Symfony\Component\Serializer\Attribute\Groups;
             input: VoidSaleDto::class,
             output: ApiResponse::class,
             deserialize: false,
+            security: "is_granted('perm:sales.void')",
             name: 'sale_void',
         ),
         new Get(
             uriTemplate: '/sales/{id}/print-invoice',
             controller: PrintSaleInvoice::class,
             read: false,
+            security: "is_granted('perm:sales.view')",
             name: 'sale_print_invoice',
         ),
         new Post(
@@ -76,6 +81,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             controller: ReplaceRejectedSaleDocument::class,
             read: false,
             deserialize: false,
+            security: "is_granted('perm:sales.create')",
             name: 'sale_replace_rejected',
         ),
         new Post(
@@ -90,6 +96,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             input: SaleCollectPaymentDto::class,
             output: SaleRecord::class,
             processor: SaleCollectPaymentProcessor::class,
+            security: "is_granted('perm:sales.collect')",
             name: 'sale_collect_payment',
         ),
     ],

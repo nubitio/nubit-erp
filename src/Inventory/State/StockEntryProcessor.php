@@ -22,6 +22,7 @@ use Override;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
  * Handles POST /stock-entries.
@@ -63,6 +64,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
             throw new UnprocessableEntityHttpException('type is required.');
         }
 
+        $this->denyUnlessGranted($data, $type);
         $this->validateEntry($data, $type);
 
         /** @var User|null $user */
@@ -86,6 +88,20 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         });
 
         return $data;
+    }
+
+    private function denyUnlessGranted(StockEntry $entry, StockEntryType $type): void
+    {
+        $permission = 'inventory.adjust';
+        if ($type === StockEntryType::TRANSFER) {
+            $permission = 'inventory.transfer';
+        } elseif ($type === StockEntryType::ADJUSTMENT && $entry->getReason() === 'COUNT_CORRECTION') {
+            $permission = 'inventory.cycle_count';
+        }
+
+        if (!$this->security->isGranted('perm:' . $permission)) {
+            throw new AccessDeniedException(sprintf('Permission "%s" is required.', $permission));
+        }
     }
 
     // ─── Type handlers ────────────────────────────────────────────────────────

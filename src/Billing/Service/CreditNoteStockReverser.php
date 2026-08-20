@@ -22,7 +22,7 @@ use Psr\Log\LoggerInterface;
  *     → delegates to StockVoidReverserInterface, which generates VOID_REVERSAL
  *       movements identical to a Comunicación de Baja.
  *
- *   PARTIAL RETURN (all other codes)
+ *   PARTIAL RETURN (code 07 only)
  *     → generates one RETURN_IN movement per credit note line, using the
  *       line quantity and the warehouse of the original sale.
  *       Only affects TRACKED products (productId must be set on the line).
@@ -33,6 +33,8 @@ final readonly class CreditNoteStockReverser implements CreditNoteStockReverserI
 {
     /** Reason codes that represent a full cancellation — stock reversed via VOID_REVERSAL. */
     private const FULL_VOID_CODES = ['01', '02', '06'];
+
+    private const string PARTIAL_RETURN_CODE = '07';
 
     public function __construct(
         private InventoryService $inventoryService,
@@ -59,6 +61,15 @@ final readonly class CreditNoteStockReverser implements CreditNoteStockReverserI
         if (in_array($reasonCode, self::FULL_VOID_CODES, true)) {
             // Full cancellation — reuse the sale void reversal (finds SALE_OUT by sale_id)
             $this->stockVoidReverser->reverse($saleRecord);
+
+            return;
+        }
+
+        if ($reasonCode !== self::PARTIAL_RETURN_CODE) {
+            $this->logger->info('CreditNoteStockReverser: reason does not represent a physical return', [
+                'credit_note_id' => $creditNote->getId(),
+                'reason_code' => $reasonCode,
+            ]);
 
             return;
         }
@@ -121,6 +132,8 @@ final readonly class CreditNoteStockReverser implements CreditNoteStockReverserI
                     'product_id' => $productId,
                     'error' => $e->getMessage(),
                 ]);
+
+                throw $e;
             }
         }
 

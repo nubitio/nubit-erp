@@ -75,13 +75,13 @@ final readonly class StockVoidReverser implements StockVoidReverserInterface
                     note: 'Reversa por anulación de venta ' . $saleId,
                 ));
             } catch (\Throwable $e) {
-                // Log but don't abort — partial reversals are better than none.
-                // The reconciliation service will detect any remaining drift.
                 $this->logger->error('StockVoidReverser: failed to reverse movement', [
                     'movement_id' => $row['id'],
                     'sale_id' => $saleId,
                     'error' => $e->getMessage(),
                 ]);
+
+                throw $e;
             }
         }
 

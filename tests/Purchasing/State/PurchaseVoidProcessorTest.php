@@ -14,6 +14,8 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\DBAL\Connection;
 
 /**
  * Unit tests for PurchaseVoidProcessor.
@@ -37,11 +39,17 @@ final class PurchaseVoidProcessorTest extends TestCase
     /** @var PurchaseOrderReceiptService&MockObject */
     private MockObject $purchaseOrderReceiptService;
 
+    /** @var EntityManagerInterface&MockObject */
+    private EntityManagerInterface $entityManager;
+
     protected function setUp(): void
     {
         $this->persist = $this->createMock(ProcessorInterface::class);
         $this->voidService = $this->createMock(PurchaseVoidServiceInterface::class);
         $this->purchaseOrderReceiptService = $this->createMock(PurchaseOrderReceiptService::class);
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $connection = $this->createStub(Connection::class);
+        $this->entityManager->method('getConnection')->willReturn($connection);
     }
 
     public function testVoidsAndPersistsPurchase(): void
@@ -135,6 +143,11 @@ final class PurchaseVoidProcessorTest extends TestCase
 
     private function processor(): PurchaseVoidProcessor
     {
-        return new PurchaseVoidProcessor($this->persist, $this->voidService, $this->purchaseOrderReceiptService);
+        return new PurchaseVoidProcessor(
+            $this->persist,
+            $this->voidService,
+            $this->purchaseOrderReceiptService,
+            $this->entityManager,
+        );
     }
 }

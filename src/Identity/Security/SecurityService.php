@@ -45,4 +45,10 @@ final readonly class SecurityService implements Security
 
         return AuthUserDto::createFromJWTPayload($jwtPayload);
     }
+
+    #[Override]
+    public function hasPermission(string $permission): bool
+    {
+        return $this->security->isGranted('perm:' . $permission);
+    }
 }

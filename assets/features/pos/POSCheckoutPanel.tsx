@@ -34,6 +34,7 @@ interface POSCheckoutPanelProps {
   updateQuantity: (id: string, nextQuantity: number) => void | Promise<void>;
   updateLinePrice: (id: string, nextPrice: number) => void;
   allowLinePriceOverride?: boolean;
+  allowDiscount?: boolean;
   updateLineDescription: (id: string, lineDescription: string) => void;
   removeFromCart: (id: string) => void;
   formatMoney: (value: number) => string;
@@ -85,6 +86,7 @@ export function POSCheckoutPanel({
   updateQuantity,
   updateLinePrice,
   allowLinePriceOverride = true,
+  allowDiscount = true,
   updateLineDescription,
   removeFromCart,
   formatMoney,
@@ -496,26 +498,28 @@ export function POSCheckoutPanel({
                 />
               </div>
 
-              <div className="pos-footer-option-row">
-                <span className="pos-discount-label">Descuento</span>
-                <div className="pos-discount-presets" role="group" aria-label="Descuento">
-                  <Chip
-                    label="Ninguno"
-                    active={discountPercent === 0}
-                    size="sm"
-                    onClick={() => setDiscountPercent(0)}
-                  />
-                  {[5, 10, 15, 20].map((pct) => (
+              {allowDiscount && (
+                <div className="pos-footer-option-row">
+                  <span className="pos-discount-label">Descuento</span>
+                  <div className="pos-discount-presets" role="group" aria-label="Descuento">
                     <Chip
-                      key={pct}
-                      label={`${pct}%`}
-                      active={discountPercent === pct}
+                      label="Ninguno"
+                      active={discountPercent === 0}
                       size="sm"
-                      onClick={() => setDiscountPercent(discountPercent === pct ? 0 : pct)}
+                      onClick={() => setDiscountPercent(0)}
                     />
-                  ))}
+                    {[5, 10, 15, 20].map((pct) => (
+                      <Chip
+                        key={pct}
+                        label={`${pct}%`}
+                        active={discountPercent === pct}
+                        size="sm"
+                        onClick={() => setDiscountPercent(discountPercent === pct ? 0 : pct)}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {currency === 'USD' && (
                 <div className="pos-footer-option-row">

@@ -142,11 +142,22 @@ final class SaleProcessorTest extends TestCase
     /** @var SunatCatalogRepository&MockObject */
     private SunatCatalogRepository $sunatCatalogRepository;
 
+    /** @var list<string> */
+    private array $grantedPermissions;
+
     protected function setUp(): void
     {
         $this->persistProcessor = $this->createMock(ProcessorInterface::class);
         $this->removeProcessor = $this->createMock(ProcessorInterface::class);
         $this->security = $this->createMock(Security::class);
+        $this->grantedPermissions = [
+            'pos.discount',
+            'pos.price_override',
+            'pos.offline_sale',
+        ];
+        $this->security->method('hasPermission')->willReturnCallback(
+            fn(string $permission): bool => in_array($permission, $this->grantedPermissions, true),
+        );
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->saleInvoicing = $this->createMock(InvoiceCreatorInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
@@ -242,6 +253,35 @@ final class SaleProcessorTest extends TestCase
         $result = $this->buildAndRunProcessor($sale, new Post());
 
         self::assertSame($sale, $result);
+    }
+
+    public function testOperationalSaleWithoutPaymentMethodStillRequiresDiscountPermission(): void
+    {
+        $this->grantedPermissions = [];
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
+        $sale->setDescuento('10');
+
+        $this->expectException(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class);
+        $this->expectExceptionMessage('pos.discount');
+
+        $this->buildAndRunProcessor($sale, new Post());
+    }
+
+    public function testOperationalSaleRejectsLineWithoutProduct(): void
+    {
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
+        $item = new SaleItemRecord();
+        $item->setNetAmount('10.00');
+        $item->setQty('1');
+        $item->setUnitPrice('10.00');
+        $item->setGrossAmount('10.00');
+        $item->setNameSnapshot('Item');
+        $sale->addSaleItemRecord($item);
+        $sale->setPayments([['payment_method_id' => 1, 'amount' => '10.00']]);
+
+        $this->expectException(ValidationException::class);
+
+        $this->buildAndRunProcessor($sale, new Post());
     }
 
     // -------------------------------------------------------------------------
@@ -636,6 +676,9 @@ final class SaleProcessorTest extends TestCase
         $item->setUnitPrice('10.00');
         $item->setGrossAmount('10.00');
         $item->setNameSnapshot('Item');
+        $product = new Product();
+        $product->setSalePrice('10.00');
+        $item->setProduct($product);
         $sale->addSaleItemRecord($item);
         $sale->setPayments([['payment_method_id' => 1, 'amount' => '10.00']]);
 

@@ -17,6 +17,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Attribute\Auditable;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -36,20 +37,24 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 #[ORM\Entity(repositoryClass: StockEntryRepository::class)]
 #[ORM\Table(name: 'stock_entries')]
+#[Auditable]
 #[ApiResource(
     shortName: 'StockEntry',
     operations: [
-        new GetCollection(),
-        new Get(),
-        new Get(uriTemplate: '/stock-entries/{id}/items', normalizationContext: ['groups' => [
-            'stock_entry_items:read',
-        ]]),
+        new GetCollection(security: "is_granted('perm:inventory.view')"),
+        new Get(security: "is_granted('perm:inventory.view')"),
+        new Get(
+            uriTemplate: '/stock-entries/{id}/items',
+            normalizationContext: ['groups' => [
+                'stock_entry_items:read',
+            ]],
+            security: "is_granted('perm:inventory.view')",
+        ),
         new Post(processor: StockEntryProcessor::class),
     ],
     normalizationContext: ['groups' => ['stock_entry:read']],
     denormalizationContext: ['groups' => ['stock_entry:write']],
     filters: [DataGridFilter::class],
-    security: "is_granted('ROLE_USER')",
     mercure: false,
 )]
 class StockEntry

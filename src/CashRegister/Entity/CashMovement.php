@@ -33,9 +33,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     normalizationContext: ['groups' => ['cash_movement:read']],
     operations: [
-        new GetCollection(provider: CashMovementCollectionProvider::class),
-        new Get(provider: CashMovementItemProvider::class),
-        new Post(processor: CashMovementWriteProcessor::class),
+        new GetCollection(provider: CashMovementCollectionProvider::class, security: "is_granted('perm:cash.view')"),
+        new Get(provider: CashMovementItemProvider::class, security: "is_granted('perm:cash.view')"),
+        new Post(processor: CashMovementWriteProcessor::class, security: "is_granted('perm:cash.movement')"),
     ],
     mercure: true,
 )]

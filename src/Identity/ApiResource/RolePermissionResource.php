@@ -16,13 +16,13 @@ use App\Identity\State\RolePermissionProvider;
     operations: [
         new GetCollection(
             uriTemplate: '/role-permissions/{role_id}',
-            security: "is_granted('ROLE_ADMIN')",
+            security: "is_granted('perm:roles.view')",
             output: RolePermissionModuleDto::class,
             provider: RolePermissionProvider::class,
         ),
         new Post(
             uriTemplate: '/role-permissions',
-            security: "is_granted('ROLE_ADMIN')",
+            security: "is_granted('perm:roles.assign')",
             input: RolePermissionResource::class,
             processor: RolePermissionProcessor::class,
         ),

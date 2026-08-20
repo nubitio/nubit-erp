@@ -6,11 +6,9 @@ namespace App\CashRegister\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
-use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Dto\CashRegisterCloseResponseDto;
@@ -33,11 +31,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Table(name: 'cash_sessions')]
 #[ApiResource(
     operations: [
-        new GetCollection(),
-        new Post(),
-        new Get(),
-        new Patch(),
-        new Delete(),
+        new GetCollection(security: "is_granted('perm:cash.view')"),
+        new Get(security: "is_granted('perm:cash.view')"),
         new GetCollection(
             uriTemplate: '/cash-sessions/{id}/movements',
             uriVariables: [
@@ -47,6 +42,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             normalizationContext: ['groups' => ['cash_movement:read']],
             output: CashMovement::class,
             provider: CashSessionMovementsProvider::class,
+            security: "is_granted('perm:cash.view')",
         ),
         new GetCollection(
             uriTemplate: '/cash-sessions/{id}/summary',
@@ -54,6 +50,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             normalizationContext: ['groups' => ['cash_closure_summary:read']],
             output: CashSessionClosureSummaryDto::class,
             provider: CashSessionClosureSummaryProvider::class,
+            security: "is_granted('perm:cash.view')",
         ),
         new Get(
             uriTemplate: '/cash-sessions/{id}/x-report',
@@ -61,6 +58,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             normalizationContext: ['groups' => ['cash_x_report:read']],
             output: CashSessionXReportDto::class,
             provider: CashSessionXReportProvider::class,
+            security: "is_granted('perm:cash.view')",
         ),
         new Post(
             uriTemplate: '/cash-sessions/{id}/close',
@@ -69,6 +67,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             output: CashRegisterCloseResponseDto::class,
             normalizationContext: ['groups' => ['cash_register_close:read']],
             processor: CashRegisterCloseProcessor::class,
+            security: "is_granted('perm:cash.close')",
         ),
     ],
     normalizationContext: ['groups' => ['cash_session:read']],

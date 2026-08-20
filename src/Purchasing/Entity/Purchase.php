@@ -25,12 +25,14 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Attribute\Auditable;
 use Nubit\ApiPlatform\Attribute\SoftDeletable;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[SoftDeletable]
+#[Auditable]
 #[ORM\Entity(repositoryClass: PurchaseRepository::class)]
 #[ORM\Table(name: 'goods_receipts')]
 #[ORM\Index(name: 'idx_goods_receipts_branch_issued', columns: ['branch_id', 'issued_at'])]
@@ -42,13 +44,21 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ApiResource(
     shortName: 'Purchase',
     operations: [
-        new GetCollection(),
-        new Get(),
-        new Post(),
-        new Patch(denormalizationContext: ['groups' => [
-            'purchase:admin_patch',
-        ]], description: 'Update administrative fields only (note, supplier). Stock-affecting fields are immutable.'),
-        new Delete(processor: PurchaseVoidProcessor::class, output: false),
+        new GetCollection(security: "is_granted('perm:purchases.view')"),
+        new Get(security: "is_granted('perm:purchases.view')"),
+        new Post(security: "is_granted('perm:purchases.create')"),
+        new Patch(
+            denormalizationContext: ['groups' => [
+                'purchase:admin_patch',
+            ]],
+            security: "is_granted('perm:purchases.edit')",
+            description: 'Update administrative fields only (note, supplier). Stock-affecting fields are immutable.',
+        ),
+        new Delete(
+            processor: PurchaseVoidProcessor::class,
+            output: false,
+            security: "is_granted('perm:purchases.void')",
+        ),
     ],
     normalizationContext: ['groups' => ['purchase:read']],
     denormalizationContext: ['groups' => ['purchase:write']],

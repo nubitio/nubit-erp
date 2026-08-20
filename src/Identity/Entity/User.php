@@ -32,12 +32,29 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'usuario')]
 #[ApiResource(
     operations: [
-        new GetCollection(),
-        new Post(validationContext: ['groups' => ['Default', 'user:create']], processor: UserPasswordHasher::class),
-        new Get(),
-        new Put(processor: UserPasswordHasher::class),
-        new Patch(processor: UserPasswordHasher::class),
-        new Delete(processor: UserSoftDeleteProcessor::class, output: false),
+        new GetCollection(security: "is_granted('perm:users.view')"),
+        new Post(
+            validationContext: ['groups' => ['Default', 'user:create']],
+            processor: UserPasswordHasher::class,
+            security: "is_granted('perm:users.create') and is_granted('perm:roles.assign')",
+            securityPostDenormalize: "object.getRole().getId() > 1 or is_granted('ROLE_SUPER_ADMIN')",
+        ),
+        new Get(security: "is_granted('perm:users.view')"),
+        new Put(
+            processor: UserPasswordHasher::class,
+            security: "is_granted('perm:users.edit')",
+            securityPostDenormalize: "(object.getRole() == previous_object.getRole() or is_granted('perm:roles.assign')) and (object.getRole().getId() > 1 or is_granted('ROLE_SUPER_ADMIN'))",
+        ),
+        new Patch(
+            processor: UserPasswordHasher::class,
+            security: "is_granted('perm:users.edit')",
+            securityPostDenormalize: "(object.getRole() == previous_object.getRole() or is_granted('perm:roles.assign')) and (object.getRole().getId() > 1 or is_granted('ROLE_SUPER_ADMIN'))",
+        ),
+        new Delete(
+            processor: UserSoftDeleteProcessor::class,
+            output: false,
+            security: "is_granted('perm:users.delete')",
+        ),
     ],
     normalizationContext: [
         'groups' => ['user:read'],

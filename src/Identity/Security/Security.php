@@ -11,4 +11,6 @@ interface Security
     public function isAuthenticated(): bool;
 
     public function connectedUser(): ?AuthUserDto;
+
+    public function hasPermission(string $permission): bool;
 }

@@ -29,6 +29,7 @@ use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use App\Identity\Repository\RoleRepository;
 use App\Identity\Repository\UserRepository;
+use App\Identity\Security\PermissionCatalog;
 use App\Inventory\Entity\LogisticOperation;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Repository\LogisticOperationRepository;
@@ -107,6 +108,7 @@ readonly class InitialSetupService
         $this->connection->beginTransaction();
         try {
             $superAdminRole = $this->ensureDefaultRoles();
+            $this->seedDefaultRolePermissions();
 
             $company = new Company()
                 ->setRuc($input->companyRuc)
@@ -180,6 +182,35 @@ readonly class InitialSetupService
         }
 
         return $superAdmin;
+    }
+
+    private function seedDefaultRolePermissions(): void
+    {
+        foreach (PermissionCatalog::keys() as $permission) {
+            $this->connection->executeStatement('INSERT IGNORE INTO role_permission (role_id, permission) VALUES (2, ?)', [
+                $permission,
+            ]);
+        }
+
+        $cashierPermissions = [
+            'sales.view',
+            'sales.create',
+            'sales.collect',
+            'pos.access',
+            'pos.offline_sale',
+            'cash.view',
+            'cash.open',
+            'cash.close',
+            'inventory.view',
+            'catalog.view',
+            'customers.view',
+            'customers.create',
+        ];
+        foreach ($cashierPermissions as $permission) {
+            $this->connection->executeStatement('INSERT IGNORE INTO role_permission (role_id, permission) VALUES (3, ?)', [
+                $permission,
+            ]);
+        }
     }
 
     private function seedSettings(): void

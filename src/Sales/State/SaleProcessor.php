@@ -34,6 +34,7 @@ use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Uid\Uuid;
 
 /**
@@ -108,9 +109,8 @@ readonly class SaleProcessor implements ProcessorInterface
         $resolvedCashSessionId = null;
         $requireOpenSession = false;
         $request = $context['request'] ?? null;
-        // Offline-sale mode skips stock validation because the physical transaction already occurred.
-        // To prevent casual abuse of this bypass, require a well-formed Idempotency-Key alongside
-        // the X-Offline-Sale flag — the outbox always sends both together.
+        // Offline mode marks an idempotent outbox replay; it never weakens stock or commercial validation.
+        // A well-formed key is required so retries cannot duplicate the physical transaction.
         $offlineSaleHeader = $request instanceof Request && $request->headers->get('X-Offline-Sale') === 'true';
         $idempotencyKey = $request instanceof Request ? $request->headers->get('Idempotency-Key') ?? '' : '';
         $isOfflineSale =
@@ -122,6 +122,9 @@ readonly class SaleProcessor implements ProcessorInterface
                 'idempotency_key' => $idempotencyKey ?: '(empty)',
                 'remote_addr' => $request->getClientIp(),
             ]);
+        }
+        if ($isOfflineSale && !$this->security->hasPermission('pos.offline_sale')) {
+            throw new AccessDeniedException('Permission "pos.offline_sale" is required to synchronize offline sales.');
         }
 
         // Idempotent replay: the offline outbox resends the exact same
@@ -221,6 +224,10 @@ readonly class SaleProcessor implements ProcessorInterface
             $this->logger->debug('Sale values filled');
         }
 
+        if ($isOperationalSale) {
+            $this->validateCommercialControls($data);
+        }
+
         $this->logger->info('Calculating sale totals');
         $subtotal = BigDecimal::zero();
         $itemCount = 0;
@@ -268,7 +275,7 @@ readonly class SaleProcessor implements ProcessorInterface
             $data->setHasInvoice(false);
         }
 
-        $this->inventoryOrchestrator->process($data, $user, $isOfflineSale);
+        $this->inventoryOrchestrator->process($data, $user, false);
 
         if ($isNew) {
             $this->logger->info('Creating new sale record with timestamp');
@@ -453,14 +460,30 @@ readonly class SaleProcessor implements ProcessorInterface
                 $item->setProduct($product);
             }
 
-            $qty = (float) ($itemData['qty'] ?? $itemData['cantidad'] ?? 1);
+            $rawQty = $itemData['qty'] ?? $itemData['cantidad'] ?? 1;
             $unitPrice = $itemData['unitPrice'] ?? $itemData['precio_unitario'] ?? '0.00';
             $discount = $itemData['discount'] ?? $itemData['descuento'] ?? null;
+
+            if (!is_numeric($rawQty) || (float) $rawQty <= 0) {
+                throw ValidationException::withErrors(['qty' => ['La cantidad debe ser un número mayor que cero.']]);
+            }
+            if (!is_numeric($unitPrice) || (float) $unitPrice < 0) {
+                throw ValidationException::withErrors(['unitPrice' => [
+                    'El precio unitario debe ser un número mayor o igual que cero.',
+                ]]);
+            }
+
+            $qty = (float) $rawQty;
 
             // Resolve discountPercent: prefer explicit percent over legacy flat amount.
             $discountPercent = $itemData['discountPercent'] ?? $itemData['descuento_porcentaje'] ?? null;
 
             if ($discountPercent !== null) {
+                if (!is_numeric($discountPercent)) {
+                    throw ValidationException::withErrors([
+                        'discountPercent' => ['El porcentaje de descuento debe ser numérico.'],
+                    ]);
+                }
                 $percentValue = (float) $discountPercent;
 
                 if ($percentValue < 0 || $percentValue > 100) {
@@ -481,10 +504,19 @@ readonly class SaleProcessor implements ProcessorInterface
                 $discount = Money::toString($discountAmount);
             }
 
-            $discount = $discount ?? '0.00';
+            $discount = (string) ($discount ?? '0.00');
 
             // gross = qty × unitPrice
             $grossAmount = Money::money(BigDecimal::of((string) $unitPrice)->multipliedBy($qty));
+            if (
+                !is_numeric($discount)
+                || (float) $discount < 0
+                || Money::money($discount)->isGreaterThan($grossAmount)
+            ) {
+                throw ValidationException::withErrors([
+                    'discount' => ['El descuento de línea debe estar entre cero y el importe bruto de la línea.'],
+                ]);
+            }
             // net = gross − discount  (always computed server-side; any client-supplied total is ignored
             // to prevent price manipulation via the write-items payload)
             $itemTotal = Money::toString(Money::money($grossAmount)->minus(Money::money($discount)));
@@ -532,6 +564,60 @@ readonly class SaleProcessor implements ProcessorInterface
         }
 
         return $items;
+    }
+
+    private function validateCommercialControls(SaleRecord $sale): void
+    {
+        $globalDiscount = $sale->getDescuento() ?? '0';
+        if (!is_numeric($globalDiscount) || (float) $globalDiscount < 0 || (float) $globalDiscount > 100) {
+            throw ValidationException::withErrors([
+                'discountPercent' => ['El descuento global debe estar entre 0 y 100.'],
+            ]);
+        }
+
+        $hasDiscount = (float) $globalDiscount > 0;
+        $hasPriceOverride = false;
+        foreach ($sale->getSaleItemRecords() as $item) {
+            $hasDiscount = $hasDiscount || (float) $item->getDiscountAmount() > 0;
+            $product = $item->getProduct();
+            if (!$product instanceof Product) {
+                throw ValidationException::withErrors([
+                    'product' => ['Cada línea de venta debe tener un producto válido.'],
+                ]);
+            }
+            if (!$this->isAuthorizedPrice($sale->getCustomer(), $product, $item->getUnitPrice())) {
+                $hasPriceOverride = true;
+            }
+        }
+
+        if ($hasDiscount && !$this->security->hasPermission('pos.discount')) {
+            throw new AccessDeniedException('Permission "pos.discount" is required to apply discounts.');
+        }
+        if ($hasPriceOverride && !$this->security->hasPermission('pos.price_override')) {
+            throw new AccessDeniedException('Permission "pos.price_override" is required to modify prices.');
+        }
+    }
+
+    private function isAuthorizedPrice(?Customer $customer, Product $product, string $unitPrice): bool
+    {
+        $expectedPrice = $product->getSalePrice();
+        $priceList = $customer?->getPriceList();
+        if ($priceList !== null && $priceList->getId() !== null) {
+            $explicitPrice = $this->entityManager->getConnection()->fetchOne('SELECT price FROM price_list_detail WHERE price_list_id = :priceList AND product_id = :product', [
+                'priceList' => $priceList->getId(),
+                'product' => $product->getId(),
+            ]);
+            if ($explicitPrice !== false) {
+                $expectedPrice = (string) $explicitPrice;
+            } else {
+                $multiplier = $priceList->getMultiplier();
+                if ($multiplier !== null) {
+                    $expectedPrice = (string) BigDecimal::of($expectedPrice)->multipliedBy($multiplier);
+                }
+            }
+        }
+
+        return BigDecimal::of($unitPrice)->compareTo(BigDecimal::of($expectedPrice)) === 0;
     }
 
     /**

@@ -16,6 +16,7 @@ use App\Billing\Service\InvoiceCalculator;
 use App\Billing\Service\InvoiceLineAmounts;
 use App\Billing\Service\InvoiceLineInput;
 use App\Billing\Service\SaleV2Loader;
+use App\Billing\Shared\Enum\CreditNoteReason;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Entity\VoucherSeries;
@@ -40,6 +41,46 @@ class TaxDocumentRepository extends ServiceEntityRepository
         private readonly SaleV2Loader $saleV2Loader,
     ) {
         parent::__construct($registry, TaxDocument::class);
+    }
+
+    public function getReturnedQuantity(TaxDocument $relatedDocument, int $lineNumber): float
+    {
+        return (float) $this
+            ->getEntityManager()
+            ->createQueryBuilder()
+            ->select('COALESCE(SUM(line.quantity), 0)')
+            ->from(TaxDocumentLine::class, 'line')
+            ->innerJoin('line.taxDocument', 'creditNote')
+            ->where('creditNote.relatedTaxDocument = :relatedDocument')
+            ->andWhere('creditNote.documentType = :documentType')
+            ->andWhere('creditNote.reasonCode = :reasonCode')
+            ->andWhere('creditNote.voidTicket IS NULL')
+            ->andWhere('creditNote.voidCorrelation IS NULL')
+            ->andWhere('line.lineNumber = :lineNumber')
+            ->setParameter('relatedDocument', $relatedDocument)
+            ->setParameter('documentType', '07')
+            ->setParameter('reasonCode', CreditNoteReason::DEVOLUCION_ITEM->value)
+            ->setParameter('lineNumber', $lineNumber)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function hasAnnullingCreditNote(TaxDocument $relatedDocument): bool
+    {
+        return (int) $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('COUNT(creditNote.id)')
+            ->from(TaxDocument::class, 'creditNote')
+            ->where('creditNote.relatedTaxDocument = :relatedDocument')
+            ->andWhere('creditNote.documentType = :documentType')
+            ->andWhere('creditNote.reasonCode IN (:reasonCodes)')
+            ->andWhere('creditNote.voidTicket IS NULL')
+            ->andWhere('creditNote.voidCorrelation IS NULL')
+            ->setParameter('relatedDocument', $relatedDocument)
+            ->setParameter('documentType', '07')
+            ->setParameter('reasonCodes', ['01', '02', '06'])
+            ->getQuery()
+            ->getSingleScalarResult() > 0;
     }
 
     /**

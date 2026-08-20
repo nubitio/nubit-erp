@@ -9,6 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Purchasing\Entity\Purchase;
 use App\Purchasing\Service\PurchaseOrderReceiptService;
 use App\Purchasing\State\PurchaseVoidServiceInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -38,6 +39,7 @@ final readonly class PurchaseVoidProcessor implements ProcessorInterface
         private ProcessorInterface $persistProcessor,
         private PurchaseVoidServiceInterface $purchaseVoidService,
         private PurchaseOrderReceiptService $purchaseOrderReceiptService,
+        private EntityManagerInterface $entityManager,
     ) {}
 
     #[Override]
@@ -51,18 +53,35 @@ final readonly class PurchaseVoidProcessor implements ProcessorInterface
             throw new UnprocessableEntityHttpException('Esta compra ya fue anulada.');
         }
 
-        // Reverse stock first — if it fails, the purchase record stays intact
-        $this->purchaseVoidService->reverse($data);
-
-        if ($data->getPurchaseOrder() !== null) {
-            $this->purchaseOrderReceiptService->revertReceipt($data);
+        $connection = $this->entityManager->getConnection();
+        $managesTransaction = !$connection->isTransactionActive();
+        if ($managesTransaction) {
+            $connection->beginTransaction();
         }
 
-        // Mark as voided
-        $data->setStatus('VOIDED');
-        $data->setDeletedAt(new \DateTime());
+        try {
+            // Reverse stock first — if it fails, the purchase record stays intact
+            $this->purchaseVoidService->reverse($data);
 
-        $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+            if ($data->getPurchaseOrder() !== null) {
+                $this->purchaseOrderReceiptService->revertReceipt($data);
+            }
+
+            // Mark as voided
+            $data->setStatus('VOIDED');
+            $data->setDeletedAt(new \DateTime());
+
+            $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+            if ($managesTransaction) {
+                $connection->commit();
+            }
+        } catch (\Throwable $exception) {
+            if ($managesTransaction && $connection->isTransactionActive()) {
+                $connection->rollBack();
+            }
+
+            throw $exception;
+        }
 
         return null;
     }

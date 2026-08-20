@@ -26,6 +26,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Attribute\Auditable;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
@@ -42,9 +43,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Index(name: 'IDX_TAX_DOCUMENT_CUSTOMER', columns: ['customer_id'])]
 #[ORM\Index(name: 'IDX_TAX_DOCUMENT_SALE_ID', columns: ['sale_id'])]
 #[ORM\Index(name: 'idx_tax_document_sunat_status', columns: ['sunat_status'])]
+#[Auditable]
 #[ApiResource(
     operations: [
-        new GetCollection(provider: TaxDocumentProvider::class),
+        new GetCollection(provider: TaxDocumentProvider::class, security: "is_granted('perm:sales.view')"),
         new GetCollection(
             uriTemplate: '/sales/{saleId}/tax-documents',
             uriVariables: [
@@ -52,35 +54,48 @@ use Symfony\Component\Serializer\Attribute\Groups;
             ],
             provider: TaxDocumentProvider::class,
             normalizationContext: ['groups' => ['invoice:read']],
+            security: "is_granted('perm:sales.view')",
         ),
-        new Post(processor: TaxDocumentProcessor::class),
-        new Get(uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: [
-            'id',
-        ])], provider: TaxDocumentProvider::class),
+        new Post(
+            processor: TaxDocumentProcessor::class,
+            security: "is_granted('perm:sales.create')",
+            securityPostDenormalize: "object.getReasonCode() == null or is_granted('perm:sales.void')",
+        ),
+        new Get(
+            uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: [
+                'id',
+            ])],
+            provider: TaxDocumentProvider::class,
+            security: "is_granted('perm:sales.view')",
+        ),
         new Get(
             uriTemplate: '/tax-documents/{id}/consult',
             uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: ['id'])],
             controller: ConsultInvoice::class,
             read: false,
             deserialize: false,
+            security: "is_granted('perm:sales.view')",
         ),
         new Post(
             uriTemplate: '/tax-documents/{id}/validate',
             controller: ValidateInvoice::class,
             read: false,
             deserialize: false,
+            security: "is_granted('perm:sales.create')",
         ),
         new Post(
             uriTemplate: '/tax-documents/{id}/send',
             controller: SendTaxDocument::class,
             read: false,
             deserialize: false,
+            security: "is_granted('perm:sales.create')",
         ),
         new Post(
             uriTemplate: '/tax-documents/{id}/email',
             controller: SendInvoiceEmail::class,
             read: false,
             deserialize: false,
+            security: "is_granted('perm:sales.view')",
         ),
     ],
     normalizationContext: ['groups' => ['invoice:read', 'creditnote:read']],
