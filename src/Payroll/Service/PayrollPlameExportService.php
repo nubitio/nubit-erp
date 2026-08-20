@@ -30,38 +30,38 @@ use Brick\Math\BigDecimal;
  * codes (601/606/608/609) and all discount codes only populate "monto
  * pagado/descontado", leaving "monto devengado" at zero.
  *
- * ⚠️ The concept codes below (Tabla 22) are NOT independently confirmed —
- * the Anexo references "Tabla 22" for the full code catalog but that
- * table itself wasn't available during this phase's research. Only
- * 0601/0606/0608 are evidenced by the Anexo's own text (it states these
- * three codes require the worker to be on the AFP/Sistema Privado de
- * Pensiones, which matches aporte obligatorio/prima de seguro/comisión).
- * The ONP and earnings codes are placeholders. MUST be validated against
- * Tabla 22 by an accountant/payroll specialist before this export is used
- * for a real PLAME declaration.
+ * Concept codes below are sourced from SUNAT's Tabla N° 22 "Definición
+ * Conceptos PLAME" (orientacion.sunat.gob.pe, retrieved for this phase):
+ * "Descuentos – Trabajador" / "Tributos y Aportes del Trabajador" section
+ * for 0601/0606/0607/0608 (confirms the Estructura 18 Anexo's own note
+ * that 0601/0606/0608/0609 require AFP/Sistema Privado de Pensiones
+ * membership), and "Ing. Gratificaciones/Aguinaldos" + "Conceptos varios"
+ * sections for 0121/0401/0904. `CONCEPT_BONIFICACION_EXTRAORDINARIA` uses
+ * the "Ley 29351" code since Ley 30334 amends 29351 in place rather than
+ * introducing a new code. These are still worth a final sanity check by
+ * an accountant/payroll specialist before a real PLAME declaration, since
+ * Tabla 22 spans 34 pages and only the entries relevant to this module
+ * were reviewed.
  */
 final readonly class PayrollPlameExportService
 {
     private const string FORM_CODE = '0601';
 
-    // Evidenced by the Anexo's own notes (require AFP/SPP membership).
-    private const string CONCEPT_AFP_MANDATORY = '0601';
+    private const string CONCEPT_AFP_COMMISSION = '0601'; // Sistema Privado de Pensiones – Comisión (AFP) porcentual.
 
-    private const string CONCEPT_AFP_INSURANCE = '0606';
+    private const string CONCEPT_AFP_INSURANCE = '0606'; // Prima de seguro AFP.
 
-    private const string CONCEPT_AFP_COMMISSION = '0608';
+    private const string CONCEPT_ONP = '0607'; // Sistema Nacional de Pensiones – DL 19990 (ONP).
 
-    // NOT evidenced by the Anexo excerpt available during this phase —
-    // placeholders pending Tabla 22 confirmation.
-    private const string CONCEPT_EARNINGS_REGULAR = '0101';
+    private const string CONCEPT_AFP_MANDATORY = '0608'; // Sistema Privado de Pensiones – Aportación obligatoria.
 
-    private const string CONCEPT_EARNINGS_GRATIFICATION = '0301';
+    private const string CONCEPT_EARNINGS_REGULAR = '0121'; // Remuneración o jornal básico.
 
-    private const string CONCEPT_EARNINGS_CTS = '0401';
+    private const string CONCEPT_EARNINGS_GRATIFICATION = '0401'; // Gratificaciones de fiestas patrias y navidad.
 
-    private const string CONCEPT_ONP = '0602';
+    private const string CONCEPT_EARNINGS_CTS = '0904'; // Compensación por tiempo de servicios (CTS).
 
-    private const string CONCEPT_BONIFICACION_EXTRAORDINARIA = '0302';
+    private const string CONCEPT_BONIFICACION_EXTRAORDINARIA = '0312'; // Bonificación extraordinaria temporal – Ley 29351 (modificada por Ley 30334).
 
     public function __construct(
         private PayslipEntryRepository $payslipEntryRepository,
