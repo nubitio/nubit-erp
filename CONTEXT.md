@@ -9,26 +9,16 @@
 eFact is a **modular monolith with strict bounded contexts** (see [ADR-001](docs/adr/ADR-001-modular-monolith-strict-bounded-contexts.md)).
 
 - One deployable unit; contexts enforced by namespace boundaries, not network boundaries.
-- Cross-context communication exclusively via **Symfony Messenger domain events**. No context may directly call a service from another context's Application or Domain layer.
-- Migration strategy: **strangler-fig by context**. Pilot context: **CashRegister**.
+- Cross-context communication via **Symfony Messenger domain events**, with one declared exception: `Billing`/`Sales`/`Inventory`/`CashRegister` may call each other's Application services directly and synchronously for the sale → stock → fiscal-document → cash-movement path only. See [ADR-001](docs/adr/ADR-001-modular-monolith-strict-bounded-contexts.md)'s 2026-08-19 amendment for the exact scope — everything outside that path still goes through events.
+- Migration strategy: **strangler-fig by context**. Pilot context: **CashRegister** — but see [ADR-004](docs/adr/ADR-004-cashregister-strangler-fig-decisions.md)'s 2026-08-19 amendment: most of that pilot's decisions were not actually implemented. Don't assume the `CashSession` aggregate model described there is the live one without checking.
 
 ### Module Responsibilities
 
-| Module | Responsibility |
-|---|---|
-| `ControlPlane` | Tenant registry, commercial plans, SUNAT certificate lifecycle, provisioning |
-| `Settings` | TenantRuntimeConfig, VerticalPresets, Capabilities |
-| `Contacts` | Unified partner registry (customers, suppliers, employees) with role assignments |
-| `Catalog` | Products, variants, price lists, tax rules |
-| `Inventory` | Stock ledger (append-only movements), warehouse management |
-| `Sales` | Orders, payments — separated from tax document issuance |
-| `Billing` | Tax documents (boletas, facturas), SUNAT/Lycet submissions — immutable |
-| `CashRegister` | Sessions, cash movements, reconciliations |
-| `Reporting` | Read models and projections only — no writes to source-of-truth tables |
+The full, current module map lives in [ADR-001](docs/adr/ADR-001-modular-monolith-strict-bounded-contexts.md) — it now covers all ~20 contexts under `src/`, not just the original 9. Duplicating it here went stale once; linking instead of copying.
 
-### Layer Structure per Module — ADR-002
+### Layer Structure per Module — ADR-002 (superseded)
 
-Each module follows a four-layer structure (see [ADR-002](docs/adr/ADR-002-domain-application-infrastructure-api-layers.md)):
+~~Each module follows a four-layer structure (see [ADR-002](docs/adr/ADR-002-domain-application-infrastructure-api-layers.md)):~~ **ADR-002 is superseded by [ADR-006](docs/adr/ADR-006-pragmatic-per-context-layout.md).** No context — not even the CashRegister pilot — actually uses the DAIA layering below, except `ControlPlane/Tenant` under its own dedicated rewrite (ADR-005). The layout every other context actually uses is `Entity/`, `Repository/`, `Service/`, `State/`, `Dto/`, `Controller/`, `Enum/` — see ADR-006. The structure below is kept only as historical context for reading ADR-002 itself:
 
 ```
 src/<Context>/
@@ -45,13 +35,15 @@ Dependency rule: `Api → Application → Domain`; `Infrastructure → Domain` (
 
 See [ADR-003](docs/adr/ADR-003-append-only-ledgers-immutable-fiscal-documents.md).
 
-- `stock_movements` and `cash_movements` are **append-only** ledger tables — no UPDATE/DELETE after insert. Corrections are new rows with a `corrects_movement_id` reference.
+- `stock_movements` and `cash_movements` are **intended to be append-only** ledger tables — no UPDATE/DELETE after insert. Corrections are new rows with a `corrects_movement_id` reference. **Verified enforced for `stock_movements`** (no setters on the entity). **Not currently enforced for `cash_movements`** — `CashMovement` has public setters; see ADR-004's 2026-08-19 amendment before relying on this invariant for that table.
 - Tax documents are **immutable after issuance**. Corrections use `credit_note` / `debit_note` documents linked via `references_document_id` (SUNAT CPE model). Voiding is a status transition, never a delete.
 - Reporting aggregates live in separate read-model tables (Reporting context) rebuilt from domain events — they are not source-of-truth.
 
 ### Stack (confirmed, no changes)
 
-PHP 8.5 · Symfony 7.4 · API Platform 4.1 · Doctrine ORM 3.5 · PostgreSQL (schema-per-tenant + control-plane DB) · React 19 / Vite / TypeScript
+PHP 8.5 · Symfony 7.4 · API Platform 4.1 · Doctrine ORM 3.5 · MariaDB (database-per-tenant + control-plane DB) · React 19 / Vite / TypeScript
+
+*(Corrected 2026-08-19: this line previously said "PostgreSQL (schema-per-tenant...)". The actual engine is MariaDB — see `DATABASE_URL` in `.env` and `ENGINE = InnoDB` throughout `migrations/`. Tenancy is database-per-tenant, not schema-per-tenant: `TenantConnection` (`src/Efact/Doctrine/DBAL/TenantConnection.php`) switches the DBAL `dbname` per request based on the resolved tenant's subdomain, not a Postgres `search_path`.)*
 
 ## Product Model
 

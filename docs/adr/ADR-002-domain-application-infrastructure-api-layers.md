@@ -1,7 +1,9 @@
 # ADR-002: Domain/Application/Infrastructure/Api Layer Structure per Module
 
 Date: 2026-06-27
-Status: Accepted
+Status: **Superseded by [ADR-006](ADR-006-pragmatic-per-context-layout.md) (2026-08-19)**
+
+> **Why superseded, not just amended:** as of 2026-08-19, zero of the ~20 contexts under `src/` follow the DAIA layering mandated below — not even `CashRegister`, the context this ADR and ADR-004 named as the pilot (see ADR-004's implementation-status amendment). The one place DAIA-style layering was actually built is `ControlPlane/Tenant` under ADR-005. Every other context — including all seven added since this ADR was accepted (`Payroll`, `AccountsPayable`, `BankReconciliation`, `FixedAssets`, `ExpenseReports`, `Purchasing`, and `CashRegister` itself) — uses a flat `Entity/Repository/Service/State/Dto/Controller` layout instead. This ADR is kept for its historical reasoning (still worth reading), but ADR-006 records what the team actually does and should be followed for new contexts. Treat this document as **not currently in force**.
 
 ## Context
 

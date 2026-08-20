@@ -22,6 +22,7 @@ The existing schema allows `UPDATE` on movement rows and in-place mutation of ta
 - Current stock levels and cash balances are always derived by summing/aggregating movements (or from maintained projection/read-model tables in the `Reporting` context that consume movement events).
 - Corrections are new rows with a negative quantity and a reference to the original movement (e.g., `corrects_movement_id`).
 - Doctrine entities for these tables expose no setters that would allow post-persist mutation; the repository interface has only `append(Movement $m): void`.
+  **Verified true for `Inventory\ApiResource\StockMovement`** (no setters, immutable after construction). **Not yet true for `CashRegister\Entity\CashMovement`**, which currently has full public setters (`setAmount`, `setDescription`, `setCreatedAt`, etc.) — see the 2026-08-19 amendment to ADR-004 for the gap and what's actually enforced there today.
 
 ### Immutable fiscal documents
 
@@ -58,6 +59,8 @@ Each ledger and fiscal-document table must have explicit indexes documented alon
 
 ## Alternatives Considered
 
-**Mutable rows with audit log (trigger-based)** — rejected. Trigger-based audit logs are fragile, invisible to application code, and not portable across PostgreSQL versions. The append-only model is self-documenting and application-enforced.
+**Mutable rows with audit log (trigger-based)** — rejected. Trigger-based audit logs are fragile, invisible to application code, and not portable across database versions. The append-only model is self-documenting and application-enforced.
+
+*(Correction, 2026-08-19: this ADR and `CONTEXT.md` both stated the database as PostgreSQL. The tenant and control-plane databases are MariaDB — see `DATABASE_URL`/`CONTROL_PLANE_DATABASE_URL` in `.env` and the migration SQL, which uses `ENGINE = InnoDB` throughout. The append-only reasoning above is unaffected by the engine; only the "portable across PostgreSQL versions" phrasing was wrong.)*
 
 **Event sourcing for all entities** — considered but scoped down. Full event sourcing adds significant infrastructure (event store, projections framework). Append-only ledgers give the same auditability for the specific tables that need it without rewriting all entity persistence.

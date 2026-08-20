@@ -131,7 +131,7 @@ Mecanismos de seguridad fiscal:
 - Retry con backoff exponencial.
 - Eventos `TaxDocumentEvent` para auditoria.
 - Almacenamiento de CDR/XML en storage tenant.
-- Calculo monetario exacto con `brick/math` y politica de descuentos secuencial documentada en ADR-023.
+- Calculo monetario exacto con `brick/math` y politica de descuentos secuencial documentada en [ADR-014](adr/ADR-014-sequential-discount-strategy.md).
 
 ### 6.4 Inventario y Compras
 
@@ -197,16 +197,17 @@ Mecanismos de seguridad fiscal:
 
 ### Decisiones vigentes
 
-- ADR-001: database-per-tenant.
-- ADR-002: base tenant + base control plane.
-- ADR-003: JWT custom.
-- ADR-004: FrankenPHP runtime.
-- ADR-009 / ADR-018: inventory ledger/read model y cutover de servicio de inventario.
-- ADR-012: facturacion Greenter/SUNAT.
-- ADR-019 a ADR-021: hardening y frontera de ControlPlane.
-- ADR-022: feature gates por plan.
-- ADR-023: estrategia de descuentos.
-- ADR-024: Scheduler operativo como modelo mixto provider + atributos.
+> **Corregido 2026-08-19:** los números ADR-001 a ADR-004 y ADR-009 en esta lista nunca existieron como archivos y colisionaban con los ADR-001..006 reales de `docs/adr/` (temas distintos). Se reconstruyeron como documentos formales en `docs/adr/ADR-007` a `ADR-015`, renumerados para no chocar con los existentes. Ver [ADR-006](adr/ADR-006-pragmatic-per-context-layout.md) para el contexto de por qué había numeraciones duplicadas.
+
+- [ADR-007](adr/ADR-007-database-per-tenant-split-control-plane-connection.md): database-per-tenant + conexión de control plane separada.
+- [ADR-008](adr/ADR-008-custom-stateless-jwt-authentication.md): JWT custom (no LexikJWT).
+- [ADR-009](adr/ADR-009-frankenphp-runtime.md): FrankenPHP runtime.
+- [ADR-010](adr/ADR-010-inventory-ledger-read-model-cutover.md): inventory ledger/read model y cutover de servicio de inventario (cutover incompleto — ver el ADR).
+- [ADR-011](adr/ADR-011-sunat-billing-greenter-model-lycet-submission.md): facturación SUNAT — Greenter solo como modelo de datos, envío real vía Lycet/Bill.
+- [ADR-012](adr/ADR-012-control-plane-hardening-and-boundary.md): hardening y frontera de ControlPlane (con gaps documentados: sin CSP, guard de frontera fuera de CI).
+- [ADR-013](adr/ADR-013-feature-gating-entitlements-vs-capabilities.md): feature gates por plan (entitlements) vs. capabilities por vertical.
+- [ADR-014](adr/ADR-014-sequential-discount-strategy.md): estrategia de descuentos secuencial.
+- [ADR-015](adr/ADR-015-mixed-scheduler-model.md): Scheduler operativo como modelo mixto provider + atributos (confirmado como deriva orgánica, no decisión deliberada).
 
 ---
 
@@ -260,7 +261,7 @@ Mecanismos de seguridad fiscal:
 ### Proximas decisiones recomendadas
 
 - Definir target real de cobertura PHP y ampliar cobertura frontend mas alla de `posHelpers.ts` y `offline/api.ts`.
-- Confirmar gateway primario en Peru entre MercadoPago y PayPal.
+- ~~Confirmar gateway primario en Peru entre MercadoPago y PayPal.~~ Resuelto: MercadoPago es el gateway primario (alias por defecto + defaults de onboarding/cambio de plan); PayPal sigue disponible como alternativa seleccionable.
 - Documentar formalmente estado productivo de Android POS por vertical.
 - Definir si lotes/FEFO y BOM son features GA o gated por plan/vertical.
 - Retirar aliases legacy `App\Core\*` cuando no queden consumidores y el guardrail refleje los paquetes `nubitio/*`.

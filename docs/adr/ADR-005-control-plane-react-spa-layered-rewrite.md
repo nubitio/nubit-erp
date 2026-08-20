@@ -1,7 +1,7 @@
 # ADR-005: Control Plane React SPA and Layered Backend Rewrite
 
 Date: 2026-07-04
-Status: Accepted
+Status: Accepted — **Implemented** (verified 2026-08-19, see Amendment below)
 
 ## Context
 
@@ -63,3 +63,17 @@ Strangler fig by screen: React replaces Twig routes as each screen ships. Twig t
 
 - **Twig redesign only** — faster short-term, does not fix backend debt or stack fragmentation.
 - **Incremental facade over TenantManager** — preserves god-class internals; rejected in favour of aggressive rewrite.
+
+## Amendment (2026-08-19) — implementation confirmed
+
+Unlike ADR-004 (its CashRegister counterpart, which mostly did not ship — see that ADR's amendment), this rewrite is done:
+
+- `TenantManager` no longer exists anywhere in `src/`.
+- `src/ControlPlane/Tenant/` now has `Domain/` (repository interfaces, `TenantSnapshot`, `TenantStatus`), `Application/` (`TenantService.php`, 264 lines; `TenantRegistry.php`, 32 lines), `Infrastructure/`, and `Controller/` — the DAIA split this ADR called for.
+- `TenantController.php` is 42 lines (thin, delegates to `TenantService`) — down from the ~990 lines this ADR cited as the problem.
+- No `tenant/edit.html.twig` remains in `templates/`.
+- `assets/control-plane.tsx` and `assets/features/control-plane/` exist; `/api/control-plane/*` has its own firewall (`control_plane_api`, `ROLE_CP_VIEWER`) in `config/packages/security.yaml`, separate from the tenant app's session context.
+
+This is the one place in the codebase where a DAIA-layered rewrite (as ADR-002 originally mandated everywhere) actually happened — because it had a dedicated ADR and effort behind it. See ADR-006 for why that's now the pattern for *when* to use DAIA, not ADR-002's blanket mandate.
+
+The only `/admin`-related Twig template remaining is `templates/admin/spa.html.twig` — the SPA shell itself, plus the server-rendered login screen this ADR always intended to keep. No per-screen legacy Twig templates remain: the strangler-fig migration reached full parity. Not re-verified in this pass: whether YAML fallback (`TENANTS_SOURCE=yaml`) still works for local dev.

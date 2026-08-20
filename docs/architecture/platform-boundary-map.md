@@ -37,7 +37,7 @@ El guard falla si rutas candidatas importan:
 
 | Contrato (`Nubit\Platform`) | Implementación efact | Implementación starter |
 |----------------------------|----------------------|-------------------------|
-| `TenantRegistryInterface` | `ControlPlane\Tenant\Service\TenantManager` | Noop single-tenant |
+| `TenantRegistryInterface` | `ControlPlane\Tenant\Application\TenantRegistry` | Noop single-tenant |
 | `TenantConnectionSwitcherInterface` | `ControlPlane\Tenant\Service\TenantConnectionSwitcher` | Noop |
 | `FeatureCheckerInterface` | `ControlPlane\Billing\Feature\TenantFeatureChecker` | Allow-all / noop |
 | `QuotaEnforcerInterface` | `ControlPlane\Billing\Service\TenantQuotaService` | Noop |
