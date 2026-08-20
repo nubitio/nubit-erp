@@ -12,3 +12,12 @@ framework:
             policy: fixed_window
             limit: 3
             interval: '24 hours'
+        # Guards POST /api/assistant and /api/assistant/stream, both of which
+        # call the OpenAI-backed agent per request — without a limiter, an
+        # authenticated user (or a compromised/scripted session) can drive
+        # unbounded OpenAI spend. Keyed per user (see AssistantController /
+        # AssistantStreamController), generous enough for a normal chat pace.
+        assistant:
+            policy: sliding_window
+            limit: 20
+            interval: '1 minute'

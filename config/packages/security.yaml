@@ -65,6 +65,15 @@ security:
             pattern: ^/api
             provider: user_provider
             custom_authenticator: Nubit\AdminBundle\Auth\JWTAuthenticator
+            # Same mechanism as the admin firewall below: Symfony's built-in
+            # login_throttling hooks CheckPassportEvent whenever the passport
+            # carries a PasswordCredentials badge, which only happens on an
+            # actual login attempt (JWTAuthenticator::authenticateWithCredentials).
+            # JWT-bearer requests use SelfValidatingPassport and are unaffected —
+            # this only throttles credential-guessing against /api/auth/login.
+            login_throttling:
+                max_attempts: 5
+                interval: '1 minute'
 
             # Activate different ways to authenticate:
             # https://symfony.com/doc/current/security.html#the-firewall

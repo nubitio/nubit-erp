@@ -18,7 +18,9 @@ use Symfony\AI\Platform\Result\StreamResult;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Throwable;
@@ -46,10 +48,18 @@ class AssistantStreamController extends AbstractController
         private readonly SerializerInterface $serializer,
         #[Autowire('%kernel.project_dir%')]
         private readonly string $projectDir,
+        private readonly RateLimiterFactoryInterface $assistantLimiter,
     ) {}
 
-    public function __invoke(Request $request): StreamedResponse
+    public function __invoke(Request $request): Response
     {
+        $limiter = $this->assistantLimiter->create($this->getUser()?->getUserIdentifier() ?? 'anonymous');
+        if (!$limiter->consume()->isAccepted()) {
+            return $this->json([
+                'error' => 'Demasiadas solicitudes al asistente. Espera un momento antes de volver a intentar.',
+            ], Response::HTTP_TOO_MANY_REQUESTS);
+        }
+
         /** @var AssistantRequest $data */
         $data = $this->serializer->deserialize($request->getContent(), AssistantRequest::class, 'json');
 

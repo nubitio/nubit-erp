@@ -21,6 +21,7 @@ use Symfony\AI\Platform\Message\MessageInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Throwable;
 
 class AssistantController extends AbstractController
@@ -32,10 +33,19 @@ class AssistantController extends AbstractController
         private readonly SessionContextBuilder $sessionContextBuilder,
         #[Autowire('%kernel.project_dir%')]
         private readonly string $projectDir,
+        private readonly RateLimiterFactoryInterface $assistantLimiter,
     ) {}
 
     public function __invoke(AssistantRequest $data): AssistantResponse
     {
+        $limiter = $this->assistantLimiter->create($this->getUser()?->getUserIdentifier() ?? 'anonymous');
+        if (!$limiter->consume()->isAccepted()) {
+            throw ServiceException::create(
+                'Demasiadas solicitudes al asistente. Espera un momento antes de volver a intentar.',
+                Response::HTTP_TOO_MANY_REQUESTS,
+            );
+        }
+
         $lastUserIndex = null;
         foreach (array_keys($data->messages) as $i) {
             if ('assistant' !== $data->messages[$i]->role) {
