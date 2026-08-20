@@ -111,8 +111,6 @@ readonly class SaleProcessor implements ProcessorInterface
         // Offline-sale mode skips stock validation because the physical transaction already occurred.
         // To prevent casual abuse of this bypass, require a well-formed Idempotency-Key alongside
         // the X-Offline-Sale flag — the outbox always sends both together.
-        // TODO: harden further by pre-registering offline sale IDs server-side so the key can be
-        //       verified rather than merely checked for presence.
         $offlineSaleHeader = $request instanceof Request && $request->headers->get('X-Offline-Sale') === 'true';
         $idempotencyKey = $request instanceof Request ? $request->headers->get('Idempotency-Key') ?? '' : '';
         $isOfflineSale =
@@ -124,6 +122,25 @@ readonly class SaleProcessor implements ProcessorInterface
                 'idempotency_key' => $idempotencyKey ?: '(empty)',
                 'remote_addr' => $request->getClientIp(),
             ]);
+        }
+
+        // Idempotent replay: the offline outbox resends the exact same
+        // Idempotency-Key on every retry of a given local sale (network
+        // failures, a lost response, etc. — see assets/offline/outbox.ts).
+        // Without this check a retry whose first attempt actually reached
+        // the server would create a second SaleRecord, double-deduct stock,
+        // and double-invoice the customer. Checked before any side effect
+        // (inventory, cash session, invoicing) runs.
+        if ($isNew && $isOfflineSale) {
+            $existingSale = $this->saleRecordRepository->findByOfflineRetryKey($idempotencyKey);
+            if ($existingSale instanceof SaleRecord) {
+                $this->logger->info('Offline sale replay detected via Idempotency-Key — returning existing sale', [
+                    'sale_id' => $existingSale->getId(),
+                    'idempotency_key' => $idempotencyKey,
+                ]);
+
+                return $existingSale;
+            }
         }
 
         // Disabled branches stay readable for reports but must not accept new sales,
@@ -257,6 +274,9 @@ readonly class SaleProcessor implements ProcessorInterface
             $this->logger->info('Creating new sale record with timestamp');
             $data->setDateCreated(new DateTimeImmutable());
             $data->setCreatedBy($user->userId);
+            if ($isOfflineSale) {
+                $data->setOfflineRetryKey($idempotencyKey);
+            }
 
             // Set the branch from the current user's session
             $branchId = $this->branchContextService->getCurrentBranchId();

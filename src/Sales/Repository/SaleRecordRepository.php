@@ -38,6 +38,16 @@ class SaleRecordRepository extends ServiceEntityRepository
     }
 
     /**
+     * Find a SaleRecord already created for this offline-sale Idempotency-Key
+     * header — lets SaleProcessor short-circuit a retried outbox request
+     * instead of creating a duplicate sale. See SaleRecord::$offlineRetryKey.
+     */
+    public function findByOfflineRetryKey(string $offlineRetryKey): ?SaleRecord
+    {
+        return $this->findOneBy(['offlineRetryKey' => $offlineRetryKey]);
+    }
+
+    /**
      * Enrich a list of SaleRecord entities with tax_document data.
      * Single DBAL query to avoid N+1.
      *

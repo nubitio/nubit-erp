@@ -125,6 +125,9 @@ final class SaleProcessorTest extends TestCase
     /** @var SalesWriteGateway&MockObject */
     private SalesWriteGateway $salesWriteGateway;
 
+    /** @var SaleRecordRepository&MockObject */
+    private SaleRecordRepository $saleRecordRepository;
+
     // -------------------------------------------------------------------------
     // Final classes — bypassed via ReflectionClass::newInstanceWithoutConstructor()
     // Their inner dependencies are replaced with mocks injected via reflection.
@@ -152,6 +155,8 @@ final class SaleProcessorTest extends TestCase
         $this->customerRepository = $this->createMock(CustomerRepository::class);
         $this->salesWriteGateway = $this->createMock(SalesWriteGateway::class);
         $this->sunatCatalogRepository = $this->createMock(SunatCatalogRepository::class);
+        $this->saleRecordRepository = $this->createMock(SaleRecordRepository::class);
+        $this->saleRecordRepository->method('findByOfflineRetryKey')->willReturn(null);
 
         // Build final-class stubs
         $this->branchContextService = $this->buildBranchContextStub(returnBranchId: null);
@@ -886,6 +891,84 @@ final class SaleProcessorTest extends TestCase
     }
 
     // -------------------------------------------------------------------------
+    // TC-37b: Offline sale with a well-formed Idempotency-Key stores it on the
+    // new sale, so a later retry with the same key can be detected.
+    // -------------------------------------------------------------------------
+
+    public function testOfflineSaleFirstSubmissionStoresIdempotencyKeyAsOfflineRetryKey(): void
+    {
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
+        $idempotencyKey = '11111111-2222-3333-4444-555555555555';
+
+        $request = new Request();
+        $request->headers->set('X-Offline-Sale', 'true');
+        $request->headers->set('Idempotency-Key', $idempotencyKey);
+
+        $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $request]);
+
+        self::assertSame($idempotencyKey, $sale->getOfflineRetryKey());
+    }
+
+    // -------------------------------------------------------------------------
+    // TC-37c: Offline sale retry — an outbox resend of a sale that already
+    // reached the server (same Idempotency-Key) must return the existing
+    // SaleRecord and MUST NOT re-run inventory/cash/invoicing side effects,
+    // i.e. must not create a duplicate sale.
+    // -------------------------------------------------------------------------
+
+    public function testOfflineSaleRetryWithKnownIdempotencyKeyReturnsExistingSaleWithoutSideEffects(): void
+    {
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
+        $idempotencyKey = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
+
+        $existingSale = $this->buildExistingSale(tipoId: 2);
+        $existingSale->setOfflineRetryKey($idempotencyKey);
+
+        $this->saleRecordRepository = $this->createMock(SaleRecordRepository::class);
+        $this->saleRecordRepository
+            ->expects($this->once())
+            ->method('findByOfflineRetryKey')
+            ->with($idempotencyKey)
+            ->willReturn($existingSale);
+
+        $request = new Request();
+        $request->headers->set('X-Offline-Sale', 'true');
+        $request->headers->set('Idempotency-Key', $idempotencyKey);
+
+        $this->salesWriteGateway->expects($this->never())->method('write');
+        $this->persistProcessor->expects($this->never())->method('process');
+
+        $result = $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $request]);
+
+        self::assertSame($existingSale, $result);
+        self::assertNotSame(
+            $sale,
+            $result,
+            'A retry must return the already-persisted sale, not process the new payload',
+        );
+    }
+
+    // -------------------------------------------------------------------------
+    // TC-37d: A malformed Idempotency-Key never triggers the replay lookup —
+    // the offline bypass simply doesn't apply (existing behaviour, unchanged).
+    // -------------------------------------------------------------------------
+
+    public function testMalformedIdempotencyKeyNeverQueriesForReplay(): void
+    {
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
+
+        $request = new Request();
+        $request->headers->set('X-Offline-Sale', 'true');
+        $request->headers->set('Idempotency-Key', 'not-a-uuid');
+
+        $this->saleRecordRepository->expects($this->never())->method('findByOfflineRetryKey');
+
+        $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $request]);
+
+        self::assertNull($sale->getOfflineRetryKey());
+    }
+
+    // -------------------------------------------------------------------------
     // TC-38: New sale has_invoice set to false always (regardless of incoming value)
     // -------------------------------------------------------------------------
 
@@ -1033,7 +1116,7 @@ final class SaleProcessorTest extends TestCase
         $inj('salePaymentPlanService', $this->salePaymentPlanService);
         $inj('detractionCalculator', $this->detractionCalculator);
         $inj('inventoryOrchestrator', $this->inventoryOrchestrator);
-        $inj('saleRecordRepository', $this->createMock(\App\Sales\Repository\SaleRecordRepository::class));
+        $inj('saleRecordRepository', $this->saleRecordRepository);
         $inj('customerRepository', $this->customerRepository);
         $inj('activeReferenceGuard', new \App\Efact\Domain\ActiveReferenceGuard());
 

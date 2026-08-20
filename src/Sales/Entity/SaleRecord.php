@@ -112,6 +112,23 @@ class SaleRecord
     #[ORM\Column(name: 'legacy_movimiento_id', type: 'string', length: 255, nullable: true, unique: true)]
     private ?string $legacyMovimientoId = null;
 
+    /**
+     * Client-supplied `Idempotency-Key` header for offline-sale retries (see
+     * SaleProcessor::process()) — nullable because only offline-sale
+     * requests (X-Offline-Sale + Idempotency-Key headers) populate it.
+     * Unique so a retry of the same outbox item can never create a second
+     * row: the DB itself is the second line of defence after the
+     * application-level lookup in SaleProcessor.
+     *
+     * Deliberately NOT named/reusing `idempotencyKey` below — that field is
+     * an unrelated deterministic sync marker derived from this row's own id
+     * (SalesWriteGateway::buildOfflineMeta(), 'idem:sale:' . $saleId) and is
+     * overwritten on every write(), so it can never carry a client-supplied
+     * value across a retry.
+     */
+    #[ORM\Column(name: 'offline_retry_key', type: 'string', length: 36, nullable: true, unique: true)]
+    private ?string $offlineRetryKey = null;
+
     #[Groups(['sale_record:read', 'sale_record:write'])]
     #[ORM\ManyToOne(targetEntity: Branch::class)]
     #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
@@ -486,6 +503,18 @@ class SaleRecord
     public function setLegacyMovimientoId(?string $legacyMovimientoId): static
     {
         $this->legacyMovimientoId = $legacyMovimientoId;
+
+        return $this;
+    }
+
+    public function getOfflineRetryKey(): ?string
+    {
+        return $this->offlineRetryKey;
+    }
+
+    public function setOfflineRetryKey(?string $offlineRetryKey): static
+    {
+        $this->offlineRetryKey = $offlineRetryKey;
 
         return $this;
     }
