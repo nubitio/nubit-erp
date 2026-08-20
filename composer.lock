@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "18943820d5bac12b41efdffa69b5a2b7",
+    "content-hash": "a26b95c14368a5af487cb2dca9b5b2f0",
     "packages": [
         {
             "name": "api-platform/core",
@@ -992,16 +992,16 @@
         },
         {
             "name": "doctrine/doctrine-bundle",
-            "version": "3.2.4",
+            "version": "3.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/DoctrineBundle.git",
-                "reference": "75f1bf75d0ba099f23e7d43ebd804df5bec58c29"
+                "reference": "9b231f957020de52d6ac94fd72f0cbe8cf1eaad5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/DoctrineBundle/zipball/75f1bf75d0ba099f23e7d43ebd804df5bec58c29",
-                "reference": "75f1bf75d0ba099f23e7d43ebd804df5bec58c29",
+                "url": "https://api.github.com/repos/doctrine/DoctrineBundle/zipball/9b231f957020de52d6ac94fd72f0cbe8cf1eaad5",
+                "reference": "9b231f957020de52d6ac94fd72f0cbe8cf1eaad5",
                 "shasum": ""
             },
             "require": {
@@ -1009,6 +1009,7 @@
                 "doctrine/deprecations": "^1.0",
                 "doctrine/persistence": "^4",
                 "doctrine/sql-formatter": "^1.0.1",
+                "ext-mbstring": "*",
                 "php": "^8.4",
                 "symfony/cache": "^6.4 || ^7.0 || ^8.0",
                 "symfony/config": "^6.4 || ^7.0 || ^8.0",
@@ -1036,6 +1037,7 @@
                 "symfony/http-kernel": "^6.4 || ^7.0 || ^8.0",
                 "symfony/messenger": "^6.4 || ^7.0 || ^8.0",
                 "symfony/property-info": "^6.4 || ^7.0 || ^8.0",
+                "symfony/runtime": "^6.4 || ^7.0 || ^8.0",
                 "symfony/security-bundle": "^6.4 || ^7.0 || ^8.0",
                 "symfony/stopwatch": "^6.4 || ^7.0 || ^8.0",
                 "symfony/string": "^6.4 || ^7.0 || ^8.0",
@@ -1088,7 +1090,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/DoctrineBundle/issues",
-                "source": "https://github.com/doctrine/DoctrineBundle/tree/3.2.4"
+                "source": "https://github.com/doctrine/DoctrineBundle/tree/3.3.1"
             },
             "funding": [
                 {
@@ -1104,7 +1106,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-09T19:11:55+00:00"
+            "time": "2026-07-23T10:37:01+00:00"
         },
         {
             "name": "doctrine/doctrine-migrations-bundle",
@@ -3464,32 +3466,33 @@
         },
         {
             "name": "nubitio/admin-bundle",
-            "version": "v0.12.3",
+            "version": "v0.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nubitio/admin-bundle.git",
-                "reference": "e2ffddc3248da2b01dbfa8e5d93b1824f711c349"
+                "reference": "9d4c922ed81f9a5ae7828da66965d564c968a608"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nubitio/admin-bundle/zipball/e2ffddc3248da2b01dbfa8e5d93b1824f711c349",
-                "reference": "e2ffddc3248da2b01dbfa8e5d93b1824f711c349",
+                "url": "https://api.github.com/repos/nubitio/admin-bundle/zipball/9d4c922ed81f9a5ae7828da66965d564c968a608",
+                "reference": "9d4c922ed81f9a5ae7828da66965d564c968a608",
                 "shasum": ""
             },
             "require": {
-                "api-platform/core": "^4.1",
+                "api-platform/core": "^4.3.12",
                 "doctrine/orm": "^3.0",
                 "firebase/php-jwt": "^7.0",
                 "league/flysystem": "^3.0",
-                "nubitio/api-platform": "0.*",
-                "nubitio/platform": "0.*",
-                "nubitio/tenant-bundle": "0.*",
+                "nubitio/api-platform": "^0.13",
+                "nubitio/platform": "^0.13",
+                "nubitio/tenant-bundle": "^0.13",
                 "php": ">=8.3",
                 "psr/log": "^3.0",
                 "symfony/config": "^7.4 || ^8.0",
                 "symfony/console": "^7.4 || ^8.0",
                 "symfony/dependency-injection": "^7.4 || ^8.0",
                 "symfony/doctrine-bridge": "^7.4 || ^8.0",
+                "symfony/http-client-contracts": "^3.0",
                 "symfony/http-foundation": "^7.4 || ^8.0",
                 "symfony/http-kernel": "^7.4 || ^8.0",
                 "symfony/mime": "^7.4 || ^8.0",
@@ -3509,7 +3512,9 @@
                 "symfony/mercure": "^0.6"
             },
             "suggest": {
+                "monolog/monolog": "Privacy-safe structured log processors when nubit_admin.observability.enabled is true",
                 "nubitio/tenant-bundle": "Column-mode multi-tenancy: TenantScoped attribute, Doctrine filter, registry, and resolvers",
+                "open-telemetry/api": "Tenant-aware tracing when nubit_admin.observability.enabled is true",
                 "symfony/mercure-bundle": "Live grid updates; the bundle adds a fail-safe hub decorator and the subscriber cookie"
             },
             "type": "symfony-bundle",
@@ -3537,27 +3542,27 @@
                 "issues": "https://github.com/nubitio/nubit-symfony/issues",
                 "source": "https://github.com/nubitio/nubit-symfony"
             },
-            "time": "2026-07-12T04:52:50+00:00"
+            "time": "2026-08-20T05:30:05+00:00"
         },
         {
             "name": "nubitio/api-platform",
-            "version": "v0.12.3",
+            "version": "v0.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nubitio/api-platform.git",
-                "reference": "2240134fa24082ad01d5f2f0f11adafbecbfa139"
+                "reference": "a2a5cbedc163d7b63eb0d29702cfa08c94333441"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nubitio/api-platform/zipball/2240134fa24082ad01d5f2f0f11adafbecbfa139",
-                "reference": "2240134fa24082ad01d5f2f0f11adafbecbfa139",
+                "url": "https://api.github.com/repos/nubitio/api-platform/zipball/a2a5cbedc163d7b63eb0d29702cfa08c94333441",
+                "reference": "a2a5cbedc163d7b63eb0d29702cfa08c94333441",
                 "shasum": ""
             },
             "require": {
-                "api-platform/core": "^4.1",
+                "api-platform/core": "^4.3.12",
                 "doctrine/orm": "^3.0",
                 "doctrine/persistence": "^4.0",
-                "nubitio/platform": "0.*",
+                "nubitio/platform": "^0.13",
                 "php": ">=8.3",
                 "psr/log": "^3.0",
                 "symfony/dependency-injection": "^7.4 || ^8.0",
@@ -3596,20 +3601,20 @@
                 "issues": "https://github.com/nubitio/nubit-symfony/issues",
                 "source": "https://github.com/nubitio/nubit-symfony"
             },
-            "time": "2026-08-04T11:55:33+00:00"
+            "time": "2026-08-20T05:24:25+00:00"
         },
         {
             "name": "nubitio/platform",
-            "version": "v0.12.3",
+            "version": "v0.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nubitio/platform.git",
-                "reference": "f77b50caf653aa294b23313c47b937b4009ed434"
+                "reference": "d25a2e925c1866c2da36f7623b64fde8c21ae244"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nubitio/platform/zipball/f77b50caf653aa294b23313c47b937b4009ed434",
-                "reference": "f77b50caf653aa294b23313c47b937b4009ed434",
+                "url": "https://api.github.com/repos/nubitio/platform/zipball/d25a2e925c1866c2da36f7623b64fde8c21ae244",
+                "reference": "d25a2e925c1866c2da36f7623b64fde8c21ae244",
                 "shasum": ""
             },
             "require": {
@@ -3630,15 +3635,17 @@
                 "symfony/validator": "^7.4 || ^8.0"
             },
             "require-dev": {
+                "doctrine/dbal": "^4.0",
                 "league/flysystem": "^3.0",
                 "monolog/monolog": "^3.0",
                 "open-telemetry/api": "^1.0",
-                "phpoffice/phpspreadsheet": "^5.3",
+                "phpoffice/phpspreadsheet": "^5.8.1",
                 "phpunit/phpunit": "^11.5 || ^12.0",
                 "pontedilana/php-weasyprint": "^2.2",
                 "symfony/cache": "^7.4 || ^8.0"
             },
             "suggest": {
+                "doctrine/dbal": "Required by Nubit\\Platform\\Observability\\Doctrine tracing middleware",
                 "league/flysystem": "Required by Nubit\\Platform\\Filesystem\\FileManager",
                 "monolog/monolog": "Required by Nubit\\Platform\\Observability\\Logging\\TenantLogProcessor",
                 "open-telemetry/api": "Trace correlation in TenantLogProcessor",
@@ -3668,26 +3675,27 @@
                 "issues": "https://github.com/nubitio/nubit-symfony/issues",
                 "source": "https://github.com/nubitio/nubit-symfony"
             },
-            "time": "2026-07-12T04:52:50+00:00"
+            "time": "2026-08-20T05:15:07+00:00"
         },
         {
             "name": "nubitio/tenant-bundle",
-            "version": "v0.12.3",
+            "version": "v0.13.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nubitio/tenant-bundle.git",
-                "reference": "ce25536035df1ced646652fc15b2e12c8bd26b7f"
+                "reference": "3f71e33101152e5c6cfb004da6507bd0f8b21262"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nubitio/tenant-bundle/zipball/ce25536035df1ced646652fc15b2e12c8bd26b7f",
-                "reference": "ce25536035df1ced646652fc15b2e12c8bd26b7f",
+                "url": "https://api.github.com/repos/nubitio/tenant-bundle/zipball/3f71e33101152e5c6cfb004da6507bd0f8b21262",
+                "reference": "3f71e33101152e5c6cfb004da6507bd0f8b21262",
                 "shasum": ""
             },
             "require": {
+                "doctrine/doctrine-bundle": "^3.2",
                 "doctrine/orm": "^3.0",
                 "firebase/php-jwt": "^7.0",
-                "nubitio/platform": "0.*",
+                "nubitio/platform": "^0.13",
                 "php": ">=8.3",
                 "symfony/config": "^7.4 || ^8.0",
                 "symfony/console": "^7.4 || ^8.0",
@@ -3699,7 +3707,8 @@
                 "symfony/security-core": "^7.4 || ^8.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^11.5 || ^12.0"
+                "phpunit/phpunit": "^11.5 || ^12.0",
+                "symfony/security-bundle": "^7.4 || ^8.0"
             },
             "type": "symfony-bundle",
             "autoload": {
@@ -3724,7 +3733,7 @@
                 "issues": "https://github.com/nubitio/nubit-symfony/issues",
                 "source": "https://github.com/nubitio/nubit-symfony"
             },
-            "time": "2026-07-12T04:52:50+00:00"
+            "time": "2026-08-20T05:24:25+00:00"
         },
         {
             "name": "nyholm/psr7-server",

@@ -42,11 +42,17 @@ services:
   App\:
     resource: '../src/'
 
-  # Platform library services (vendor classes are not autodiscovered)
+  # Platform library services (vendor classes are not autodiscovered).
+  # Opt-in 0.13 modules (analytics, feature flags, OTEL tracing/metrics) are
+  # registered by nubit_admin.* when enabled — do not autowire them here.
   Nubit\Platform\:
     resource: '../vendor/nubitio/platform/src/'
     exclude:
-      - '../vendor/nubitio/platform/src/{Exception,Tenant/Model,Messenger/TenantStamp.php,Messenger/ActorStamp.php,RateLimit/RateLimitResult.php,Http}'
+      - '../vendor/nubitio/platform/src/{Exception,Tenant/Model,Http,Analytics,FeatureFlag,Privacy/Attribute}'
+      - '../vendor/nubitio/platform/src/Messenger/{TenantStamp.php,ActorStamp.php,TraceContextStamp.php,TracingMiddleware.php}'
+      - '../vendor/nubitio/platform/src/Observability/{Doctrine,Tracing,Metrics}'
+      - '../vendor/nubitio/platform/src/Observability/Logging/SensitiveDataProcessor.php'
+      - '../vendor/nubitio/platform/src/RateLimit/RateLimitResult.php'
 
   # add more service definitions when explicit configuration is needed
   # please note that last definitions always *replace* previous ones

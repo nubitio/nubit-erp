@@ -2397,6 +2397,22 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         ignored_fields?: list<scalar|Param|null>,
  *         purge_retention_days?: int|Param, // nubit:audit:purge removes entries older than this. // Default: 365
  *     },
+ *     observability?: array{
+ *         enabled?: bool|Param, // Register privacy-safe Monolog processors and tenant-aware OpenTelemetry tracing services. // Default: false
+ *         redaction_hmac_key?: scalar|Param|null, // HMAC key for stable confidential-value correlation. Empty means confidential hashes are dropped. // Default: ""
+ *     },
+ *     analytics?: array{
+ *         enabled?: bool|Param, // Persist privacy-safe typed analytics events to the transactional Doctrine outbox. // Default: false
+ *         redaction_hmac_key?: scalar|Param|null, // HMAC key for confidential analytics properties. Empty drops properties requiring a hash. // Default: ""
+ *         deduplication_capacity?: int|Param, // Default: 10000
+ *         batch_size?: int|Param, // Default: 100
+ *         maximum_retry_delay?: int|Param, // Default: 3600
+ *         retention_days?: int|Param, // Default: 30
+ *         delivery_endpoint?: scalar|Param|null, // Default: ""
+ *         delivery_token?: scalar|Param|null, // Default: ""
+ *         delivery_timeout?: float|Param, // Default: 5.0
+ *         allow_insecure_http?: bool|Param, // Default: false
+ *     },
  *     media?: array{
  *         enabled?: bool|Param, // Expose the media library: POST /api/media (multipart), Media entity, streaming route, purge command. // Default: false
  *         storage?: array{
