@@ -7,7 +7,6 @@ namespace App\Tests\CashRegister\Entity;
 use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashSession;
-use App\CashRegister\Entity\CashShift;
 use App\CashRegister\Enum\CashMovementType;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -67,35 +66,6 @@ final class CashMovementTest extends TestCase
         self::assertSame('Test description', $entity->getDescription());
     }
 
-    public function testSetAndGetCashShift(): void
-    {
-        /** @var CashShift&MockObject */
-        $cashShift = $this->createStub(CashShift::class);
-
-        $entity = new CashMovement();
-        $entity->setType(CashMovementType::INCOME);
-        $entity->setAmount('0.00');
-        $entity->setDescription('');
-        $entity->setCashShift($cashShift);
-
-        self::assertSame($cashShift, $entity->getCashShift());
-    }
-
-    public function testSetCashShiftToNull(): void
-    {
-        /** @var CashShift&MockObject */
-        $cashShift = $this->createStub(CashShift::class);
-
-        $entity = new CashMovement();
-        $entity->setType(CashMovementType::INCOME);
-        $entity->setAmount('0.00');
-        $entity->setDescription('');
-        $entity->setCashShift($cashShift);
-        $entity->setCashShift(null);
-
-        self::assertNull($entity->getCashShift());
-    }
-
     public function testSetAndGetCashSession(): void
     {
         /** @var CashSession&MockObject */
@@ -152,21 +122,5 @@ final class CashMovementTest extends TestCase
         $entity->setCreatedAt($createdAt);
 
         self::assertSame($createdAt, $entity->getCreatedAt());
-    }
-
-    public function testPrePersistSetsCreatedAt(): void
-    {
-        $before = new DateTimeImmutable();
-
-        $entity = new CashMovement();
-        $entity->setType(CashMovementType::INCOME);
-        $entity->setAmount('0.00');
-        $entity->setDescription('');
-        $entity->setCreatedAtValue();
-
-        $after = new DateTimeImmutable();
-
-        self::assertGreaterThanOrEqual($before, $entity->getCreatedAt());
-        self::assertLessThanOrEqual($after, $entity->getCreatedAt());
     }
 }

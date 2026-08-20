@@ -12,22 +12,26 @@ use ApiPlatform\Metadata\Post;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashSession;
 use App\CashRegister\Enum\CashMovementType;
-use App\CashRegister\Repository\CashMovementRepository;
 use App\CashRegister\State\CashMovementCollectionProvider;
 use App\CashRegister\State\CashMovementItemProvider;
 use App\CashRegister\State\CashMovementWriteProcessor;
 use App\Organization\Entity\Branch;
 use DateTimeImmutable;
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 
-#[ORM\Entity(repositoryClass: CashMovementRepository::class)]
-#[ORM\HasLifecycleCallbacks]
+/**
+ * Not a Doctrine entity — a read/write shape for the v2 `cash_movements`
+ * table, always built by `CashMovementHydrator` from a raw DBAL row (reads)
+ * or written by `CashMovementWriteProcessor` via a raw DBAL INSERT (the
+ * table is append-only: no PATCH/DELETE operation exists below). It used to
+ * be an ORM entity mapped to a legacy singular `cash_movement` table that
+ * nothing wrote to after the CashRegister v2 cutover; that table (and
+ * `cash_shift`) were dropped 2026-08-19 once every remaining reader was
+ * confirmed to go through the v2-aware paths below — see ADR-004's
+ * amendment (docs/adr/ADR-004-cashregister-strangler-fig-decisions.md).
+ */
 #[ApiResource(
     normalizationContext: ['groups' => ['cash_movement:read']],
-    filters: [DataGridFilter::class],
     operations: [
         new GetCollection(provider: CashMovementCollectionProvider::class),
         new Get(provider: CashMovementItemProvider::class),
@@ -38,70 +42,38 @@ use Symfony\Component\Serializer\Attribute\Groups;
 class CashMovement
 {
     #[Groups(['cash_movement:read'])]
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    // @phpstan-ignore property.unusedType (set via ReflectionProperty by CashMovementHydrator/CashMovementWriteProcessor)
     private ?int $id = null;
 
-    #[Groups(['cash_movement:read'])]
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: true)]
-    #[ApiProperty(description: 'cash_movement.cash_shift.label')]
-    private ?CashShift $cashShift = null;
-
-    /**
-     * V2 FK to cash_sessions. Cash movements are written/read from cash_movements
-     * through DBAL providers, while this mixed legacy DTO still maps cash_movement.
-     */
     #[Groups(['cash_movement:read'])]
     #[ApiProperty(description: 'cash_movement.cash_session.label')]
     private ?CashSession $cashSession = null;
 
     #[Groups(['cash_movement:read'])]
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: true)]
     #[ApiProperty(description: 'cash_movement.category.label')]
     private ?CashMovementCategory $category = null;
 
     #[Groups(['cash_movement:read'])]
-    #[ORM\Column(enumType: CashMovementType::class)]
     #[ApiProperty(description: 'cash_movement.type.label')]
     private CashMovementType $type;
 
     #[Groups(['cash_movement:read'])]
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[ApiProperty(description: 'cash_movement.amount.label')]
     private string $amount = '0.00';
 
     #[Groups(['cash_movement:read'])]
-    #[ORM\Column(length: 255)]
     #[ApiProperty(description: 'cash_movement.description.label')]
     private string $description;
 
-    #[ORM\Column]
     private DateTimeImmutable $createdAt;
 
     #[Groups(['cash_movement:read'])]
-    #[ORM\ManyToOne(targetEntity: Branch::class)]
-    #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
     #[ApiProperty(description: 'cash_movement.branch.label')]
     private ?Branch $branch = null;
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getCashShift(): ?CashShift
-    {
-        return $this->cashShift;
-    }
-
-    public function setCashShift(?CashShift $cashShift): static
-    {
-        $this->cashShift = $cashShift;
-
-        return $this;
     }
 
     public function getCashSession(): ?CashSession
@@ -175,25 +147,6 @@ class CashMovement
         $this->createdAt = $createdAt;
 
         return $this;
-    }
-
-    #[ORM\PrePersist]
-    public function setCreatedAtValue(): void
-    {
-        $this->createdAt = new DateTimeImmutable();
-    }
-
-    #[ORM\PrePersist]
-    #[ORM\PreUpdate]
-    public function syncBranchFromCashShift(): void
-    {
-        if ($this->branch === null) {
-            if ($this->cashSession !== null) {
-                $this->branch = $this->cashSession->getBranch();
-            } elseif ($this->cashShift !== null) {
-                $this->branch = $this->cashShift->getBranch();
-            }
-        }
     }
 
     public function getBranch(): ?Branch

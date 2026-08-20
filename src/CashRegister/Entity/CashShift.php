@@ -6,137 +6,111 @@ namespace App\CashRegister\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Post;
 use App\CashRegister\Dto\CashSessionClosureSummaryDto;
 use App\CashRegister\Dto\CashSessionXReportDto;
 use App\CashRegister\Enum\CashShiftStatus;
-use App\CashRegister\Repository\CashShiftRepository;
 use App\CashRegister\State\CashSessionClosureSummaryProvider;
 use App\CashRegister\State\CashSessionMovementsProvider;
 use App\CashRegister\State\CashSessionXReportProvider;
 use App\Identity\Entity\User;
 use App\Organization\Entity\Branch;
 use DateTimeImmutable;
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
-use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 
-#[ORM\Entity(repositoryClass: CashShiftRepository::class)]
-#[ApiResource(
-    operations: [
-        new GetCollection(),
-        new Post(),
-        new Get(),
-        new Patch(),
-        new Delete(),
-        new GetCollection(
-            uriTemplate: '/cash-shifts/{id}/movements',
-            uriVariables: [
-                'id' => new Link(fromProperty: 'id', fromClass: CashShift::class),
-            ],
-            paginationEnabled: false,
-            normalizationContext: ['groups' => ['cash_movement:read']],
-            output: CashMovement::class,
-            provider: CashSessionMovementsProvider::class,
-        ),
-        new GetCollection(
-            uriTemplate: '/cash-shifts/{id}/summary',
-            paginationEnabled: false,
-            normalizationContext: ['groups' => ['cash_closure_summary:read']],
-            output: CashSessionClosureSummaryDto::class,
-            provider: CashSessionClosureSummaryProvider::class,
-        ),
-        new Get(
-            uriTemplate: '/cash-shifts/{id}/x-report',
-            paginationEnabled: false,
-            normalizationContext: ['groups' => ['cash_x_report:read']],
-            output: CashSessionXReportDto::class,
-            provider: CashSessionXReportProvider::class,
-        ),
-    ],
-    filters: [DataGridFilter::class],
-    mercure: true,
-)]
+/**
+ * Not a Doctrine entity — kept only as the `fromClass` anchor for the three
+ * `/cash-shifts/{id}/...` sub-resource routes below, which resolve a legacy
+ * shift id to its v2 `cash_session` via `cash_sessions.legacy_cash_shift_id`
+ * (a plain lookup column, never an FK) and therefore still work correctly.
+ * The base CRUD operations this resource used to expose
+ * (GetCollection/Post/Get/Patch/Delete via the default ORM provider) were
+ * removed when the underlying `cash_shift` table was dropped 2026-08-19 —
+ * see ADR-004's amendment.
+ */
+#[ApiResource(operations: [
+    new GetCollection(
+        uriTemplate: '/cash-shifts/{id}/movements',
+        uriVariables: [
+            'id' => new Link(fromProperty: 'id', fromClass: CashShift::class),
+        ],
+        paginationEnabled: false,
+        normalizationContext: ['groups' => ['cash_movement:read']],
+        output: CashMovement::class,
+        provider: CashSessionMovementsProvider::class,
+    ),
+    new GetCollection(
+        uriTemplate: '/cash-shifts/{id}/summary',
+        paginationEnabled: false,
+        normalizationContext: ['groups' => ['cash_closure_summary:read']],
+        output: CashSessionClosureSummaryDto::class,
+        provider: CashSessionClosureSummaryProvider::class,
+    ),
+    new Get(
+        uriTemplate: '/cash-shifts/{id}/x-report',
+        paginationEnabled: false,
+        normalizationContext: ['groups' => ['cash_x_report:read']],
+        output: CashSessionXReportDto::class,
+        provider: CashSessionXReportProvider::class,
+    ),
+], mercure: true)]
 class CashShift
 {
     #[Groups(['cash_shift:read'])]
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    // @phpstan-ignore property.unusedType (class is never instantiated — kept only as the sub-resource Link/fromClass anchor, see class docblock)
     private ?int $id = null;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
     #[ApiProperty(description: 'cash_shift.cash_register.label')]
     private CashRegister $cashRegister;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column(enumType: CashShiftStatus::class)]
     #[ApiProperty(description: 'cash_shift.status.label')]
     private CashShiftStatus $status;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[ApiProperty(description: 'cash_shift.opening_balance.label')]
     private string $openingBalance = '0.00';
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     #[ApiProperty(description: 'cash_shift.closing_balance.label')]
     private ?string $closingBalance = null;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'opened_by', referencedColumnName: 'usuario_id', nullable: false)]
     #[ApiProperty(description: 'cash_shift.opened_by.label')]
     private User $openedBy;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(name: 'closed_by', referencedColumnName: 'usuario_id')]
     #[ApiProperty(description: 'cash_shift.closed_by.label')]
     private ?User $closedBy = null;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column]
     #[ApiProperty(description: 'cash_shift.opened_at.label')]
     private DateTimeImmutable $openedAt;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column(nullable: true)]
     #[ApiProperty(description: 'cash_shift.closed_at.label')]
     private ?DateTimeImmutable $closedAt = null;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     #[ApiProperty(description: 'cash_shift.expected_amount.label')]
     private ?string $expectedAmount = null;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     #[ApiProperty(description: 'cash_shift.counted_amount.label')]
     private ?string $countedAmount = null;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     #[ApiProperty(description: 'cash_shift.difference.label')]
     private ?string $difference = null;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[ApiProperty(description: 'cash_shift.note.label')]
     private ?string $note = null;
 
     #[Groups(['cash_shift:read'])]
-    #[ORM\ManyToOne(targetEntity: Branch::class)]
-    #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
     #[ApiProperty(description: 'cash_shift.branch.label')]
     private ?Branch $branch = null;
 
