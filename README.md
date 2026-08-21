@@ -66,7 +66,7 @@ Opcionales según features:
 
 - `S3_*` (uploads/backups S3)
 - `BILL_API_*` (servicio de facturación)
-- `OPENAI_API_KEY` (AI assistant)
+- `XAI_API_KEY` (AI assistant; falls back to `OPENAI_API_KEY` + `AI_MODEL_CHAT=gpt-4o-mini`)
 
 ## Flujo recomendado local
 
@@ -154,6 +154,22 @@ docker compose exec -T web php bin/console app:menu:sync-mvp --tenant=demo --no-
 ```
 
 No uses `app:seed:initial-data` sobre tenants existentes salvo en un reset controlado: además del menú puede tocar `tenant_settings`, parámetros SUNAT, impresión y flags operativos.
+
+### Preparar una presentación comercial
+
+Usa un tenant nuevo y dedicado para cada prospecto. Tras completar el setup inicial, este comando crea el acceso de dueño y una muestra concisa de clientes, productos, proveedores y ventas; no mezcla datos sintéticos en un tenant que ya opera:
+
+```bash
+docker compose exec -T web php bin/console app:demo:seed --tenant=demo --no-interaction
+```
+
+Acceso creado: `demo@empresa.pe` / `Demo.2026!`. Para una presentación real, cambia la contraseña:
+
+```bash
+docker compose exec -T web php bin/console app:demo:seed --tenant=demo --password='UnaClaveDemoSegura' --no-interaction
+```
+
+El comando se detiene si detecta productos o ventas existentes. Esto es intencional: una demo debe ser reproducible y nunca contaminar información operativa. La barra de depuración Symfony está desactivada por defecto para que no aparezca frente a un prospecto.
 
 Si cargaste una base tenant desde dump o baseline schema y necesitas registrar migraciones como ya aplicadas sin ejecutar SQL:
 
@@ -285,20 +301,17 @@ Deploy manual por compose prod:
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-## Stack IA / MCP
+## Stack IA
 
-El sistema integra un asistente IA y herramientas MCP sobre la misma base Symfony:
+El sistema integra un asistente in-app sobre la misma base Symfony. No hay MCP.
 
 | Componente | Detalle |
 |---|---|
-| `symfony/ai-bundle` | Agente IA, invocado en `POST /api/assistant` |
-| Modelo LLM | OpenAI `gpt-4o-mini` (requiere `OPENAI_API_KEY`) |
-| RAG | Pipeline TF-IDF (`KnowledgeIndex` + `KnowledgeRetriever`) — búsqueda por similitud de coseno |
-| `symfony/mcp-bundle` | Expone herramientas MCP: `SaleTools`, `ProductTools`, `CashRegisterTools`, `DocumentationTools` |
-| Frontend AI | Cliente HTTP interno (`assets/shared/api/HttpClient.ts`) + renderizado Markdown con `marked` |
-
-Las herramientas MCP se registran mediante atributos `#[AsTool]` en `src/AI/Tool/*.php`.
-La configuración HTTP de MCP vive en `config/packages/mcp.yaml` y la ruta se declara en `config/routes/mcp.yaml`.
+| `symfony/ai-bundle` | Agente IA, invocado en `POST /api/assistant` y `/api/assistant/stream` |
+| Modelo LLM | xAI `grok-4.3` por defecto (`XAI_API_KEY`). Fallback OpenAI `gpt-4o-mini` |
+| RAG | Pipeline TF-IDF (`KnowledgeIndex` + `KnowledgeRetriever`) sobre `docs/cashier-user-manual.md` |
+| Herramientas | `#[AsTool]` en `src/AI/Tool/*.php` — llaman servicios de dominio in-process |
+| Frontend AI | Drawer en el admin shell (gated by `ai_assistant`) + Markdown con `marked` |
 
 ## Plan de producto
 

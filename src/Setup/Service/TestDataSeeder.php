@@ -252,6 +252,8 @@ final readonly class TestDataSeeder
         $stats['suppliers_created'] = $this->seedSuppliers($supplierCount, $batchSize);
         $stats['customers_created'] = $this->seedCustomers($customerCount, $batchSize);
         $stats['products_created'] = $this->seedProducts($productCount, $categories, $units, $warehouse, $batchSize);
+        $this->syncLegacyProductStockMirrorToStockItems();
+        $this->replicateStockToAllWarehouses();
 
         $suppliers = $this->supplierRepository->findAll();
         $customers = $this->customerRepository->findAll();
@@ -452,7 +454,6 @@ final readonly class TestDataSeeder
 
         $this->entityManager->flush();
         $this->entityManager->clear();
-        $this->syncLegacyProductStockMirrorToStockItems();
 
         return $created;
     }
@@ -468,6 +469,24 @@ final readonly class TestDataSeeder
                 qty_reserved = 0,
                 updated_at = NOW(),
                 version = version + 1
+            SQL);
+    }
+
+    private function replicateStockToAllWarehouses(): void
+    {
+        $this->connection->executeStatement(<<<'SQL'
+            INSERT INTO stock_items (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, version)
+            SELECT a.almacen_id, src.product_id, src.qty_on_hand, 0, NOW(), 1
+            FROM (
+                SELECT product_id, MAX(qty_on_hand) AS qty_on_hand
+                FROM stock_items
+                GROUP BY product_id
+            ) src
+            CROSS JOIN almacen a
+            WHERE NOT EXISTS (
+                SELECT 1 FROM stock_items x
+                WHERE x.warehouse_id = a.almacen_id AND x.product_id = src.product_id
+            )
             SQL);
     }
 
@@ -502,7 +521,7 @@ final readonly class TestDataSeeder
                 $name = self::PRODUCT_NAMES[($i - 1) % count(self::PRODUCT_NAMES)] . ' #' . $i;
                 $purchasePrice = number_format(random_int(10, 1000) / 10, 2, '.', '');
                 $salePrice = number_format((float) $purchasePrice * (1 + (random_int(20, 80) / 100)), 2, '.', '');
-                $stock = (string) random_int(0, 500);
+                $stock = (string) random_int(25, 500);
                 $minStock = (string) random_int(5, 20);
 
                 $product = new Product();

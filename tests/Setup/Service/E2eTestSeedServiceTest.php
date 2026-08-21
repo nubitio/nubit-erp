@@ -32,6 +32,7 @@ use App\Organization\Entity\Branch;
 use App\Organization\Repository\BranchRepository;
 use App\Organization\Repository\CompanyRepository;
 use App\Sales\Entity\SaleRecord;
+use App\Sales\Repository\DashboardRepository;
 use App\Settings\Entity\TenantSettings;
 use App\Settings\Service\TenantSettingsService;
 use App\Setup\Dto\SetupStatusDto;
@@ -72,6 +73,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $voucherSeriesRepository = $this->createStub(VoucherSeriesRepository::class);
         $paymentMethodRepository = $this->createMock(PaymentMethodRepository::class);
         $cashRegisterRepository = $this->createMock(CashRegisterRepository::class);
+        $dashboardRepository = $this->createStub(DashboardRepository::class);
 
         $initialSetupService->method('status')->willReturn(new SetupStatusDto(true, 1, 1, 1));
 
@@ -187,6 +189,7 @@ final class E2eTestSeedServiceTest extends TestCase
             $voucherSeriesRepository,
             $paymentMethodRepository,
             $cashRegisterRepository,
+            $dashboardRepository,
         );
 
         $seed = $service->seed();
@@ -219,6 +222,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $voucherSeriesRepository = $this->createStub(VoucherSeriesRepository::class);
         $paymentMethodRepository = $this->createMock(PaymentMethodRepository::class);
         $cashRegisterRepository = $this->createMock(CashRegisterRepository::class);
+        $dashboardRepository = $this->createStub(DashboardRepository::class);
 
         $user = new User()->setUsername('ci_e2e_user');
         $this->setEntityId($user, 'id', 9);
@@ -285,6 +289,7 @@ final class E2eTestSeedServiceTest extends TestCase
             $voucherSeriesRepository,
             $paymentMethodRepository,
             $cashRegisterRepository,
+            $dashboardRepository,
         );
 
         $service->reset();

@@ -604,6 +604,13 @@ readonly class InitialSetupService
         );
     }
 
+    public function ensureDefaultVoucherSeriesForAllBranches(): void
+    {
+        foreach ($this->branchRepository->findAll() as $branch) {
+            $this->ensureVoucherSeriesForBranch($branch);
+        }
+    }
+
     private function ensureVoucherSeriesForBranch(Branch $branch): void
     {
         $seriesList = [

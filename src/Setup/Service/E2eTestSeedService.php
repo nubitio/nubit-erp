@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Setup\Service;
 
 use App\CashRegister\Entity\CashRegister;
+use App\CashRegister\Entity\CashSession;
 use App\CashRegister\Repository\CashRegisterRepository;
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\PaymentMethod;
@@ -35,6 +36,7 @@ use App\Organization\Repository\BranchRepository;
 use App\Organization\Repository\CompanyRepository;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
+use App\Sales\Repository\DashboardRepository;
 use App\Settings\Service\TenantSettingsService;
 use App\Setup\Dto\InitialSetupInput;
 use App\Setup\InitialSetupService;
@@ -83,6 +85,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         private readonly VoucherSeriesRepository $voucherSeriesRepository,
         private readonly PaymentMethodRepository $paymentMethodRepository,
         private readonly CashRegisterRepository $cashRegisterRepository,
+        private readonly DashboardRepository $dashboardRepository,
     ) {}
 
     /**
@@ -124,6 +127,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $cashRegister = $this->upsertCashRegister($branch);
         $this->purgeE2eSales();
         $this->purgeE2eCashSessions($cashRegister);
+        $this->openE2eCashSession($cashRegister, $branch, $user);
         $this->ensureVoucherSeries($branch);
 
         $customer = $this->upsertCustomer();
@@ -503,7 +507,51 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $this->entityManager->persist($item);
         $this->entityManager->flush();
 
+        // Dashboard payment widgets read the normalized V2 table, not the
+        // legacy payment fields on SaleRecord.
+        $this->connection->executeStatement(
+            'INSERT INTO sale_payments (sale_id, payment_method_id, amount, currency, paid_at, created_at, sync_status, version_no, last_modified_at) VALUES (?, ?, ?, ?, NOW(), NOW(), ?, 1, NOW())',
+            [(string) $sale->getId(), $paymentMethod->getId(), '10.00', 'PEN', 'SYNCED'],
+        );
+
+        $this->refreshDashboardSummary($branch, $sale);
+
         return $sale;
+    }
+
+    /**
+     * Direct seed inserts bypass SalesWriteGateway. Rebuild the matching
+     * aggregate and invalidate its cache so dashboard KPIs match the seeded
+     * recent sale shown to a prospect.
+     */
+    private function refreshDashboardSummary(Branch $branch, SaleRecord $sale): void
+    {
+        $issuedAt = $sale->getFecha() ?? new \DateTimeImmutable('now', new \DateTimeZone('America/Lima'));
+        $saleDate = \DateTimeImmutable::createFromInterface($issuedAt)
+            ->setTimezone(new \DateTimeZone('America/Lima'))
+            ->format('Y-m-d');
+
+        $this->connection->executeStatement(
+            <<<'SQL'
+                INSERT INTO branch_daily_summary
+                    (summary_date, branch_id, sales_count, gross_sales, discount_total, tax_total, net_sales, refunds_total)
+                SELECT
+                    :sale_date, :branch_id, COUNT(*),
+                    COALESCE(SUM(grand_total), 0), COALESCE(SUM(discount_total), 0),
+                    COALESCE(SUM(tax_total), 0), COALESCE(SUM(grand_total - tax_total), 0), 0
+                FROM sales
+                WHERE branch_id = :branch_id
+                  AND DATE(CONVERT_TZ(issued_at, '+00:00', 'America/Lima')) = :sale_date
+                  AND status != 'VOIDED'
+                ON DUPLICATE KEY UPDATE
+                    sales_count = VALUES(sales_count), gross_sales = VALUES(gross_sales),
+                    discount_total = VALUES(discount_total), tax_total = VALUES(tax_total),
+                    net_sales = VALUES(net_sales), updated_at = NOW()
+                SQL,
+            ['sale_date' => $saleDate, 'branch_id' => (string) $branch->getId()],
+        );
+
+        $this->dashboardRepository->invalidate((string) $branch->getId());
     }
 
     private function purgeE2eSales(): void
@@ -563,7 +611,12 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
     private function resolveUserRole(): Role
     {
-        $role = $this->roleRepository->find(3) ?? $this->roleRepository->find(2) ?? $this->roleRepository->find(1);
+        // The E2E user drives end-to-end business flows (POS, catalog,
+        // purchases, inventory and cash).  It must therefore use the
+        // owner role. Assigning it the cashier role made the menu
+        // advertise screens that immediately answered with 403, hiding real
+        // regressions behind an unusable test/demo session.
+        $role = $this->roleRepository->find(1) ?? $this->roleRepository->find(2) ?? $this->roleRepository->find(3);
 
         if (!$role instanceof Role) {
             throw new \RuntimeException('No role found for E2E user.');
@@ -624,5 +677,27 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $this->entityManager->flush();
 
         return $cashRegister;
+    }
+
+    /** Keep the POS ready to charge immediately after a demo seed. */
+    private function openE2eCashSession(CashRegister $cashRegister, Branch $branch, User $user): void
+    {
+        $now = new DateTimeImmutable();
+        $session = (new CashSession())
+            ->setCashRegister($cashRegister)
+            ->setBranch($branch)
+            ->setOpenedBy($user)
+            ->setStatus('OPEN')
+            ->setOpeningAmount('200.00')
+            ->setOpenedAt($now)
+            ->setCreatedAt($now);
+
+        $this->entityManager->persist($session);
+        $this->entityManager->flush();
+
+        $this->connection->executeStatement(
+            'INSERT INTO cash_movements (cash_session_id, movement_type, amount, description, created_by, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+            [$session->getId(), 'OPENING', '200.00', 'Saldo inicial de demostración', $user->getId()],
+        );
     }
 }

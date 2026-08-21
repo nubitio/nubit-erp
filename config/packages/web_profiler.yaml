@@ -1,6 +1,10 @@
 when@dev:
     web_profiler:
-        toolbar: true
+        # A presentation should never expose request timings, route names or
+        # framework internals to a prospect. Enable it temporarily only while
+        # diagnosing a request in this local development stack.
+        toolbar:
+            enabled: false
 
     framework:
         profiler:
