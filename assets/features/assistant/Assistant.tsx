@@ -1,4 +1,4 @@
-import React, { FormEvent, useCallback, useMemo, useRef, useState } from 'react';
+import React, { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { marked } from 'marked';
 import HTMLReactParser from 'html-react-parser';
 import { useLocation } from 'react-router-dom';
@@ -7,10 +7,13 @@ import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
 import toast from '@shared/lib/SharedUtils';
 import {
+  assistantService,
   type AssistantAttachmentPayload,
   type AssistantChatMessage,
 } from './services/assistantService';
+import { ASSISTANT_PREFILL_KEY } from './requestAssistantHelp';
 import { QuerySuggestionChips } from './components/QuerySuggestionChips';
+import { ActionCard, type ProposedAction } from './components/ActionCard';
 import { useAssistantStream } from './hooks/useAssistantStream';
 import type { ScreenContext } from './types';
 import './Assistant.scss';
@@ -23,10 +26,15 @@ type ChatMessage = {
   text: string;
   timestamp: Date;
   attachments?: AssistantAttachmentPayload[];
+  actions?: ProposedAction[];
 };
 
 type AssistantProps = {
   showToolbar?: boolean;
+  screen?: ScreenContext['screen'];
+  screenExtra?: Record<string, unknown>;
+  entityType?: string;
+  entityId?: string;
 };
 
 type SpeechRecognitionLike = {
@@ -93,6 +101,9 @@ function AssistantMessageBubble({
             ))}
           </div>
         )}
+        {message.actions?.map((action) => (
+          <ActionCard key={action.id} action={action} />
+        ))}
         {isLastAssistantMessage && message.text !== REGENERATION_TEXT && (
           <div className="bubble-button-container">
             <IconButton icon={`ph ph-${copied ? 'check' : 'copy'}`} label="Copy" onClick={onCopy} />
@@ -123,7 +134,13 @@ async function uploadFile(file: File): Promise<AssistantAttachmentPayload> {
   };
 }
 
-export default function Assistant({ showToolbar = true }: AssistantProps) {
+export default function Assistant({
+  showToolbar = true,
+  screen: screenOverride,
+  screenExtra,
+  entityType,
+  entityId,
+}: AssistantProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
@@ -134,20 +151,53 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
   const { streamingText, status, stream, abort } = useAssistantStream();
   const isProcessing = status === 'streaming';
 
+  useEffect(() => {
+    let cancelled = false;
+    void assistantService
+      .currentThread()
+      .then((thread) => {
+        if (cancelled || thread.messages.length === 0) return;
+        setMessages(
+          thread.messages.map((message, index) => ({
+            id: Date.parse(message.createdAt) + index,
+            role: message.role,
+            text: message.content,
+            timestamp: new Date(message.createdAt),
+            actions: message.actions ?? undefined,
+          })),
+        );
+      })
+      .catch(() => {
+        /* fail closed: empty chat */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Derive screen context from the current route so the AI knows where the user is
   const { pathname } = useLocation();
   const screenContext = useMemo((): ScreenContext => {
-    if (pathname.startsWith('/pos')) return { screen: 'pos' };
-    if (pathname.startsWith('/dashboard')) return { screen: 'dashboard' };
-    if (pathname.startsWith('/sale')) return { screen: 'sale_form' };
-    if (pathname.startsWith('/inventory')) return { screen: 'inventory' };
-    if (pathname.startsWith('/cash')) return { screen: 'cash_register' };
-    if (pathname.startsWith('/customer')) return { screen: 'customers' };
-    if (pathname.startsWith('/product')) return { screen: 'products' };
-    if (pathname.startsWith('/purchase')) return { screen: 'purchases' };
-    if (pathname.startsWith('/report')) return { screen: 'dashboard' };
-    return { screen: pathname.replace(/^\//, '').split('/')[0] ?? 'unknown' };
-  }, [pathname]);
+    let screen: ScreenContext['screen'] = pathname.replace(/^\//, '').split('/')[0] ?? 'unknown';
+    if (screenOverride) screen = screenOverride;
+    else if (pathname.startsWith('/pos')) screen = 'pos';
+    else if (pathname.startsWith('/dashboard')) screen = 'dashboard';
+    else if (pathname.startsWith('/sale')) screen = 'sale_form';
+    else if (pathname.startsWith('/inventory')) screen = 'inventory';
+    else if (pathname.startsWith('/cash')) screen = 'cash_register';
+    else if (pathname.startsWith('/customer')) screen = 'customers';
+    else if (pathname.startsWith('/product')) screen = 'products';
+    else if (pathname.startsWith('/purchase')) screen = 'purchases';
+    else if (pathname.startsWith('/report')) screen = 'dashboard';
+
+    const entityMatch = pathname.match(/\/([0-9a-fA-F-]{8,}|[0-9]+)(?:\/|$)/);
+    return {
+      screen,
+      entityType: entityType ?? (entityMatch ? screen.replace(/s$/, '') : undefined),
+      entityId: entityId ?? entityMatch?.[1],
+      extra: screenExtra,
+    };
+  }, [pathname, screenOverride, screenExtra, entityType, entityId]);
 
   const lastAssistantMessageId = useMemo(
     () => [...messages].reverse().find((message) => message.role === 'assistant')?.id,
@@ -174,7 +224,7 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
       ]);
 
       try {
-        const fullText = await stream(
+        const result = await stream(
           [...currentMessages, message].map(messageToHistory),
           attachments,
           screenContext,
@@ -183,7 +233,7 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
         // Replace placeholder with final text once streaming completes
         setMessages((existing) =>
           existing.map((m) =>
-            m.id === placeholderId ? { ...m, text: fullText } : m,
+            m.id === placeholderId ? { ...m, text: result.text, actions: result.actions } : m,
           ),
         );
       } catch (error: unknown) {
@@ -242,6 +292,33 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
     [sendMessage],
   );
 
+  const sendMessageRef = useRef(sendMessage);
+  sendMessageRef.current = sendMessage;
+
+  useEffect(() => {
+    const consume = (query: string) => {
+      const trimmed = query.trim();
+      if (trimmed === '') return;
+      void sendMessageRef.current(trimmed);
+    };
+
+    const stored = sessionStorage.getItem(ASSISTANT_PREFILL_KEY);
+    if (stored) {
+      sessionStorage.removeItem(ASSISTANT_PREFILL_KEY);
+      consume(stored);
+    }
+
+    const onPrefill = (event: Event) => {
+      const query = (event as CustomEvent<{ query?: string }>).detail?.query;
+      if (typeof query === 'string') {
+        sessionStorage.removeItem(ASSISTANT_PREFILL_KEY);
+        consume(query);
+      }
+    };
+    window.addEventListener('efact:assistant-prefill', onPrefill);
+    return () => window.removeEventListener('efact:assistant-prefill', onPrefill);
+  }, []);
+
   const onRegenerate = useCallback(async () => {
     if (isProcessing) return;
     const lastAssistantIndex = messages.findLastIndex((message) => message.role === 'assistant');
@@ -258,10 +335,12 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
     );
 
     try {
-      const fullText = await stream(history.map(messageToHistory), undefined, screenContext);
+      const result = await stream(history.map(messageToHistory), undefined, screenContext);
       setMessages((existing) =>
         existing.map((message, index) =>
-          index === lastAssistantIndex ? { ...message, text: fullText } : message,
+          index === lastAssistantIndex
+            ? { ...message, text: result.text, actions: result.actions }
+            : message,
         ),
       );
     } catch (error: unknown) {
@@ -294,8 +373,22 @@ export default function Assistant({ showToolbar = true }: AssistantProps) {
     recognition.start();
   }, []);
 
+  const startNewConversation = useCallback(() => {
+    abort();
+    setMessages([]);
+    setInputText('');
+    void assistantService.startNewThread().catch(() => {
+      toast('No se pudo iniciar una conversación nueva.', 'error');
+    });
+  }, [abort]);
+
   const chat = (
     <div className="chat-container mt-4">
+      <div className="chat-thread-bar">
+        <button type="button" className="chat-thread-bar__new" onClick={startNewConversation}>
+          Nueva conversación
+        </button>
+      </div>
       <div ref={messageListRef} className="chat-message-list" aria-live="polite">
         {messages.length === 0 ? (
           <div className="chat-empty-view-center">

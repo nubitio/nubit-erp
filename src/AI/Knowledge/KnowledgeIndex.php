@@ -6,7 +6,6 @@ namespace App\AI\Knowledge;
 
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Uid\Uuid;
 
 final class KnowledgeIndex implements KnowledgeIndexInterface
@@ -24,7 +23,7 @@ final class KnowledgeIndex implements KnowledgeIndexInterface
      */
     public function build(): array
     {
-        $docs = $this->collectDocuments($this->projectDir . '/docs');
+        $docs = $this->collectDocuments();
         $chunks = $this->chunkDocuments($docs);
 
         if ([] === $chunks) {
@@ -109,31 +108,29 @@ final class KnowledgeIndex implements KnowledgeIndexInterface
     }
 
     /**
+     * Only the cashier user manual is indexed. Architecture ADRs and
+     * internal plans must not leak to tenant operators.
+     *
      * @return array<int, array{path: string, content: string}>
      */
-    private function collectDocuments(string $directory): array
+    private function collectDocuments(): array
     {
-        if (!is_dir($directory)) {
+        $path = $this->projectDir . '/docs/cashier-user-manual.md';
+        if (!is_file($path)) {
             return [];
         }
 
-        $finder = new Finder();
-        $finder->files()->in($directory)->name('*.md');
-
-        $docs = [];
-        foreach ($finder as $file) {
-            $contents = $file->getContents();
-            if ('' === trim($contents)) {
-                continue;
-            }
-
-            $docs[] = [
-                'path' => $file->getRelativePathname(),
-                'content' => $contents,
-            ];
+        $contents = (string) file_get_contents($path);
+        if ('' === trim($contents)) {
+            return [];
         }
 
-        return $docs;
+        return [
+            [
+                'path' => 'cashier-user-manual.md',
+                'content' => $contents,
+            ],
+        ];
     }
 
     /**

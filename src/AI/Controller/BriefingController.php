@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\AI\Controller;
 
 use App\AI\Briefing\DailyBriefingService;
+use Nubit\Platform\Feature\Attribute\RequiresFeature;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,6 +20,7 @@ use Throwable;
  * cached in Redis for 20 hours. This endpoint serves the cached value instantly;
  * on cache miss it generates on-demand (< 3 s).
  */
+#[RequiresFeature('ai_assistant')]
 #[Route('/api/assistant/briefing', name: 'api_assistant_briefing', methods: ['GET'])]
 class BriefingController extends AbstractController
 {

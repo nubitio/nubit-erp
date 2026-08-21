@@ -1,0 +1,27 @@
+.onboarding-help {
+  border: 1px solid var(--border-color, rgba(0, 0, 0, .12));
+  border-radius: 12px;
+  padding: 16px;
+  background: var(--surface-2, #f3f4f7);
+}
+
+.onboarding-help__title {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.onboarding-help__item {
+  margin: 0 0 8px;
+}
+
+.onboarding-help__item summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.onboarding-help__item p {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary, #5f6368);
+}

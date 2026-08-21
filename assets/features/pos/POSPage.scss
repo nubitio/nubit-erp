@@ -984,7 +984,8 @@
 }
 
 // Caja closed banner inside panel
-.pos-caja-closed-banner {
+.pos-caja-closed-banner,
+.pos-checkout-error-banner {
   padding: 0.55rem 1rem;
   background: var(--pos-danger-soft);
   color: var(--pos-danger);
@@ -993,6 +994,15 @@
   border-bottom: 1px solid var(--pos-danger-soft);
   flex-shrink: 0;
   text-align: center;
+}
+
+.pos-checkout-error-banner {
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.pos-footer-options__badge.is-sunat {
+  color: var(--pos-success);
 }
 
 .pos-panel__header {
@@ -2370,6 +2380,8 @@
 
   &__actions {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: var(--space-2);
     margin-top: var(--space-2);
   }
@@ -2677,4 +2689,35 @@ html[data-density="comfortable"] {
     padding: var(--space-2) var(--space-5);
     &__name { font-size: var(--font-size-md); }
   }
+}
+
+.pos-assistant-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: flex-end;
+  background: color-mix(in srgb, #000 24%, transparent);
+}
+
+.pos-assistant-overlay__panel {
+  width: min(520px, 100%);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--pos-card);
+  border-left: 1px solid var(--pos-border);
+}
+
+.pos-assistant-overlay__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--pos-border);
+}
+
+.pos-assistant-overlay__offline {
+  margin: 24px 16px;
+  color: var(--pos-muted);
 }

@@ -82,7 +82,7 @@ final readonly class SessionContextBuilder
     private function resolveRoleLabel(int $roleId): string
     {
         return match ($roleId) {
-            1 => 'SUPER_ADMIN',
+            0, 1 => 'SUPER_ADMIN',
             2 => 'ADMIN',
             3 => 'CASHIER',
             default => 'UNKNOWN',

@@ -19,6 +19,7 @@ use App\AI\Dto\AssistantResponse;
             output: AssistantResponse::class,
             read: false,
             controller: AssistantController::class,
+            security: "is_granted('FEATURE_AI_ASSISTANT')",
         ),
     ],
     paginationEnabled: false,

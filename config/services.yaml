@@ -11,7 +11,6 @@ parameters:
   jwt_refresh_token_ttl: '%env(int:REFRESH_TOKEN_TTL)%'
   tenant_rate_limit: '300'
   tenant_rate_window: '60'
-  app.api_base_url: '%env(APP_API_BASE_URL)%'
   mercadopago_access_token: ''
   mercadopago_webhook_secret: ''
   mercadopago_plan_map: '{}'
@@ -66,6 +65,11 @@ services:
 
   # Media URLs go straight to S3/CDN instead of the bundle streaming route.
   Nubit\AdminBundle\Media\MediaUrlResolverInterface: '@App\Efact\Filesystem\S3MediaUrlResolver'
+
+  ai.platform.assistant:
+    class: Symfony\AI\Platform\Platform
+    lazy: true
+    factory: ['@App\AI\Platform\AssistantPlatformFactory', 'create']
 
   App\Setup\Infrastructure\Billing\E2eStubBillRepository:
     decorates: App\Billing\Sunat\Infrastructure\BillRepository

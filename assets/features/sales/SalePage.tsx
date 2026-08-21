@@ -27,6 +27,8 @@ import { applySaleAutoInvoiceOnAdd, saleEvents, useSalePageObservers } from './m
 import { Setting, settings } from '@shared/settings';
 import { cloneSaleToForm, createInvoicePrinter, runMakeInvoiceAction, runReplaceRejectedAction, runVoidSaleAction } from './lib';
 import { createSaleToolbar, useSalePrintPreview } from './ui';
+import { requestAssistantHelp } from '@features/assistant';
+import { useFeature } from '@shared/hooks';
 import { CustomerPage, CustomerFields, customerFormLayout } from '@features/customer';
 import { SalePrintPreviewPopup } from './SalePrintPreviewPopup';
 import { SaleTaxDocumentsDialog } from './SaleTaxDocumentsDialog';
@@ -105,6 +107,7 @@ export const SalePage = () => {
   const [documentsDialogSaleId, setDocumentsDialogSaleId] = useState<string | null>(null);
   const [saleFormOpen, setSaleFormOpen] = useState(false);
   const { currentBranchId, currentUserId } = useSessionInfo();
+  const assistantEnabled = useFeature('ai_assistant');
 
   const formHandleProxy = useMemo<FormHandle>(() => ({
     getFormData: () => formRef.current?.getFormData(),
@@ -342,6 +345,12 @@ export const SalePage = () => {
         loadingEventName: FORM_EVENTS.LOADING,
       }),
     onReplaceRejected: replaceRejected,
+    onExplainWithAi: assistantEnabled
+      ? (saleId) =>
+          requestAssistantHelp(
+            `Explica el estado SUNAT de la venta ${saleId}. Si el comprobante fue rechazado, propone reemplazarlo. Si fue aceptado y hay que anularlo o devolverlo, propone una nota de crédito. Nunca sugieras saltarse SUNAT.`,
+          )
+      : undefined,
     onViewDocuments: (saleId) => setDocumentsDialogSaleId(saleId),
     printEnabled,
     cloneEnabled,

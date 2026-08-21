@@ -21,6 +21,22 @@ export type AssistantResponse = {
   message: string;
 };
 
+export type AssistantThreadPayload = {
+  id: string | null;
+  messages: Array<{
+    role: 'user' | 'assistant';
+    content: string;
+    createdAt: string;
+    actions: Array<{
+      id: string;
+      kind: string;
+      summary: string;
+      payload?: Record<string, unknown>;
+      expiresAt?: string;
+    }> | null;
+  }>;
+};
+
 export type AssistantChatRequest = {
   messages: AssistantChatMessage[];
   attachments?: AssistantAttachmentPayload[];
@@ -45,6 +61,18 @@ class AssistantService {
 
       return { message };
     });
+  }
+
+  currentThread(): Promise<AssistantThreadPayload> {
+    return httpClient
+      .get<AssistantThreadPayload>(`${API}assistant/thread`)
+      .then((response: ApiResponse<AssistantThreadPayload>) => response.data ?? { id: null, messages: [] });
+  }
+
+  startNewThread(): Promise<AssistantThreadPayload> {
+    return httpClient
+      .post<AssistantThreadPayload>(`${API}assistant/thread`, {})
+      .then((response: ApiResponse<AssistantThreadPayload>) => response.data ?? { id: null, messages: [] });
   }
 }
 

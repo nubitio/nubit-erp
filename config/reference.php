@@ -1885,37 +1885,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         preload_attributes?: list<scalar|Param|null>,
  *     }>,
  * }
- * @psalm-type McpConfig = array{
- *     app?: scalar|Param|null, // Default: "app"
- *     version?: scalar|Param|null, // Default: "0.0.1"
- *     description?: scalar|Param|null, // Default: null
- *     icons?: list<array{ // Default: []
- *         src?: scalar|Param|null,
- *         mime_type?: scalar|Param|null, // Default: null
- *         sizes?: list<scalar|Param|null>,
- *     }>,
- *     website_url?: scalar|Param|null, // Default: null
- *     pagination_limit?: int|Param, // Default: 50
- *     instructions?: scalar|Param|null, // Default: null
- *     client_transports?: array{
- *         stdio?: bool|Param, // Default: false
- *         http?: bool|Param, // Default: false
- *     },
- *     discovery?: array{
- *         scan_dirs?: list<scalar|Param|null>,
- *         exclude_dirs?: list<scalar|Param|null>,
- *     },
- *     http?: array{
- *         path?: scalar|Param|null, // Default: "/_mcp"
- *         session?: array{
- *             store?: "file"|"memory"|"cache"|Param, // Default: "file"
- *             directory?: scalar|Param|null, // Default: "%kernel.cache_dir%/mcp-sessions"
- *             cache_pool?: scalar|Param|null, // Default: "cache.mcp.sessions"
- *             prefix?: scalar|Param|null, // Default: "mcp-"
- *             ttl?: int|Param, // Default: 3600
- *         },
- *     },
- * }
  * @psalm-type AiConfig = array{
  *     platform?: array{
  *         albert?: array{
@@ -2466,7 +2435,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     api_platform?: ApiPlatformConfig,
  *     oneup_flysystem?: OneupFlysystemConfig,
  *     pentatrion_vite?: PentatrionViteConfig,
- *     mcp?: McpConfig,
  *     ai?: AiConfig,
  *     mercure?: MercureConfig,
  *     nubit_admin?: NubitAdminConfig,
@@ -2488,7 +2456,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         api_platform?: ApiPlatformConfig,
  *         oneup_flysystem?: OneupFlysystemConfig,
  *         pentatrion_vite?: PentatrionViteConfig,
- *         mcp?: McpConfig,
  *         ai?: AiConfig,
  *         mercure?: MercureConfig,
  *         nubit_admin?: NubitAdminConfig,
@@ -2508,7 +2475,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         api_platform?: ApiPlatformConfig,
  *         oneup_flysystem?: OneupFlysystemConfig,
  *         pentatrion_vite?: PentatrionViteConfig,
- *         mcp?: McpConfig,
  *         ai?: AiConfig,
  *         mercure?: MercureConfig,
  *         nubit_admin?: NubitAdminConfig,
@@ -2529,7 +2495,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         api_platform?: ApiPlatformConfig,
  *         oneup_flysystem?: OneupFlysystemConfig,
  *         pentatrion_vite?: PentatrionViteConfig,
- *         mcp?: McpConfig,
  *         ai?: AiConfig,
  *         mercure?: MercureConfig,
  *         nubit_admin?: NubitAdminConfig,

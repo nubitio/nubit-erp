@@ -18,7 +18,7 @@ import { NotificationPanel } from './components/NotificationPanel';
 import { BranchPicker } from './components/BranchPicker';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
 import { SessionExpiredDialog } from './components/SessionExpiredDialog';
-import { useTenantRuntimeConfig } from '@shared/hooks';
+import { useFeature, useTenantRuntimeConfig } from '@shared/hooks';
 
 // Lazy-load the chat panel so it doesn't bloat the initial bundle
 const Assistant = lazy(() => import('@features/assistant/Assistant'));
@@ -41,6 +41,18 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
   if (assistantOpen) assistantEverOpenedRef.current = true;
   const { unreadCount, notifications, loading, markRead, markAllRead } = useNotifications();
   const { data: runtimeConfig, isError: runtimeConfigError } = useTenantRuntimeConfig();
+  const assistantEnabled = useFeature('ai_assistant');
+
+  useEffect(() => {
+    const onOpen = () => {
+      if (!assistantEnabled) {
+        return;
+      }
+      setAssistantOpen(true);
+    };
+    window.addEventListener('efact:assistant-open', onOpen);
+    return () => window.removeEventListener('efact:assistant-open', onOpen);
+  }, [assistantEnabled]);
 
   useEffect(() => {
     if (!runtimeConfig && !runtimeConfigError) {
@@ -63,12 +75,16 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
         title={title}
         menuItems={menuItems}
         headerActions={[
-          {
-            id: 'assistant',
-            icon: 'ph ph-sparkle',
-            label: 'Asistente de IA',
-            onClick: () => setAssistantOpen((prev) => !prev),
-          },
+          ...(assistantEnabled
+            ? [
+                {
+                  id: 'assistant',
+                  icon: 'ph ph-sparkle',
+                  label: 'Asistente de IA',
+                  onClick: () => setAssistantOpen((prev) => !prev),
+                },
+              ]
+            : []),
           {
             id: 'notifications',
             icon: 'ph ph-bell',
@@ -92,23 +108,24 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
           />
         )}
         renderThemeSwitcher={() => <ThemeSwitcher />}
-        footer={<span className="nb-admin-footer-copyright">© {new Date().getFullYear()} Nubit Labs</span>}
+        footer={<span className="nb-admin-footer-copyright">© {new Date().getFullYear()} Efact</span>}
       >
         {children}
       </AdminShell>
 
-      {/* AI Assistant drawer */}
-      <Drawer
-        isOpen={assistantOpen}
-        onClose={() => setAssistantOpen(false)}
-        title="Asistente de IA"
-        width={520}
-        scrim="subtle"
-      >
-        <Suspense fallback={null}>
-          {assistantEverOpenedRef.current && <Assistant showToolbar={false} />}
-        </Suspense>
-      </Drawer>
+      {assistantEnabled && (
+        <Drawer
+          isOpen={assistantOpen}
+          onClose={() => setAssistantOpen(false)}
+          title="Asistente de IA"
+          width={520}
+          scrim="subtle"
+        >
+          <Suspense fallback={null}>
+            {assistantEverOpenedRef.current && <Assistant showToolbar={false} />}
+          </Suspense>
+        </Drawer>
+      )}
 
       {/* Notification drawer */}
       <Drawer

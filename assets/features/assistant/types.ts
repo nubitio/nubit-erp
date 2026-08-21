@@ -16,9 +16,12 @@ export type ScreenContext = {
     | 'products'
     | 'purchases'
     | 'reports'
+    | 'onboarding'
     | string;
   /** Entity type being viewed (e.g. "sale", "product", "customer"). */
   entityType?: string;
   /** UUID or numeric ID of the active entity. */
   entityId?: string;
+  /** Screen-specific extras (POS cart, form snapshot). */
+  extra?: Record<string, unknown>;
 };

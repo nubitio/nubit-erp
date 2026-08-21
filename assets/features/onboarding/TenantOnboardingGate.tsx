@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Button, FileDropzone, FormField, TextField, Timeline, TimelineItem } from '@nubitio/ui';
@@ -6,6 +6,7 @@ import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import {
   useApplyTenantPreset,
   useCompleteTenantOnboarding,
+  useFeature,
   useTenantRuntimeConfig,
   useUploadTenantCertificate,
 } from '@shared/hooks';
@@ -16,11 +17,23 @@ import {
   type SaveCompanyInput,
   type SaveWarehouseInput,
 } from './tenantOnboardingService';
+import { OnboardingHelp } from './OnboardingHelp';
 import './TenantOnboardingGate.scss';
+
+const Assistant = lazy(() => import('@features/assistant/Assistant'));
 
 const STEPS = ['Welcome', 'Company', 'SUNAT', 'Branch', 'Warehouse', 'Done'] as const;
 
 type StepKey = (typeof STEPS)[number];
+
+const STEP_LABEL: Record<StepKey, string> = {
+  Welcome: 'Giro',
+  Company: 'Empresa',
+  SUNAT: 'SUNAT',
+  Branch: 'Local',
+  Warehouse: 'Almacén',
+  Done: 'Listo',
+};
 
 const STEP_META: Record<StepKey, { title: string; subtitle: string }> = {
   Welcome: {
@@ -28,24 +41,24 @@ const STEP_META: Record<StepKey, { title: string; subtitle: string }> = {
     subtitle: 'Ajustaremos inventario, facturación y menús para que eFact arranque simple.',
   },
   Company: {
-    title: 'Company information',
-    subtitle: 'Enter your RUC to auto-fill from SUNAT records.',
+    title: 'Datos de tu empresa',
+    subtitle: 'Ingresa el RUC para completar razón social y domicilio fiscal desde SUNAT.',
   },
   SUNAT: {
-    title: 'SUNAT connection',
-    subtitle: 'Enter your SOL credentials to send electronic documents.',
+    title: 'Conexión con SUNAT',
+    subtitle: 'Ingresa tus credenciales SOL y el certificado para emitir comprobantes electrónicos.',
   },
   Branch: {
-    title: 'Your first branch',
-    subtitle: 'You can add more branches later from Settings.',
+    title: 'Tu primer local',
+    subtitle: 'Puedes agregar más sucursales después desde Configuración.',
   },
   Warehouse: {
-    title: 'First warehouse',
-    subtitle: 'Linked to your branch. Add more warehouses later.',
+    title: 'Tu almacén',
+    subtitle: 'Queda vinculado a tu local. Puedes agregar más almacenes después.',
   },
   Done: {
-    title: "You're all set!",
-    subtitle: "Your Efact account is ready. Here's a summary of what was configured:",
+    title: '¡Listo para vender!',
+    subtitle: 'Tu cuenta de eFact quedó configurada. Resumen:',
   },
 };
 
@@ -81,6 +94,33 @@ export function TenantOnboardingGate() {
   const [certificateFile, setCertificateFile] = useState<File | null>(null);
   const [sunat, setSunat] = useState({ solUser: '', solPass: '', certificatePassword: '' });
   const [sunatSkipped, setSunatSkipped] = useState(false);
+  const assistantEnabled = useFeature('ai_assistant');
+
+  useEffect(() => {
+    const onFill = (event: Event) => {
+      const payload = (event as CustomEvent<Record<string, unknown>>).detail ?? {};
+      setCompany((current) => ({
+        ...current,
+        ruc: typeof payload.ruc === 'string' ? payload.ruc.replace(/\D/g, '').slice(0, 11) : current.ruc,
+        businessName: typeof payload.businessName === 'string' ? payload.businessName : current.businessName,
+        tradeName: typeof payload.tradeName === 'string' ? payload.tradeName : current.tradeName,
+        fiscalAddress: typeof payload.fiscalAddress === 'string' ? payload.fiscalAddress : current.fiscalAddress,
+        phone: typeof payload.phone === 'string' ? payload.phone : current.phone,
+      }));
+      setBranch((current) => ({
+        ...current,
+        name: typeof payload.branchName === 'string' ? payload.branchName : current.name,
+        invoiceSeries: typeof payload.invoiceSeries === 'string' ? payload.invoiceSeries : current.invoiceSeries,
+        receiptSeries: typeof payload.boletaSeries === 'string' ? payload.boletaSeries : current.receiptSeries,
+      }));
+      setWarehouse((current) => ({
+        ...current,
+        name: typeof payload.warehouseName === 'string' ? payload.warehouseName : current.name,
+      }));
+    };
+    window.addEventListener('efact:onboarding-fill', onFill);
+    return () => window.removeEventListener('efact:onboarding-fill', onFill);
+  }, []);
 
   useEffect(() => {
     const snapshot = snapshotQuery.data;
@@ -192,7 +232,7 @@ export function TenantOnboardingGate() {
             <span className="tenant-onboarding__logo">e</span>
             <strong>Efact</strong>
           </div>
-          <span className="tenant-onboarding__step-count">Step {step + 1} of 6</span>
+          <span className="tenant-onboarding__step-count">Paso {step + 1} de 6</span>
         </header>
 
         <nav className="tenant-onboarding__steps" aria-label="Pasos de onboarding">
@@ -201,13 +241,14 @@ export function TenantOnboardingGate() {
               <TimelineItem
                 key={label}
                 status={index < step ? 'complete' : index === step ? 'current' : 'pending'}
-                title={label}
+                title={STEP_LABEL[label]}
               />
             ))}
           </Timeline>
         </nav>
 
         <div className={`tenant-onboarding__body tenant-onboarding__body--${currentStep.toLowerCase()}`}>
+          <div className="tenant-onboarding__main">
           {currentStep !== 'Done' ? (
             <>
               <h1>{meta.title}</h1>
@@ -243,57 +284,57 @@ export function TenantOnboardingGate() {
               <FormField label="RUC" className="tenant-onboarding__field tenant-onboarding__field--with-button">
                 <div>
                   <TextField value={company.ruc} onChange={(e) => setCompany({ ...company, ruc: e.target.value.replace(/\D/g, '').slice(0, 11) })} />
-                  <Button type="button" variant="secondary" onClick={verifyRuc}>Verify with SUNAT</Button>
+                  <Button type="button" variant="secondary" onClick={verifyRuc}>Consultar SUNAT</Button>
                 </div>
               </FormField>
-              <FormField label="Legal name" className="tenant-onboarding__field"><TextField value={company.businessName} onChange={(e) => setCompany({ ...company, businessName: e.target.value })} /></FormField>
-              <FormField label="Trade name (optional)" className="tenant-onboarding__field"><TextField value={company.tradeName ?? ''} onChange={(e) => setCompany({ ...company, tradeName: e.target.value })} /></FormField>
-              <FormField label="Fiscal address" className="tenant-onboarding__field"><TextField value={company.fiscalAddress} onChange={(e) => setCompany({ ...company, fiscalAddress: e.target.value })} /></FormField>
-              <FormField label="Contact phone" className="tenant-onboarding__field"><TextField value={company.phone ?? ''} onChange={(e) => setCompany({ ...company, phone: e.target.value })} /></FormField>
-              <FormField label="Currency" className="tenant-onboarding__field"><TextField value="PEN — Sol" disabled /></FormField>
+              <FormField label="Razón social" className="tenant-onboarding__field"><TextField value={company.businessName} onChange={(e) => setCompany({ ...company, businessName: e.target.value })} /></FormField>
+              <FormField label="Nombre comercial (opcional)" className="tenant-onboarding__field"><TextField value={company.tradeName ?? ''} onChange={(e) => setCompany({ ...company, tradeName: e.target.value })} /></FormField>
+              <FormField label="Domicilio fiscal" className="tenant-onboarding__field"><TextField value={company.fiscalAddress} onChange={(e) => setCompany({ ...company, fiscalAddress: e.target.value })} /></FormField>
+              <FormField label="Teléfono" className="tenant-onboarding__field"><TextField value={company.phone ?? ''} onChange={(e) => setCompany({ ...company, phone: e.target.value })} /></FormField>
+              <FormField label="Moneda" className="tenant-onboarding__field"><TextField value="PEN — Sol" disabled /></FormField>
             </div>
           )}
 
           {currentStep === 'SUNAT' && (
             <div className="tenant-onboarding__grid">
-              <FormField label="SOL username" className="tenant-onboarding__field"><TextField value={sunat.solUser} onChange={(e) => setSunat({ ...sunat, solUser: e.target.value })} placeholder="e.g. EFACT01" disabled={sunatSkipped} /></FormField>
-              <FormField label="SOL password" className="tenant-onboarding__field"><TextField value={sunat.solPass} onChange={(e) => setSunat({ ...sunat, solPass: e.target.value })} type="password" disabled={sunatSkipped} /></FormField>
-              <FormField label="Digital certificate (.pfx or PEM)" className="tenant-onboarding__field tenant-onboarding__dropzone">
+              <FormField label="Usuario SOL" className="tenant-onboarding__field"><TextField value={sunat.solUser} onChange={(e) => setSunat({ ...sunat, solUser: e.target.value })} placeholder="Ej. MODDATOS" disabled={sunatSkipped} /></FormField>
+              <FormField label="Clave SOL" className="tenant-onboarding__field"><TextField value={sunat.solPass} onChange={(e) => setSunat({ ...sunat, solPass: e.target.value })} type="password" disabled={sunatSkipped} /></FormField>
+              <FormField label="Certificado digital (.pfx o PEM)" className="tenant-onboarding__field tenant-onboarding__dropzone">
                 <FileDropzone
                   accept=".pfx,.pem,.crt,.cer"
                   value={certificateFile ? { fileName: certificateFile.name } : null}
                   disabled={sunatSkipped}
                   labels={{
-                    prompt: 'Drop .pfx file here or click to browse',
-                    hint: 'SUNAT digital certificate in PFX or PEM format.',
-                    replace: 'Replace certificate',
-                    remove: 'Remove certificate',
-                    open: 'Open certificate',
+                    prompt: 'Suelta el archivo .pfx o haz clic para buscarlo',
+                    hint: 'Certificado digital SUNAT en formato PFX o PEM.',
+                    replace: 'Cambiar certificado',
+                    remove: 'Quitar certificado',
+                    open: 'Abrir certificado',
                   }}
                   onFileSelect={setCertificateFile}
                   onClear={() => setCertificateFile(null)}
                 />
               </FormField>
-              <FormField label="Certificate password" className="tenant-onboarding__field"><TextField value={sunat.certificatePassword} onChange={(e) => setSunat({ ...sunat, certificatePassword: e.target.value })} type="password" placeholder="PFX passphrase" disabled={sunatSkipped} /></FormField>
+              <FormField label="Contraseña del certificado" className="tenant-onboarding__field"><TextField value={sunat.certificatePassword} onChange={(e) => setSunat({ ...sunat, certificatePassword: e.target.value })} type="password" placeholder="Clave del PFX" disabled={sunatSkipped} /></FormField>
               <Button className="tenant-onboarding__skip" variant="ghost" type="button" onClick={() => setSunatSkipped((value) => !value)}>
-                {sunatSkipped ? 'Configure SUNAT now' : 'Skip SUNAT for now'}
+                {sunatSkipped ? 'Configurar SUNAT ahora' : 'Configurar SUNAT más tarde'}
               </Button>
             </div>
           )}
 
           {currentStep === 'Branch' && (
             <div className="tenant-onboarding__grid">
-              <FormField label="Branch name" className="tenant-onboarding__field"><TextField value={branch.name} onChange={(e) => setBranch({ ...branch, name: e.target.value })} placeholder="e.g. San Isidro Main" /></FormField>
-              <FormField label="Address" className="tenant-onboarding__field"><TextField value={branch.address ?? ''} onChange={(e) => setBranch({ ...branch, address: e.target.value })} placeholder="Street, district, province" /></FormField>
-              <FormField label="Invoice series — Factura" className="tenant-onboarding__field"><TextField value={branch.invoiceSeries} onChange={(e) => setBranch({ ...branch, invoiceSeries: e.target.value.toUpperCase().slice(0, 6) })} /></FormField>
-              <FormField label="Invoice series — Boleta" className="tenant-onboarding__field"><TextField value={branch.receiptSeries} onChange={(e) => setBranch({ ...branch, receiptSeries: e.target.value.toUpperCase().slice(0, 6) })} /></FormField>
+              <FormField label="Nombre del local" className="tenant-onboarding__field"><TextField value={branch.name} onChange={(e) => setBranch({ ...branch, name: e.target.value })} placeholder="Ej. San Isidro" /></FormField>
+              <FormField label="Dirección" className="tenant-onboarding__field"><TextField value={branch.address ?? ''} onChange={(e) => setBranch({ ...branch, address: e.target.value })} placeholder="Calle, distrito, provincia" /></FormField>
+              <FormField label="Serie de factura" className="tenant-onboarding__field"><TextField value={branch.invoiceSeries} onChange={(e) => setBranch({ ...branch, invoiceSeries: e.target.value.toUpperCase().slice(0, 6) })} /></FormField>
+              <FormField label="Serie de boleta" className="tenant-onboarding__field"><TextField value={branch.receiptSeries} onChange={(e) => setBranch({ ...branch, receiptSeries: e.target.value.toUpperCase().slice(0, 6) })} /></FormField>
             </div>
           )}
 
           {currentStep === 'Warehouse' && (
             <div className="tenant-onboarding__grid">
-              <FormField label="Warehouse name" className="tenant-onboarding__field"><TextField value={warehouse.name} onChange={(e) => setWarehouse({ ...warehouse, name: e.target.value })} placeholder="e.g. Stock Room 1" /></FormField>
-              <FormField label="Default valuation method" className="tenant-onboarding__field"><TextField value="Promedio Ponderado (PP) — SUNAT" disabled /></FormField>
+              <FormField label="Nombre del almacén" className="tenant-onboarding__field"><TextField value={warehouse.name} onChange={(e) => setWarehouse({ ...warehouse, name: e.target.value })} placeholder="Ej. Almacén principal" /></FormField>
+              <FormField label="Método de valuación" className="tenant-onboarding__field"><TextField value="Promedio ponderado (PP) — SUNAT" disabled /></FormField>
             </div>
           )}
 
@@ -303,19 +344,30 @@ export function TenantOnboardingGate() {
               <h1>{meta.title}</h1>
               <p>{meta.subtitle}</p>
               <ul>
-                <li>Company: {company.businessName || company.ruc}</li>
-                <li>Branch: {branch.name}</li>
-                <li>Warehouse: {warehouse.name}</li>
-                <li>SUNAT: {sunatSkipped ? 'set up later in Settings' : 'configured'}</li>
+                <li>Empresa: {company.businessName || company.ruc}</li>
+                <li>Local: {branch.name}</li>
+                <li>Almacén: {warehouse.name}</li>
+                <li>SUNAT: {sunatSkipped ? 'se configura después en Ajustes' : 'configurada'}</li>
               </ul>
             </div>
           )}
+          </div>
+          <div className="tenant-onboarding__aside">
+            <OnboardingHelp step={currentStep} />
+            {assistantEnabled ? (
+              <div className="tenant-onboarding__assistant">
+                <Suspense fallback={null}>
+                  <Assistant showToolbar={false} screen="onboarding" entityType="onboarding" entityId={currentStep} />
+                </Suspense>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         <footer className="tenant-onboarding__footer">
-          <Button type="button" variant="secondary" onClick={() => setStep((value) => Math.max(value - 1, 0) as OnboardingStep)} disabled={step === 0 || busy}>Back</Button>
+          <Button type="button" variant="secondary" onClick={() => setStep((value) => Math.max(value - 1, 0) as OnboardingStep)} disabled={step === 0 || busy}>Atrás</Button>
           <Button type="button" variant="primary" onClick={goNext} disabled={!canContinue || busy} loading={busy}>
-            {step === 5 ? 'Enter Efact' : busy ? 'Saving...' : 'Continue'}
+            {step === 5 ? 'Entrar a eFact' : busy ? 'Guardando…' : 'Continuar'}
           </Button>
         </footer>
       </section>

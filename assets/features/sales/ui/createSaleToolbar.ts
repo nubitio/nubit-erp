@@ -10,6 +10,7 @@ type CreateSaleToolbarParams = {
   onClone: (saleId: string) => void;
   onReplaceRejected: (saleId: string) => void;
   onViewDocuments: (saleId: string) => void;
+  onExplainWithAi?: (saleId: string) => void;
   printEnabled: boolean;
   cloneEnabled: boolean;
   replaceEnabled: boolean;
@@ -34,6 +35,7 @@ export const createSaleToolbar = ({
   onMakeInvoice,
   onReplaceRejected,
   onViewDocuments,
+  onExplainWithAi,
   replaceEnabled,
   documentsEnabled,
 }: CreateSaleToolbarParams): ResourceToolbarItems => ({
@@ -61,5 +63,16 @@ export const createSaleToolbar = ({
       onClick: () => requireSelectedSale(getSelectedSaleId, onReplaceRejected),
       disabled: !replaceEnabled,
     },
+    ...(onExplainWithAi
+      ? [
+          {
+            text: 'Explicar con IA',
+            type: 'secondary',
+            group: 'documents',
+            groupLabel: 'Comprobantes',
+            onClick: () => requireSelectedSale(getSelectedSaleId, onExplainWithAi),
+          },
+        ]
+      : []),
   ],
 });

@@ -7,8 +7,13 @@ namespace App\Tests\AI\Controller;
 use App\AI\Controller\AssistantController;
 use App\AI\Dto\AssistantMessageInput;
 use App\AI\Dto\AssistantRequest;
-use App\AI\Service\SessionContextBuilder;
+use App\AI\Service\AssistantCallLogger;
+use App\AI\Service\AssistantPromptAssembler;
+use App\AI\Service\AssistantThreadService;
+use App\AI\Service\AssistantTokenQuotaService;
 use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Tenant\Context\TenantContext;
+use Psr\Log\NullLogger;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -50,14 +55,20 @@ final class AssistantControllerRateLimitTest extends TestCase
         // same key AssistantController::__invoke() will use.
         $limiterFactory->create('anonymous')->consume();
 
-        $sessionContextBuilder = new ReflectionClass(SessionContextBuilder::class)->newInstanceWithoutConstructor();
+        $promptAssembler = new ReflectionClass(AssistantPromptAssembler::class)->newInstanceWithoutConstructor();
+        $threadService = new ReflectionClass(AssistantThreadService::class)->newInstanceWithoutConstructor();
+        $tokenQuota = new ReflectionClass(AssistantTokenQuotaService::class)->newInstanceWithoutConstructor();
 
         $controller = new AssistantController(
             $agent,
             $this->createMock(LoggerInterface::class),
-            $sessionContextBuilder,
-            '/app',
+            $promptAssembler,
+            new AssistantCallLogger(new NullLogger()),
+            $threadService,
+            $tokenQuota,
+            $this->createStub(TenantContext::class),
             $limiterFactory,
+            'grok-4.3',
         );
         $controller->setContainer(new ServiceLocator([
             'security.token_storage' => static fn() => new TokenStorage(),

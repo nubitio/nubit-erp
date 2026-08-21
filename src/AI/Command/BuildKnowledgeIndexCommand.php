@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
-#[AsCommand(name: 'app:ai:build-knowledge', description: 'Rebuild the local knowledge base index from docs/.')]
+#[AsCommand(name: 'app:ai:build-knowledge', description: 'Rebuild the local knowledge base index from the cashier user manual.')]
 #[AsCronTask('0 0 * * *')]
 final class BuildKnowledgeIndexCommand extends Command
 {

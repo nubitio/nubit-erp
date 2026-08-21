@@ -17,7 +17,7 @@ class ScreenContextInput
      * Identifies which screen the user is currently viewing.
      *
      * Known values: dashboard · pos · sale_form · inventory · cash_register ·
-     *               customers · products · purchases · reports
+     *               customers · products · purchases · reports · onboarding
      */
     #[Assert\Type('string')]
     #[Assert\Length(max: 64)]
@@ -36,4 +36,13 @@ class ScreenContextInput
     #[Assert\Type('string')]
     #[Assert\Length(max: 128)]
     public ?string $entityId = null;
+
+    /**
+     * Optional structured extras from the active screen (POS cart, form snapshot).
+     * Size-capped when injected into the system prompt.
+     *
+     * @var array<string, mixed>|null
+     */
+    #[Assert\Type('array')]
+    public ?array $extra = null;
 }

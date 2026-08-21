@@ -1,0 +1,51 @@
+.assistant-action-card {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-1);
+}
+
+.assistant-action-card__summary {
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+
+.assistant-action-card__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.assistant-action-card__confirm,
+.assistant-action-card__cancel {
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.assistant-action-card__confirm {
+  background: var(--accent-color);
+  color: #fff;
+  border: 0;
+}
+
+.assistant-action-card__cancel {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.assistant-action-card__hint,
+.assistant-action-card__error {
+  margin: 8px 0 0;
+  font-size: 13px;
+}
+
+.assistant-action-card__error {
+  color: var(--error-color);
+}
+
+.assistant-action-card--confirmed {
+  border-color: color-mix(in srgb, var(--success-color) 40%, var(--border-color));
+}

@@ -37,6 +37,7 @@ final class PlanFeatureManager
         'sunat_auto_retry',
         'webhooks',
         'priority_support',
+        'ai_assistant',
         'api_rate_limit',
         'retention_days',
         'concurrent_sessions',
@@ -47,6 +48,7 @@ final class PlanFeatureManager
         'api_rate_limit',
         'retention_days',
         'concurrent_sessions',
+        'ai_assistant',
     ];
 
     public function __construct(
@@ -73,7 +75,7 @@ final class PlanFeatureManager
     }
 
     /**
-     * Seeds all 14 feature keys for a newly created plan, all disabled by default.
+     * Seeds all catalogue feature keys for a newly created plan, all disabled by default.
      * Uses upsert so it is idempotent (safe to call multiple times).
      * No cache invalidation needed — a brand-new plan has no tenants yet.
      */

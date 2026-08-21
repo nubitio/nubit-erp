@@ -8,8 +8,14 @@ use App\AI\Dto\AssistantMessageInput;
 use App\AI\Dto\AssistantRequest;
 use App\AI\Dto\AssistantResponse;
 use App\AI\Dto\AttachmentInput;
-use App\AI\Service\SessionContextBuilder;
+use App\AI\Service\AssistantCallLogger;
+use App\AI\Service\AssistantPromptAssembler;
+use App\AI\Service\AssistantThreadService;
+use App\AI\Service\AssistantTokenQuotaService;
+use App\Identity\Entity\User;
 use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Feature\Attribute\RequiresFeature;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Platform\Message\Content\ContentInterface;
@@ -24,16 +30,21 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Throwable;
 
+#[RequiresFeature('ai_assistant')]
 class AssistantController extends AbstractController
 {
     public function __construct(
         #[Autowire(service: 'ai.agent.default')]
         private readonly AgentInterface $agent,
         private readonly LoggerInterface $logger,
-        private readonly SessionContextBuilder $sessionContextBuilder,
-        #[Autowire('%kernel.project_dir%')]
-        private readonly string $projectDir,
+        private readonly AssistantPromptAssembler $promptAssembler,
+        private readonly AssistantCallLogger $callLogger,
+        private readonly AssistantThreadService $threadService,
+        private readonly AssistantTokenQuotaService $tokenQuota,
+        private readonly TenantContext $tenantContext,
         private readonly RateLimiterFactoryInterface $assistantLimiter,
+        #[Autowire('%env(default:ai_model_chat_default:AI_MODEL_CHAT)%')]
+        private readonly string $model,
     ) {}
 
     public function __invoke(AssistantRequest $data): AssistantResponse
@@ -45,6 +56,7 @@ class AssistantController extends AbstractController
                 Response::HTTP_TOO_MANY_REQUESTS,
             );
         }
+        $this->tokenQuota->assertWithinQuota();
 
         $lastUserIndex = null;
         foreach (array_keys($data->messages) as $i) {
@@ -69,25 +81,29 @@ class AssistantController extends AbstractController
 
         // Prepend a dynamic system message so SystemPromptInputProcessor skips its static file.
         // The full prompt = context block (live session data) + static assistant.md content.
-        $messageBag = $messageBag->withSystemMessage(Message::forSystem($this->buildDynamicSystemPrompt($data)));
+        $messageBag = $messageBag->withSystemMessage(Message::forSystem($this->promptAssembler->assemble($data)));
+
+        $user = $this->getUser()?->getUserIdentifier();
+        $tenant = $this->tenantContext->getTenantName();
+        $startedAt = microtime(true);
 
         $this->logger->info('Assistant request received', [
             'messages_count' => \count($data->messages),
             'attachments_count' => \count($data->attachments),
+            'model' => $this->model,
             'message_preview' => array_slice(
                 array_map(static fn(AssistantMessageInput $m): string => $m->content, $data->messages),
                 0,
                 3,
             ),
-            'user' => $this->getUser()?->getUserIdentifier(),
+            'user' => $user,
+            'tenant' => $tenant,
         ]);
 
         try {
             $result = $this->agent->call($messageBag);
         } catch (Throwable $throwable) {
-            $this->logger->error('Assistant invocation failed', [
-                'error' => $throwable->getMessage(),
-            ]);
+            $this->callLogger->logFailure($throwable, $startedAt, $this->model, $user, $tenant);
 
             throw ServiceException::create(
                 'No se pudo generar la respuesta del asistente.',
@@ -106,11 +122,15 @@ class AssistantController extends AbstractController
             throw ServiceException::create('La respuesta del asistente no es válida.');
         }
 
-        $this->logger->info('Assistant response generated', [
-            'chars' => \strlen($content),
+        $this->callLogger->logSuccess($result, $startedAt, $this->model, $user, $tenant, [
             'preview' => mb_substr($content, 0, 120),
-            'user' => $this->getUser()?->getUserIdentifier(),
         ]);
+        $this->tokenQuota->recordUsage($result);
+
+        $authenticatedUser = $this->getUser();
+        if ($authenticatedUser instanceof User) {
+            $this->threadService->persistTurn($authenticatedUser, $data->messages, $content);
+        }
 
         return new AssistantResponse($content);
     }
@@ -191,40 +211,6 @@ class AssistantController extends AbstractController
         }
 
         return [$images, $texts];
-    }
-
-    /**
-     * Builds the full dynamic system prompt: session context block + screen context + static assistant.md content.
-     *
-     * Injecting it here causes symfony/ai-bundle's SystemPromptInputProcessor to skip its own
-     * static file injection (it bails out when a system message already exists in the bag).
-     */
-    private function buildDynamicSystemPrompt(AssistantRequest $data): string
-    {
-        $contextBlock = $this->sessionContextBuilder->build();
-
-        $screenBlock = '';
-        if ($data->screenContext !== null) {
-            $screenBlock =
-                "\n## Pantalla activa del usuario\n"
-                . sprintf('- Screen: %s', $data->screenContext->screen ?? 'unknown')
-                . "\n"
-                . (
-                    $data->screenContext->entityType !== null
-                        ? sprintf('- Tipo de entidad: %s', $data->screenContext->entityType) . "\n"
-                        : ''
-                )
-                . (
-                    $data->screenContext->entityId !== null
-                        ? sprintf('- ID de entidad: %s', $data->screenContext->entityId) . "\n"
-                        : ''
-                );
-        }
-
-        $staticPromptPath = $this->projectDir . '/prompts/assistant.md';
-        $staticPrompt = is_file($staticPromptPath) ? (string) file_get_contents($staticPromptPath) : '';
-
-        return $contextBlock . $screenBlock . "\n\n---\n\n" . $staticPrompt;
     }
 
     private function normalizeContent(mixed $content): string

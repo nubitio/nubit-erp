@@ -26,6 +26,8 @@ interface POSOperatorHeaderProps {
   onRetrySale: (saleId: string) => void;
   showWarehouseSelector: boolean;
   onOpenCaja?: () => void;
+  assistantEnabled?: boolean;
+  onAssistantClick?: () => void;
 }
 
 export function POSOperatorHeader({
@@ -46,6 +48,8 @@ export function POSOperatorHeader({
   onRetrySale,
   showWarehouseSelector,
   onOpenCaja,
+  assistantEnabled = false,
+  onAssistantClick,
 }: POSOperatorHeaderProps) {
   const navigate = useNavigate();
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -195,6 +199,21 @@ export function POSOperatorHeader({
             Abrir caja
           </button>
         )}
+
+        {assistantEnabled && onAssistantClick ? (
+          <>
+            <div className="pos-operator-header__sep" />
+            <button
+              type="button"
+              className="pos-shortcuts-btn"
+              onClick={onAssistantClick}
+              aria-label="Asistente de IA"
+              title="Asistente de IA (Ctrl+K)"
+            >
+              <i className="ph ph-sparkle" aria-hidden="true" />
+            </button>
+          </>
+        ) : null}
 
         <div className="pos-operator-header__sep" />
         <ThemeSwitcher />

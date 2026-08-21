@@ -1,10 +1,9 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import './POSPage.scss';
 import './HardwareAgentDialog.scss';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { useSessionInfo } from '@shared/sessionInfo';
-import { Setting, settings } from '@shared/settings';
 import { createInvoicePrinter, InvoicePrinter } from '@features/sales';
 import { ThemeContext } from '@assets/theme/theme';
 import { POSOperatorHeader } from './POSOperatorHeader';
@@ -14,15 +13,17 @@ import { productService } from '@features/product/services/productService';
 import { usePosCustomers } from './usePosCustomers';
 import { usePosCheckout } from './usePosCheckout';
 import { usePosCatalogData } from './usePosCatalogData';
-import { normalizeText, parseBooleanSetting, toNumber } from './posHelpers';
+import { normalizeText, toNumber } from './posHelpers';
 import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { useOutboxSync } from '@offline/hooks/useOutboxSync';
 import { ConfirmDialog } from '@nubitio/ui';
-import { useTenantRuntimeConfig } from '@shared/hooks';
+import { useFeature, useTenantRuntimeConfig } from '@shared/hooks';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { OpenCajaDialog } from './OpenCajaDialog';
 import { hasPermission } from '@shared/permissions';
+
+const Assistant = lazy(() => import('@features/assistant/Assistant'));
 
 const POSPage = () => {
   const themeContext = useContext(ThemeContext);
@@ -36,6 +37,8 @@ const POSPage = () => {
   const allowCatalogPriceEdit =
     (runtimeConfig?.ui.pos?.allowCatalogPriceEdit ?? true) && hasPermission('catalog.edit');
   const allowDiscount = hasPermission('pos.discount');
+  const assistantEnabled = useFeature('ai_assistant');
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -147,7 +150,10 @@ const POSPage = () => {
     setNote,
     isProcessingSale,
     lastCheckoutSucceeded,
+    checkoutError,
     lastSaleCode,
+    lastSaleId,
+    lastSaleReceiptUrl,
     emitInvoice,
     setEmitInvoice,
     creditSale,
@@ -195,6 +201,7 @@ const POSPage = () => {
       setCajaAbierta(false);
       setActivePanel('cart');
     },
+    autoInvoice: runtimeConfig?.settings.autoInvoice !== false,
   });
 
   useEffect(() => {
@@ -307,14 +314,6 @@ const POSPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Load settings ─────────────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    (async () => {
-      const autoInvoiceSetting = await settings.get(Setting.AUTO_INVOICE);
-      setEmitInvoice(parseBooleanSetting(autoInvoiceSetting?.value, false));
-    })();
-  }, [setEmitInvoice]);
-
   useEffect(() => {
     invoicePrinterRef.current.initialize().catch(() => {
       toast(
@@ -379,16 +378,43 @@ const POSPage = () => {
 
       // Esc → clear cart with confirmation
       if (e.key === 'Escape' && !isInput) {
+        if (assistantOpen) {
+          e.preventDefault();
+          setAssistantOpen(false);
+          return;
+        }
         if (cart.length > 0) {
           setConfirmClearCartOpen(true);
         }
       }
+
+      // Ctrl+K opens the copilot; ignore while a barcode burst is in the buffer.
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K') && assistantEnabled) {
+        if (barcodeBufferRef.current.length > 0) return;
+        e.preventDefault();
+        setAssistantOpen((open) => !open);
+      }
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [checkoutDisabled, cajaAbierta, cart.length, handleCheckout, clearCart, menuData, addToCart]);
+  }, [checkoutDisabled, cajaAbierta, cart.length, handleCheckout, clearCart, menuData, addToCart, assistantEnabled, assistantOpen]);
 
   const selectedWarehouse = warehouses.find((w) => w.id === selectedWarehouseId);
+  const assistantScreenExtra = useMemo(
+    () => ({
+      cartCount: cart.length,
+      cartItemsCount,
+      total,
+      customer: customersState.selectedCustomer
+        ? {
+            id: customersState.selectedCustomer.id,
+            name: customersState.selectedCustomer.businessName,
+          }
+        : null,
+      cajaAbierta,
+    }),
+    [cart.length, cartItemsCount, total, customersState.selectedCustomer, cajaAbierta],
+  );
 
   return (
     <div className="pos-shell" data-theme={resolvedTheme} data-active-panel={activePanel}>
@@ -413,6 +439,8 @@ const POSPage = () => {
         }}
         showWarehouseSelector={runtimeConfig?.ui.inventory.showWarehouseSelector ?? warehouses.length > 1}
         onOpenCaja={() => setOpenCajaDialogOpen(true)}
+        assistantEnabled={assistantEnabled}
+        onAssistantClick={() => setAssistantOpen((open) => !open)}
       />
 
       {/* ── Mobile tab bar (hidden on desktop via CSS) ── */}
@@ -475,9 +503,10 @@ const POSPage = () => {
         clearSelectedCustomer={clearSelectedCustomer}
         focusCustomerTrigger={focusCustomerTrigger}
         lastSaleCode={lastSaleCode}
+        lastSaleReceiptUrl={lastSaleReceiptUrl}
         onPrintLastSale={() => {
-          if (lastSaleCode) {
-            void invoicePrinterRef.current.printSaleInvoice(lastSaleCode);
+          if (lastSaleId) {
+            void invoicePrinterRef.current.printSaleInvoice(lastSaleId);
           }
         }}
         selectedCustomerId={customersState.selectedCustomerId}
@@ -513,6 +542,7 @@ const POSPage = () => {
         handleCheckout={handleCheckout}
         isProcessingSale={isProcessingSale}
         lastCheckoutSucceeded={lastCheckoutSucceeded}
+        checkoutError={checkoutError}
         syncSales={recentSales}
         onRetrySale={(saleId) => {
           void retrySale(saleId);
@@ -522,6 +552,31 @@ const POSPage = () => {
         }}
         scaleReady={scaleReady}
       />
+
+      {assistantEnabled && assistantOpen ? (
+        <div className="pos-assistant-overlay" role="dialog" aria-label="Asistente de IA">
+          <div className="pos-assistant-overlay__panel">
+            <div className="pos-assistant-overlay__header">
+              <strong>Asistente de IA</strong>
+              <button
+                type="button"
+                className="pos-shortcuts-btn"
+                onClick={() => setAssistantOpen(false)}
+                aria-label="Cerrar asistente"
+              >
+                <i className="ph ph-x" aria-hidden="true" />
+              </button>
+            </div>
+            {!isOnline ? (
+              <p className="pos-assistant-overlay__offline">El asistente necesita conexión.</p>
+            ) : (
+              <Suspense fallback={null}>
+                <Assistant showToolbar={false} screenExtra={assistantScreenExtra} />
+              </Suspense>
+            )}
+          </div>
+        </div>
+      ) : null}
 
       {/* ── Clear cart confirmation (triggered by Esc key) ── */}
       <ConfirmDialog

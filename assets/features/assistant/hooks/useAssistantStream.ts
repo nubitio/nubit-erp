@@ -2,11 +2,17 @@ import { useCallback, useRef, useState } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { exceptionalFetch } from '@shared/api/network';
 import type { AssistantChatMessage, AssistantAttachmentPayload } from '../services/assistantService';
+import type { ProposedAction } from '../components/ActionCard';
 import type { ScreenContext } from '../types';
 
 const API = getCoreApiBaseUrl();
 
 export type StreamStatus = 'idle' | 'streaming' | 'done' | 'error';
+
+export type AssistantStreamResult = {
+  text: string;
+  actions: ProposedAction[];
+};
 
 export type UseAssistantStreamReturn = {
   /** Accumulated text delta as it streams in. Empty when idle. */
@@ -17,7 +23,7 @@ export type UseAssistantStreamReturn = {
     messages: AssistantChatMessage[],
     attachments?: AssistantAttachmentPayload[],
     screenContext?: ScreenContext,
-  ) => Promise<string>;
+  ) => Promise<AssistantStreamResult>;
   /** Abort an in-flight request. */
   abort: () => void;
 };
@@ -50,7 +56,7 @@ export function useAssistantStream(): UseAssistantStreamReturn {
       messages: AssistantChatMessage[],
       attachments?: AssistantAttachmentPayload[],
       screenContext?: ScreenContext,
-    ): Promise<string> => {
+    ): Promise<AssistantStreamResult> => {
       // Abort any previous in-flight request
       abortRef.current?.abort();
       const controller = new AbortController();
@@ -64,6 +70,7 @@ export function useAssistantStream(): UseAssistantStreamReturn {
       if (screenContext) body.screenContext = screenContext;
 
       let accumulated = '';
+      const actions: ProposedAction[] = [];
 
       try {
         // SSE streaming requires the native fetch ReadableStream API.
@@ -102,15 +109,34 @@ export function useAssistantStream(): UseAssistantStreamReturn {
 
             if (raw === '[DONE]') {
               setStatus('done');
-              return accumulated;
+              return { text: accumulated, actions };
             }
 
             try {
-              const parsed = JSON.parse(raw) as { delta?: string; error?: string };
+              const parsed = JSON.parse(raw) as {
+                delta?: string;
+                error?: string;
+                id?: string;
+                kind?: string;
+                summary?: string;
+                payload?: Record<string, unknown>;
+                expiresAt?: string;
+              };
 
               if (parsed.error) {
                 setStatus('error');
                 throw new Error(parsed.error);
+              }
+
+              if (parsed.id && parsed.kind && parsed.summary) {
+                actions.push({
+                  id: parsed.id,
+                  kind: parsed.kind,
+                  summary: parsed.summary,
+                  payload: parsed.payload,
+                  expiresAt: parsed.expiresAt,
+                });
+                continue;
               }
 
               if (parsed.delta) {
@@ -126,11 +152,11 @@ export function useAssistantStream(): UseAssistantStreamReturn {
         }
 
         setStatus('done');
-        return accumulated;
+        return { text: accumulated, actions };
       } catch (error) {
         if ((error as { name?: string }).name === 'AbortError') {
           setStatus('idle');
-          return accumulated;
+          return { text: accumulated, actions };
         }
         setStatus('error');
         setStreamingText('');

@@ -6,7 +6,15 @@ namespace App\AI\Controller;
 
 use App\AI\Dto\AssistantMessageInput;
 use App\AI\Dto\AssistantRequest;
-use App\AI\Service\SessionContextBuilder;
+use App\AI\Service\AssistantCallLogger;
+use App\AI\Service\AssistantPromptAssembler;
+use App\AI\Service\AssistantThreadService;
+use App\AI\Service\AssistantTokenQuotaService;
+use Nubit\Platform\Exception\ServiceException;
+use App\AI\Service\ProposedActionCollector;
+use App\Identity\Entity\User;
+use Nubit\Platform\Feature\Attribute\RequiresFeature;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Psr\Log\LoggerInterface;
 use Symfony\AI\Agent\AgentInterface;
 use Symfony\AI\Platform\Message\Content\ImageUrl;
@@ -37,6 +45,7 @@ use Throwable;
  *   data: [DONE]\n\n
  *   data: {"error": "message"}\n\n   (on failure)
  */
+#[RequiresFeature('ai_assistant')]
 #[Route('/api/assistant/stream', name: 'api_assistant_stream', methods: ['POST'])]
 class AssistantStreamController extends AbstractController
 {
@@ -44,11 +53,16 @@ class AssistantStreamController extends AbstractController
         #[Autowire(service: 'ai.agent.default')]
         private readonly AgentInterface $agent,
         private readonly LoggerInterface $logger,
-        private readonly SessionContextBuilder $sessionContextBuilder,
+        private readonly AssistantPromptAssembler $promptAssembler,
         private readonly SerializerInterface $serializer,
-        #[Autowire('%kernel.project_dir%')]
-        private readonly string $projectDir,
+        private readonly AssistantCallLogger $callLogger,
+        private readonly ProposedActionCollector $proposedActionCollector,
+        private readonly AssistantThreadService $threadService,
+        private readonly AssistantTokenQuotaService $tokenQuota,
+        private readonly TenantContext $tenantContext,
         private readonly RateLimiterFactoryInterface $assistantLimiter,
+        #[Autowire('%env(default:ai_model_chat_default:AI_MODEL_CHAT)%')]
+        private readonly string $model,
     ) {}
 
     public function __invoke(Request $request): Response
@@ -60,6 +74,12 @@ class AssistantStreamController extends AbstractController
             ], Response::HTTP_TOO_MANY_REQUESTS);
         }
 
+        try {
+            $this->tokenQuota->assertWithinQuota();
+        } catch (ServiceException $exception) {
+            return $this->json(['error' => $exception->getMessage()], $exception->getCode() ?: Response::HTTP_PAYMENT_REQUIRED);
+        }
+
         /** @var AssistantRequest $data */
         $data = $this->serializer->deserialize($request->getContent(), AssistantRequest::class, 'json');
 
@@ -68,21 +88,33 @@ class AssistantStreamController extends AbstractController
 
         $logger = $this->logger;
         $agent = $this->agent;
+        $callLogger = $this->callLogger;
+        $collector = $this->proposedActionCollector;
+        $threadService = $this->threadService;
+        $tokenQuota = $this->tokenQuota;
+        $authenticatedUser = $this->getUser();
+        $user = $authenticatedUser?->getUserIdentifier();
+        $tenant = $this->tenantContext->getTenantName();
+        $model = $this->model;
 
         return new StreamedResponse(
-            function () use ($messageBag, $data, $agent, $logger): void {
+            function () use ($messageBag, $data, $agent, $logger, $callLogger, $collector, $threadService, $tokenQuota, $authenticatedUser, $user, $tenant, $model): void {
                 // Disable output buffering so tokens reach the client immediately
                 if (ob_get_level() > 0) {
                     ob_end_clean();
                 }
 
+                $startedAt = microtime(true);
                 $logger->info('Assistant stream request received', [
                     'messages_count' => \count($data->messages),
-                    'user' => $this->getUser()?->getUserIdentifier(),
+                    'model' => $model,
+                    'user' => $user,
+                    'tenant' => $tenant,
                 ]);
 
                 try {
                     $result = $agent->call($messageBag, ['stream' => true]);
+                    $assistantText = '';
 
                     if ($result instanceof StreamResult) {
                         foreach ($result->getContent() as $chunk) {
@@ -93,19 +125,32 @@ class AssistantStreamController extends AbstractController
                                 continue;
                             }
 
+                            $assistantText .= $content;
                             $this->sendEvent(['delta' => $content]);
                         }
                     } else {
                         // Fallback: non-streaming result — send as a single chunk
                         $content = $result->getContent();
                         if (\is_string($content) && $content !== '') {
+                            $assistantText = $content;
                             $this->sendEvent(['delta' => $content]);
                         }
                     }
 
+                    $callLogger->logSuccess($result, $startedAt, $model, $user, $tenant, ['stream' => true]);
+                    $tokenQuota->recordUsage($result);
+                    $actions = $collector->all();
+                    foreach ($actions as $action) {
+                        echo "event: action\n";
+                        echo 'data: ' . json_encode($action->toCard(), JSON_UNESCAPED_UNICODE) . "\n\n";
+                        flush();
+                    }
+                    if ($authenticatedUser instanceof User) {
+                        $threadService->persistTurn($authenticatedUser, $data->messages, $assistantText, $actions);
+                    }
                     $this->sendRaw('[DONE]');
                 } catch (Throwable $throwable) {
-                    $logger->error('Assistant stream failed', ['error' => $throwable->getMessage()]);
+                    $callLogger->logFailure($throwable, $startedAt, $model, $user, $tenant, ['stream' => true]);
                     $this->sendEvent(['error' => 'No se pudo generar la respuesta del asistente.']);
                 }
             },
@@ -159,36 +204,7 @@ class AssistantStreamController extends AbstractController
 
         $messageBag = new MessageBag(...$userMessages);
 
-        return $messageBag->withSystemMessage(Message::forSystem($this->buildDynamicSystemPrompt($data)));
-    }
-
-    private function buildDynamicSystemPrompt(AssistantRequest $data): string
-    {
-        $contextBlock = $this->sessionContextBuilder->build();
-
-        // Inject screen context if provided
-        $screenBlock = '';
-        if ($data->screenContext !== null) {
-            $screenBlock =
-                "\n## Pantalla activa del usuario\n"
-                . sprintf('- Screen: %s', $data->screenContext->screen ?? 'unknown')
-                . "\n"
-                . (
-                    $data->screenContext->entityType !== null
-                        ? sprintf('- Tipo de entidad: %s', $data->screenContext->entityType) . "\n"
-                        : ''
-                )
-                . (
-                    $data->screenContext->entityId !== null
-                        ? sprintf('- ID de entidad: %s', $data->screenContext->entityId) . "\n"
-                        : ''
-                );
-        }
-
-        $staticPromptPath = $this->projectDir . '/prompts/assistant.md';
-        $staticPrompt = is_file($staticPromptPath) ? (string) file_get_contents($staticPromptPath) : '';
-
-        return $contextBlock . $screenBlock . "\n\n---\n\n" . $staticPrompt;
+        return $messageBag->withSystemMessage(Message::forSystem($this->promptAssembler->assemble($data)));
     }
 
     /**
