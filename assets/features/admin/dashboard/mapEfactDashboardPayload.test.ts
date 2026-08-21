@@ -106,4 +106,12 @@ describe('mapEfactDashboardPayload', () => {
     expect(payload.paymentMethods[0]?.method).toBe('Efectivo');
     expect(payload.topCustomers[0]?.name).toBe('ACME SAC');
   });
+
+  it('hides the daily trend when there are no sales yet today', () => {
+    const data = emptyDashboardData();
+    data.summary.netSalesToday = 0;
+    data.summary.dailyGrowth = -100;
+
+    expect(mapEfactDashboardPayload(data).stats.dailyGrowth).toBeNull();
+  });
 });

@@ -98,7 +98,7 @@ export function POSCatalogPanel({
       {/* Category bar — fixed outside scroll, single-row, horizontally scrollable */}
       {usingOfflineCatalog && (
         <div className="pos-offline-banner" role="status">
-          Mostrando catálogo offline
+          Usando catálogo en caché
           {lastCatalogSyncAt
             ? ` (última actualización: ${new Date(lastCatalogSyncAt).toLocaleString('es-PE')})`
             : ''}

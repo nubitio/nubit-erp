@@ -97,7 +97,7 @@ export const InvoiceFields = () => {
   fields.push(
     textField()
       .name('sunatStatus')
-      .label('Envio sunat')
+      .label('SUNAT')
       .width(140)
       .cardRole('primary')
       .formatter((cell: GridCellContext) => SharedUtils.billStatusFormatter(cell.value as string | number | null | undefined))

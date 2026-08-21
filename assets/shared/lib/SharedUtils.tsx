@@ -266,14 +266,33 @@ export class SharedUtils {
   }
 
   static billStatusFormatter(value: string | number | null | undefined) {
+    if (typeof value === 'string') {
+      const normalized = value.trim().toLowerCase();
+      if (normalized === 'aceptado' || normalized === 'accepted') {
+        return <Badge variant="success" outlined>ACEPTADO</Badge>;
+      }
+      if (normalized === 'pendiente' || normalized === 'pending') {
+        return <Badge variant="info" outlined>PENDIENTE SUNAT</Badge>;
+      }
+      if (normalized === 'enviado' || normalized === 'sent') {
+        return <Badge variant="primary" outlined>ENVIADO</Badge>;
+      }
+      if (normalized === 'rechazado' || normalized === 'rejected') {
+        return <Badge variant="danger" outlined>RECHAZADO</Badge>;
+      }
+      if (normalized === 'observado' || normalized === 'observed') {
+        return <Badge variant="secondary" outlined>OBSERVADO</Badge>;
+      }
+    }
+
     const raw = value === null || value === undefined || value === '' ? -1 : Number(value);
     const code = Number.isNaN(raw) ? -1 : raw;
     if (code === -1) {
-      return <Badge variant="info" outlined>PENDIENTE</Badge>;
+      return <Badge variant="info" outlined>PENDIENTE SUNAT</Badge>;
     } else if (code === 0) {
-      return <Badge variant="success" outlined>ENVIADO</Badge>;
+      return <Badge variant="success" outlined>ACEPTADO</Badge>;
     } else if (code < 2000) {
-      return <Badge variant="warning" outlined>ERRONEO</Badge>;
+      return <Badge variant="warning" outlined>ERRÓNEO</Badge>;
     } else if (code >= 2000 && code < 4000) {
       return <Badge variant="danger" outlined>RECHAZADO</Badge>;
     } else if (code >= 4000) {

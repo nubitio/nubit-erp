@@ -110,7 +110,7 @@ export function mapEfactDashboardPayload(data: DashboardData): EfactDeclarativeD
       ytdRevenue: salesLast12Months,
       igvCollected: data.summary.salesThisMonth * (18 / 118),
       customersThisMonth: data.summary.customersThisMonth,
-      dailyGrowth: data.summary.dailyGrowth,
+      dailyGrowth: data.summary.netSalesToday <= 0 ? null : data.summary.dailyGrowth,
       monthGrowth: data.summary.monthGrowth,
     },
     salesByDay: pickLast7SalesDays(data.salesByDay),

@@ -45,8 +45,8 @@ final readonly class TenantStockValidationPolicy implements StockValidationPolic
         $policy = $this->resolvePolicy();
 
         return match ($policy) {
-            StockPolicy::STRICT => StockValidationResult::blocked('Insufficient stock for STRICT policy'),
-            StockPolicy::WARNING_ONLY => StockValidationResult::warning('Stock would go negative under WARNING_ONLY'),
+            StockPolicy::STRICT => StockValidationResult::blocked('Stock insuficiente para completar la venta'),
+            StockPolicy::WARNING_ONLY => StockValidationResult::warning('El stock quedaría en negativo'),
             StockPolicy::ALLOW_NEGATIVE => StockValidationResult::allowed(),
         };
     }

@@ -93,10 +93,8 @@ final readonly class SaleInventoryOrchestrator
 
                 if (!$validation->allowed) {
                     throw new ServiceException(sprintf(
-                        'Stock insuficiente para "%s" en el almacén seleccionado (%s).'
-                        . ' Disponible: %s, solicitado: %s',
+                        'Stock insuficiente para "%s" en el almacén seleccionado. Disponible: %s, solicitado: %s',
                         $item->getProduct()->getName(),
-                        $validation->reason ?? 'STRICT',
                         rtrim(rtrim(number_format($currentStock, 3, '.', ''), '0'), '.'),
                         rtrim(rtrim(number_format((float) $item->getQty(), 3, '.', ''), '0'), '.'),
                     ));

@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import type { PosItem } from './types';
+import { formatStockCount, productNameInitials } from './posPresentation';
 import './POSPage.scss';
-
-function nameToInitials(name: string): string {
-  const words = name.trim().split(/\s+/);
-  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
-}
 
 interface POSItemProps {
   item: PosItem;
@@ -87,30 +82,36 @@ export function POSItem({
       data-testid="pos-product-card"
       data-product-id={item.id}
     >
-      {/* Top row: thumbnail + stock/OUT */}
+      {/* Top row: thumbnail + stock / qty */}
       <div className="pos-product-card__top">
         <div className="pos-product-card__thumb" aria-hidden="true">
           {item.photo?.path ? (
             <img src={item.photo.path} alt="" className="pos-product-card__image" loading="lazy" />
           ) : (
-            <span>{nameToInitials(item.name)}</span>
+            <span>{productNameInitials(item.name)}</span>
           )}
         </div>
-        {isOutOfStock ? (
-          <div className="pos-product-card__out-pill">OUT</div>
+        {quantity > 0 ? (
+          <div className="pos-product-card__qty-badge" aria-label={`${quantity} en la orden`}>
+            {quantity}
+          </div>
+        ) : isOutOfStock ? (
+          <div className="pos-product-card__out-pill">Sin stock</div>
         ) : (
           tracksInventory && stockValue !== null && stockValue > 0 && (
             <div className="pos-product-card__stock-corner">
-              {stockValue % 1 === 0 ? stockValue.toFixed(0) : stockValue.toFixed(1)} left
+              {formatStockCount(stockValue)}
             </div>
           )
         )}
       </div>
 
-      {/* Name */}
       <div className="pos-product-card__title" title={item.name}>
         {item.name}
       </div>
+      {item.sku ? (
+        <div className="pos-product-card__sku">{item.sku}</div>
+      ) : null}
 
       {/* Price */}
       <div className="pos-product-card__price-row" onClick={(event) => event.stopPropagation()}>

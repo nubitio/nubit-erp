@@ -5,6 +5,21 @@ import { SharedUtils } from './SharedUtils';
 const label = (sale: Parameters<typeof SharedUtils.saleStatusFormatter>[0]) =>
   renderToStaticMarkup(SharedUtils.saleStatusFormatter(sale) ?? <></>);
 
+describe('billStatusFormatter', () => {
+  const bill = (value: Parameters<typeof SharedUtils.billStatusFormatter>[0]) =>
+    renderToStaticMarkup(SharedUtils.billStatusFormatter(value) ?? <></>);
+
+  it('labels SUNAT code 0 as accepted, not merely sent', () => {
+    expect(bill(0)).toContain('ACEPTADO');
+    expect(bill('aceptado')).toContain('ACEPTADO');
+  });
+
+  it('labels missing CDR as pending SUNAT', () => {
+    expect(bill(null)).toContain('PENDIENTE SUNAT');
+    expect(bill('pendiente')).toContain('PENDIENTE SUNAT');
+  });
+});
+
 describe('saleStatusFormatter', () => {
   it('labels a completed sale without invoice as cobrada', () => {
     expect(label({ status: 'COMPLETED' })).toContain('COBRADA');

@@ -152,6 +152,8 @@ const POSPage = () => {
     lastCheckoutSucceeded,
     checkoutError,
     lastSaleCode,
+    lastSaleDocumentType,
+    lastSaleTotal,
     lastSaleId,
     lastSaleReceiptUrl,
     emitInvoice,
@@ -503,6 +505,8 @@ const POSPage = () => {
         clearSelectedCustomer={clearSelectedCustomer}
         focusCustomerTrigger={focusCustomerTrigger}
         lastSaleCode={lastSaleCode}
+        lastSaleDocumentType={lastSaleDocumentType}
+        lastSaleTotal={lastSaleTotal}
         lastSaleReceiptUrl={lastSaleReceiptUrl}
         onPrintLastSale={() => {
           if (lastSaleId) {

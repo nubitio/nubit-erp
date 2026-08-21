@@ -41,7 +41,7 @@ const SALE_COLUMN_PRESETS = [
   {
     key: 'basic',
     label: 'Básico',
-    columns: ['issuedDate', 'customer', 'paymentMethod', 'grandTotal', 'status'],
+    columns: ['issuedDate', 'invoiceFullNumber', 'customer', 'paymentMethod', 'grandTotal', 'status'],
   },
   {
     key: 'full',

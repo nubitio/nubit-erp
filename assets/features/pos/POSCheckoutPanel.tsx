@@ -15,6 +15,7 @@ import {
   isWeightUnitCode,
   toNumber,
 } from './posHelpers';
+import { formatPosReceiptLabel } from './posPresentation';
 import type { LocalSale } from '@offline/types';
 
 interface POSCheckoutPanelProps {
@@ -63,6 +64,8 @@ interface POSCheckoutPanelProps {
   lastCheckoutSucceeded?: boolean;
   checkoutError?: string | null;
   lastSaleCode?: string | null;
+  lastSaleDocumentType?: string | null;
+  lastSaleTotal?: number | null;
   lastSaleReceiptUrl?: string | null;
   onPrintLastSale?: () => void;
   syncSales?: LocalSale[];
@@ -116,6 +119,8 @@ export function POSCheckoutPanel({
   lastCheckoutSucceeded = false,
   checkoutError = null,
   lastSaleCode,
+  lastSaleDocumentType = null,
+  lastSaleTotal = null,
   lastSaleReceiptUrl = null,
   onPrintLastSale,
   syncSales: _syncSales = [],
@@ -145,6 +150,9 @@ export function POSCheckoutPanel({
   const successChangeRef = useRef(0);
   const successWasCashRef = useRef(false);
   const successCodeRef = useRef<string | null>(null);
+  const successDocumentTypeRef = useRef<string | null>(null);
+  const successTotalRef = useRef<number | null>(null);
+  const successEmitInvoiceRef = useRef(false);
   const successReceiptUrlRef = useRef<string | null>(null);
   const successDismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -155,13 +163,25 @@ export function POSCheckoutPanel({
         successChangeRef.current = changeAmount;
         successWasCashRef.current = changeAmount > 0;
         successCodeRef.current = lastSaleCode ?? null;
+        successDocumentTypeRef.current = lastSaleDocumentType;
+        successTotalRef.current = lastSaleTotal;
+        successEmitInvoiceRef.current = emitInvoice;
         successReceiptUrlRef.current = lastSaleReceiptUrl;
         setShowSuccess(true);
         if (successDismissTimer.current) clearTimeout(successDismissTimer.current);
       }
     }
     prevProcessing.current = isProcessingSale;
-  }, [isProcessingSale, lastCheckoutSucceeded, changeAmount, lastSaleCode, lastSaleReceiptUrl]);
+  }, [
+    isProcessingSale,
+    lastCheckoutSucceeded,
+    changeAmount,
+    lastSaleCode,
+    lastSaleDocumentType,
+    lastSaleTotal,
+    emitInvoice,
+    lastSaleReceiptUrl,
+  ]);
 
   // New line entrance animation
   useEffect(() => {
@@ -631,12 +651,19 @@ export function POSCheckoutPanel({
               ¡Venta cobrada!
             </h2>
             {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
-            {successCodeRef.current && (
+            {successTotalRef.current != null && successTotalRef.current > 0 && (
+              // eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set
+              <p className="pos-postsale__total">{formatMoney(successTotalRef.current)}</p>
+            )}
+            {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
+            {formatPosReceiptLabel(successCodeRef.current, successDocumentTypeRef.current) ? (
               // eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set
               <p className="pos-postsale__code" data-testid="pos-postsale-code">
-                Comprobante {successCodeRef.current}
+                {formatPosReceiptLabel(successCodeRef.current, successDocumentTypeRef.current)}
               </p>
-            )}
+            ) : successEmitInvoiceRef.current ? (
+              <p className="pos-postsale__hint">Comprobante en proceso de envío a SUNAT</p>
+            ) : null}
             {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
             {successWasCashRef.current && successChangeRef.current > 0 && (
               <div className="pos-postsale__change">
@@ -667,8 +694,8 @@ export function POSCheckoutPanel({
                       return;
                     }
                     const text = encodeURIComponent(
-                      code
-                        ? `Tu comprobante ${code}: ${receiptUrl}`
+                      formatPosReceiptLabel(code, successDocumentTypeRef.current)
+                        ? `Tu ${formatPosReceiptLabel(code, successDocumentTypeRef.current)}: ${receiptUrl}`
                         : `Tu comprobante: ${receiptUrl}`,
                     );
                     window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');

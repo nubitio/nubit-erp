@@ -40,9 +40,12 @@ export const generateIdempotencyKey = (): string => {
   });
 };
 
+const looksLikeUuid = (value: string): boolean =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+
 const buildServerSaleCode = (created: Record<string, unknown>, fallback: string) => {
   const invoiceFullNumber = asTrimmedString(created.invoiceFullNumber);
-  if (invoiceFullNumber) {
+  if (invoiceFullNumber && !looksLikeUuid(invoiceFullNumber)) {
     return invoiceFullNumber;
   }
 
@@ -50,7 +53,12 @@ const buildServerSaleCode = (created: Record<string, unknown>, fallback: string)
     .map((part) => asTrimmedString(part))
     .filter((part): part is string => part !== null)
     .join('-');
-  return composed || String(created.invoice ?? created.id ?? fallback);
+  if (composed) {
+    return composed;
+  }
+
+  const rawFallback = String(created.invoice ?? created.id ?? fallback);
+  return looksLikeUuid(rawFallback) ? '' : rawFallback;
 };
 
 const extractServerSaleId = (created: Record<string, unknown>): string | null => {

@@ -58,11 +58,11 @@ export const LoginPage = () => {
 
           <div className="brand-text">
             <h1>
-              Simplifica tu trabajo,
+              Cobra en caja
               <br />
-              optimiza tu negocio.
+              y emite a SUNAT.
             </h1>
-            <p>La plataforma de facturación electrónica más intuitiva para tu empresa.</p>
+            <p>Un solo sistema para vender, controlar stock y facturar en Perú.</p>
           </div>
 
           <ul className="brand-features">
@@ -80,7 +80,9 @@ export const LoginPage = () => {
             </li>
           </ul>
 
-          {window.app_version && <span className="brand-version">{window.app_version}</span>}
+          {window.app_version && window.app_version !== 'dev' && (
+            <span className="brand-version">{window.app_version}</span>
+          )}
         </div>
       </aside>
 

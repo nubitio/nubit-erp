@@ -782,11 +782,11 @@
   justify-content: center;
 
   span {
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: var(--text-secondary);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--pos-muted);
     user-select: none;
-    letter-spacing: -0.01em;
+    letter-spacing: 0.02em;
   }
 }
 
@@ -823,16 +823,42 @@
 
 // Product name — normal weight, small, 2-line clamp
 .pos-product-card__title {
-  font-weight: 400;
-  font-size: 0.78rem;
-  line-height: 1.35;
+  font-weight: 600;
+  font-size: 0.8rem;
+  line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  height: calc(2 * 0.78rem * 1.35);
+  height: calc(2 * 0.8rem * 1.3);
   color: var(--pos-text);
+  margin-bottom: 0.15rem;
+}
+
+.pos-product-card__sku {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--pos-muted);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   margin-bottom: var(--space-2);
+}
+
+.pos-product-card__qty-badge {
+  min-width: 1.3rem;
+  height: 1.3rem;
+  padding: 0 0.35rem;
+  border-radius: var(--pos-radius-pill);
+  background: var(--pos-primary);
+  color: var(--on-accent-color, #fff);
+  font-size: 0.68rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 // Price — bold, distinct from name
@@ -1978,12 +2004,9 @@
 
 // ─── Dark mode overrides ──────────────────────────────────────────────────────
 .pos-shell[data-theme='dark'] {
-  // Qty badge: near-invisible frosted glass using text-primary tint (Fluent aligned, no raw white)
   .pos-product-card__qty-badge {
-    background: color-mix(in srgb, var(--text-primary) 13%, transparent);
-    color: color-mix(in srgb, var(--text-primary) 82%, transparent);
-    backdrop-filter: blur(6px);
-    box-shadow: none;
+    background: var(--pos-primary);
+    color: var(--on-accent-color, #fff);
   }
 }
 
@@ -2342,10 +2365,25 @@
 
   &__code {
     margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    opacity: 0.95;
+    letter-spacing: 0.01em;
+  }
+
+  &__total {
+    margin: 0;
+    font-size: var(--font-size-2xl);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  &__hint {
+    margin: 0;
     font-size: var(--font-size-sm);
     font-weight: 600;
-    opacity: 0.75;
-    letter-spacing: 0.02em;
+    opacity: 0.78;
   }
 
   &__change {

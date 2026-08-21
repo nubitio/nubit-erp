@@ -24,6 +24,7 @@ import { useWarehouseStock } from './useWarehouseStock';
 import { offlineDb } from '@offline/db';
 import { useCurrencySettings } from '@shared/hooks/useCurrencySettings';
 import { generateIdempotencyKey, submitSale } from './saleSubmitter';
+import { publicSaleCode } from './posPresentation';
 import { useQueryClient } from '@tanstack/react-query';
 
 let posCheckoutInFlight = false;
@@ -93,6 +94,8 @@ export const usePosCheckout = ({
   const [isProcessingSale, setIsProcessingSale] = useState(false);
   const [lastCheckoutSucceeded, setLastCheckoutSucceeded] = useState(false);
   const [lastSaleCode, setLastSaleCode] = useState<string | null>(null);
+  const [lastSaleDocumentType, setLastSaleDocumentType] = useState<string | null>(null);
+  const [lastSaleTotal, setLastSaleTotal] = useState<number | null>(null);
   const [lastSaleId, setLastSaleId] = useState<string | null>(null);
   const [lastSaleReceiptUrl, setLastSaleReceiptUrl] = useState<string | null>(null);
   const [emitInvoice, setEmitInvoice] = useState(autoInvoice);
@@ -523,10 +526,12 @@ export const usePosCheckout = ({
       });
 
       if (submitResult.mode === 'server') {
-        const displayCode = submitResult.invoiceFullNumber ?? submitResult.serverCode;
-        toast(`Venta registrada (${displayCode})`, 'success');
+        const displayCode = publicSaleCode(submitResult.invoiceFullNumber ?? submitResult.serverCode);
+        toast(displayCode ? `Venta registrada (${displayCode})` : 'Venta registrada', 'success');
         setLastSaleId(submitResult.serverSaleId);
         setLastSaleCode(displayCode);
+        setLastSaleDocumentType(submitResult.documentType);
+        setLastSaleTotal(total);
         setLastSaleReceiptUrl(submitResult.publicReceiptUrl);
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
@@ -544,7 +549,9 @@ export const usePosCheckout = ({
         toast('Venta guardada localmente', 'success');
         toast('Pendiente de sincronización', 'warning');
         setLastSaleId(sale.id);
-        setLastSaleCode(sale.correlativoTemporal);
+        setLastSaleCode(publicSaleCode(sale.correlativoTemporal));
+        setLastSaleDocumentType(null);
+        setLastSaleTotal(total);
         setLastSaleReceiptUrl(null);
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
@@ -554,13 +561,16 @@ export const usePosCheckout = ({
       }
 
       setLastSaleId(sale.id);
-      setLastSaleCode(sale.correlativoTemporal);
+      setLastSaleCode(publicSaleCode(sale.correlativoTemporal));
+      setLastSaleTotal(total);
       await onQueuedSaleCreated();
       const syncedSale = await offlineDb.sales.get(sale.id);
       if (syncedSale?.serverSaleId) {
-        toast(`Venta registrada (${syncedSale.serverCode ?? sale.correlativoTemporal})`, 'success');
+        const syncedCode = publicSaleCode(syncedSale.serverCode ?? sale.correlativoTemporal);
+        toast(syncedCode ? `Venta registrada (${syncedCode})` : 'Venta registrada', 'success');
         setLastSaleId(syncedSale.serverSaleId);
-        setLastSaleCode(syncedSale.serverCode ?? sale.correlativoTemporal);
+        setLastSaleCode(syncedCode);
+        setLastSaleTotal(total);
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
         clearCart();
@@ -574,7 +584,8 @@ export const usePosCheckout = ({
         }
         toast(getActionableSaleErrorMessage(syncedSale), 'error', 6000);
       } else {
-        toast(`Venta registrada localmente (${sale.correlativoTemporal})`, 'success');
+        toast('Venta registrada localmente', 'success');
+        setLastSaleTotal(total);
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
         clearCart();
@@ -598,6 +609,8 @@ export const usePosCheckout = ({
     setNote,
     isProcessingSale,
     lastSaleCode,
+    lastSaleDocumentType,
+    lastSaleTotal,
     lastSaleId,
     lastSaleReceiptUrl,
     emitInvoice,
