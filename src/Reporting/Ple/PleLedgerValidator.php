@@ -117,6 +117,81 @@ final class PleLedgerValidator
     }
 
     /**
+     * @param array<string, mixed> $book
+     *
+     * @return list<array{severity: string, row: ?int, code: string, message: string}>
+     */
+    public function validateJournalBook(array $book, string $period): array
+    {
+        if (($book['status'] ?? '') === 'unavailable') {
+            return [];
+        }
+
+        $rows = $book['rows'] ?? [];
+        if (!is_array($rows) || $rows === []) {
+            return [];
+        }
+
+        $issues = [];
+        $byCuo = [];
+
+        /** @var list<array<string, mixed>> $rows */
+        foreach ($rows as $row) {
+            $rawIndex = $row['index'] ?? null;
+            $index = $rawIndex === null ? null : (int) $rawIndex;
+            $this->assertDateInPeriod($issues, $index, (string) ($row['issueDate'] ?? ''), $period);
+            $this->assertRequiredField(
+                $issues,
+                $index,
+                'account',
+                (string) ($row['accountCode'] ?? ''),
+                'La cuenta contable es obligatoria.',
+            );
+
+            $debit = (float) ($row['debit'] ?? 0);
+            $credit = (float) ($row['credit'] ?? 0);
+            if (abs($debit) < 0.005 && abs($credit) < 0.005) {
+                $issues[] = $this->issue($index, 'ZERO_LINE', 'La línea no tiene debe ni haber.');
+            }
+
+            $cuo = (string) ($row['cuo'] ?? '');
+            $correlative = (string) ($row['correlative'] ?? '');
+            if ($correlative !== '' && !preg_match('/^[AMC]/', $correlative)) {
+                $issues[] = $this->issue(
+                    $index,
+                    'INVALID_CORRELATIVE',
+                    'El correlativo del asiento debe iniciar con A, M o C.',
+                );
+            }
+
+            if ($cuo !== '') {
+                $byCuo[$cuo] ??= ['debit' => 0.0, 'credit' => 0.0, 'index' => $index];
+                $byCuo[$cuo]['debit'] += $debit;
+                $byCuo[$cuo]['credit'] += $credit;
+            }
+        }
+
+        foreach ($byCuo as $cuo => $sum) {
+            if (abs($sum['debit'] - $sum['credit']) <= 0.02) {
+                continue;
+            }
+
+            $issues[] = $this->issue(
+                $sum['index'],
+                'UNBALANCED_ENTRY',
+                sprintf(
+                    'El asiento %s no cuadra (debe %s, haber %s).',
+                    $cuo,
+                    PleWriter::amount($sum['debit']),
+                    PleWriter::amount($sum['credit']),
+                ),
+            );
+        }
+
+        return $issues;
+    }
+
+    /**
      * @param list<array{severity: string, row: ?int, code: string, message: string}> $issues
      */
     private function assertDateInPeriod(array &$issues, ?int $row, string $issueDate, string $period): void

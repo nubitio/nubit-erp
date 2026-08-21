@@ -11,12 +11,13 @@ final readonly class PleValidationService
     public function __construct(
         private SalesLedgerExporter $salesExporter,
         private PurchaseLedgerExporter $purchaseExporter,
+        private AccountingBookExporter $accountingExporter,
         private PleLedgerValidator $validator,
         private CompanyContext $companyContext,
     ) {}
 
     /**
-     * @param 'sales'|'purchases'|null $book
+     * @param 'sales'|'purchases'|'diary'|'ledger'|null $book
      *
      * @return array<string, mixed>
      */
@@ -38,6 +39,18 @@ final readonly class PleValidationService
                 $period,
             ));
             $books['purchases'] = $this->bookValidation($purchaseIssues);
+        }
+
+        if ($book === null || $book === 'diary') {
+            $diaryPreview = $this->accountingExporter->previewDiary($period);
+            $diaryIssues = array_merge($companyIssues, $this->validator->validateJournalBook($diaryPreview, $period));
+            $books['diary'] = $this->bookValidation($diaryIssues);
+        }
+
+        if ($book === null || $book === 'ledger') {
+            $mayorPreview = $this->accountingExporter->previewMayor($period);
+            $mayorIssues = array_merge($companyIssues, $this->validator->validateJournalBook($mayorPreview, $period));
+            $books['ledger'] = $this->bookValidation($mayorIssues);
         }
 
         $valid = true;

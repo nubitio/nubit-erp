@@ -16,12 +16,21 @@ export interface PleLedgerRow {
   total: number;
   state: string;
   stateLabel: string;
+  cuo?: string;
+  correlative?: string;
+  accountCode?: string;
+  accountName?: string;
+  glosa?: string;
+  debit?: number;
+  credit?: number;
 }
 
 export interface PleLedgerTotals {
   taxable: number;
   igv: number;
   total: number;
+  debit?: number;
+  credit?: number;
 }
 
 export type PleBookStatus = 'ready' | 'empty' | 'unavailable';
@@ -51,7 +60,11 @@ export interface PlePreviewResponse {
   };
 }
 
-export type PleDownloadBook = 'sales' | 'purchases';
+export type PleDownloadBook = 'sales' | 'purchases' | 'diary' | 'ledger';
+
+export function isJournalBook(book: string): book is 'diary' | 'ledger' {
+  return book === 'diary' || book === 'ledger';
+}
 
 export interface PleValidationIssue {
   severity: 'error' | 'warning';

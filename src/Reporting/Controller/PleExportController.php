@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reporting\Controller;
 
+use App\Reporting\Ple\AccountingBookExporter;
 use App\Reporting\Ple\PlePreviewService;
 use App\Reporting\Ple\PleValidationService;
 use App\Reporting\Ple\PleZipService;
@@ -20,14 +21,19 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * Descarga de los Libros Electrónicos (PLE) de SUNAT en formato de texto:
  *   GET /api/v1/ple/sales?period=AAAAMM     → Registro de Ventas (14.1)
  *   GET /api/v1/ple/purchases?period=AAAAMM  → Registro de Compras (8.1)
+ *   GET /api/v1/ple/diary?period=AAAAMM     → Libro Diario (5.1)
+ *   GET /api/v1/ple/ledger?period=AAAAMM    → Libro Mayor (6.1)
  */
 #[Route('/api/v1/ple')]
 #[IsGranted('ROLE_ADMIN')]
 final class PleExportController extends AbstractController
 {
+    private const array BOOK_KEYS = ['sales', 'purchases', 'diary', 'ledger'];
+
     public function __construct(
         private readonly SalesLedgerExporter $salesExporter,
         private readonly PurchaseLedgerExporter $purchaseExporter,
+        private readonly AccountingBookExporter $accountingExporter,
         private readonly PlePreviewService $previewService,
         private readonly PleValidationService $validationService,
         private readonly PleZipService $zipService,
@@ -48,7 +54,7 @@ final class PleExportController extends AbstractController
         $book = $request->query->get('book');
         $bookKey = is_string($book) && $book !== '' ? $book : null;
 
-        if ($bookKey !== null && !in_array($bookKey, ['sales', 'purchases'], true)) {
+        if ($bookKey !== null && !in_array($bookKey, self::BOOK_KEYS, true)) {
             throw $this->createNotFoundException('El libro solicitado no es válido.');
         }
 
@@ -77,6 +83,22 @@ final class PleExportController extends AbstractController
         $period = $this->resolvePeriod($request);
 
         return $this->download($this->purchaseExporter->export($period));
+    }
+
+    #[Route('/diary', name: 'ple_diary', methods: ['GET'])]
+    public function diary(Request $request): Response
+    {
+        $period = $this->resolvePeriod($request);
+
+        return $this->download($this->accountingExporter->exportDiary($period));
+    }
+
+    #[Route('/ledger', name: 'ple_ledger', methods: ['GET'])]
+    public function ledger(Request $request): Response
+    {
+        $period = $this->resolvePeriod($request);
+
+        return $this->download($this->accountingExporter->exportMayor($period));
     }
 
     private function resolvePeriod(Request $request): string

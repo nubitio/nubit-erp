@@ -26,6 +26,18 @@ final class PleWriterTest extends TestCase
             '080100',
             false,
         ));
+        self::assertSame('LE2012345678920260800050100001111.txt', PleWriter::fileName(
+            '20123456789',
+            '202608',
+            '050100',
+            true,
+        ));
+        self::assertSame('LE2012345678920260800060100001111.txt', PleWriter::fileName(
+            '20123456789',
+            '202608',
+            '060100',
+            true,
+        ));
     }
 
     public function testCreditNoteAmountsAreNegativeInSalesLedger(): void

@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppDropdown, Button } from '@nubitio/ui';
+import { ErpModuleBanner } from '@features/shared/ErpModuleBanner';
 import {
   currentPeriod,
   formatFileSize,
   formatMoney,
+  isJournalBook,
   isValidPeriod,
   periodLabel,
   pleService,
@@ -108,6 +110,69 @@ function PleIssuesPanel({ validation }: { validation: PleBookValidation }) {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function voucherLabel(row: PleBookPreview['rows'][number]): string {
+  const parts = [row.documentType, row.series, row.number].filter((part) => part && part.trim() !== '');
+  return parts.length > 0 ? parts.join(' ') : '—';
+}
+
+function PleJournalTable({ book }: { book: PleBookPreview }) {
+  if (book.rows.length === 0) {
+    return (
+      <div className="ple-empty">
+        No hay asientos para este libro en el periodo seleccionado.
+      </div>
+    );
+  }
+
+  return (
+    <div className="ple-table-wrap">
+      <table className="ple-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha</th>
+            <th>CUO</th>
+            <th>Cuenta</th>
+            <th>Glosa</th>
+            <th>Comprobante</th>
+            <th>Debe</th>
+            <th>Haber</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {book.rows.map((row) => (
+            <tr key={`${row.cuo ?? ''}-${row.correlative ?? ''}-${row.accountCode ?? ''}-${row.index}`}>
+              <td>{row.index}</td>
+              <td>{row.issueDate}</td>
+              <td>{row.cuo || '—'}</td>
+              <td title={row.accountName}>
+                <span className="ple-table__account">{row.accountCode}</span>
+                {row.accountName ? <span className="ple-table__account-name">{row.accountName}</span> : null}
+              </td>
+              <td className="ple-table__name" title={row.glosa ?? row.counterpartyName}>
+                {row.glosa || row.counterpartyName || '—'}
+              </td>
+              <td>{voucherLabel(row)}</td>
+              <td>{formatMoney(row.debit ?? 0)}</td>
+              <td>{formatMoney(row.credit ?? 0)}</td>
+              <td>
+                <span className="ple-badge ple-badge--active">{row.stateLabel}</span>
+              </td>
+            </tr>
+          ))}
+          <tr className="ple-table__totals">
+            <td colSpan={6}>TOTALES</td>
+            <td>{formatMoney(book.totals.debit ?? 0)}</td>
+            <td>{formatMoney(book.totals.credit ?? 0)}</td>
+            <td />
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -220,7 +285,10 @@ export function PleExportPage() {
   const selectedBook = preview?.books[activeBook];
   const salesBook = preview?.books.sales;
   const purchasesBook = preview?.books.purchases;
+  const diaryBook = preview?.books.diary;
+  const ledgerBook = preview?.books.ledger;
   const activeValidation = validation?.books[activeBook];
+  const journalSelected = isJournalBook(activeBook);
 
   const updatePeriod = (nextYear: string, nextMonth: string) => {
     setPeriod(`${nextYear}${nextMonth}`);
@@ -293,7 +361,7 @@ export function PleExportPage() {
           <div className="ple-page__intro">
             <h1 className="ple-page__title">SUNAT PLE — Libros electrónicos</h1>
             <p className="ple-page__subtitle">
-              Programa de Libros Electrónicos · Formato SUNAT UBL 2.1
+              Programa de Libros Electrónicos · Ventas 14.1, compras 8.1, diario 5.1 y mayor 6.1
             </p>
           </div>
 
@@ -347,11 +415,8 @@ export function PleExportPage() {
           <>
             <div className="ple-cards">
               {bookCards.map(({ key, book }) => {
-                const selectable = key === 'sales' || key === 'purchases';
-                const isActive = selectable && activeBook === key;
-                const status = selectable
-                  ? resolveBookStatus(book, key, validation)
-                  : { label: book.statusLabel, tone: 'unavailable' as const };
+                const isActive = activeBook === key;
+                const status = resolveBookStatus(book, key, validation);
                 const dotClass =
                   status.tone === 'ready'
                     ? 'ple-card__dot--ready'
@@ -366,10 +431,7 @@ export function PleExportPage() {
                     key={key}
                     type="button"
                     className={`ple-card${isActive ? ' ple-card--active' : ''}`}
-                    disabled={!selectable}
-                    onClick={() => {
-                      if (selectable) setActiveBook(key);
-                    }}
+                    onClick={() => setActiveBook(key)}
                   >
                     <div className="ple-card__head">
                       <span className="ple-card__code">{book.pleCode}</span>
@@ -431,6 +493,13 @@ export function PleExportPage() {
                   </div>
                 </div>
 
+                {journalSelected && (
+                  <ErpModuleBanner>
+                    Diario y Mayor salen de los asientos operativos del periodo. No incluyen apertura ni
+                    cierre certificado.
+                  </ErpModuleBanner>
+                )}
+
                 <div className="ple-tabs" role="tablist" aria-label="Libros con vista previa">
                   <button
                     type="button"
@@ -450,10 +519,32 @@ export function PleExportPage() {
                   >
                     Reg. Compras ({purchasesBook?.recordCount ?? 0})
                   </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={activeBook === 'diary'}
+                    className={`ple-tab${activeBook === 'diary' ? ' ple-tab--active' : ''}`}
+                    onClick={() => setActiveBook('diary')}
+                  >
+                    Diario ({diaryBook?.recordCount ?? 0})
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={activeBook === 'ledger'}
+                    className={`ple-tab${activeBook === 'ledger' ? ' ple-tab--active' : ''}`}
+                    onClick={() => setActiveBook('ledger')}
+                  >
+                    Mayor ({ledgerBook?.recordCount ?? 0})
+                  </button>
                 </div>
 
                 {activeValidation && <PleIssuesPanel validation={activeValidation} />}
-                <PleLedgerTable book={selectedBook} />
+                {journalSelected ? (
+                  <PleJournalTable book={selectedBook} />
+                ) : (
+                  <PleLedgerTable book={selectedBook} />
+                )}
               </section>
             )}
           </>

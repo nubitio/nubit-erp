@@ -4,25 +4,17 @@ declare(strict_types=1);
 
 namespace App\Tests\Reporting\Ple;
 
-use App\Reporting\Ple\PlePreviewService;
+use App\Reporting\Ple\AccountingBookExporter;
 use App\Reporting\Ple\SalesLedgerExporter;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
 final class PlePreviewServiceTest extends TestCase
 {
-    public function testUnavailableBookPlaceholderStructure(): void
+    public function testAccountingPreviewMetaUsesSunatBookCodes(): void
     {
-        $reflection = new ReflectionClass(PlePreviewService::class);
-        $service = $reflection->newInstanceWithoutConstructor();
-        $method = $reflection->getMethod('unavailableBook');
-
-        $book = $method->invoke($service, 'diary', 'Libro Diario', 'LE05.2');
-
-        self::assertSame('unavailable', $book['status']);
-        self::assertSame('Sin datos aún', $book['statusLabel']);
-        self::assertSame('Libro Diario', $book['label']);
-        self::assertSame([], $book['rows']);
+        self::assertSame('050100', AccountingBookExporter::BOOK_DIARY);
+        self::assertSame('060100', AccountingBookExporter::BOOK_MAYOR);
     }
 
     public function testSalesPreviewRowMapsCreditNoteAsNegativeAmounts(): void

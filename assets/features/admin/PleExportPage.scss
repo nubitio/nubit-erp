@@ -292,6 +292,21 @@
   text-overflow: ellipsis;
 }
 
+.ple-table__account {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ple-table__account-name {
+  display: block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
 .ple-table__totals {
   font-weight: 700;
   background: var(--surface-0, var(--base-bg));

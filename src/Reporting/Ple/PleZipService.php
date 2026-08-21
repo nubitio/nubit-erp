@@ -12,6 +12,7 @@ final readonly class PleZipService
     public function __construct(
         private SalesLedgerExporter $salesExporter,
         private PurchaseLedgerExporter $purchaseExporter,
+        private AccountingBookExporter $accountingExporter,
     ) {}
 
     public function createArchive(string $period): Response
@@ -19,6 +20,8 @@ final readonly class PleZipService
         $files = [
             $this->salesExporter->export($period),
             $this->purchaseExporter->export($period),
+            $this->accountingExporter->exportDiary($period),
+            $this->accountingExporter->exportMayor($period),
         ];
 
         $tmp = tempnam(sys_get_temp_dir(), 'ple_zip_');
