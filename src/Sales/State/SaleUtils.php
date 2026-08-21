@@ -24,6 +24,26 @@ readonly class SaleUtils
      */
     public function getSaleSeries(string $docType, string $wareHouseId): string
     {
+        $series = $this->fetchSeries($docType, $wareHouseId);
+
+        // Internal notes of sale are not SUNAT documents. Auto-provision N001 so a
+        // cashier can still ring up a sale when the branch was created without that series.
+        if ($series === null && $docType === DocType::NOTA_VENTA->value) {
+            $series = $this->provisionInternalSaleSeries($wareHouseId);
+        }
+
+        if ($series === null) {
+            throw new ServiceException($this->missingSeriesMessage($docType));
+        }
+
+        return $series;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function fetchSeries(string $docType, string $wareHouseId): ?string
+    {
         /** @var false|string $series */
         $series = $this->connection->fetchOne('
             select
@@ -33,11 +53,57 @@ readonly class SaleUtils
             where tipo_comprobante_id = ?
             and a.almacen_id = ?', [$docType, $wareHouseId]);
 
-        if (!$series) {
-            throw new ServiceException('No se encontró la serie para el tipo de comprobante y el local seleccionado.');
+        return $series === false || $series === '' ? null : (string) $series;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function provisionInternalSaleSeries(string $wareHouseId): ?string
+    {
+        /** @var false|string $branchId */
+        $branchId = $this->connection->fetchOne(
+            'SELECT local_id FROM almacen WHERE almacen_id = ?',
+            [$wareHouseId],
+        );
+        if ($branchId === false || $branchId === '') {
+            return null;
         }
 
-        return strval($series);
+        $voucherTypeExists = $this->connection->fetchOne(
+            'SELECT codigo FROM tipo_comprobante WHERE codigo = ?',
+            [DocType::NOTA_VENTA->value],
+        );
+        if ($voucherTypeExists === false) {
+            return null;
+        }
+
+        $existing = $this->connection->fetchOne(
+            'SELECT series FROM local_comprobante WHERE local_id = ? AND tipo_comprobante_id = ? LIMIT 1',
+            [$branchId, DocType::NOTA_VENTA->value],
+        );
+        if (is_string($existing) && $existing !== '') {
+            return $existing;
+        }
+
+        $this->connection->insert('local_comprobante', [
+            'local_id' => $branchId,
+            'tipo_comprobante_id' => DocType::NOTA_VENTA->value,
+            'series' => 'N001',
+            'is_active' => 1,
+        ]);
+
+        return 'N001';
+    }
+
+    private function missingSeriesMessage(string $docType): string
+    {
+        return match ($docType) {
+            DocType::FACTURA->value => 'Esta sucursal no tiene serie de factura (F001). Configúrala en Configuración → Series de comprobantes.',
+            DocType::BOLETA->value => 'Esta sucursal no tiene serie de boleta (B001). Configúrala en Configuración → Series de comprobantes.',
+            DocType::NOTA_VENTA->value => 'Esta sucursal no tiene serie de nota de venta (N001). Configúrala en Configuración → Series de comprobantes.',
+            default => 'Esta sucursal no tiene serie para el tipo de comprobante seleccionado. Configúrala en Configuración → Series de comprobantes.',
+        };
     }
 
     /**

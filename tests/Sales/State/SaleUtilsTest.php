@@ -74,9 +74,40 @@ class SaleUtilsTest extends TestCase
         $this->connection->method('fetchOne')->willReturn(false);
 
         $this->expectException(ServiceException::class);
-        $this->expectExceptionMessageMatches('/No se encontró la serie/');
+        $this->expectExceptionMessageMatches('/serie de factura \(F001\)/');
 
         $this->utils->getSaleSeries('01', 'wh-uuid');
+    }
+
+    public function testGetSaleSeriesProvisionsInternalNoteSeriesWhenMissing(): void
+    {
+        $fetchOneCallCount = 0;
+        $this->connection
+            ->method('fetchOne')
+            ->willReturnCallback(function () use (&$fetchOneCallCount): false|string {
+                ++$fetchOneCallCount;
+
+                return match ($fetchOneCallCount) {
+                    1 => false,
+                    2 => 'branch-uuid',
+                    3 => '00',
+                    4 => false,
+                    default => false,
+                };
+            });
+        $this->connection
+            ->expects($this->once())
+            ->method('insert')
+            ->with('local_comprobante', [
+                'local_id' => 'branch-uuid',
+                'tipo_comprobante_id' => '00',
+                'series' => 'N001',
+                'is_active' => 1,
+            ]);
+
+        $result = $this->utils->getSaleSeries('00', 'wh-uuid');
+
+        $this->assertSame('N001', $result);
     }
 
     // ── getSaleNumber() ───────────────────────────────────────────────────────

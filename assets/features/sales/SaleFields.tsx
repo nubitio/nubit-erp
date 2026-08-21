@@ -432,9 +432,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .label('Estado')
       .visibleOnForm(false)
       .align('center')
-      .formatter((cell: GridCellContext) => {
-        return SharedUtils.saleStatusFormatter(cell.data);
-      })
+      .formatter((cell: GridCellContext) => SharedUtils.saleStatusFormatter(cell.data))
       .build(),
   );
   fields.push(

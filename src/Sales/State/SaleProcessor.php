@@ -113,9 +113,11 @@ readonly class SaleProcessor implements ProcessorInterface
         // A well-formed key is required so retries cannot duplicate the physical transaction.
         $offlineSaleHeader = $request instanceof Request && $request->headers->get('X-Offline-Sale') === 'true';
         $idempotencyKey = $request instanceof Request ? $request->headers->get('Idempotency-Key') ?? '' : '';
-        $isOfflineSale =
-            $offlineSaleHeader
-            && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $idempotencyKey) === 1;
+        $isUuidIdempotencyKey = preg_match(
+            '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
+            $idempotencyKey,
+        ) === 1;
+        $isOfflineSale = $offlineSaleHeader && $isUuidIdempotencyKey;
         if ($offlineSaleHeader && !$isOfflineSale) {
             $this->logger->warning('X-Offline-Sale header rejected: missing or malformed Idempotency-Key', [
                 'user_id' => $user->userId,
@@ -127,20 +129,19 @@ readonly class SaleProcessor implements ProcessorInterface
             throw new AccessDeniedException('Permission "pos.offline_sale" is required to synchronize offline sales.');
         }
 
-        // Idempotent replay: the offline outbox resends the exact same
-        // Idempotency-Key on every retry of a given local sale (network
-        // failures, a lost response, etc. — see assets/offline/outbox.ts).
-        // Without this check a retry whose first attempt actually reached
-        // the server would create a second SaleRecord, double-deduct stock,
-        // and double-invoice the customer. Checked before any side effect
-        // (inventory, cash session, invoicing) runs.
-        if ($isNew && $isOfflineSale) {
+        // Idempotent replay: POS double-clicks and the offline outbox both resend
+        // the same Idempotency-Key. Without this check a retry whose first attempt
+        // reached the server would create a second SaleRecord, double-deduct stock,
+        // and double-invoice the customer. Checked before any side effect runs.
+        if ($isNew && $isUuidIdempotencyKey) {
             $existingSale = $this->saleRecordRepository->findByOfflineRetryKey($idempotencyKey);
             if ($existingSale instanceof SaleRecord) {
-                $this->logger->info('Offline sale replay detected via Idempotency-Key — returning existing sale', [
+                $this->logger->info('Sale replay detected via Idempotency-Key — returning existing sale', [
                     'sale_id' => $existingSale->getId(),
                     'idempotency_key' => $idempotencyKey,
+                    'offline' => $isOfflineSale,
                 ]);
+                $this->saleRecordRepository->enrichWithTaxDocuments([$existingSale]);
 
                 return $existingSale;
             }
@@ -281,7 +282,7 @@ readonly class SaleProcessor implements ProcessorInterface
             $this->logger->info('Creating new sale record with timestamp');
             $data->setDateCreated(new DateTimeImmutable());
             $data->setCreatedBy($user->userId);
-            if ($isOfflineSale) {
+            if ($isUuidIdempotencyKey) {
                 $data->setOfflineRetryKey($idempotencyKey);
             }
 

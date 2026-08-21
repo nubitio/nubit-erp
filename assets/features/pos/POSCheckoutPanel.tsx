@@ -61,7 +61,9 @@ interface POSCheckoutPanelProps {
   handleCheckout: () => void;
   isProcessingSale: boolean;
   lastCheckoutSucceeded?: boolean;
+  checkoutError?: string | null;
   lastSaleCode?: string | null;
+  lastSaleReceiptUrl?: string | null;
   onPrintLastSale?: () => void;
   syncSales?: LocalSale[];
   onRetrySale?: (saleId: string) => void;
@@ -112,7 +114,9 @@ export function POSCheckoutPanel({
   handleCheckout,
   isProcessingSale,
   lastCheckoutSucceeded = false,
+  checkoutError = null,
   lastSaleCode,
+  lastSaleReceiptUrl = null,
   onPrintLastSale,
   syncSales: _syncSales = [],
   onRetrySale: _onRetrySale,
@@ -141,6 +145,7 @@ export function POSCheckoutPanel({
   const successChangeRef = useRef(0);
   const successWasCashRef = useRef(false);
   const successCodeRef = useRef<string | null>(null);
+  const successReceiptUrlRef = useRef<string | null>(null);
   const successDismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Success overlay: fires when isProcessingSale goes true → false AND sale succeeded
@@ -150,14 +155,13 @@ export function POSCheckoutPanel({
         successChangeRef.current = changeAmount;
         successWasCashRef.current = changeAmount > 0;
         successCodeRef.current = lastSaleCode ?? null;
+        successReceiptUrlRef.current = lastSaleReceiptUrl;
         setShowSuccess(true);
-        // Auto-dismiss after 8s if the cashier doesn't interact
         if (successDismissTimer.current) clearTimeout(successDismissTimer.current);
-        successDismissTimer.current = setTimeout(() => setShowSuccess(false), 8000);
       }
     }
     prevProcessing.current = isProcessingSale;
-  }, [isProcessingSale, lastCheckoutSucceeded, changeAmount, lastSaleCode]);
+  }, [isProcessingSale, lastCheckoutSucceeded, changeAmount, lastSaleCode, lastSaleReceiptUrl]);
 
   // New line entrance animation
   useEffect(() => {
@@ -244,6 +248,11 @@ export function POSCheckoutPanel({
       {!cajaAbierta && (
         <div className="pos-caja-closed-banner" role="alert">
           Caja cerrada — no se puede cobrar
+        </div>
+      )}
+      {checkoutError && (
+        <div className="pos-checkout-error-banner" role="alert">
+          {checkoutError}
         </div>
       )}
 
@@ -470,9 +479,10 @@ export function POSCheckoutPanel({
             aria-expanded={optionsOpen}
           >
             <span>Opciones</span>
-            {!optionsOpen && (discountPercent > 0 || !emitInvoice) && (
-              <span className="pos-footer-options__badge">
-                {discountPercent > 0 ? `-${discountPercent}%` : 'Sin comprobante'}
+            {!optionsOpen && (
+              <span className={`pos-footer-options__badge${emitInvoice ? ' is-sunat' : ''}`}>
+                {emitInvoice ? 'Boleta / Factura' : 'Sin comprobante'}
+                {discountPercent > 0 ? ` · -${discountPercent}%` : ''}
               </span>
             )}
             <i className={`ph ph-caret-${optionsOpen ? 'up' : 'down'}`} aria-hidden="true" />
@@ -481,11 +491,11 @@ export function POSCheckoutPanel({
           {optionsOpen && (
             <div className="pos-footer-options__body">
               <div className="pos-footer-option-row">
-                <span className="pos-discount-label">Emitir comprobante</span>
+                <span className="pos-discount-label">Emitir boleta/factura SUNAT</span>
                 <Toggle
                   checked={emitInvoice}
                   onChange={setEmitInvoice}
-                  aria-label="Emitir comprobante"
+                  aria-label="Emitir boleta o factura SUNAT"
                 />
               </div>
 
@@ -618,12 +628,14 @@ export function POSCheckoutPanel({
           <div className="pos-postsale__card">
             <div className="pos-postsale__check">✓</div>
             <h2 className="pos-postsale__title" data-testid="pos-postsale-title">
-              ¡Venta completada!
+              ¡Venta cobrada!
             </h2>
             {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
             {successCodeRef.current && (
               // eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set
-              <p className="pos-postsale__code">{successCodeRef.current}</p>
+              <p className="pos-postsale__code" data-testid="pos-postsale-code">
+                Comprobante {successCodeRef.current}
+              </p>
             )}
             {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
             {successWasCashRef.current && successChangeRef.current > 0 && (
@@ -641,6 +653,28 @@ export function POSCheckoutPanel({
                   onClick={onPrintLastSale}
                 >
                   Imprimir ticket
+                </button>
+              )}
+              {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
+              {successReceiptUrlRef.current && (
+                <button
+                  type="button"
+                  className="pos-postsale__btn pos-postsale__btn--secondary"
+                  onClick={() => {
+                    const receiptUrl = successReceiptUrlRef.current;
+                    const code = successCodeRef.current;
+                    if (!receiptUrl) {
+                      return;
+                    }
+                    const text = encodeURIComponent(
+                      code
+                        ? `Tu comprobante ${code}: ${receiptUrl}`
+                        : `Tu comprobante: ${receiptUrl}`,
+                    );
+                    window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
+                  }}
+                >
+                  Enviar por WhatsApp
                 </button>
               )}
               <button

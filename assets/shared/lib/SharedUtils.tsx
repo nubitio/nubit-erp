@@ -289,32 +289,40 @@ export class SharedUtils {
 
     const hasInvoice = !!sale?.invoice || !!sale?.invoiceFullNumber;
     if (!hasInvoice) {
-      return <Badge variant="success" outlined>ACEPTADO</Badge>;
+      return <Badge variant="success" outlined>COBRADA</Badge>;
     }
 
-    const rawStatus = sale?.invoiceSunatStatus ?? sale?.sunatStatus;
-    if (rawStatus === null || rawStatus === undefined || rawStatus === '') {
-      return <Badge variant="info" outlined>PENDIENTE</Badge>;
+    const rawStatus = String(sale?.invoiceSunatStatus ?? sale?.sunatStatus ?? '').trim().toLowerCase();
+    if (rawStatus === '' || rawStatus === 'null') {
+      return <Badge variant="info" outlined>EMITIDA</Badge>;
+    }
+
+    if (rawStatus === 'pendiente' || rawStatus === 'pending' || rawStatus === 'enviado' || rawStatus === 'sent') {
+      return <Badge variant="primary" outlined>ENVIADA A SUNAT</Badge>;
+    }
+
+    if (rawStatus === 'aceptado' || rawStatus === 'accepted') {
+      return <Badge variant="success" outlined>ACEPTADA SUNAT</Badge>;
     }
 
     const statusNumber = Number(rawStatus);
     if (Number.isNaN(statusNumber)) {
-      return <Badge variant="primary" outlined>PENDIENTE</Badge>;
+      return <Badge variant="primary" outlined>ENVIADA A SUNAT</Badge>;
     }
 
     if (statusNumber === 0) {
-      return <Badge variant="success" outlined>ACEPTADO</Badge>;
+      return <Badge variant="success" outlined>ACEPTADA SUNAT</Badge>;
     }
 
     if (statusNumber < 2000) {
-      return <Badge variant="warning" outlined>ERRONEO</Badge>;
+      return <Badge variant="warning" outlined>ERRÓNEA</Badge>;
     }
 
     if (statusNumber < 4000) {
-      return <Badge variant="danger" outlined>RECHAZADO</Badge>;
+      return <Badge variant="danger" outlined>RECHAZADA</Badge>;
     }
 
-    return <Badge variant="secondary" outlined>OBSERVADO</Badge>;
+    return <Badge variant="secondary" outlined>OBSERVADA</Badge>;
   }
 }
 

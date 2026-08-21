@@ -306,7 +306,7 @@ class HttpClient {
 
     const errorMessage =
       message || (status ? messageMap[status] : undefined) || HttpClient.DEFAULT_MESSAGES.error;
-    toast(errorMessage, 'error');
+    toast(errorMessage, 'error', 8000);
 
     dispatch(HTTP_ERROR_EVENT, errorMessage);
   }

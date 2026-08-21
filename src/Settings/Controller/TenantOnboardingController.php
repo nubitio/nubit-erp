@@ -98,6 +98,7 @@ final class TenantOnboardingController extends AbstractController
         $receiptSeries = strtoupper($this->optionalString($payload, 'receiptSeries') ?? 'B001');
         $this->upsertVoucherSeries($branch, '01', $invoiceSeries);
         $this->upsertVoucherSeries($branch, '03', $receiptSeries);
+        $this->upsertVoucherSeries($branch, '00', 'N001');
         $this->entityManager->flush();
 
         return $this->json(['branch' => $this->serializeBranch($branch)]);

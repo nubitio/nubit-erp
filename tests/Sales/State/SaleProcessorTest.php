@@ -1011,6 +1011,49 @@ final class SaleProcessorTest extends TestCase
         self::assertNull($sale->getOfflineRetryKey());
     }
 
+    public function testOnlineSaleStoresIdempotencyKeyWithoutOfflineHeader(): void
+    {
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
+        $idempotencyKey = '22222222-3333-4444-5555-666666666666';
+
+        $request = new Request();
+        $request->headers->set('Idempotency-Key', $idempotencyKey);
+
+        $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $request]);
+
+        self::assertSame($idempotencyKey, $sale->getOfflineRetryKey());
+    }
+
+    public function testOnlineSaleRetryWithKnownIdempotencyKeyReturnsExistingSale(): void
+    {
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
+        $idempotencyKey = 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff';
+
+        $existingSale = $this->buildExistingSale(tipoId: 2);
+        $existingSale->setOfflineRetryKey($idempotencyKey);
+
+        $this->saleRecordRepository = $this->createMock(SaleRecordRepository::class);
+        $this->saleRecordRepository
+            ->expects($this->once())
+            ->method('findByOfflineRetryKey')
+            ->with($idempotencyKey)
+            ->willReturn($existingSale);
+        $this->saleRecordRepository
+            ->expects($this->once())
+            ->method('enrichWithTaxDocuments')
+            ->with([$existingSale]);
+
+        $request = new Request();
+        $request->headers->set('Idempotency-Key', $idempotencyKey);
+
+        $this->salesWriteGateway->expects($this->never())->method('write');
+        $this->persistProcessor->expects($this->never())->method('process');
+
+        $result = $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $request]);
+
+        self::assertSame($existingSale, $result);
+    }
+
     // -------------------------------------------------------------------------
     // TC-38: New sale has_invoice set to false always (regardless of incoming value)
     // -------------------------------------------------------------------------

@@ -23,7 +23,11 @@ import { useTenantIgvRate } from '@shared/hooks/useTenantIgvRate';
 import { useWarehouseStock } from './useWarehouseStock';
 import { offlineDb } from '@offline/db';
 import { useCurrencySettings } from '@shared/hooks/useCurrencySettings';
-import { submitSale } from './saleSubmitter';
+import { generateIdempotencyKey, submitSale } from './saleSubmitter';
+import { useQueryClient } from '@tanstack/react-query';
+
+let posCheckoutInFlight = false;
+let posCheckoutAttemptKey: string | null = null;
 
 const getActionableSaleErrorMessage = (sale: { errorCode?: string; errorMessage?: string }) => {
   if (sale.errorCode === 'SALE_CASH_SESSION_REQUIRED') {
@@ -47,6 +51,7 @@ type UsePosCheckoutParams = {
   onQueuedSaleCreated: () => Promise<void>;
   printSaleInvoice: (saleId: string) => Promise<void>;
   onCashSessionRequired?: () => void;
+  autoInvoice?: boolean;
 };
 
 export const usePosCheckout = ({
@@ -63,7 +68,9 @@ export const usePosCheckout = ({
   onQueuedSaleCreated,
   printSaleInvoice,
   onCashSessionRequired,
+  autoInvoice = true,
 }: UsePosCheckoutParams) => {
+  const queryClient = useQueryClient();
   // ── Draft-persistence helpers ────────────────────────────────────────────
   const storageKey = `pos_draft_${storeId || 'default'}`;
 
@@ -86,7 +93,14 @@ export const usePosCheckout = ({
   const [isProcessingSale, setIsProcessingSale] = useState(false);
   const [lastCheckoutSucceeded, setLastCheckoutSucceeded] = useState(false);
   const [lastSaleCode, setLastSaleCode] = useState<string | null>(null);
-  const [emitInvoice, setEmitInvoice] = useState(false);
+  const [lastSaleId, setLastSaleId] = useState<string | null>(null);
+  const [lastSaleReceiptUrl, setLastSaleReceiptUrl] = useState<string | null>(null);
+  const [emitInvoice, setEmitInvoice] = useState(autoInvoice);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setEmitInvoice(autoInvoice);
+  }, [autoInvoice]);
   const [creditSale, setCreditSale] = useState(false);
   const { currency, exchangeRate, setCurrency, setExchangeRate } = useCurrencySettings();
   const { igvRate } = useTenantIgvRate();
@@ -416,6 +430,10 @@ export const usePosCheckout = ({
     !paymentValidation.valid;
 
   const handleCheckout = async () => {
+    if (posCheckoutInFlight) {
+      return;
+    }
+
     if (checkoutDisabled) {
       if (cart.length === 0) {
         toast('Agrega productos al carrito', 'warning');
@@ -431,8 +449,14 @@ export const usePosCheckout = ({
       return;
     }
 
+    posCheckoutInFlight = true;
     setIsProcessingSale(true);
     setLastCheckoutSucceeded(false);
+    setCheckoutError(null);
+    if (posCheckoutAttemptKey === null) {
+      posCheckoutAttemptKey = generateIdempotencyKey();
+    }
+    const idempotencyKey = posCheckoutAttemptKey;
 
     try {
       const salePayload = {
@@ -495,13 +519,19 @@ export const usePosCheckout = ({
           total,
         },
         isOnline,
+        idempotencyKey,
       });
 
       if (submitResult.mode === 'server') {
-        toast(`Venta registrada (${submitResult.serverCode})`, 'success');
-        setLastSaleCode(submitResult.serverSaleId);
+        const displayCode = submitResult.invoiceFullNumber ?? submitResult.serverCode;
+        toast(`Venta registrada (${displayCode})`, 'success');
+        setLastSaleId(submitResult.serverSaleId);
+        setLastSaleCode(displayCode);
+        setLastSaleReceiptUrl(submitResult.publicReceiptUrl);
         setLastCheckoutSucceeded(true);
+        posCheckoutAttemptKey = null;
         clearCart();
+        void queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });
         printSaleInvoice(submitResult.serverSaleId).catch(() => {
           toast('Venta registrada, pero no se pudo imprimir el ticket.', 'warning');
         });
@@ -513,20 +543,28 @@ export const usePosCheckout = ({
       if (!isOnline) {
         toast('Venta guardada localmente', 'success');
         toast('Pendiente de sincronización', 'warning');
+        setLastSaleId(sale.id);
         setLastSaleCode(sale.correlativoTemporal);
+        setLastSaleReceiptUrl(null);
         setLastCheckoutSucceeded(true);
+        posCheckoutAttemptKey = null;
         clearCart();
         await onQueuedSaleCreated();
         return;
       }
 
+      setLastSaleId(sale.id);
       setLastSaleCode(sale.correlativoTemporal);
       await onQueuedSaleCreated();
       const syncedSale = await offlineDb.sales.get(sale.id);
       if (syncedSale?.serverSaleId) {
         toast(`Venta registrada (${syncedSale.serverCode ?? sale.correlativoTemporal})`, 'success');
+        setLastSaleId(syncedSale.serverSaleId);
+        setLastSaleCode(syncedSale.serverCode ?? sale.correlativoTemporal);
         setLastCheckoutSucceeded(true);
+        posCheckoutAttemptKey = null;
         clearCart();
+        void queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });
         printSaleInvoice(syncedSale.serverSaleId).catch(() => {
           toast('Venta sincronizada, pero no se pudo imprimir el ticket.', 'warning');
         });
@@ -538,12 +576,14 @@ export const usePosCheckout = ({
       } else {
         toast(`Venta registrada localmente (${sale.correlativoTemporal})`, 'success');
         setLastCheckoutSucceeded(true);
+        posCheckoutAttemptKey = null;
         clearCart();
       }
-    } catch {
-      // HttpClient already displayed an error toast for HTTP error responses.
-      // We only need to ensure isProcessingSale resets (handled by finally).
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo registrar la venta.';
+      setCheckoutError(message);
     } finally {
+      posCheckoutInFlight = false;
       setIsProcessingSale(false);
     }
   };
@@ -558,6 +598,8 @@ export const usePosCheckout = ({
     setNote,
     isProcessingSale,
     lastSaleCode,
+    lastSaleId,
+    lastSaleReceiptUrl,
     emitInvoice,
     setEmitInvoice,
     creditSale,
@@ -586,6 +628,7 @@ export const usePosCheckout = ({
     checkoutDisabled,
     handleCheckout,
     lastCheckoutSucceeded,
+    checkoutError,
     getEffectiveStock,
     readScaleForLine,
     scaleReady,

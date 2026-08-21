@@ -4,21 +4,52 @@ import type { CreateOfflineSaleInput, LocalSale } from '@offline/types';
 
 interface SubmitSaleInput extends CreateOfflineSaleInput {
   isOnline: boolean;
+  idempotencyKey: string;
 }
 
-type SaleSubmitterResult =
+export type SaleSubmitterResult =
   | {
       mode: 'server';
       serverSaleId: string;
       serverCode: string;
+      invoiceFullNumber: string | null;
+      publicReceiptUrl: string | null;
+      documentType: string | null;
     }
   | {
       mode: 'queued';
       sale: LocalSale;
     };
 
+const asTrimmedString = (value: unknown): string | null => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed === '' ? null : trimmed;
+};
+
+export const generateIdempotencyKey = (): string => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
+    const random = (Math.random() * 16) | 0;
+    const value = char === 'x' ? random : (random & 0x3) | 0x8;
+    return value.toString(16);
+  });
+};
+
 const buildServerSaleCode = (created: Record<string, unknown>, fallback: string) => {
-  const composed = [created.serie, created.numero].filter(Boolean).join('-');
+  const invoiceFullNumber = asTrimmedString(created.invoiceFullNumber);
+  if (invoiceFullNumber) {
+    return invoiceFullNumber;
+  }
+
+  const composed = [created.series ?? created.serie, created.number ?? created.numero]
+    .map((part) => asTrimmedString(part))
+    .filter((part): part is string => part !== null)
+    .join('-');
   return composed || String(created.invoice ?? created.id ?? fallback);
 };
 
@@ -47,6 +78,11 @@ export async function submitSale(input: SubmitSaleInput): Promise<SaleSubmitterR
       const response = await httpClient.post<Record<string, unknown>>(
         input.endpointUrl,
         input.requestBody,
+        {
+          headers: {
+            'Idempotency-Key': input.idempotencyKey,
+          },
+        },
       );
       const serverSaleId = extractServerSaleId(response.data);
 
@@ -55,6 +91,9 @@ export async function submitSale(input: SubmitSaleInput): Promise<SaleSubmitterR
           mode: 'server',
           serverSaleId,
           serverCode: buildServerSaleCode(response.data, serverSaleId),
+          invoiceFullNumber: asTrimmedString(response.data.invoiceFullNumber),
+          publicReceiptUrl: asTrimmedString(response.data.publicReceiptUrl),
+          documentType: asTrimmedString(response.data.documentType),
         };
       }
 

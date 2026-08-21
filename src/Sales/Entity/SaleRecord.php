@@ -364,12 +364,12 @@ class SaleRecord
     private ?string $discountPercent = null;
 
     #[ORM\Column(name: 'series', type: 'string', length: 10, nullable: true)]
-    #[Groups(['sale:read'])]
+    #[Groups(['sale:read', 'sale_record:read'])]
     #[ApiProperty(description: 'sale_record.series.label')]
     private ?string $series = null;
 
     #[ORM\Column(name: 'number', type: 'string', length: 20, nullable: true)]
-    #[Groups(['sale:read'])]
+    #[Groups(['sale:read', 'sale_record:read'])]
     #[ApiProperty(description: 'sale_record.number.label')]
     private ?string $number = null;
 
