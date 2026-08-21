@@ -83,6 +83,7 @@ final readonly class TenantRuntimeConfigProvider
             'capabilities' => [
                 'sales.core' => $this->capability(true),
                 'billing.sunat' => $this->capability(true),
+                'billing.recurring' => $this->capability($this->isFeatureEnabled($entitlements, 'recurring_billing')),
                 'cash.sessions' => $this->capability(true, [
                     'requireOpenSession' => $settings->isRequireCashRegister(),
                 ]),
@@ -93,6 +94,10 @@ final readonly class TenantRuntimeConfigProvider
                 'inventory.lot_tracking' => $this->capability($lotTracking),
                 'reporting.advanced' => $this->capability($advancedReports),
                 'exports.excel' => $this->capability($excelExport),
+                'payroll.core' => $this->capability($this->isFeatureEnabled($entitlements, 'payroll')),
+                'treasury.bank_reconciliation' => $this->capability($this->isFeatureEnabled($entitlements, 'bank_reconciliation')),
+                'fixed_assets.tracking' => $this->capability($this->isFeatureEnabled($entitlements, 'fixed_assets')),
+                'expense_reports.core' => $this->capability($this->isFeatureEnabled($entitlements, 'expense_reports')),
             ],
             'settings' => [
                 'requireCashRegister' => $settings->isRequireCashRegister(),

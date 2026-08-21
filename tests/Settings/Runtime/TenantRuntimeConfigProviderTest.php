@@ -78,6 +78,21 @@ final class TenantRuntimeConfigProviderTest extends TestCase
         self::assertSame('advanced', $config['profile']['navigationTier']);
     }
 
+    public function testKeepsErpCapabilitiesOffByDefault(): void
+    {
+        $config = $this->createProviderForVertical(RetailPreset::KEY)->getConfig();
+        $capabilities = $config['capabilities'];
+        self::assertIsArray($capabilities);
+
+        self::assertFalse($capabilities['payroll.core']['enabled']);
+        self::assertFalse($capabilities['treasury.bank_reconciliation']['enabled']);
+        self::assertFalse($capabilities['fixed_assets.tracking']['enabled']);
+        self::assertFalse($capabilities['expense_reports.core']['enabled']);
+        self::assertFalse($capabilities['billing.recurring']['enabled']);
+        self::assertTrue($capabilities['sales.core']['enabled']);
+        self::assertTrue($capabilities['billing.sunat']['enabled']);
+    }
+
     /**
      * @param array<string, array{enabled: bool, config: array<string, mixed>}> $entitlements
      */

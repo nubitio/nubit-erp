@@ -1,6 +1,8 @@
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import type { TenantRuntimeConfig } from '@shared/hooks';
+import { hasPermission } from '@shared/permissions';
+import { getSessionUser } from '@shared/sessionInfo';
 import type { AdminMenuItem } from '@nubitio/admin';
 
 const API = getCoreApiBaseUrl();
@@ -11,6 +13,33 @@ const WAREHOUSE_PATHS = new Set(['warehouse', 'inventory/warehouses']);
 const TRANSFER_PATHS = new Set(['transfer']);
 const DEPRECATED_MENU_PATHS = new Set(['reports']);
 const ADVANCED_REPORT_PATHS = new Set(['ple']);
+
+// The server is the source of truth for authorization, but hiding unavailable
+// destinations prevents a user from being invited into a screen that will
+// inevitably return a 403.  Keeping this mapping next to the menu policy also
+// makes the commercial navigation reflect the plan and role actually bought.
+const MENU_VIEW_PERMISSION: Record<string, string> = {
+  billing: 'sales.view',
+  pos: 'pos.access',
+  purchases: 'purchases.view',
+  'purchase-orders': 'purchase_orders.view',
+  catalog: 'catalog.view',
+  inventory: 'inventory.view',
+  customer: 'customers.view',
+  cashbox: 'cash.view',
+  subscriptions: 'subscriptions.view',
+  'accounts-payable': 'accounts_payable.view',
+  'accounts-receivable': 'accounts_payable.view',
+  'bank-reconciliation': 'bank_reconciliation.view',
+  'financial-reports': 'reports.view',
+  'expense-reports': 'expense_reports.view',
+  'fixed-assets': 'fixed_assets.view',
+  'sale-quotes': 'sale_quotes.view',
+  employees: 'payroll.view',
+  'payroll-runs': 'payroll.view',
+  ple: 'reports.ple',
+  config: 'settings.view',
+};
 
 const NAVIGATION_TIER_RANK: Record<TenantRuntimeConfig['profile']['navigationTier'], number> = {
   basic: 0,
@@ -23,6 +52,17 @@ const MENU_MIN_TIER = new Map<string, TenantRuntimeConfig['profile']['navigation
   ['inventory', 'standard'],
   ['ple', 'advanced'],
 ]);
+
+const MENU_REQUIRED_CAPABILITY: Record<string, string> = {
+  subscriptions: 'billing.recurring',
+  employees: 'payroll.core',
+  'payroll-runs': 'payroll.core',
+  'afp-rates': 'payroll.core',
+  'bank-reconciliation': 'treasury.bank_reconciliation',
+  'fixed-assets': 'fixed_assets.tracking',
+  'expense-reports': 'expense_reports.core',
+  'financial-reports': 'reporting.advanced',
+};
 
 function normalizePath(path: unknown): string {
   return String(path ?? '').replace(/^\/+/, '').toLowerCase();
@@ -49,6 +89,18 @@ function isAllowedMenuPath(path: string, runtimeConfig: TenantRuntimeConfig): bo
   }
 
   if (!runtimeConfig.ui.reports.showAdvancedReports && ADVANCED_REPORT_PATHS.has(path)) {
+    return false;
+  }
+
+  const requiredCapability = MENU_REQUIRED_CAPABILITY[path];
+  if (requiredCapability && runtimeConfig.capabilities[requiredCapability]?.enabled !== true) {
+    return false;
+  }
+
+  const requiredPermission = MENU_VIEW_PERMISSION[path];
+  // During bootstrap and in pure policy tests there is no authenticated
+  // session yet. Once a session exists, its grants must shape the menu.
+  if (requiredPermission && getSessionUser() && !hasPermission(requiredPermission)) {
     return false;
   }
 

@@ -6,6 +6,7 @@ import { filterMenuByRuntimeConfig } from './menuService';
 function runtimeConfig(
   navigationTier: TenantRuntimeConfig['profile']['navigationTier'],
   overrides: Partial<TenantRuntimeConfig['ui']['inventory'] & TenantRuntimeConfig['ui']['reports']> = {},
+  capabilities: TenantRuntimeConfig['capabilities'] = {},
 ): TenantRuntimeConfig {
   return {
     profile: {
@@ -17,7 +18,7 @@ function runtimeConfig(
     },
     counts: { branches: 1, warehouses: 1 },
     defaults: { branch: null, warehouse: null },
-    capabilities: {},
+    capabilities,
     settings: {
       requireCashRegister: false,
       autoInvoice: true,
@@ -100,5 +101,34 @@ describe('filterMenuByRuntimeConfig', () => {
 
     expect(filtered).toHaveLength(1);
     expect(filtered[0].items?.map((item) => item.path)).toEqual(['billing']);
+  });
+
+  it('hides unfinished ERP modules unless their capability is enabled', () => {
+    const filtered = filterMenuByRuntimeConfig(
+      menu([
+        'pos',
+        'billing',
+        'subscriptions',
+        'employees',
+        'payroll-runs',
+        'bank-reconciliation',
+        'fixed-assets',
+        'expense-reports',
+        'financial-reports',
+        'sale-quotes',
+      ]),
+      runtimeConfig('advanced', { showAdvancedReports: true }),
+    );
+
+    expect(visiblePaths(filtered)).toEqual(['pos', 'billing', 'sale-quotes']);
+  });
+
+  it('shows payroll when the payroll capability is enabled', () => {
+    const filtered = filterMenuByRuntimeConfig(
+      menu(['employees', 'payroll-runs', 'pos']),
+      runtimeConfig('advanced', {}, { 'payroll.core': { enabled: true, config: {} } }),
+    );
+
+    expect(visiblePaths(filtered)).toEqual(['employees', 'payroll-runs', 'pos']);
   });
 });
