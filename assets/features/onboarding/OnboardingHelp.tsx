@@ -27,7 +27,7 @@ const FAQ: Record<OnboardingHelpProps['step'], Array<{ q: string; a: string }>> 
   Branch: [
     {
       q: '¿Qué es la serie F001 / B001?',
-      a: 'F001 es la serie de facturas y B001 la de boletas. eFact las crea para tu local. Puedes agregar más series después.',
+      a: 'F001 es la serie de facturas y B001 la de boletas. El sistema las crea para tu local. Puedes agregar más series después.',
     },
   ],
   Warehouse: [
@@ -39,7 +39,7 @@ const FAQ: Record<OnboardingHelpProps['step'], Array<{ q: string; a: string }>> 
   Done: [
     {
       q: '¿Y ahora?',
-      a: 'Entra a eFact y registra tu primera venta desde el POS. El asistente de IA te ayuda si tu plan lo incluye.',
+      a: 'Entra al dashboard y registra tu primera venta desde el POS. Desde ahí recorres inventario, compras, finanzas y planilla.',
     },
   ],
 };

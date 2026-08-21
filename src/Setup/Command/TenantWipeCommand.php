@@ -21,10 +21,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * ## What gets deleted
  *
  * Transactional (always):
- *   - Sales, sale items, payments, taxes, discounts
+ *   - Sales, sale items, payments, taxes, discounts, quotes
  *   - Tax documents (SUNAT invoices) and their events/lines
  *   - Cash sessions, cash movements, cash counts, cash shifts
- *   - Purchases (goods receipts) and their items
+ *   - Purchases, purchase orders, supplier bills
+ *   - Payroll runs, journal entries, bank statements, expense reports
  *   - Stock movements, stock entries/transfers and their items
  *   - Stock lots, stock items, stock balances, reconciliation runs
  *   - Returns, return items, refund payments
@@ -42,8 +43,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  *   SUNAT catalog, units of measure, config settings
  *
  * ## --wipe-catalog flag
- *   Also deletes products, customers, suppliers and resets price lists
- *   so the tenant can re-enter their real catalog from scratch.
+ *   Also deletes products, customers, suppliers, employees, bank accounts,
+ *   fixed assets and resets price lists so the tenant can re-enter masters
+ *   from scratch.
  *
  * Usage:
  *   php bin/console app:tenant:wipe --tenant=jawka --force
@@ -199,6 +201,25 @@ final class TenantWipeCommand extends Command
             // — Purchase headers —
             'goods_receipt_items',
             'goods_receipts',
+            'purchase_order_items',
+            'purchase_orders',
+
+            // — Quotes —
+            'sale_quote_items',
+            'sale_quotes',
+
+            // — Finance / payroll / ledger —
+            'supplier_payment',
+            'supplier_bill',
+            'payslip_entry',
+            'payroll_run',
+            'journal_entry_line',
+            'journal_entry',
+            'bank_reconciliation_match',
+            'bank_statement_line',
+            'bank_statement_import',
+            'asset_depreciation_entry',
+            'expense_report',
 
             // — Cash sessions —
             'cash_sessions',
@@ -230,6 +251,9 @@ final class TenantWipeCommand extends Command
             'price_list',
             'cliente',
             'proveedor',
+            'employee',
+            'bank_account',
+            'fixed_asset',
         ];
 
         foreach ($tables as $table) {

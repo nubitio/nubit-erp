@@ -1,6 +1,6 @@
-# eFact SaaS POS
+# eFact — Mini ERP
 
-SaaS multi-tenant para POS, inventario y facturación electrónica (SUNAT), construido con Symfony + API Platform + React.
+SaaS multi-tenant de mini ERP para Perú: POS, inventario, compras, tesorería, contabilidad, planilla y facturación electrónica SUNAT. Construido con Symfony + API Platform + React.
 
 ## Inicio rápido (<10 min)
 
@@ -41,6 +41,7 @@ make migrate
 ### 5) Abrir aplicación
 
 - App: http://localhost:8080
+- Demo tenant: http://demo.localhost:8080
 - API docs: http://localhost:8080/api/docs
 - Vite dev server: http://localhost:5173
 - Health: http://localhost:8080/health
@@ -157,7 +158,7 @@ No uses `app:seed:initial-data` sobre tenants existentes salvo en un reset contr
 
 ### Preparar una presentación comercial
 
-Usa un tenant nuevo y dedicado para cada prospecto. Tras completar el setup inicial, este comando crea el acceso de dueño y una muestra concisa de clientes, productos, proveedores y ventas; no mezcla datos sintéticos en un tenant que ya opera:
+Usa un tenant nuevo y dedicado para cada prospecto. Tras completar el setup inicial, este comando crea el acceso de dueño y una muestra concisa de mini ERP (catálogo, ventas de 12 meses, compras, CxC/CxP, cotizaciones, planilla, bancos, activos y asientos); no mezcla datos sintéticos en un tenant que ya opera:
 
 ```bash
 docker compose exec -T web php bin/console app:demo:seed --tenant=demo --no-interaction
@@ -170,6 +171,8 @@ docker compose exec -T web php bin/console app:demo:seed --tenant=demo --passwor
 ```
 
 El comando se detiene si detecta productos o ventas existentes. Esto es intencional: una demo debe ser reproducible y nunca contaminar información operativa. La barra de depuración Symfony está desactivada por defecto para que no aparezca frente a un prospecto.
+
+Guión de 20 minutos para el comprador: [`docs/presentation-mini-erp.md`](docs/presentation-mini-erp.md).
 
 Si cargaste una base tenant desde dump o baseline schema y necesitas registrar migraciones como ya aplicadas sin ejecutar SQL:
 

@@ -47,7 +47,7 @@ export const LoginPage = () => {
               <img
                 src={LOGO_DARK}
                 className="brand-logo brand-logo--efact"
-                alt="Efact"
+                alt="eFact"
               />
             )}
           </div>
@@ -58,25 +58,25 @@ export const LoginPage = () => {
 
           <div className="brand-text">
             <h1>
-              Cobra en caja
+              El mini ERP
               <br />
-              y emite a SUNAT.
+              para tu empresa.
             </h1>
-            <p>Un solo sistema para vender, controlar stock y facturar en Perú.</p>
+            <p>Vende, factura a SUNAT, controla stock, compras, finanzas y planilla en un solo sistema.</p>
           </div>
 
           <ul className="brand-features">
             <li>
               <i className="ph ph-check-circle" aria-hidden="true" />
-              Facturación electrónica SUNAT
+              POS y facturación electrónica SUNAT
             </li>
             <li>
               <i className="ph ph-check-circle" aria-hidden="true" />
-              POS integrado multilocal
+              Inventario, compras y tesorería
             </li>
             <li>
               <i className="ph ph-check-circle" aria-hidden="true" />
-              Inventario en tiempo real
+              Contabilidad y planilla
             </li>
           </ul>
 
@@ -96,7 +96,7 @@ export const LoginPage = () => {
             <img
               src={theme === 'dark' ? LOGO_DARK : LOGO_LIGHT}
               className="efact-wordmark"
-              alt="Efact"
+              alt="eFact"
             />
           )}
         </div>

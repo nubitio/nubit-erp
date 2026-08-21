@@ -38,7 +38,7 @@ const STEP_LABEL: Record<StepKey, string> = {
 const STEP_META: Record<StepKey, { title: string; subtitle: string }> = {
   Welcome: {
     title: 'Elige tu tipo de negocio',
-    subtitle: 'Ajustaremos inventario, facturación y menús para que eFact arranque simple.',
+    subtitle: 'Ajustaremos inventario, facturación y menús para que el mini ERP arranque simple.',
   },
   Company: {
     title: 'Datos de tu empresa',
@@ -57,8 +57,8 @@ const STEP_META: Record<StepKey, { title: string; subtitle: string }> = {
     subtitle: 'Queda vinculado a tu local. Puedes agregar más almacenes después.',
   },
   Done: {
-    title: '¡Listo para vender!',
-    subtitle: 'Tu cuenta de eFact quedó configurada. Resumen:',
+    title: '¡Listo para operar!',
+    subtitle: 'Tu mini ERP quedó configurado. Resumen:',
   },
 };
 
@@ -226,7 +226,7 @@ export function TenantOnboardingGate() {
 
   return (
     <main className="tenant-onboarding">
-      <section className="tenant-onboarding__card" aria-label="Configuración inicial de eFact">
+      <section className="tenant-onboarding__card" aria-label="Configuración inicial del mini ERP">
         <header className="tenant-onboarding__header">
           <div className="tenant-onboarding__brand">
             <span className="tenant-onboarding__logo">e</span>
@@ -367,7 +367,7 @@ export function TenantOnboardingGate() {
         <footer className="tenant-onboarding__footer">
           <Button type="button" variant="secondary" onClick={() => setStep((value) => Math.max(value - 1, 0) as OnboardingStep)} disabled={step === 0 || busy}>Atrás</Button>
           <Button type="button" variant="primary" onClick={goNext} disabled={!canContinue || busy} loading={busy}>
-            {step === 5 ? 'Entrar a eFact' : busy ? 'Guardando…' : 'Continuar'}
+            {step === 5 ? 'Entrar al mini ERP' : busy ? 'Guardando…' : 'Continuar'}
           </Button>
         </footer>
       </section>

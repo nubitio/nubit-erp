@@ -94,6 +94,27 @@ final class TenantRuntimeConfigProviderTest extends TestCase
         self::assertTrue($capabilities['billing.sunat']['enabled']);
     }
 
+    public function testEnablesMiniErpCapabilitiesFromPlanEntitlements(): void
+    {
+        $config = $this->createProviderForVertical(RetailPreset::KEY, entitlements: [
+            'payroll' => ['enabled' => true, 'config' => []],
+            'bank_reconciliation' => ['enabled' => true, 'config' => []],
+            'fixed_assets' => ['enabled' => true, 'config' => []],
+            'expense_reports' => ['enabled' => true, 'config' => []],
+            'general_ledger' => ['enabled' => true, 'config' => []],
+            'recurring_billing' => ['enabled' => true, 'config' => []],
+        ])->getConfig();
+        $capabilities = $config['capabilities'];
+        self::assertIsArray($capabilities);
+
+        self::assertTrue($capabilities['payroll.core']['enabled']);
+        self::assertTrue($capabilities['treasury.bank_reconciliation']['enabled']);
+        self::assertTrue($capabilities['fixed_assets.tracking']['enabled']);
+        self::assertTrue($capabilities['expense_reports.core']['enabled']);
+        self::assertTrue($capabilities['accounting.general_ledger']['enabled']);
+        self::assertTrue($capabilities['billing.recurring']['enabled']);
+    }
+
     /**
      * @param array<string, array{enabled: bool, config: array<string, mixed>}> $entitlements
      */

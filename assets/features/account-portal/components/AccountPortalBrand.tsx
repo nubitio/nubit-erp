@@ -1,9 +1,9 @@
 const LOGO = '/assets/images/efact-logo-dark.svg';
 
 const FEATURES = [
-  'Facturación electrónica SUNAT',
-  'POS integrado multilocal',
-  'Inventario en tiempo real',
+  'POS y facturación electrónica SUNAT',
+  'Inventario, compras y tesorería',
+  'Contabilidad y planilla',
 ] as const;
 
 interface AccountPortalBrandProps {
@@ -12,8 +12,8 @@ interface AccountPortalBrandProps {
 }
 
 export function AccountPortalBrand({
-  headline = 'Simplifica tu trabajo,\noptimiza tu negocio.',
-  description = 'La plataforma de facturación electrónica más intuitiva para tu empresa.',
+  headline = 'El mini ERP\npara tu empresa.',
+  description = 'Vende, factura a SUNAT, controla stock, compras, finanzas y planilla en un solo sistema.',
 }: AccountPortalBrandProps) {
   const titleLines = headline.split('\n');
 

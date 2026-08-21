@@ -5947,6 +5947,12 @@ message = "Redundant method override."
 count = 1
 
 [[issues]]
+file = "src/Setup/Command/SeedPresentationDemoCommand.php"
+code = "no-literal-password"
+message = "Literal passwords or sensitive data should not be stored in code."
+count = 1
+
+[[issues]]
 file = "src/Setup/Controller/E2eSeedController.php"
 code = "final-controller"
 message = "Controller classes should be declared as `final`."
@@ -6179,6 +6185,18 @@ file = "src/Setup/Service/TestDataSeeder.php"
 code = "readable-literal"
 message = "Numeric literal could use underscore separators for readability."
 count = 5
+
+[[issues]]
+file = "src/Setup/Service/PresentationDemoSeeder.php"
+code = "cyclomatic-complexity"
+message = "Class has high complexity."
+count = 1
+
+[[issues]]
+file = "src/Setup/Service/PresentationDemoSeeder.php"
+code = "kan-defect"
+message = "Class has a high kan defect score."
+count = 1
 
 [[issues]]
 file = "src/Taxes/Api/TaxController.php"
