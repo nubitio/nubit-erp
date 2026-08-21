@@ -5,7 +5,7 @@ import type { CustomerOption } from './types';
 import { mapPosCustomer } from './lib/mapPosCustomer';
 
 const customerEndpoints = createEndpoints('customers');
-const DEFAULT_CUSTOMER_ID = 1;
+const ANONYMOUS_CUSTOMER_RUC = '00000000';
 
 export const usePosCustomers = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
@@ -32,13 +32,18 @@ export const usePosCustomers = () => {
     const controller = new AbortController();
 
     httpClient
-      .get<unknown>(customerEndpoints.detail(DEFAULT_CUSTOMER_ID), { signal: controller.signal })
+      .get<unknown>(`${customerEndpoints.list()}?ruc=${ANONYMOUS_CUSTOMER_RUC}`, { signal: controller.signal })
       .then(({ data }) => {
         if (cancelled) return;
-        applyCustomer(mapPosCustomer(data));
+        const raw = data as { member?: unknown[]; 'hydra:member'?: unknown[] };
+        const first = raw.member?.[0] ?? raw['hydra:member']?.[0] ?? (Array.isArray(data) ? data[0] : data);
+        const mapped = mapPosCustomer(first);
+        if (mapped && String((first as { ruc?: string } | undefined)?.ruc ?? '') === ANONYMOUS_CUSTOMER_RUC) {
+          applyCustomer(mapped);
+        }
       })
       .catch(() => {
-        /* default customer fetch failed — POS remains usable without it */
+        /* anonymous customer fetch failed — POS remains usable as walk-in */
       });
 
     return () => {

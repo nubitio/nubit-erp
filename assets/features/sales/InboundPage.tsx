@@ -31,12 +31,12 @@ export const PurchasesPage = () => {
       ? ['issuedAt', 'supplier', 'warehouse', 'note', 'grandTotal']
       : ['issuedAt', 'supplier', 'note', 'grandTotal'];
     const formFields = showWarehouseColumn
-      ? ['issuedAt', 'warehouse', 'supplier', 'grandTotal']
-      : ['issuedAt', 'supplier', 'grandTotal'];
+      ? ['issuedAt', 'warehouse', 'supplier', 'supplierDocType', 'supplierDocSeries', 'supplierDocNumber', 'grandTotal']
+      : ['issuedAt', 'supplier', 'supplierDocType', 'supplierDocSeries', 'supplierDocNumber', 'grandTotal'];
 
     return defineResource(API + 'purchases', {
       id: 'purchases',
-      title: 'Compras',
+      title: 'Recepción de mercadería',
       fields: PurchasesFields(currentBranchId, runtimeConfig),
       gridDetail: { url: detailUrl, fields: detailFields },
       formDetail: {

@@ -10,6 +10,7 @@ import {
   type GridCellContext,
 } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
+import { Button } from '@nubitio/ui';
 
 const API = getCoreApiBaseUrl();
 
@@ -117,9 +118,9 @@ export const ReorderPage = () => {
           navigate(`/kardex?${params.toString()}`);
         };
 
-        const goReceipt = (e: React.MouseEvent) => {
+        const goPurchaseOrder = (e: React.MouseEvent) => {
           e.stopPropagation();
-          navigate('/receipt');
+          navigate('/purchase-orders');
         };
 
         return (
@@ -127,8 +128,8 @@ export const ReorderPage = () => {
             <button onClick={goKardex} title="Ver Kardex" style={btnStyle}>
               <i className="ph ph-list-magnifying-glass" />
             </button>
-            <button onClick={goReceipt} title="Crear entrada" style={{ ...btnStyle, color: '#16a34a' }}>
-              <i className="ph ph-plus-circle" />
+            <button onClick={goPurchaseOrder} title="Crear orden de compra" style={{ ...btnStyle, color: '#16a34a' }}>
+              <i className="ph ph-clipboard-text" /> Crear OC
             </button>
           </span>
         );
@@ -139,8 +140,31 @@ export const ReorderPage = () => {
   const resource = useMemo(
     () =>
       defineResource<ReorderRecord>(API_URL, {
-        id: 'reorder-alerts',
+        id: 'reorder-alerts-owner',
         title: 'Alertas de reabastecimiento',
+        stateStoring: false,
+        rowActions: (row) => {
+          const product = row.product;
+          const productId = product && typeof product === 'object'
+            ? (product as { id?: string }).id
+            : undefined;
+
+          return [
+            {
+              key: 'kardex',
+              text: 'Ver Kardex',
+              icon: 'ph-list-magnifying-glass',
+              onClick: () => navigate(`/kardex${productId ? `?product=${encodeURIComponent(productId)}` : ''}`),
+            },
+            {
+              key: 'purchase-order',
+              text: 'Crear orden de compra',
+              icon: 'ph-clipboard-text',
+              type: 'success',
+              onClick: () => navigate('/purchase-orders'),
+            },
+          ];
+        },
         fieldContract: defineFields<ReorderRecord>({
           source: 'hydra',
           strategy: 'augment',
@@ -204,7 +228,7 @@ export const ReorderPage = () => {
           ],
         }),
         sort: [{ selector: 'qtyOnHand', desc: false }],
-        permissions: { canAdd: false, canEdit: false, canDelete: false },
+        permissions: { canAdd: false, canEdit: false, canView: false, canDelete: false },
         defaultPreset: 'basic',
         columnPresets: REORDER_COLUMN_PRESETS,
         emptyState: {
@@ -217,7 +241,32 @@ export const ReorderPage = () => {
     [makeActionsCell],
   );
 
-  return <SchemaCrudPage resource={resource} />;
+  return (
+    <>
+      <section
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          margin: '0 24px 12px',
+          padding: '14px 16px',
+          border: '1px solid #fed7aa',
+          borderRadius: 10,
+          background: '#fff7ed',
+        }}
+      >
+        <div>
+          <strong style={{ display: 'block', color: '#9a3412' }}>Evita quedarte sin stock</strong>
+          <span style={{ color: '#7c2d12', fontSize: 14 }}>
+            Revisa las alertas y crea una orden de compra para reponer a tiempo.
+          </span>
+        </div>
+        <Button onClick={() => navigate('/purchase-orders')}>Crear orden de compra</Button>
+      </section>
+      <SchemaCrudPage resource={resource} />
+    </>
+  );
 };
 
 const btnStyle: React.CSSProperties = {

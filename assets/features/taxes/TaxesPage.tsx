@@ -3,6 +3,7 @@ import toast from '@shared/lib/SharedUtils';
 import { useTenantIgvRate } from '@shared/hooks/useTenantIgvRate';
 import type { IgvSummaryResponse } from './api/taxesEndpoints';
 import { useIgvSummary, useDetracciones, useRetencionesPercepciones } from './useTaxes';
+import { formatDate } from '@shared/lib/displayFormat';
 import './TaxesPage.scss';
 
 // ---------------------------------------------------------------------------
@@ -195,7 +196,7 @@ function LiquidacionPanel({ data, loading }: { data: IgvSummaryResponse | undefi
 
       <div className="taxes-liquidacion__due">
         <i className="ph ph-clock taxes-liquidacion__due-icon" aria-hidden="true" />
-        <span>Vence el {loading ? '…' : (data?.vencimiento ?? '')}</span>
+        <span>Vence el {loading ? '…' : formatDate(data?.vencimiento ?? '')}</span>
       </div>
 
       <button type="button" className="taxes-liquidacion__cta" disabled={loading} onClick={handleGeneratePdt}>
@@ -416,7 +417,7 @@ export function TaxesPage() {
           />
           <KpiCard
             label="PRÓXIMO VENCIMIENTO"
-            value={igvData?.vencimiento ?? '—'}
+            value={igvData?.vencimiento ? formatDate(igvData.vencimiento) : '—'}
             icon="ph-calendar"
             loading={igvLoading}
           />

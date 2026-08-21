@@ -15,6 +15,7 @@ const API = getCoreApiBaseUrl();
 import { Badge } from '@nubitio/ui';
 import { useNavigate } from 'react-router-dom';
 import { ErpModuleBanner } from '@features/shared/ErpModuleBanner';
+import { monthPeriodCell } from '@shared/ui/crudFormatters';
 import { payrollRunApiUrl, payrollRunEvents, payrollRunFormLayout } from './model/constants';
 
 interface PayrollRunRecord extends DataRecord {
@@ -108,7 +109,7 @@ const payrollRunResource = defineResource<PayrollRunRecord>(payrollRunApiUrl, {
           label: 'Empresa',
         },
       },
-      { kind: 'override', key: 'period', patch: { order: 1, layoutHint: 'short', label: 'Periodo' } },
+      { kind: 'override', key: 'period', patch: { order: 1, layoutHint: 'short', label: 'Periodo', formatter: monthPeriodCell } },
       { kind: 'override', key: 'type', patch: { ...typePatch, order: 2, layoutHint: 'short' } },
       { kind: 'override', key: 'status', patch: { ...statusPatch, order: 3, layoutHint: 'short', disabled: true } },
       { kind: 'override', key: 'calculatedAt', patch: { visibleOnForm: false } },
@@ -127,7 +128,7 @@ export const PayrollRunPage = () => {
     rowActions: (row: PayrollRunRecord) => [
       {
         key: 'detail',
-        text: 'Ver detalle',
+        text: 'Ver / pagar',
         icon: 'ph-eye',
         type: 'default' as const,
         onClick: () => navigate(`/payroll-runs/${row.id}`),

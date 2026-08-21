@@ -74,6 +74,8 @@ export type EfactDeclarativeDashboardPayload = {
     payablesTotal: number;
     pendingSunatCount: number;
     lowStockCount: number;
+    receivablesCount: number;
+    payablesCount: number;
   };
   salesByDay: Array<{ label: string; total: number }>;
   salesByMonth: Array<{ label: string; total: number }>;
@@ -93,6 +95,11 @@ export type EfactDeclarativeDashboardPayload = {
 
 function truncateName(name: string, maxLength = 45): string {
   return name.length > maxLength ? name.slice(0, maxLength - 1) + '…' : name;
+}
+
+function saneGrowth(value: number | null): number | null {
+  if (value == null || !Number.isFinite(value) || Math.abs(value) > 200) return null;
+  return value;
 }
 
 function resolveSalesLast12Months(data: DashboardData): number {
@@ -116,12 +123,14 @@ export function mapEfactDashboardPayload(data: DashboardData): EfactDeclarativeD
       ytdRevenue: salesLast12Months,
       igvCollected: data.summary.salesThisMonth * (18 / 118),
       customersThisMonth: data.summary.customersThisMonth,
-      dailyGrowth: data.summary.netSalesToday <= 0 ? null : data.summary.dailyGrowth,
-      monthGrowth: data.summary.monthGrowth === 0 ? null : data.summary.monthGrowth,
+      dailyGrowth: data.summary.netSalesToday <= 0 ? null : saneGrowth(data.summary.dailyGrowth),
+      monthGrowth: data.summary.monthGrowth === 0 ? null : saneGrowth(data.summary.monthGrowth),
       receivablesTotal: data.summary.receivablesTotal,
       payablesTotal: data.summary.payablesTotal,
       pendingSunatCount: data.summary.pendingSunatCount,
       lowStockCount: data.summary.lowStockCount,
+      receivablesCount: data.summary.receivablesCount,
+      payablesCount: data.summary.payablesCount,
     },
     salesByDay: pickLast7SalesDays(data.salesByDay),
     salesByMonth: data.salesByMonth.map((row) => ({

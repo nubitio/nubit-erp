@@ -21,6 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[AppAssert\UniqueEntity(fields: ['ruc'], message: 'Ya existe un cliente con el mismo RUC/DNI.')]
 class Customer implements ActivatableInterface
 {
+    #[Groups(['sale:read', 'invoice:read', 'sale_record:read', 'sale_quote:read'])]
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
     #[ORM\GeneratedValue]
@@ -44,6 +45,7 @@ class Customer implements ActivatableInterface
     private ?string $fiscalAddress = null;
 
     #[Assert\Regex(pattern: '/^\+?[1-9]\d{1,2}[-.\s]?\d{6,14}$/', message: 'El teléfono ingresado no es válido.')]
+    #[Groups(['sale:read', 'sale_record:read'])]
     #[ApiProperty(description: 'customer.phone.label')]
     #[ORM\Column(name: 'telefono', length: 20, nullable: true)]
     private ?string $phone = null;

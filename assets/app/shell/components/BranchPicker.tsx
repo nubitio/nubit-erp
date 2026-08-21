@@ -81,9 +81,7 @@ export const BranchPicker = ({
     const lastBranchId = branchService.getSelectedBranchId();
     const rememberedBranch = selectable.find((item) => item.id === lastBranchId) ?? null;
 
-    if (rememberedBranch) {
-      setSelectedBranch(rememberedBranch);
-    }
+    setSelectedBranch(rememberedBranch ?? selectable[0] ?? null);
 
     setHasLoaded(true);
     setLoadingBranches(false);

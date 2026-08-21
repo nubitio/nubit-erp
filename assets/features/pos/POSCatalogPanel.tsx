@@ -69,7 +69,7 @@ export function POSCatalogPanel({
           <input
             ref={searchInputRef}
             type="search"
-            placeholder="Buscar producto… (F2)"
+            placeholder="Buscar producto…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {

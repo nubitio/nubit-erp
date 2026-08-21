@@ -110,9 +110,10 @@ export const SaleQuotePage = () => {
           rowActions={rowActions}
           events={saleQuoteEvents}
           sort={[{ selector: 'issuedAt', desc: true }]}
+          filterRow={false}
           emptyState={{
             title: 'Sin cotizaciones',
-            description: 'Crea una cotización con el botón Nuevo.',
+            description: 'Crea una cotización con el botón Nuevo y envíala al cliente.',
             icon: 'file-text',
           }}
         />

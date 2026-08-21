@@ -49,6 +49,11 @@ const customerResource = defineResource<CustomerRecord>(customerApiUrl, {
   columnPresets: CUSTOMER_COLUMN_PRESETS,
   viewMode: { mode: 'drawer', drawerSize: 'md' },
   formLayout: customerFormLayout,
+  emptyState: {
+    title: 'Sin clientes',
+    description: 'Crea un cliente o impórtalos desde Inicio → Importar Excel.',
+    icon: 'users',
+  },
   fieldContract: defineFields<CustomerRecord>({
     source: 'hydra',
     strategy: 'augment',

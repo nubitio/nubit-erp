@@ -15,6 +15,9 @@ const API = getCoreApiBaseUrl();
 import { supplierBillApiUrl, supplierBillEvents, supplierBillFormLayout } from './model/constants';
 import { Badge } from '@nubitio/ui';
 import { useNavigate } from 'react-router-dom';
+import { dateCell, entityNameCell, moneyCell, payableStatusCell } from '@shared/ui/crudFormatters';
+import { OwnerRowButtons } from '@shared/ui/OwnerRowButtons';
+import { payableStatus } from '@shared/lib/displayFormat';
 
 interface SupplierBillRecord extends DataRecord {
   id: string;
@@ -67,23 +70,19 @@ const statusPatch = toPatch(
     .build(),
 );
 
-const SUPPLIER_BILL_COLUMN_PRESETS = [
-  {
-    key: 'basic',
-    label: 'Básico',
-    columns: ['supplier', 'number', 'dueDate', 'amount', 'balanceDue', 'status'],
-  },
-];
+export const SupplierBillPage = () => {
+  const navigate = useNavigate();
 
-const supplierBillResource = defineResource<SupplierBillRecord>(supplierBillApiUrl, {
-  id: 'supplier-bill',
+  const resource = {
+    ...defineResource<SupplierBillRecord>(supplierBillApiUrl, {
+  id: 'supplier-bill-actions',
   title: 'Cuentas por pagar',
   events: supplierBillEvents,
-  defaultPreset: 'basic',
-  columnPresets: SUPPLIER_BILL_COLUMN_PRESETS,
   viewMode: { mode: 'drawer', drawerSize: 'md' },
   formLayout: supplierBillFormLayout,
   sort: [{ selector: 'dueDate', desc: false }],
+  filter: [{ field: 'balanceDue', operator: '>', value: 0 }],
+  stateStoring: false,
   emptyState: {
     title: 'Nada por pagar',
     description: 'Registra facturas de proveedores, alquiler o servicios para controlar vencimientos.',
@@ -104,6 +103,7 @@ const supplierBillResource = defineResource<SupplierBillRecord>(supplierBillApiU
           textField: 'businessName',
           layoutHint: 'lookup',
           label: 'Proveedor',
+          formatter: entityNameCell,
         },
       },
       {
@@ -117,6 +117,8 @@ const supplierBillResource = defineResource<SupplierBillRecord>(supplierBillApiU
           textField: 'name',
           layoutHint: 'lookup',
           label: 'Sucursal',
+          visible: false,
+          visibleOnForm: true,
         },
       },
       {
@@ -130,6 +132,8 @@ const supplierBillResource = defineResource<SupplierBillRecord>(supplierBillApiU
           textField: 'name',
           layoutHint: 'lookup',
           label: 'Categoría de gasto',
+          visible: false,
+          visibleOnForm: true,
         },
       },
       {
@@ -145,38 +149,59 @@ const supplierBillResource = defineResource<SupplierBillRecord>(supplierBillApiU
           label: 'Compra asociada',
           helpText: 'Solo si esta factura corresponde a una compra de mercadería ya registrada.',
           required: false,
+          visible: false,
+          visibleOnForm: true,
         },
       },
-      { kind: 'override', key: 'documentType', patch: { order: 4, layoutHint: 'short', label: 'Tipo de documento' } },
-      { kind: 'override', key: 'series', patch: { order: 5, layoutHint: 'short', label: 'Serie' } },
+      { kind: 'override', key: 'documentType', patch: { order: 4, layoutHint: 'short', label: 'Tipo de documento', visible: false, visibleOnForm: true } },
+      { kind: 'override', key: 'series', patch: { order: 5, layoutHint: 'short', label: 'Serie', visible: false, visibleOnForm: true } },
       { kind: 'override', key: 'number', patch: { order: 6, layoutHint: 'short', label: 'Número' } },
-      { kind: 'override', key: 'issueDate', patch: { order: 7, layoutHint: 'short', label: 'Fecha de emisión' } },
-      { kind: 'override', key: 'dueDate', patch: { order: 8, layoutHint: 'short', label: 'Fecha de vencimiento' } },
-      { kind: 'override', key: 'amount', patch: { order: 9, layoutHint: 'short', label: 'Monto' } },
-      { kind: 'override', key: 'currency', patch: { order: 10, layoutHint: 'short', label: 'Moneda' } },
-      { kind: 'override', key: 'paidTotal', patch: { order: 11, layoutHint: 'short', label: 'Pagado', disabled: true } },
-      { kind: 'override', key: 'balanceDue', patch: { order: 12, layoutHint: 'short', label: 'Saldo', disabled: true } },
-      { kind: 'override', key: 'status', patch: { ...statusPatch, order: 13, layoutHint: 'short', disabled: true } },
-      { kind: 'override', key: 'note', patch: { order: 14, layoutHint: 'fullWidth', label: 'Notas' } },
+      { kind: 'override', key: 'issueDate', patch: { order: 7, layoutHint: 'short', label: 'Fecha de emisión', formatter: dateCell, visible: false, visibleOnForm: true } },
+      { kind: 'override', key: 'dueDate', patch: { order: 8, layoutHint: 'short', label: 'Fecha de vencimiento', formatter: dateCell } },
+      { kind: 'override', key: 'amount', patch: { order: 9, layoutHint: 'short', label: 'Monto', formatter: moneyCell, align: 'right' } },
+      { kind: 'override', key: 'currency', patch: { order: 10, layoutHint: 'short', label: 'Moneda', visible: false, visibleOnForm: true } },
+      { kind: 'override', key: 'paidTotal', patch: { order: 11, layoutHint: 'short', label: 'Pagado', disabled: true, formatter: moneyCell, visible: false } },
+      { kind: 'override', key: 'balanceDue', patch: { order: 12, layoutHint: 'short', label: 'Saldo', disabled: true, formatter: moneyCell, align: 'right' } },
+      { kind: 'override', key: 'status', patch: { ...statusPatch, order: 13, layoutHint: 'short', disabled: true, formatter: payableStatusCell } },
+      { kind: 'override', key: 'note', patch: { order: 15, layoutHint: 'fullWidth', label: 'Notas', visible: false, visibleOnForm: true } },
+      { kind: 'override', key: 'id', patch: { visible: false, visibleOnForm: false } },
       { kind: 'override', key: 'createdAt', patch: { visibleOnForm: false, visible: false } },
+      {
+        kind: 'append' as const,
+        field: {
+          name: '_pay',
+          type: FieldType.TEXT,
+          label: '',
+          order: 16,
+          width: 110,
+          visible: true,
+          filterable: false,
+          sortable: false,
+          visibleOnForm: false,
+          formatter: (cell: GridCellContext) => {
+            if (payableStatus(cell.data ?? {}) === 'paid') return null;
+            const id = String(cell.data?.id ?? '');
+            if (!id) return null;
+            return (
+              <OwnerRowButtons
+                actions={[{ label: 'Pagar', onClick: () => navigate(`/supplier-bill/${id}/pay`) }]}
+              />
+            );
+          },
+        } as Field,
+      },
     ],
   }),
-});
-
-export const SupplierBillPage = () => {
-  const navigate = useNavigate();
-
-  const resource = {
-    ...supplierBillResource,
+  }),
     rowActions: (row: SupplierBillRecord) => {
-      if (row.status === 'PAID' || row.status === 'VOID') {
+      if (payableStatus(row) === 'paid' || row.status === 'VOID') {
         return [];
       }
 
       return [
         {
           key: 'pay',
-          text: 'Registrar pago',
+          text: 'Pagar',
           icon: 'ph-hand-coins',
           type: 'success',
           onClick: () => navigate(`/supplier-bill/${row.id}/pay`),

@@ -43,6 +43,11 @@
   font-size: var(--font-size-xs);
   gap: 0.35rem;
 
+  .acc-period__fields {
+    display: flex;
+    gap: 0.5rem;
+  }
+
   input,
   select {
     background: var(--surface-1);

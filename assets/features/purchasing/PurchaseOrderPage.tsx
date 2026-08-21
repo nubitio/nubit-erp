@@ -124,7 +124,8 @@ export const PurchaseOrderPage = () => {
           adapter={HydraAdapter}
           rowActions={rowActions}
           events={purchaseOrderEvents}
-          sort={[{ selector: 'issuedAt', desc: true }]}
+          filterRow={false}
+          sort={[{ selector: 'expectedDate', desc: true }]}
           emptyState={{
             title: 'Sin órdenes de compra',
             description: 'Crea una orden de compra con el botón Nuevo.',

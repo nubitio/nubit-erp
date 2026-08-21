@@ -3,6 +3,7 @@ import { Badge } from '@nubitio/ui';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { ErpModuleBanner } from '@features/shared/ErpModuleBanner';
+import { formatDate } from '@shared/lib/displayFormat';
 import './AccountingPage.scss';
 
 const API = getCoreApiBaseUrl();
@@ -72,6 +73,21 @@ function money(value: string | number | undefined): string {
   const amount = Number(value ?? 0);
   return `S/ ${amount.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
+
+const MONTH_OPTIONS = [
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+];
 
 function currentPeriod(): string {
   const now = new Date();
@@ -152,11 +168,28 @@ export function AccountingPage() {
           </div>
           <label className="acc-period">
             Periodo
-            <input
-              type="month"
-              value={`${period.slice(0, 4)}-${period.slice(4, 6)}`}
-              onChange={(event) => setPeriod(event.target.value.replace('-', ''))}
-            />
+            <span className="acc-period__fields">
+              <select
+                value={period.slice(4, 6)}
+                onChange={(event) => setPeriod(`${period.slice(0, 4)}${event.target.value}`)}
+              >
+                {MONTH_OPTIONS.map((name, index) => (
+                  <option key={name} value={String(index + 1).padStart(2, '0')}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={period.slice(0, 4)}
+                onChange={(event) => setPeriod(`${event.target.value}${period.slice(4, 6)}`)}
+              >
+                {Array.from({ length: 6 }, (_, index) => String(new Date().getFullYear() - 3 + index)).map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </span>
           </label>
         </div>
 
@@ -219,7 +252,7 @@ export function AccountingPage() {
                 <tbody>
                   {ledger?.lines.map((line) => (
                     <tr key={`${line.entryNo}-${line.date}-${line.debit}-${line.credit}`}>
-                      <td>{line.date}</td>
+                      <td>{formatDate(line.date)}</td>
                       <td>{line.entryNo}</td>
                       <td>{line.description}</td>
                       <td className="acc-table__amount">{Number(line.debit) ? money(line.debit) : ''}</td>

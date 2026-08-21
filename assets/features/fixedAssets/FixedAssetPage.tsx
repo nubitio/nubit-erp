@@ -16,6 +16,7 @@ const API = getCoreApiBaseUrl();
 import { Badge, ConfirmDialog } from '@nubitio/ui';
 import { hasPermission } from '@shared/permissions';
 import toast from '@shared/lib/SharedUtils';
+import { dateCell, moneyCell } from '@shared/ui/crudFormatters';
 import { fixedAssetApiUrl, fixedAssetEvents, fixedAssetFormLayout } from './model/constants';
 import fixedAssetService from './services/fixedAssetService';
 
@@ -88,7 +89,7 @@ const fixedAssetResource = defineResource<FixedAssetRecord>(fixedAssetApiUrl, {
     strategy: 'augment',
     directives: [
       { kind: 'override', key: 'description', patch: { order: 0, layoutHint: 'fullWidth', label: 'Descripción' } },
-      { kind: 'override', key: 'purchaseDate', patch: { order: 1, layoutHint: 'short', label: 'Fecha de compra' } },
+      { kind: 'override', key: 'purchaseDate', patch: { order: 1, layoutHint: 'short', label: 'Fecha de compra', formatter: dateCell } },
       {
         kind: 'override',
         key: 'sourceBill',
@@ -102,9 +103,9 @@ const fixedAssetResource = defineResource<FixedAssetRecord>(fixedAssetApiUrl, {
           label: 'Factura de origen',
         },
       },
-      { kind: 'override', key: 'cost', patch: { order: 3, layoutHint: 'short', label: 'Costo' } },
+      { kind: 'override', key: 'cost', patch: { order: 3, layoutHint: 'short', label: 'Costo', formatter: moneyCell, align: 'right' } },
       { kind: 'override', key: 'usefulLifeMonths', patch: { order: 4, layoutHint: 'short', label: 'Vida útil (meses)' } },
-      { kind: 'override', key: 'accumulatedDepreciation', patch: { order: 5, layoutHint: 'short', label: 'Depreciación acumulada', disabled: true, visibleOnForm: false } },
+      { kind: 'override', key: 'accumulatedDepreciation', patch: { order: 5, layoutHint: 'short', label: 'Depreciación acumulada', disabled: true, visibleOnForm: false, formatter: moneyCell } },
       { kind: 'override', key: 'status', patch: { ...statusPatch, order: 6, layoutHint: 'short', disabled: true, visibleOnForm: false } },
       { kind: 'override', key: 'note', patch: { order: 7, layoutHint: 'fullWidth', label: 'Notas' } },
       { kind: 'override', key: 'disposedAt', patch: { visibleOnForm: false } },

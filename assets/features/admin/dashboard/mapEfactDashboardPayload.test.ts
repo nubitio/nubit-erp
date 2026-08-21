@@ -114,6 +114,15 @@ describe('mapEfactDashboardPayload', () => {
     expect(payload.stats.receivablesTotal).toBe(320);
     expect(payload.stats.payablesTotal).toBe(150);
     expect(payload.stats.pendingSunatCount).toBe(1);
+    expect(payload.stats.receivablesCount).toBe(4);
+    expect(payload.stats.payablesCount).toBe(2);
+  });
+
+  it('hides absurd growth percentages from empty comparison days', () => {
+    const data = emptyDashboardData();
+    data.summary.dailyGrowth = 880.5;
+
+    expect(mapEfactDashboardPayload(data).stats.dailyGrowth).toBeNull();
   });
 
   it('hides the daily trend when there are no sales yet today', () => {

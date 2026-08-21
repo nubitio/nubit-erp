@@ -1,91 +1,159 @@
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  SchemaCrudPage,
-  defineFields,
-  defineResource,
-  FieldType,
+  DataGridView,
+  HydraAdapter,
+  currencyField,
+  dateField,
+  entityField,
+  identityField,
+  textField,
   type DataRecord,
+  type GridCellContext,
 } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
+import { Button } from '@nubitio/ui';
+import { saleEndpoints } from './api/saleEndpoints';
+import { dateCell, entityNameCell, moneyCell, receivableStatusCell } from '@shared/ui/crudFormatters';
+import { OwnerRowButtons } from '@shared/ui/OwnerRowButtons';
+import { addDays, formatInvoiceNumber, startOfToday, toIsoDate } from '@shared/lib/displayFormat';
 
 const API = getCoreApiBaseUrl();
-import { saleEndpoints } from './api/saleEndpoints';
-import { useNavigate } from 'react-router-dom';
 
 interface AccountsReceivableRecord extends DataRecord {
   id: string;
-  customer: unknown;
+  customer: { businessName?: string; phone?: string } | string | null;
   issuedDate: string;
   dueDate: string | null;
   grandTotal: string;
   paidTotal: string;
   balanceDue: string;
+  invoiceFullNumber?: string | null;
   status: string;
 }
 
-const ACCOUNTS_RECEIVABLE_COLUMN_PRESETS = [
-  {
-    key: 'basic',
-    label: 'Básico',
-    columns: ['customer', 'invoiceFullNumber', 'issuedDate', 'dueDate', 'grandTotal', 'balanceDue', 'status'],
-  },
-];
+type AgingKey = 'all' | 'overdue' | 'week';
 
-const accountsReceivableResource = defineResource<AccountsReceivableRecord>(saleEndpoints.list(), {
-  id: 'accounts-receivable',
-  title: 'Cuentas por cobrar',
-  defaultPreset: 'basic',
-  columnPresets: ACCOUNTS_RECEIVABLE_COLUMN_PRESETS,
-  sort: [{ selector: 'dueDate', desc: false }],
-  filter: [{ field: 'balanceDue', operator: '>', value: 0 }],
-  permissions: { canAdd: false, canEdit: false, canView: false, canDelete: false },
-  emptyState: {
-    title: 'Nadie te debe en este momento',
-    description: 'Las ventas a crédito con saldo pendiente aparecen aquí para cobrarlas.',
-    icon: 'hand-coins',
-  },
-  fieldContract: defineFields<AccountsReceivableRecord>({
-    source: 'hydra',
-    strategy: 'augment',
-    directives: [
-      {
-        kind: 'override',
-        key: 'customer',
-        patch: {
-          order: 0,
-          type: FieldType.ENTITY,
-          url: API + 'customers',
-          valueField: '_iri',
-          textField: 'businessName',
-          layoutHint: 'lookup',
-          label: 'Cliente',
-        },
-      },
-      { kind: 'override', key: 'invoiceFullNumber', patch: { order: 1, layoutHint: 'short', label: 'Comprobante' } },
-      { kind: 'override', key: 'issuedDate', patch: { order: 2, layoutHint: 'short', label: 'Fecha de emisión' } },
-      { kind: 'override', key: 'dueDate', patch: { order: 3, layoutHint: 'short', label: 'Fecha de vencimiento' } },
-      { kind: 'override', key: 'grandTotal', patch: { order: 4, layoutHint: 'short', label: 'Total' } },
-      { kind: 'override', key: 'paidTotal', patch: { order: 5, layoutHint: 'short', label: 'Cobrado' } },
-      { kind: 'override', key: 'balanceDue', patch: { order: 6, layoutHint: 'short', label: 'Saldo' } },
-      { kind: 'override', key: 'status', patch: { order: 7, layoutHint: 'short', label: 'Estado' } },
-    ],
-  }),
-});
+function customerPhone(customer: AccountsReceivableRecord['customer']): string {
+  if (customer && typeof customer === 'object' && typeof customer.phone === 'string') {
+    return customer.phone.replace(/\D/g, '');
+  }
+  return '';
+}
 
 export const AccountsReceivablePage = () => {
   const navigate = useNavigate();
+  const [aging, setAging] = useState<AgingKey>('all');
 
-  const resource = {
-    ...accountsReceivableResource,
-    rowActions: (row: AccountsReceivableRecord) => [
-      {
-        key: 'collect',
-        text: 'Registrar cobro',
-        icon: 'ph-hand-coins',
-        type: 'success',
-        onClick: () => navigate(`/sale/${row.id}/collect`),
-      },
+  const filter = useMemo(() => {
+    const rules: Array<{ field: string; operator: string; value: string | number }> = [
+      { field: 'balanceDue', operator: '>', value: 0 },
+    ];
+    const today = startOfToday();
+    if (aging === 'overdue') {
+      rules.push({ field: 'dueDate', operator: '<', value: toIsoDate(today) });
+    }
+    if (aging === 'week') {
+      rules.push({ field: 'dueDate', operator: '>=', value: toIsoDate(today) });
+      rules.push({ field: 'dueDate', operator: '<=', value: toIsoDate(addDays(today, 7)) });
+    }
+    return rules;
+  }, [aging]);
+
+  const fields = useMemo(
+    () => [
+      identityField().visible(false).visibleOnForm(false).build(),
+      entityField(API + 'customers', 'id', 'businessName')
+        .name('customer')
+        .label('Cliente')
+        .formatter(entityNameCell)
+        .build(),
+      textField()
+        .name('invoiceFullNumber')
+        .label('Comprobante')
+        .formatter((cell: GridCellContext) => formatInvoiceNumber(cell.value) || 'Saldo inicial')
+        .build(),
+      dateField().name('issuedDate').label('Fecha de emisión').formatter(dateCell).build(),
+      dateField().name('dueDate').label('Fecha de vencimiento').formatter(dateCell).build(),
+      currencyField().name('grandTotal').label('Total').align('right').formatter(moneyCell).build(),
+      currencyField().name('balanceDue').label('Saldo').align('right').formatter(moneyCell).build(),
+      textField().name('status').label('Estado').filterable(false).formatter(receivableStatusCell).build(),
+      textField()
+        .name('_collect')
+        .label('')
+        .width(200)
+        .filterable(false)
+        .sortable(false)
+        .formatter((cell: GridCellContext) => {
+          const row = cell.data as AccountsReceivableRecord | undefined;
+          if (!row?.id) return null;
+          const phone = customerPhone(row.customer ?? null);
+          const name = entityNameCell(cell);
+          const actions: Array<{ label: string; onClick: () => void; variant?: 'primary' | 'secondary' }> = [
+            {
+              label: 'Cobrar',
+              onClick: () => navigate(`/sale/${row.id}/collect`),
+            },
+          ];
+          if (phone) {
+            actions.push({
+              label: 'WhatsApp',
+              variant: 'secondary',
+              onClick: () => {
+                const text = encodeURIComponent(
+                  `Hola ${name}, te escribimos por el saldo pendiente ${formatInvoiceNumber(row.invoiceFullNumber) || ''}.`.trim(),
+                );
+                window.open(`https://wa.me/${phone}?text=${text}`, '_blank', 'noopener,noreferrer');
+              },
+            });
+          }
+          return <OwnerRowButtons actions={actions} />;
+        })
+        .build(),
     ],
-  };
+    [navigate],
+  );
 
-  return <SchemaCrudPage resource={resource} />;
+  return (
+    <div id="wrapper">
+      <DataGridView
+        id="accounts-receivable-actions"
+        title="Cuentas por cobrar"
+        url={saleEndpoints.list()}
+        fields={fields}
+        adapter={HydraAdapter}
+        filter={filter}
+        filterRow={false}
+        allowAdd={false}
+        allowEdit={false}
+        allowDelete={false}
+        sort={[{ selector: 'dueDate', desc: false }]}
+        emptyState={{
+          title: 'Nadie te debe en este momento',
+          description: 'Las ventas a crédito y los saldos importados desde Excel aparecen aquí.',
+          icon: 'hand-coins',
+        }}
+        aboveGrid={
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '0 0 12px' }}>
+            {(
+              [
+                ['all', 'Todas'],
+                ['overdue', 'Vencidas'],
+                ['week', 'Vencen en 7 días'],
+              ] as const
+            ).map(([key, label]) => (
+              <Button
+                key={key}
+                size="sm"
+                variant={aging === key ? 'primary' : 'secondary'}
+                onClick={() => setAging(key)}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+        }
+      />
+    </div>
+  );
 };

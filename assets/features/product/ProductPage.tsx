@@ -14,6 +14,7 @@ const API = getCoreApiBaseUrl();
 import React, { useCallback, useRef, useState } from 'react';
 import { ProductImportDialog } from './components/ProductImportDialog';
 import './ProductPage.scss';
+import { moneyCell } from '@shared/ui/crudFormatters';
 
 interface ProductRecord extends DataRecord {
   id: string;
@@ -247,7 +248,7 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
       {
         kind: 'override',
         key: 'salePrice',
-        patch: { order: 3, layoutHint: 'money', align: 'right', label: 'Precio de venta' },
+        patch: { order: 3, layoutHint: 'money', align: 'right', label: 'Precio de venta', formatter: moneyCell },
       },
       {
         kind: 'override',

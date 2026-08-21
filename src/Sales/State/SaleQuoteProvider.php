@@ -8,8 +8,10 @@ use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Sales\Entity\SaleQuote;
+use App\Sales\Entity\SaleQuoteItem;
 use App\Sales\Service\SaleQuoteService;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityNotFoundException;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -50,6 +52,7 @@ readonly class SaleQuoteProvider implements ProviderInterface
             }
 
             $this->expireStaleQuotes($quotes);
+            $this->detachMissingProducts($quotes);
 
             return $paginator;
         }
@@ -58,6 +61,7 @@ readonly class SaleQuoteProvider implements ProviderInterface
 
         if ($quote instanceof SaleQuote) {
             $this->expireStaleQuotes([$quote]);
+            $this->detachMissingProducts([$quote]);
         }
 
         return $quote;
@@ -75,6 +79,29 @@ readonly class SaleQuoteProvider implements ProviderInterface
 
         if ($expired) {
             $this->entityManager->flush();
+        }
+    }
+
+    /** @param SaleQuote[] $quotes */
+    private function detachMissingProducts(array $quotes): void
+    {
+        foreach ($quotes as $quote) {
+            foreach ($quote->getItems() as $item) {
+                if (!$item instanceof SaleQuoteItem) {
+                    continue;
+                }
+
+                $product = $item->getProduct();
+                if ($product === null) {
+                    continue;
+                }
+
+                try {
+                    $product->getName();
+                } catch (EntityNotFoundException) {
+                    $item->setProduct(null);
+                }
+            }
         }
     }
 }

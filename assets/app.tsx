@@ -58,7 +58,7 @@ window.addEventListener('load', () => {
             <EfactApp />
           </ErrorBoundary>
         </UiStringsProvider>
-        {import.meta.env.DEV && (
+        {import.meta.env.DEV && import.meta.env.VITE_SHOW_DEVTOOLS === 'true' && (
           <React.Suspense fallback={null}>
             <DevtoolsLoader />
           </React.Suspense>

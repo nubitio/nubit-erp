@@ -29,9 +29,9 @@ describe('formatPosReceiptLabel', () => {
   });
 
   it('labels SUNAT series as boleta or factura', () => {
-    expect(formatPosReceiptLabel('B001-000048', '03')).toBe('Boleta B001-000048');
-    expect(formatPosReceiptLabel('F001-000012', '01')).toBe('Factura F001-000012');
-    expect(formatPosReceiptLabel('B001-8')).toBe('Boleta B001-8');
+    expect(formatPosReceiptLabel('B001-000048', '03')).toBe('Boleta B001-00000048');
+    expect(formatPosReceiptLabel('F001-000012', '01')).toBe('Factura F001-00000012');
+    expect(formatPosReceiptLabel('B001-8')).toBe('Boleta B001-00000008');
   });
 });
 

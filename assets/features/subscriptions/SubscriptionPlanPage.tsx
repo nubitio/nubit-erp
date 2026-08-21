@@ -15,6 +15,7 @@ const API = getCoreApiBaseUrl();
 import { subscriptionPlanApiUrl, subscriptionPlanEvents, subscriptionPlanFormLayout } from './model/constants';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { useTranslation } from 'react-i18next';
+import { moneyCell } from '@shared/ui/crudFormatters';
 
 interface SubscriptionPlanRecord extends DataRecord {
   id: string;
@@ -62,6 +63,11 @@ const subscriptionPlanResource = defineResource<SubscriptionPlanRecord>(subscrip
   columnPresets: SUBSCRIPTION_PLAN_COLUMN_PRESETS,
   viewMode: { mode: 'drawer', drawerSize: 'md' },
   formLayout: subscriptionPlanFormLayout,
+  emptyState: {
+    title: 'Sin planes de suscripción',
+    description: 'Crea un plan solo si facturas cuotas recurrentes. Si no, puedes ignorar este módulo.',
+    icon: 'arrows-clockwise',
+  },
   fieldContract: defineFields<SubscriptionPlanRecord>({
     source: 'hydra',
     strategy: 'augment',
@@ -85,7 +91,7 @@ const subscriptionPlanResource = defineResource<SubscriptionPlanRecord>(subscrip
         key: 'billingCycle',
         patch: { ...billingCyclePatch, order: 2, layoutHint: 'short' },
       },
-      { kind: 'override', key: 'amount', patch: { order: 3, layoutHint: 'short', label: 'Monto por periodo' } },
+      { kind: 'override', key: 'amount', patch: { order: 3, layoutHint: 'short', label: 'Monto por periodo', formatter: moneyCell, align: 'right' } },
       {
         kind: 'override',
         key: 'paymentTermDays',

@@ -52,6 +52,8 @@ const MENU_MIN_TIER = new Map<string, TenantRuntimeConfig['profile']['navigation
   ['purchases', 'standard'],
   ['inventory', 'standard'],
   ['ple', 'advanced'],
+  ['subscriptions', 'advanced'],
+  ['expense-reports', 'advanced'],
 ]);
 
 const MENU_REQUIRED_CAPABILITY: Record<string, string> = {
@@ -65,6 +67,40 @@ const MENU_REQUIRED_CAPABILITY: Record<string, string> = {
   'financial-reports': 'reporting.advanced',
   accounting: 'accounting.general_ledger',
 };
+
+// Owners open the system to operate, not to browse an ERP sitemap. Keep the
+// daily sequence first and leave specialised/administrative areas afterwards.
+const DAILY_OPERATION_ORDER = [
+  'dashboard',
+  'pos',
+  'cashbox',
+  'billing',
+  'customer',
+  'catalog',
+  'inventory',
+  'purchases',
+  'purchase-orders',
+  'accounts-receivable',
+  'accounts-payable',
+  'sale-quotes',
+  'bank-reconciliation',
+  'financial-reports',
+  'accounting',
+  'employees',
+  'payroll-runs',
+  'config',
+] as const;
+
+const DAILY_OPERATION_INDEX = new Map(DAILY_OPERATION_ORDER.map((path, index) => [path, index]));
+
+function menuItemSortIndex(item: AdminMenuItem): number {
+  const ownIndex = DAILY_OPERATION_INDEX.get(normalizePath(item.path));
+  if (ownIndex !== undefined) return ownIndex;
+
+  return Math.min(
+    ...(item.items ?? []).map((child) => DAILY_OPERATION_INDEX.get(normalizePath(child.path)) ?? Number.MAX_SAFE_INTEGER),
+  );
+}
 
 function normalizePath(path: unknown): string {
   return String(path ?? '').replace(/^\/+/, '').toLowerCase();
@@ -120,7 +156,7 @@ export function filterMenuByRuntimeConfig(
   items: AdminMenuItem[],
   runtimeConfig: TenantRuntimeConfig,
 ): AdminMenuItem[] {
-  return items.flatMap((item) => {
+  const filtered = items.flatMap((item) => {
     const path = normalizePath(item.path);
     const childItems = item.items ?? [];
     const filteredChildren = filterSubItemsByRuntimeConfig(childItems, runtimeConfig);
@@ -134,6 +170,10 @@ export function filterMenuByRuntimeConfig(
     }
 
     return [{ ...item, items: filteredChildren } satisfies AdminMenuItem];
+  });
+
+  return filtered.sort((a, b) => {
+    return menuItemSortIndex(a) - menuItemSortIndex(b);
   });
 }
 

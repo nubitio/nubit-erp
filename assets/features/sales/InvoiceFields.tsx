@@ -14,6 +14,7 @@ import {
 } from '@nubitio/crud';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
+import { padDocumentNumber } from '@shared/lib/displayFormat';
 import type { GridCellContext } from '@nubitio/crud';
 import { Badge } from '@nubitio/ui';
 import { activeEntityField } from '@shared/lib/activeEntityField';
@@ -64,7 +65,15 @@ export const InvoiceFields = () => {
       .build(),
   );
   fields.push(textField().name('series').label('Serie').width(80).cardRole('primary').build());
-  fields.push(textField().name('number').label('Número').width(90).cardRole('primary').build());
+  fields.push(
+    textField()
+      .name('number')
+      .label('Número')
+      .width(90)
+      .cardRole('primary')
+      .formatter((cell: GridCellContext) => padDocumentNumber(cell.value as string | number))
+      .build(),
+  );
   fields.push(
     currencyField()
       .name('total')

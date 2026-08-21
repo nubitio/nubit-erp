@@ -61,13 +61,35 @@ describe('filterMenuByRuntimeConfig', () => {
     expect(visiblePaths(filtered)).toEqual(['dashboard', 'pos', 'billing', 'catalog', 'config']);
   });
 
+  it('puts the actions an owner performs every day before specialised areas', () => {
+    const filtered = filterMenuByRuntimeConfig(
+      menu(['config', 'catalog', 'billing', 'cashbox', 'pos', 'dashboard']),
+      runtimeConfig('advanced'),
+    );
+
+    expect(visiblePaths(filtered)).toEqual(['dashboard', 'pos', 'cashbox', 'billing', 'catalog', 'config']);
+  });
+
+  it('uses the first daily action of a menu group to order that group', () => {
+    const filtered = filterMenuByRuntimeConfig(
+      [
+        { path: 'config' },
+        { path: '', items: [{ path: 'purchases' }] as AdminMenuItem['items'] },
+        { path: 'pos' },
+      ] as AdminMenuItem[],
+      runtimeConfig('advanced'),
+    );
+
+    expect(visiblePaths(filtered)).toEqual(['pos', '', 'config']);
+  });
+
   it('shows standard entries but still hides advanced PLE without reports entitlement', () => {
     const filtered = filterMenuByRuntimeConfig(
       menu(['billing', 'catalog', 'purchases', 'inventory', 'ple']),
       runtimeConfig('standard'),
     );
 
-    expect(visiblePaths(filtered)).toEqual(['billing', 'catalog', 'purchases', 'inventory']);
+    expect(visiblePaths(filtered)).toEqual(['billing', 'catalog', 'inventory', 'purchases']);
   });
 
   it('shows PLE for advanced tenants with advanced reports enabled', () => {
@@ -76,7 +98,7 @@ describe('filterMenuByRuntimeConfig', () => {
       runtimeConfig('advanced', { showAdvancedReports: true }),
     );
 
-    expect(visiblePaths(filtered)).toEqual(['billing', 'catalog', 'purchases', 'inventory', 'ple']);
+    expect(visiblePaths(filtered)).toEqual(['billing', 'catalog', 'inventory', 'purchases', 'ple']);
   });
 
   it('removes deprecated reports and capability-gated warehouse/transfer paths', () => {
@@ -130,6 +152,6 @@ describe('filterMenuByRuntimeConfig', () => {
       runtimeConfig('advanced', {}, { 'payroll.core': { enabled: true, config: {} } }),
     );
 
-    expect(visiblePaths(filtered)).toEqual(['employees', 'payroll-runs', 'pos']);
+    expect(visiblePaths(filtered)).toEqual(['pos', 'employees', 'payroll-runs']);
   });
 });

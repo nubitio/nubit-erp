@@ -18,6 +18,7 @@ import { Badge, ConfirmDialog } from '@nubitio/ui';
 import { userInformation } from '@shared/sessionInfo';
 import { hasPermission } from '@shared/permissions';
 import toast from '@shared/lib/SharedUtils';
+import { dateCell, moneyCell } from '@shared/ui/crudFormatters';
 import { expenseReportApiUrl, expenseReportEvents, expenseReportFormLayout } from './model/constants';
 import expenseReportService from './services/expenseReportService';
 
@@ -141,9 +142,9 @@ const expenseReportResource = defineResource<ExpenseReportRecord>(expenseReportA
         },
       },
       { kind: 'override', key: 'description', patch: { order: 3, layoutHint: 'fullWidth', label: 'Descripción' } },
-      { kind: 'override', key: 'amount', patch: { order: 4, layoutHint: 'short', label: 'Monto' } },
+      { kind: 'override', key: 'amount', patch: { order: 4, layoutHint: 'short', label: 'Monto', formatter: moneyCell, align: 'right' } },
       { kind: 'override', key: 'currency', patch: { order: 5, layoutHint: 'short', label: 'Moneda' } },
-      { kind: 'override', key: 'expenseDate', patch: { order: 6, layoutHint: 'short', label: 'Fecha del gasto' } },
+      { kind: 'override', key: 'expenseDate', patch: { order: 6, layoutHint: 'short', label: 'Fecha del gasto', formatter: dateCell } },
       {
         kind: 'override',
         key: 'receiptMedia',

@@ -18,6 +18,7 @@ import {
 } from '@nubitio/crud';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
+import { formatInvoiceNumber } from '@shared/lib/displayFormat';
 import { httpClient } from '@shared/api/HttpClient';
 import { httpRequestData } from '@shared/api/network';
 import { activeEntityField, activeOnlyFilter } from '@shared/lib/activeEntityField';
@@ -364,7 +365,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
           const url = `/receipt/${cell.data.id}/ticket?format=a4`;
           return (
             <a href={url} className="text-reset" target="_blank" rel="noreferrer">
-              <i className="ph ph-file-pdf text-emerald-700" /> {cell.value as string}
+              <i className="ph ph-file-pdf text-emerald-700" /> {formatInvoiceNumber(cell.value)}
             </a>
           );
         }

@@ -1,3 +1,16 @@
+// Owner grids: hide the operator filter row (`~`, `=`) by default.
+.nb-datagrid thead tr.nb-datagrid__filter-row,
+.nb-datagrid__filter-row {
+  display: none !important;
+  height: 0 !important;
+}
+
+.owner-row-buttons {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 // Self-hosted Inter — replaces Google Fonts link in base.html.twig (CSP compliance)
 @import '@fontsource/inter/latin-400.css';
 @import '@fontsource/inter/latin-500.css';

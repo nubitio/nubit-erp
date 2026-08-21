@@ -98,9 +98,6 @@ export const InboundFields = (branchId: string | number = '', runtimeConfig?: Te
       .label('Tipo comprobante')
       .width(150)
       .defaultValue('01')
-      .hidden(true)
-      .visible(false)
-      .visibleOnForm(false)
       .required(true)
       .build(),
   );
@@ -110,9 +107,6 @@ export const InboundFields = (branchId: string | number = '', runtimeConfig?: Te
       .label('Serie proveedor')
       .width(120)
       .defaultValue('E001')
-      .hidden(true)
-      .visible(false)
-      .visibleOnForm(false)
       .required(true)
       .build(),
   );
@@ -121,10 +115,6 @@ export const InboundFields = (branchId: string | number = '', runtimeConfig?: Te
       .name('supplierDocNumber')
       .label('Número proveedor')
       .width(140)
-      .defaultValue('1')
-      .hidden(true)
-      .visible(false)
-      .visibleOnForm(false)
       .required(true)
       .build(),
   );

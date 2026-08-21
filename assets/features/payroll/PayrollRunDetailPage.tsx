@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Badge, ConfirmDialog } from '@nubitio/ui';
+import { Badge, Button, ConfirmDialog } from '@nubitio/ui';
 import toast from '@shared/lib/SharedUtils';
+import { formatMoney, formatMonthPeriod } from '@shared/lib/displayFormat';
 import payrollRunService, { type PayrollRunRecord, type PayslipEntryRecord } from './services/payrollRunService';
 
 const STATUS_BADGE: Record<PayrollRunRecord['status'], { variant: 'success' | 'warning' | 'secondary' | 'danger'; text: string }> = {
@@ -69,34 +70,38 @@ export const PayrollRunDetailPage = () => {
   }
 
   const badge = STATUS_BADGE[run.status];
+  const netTotal = entries.reduce((sum, entry) => sum + Number(entry.netPay ?? 0), 0);
 
   return (
     <div className="view-wrapper-scroll">
       <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <button type="button" onClick={() => navigate('/payroll-runs')} style={{ marginBottom: '0.5rem' }}>
+            <Button variant="secondary" size="sm" onClick={() => navigate('/payroll-runs')}>
               ← Volver a corridas
-            </button>
-            <h1>Corrida de planilla — {run.period}</h1>
+            </Button>
+            <h1>Corrida de planilla — {formatMonthPeriod(run.period)}</h1>
+            <p style={{ margin: '0.35rem 0 0', color: 'var(--text-secondary)' }}>
+              {entries.length} {entries.length === 1 ? 'empleado' : 'empleados'} · Neto a pagar {formatMoney(netTotal)}
+            </p>
             <Badge variant={badge.variant} outlined>{badge.text}</Badge>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             {run.status === 'DRAFT' && (
-              <button type="button" onClick={() => setConfirmAction('calculate')}>Calcular</button>
+              <Button onClick={() => setConfirmAction('calculate')}>Calcular</Button>
             )}
             {run.status === 'CALCULATED' && (
               <>
-                <button type="button" onClick={() => setConfirmAction('calculate')}>Recalcular</button>
-                <button type="button" onClick={() => setConfirmAction('approve')}>Aprobar</button>
+                <Button variant="secondary" onClick={() => setConfirmAction('calculate')}>Recalcular</Button>
+                <Button onClick={() => setConfirmAction('approve')}>Aprobar</Button>
               </>
             )}
             {run.status === 'APPROVED' && (
-              <button type="button" onClick={() => setConfirmAction('pay')}>Marcar pagada</button>
+              <Button onClick={() => setConfirmAction('pay')}>Registrar pago</Button>
             )}
             {(run.status === 'APPROVED' || run.status === 'PAID') && (
               <a href={payrollRunService().plameExportUrl(run.id)} target="_blank" rel="noopener noreferrer">
-                <button type="button">Exportar PLAME</button>
+                <Button variant="secondary">Exportar PLAME</Button>
               </a>
             )}
           </div>
@@ -138,10 +143,10 @@ export const PayrollRunDetailPage = () => {
                   return (
                     <tr key={entry.id}>
                       <td>{employeeName}</td>
-                      <td>{entry.vacationTruncaAmount}</td>
-                      <td>{entry.gratificacionTruncaAmount}</td>
-                      <td>{entry.ctsTruncaAmount}</td>
-                      <td>{entry.netPay}</td>
+                      <td>{formatMoney(entry.vacationTruncaAmount)}</td>
+                      <td>{formatMoney(entry.gratificacionTruncaAmount)}</td>
+                      <td>{formatMoney(entry.ctsTruncaAmount)}</td>
+                      <td>{formatMoney(entry.netPay)}</td>
                     </tr>
                   );
                 }
@@ -156,12 +161,12 @@ export const PayrollRunDetailPage = () => {
                 return (
                   <tr key={entry.id}>
                     <td>{employeeName}</td>
-                    <td>{entry.grossSalary}</td>
-                    <td>{pension}</td>
-                    <td>{entry.essaludEmployerContribution}</td>
-                    <td>{entry.bonificacionExtraordinaria}</td>
-                    <td>{entry.quintaCategoriaRetention}</td>
-                    <td>{entry.netPay}</td>
+                    <td>{formatMoney(entry.grossSalary)}</td>
+                    <td>{formatMoney(pension)}</td>
+                    <td>{formatMoney(entry.essaludEmployerContribution)}</td>
+                    <td>{formatMoney(entry.bonificacionExtraordinaria)}</td>
+                    <td>{formatMoney(entry.quintaCategoriaRetention)}</td>
+                    <td>{formatMoney(entry.netPay)}</td>
                   </tr>
                 );
               })

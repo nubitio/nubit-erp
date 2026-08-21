@@ -14,6 +14,7 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 const API = getCoreApiBaseUrl();
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { ErpModuleBanner } from '@features/shared/ErpModuleBanner';
+import { dateCell, moneyCell } from '@shared/ui/crudFormatters';
 import { employeeApiUrl, employeeEvents, employeeFormLayout } from './model/constants';
 
 interface EmployeeRecord extends DataRecord {
@@ -133,7 +134,7 @@ const employeeResource = defineResource<EmployeeRecord>(employeeApiUrl, {
       { kind: 'override', key: 'dni', patch: { order: 1, layoutHint: 'short', label: 'DNI' } },
       { kind: 'override', key: 'firstName', patch: { order: 2, layoutHint: 'medium', label: 'Nombres' } },
       { kind: 'override', key: 'lastName', patch: { order: 3, layoutHint: 'medium', label: 'Apellidos' } },
-      { kind: 'override', key: 'hireDate', patch: { order: 4, layoutHint: 'short', label: 'Fecha de ingreso' } },
+      { kind: 'override', key: 'hireDate', patch: { order: 4, layoutHint: 'short', label: 'Fecha de ingreso', formatter: dateCell } },
       {
         kind: 'override',
         key: 'terminationDate',
@@ -141,6 +142,7 @@ const employeeResource = defineResource<EmployeeRecord>(employeeApiUrl, {
           order: 5,
           layoutHint: 'short',
           label: 'Fecha de cese',
+          formatter: dateCell,
           required: false,
           // The schema-inferred date field defaults empty dates to "now" —
           // wrong for an optional field where "today" would silently mark
@@ -149,7 +151,7 @@ const employeeResource = defineResource<EmployeeRecord>(employeeApiUrl, {
         },
       },
       { kind: 'override', key: 'contractType', patch: { ...contractTypePatch, order: 6, layoutHint: 'short' } },
-      { kind: 'override', key: 'baseSalary', patch: { order: 7, layoutHint: 'short', label: 'Sueldo base' } },
+      { kind: 'override', key: 'baseSalary', patch: { order: 7, layoutHint: 'short', label: 'Sueldo base', formatter: moneyCell, align: 'right' } },
       { kind: 'override', key: 'pensionScheme', patch: { ...pensionSchemePatch, order: 8, layoutHint: 'short' } },
       { kind: 'override', key: 'afpProvider', patch: { ...afpProviderPatch, order: 9, layoutHint: 'short' } },
       { kind: 'override', key: 'epsAffiliated', patch: { ...epsAffiliatedPatch, order: 10, layoutHint: 'short' } },

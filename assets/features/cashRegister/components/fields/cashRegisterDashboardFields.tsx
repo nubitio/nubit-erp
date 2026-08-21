@@ -24,7 +24,7 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
   fields.push(
     currencyField()
       .name('todaySales')
-      .label('Ventas hoy')
+      .label('Efectivo de esta sesión')
       .formatter((cell: GridCellContext) =>
         cell.value != null ? NumberUtils.formatCurrency(Number(cell.value)) : '—',
       )

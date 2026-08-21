@@ -34,7 +34,10 @@ export function publicSaleCode(code: string | null | undefined): string | null {
     return null;
   }
 
-  return code.trim();
+  const trimmed = code.trim();
+  const match = /^([A-Za-z]+\d*)-(\d+)$/.exec(trimmed);
+  if (!match) return trimmed;
+  return `${match[1].toUpperCase()}-${match[2].padStart(8, '0')}`;
 }
 
 export function formatPosReceiptLabel(
