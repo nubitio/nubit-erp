@@ -196,6 +196,12 @@ final class PermissionCatalog
                     'payroll.export_plame' => 'Exportar archivos PLAME',
                 ],
             ],
+            'accounting' => [
+                'label' => 'Contabilidad',
+                'permissions' => [
+                    'accounting.view' => 'Ver libro mayor y asientos',
+                ],
+            ],
         ];
     }
 

@@ -19,6 +19,7 @@ use App\Organization\Repository\BranchRepository;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Port\InvoiceCreatorInterface;
+use App\Accounting\Message\EconomicEvent;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\Service\SalePaymentPlanService;
 use App\Settings\Service\TenantSettingsService;
@@ -33,6 +34,7 @@ use Nubit\Platform\Exception\ValidationException;
 use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Uid\Uuid;
@@ -67,6 +69,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private SaleRecordRepository $saleRecordRepository,
         private CustomerRepository $customerRepository,
         private ActiveReferenceGuard $activeReferenceGuard,
+        private ?MessageBusInterface $messageBus = null,
     ) {}
 
     /**
@@ -415,6 +418,17 @@ readonly class SaleProcessor implements ProcessorInterface
             }
         }
 
+        if ($isNew && $this->messageBus !== null && $data->getTipoId() === 2) {
+            try {
+                $this->dispatchSaleToLedger($data);
+            } catch (\Throwable $exception) {
+                $this->logger->error('Accounting post for sale failed', [
+                    'sale_id' => $data->getId(),
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        }
+
         $this->logger->info('Sale processing completed successfully', [
             'sale_id' => $data->getId(),
         ]);
@@ -435,6 +449,34 @@ readonly class SaleProcessor implements ProcessorInterface
         ]);
 
         return $data;
+    }
+
+    private function dispatchSaleToLedger(SaleRecord $sale): void
+    {
+        $cogs = BigDecimal::zero();
+        foreach ($sale->getSaleItemRecords() as $item) {
+            $cogs = $cogs->plus(Money::mul(
+                Money::of($item->getQty()),
+                Money::of($item->getUnitCostSnapshot() ?? '0'),
+            ));
+        }
+
+        $issued = $sale->getIssuedAt() ?? new DateTimeImmutable();
+        $serie = $sale->getSerie() ?? '';
+        $numero = $sale->getNumero() ?? '';
+        $label = $serie !== '' && $numero !== '' ? "{$serie}-{$numero}" : (string) $sale->getId();
+
+        $this->messageBus?->dispatch(new EconomicEvent(
+            source: EconomicEvent::SOURCE_SALE,
+            sourceId: (string) $sale->getId(),
+            kind: $sale->isCreditSale() ? EconomicEvent::SALE_CREDIT : EconomicEvent::SALE_CASH,
+            occurredOn: $issued->format('Y-m-d'),
+            description: 'Venta '.$label,
+            total: $sale->getTotal() ?? '0.00',
+            tax: $sale->getTaxTotal(),
+            cogs: Money::toString($cogs),
+            currency: $sale->getCurrency() ?? 'PEN',
+        ));
     }
 
     /**

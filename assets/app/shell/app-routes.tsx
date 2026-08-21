@@ -1,4 +1,5 @@
 import type { AppRouteDefinition } from '@app/router/types';
+import { accountingRoutes } from '@features/accounting/routes';
 import { accountsPayableRoutes } from '@features/accountsPayable/routes';
 import { adminRoutes } from '@features/admin/routes';
 import { bankReconciliationRoutes } from '@features/bankReconciliation/routes';
@@ -18,6 +19,7 @@ import { subscriptionsRoutes } from '@features/subscriptions/routes';
 import { taxesRoutes } from '@features/taxes/routes';
 
 export const appRoutes: AppRouteDefinition[] = [
+  ...accountingRoutes,
   ...accountsPayableRoutes,
   ...adminRoutes,
   ...bankReconciliationRoutes,

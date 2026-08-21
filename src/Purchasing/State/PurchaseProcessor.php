@@ -6,6 +6,7 @@ namespace App\Purchasing\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Accounting\Message\EconomicEvent;
 use App\Efact\Domain\ActiveReferenceGuard;
 use App\Identity\Auth\BranchContextService;
 use App\Identity\Entity\User;
@@ -19,6 +20,7 @@ use Override;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Uid\Uuid;
 
 /**
@@ -40,6 +42,7 @@ readonly class PurchaseProcessor implements ProcessorInterface
         private PurchaseSupplierDocumentValidator $purchaseSupplierDocumentValidator,
         private ActiveReferenceGuard $activeReferenceGuard,
         private PurchaseOrderReceiptService $purchaseOrderReceiptService,
+        private ?MessageBusInterface $messageBus = null,
     ) {}
 
     #[Override]
@@ -111,6 +114,17 @@ readonly class PurchaseProcessor implements ProcessorInterface
             if ($data->getPurchaseOrder() !== null) {
                 $this->purchaseOrderReceiptService->applyReceipt($data);
             }
+            $issued = $data->getIssuedAt() ?? new \DateTime();
+            $this->messageBus?->dispatch(new EconomicEvent(
+                source: EconomicEvent::SOURCE_PURCHASE,
+                sourceId: (string) $data->getId(),
+                kind: EconomicEvent::PURCHASE,
+                occurredOn: $issued->format('Y-m-d'),
+                description: 'Compra '.($data->getReceiptNo() !== null ? (string) $data->getReceiptNo() : (string) $data->getId()),
+                total: $data->getGrandTotal(),
+                tax: $data->getTaxTotal(),
+                currency: $data->getCurrency(),
+            ));
         }
 
         return $result;

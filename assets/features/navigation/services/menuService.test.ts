@@ -115,6 +115,7 @@ describe('filterMenuByRuntimeConfig', () => {
         'fixed-assets',
         'expense-reports',
         'financial-reports',
+        'accounting',
         'sale-quotes',
       ]),
       runtimeConfig('advanced', { showAdvancedReports: true }),

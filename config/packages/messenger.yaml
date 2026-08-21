@@ -28,6 +28,7 @@ framework:
       # bundle FailSafeHub rethrows on failure so retries actually happen
       # (in HTTP context it would log-and-continue instead).
       Symfony\Component\Mercure\Update: async
+      App\Accounting\Message\EconomicEvent: sync
 
 # when@test:
 #    framework:

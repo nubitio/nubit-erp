@@ -88,6 +88,7 @@ final class TenantRuntimeConfigProviderTest extends TestCase
         self::assertFalse($capabilities['treasury.bank_reconciliation']['enabled']);
         self::assertFalse($capabilities['fixed_assets.tracking']['enabled']);
         self::assertFalse($capabilities['expense_reports.core']['enabled']);
+        self::assertFalse($capabilities['accounting.general_ledger']['enabled']);
         self::assertFalse($capabilities['billing.recurring']['enabled']);
         self::assertTrue($capabilities['sales.core']['enabled']);
         self::assertTrue($capabilities['billing.sunat']['enabled']);

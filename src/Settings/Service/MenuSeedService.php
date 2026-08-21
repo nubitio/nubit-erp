@@ -198,6 +198,15 @@ class MenuSeedService
             'icon' => 'ph ph-buildings',
             'parent_id' => 790,
         ],
+        [
+            'id' => 788,
+            'order_index' => 6,
+            'key_name' => 'Contabilidad',
+            'type' => 'route',
+            'route' => 'accounting',
+            'icon' => 'ph ph-books',
+            'parent_id' => 790,
+        ],
 
         [
             'id' => 775,

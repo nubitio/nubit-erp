@@ -32,6 +32,7 @@ const MENU_VIEW_PERMISSION: Record<string, string> = {
   'accounts-receivable': 'accounts_payable.view',
   'bank-reconciliation': 'bank_reconciliation.view',
   'financial-reports': 'reports.view',
+  accounting: 'accounting.view',
   'expense-reports': 'expense_reports.view',
   'fixed-assets': 'fixed_assets.view',
   'sale-quotes': 'sale_quotes.view',
@@ -62,6 +63,7 @@ const MENU_REQUIRED_CAPABILITY: Record<string, string> = {
   'fixed-assets': 'fixed_assets.tracking',
   'expense-reports': 'expense_reports.core',
   'financial-reports': 'reporting.advanced',
+  accounting: 'accounting.general_ledger',
 };
 
 function normalizePath(path: unknown): string {

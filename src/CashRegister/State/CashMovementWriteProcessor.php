@@ -7,6 +7,7 @@ namespace App\CashRegister\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
+use App\Accounting\Message\EconomicEvent;
 use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Enum\CashMovementType;
 use App\Identity\Security\Security;
@@ -18,6 +19,7 @@ use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * Custom state processor that writes CashMovement records directly to the
@@ -32,6 +34,7 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
     public function __construct(
         private Connection $connection,
         private Security $security,
+        private ?MessageBusInterface $messageBus = null,
     ) {}
 
     /**
@@ -121,6 +124,15 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
 
         // Set createdAt (ORM PrePersist won't fire since we bypass ORM).
         $data->setCreatedAt(new DateTimeImmutable());
+
+        $this->messageBus?->dispatch(new EconomicEvent(
+            source: EconomicEvent::SOURCE_CASH,
+            sourceId: (string) $newId,
+            kind: $movementType === 'CASH_OUT' ? EconomicEvent::CASH_OUT : EconomicEvent::CASH_IN,
+            occurredOn: (new DateTimeImmutable())->format('Y-m-d'),
+            description: $description !== null && $description !== '' ? $description : 'Movimiento de caja',
+            total: is_string($amount) ? $amount : number_format((float) $amount, 2, '.', ''),
+        ));
 
         return $data;
     }

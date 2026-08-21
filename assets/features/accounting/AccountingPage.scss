@@ -1,0 +1,135 @@
+.acc-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+
+  .erp-module-banner {
+    margin: 0;
+  }
+}
+
+.acc-page__header {
+  align-items: flex-end;
+  display: flex;
+  gap: var(--space-4);
+  justify-content: space-between;
+
+  @media (max-width: 800px) {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+.acc-page__title {
+  color: var(--text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.acc-page__subtitle {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin: var(--space-1) 0 0;
+}
+
+.acc-period,
+.acc-toolbar label {
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  font-size: var(--font-size-xs);
+  gap: 0.35rem;
+
+  input,
+  select {
+    background: var(--surface-1);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: var(--font-size-sm);
+    min-height: 2.25rem;
+    padding: 0 var(--space-3);
+  }
+}
+
+.acc-tabs {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.acc-tab {
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  padding: var(--space-2) var(--space-1);
+
+  &--active {
+    border-bottom-color: var(--accent-color);
+    color: var(--text-primary);
+  }
+}
+
+.acc-card {
+  background: var(--surface-1);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.acc-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.acc-balances {
+  color: var(--text-secondary);
+  display: flex;
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
+
+  strong {
+    color: var(--text-primary);
+  }
+}
+
+.acc-empty {
+  color: var(--text-secondary);
+  margin: var(--space-6) 0;
+  text-align: center;
+}
+
+.acc-table {
+  border-collapse: collapse;
+  width: 100%;
+
+  th,
+  td {
+    border-bottom: 1px solid var(--border-color);
+    font-size: var(--font-size-sm);
+    padding: 0.65rem 0.4rem;
+    text-align: left;
+  }
+
+  th {
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  &__amount {
+    text-align: right;
+    white-space: nowrap;
+  }
+}

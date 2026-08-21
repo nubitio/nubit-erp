@@ -1205,6 +1205,7 @@ final class SaleProcessorTest extends TestCase
         $inj('saleRecordRepository', $this->saleRecordRepository);
         $inj('customerRepository', $this->customerRepository);
         $inj('activeReferenceGuard', new \App\Efact\Domain\ActiveReferenceGuard());
+        $inj('messageBus', null);
 
         return $processor;
     }

@@ -98,6 +98,7 @@ final readonly class TenantRuntimeConfigProvider
                 'treasury.bank_reconciliation' => $this->capability($this->isFeatureEnabled($entitlements, 'bank_reconciliation')),
                 'fixed_assets.tracking' => $this->capability($this->isFeatureEnabled($entitlements, 'fixed_assets')),
                 'expense_reports.core' => $this->capability($this->isFeatureEnabled($entitlements, 'expense_reports')),
+                'accounting.general_ledger' => $this->capability($this->isFeatureEnabled($entitlements, 'general_ledger')),
             ],
             'settings' => [
                 'requireCashRegister' => $settings->isRequireCashRegister(),
