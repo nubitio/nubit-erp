@@ -26,7 +26,7 @@ const ACCOUNTS_RECEIVABLE_COLUMN_PRESETS = [
   {
     key: 'basic',
     label: 'Básico',
-    columns: ['customer', 'issuedDate', 'dueDate', 'grandTotal', 'balanceDue', 'status'],
+    columns: ['customer', 'invoiceFullNumber', 'issuedDate', 'dueDate', 'grandTotal', 'balanceDue', 'status'],
   },
 ];
 
@@ -39,8 +39,8 @@ const accountsReceivableResource = defineResource<AccountsReceivableRecord>(sale
   filter: [{ field: 'balanceDue', operator: '>', value: 0 }],
   permissions: { canAdd: false, canEdit: false, canView: false, canDelete: false },
   emptyState: {
-    title: 'Sin cuentas por cobrar',
-    description: 'Las ventas a crédito con saldo pendiente aparecerán aquí.',
+    title: 'Nadie te debe en este momento',
+    description: 'Las ventas a crédito con saldo pendiente aparecen aquí para cobrarlas.',
     icon: 'hand-coins',
   },
   fieldContract: defineFields<AccountsReceivableRecord>({
@@ -60,12 +60,13 @@ const accountsReceivableResource = defineResource<AccountsReceivableRecord>(sale
           label: 'Cliente',
         },
       },
-      { kind: 'override', key: 'issuedDate', patch: { order: 1, layoutHint: 'short', label: 'Fecha de emisión' } },
-      { kind: 'override', key: 'dueDate', patch: { order: 2, layoutHint: 'short', label: 'Fecha de vencimiento' } },
-      { kind: 'override', key: 'grandTotal', patch: { order: 3, layoutHint: 'short', label: 'Total' } },
-      { kind: 'override', key: 'paidTotal', patch: { order: 4, layoutHint: 'short', label: 'Cobrado' } },
-      { kind: 'override', key: 'balanceDue', patch: { order: 5, layoutHint: 'short', label: 'Saldo' } },
-      { kind: 'override', key: 'status', patch: { order: 6, layoutHint: 'short', label: 'Estado' } },
+      { kind: 'override', key: 'invoiceFullNumber', patch: { order: 1, layoutHint: 'short', label: 'Comprobante' } },
+      { kind: 'override', key: 'issuedDate', patch: { order: 2, layoutHint: 'short', label: 'Fecha de emisión' } },
+      { kind: 'override', key: 'dueDate', patch: { order: 3, layoutHint: 'short', label: 'Fecha de vencimiento' } },
+      { kind: 'override', key: 'grandTotal', patch: { order: 4, layoutHint: 'short', label: 'Total' } },
+      { kind: 'override', key: 'paidTotal', patch: { order: 5, layoutHint: 'short', label: 'Cobrado' } },
+      { kind: 'override', key: 'balanceDue', patch: { order: 6, layoutHint: 'short', label: 'Saldo' } },
+      { kind: 'override', key: 'status', patch: { order: 7, layoutHint: 'short', label: 'Estado' } },
     ],
   }),
 });

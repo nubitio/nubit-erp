@@ -11,12 +11,13 @@ import {
   YAxis,
 } from 'recharts';
 import { financialReportsApi } from './api/financialReportsEndpoints';
+import { ErpModuleBanner } from '@features/shared/ErpModuleBanner';
 import { useCashFlow, useProfitAndLoss } from './useFinancialReports';
 
 type TabKey = 'pnl' | 'cashflow';
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: 'pnl', label: 'Estado de resultados' },
+  { key: 'pnl', label: 'Resultado operativo' },
   { key: 'cashflow', label: 'Flujo de caja' },
 ];
 
@@ -218,9 +219,10 @@ export function FinancialReportsPage() {
       <div className="fr-page">
         <div className="fr-page__header">
           <div>
-            <h1 className="fr-page__title">Reportes financieros</h1>
+            <h1 className="fr-page__title">Resultado del negocio</h1>
             <p className="fr-page__subtitle">
-              {pnlLoading ? '…' : pnlData?.periodLabel} · Estado de resultados y flujo de caja.
+              {pnlLoading ? '…' : pnlData?.periodLabel} · Estimado operativo a partir de ventas, compras y caja.
+              No reemplaza la contabilidad formal.
             </p>
           </div>
           <button type="button" className="fr-export-button" onClick={handleExport}>
@@ -228,6 +230,11 @@ export function FinancialReportsPage() {
             Exportar a Excel
           </button>
         </div>
+
+        <ErpModuleBanner>
+          Estas cifras salen de ventas, compras y caja. Sirven para decidir el día a día; el
+          contador sigue cerrando libros por su lado.
+        </ErpModuleBanner>
 
         <div className="fr-kpi-grid">
           <KpiCard
@@ -251,7 +258,7 @@ export function FinancialReportsPage() {
             loading={pnlLoading}
           />
           <KpiCard
-            label="UTILIDAD NETA"
+            label="UTILIDAD OPERATIVA"
             value={fmtMoney(pnlData?.utilidadNeta ?? 0)}
             icon="ph-percent"
             tone={pnlData && pnlData.utilidadNeta < 0 ? 'danger' : 'success'}

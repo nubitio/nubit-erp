@@ -558,6 +558,52 @@ readonly class DashboardRepository
             'number' => $row['number'] ?? null,
         ], $recentSalesToday);
 
+        $receivables = $this->safeQuery(
+            'receivables',
+            fn() => $this->connection->fetchAssociative('
+            SELECT COALESCE(SUM(balance_due), 0) AS total, COUNT(*) AS count
+            FROM sales
+            WHERE branch_id = :branchId
+              AND balance_due > 0
+              AND status <> \'VOIDED\'
+        ', $params) ?: [],
+            [],
+            $failedSegments,
+        );
+        $payables = $this->safeQuery(
+            'payables',
+            fn() => $this->connection->fetchAssociative('
+            SELECT COALESCE(SUM(balance_due), 0) AS total, COUNT(*) AS count
+            FROM supplier_bill
+            WHERE branch_id = :branchId
+              AND balance_due > 0
+              AND status NOT IN (\'PAID\', \'VOID\')
+        ', $params) ?: [],
+            [],
+            $failedSegments,
+        );
+        $pendingSunat = $this->safeQuery(
+            'pendingSunat',
+            fn() => $this->connection->fetchAssociative('
+            SELECT COUNT(*) AS count
+            FROM tax_document td
+            INNER JOIN sales s ON s.id = td.sale_id
+            WHERE s.branch_id = :branchId
+              AND td.document_type IN (\'01\', \'03\')
+              AND (td.sunat_status IS NULL OR td.sunat_status IN (\'\', \'pendiente\', \'pending\'))
+              AND td.void_ticket IS NULL
+        ', $params) ?: [],
+            [],
+            $failedSegments,
+        );
+
+        $payload['summary']['receivablesTotal'] = (float) ($receivables['total'] ?? 0);
+        $payload['summary']['receivablesCount'] = (int) ($receivables['count'] ?? 0);
+        $payload['summary']['payablesTotal'] = (float) ($payables['total'] ?? 0);
+        $payload['summary']['payablesCount'] = (int) ($payables['count'] ?? 0);
+        $payload['summary']['pendingSunatCount'] = (int) ($pendingSunat['count'] ?? 0);
+        $payload['summary']['lowStockCount'] = count($payload['lowStockProducts']);
+
         $payload['meta'] = $this->buildMeta('full', $failedSegments);
 
         return $payload;
@@ -778,6 +824,12 @@ readonly class DashboardRepository
                 'refundsThisMonth' => 0.0,
                 'netSalesToday' => 0.0,
                 'netSalesThisMonth' => 0.0,
+                'receivablesTotal' => 0.0,
+                'receivablesCount' => 0,
+                'payablesTotal' => 0.0,
+                'payablesCount' => 0,
+                'pendingSunatCount' => 0,
+                'lowStockCount' => 0,
             ],
             'salesByDay' => [],
             'salesByMonth' => [],

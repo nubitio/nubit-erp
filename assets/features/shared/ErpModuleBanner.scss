@@ -1,0 +1,40 @@
+.erp-module-banner {
+  align-items: flex-start;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  display: flex;
+  gap: var(--space-3);
+  margin: var(--space-3) var(--space-4) 0;
+  padding: var(--space-3) var(--space-4);
+
+  i {
+    flex-shrink: 0;
+    font-size: 1.1rem;
+    margin-top: 0.1rem;
+  }
+
+  p {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    line-height: 1.45;
+    margin: 0;
+  }
+
+  &--info {
+    background: color-mix(in srgb, var(--accent-color) 8%, var(--surface-1));
+    border-color: color-mix(in srgb, var(--accent-color) 28%, var(--border-color));
+
+    i {
+      color: var(--accent-color);
+    }
+  }
+
+  &--warning {
+    background: color-mix(in srgb, var(--warning-color) 10%, var(--surface-1));
+    border-color: color-mix(in srgb, var(--warning-color) 32%, var(--border-color));
+
+    i {
+      color: var(--warning-color);
+    }
+  }
+}

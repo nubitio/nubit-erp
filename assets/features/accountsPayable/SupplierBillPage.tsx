@@ -71,13 +71,13 @@ const SUPPLIER_BILL_COLUMN_PRESETS = [
   {
     key: 'basic',
     label: 'Básico',
-    columns: ['supplier', 'category', 'dueDate', 'amount', 'balanceDue', 'status'],
+    columns: ['supplier', 'number', 'dueDate', 'amount', 'balanceDue', 'status'],
   },
 ];
 
 const supplierBillResource = defineResource<SupplierBillRecord>(supplierBillApiUrl, {
   id: 'supplier-bill',
-  title: 'Facturas de proveedor',
+  title: 'Cuentas por pagar',
   events: supplierBillEvents,
   defaultPreset: 'basic',
   columnPresets: SUPPLIER_BILL_COLUMN_PRESETS,
@@ -85,8 +85,8 @@ const supplierBillResource = defineResource<SupplierBillRecord>(supplierBillApiU
   formLayout: supplierBillFormLayout,
   sort: [{ selector: 'dueDate', desc: false }],
   emptyState: {
-    title: 'Sin facturas de proveedor',
-    description: 'Registra facturas de servicios como comisiones bancarias, alquiler o compras.',
+    title: 'Nada por pagar',
+    description: 'Registra facturas de proveedores, alquiler o servicios para controlar vencimientos.',
     icon: 'invoice',
   },
   fieldContract: defineFields<SupplierBillRecord>({

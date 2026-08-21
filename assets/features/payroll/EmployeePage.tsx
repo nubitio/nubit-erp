@@ -13,6 +13,7 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import { SharedUtils } from '@shared/lib/SharedUtils';
+import { ErpModuleBanner } from '@features/shared/ErpModuleBanner';
 import { employeeApiUrl, employeeEvents, employeeFormLayout } from './model/constants';
 
 interface EmployeeRecord extends DataRecord {
@@ -173,7 +174,15 @@ const employeeResource = defineResource<EmployeeRecord>(employeeApiUrl, {
   }),
 });
 
-export const EmployeePage = () => <SchemaCrudPage resource={employeeResource} />;
+export const EmployeePage = () => (
+  <>
+    <ErpModuleBanner tone="warning">
+      Calcula AFP, CTS y quinta como apoyo operativo. Valida PLAME y los pagos con tu contador
+      antes de declarar.
+    </ErpModuleBanner>
+    <SchemaCrudPage resource={employeeResource} />
+  </>
+);
 
 EmployeePage.EVENTS = employeeEvents;
 EmployeePage.API_URL = employeeApiUrl;

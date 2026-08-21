@@ -65,7 +65,7 @@ export const PurchasesPage = () => {
       defaultPreset: 'basic',
       emptyState: {
         title: 'Sin compras registradas',
-        description: 'Registra tu primera compra con el botón Nuevo.',
+        description: 'Ingresa mercadería de un proveedor para que el stock y el costo se actualicen.',
         icon: 'shopping-cart',
       },
       formLayout: {

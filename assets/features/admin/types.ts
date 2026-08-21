@@ -16,6 +16,12 @@ export type SummaryStats = {
   refundsThisMonth: number;
   netSalesToday: number;
   netSalesThisMonth: number;
+  receivablesTotal: number;
+  receivablesCount: number;
+  payablesTotal: number;
+  payablesCount: number;
+  pendingSunatCount: number;
+  lowStockCount: number;
 };
 
 export type SalesByDay = { day: number; label: string; total: number };
@@ -52,6 +58,8 @@ export type RecentSaleToday = {
   issuedAt: string;
   paymentMethod: string;
   total: number;
+  series?: string | null;
+  number?: string | null;
 };
 
 export type DashboardData = {

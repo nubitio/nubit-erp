@@ -13,7 +13,7 @@ export const InventoryHubLayout = () => {
     <FeatureHubLayout
       density="compact"
       title="Inventario"
-      subtitle="Existencias, movimientos y operaciones de stock en un solo lugar."
+      subtitle="Qué hay, qué falta y qué se movió. El kardex es la fuente de verdad."
       basePath="/inventory"
       defaultPath="/inventory/stock"
       tabsAriaLabel="Secciones de inventario"

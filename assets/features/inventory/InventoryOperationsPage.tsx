@@ -12,7 +12,7 @@ export const InventoryOperationsPage = () => {
       <OperationCardGrid
         testId="inventory-operations"
         title="Operaciones de stock"
-        description="Cada movimiento genera un documento inmutable en el kardex."
+        description="Cada entrada, salida o ajuste queda en el kardex. El pasado no se edita."
         operations={[
           {
             key: 'receipt',

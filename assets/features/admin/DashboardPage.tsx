@@ -13,7 +13,7 @@ export const DashboardPage = () => {
   const { currentBranchName } = useSessionInfo();
   const dashboardData = useEfactDashboardData();
   const dashboardConfig = useMemo(
-    () => buildEfactDashboardConfig(currentBranchName || 'Panel'),
+    () => buildEfactDashboardConfig(currentBranchName ? `Resumen · ${currentBranchName}` : 'Resumen'),
     [currentBranchName],
   );
   const assistantEnabled = useFeature('ai_assistant');

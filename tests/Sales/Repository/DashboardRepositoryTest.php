@@ -427,6 +427,9 @@ final class DashboardRepositoryTest extends TestCase
             ],
             // refunds
             ['refunds_today' => '0', 'refunds_month' => '0'],
+            ['total' => '120.00', 'count' => '2'],
+            ['total' => '80.00', 'count' => '1'],
+            ['count' => '3'],
         );
         $this->connection->method('fetchAllAssociative')->willReturn([]);
 
@@ -434,6 +437,9 @@ final class DashboardRepositoryTest extends TestCase
         $summary = $result['summary'];
 
         self::assertSame(50.0, $summary['avgTicket']); // 500/10
+        self::assertSame(120.0, $summary['receivablesTotal']);
+        self::assertSame(80.0, $summary['payablesTotal']);
+        self::assertSame(3, $summary['pendingSunatCount']);
         self::assertEqualsWithDelta(25.0, (float) $summary['monthGrowth'], 0.001); // (500-400)/400*100
     }
 
@@ -462,6 +468,9 @@ final class DashboardRepositoryTest extends TestCase
                 'receipts_month' => '0',
             ],
             ['refunds_today' => '0', 'refunds_month' => '0'],
+            [],
+            [],
+            [],
         );
         $this->connection->method('fetchAllAssociative')->willReturn([]);
 

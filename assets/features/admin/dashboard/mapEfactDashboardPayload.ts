@@ -70,6 +70,10 @@ export type EfactDeclarativeDashboardPayload = {
     customersThisMonth: number;
     dailyGrowth: number | null;
     monthGrowth: number | null;
+    receivablesTotal: number;
+    payablesTotal: number;
+    pendingSunatCount: number;
+    lowStockCount: number;
   };
   salesByDay: Array<{ label: string; total: number }>;
   salesByMonth: Array<{ label: string; total: number }>;
@@ -79,10 +83,12 @@ export type EfactDeclarativeDashboardPayload = {
     id: string;
     issuedAt: string;
     paymentMethod: string;
+    document: string;
     total: number;
   }>;
   topProducts: Array<{ name: string; quantity: number; total: number }>;
   topCustomers: Array<{ name: string; invoices: number; total: number }>;
+  lowStock: Array<{ name: string; currentStock: number; minStock: number }>;
 };
 
 function truncateName(name: string, maxLength = 45): string {
@@ -111,7 +117,11 @@ export function mapEfactDashboardPayload(data: DashboardData): EfactDeclarativeD
       igvCollected: data.summary.salesThisMonth * (18 / 118),
       customersThisMonth: data.summary.customersThisMonth,
       dailyGrowth: data.summary.netSalesToday <= 0 ? null : data.summary.dailyGrowth,
-      monthGrowth: data.summary.monthGrowth,
+      monthGrowth: data.summary.monthGrowth === 0 ? null : data.summary.monthGrowth,
+      receivablesTotal: data.summary.receivablesTotal,
+      payablesTotal: data.summary.payablesTotal,
+      pendingSunatCount: data.summary.pendingSunatCount,
+      lowStockCount: data.summary.lowStockCount,
     },
     salesByDay: pickLast7SalesDays(data.salesByDay),
     salesByMonth: data.salesByMonth.map((row) => ({
@@ -131,7 +141,13 @@ export function mapEfactDashboardPayload(data: DashboardData): EfactDeclarativeD
       id: row.id,
       issuedAt: row.issuedAt,
       paymentMethod: row.paymentMethod,
+      document: [row.series, row.number].filter(Boolean).join('-') || '—',
       total: row.total,
+    })),
+    lowStock: data.lowStockProducts.map((row) => ({
+      name: truncateName(row.product),
+      currentStock: row.currentStock,
+      minStock: row.minStock,
     })),
     topProducts: data.topProducts.map((row) => ({
       name: truncateName(row.product),

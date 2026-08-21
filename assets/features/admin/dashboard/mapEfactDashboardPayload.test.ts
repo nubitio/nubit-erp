@@ -23,6 +23,12 @@ const emptyDashboardData = (): DashboardData => ({
     refundsThisMonth: 0,
     netSalesToday: 250,
     netSalesThisMonth: 0,
+    receivablesTotal: 320,
+    receivablesCount: 4,
+    payablesTotal: 150,
+    payablesCount: 2,
+    pendingSunatCount: 1,
+    lowStockCount: 3,
   },
   salesByDay: Array.from({ length: 23 }, (_, index) => ({
     day: index + 1,
@@ -105,6 +111,9 @@ describe('mapEfactDashboardPayload', () => {
     expect(payload.salesByMonth).toHaveLength(2);
     expect(payload.paymentMethods[0]?.method).toBe('Efectivo');
     expect(payload.topCustomers[0]?.name).toBe('ACME SAC');
+    expect(payload.stats.receivablesTotal).toBe(320);
+    expect(payload.stats.payablesTotal).toBe(150);
+    expect(payload.stats.pendingSunatCount).toBe(1);
   });
 
   it('hides the daily trend when there are no sales yet today', () => {

@@ -14,6 +14,7 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 const API = getCoreApiBaseUrl();
 import { Badge } from '@nubitio/ui';
 import { useNavigate } from 'react-router-dom';
+import { ErpModuleBanner } from '@features/shared/ErpModuleBanner';
 import { payrollRunApiUrl, payrollRunEvents, payrollRunFormLayout } from './model/constants';
 
 interface PayrollRunRecord extends DataRecord {
@@ -134,7 +135,15 @@ export const PayrollRunPage = () => {
     ],
   };
 
-  return <SchemaCrudPage resource={resource} />;
+  return (
+    <>
+      <ErpModuleBanner tone="warning">
+        Calcula AFP, CTS y quinta como apoyo operativo. Valida PLAME y los pagos con tu contador
+        antes de declarar.
+      </ErpModuleBanner>
+      <SchemaCrudPage resource={resource} />
+    </>
+  );
 };
 
 PayrollRunPage.EVENTS = payrollRunEvents;

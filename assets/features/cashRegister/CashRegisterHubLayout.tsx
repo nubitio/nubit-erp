@@ -5,7 +5,7 @@ export const CashRegisterHubLayout = () => {
     <FeatureHubLayout
       density="compact"
       title="Caja"
-      subtitle="Estado en vivo, registros por sucursal y categorías de movimiento."
+      subtitle="Abre el turno, cobra y cierra con arqueo. Si el efectivo no cuadra, se ve aquí."
       basePath="/cashbox"
       defaultPath="/cashbox/dashboard"
       tabsAriaLabel="Secciones de caja"
