@@ -8,7 +8,7 @@ import './FeatureGate.scss';
 // ---------------------------------------------------------------------------
 
 /** URL to the eFact pricing page on the marketing site. */
-const PRICING_URL = 'https://efact.pe/precios';
+const PRICING_URL = 'https://nubit.pe/precios';
 
 // ---------------------------------------------------------------------------
 // Types

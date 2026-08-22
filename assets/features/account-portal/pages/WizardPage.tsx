@@ -98,7 +98,7 @@ export function WizardPage() {
     }
   };
 
-  const domainSuffix = config.data?.domainSuffix ?? '.efact.app';
+  const domainSuffix = config.data?.domainSuffix ?? '.nubit.pe';
   const isPaid = plan !== 'free';
 
   return (

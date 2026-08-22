@@ -1,6 +1,6 @@
 api_platform:
-  title: 'Efact API'
-  description: 'Efact API'
+  title: 'Nubit ERP API'
+  description: 'Nubit ERP API'
   version: '1.0.0'
   path_segment_name_generator: 'api_platform.metadata.path_segment_name_generator.dash'
   mapping:

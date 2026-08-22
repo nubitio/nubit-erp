@@ -141,10 +141,20 @@ html, body {
   width: 100%;
 }
 
+.ap-brand__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--on-accent-color);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
 .ap-brand__logo {
-  height: 44px;
-  width: auto;
-  opacity: 0.94;
+  width: 64px;
+  height: auto;
+  filter: drop-shadow(0 8px 18px rgb(0 0 0 / 18%));
 }
 
 .ap-brand__illustration img {
@@ -214,11 +224,16 @@ html, body {
 
 .ap-auth-panel__mobile-logo {
   display: none;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 28px;
+  color: var(--text-primary);
+  font-size: 24px;
+  font-weight: 700;
 
   img {
-    height: 36px;
-    width: auto;
+    width: 48px;
+    height: auto;
   }
 
   @media (max-width: 900px) {
@@ -297,14 +312,7 @@ html, body {
 
 .ap-shell__logo {
   width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md, 10px);
-  display: grid;
-  place-items: center;
-  background: var(--accent-color);
-  color: var(--on-accent-color, #fff);
-  font-weight: 700;
-  font-size: 16px;
+  height: auto;
 }
 
 .ap-shell__actions {

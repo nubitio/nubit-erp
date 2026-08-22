@@ -1,18 +1,15 @@
 import { useMemo, useState } from 'react';
-import { useTheme } from '@nubitio/ui';
 
 import '@assets/styles.scss';
 import '@theme/theme';
 import './LoginPage.scss';
 import { LoginForm } from './LoginForm';
 
-const LOGO_LIGHT = '/assets/images/efact-logo.svg';
-const LOGO_DARK  = '/assets/images/efact-logo-dark.svg';
+const NUBIT_ICON = '/assets/images/nubit-icon.png';
 
 export const LoginPage = () => {
   const [brandLogoFailed, setBrandLogoFailed] = useState(false);
   const [mobileLogoFailed, setMobileLogoFailed] = useState(false);
-  const { theme } = useTheme();
 
   const hasCustomLogo = useMemo(
     () => Boolean(window.app_logo) && !brandLogoFailed,
@@ -44,11 +41,10 @@ export const LoginPage = () => {
                 onError={() => setBrandLogoFailed(true)}
               />
             ) : (
-              <img
-                src={LOGO_DARK}
-                className="brand-logo brand-logo--efact"
-                alt="eFact"
-              />
+              <span className="nubit-brand nubit-brand--on-dark">
+                <img src={NUBIT_ICON} alt="" />
+                <span>Nubit ERP</span>
+              </span>
             )}
           </div>
 
@@ -58,9 +54,9 @@ export const LoginPage = () => {
 
           <div className="brand-text">
             <h1>
-              El mini ERP
+              Gestiona tu negocio
               <br />
-              para tu empresa.
+              en un solo lugar.
             </h1>
             <p>Vende, factura a SUNAT, controla stock, compras, finanzas y planilla en un solo sistema.</p>
           </div>
@@ -93,11 +89,10 @@ export const LoginPage = () => {
           {hasCustomMobileLogo ? (
             <img src={window.app_logo} alt="Logo" onError={() => setMobileLogoFailed(true)} />
           ) : (
-            <img
-              src={theme === 'dark' ? LOGO_DARK : LOGO_LIGHT}
-              className="efact-wordmark"
-              alt="eFact"
-            />
+            <span className="nubit-brand nubit-brand--mobile">
+              <img src={NUBIT_ICON} alt="" />
+              <span>Nubit ERP</span>
+            </span>
           )}
         </div>
 

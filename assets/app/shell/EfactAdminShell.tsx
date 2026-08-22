@@ -28,7 +28,7 @@ interface EfactAdminShellProps {
   children: React.ReactNode;
 }
 
-export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellProps) => {
+export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShellProps) => {
   const [menuItems, setMenuItems] = useState<AdminMenuItem[]>([]);
   const [showBranchPicker, setShowBranchPicker] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -108,7 +108,7 @@ export const EfactAdminShell = ({ title = 'efact', children }: EfactAdminShellPr
           />
         )}
         renderThemeSwitcher={() => <ThemeSwitcher />}
-        footer={<span className="nb-admin-footer-copyright">© {new Date().getFullYear()} Efact</span>}
+        footer={<span className="nb-admin-footer-copyright">© {new Date().getFullYear()} Nubit ERP</span>}
       >
         {children}
       </AdminShell>

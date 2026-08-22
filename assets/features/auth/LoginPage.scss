@@ -142,10 +142,27 @@ html, body {
     opacity: 0.92;
   }
 
-  // Efact SVG is already designed for dark backgrounds — no filter needed.
-  .brand-logo--efact {
-    opacity: 0.94;
+}
+
+.nubit-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--on-accent-color);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  line-height: 1;
+
+  img {
+    display: block;
+    width: 64px;
+    height: auto;
   }
+}
+
+.nubit-brand--on-dark img {
+  filter: drop-shadow(0 8px 18px rgb(0 0 0 / 18%));
 }
 
 .brand-illustration {
@@ -235,8 +252,14 @@ html, body {
     object-fit: contain;
   }
 
-  .efact-wordmark {
-    height: 36px;
+  .nubit-brand--mobile {
+    gap: 10px;
+    color: var(--text-primary);
+    font-size: 24px;
+
+    img {
+      width: 48px;
+    }
   }
 
   @media (max-width: 860px) { display: flex; justify-content: center; }
@@ -278,4 +301,3 @@ html, body {
     line-height: 1.5;
   }
 }
-

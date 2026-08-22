@@ -25,7 +25,7 @@ final class SubscriptionNotifyExpiringCommand extends Command
         private readonly SubscriptionManager $subscriptionManager,
         private readonly MailerInterface $mailer,
         private readonly LoggerInterface $logger,
-        private readonly string $mailerFrom = 'noreply@efact.app',
+        private readonly string $mailerFrom = 'noreply@nubit.pe',
     ) {
         parent::__construct();
     }
@@ -63,7 +63,7 @@ final class SubscriptionNotifyExpiringCommand extends Command
                 $message
                     ->from($this->mailerFrom)
                     ->to($email)
-                    ->subject('Tu suscripcion de eFact esta por vencer - ' . $tenantName)
+                    ->subject('Tu suscripción de Nubit ERP está por vencer - ' . $tenantName)
                     ->htmlTemplate('onboarding/emails/subscription_expiring.html.twig')
                     ->context([
                         'tenant_name' => $tenantName,

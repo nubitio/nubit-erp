@@ -32,7 +32,7 @@ readonly class InvoiceEmailUseCase
         private SettingsService $settings,
         private CompanyContext $companyContext,
         private TaxDocumentRepository $taxDocumentRepository,
-        private string $mailerFrom = 'noreply@efact.app',
+        private string $mailerFrom = 'noreply@nubit.pe',
     ) {}
 
     /**

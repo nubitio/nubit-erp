@@ -71,7 +71,7 @@ final readonly class ProductExportService
     public function build(): Spreadsheet
     {
         $spreadsheet = new Spreadsheet();
-        $spreadsheet->getProperties()->setTitle('Exportación de productos')->setCreator('eFact');
+        $spreadsheet->getProperties()->setTitle('Exportación de productos')->setCreator('Nubit ERP');
 
         $mainSheet = $spreadsheet->getActiveSheet();
         $mainSheet->setTitle('Productos');

@@ -41,7 +41,7 @@ export function LoginPage() {
     <AccountPortalLayout
       variant="auth"
       title="Bienvenido de nuevo"
-      subtitle="Accede a tus empresas en eFact."
+      subtitle="Accede a tus empresas en Nubit ERP."
       brandHeadline={'Gestiona todas tus\nempresas en un solo lugar.'}
       brandDescription="Inicia sesión para administrar suscripciones, planes y accesos a tus instancias."
     >

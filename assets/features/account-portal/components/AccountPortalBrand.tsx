@@ -1,4 +1,4 @@
-const LOGO = '/assets/images/efact-logo-dark.svg';
+const LOGO = '/assets/images/nubit-icon.png';
 
 const FEATURES = [
   'POS y facturación electrónica SUNAT',
@@ -12,7 +12,7 @@ interface AccountPortalBrandProps {
 }
 
 export function AccountPortalBrand({
-  headline = 'El mini ERP\npara tu empresa.',
+  headline = 'Gestiona tu negocio\nen un solo lugar.',
   description = 'Vende, factura a SUNAT, controla stock, compras, finanzas y planilla en un solo sistema.',
 }: AccountPortalBrandProps) {
   const titleLines = headline.split('\n');
@@ -27,7 +27,10 @@ export function AccountPortalBrand({
 
       <div className="ap-brand__content">
         <div className="ap-brand__logo-wrap">
-          <img src={LOGO} className="ap-brand__logo" alt="eFact" />
+          <span className="ap-brand__brand">
+            <img src={LOGO} className="ap-brand__logo" alt="" />
+            <span>Nubit ERP</span>
+          </span>
         </div>
 
         <div className="ap-brand__illustration">

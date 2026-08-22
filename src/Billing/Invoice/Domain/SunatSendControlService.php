@@ -30,7 +30,7 @@ readonly class SunatSendControlService
         private TenantNotificationService $notificationService,
         private MailerInterface $mailer,
         private LoggerInterface $logger,
-        private string $mailerFrom = 'noreply@efact.app',
+        private string $mailerFrom = 'noreply@nubit.pe',
         private ?SettingsService $settings = null,
     ) {}
 

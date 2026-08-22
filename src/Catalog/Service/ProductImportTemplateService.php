@@ -58,7 +58,7 @@ final readonly class ProductImportTemplateService
     public function build(): Spreadsheet
     {
         $spreadsheet = new Spreadsheet();
-        $spreadsheet->getProperties()->setTitle('Plantilla importación de productos')->setCreator('eFact');
+        $spreadsheet->getProperties()->setTitle('Plantilla importación de productos')->setCreator('Nubit ERP');
 
         $mainSheet = $spreadsheet->getActiveSheet();
         $mainSheet->setTitle('Productos');

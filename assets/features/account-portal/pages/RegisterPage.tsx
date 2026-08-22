@@ -42,7 +42,7 @@ export function RegisterPage() {
       variant="auth"
       funnelStep={1}
       title="Crear cuenta"
-      subtitle="Empieza gratis con eFact en minutos."
+      subtitle="Empieza gratis con Nubit ERP en minutos."
     >
       <form className="ap-form" onSubmit={submit}>
         <FormField label="Email">

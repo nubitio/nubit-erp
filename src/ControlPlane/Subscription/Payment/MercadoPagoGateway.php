@@ -46,7 +46,7 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
         $cycleLabel = $billingCycle === BillingCycle::Annual ? 'Anual' : 'Mensual';
 
         $body = [
-            'reason' => 'eFact - Plan ' . ucfirst($planId) . ' ' . $cycleLabel,
+            'reason' => 'Nubit ERP - Plan ' . ucfirst($planId) . ' ' . $cycleLabel,
             'auto_recurring' => [
                 'frequency' => $frequency,
                 'frequency_type' => 'months',

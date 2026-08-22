@@ -31,7 +31,7 @@ readonly class TenantNotificationService
         private ConnectionRegistry $connectionRegistry,
         private MailerInterface $mailer,
         private LoggerInterface $logger,
-        private string $mailerFrom = 'noreply@efact.app',
+        private string $mailerFrom = 'noreply@nubit.pe',
     ) {}
 
     /**

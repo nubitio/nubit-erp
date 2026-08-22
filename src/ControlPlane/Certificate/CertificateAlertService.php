@@ -28,7 +28,7 @@ final readonly class CertificateAlertService implements CertificateAlertServiceI
         private MailerInterface $mailer,
         private HubInterface $hub,
         private LoggerInterface $logger,
-        private string $mailerFrom = 'noreply@efact.app',
+        private string $mailerFrom = 'noreply@nubit.pe',
     ) {}
 
     public function sendExpiringAlerts(int $days = 30): int

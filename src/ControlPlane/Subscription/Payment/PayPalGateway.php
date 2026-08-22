@@ -49,7 +49,7 @@ final class PayPalGateway implements PaymentGatewayInterface
                 'email_address' => $email,
             ],
             'application_context' => [
-                'brand_name' => 'eFact',
+                'brand_name' => 'Nubit ERP',
                 'locale' => 'es-PE',
                 'shipping_preference' => 'NO_SHIPPING',
                 'user_action' => 'SUBSCRIBE_NOW',

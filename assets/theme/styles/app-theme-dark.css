@@ -1,5 +1,5 @@
 /* stylelint-disable */
-/* eFact dark theme — source of truth. Copied to public/themes/ at build time. */
+/* Nubit ERP dark theme — source of truth. Copied to public/themes/ at build time. */
 :root,
 [data-theme=dark] {
   --base-bg: #171d27;
@@ -9,7 +9,7 @@
   --base-text-color-alpha: rgba(243, 244, 246, 0.65);
   --background-gray-color: rgba(243, 244, 246, 0.04);
   --typography-bg: var(--base-bg);
-  --accent-color: #2f7ce0;
+  --accent-color: #08c6eb;
   --accent-hover: color-mix(in srgb, var(--accent-color) 85%, #fff);
   --accent-pressed: color-mix(in srgb, var(--accent-color) 70%, #fff);
   --accent-subtle: color-mix(in srgb, var(--accent-color) 18%, var(--surface-0));

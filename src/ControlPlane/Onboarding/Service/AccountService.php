@@ -20,7 +20,7 @@ final readonly class AccountService
         private ConnectionRegistry $connectionRegistry,
         private MailerInterface $mailer,
         private LoggerInterface $logger,
-        private string $mailerFrom = 'noreply@efact.app',
+        private string $mailerFrom = 'noreply@nubit.pe',
     ) {}
 
     /**
@@ -251,7 +251,7 @@ final readonly class AccountService
         $message
             ->from($this->mailerFrom)
             ->to($email)
-            ->subject('Codigo de verificacion - eFact')
+            ->subject('Código de verificación - Nubit ERP')
             ->htmlTemplate('onboarding/emails/verification_code.html.twig')
             ->context([
                 'code' => $code,

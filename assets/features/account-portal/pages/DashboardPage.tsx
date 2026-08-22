@@ -82,7 +82,7 @@ export function DashboardPage() {
         <div className="ap-empty">
           <i className="ph ph-buildings" aria-hidden="true" />
           <h3>Aún no tienes empresas</h3>
-          <p>Crea tu primera instancia de eFact y empieza a facturar en minutos.</p>
+          <p>Crea tu primera instancia de Nubit ERP y empieza a facturar en minutos.</p>
           <Link to="/register/new-tenant" className="ap-cta">
             Crear mi primera empresa
           </Link>

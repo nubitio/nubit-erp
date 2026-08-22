@@ -23,7 +23,7 @@ interface AccountPortalLayoutProps {
   backTo?: { label: string; href: string };
 }
 
-const LOGO_LIGHT = '/assets/images/efact-logo.svg';
+const NUBIT_ICON = '/assets/images/nubit-icon.png';
 
 export function AccountPortalLayout({
   children,
@@ -53,9 +53,10 @@ export function AccountPortalLayout({
         <AccountPortalBrand headline={brandHeadline} description={brandDescription} />
         <main className="ap-auth-panel">
           <div className="ap-auth-panel__mobile-logo">
-            <img src={LOGO_LIGHT} alt="eFact" />
+            <img src={NUBIT_ICON} alt="" />
+            <span>Nubit ERP</span>
           </div>
-          <section className="ap-auth-card" aria-label="Portal de cuenta eFact">
+          <section className="ap-auth-card" aria-label="Portal de cuenta Nubit ERP">
             {funnelStep ? (
               <div className="ap-auth-card__funnel">
                 <FunnelSteps current={funnelStep} />
@@ -79,8 +80,8 @@ export function AccountPortalLayout({
       <header className="ap-shell">
         <div className="ap-shell__inner">
           <Link to="/account/dashboard" className="ap-shell__brand">
-            <span className="ap-shell__logo">e</span>
-            <span>eFact</span>
+            <img src={NUBIT_ICON} className="ap-shell__logo" alt="" />
+            <span>Nubit ERP</span>
           </Link>
 
           <div className="ap-shell__actions">
