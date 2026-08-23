@@ -240,10 +240,6 @@ services:
     tags:
       - { name: app.payment_gateway }
 
-  Nubit\Platform\Observability\Logging\TenantLogProcessor:
-    tags:
-      - { name: monolog.processor }
-
   App\Core\Logging\TenantLogProcessor:
     alias: Nubit\Platform\Observability\Logging\TenantLogProcessor
 

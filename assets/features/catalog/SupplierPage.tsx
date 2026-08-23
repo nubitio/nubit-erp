@@ -38,6 +38,7 @@ const SUPPLIER_COLUMN_PRESETS = [
 const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
   id: 'supplier',
   title: 'Proveedores',
+  permissions: { canExport: true },
   defaultPreset: 'basic',
   columnPresets: SUPPLIER_COLUMN_PRESETS,
   viewMode: { mode: 'drawer', drawerSize: 'md' },

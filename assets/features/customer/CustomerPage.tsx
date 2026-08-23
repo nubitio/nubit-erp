@@ -44,6 +44,7 @@ const CUSTOMER_COLUMN_PRESETS = [
 const customerResource = defineResource<CustomerRecord>(customerApiUrl, {
   id: 'customer',
   title: 'Clientes',
+  permissions: { canExport: true },
   events: customerEvents,
   defaultPreset: 'basic',
   columnPresets: CUSTOMER_COLUMN_PRESETS,

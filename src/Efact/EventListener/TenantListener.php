@@ -39,7 +39,6 @@ readonly class TenantListener
             $requestId = Uuid::v4()->toRfc4122();
         }
         $request->attributes->set('request_id', $requestId);
-        $request->attributes->set('request_start', microtime(true));
 
         $this->logger->debug('TenantListener invoked', [
             'path' => $path,

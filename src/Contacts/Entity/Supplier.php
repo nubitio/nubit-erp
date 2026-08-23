@@ -11,12 +11,14 @@ use App\Efact\Domain\ActivatableInterface;
 use App\Efact\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Attribute\Auditable;
+use Nubit\ApiPlatform\Attribute\Exportable;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[Auditable]
+#[Exportable]
 #[ORM\Entity(repositoryClass: SupplierRepository::class)]
 #[ORM\Table(name: 'proveedor')]
 #[ApiResource(filters: [DataGridFilter::class], mercure: true)]

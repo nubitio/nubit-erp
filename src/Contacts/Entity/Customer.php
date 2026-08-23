@@ -11,10 +11,12 @@ use App\Efact\Domain\ActivatableInterface;
 use App\Efact\Validator as AppAssert;
 use App\Inventory\Entity\PriceList;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Attribute\Exportable;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[Exportable]
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 #[ORM\Table(name: 'cliente')]
 #[ApiResource(filters: [DataGridFilter::class], mercure: true)]
