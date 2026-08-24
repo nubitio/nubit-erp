@@ -74,11 +74,18 @@ final class TenantListenerTest extends TestCase
         ($this->listener)($this->createEvent('app.example.com', '/api/account/session'));
     }
 
-    public function testSkipsLocalhostSubdomain(): void
+    public function testResolvesConfiguredTenantForLocalhost(): void
     {
+        $this->tenantRegistry->expects($this->once())->method('getTenantByName')->with('demo')->willReturn([
+            'id' => 1,
+            'name' => 'demo',
+            'status' => 'active',
+        ]);
         $this->switcher->expects($this->never())->method('switchConnection');
 
         ($this->listener)($this->createEvent('localhost'));
+
+        $this->assertSame('demo', $this->tenantContext->getTenantName());
     }
 
     public function testSkipsDevSubdomain(): void
@@ -97,16 +104,26 @@ final class TenantListenerTest extends TestCase
 
     public function testSkipsPrivateIp(): void
     {
+        $this->tenantRegistry->expects($this->never())->method('getTenantByName');
         $this->switcher->expects($this->never())->method('switchConnection');
 
         ($this->listener)($this->createEvent('192.168.1.1'));
+
+        $this->assertNull($this->tenantContext->getTenantName());
     }
 
-    public function testSkipsLoopbackIp(): void
+    public function testResolvesConfiguredTenantForLoopbackIp(): void
     {
+        $this->tenantRegistry->expects($this->once())->method('getTenantByName')->with('demo')->willReturn([
+            'id' => 1,
+            'name' => 'demo',
+            'status' => 'active',
+        ]);
         $this->switcher->expects($this->never())->method('switchConnection');
 
         ($this->listener)($this->createEvent('127.0.0.1'));
+
+        $this->assertSame('demo', $this->tenantContext->getTenantName());
     }
 
     public function testResolvesSubdomainTenant(): void

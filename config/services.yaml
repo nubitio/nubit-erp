@@ -29,6 +29,7 @@ services:
       Psr\Log\LoggerInterface $billingLogger: '@monolog.logger.billing'
       string $mailerFrom: '%env(MAILER_FROM)%'
       string $weasyprintBinary: '%env(WEASYPRINT_BINARY)%'
+      string $localTenantName: '%env(LOCAL_TENANT_NAME)%'
       iterable $enrichers: !tagged_iterator inventory.stock_movement_enricher
       iterable $saleReports: !tagged_iterator app.sale_report
 

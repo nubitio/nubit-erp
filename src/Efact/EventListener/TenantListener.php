@@ -24,6 +24,7 @@ readonly class TenantListener
         private TenantRegistryInterface $tenantRegistry,
         private TenantContext $tenantContext,
         private LoggerInterface $logger,
+        private string $localTenantName = 'demo',
     ) {}
 
     public function __invoke(RequestEvent $event): void
@@ -75,6 +76,12 @@ readonly class TenantListener
             );
 
             if (!$isPublicIp) {
+                if (in_array($host, ['127.0.0.1', '::1'], true)) {
+                    $this->activateLocalTenant($event, $host, $requestId);
+
+                    return;
+                }
+
                 $this->logger->debug('Host is private or reserved IP; skipping tenant switching', ['host' => $host]);
 
                 return;
@@ -88,6 +95,11 @@ readonly class TenantListener
         // 'host' covers host.docker.internal used in Docker Desktop environments.
         $excludedSubdomains = ['localhost', 'dev', 'stg', 'host'];
         if ('' === $subdomain || in_array($subdomain, $excludedSubdomains, true)) {
+            if ($subdomain === 'localhost' || $subdomain === 'host') {
+                $this->activateLocalTenant($event, $host, $requestId);
+
+                return;
+            }
             $this->logger->debug('Skipping tenant switch for excluded or empty subdomain', [
                 'subdomain' => $subdomain,
                 'host' => $host,
@@ -137,6 +149,39 @@ readonly class TenantListener
                 'exception' => $throwable->getMessage(),
             ]);
 
+            $event->setResponse(new JsonResponse([
+                'success' => false,
+                'message' => 'Tenant not found',
+            ], Response::HTTP_NOT_FOUND));
+        }
+    }
+
+    private function activateLocalTenant(RequestEvent $event, string $host, string $requestId): void
+    {
+        try {
+            $tenant = $this->tenantRegistry->getTenantByName($this->localTenantName);
+            if ($tenant === null) {
+                throw new \RuntimeException('Local tenant not found');
+            }
+
+            $tenantName = (string) ($tenant['name'] ?? $this->localTenantName);
+            if (($tenant['status'] ?? 'active') === 'suspended') {
+                throw new AccessDeniedHttpException('Service temporarily unavailable');
+            }
+
+            $tenantId = isset($tenant['id']) ? (int) $tenant['id'] : null;
+            $this->tenantContext->setTenant($tenantId ?: null, $tenantName, $host, $requestId);
+            $this->setTraceAttributes($tenantId ?: null, $tenantName, $host, $requestId);
+        } catch (AccessDeniedHttpException $exception) {
+            $event->setResponse(new JsonResponse([
+                'success' => false,
+                'message' => $exception->getMessage(),
+            ], Response::HTTP_FORBIDDEN));
+        } catch (Throwable $throwable) {
+            $this->logger->warning('Local tenant resolution failed', [
+                'host' => $host,
+                'exception' => $throwable->getMessage(),
+            ]);
             $event->setResponse(new JsonResponse([
                 'success' => false,
                 'message' => 'Tenant not found',
