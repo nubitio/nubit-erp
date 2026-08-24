@@ -30,7 +30,12 @@ services:
       QZ_PRIVATE_KEY_PASSPHRASE: '${QZ_PRIVATE_KEY_PASSPHRASE:-changeme}'
       # Worker mode disabled for development (enable for performance testing)
       # FRANKENPHP_CONFIG: "worker ./public/index.php"
-      OTEL_PHP_AUTOLOAD_ENABLED: 'true'
+      # Nubit observability already instruments Symfony and Doctrine. Enabling
+      # the contrib auto-instrumentation as well creates nested Context scopes
+      # that detach out of order under FrankenPHP and can crash PHP 8.5.
+      OTEL_PHP_AUTOLOAD_ENABLED: 'false'
+      OTEL_PHP_DISABLED_INSTRUMENTATIONS: 'symfony,doctrine'
+      OTEL_SDK_DISABLED: 'true'
       OTEL_SERVICE_NAME: 'efact-dev'
       OTEL_TRACES_EXPORTER: 'otlp'
       OTEL_LOGS_EXPORTER: 'otlp'
@@ -252,7 +257,7 @@ services:
     # Comment the following line to disable the development mode
     command: /usr/bin/caddy run --config /etc/caddy/dev.Caddyfile
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'https://localhost/healthz']
+      test: ['CMD', 'curl', '-f', 'http://localhost/healthz']
       timeout: 5s
       retries: 5
       start_period: 60s

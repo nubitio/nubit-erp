@@ -50,7 +50,6 @@ const productName = `Test Producto ${ts}`;
 
 // ── Seed product — always available from app:test:seed-e2e ───────────────────
 const SEED_PRODUCT_NAME = E2E_SEED.productName;
-const SEED_PRODUCT_2_NAME = E2E_SEED.product2Name;
 const SEED_PRODUCT_PRICE = E2E_SEED.productPrice;
 const SEED_CUSTOMER_DNI = '20100000001';
 const SEED_CUSTOMER_NAME = 'Cliente CI E2E';
@@ -94,30 +93,27 @@ async function waitForGridLoad(page: Page) {
  */
 async function fillDxInput(page: Page, ariaLabel: string | string[], value: string) {
   const labels = Array.isArray(ariaLabel) ? ariaLabel : [ariaLabel];
+  const loginInputIds: Record<string, string> = {
+    Usuario: '#login-username',
+    'Contraseña': '#login-password',
+  };
   let input = page.locator('__missing__');
 
   for (const label of labels) {
-    const candidate = page
-      .locator(
-        `input[aria-label="${label}"], textarea[aria-label="${label}"], [role="textbox"][aria-label="${label}"]`,
-      )
-      .first();
-    const visible = await candidate.isVisible({ timeout: 1500 }).catch(() => false);
-    if (visible) {
+    const selector = loginInputIds[label]
+      ? `${loginInputIds[label]}:visible`
+      : `input[aria-label="${label}"]:visible, textarea[aria-label="${label}"]:visible, [role="textbox"][aria-label="${label}"]:visible`;
+    const candidate = page.locator(selector).first();
+    await candidate.waitFor({ state: 'visible', timeout: 8000 }).catch(() => {});
+    if ((await candidate.count()) > 0) {
       input = candidate;
       break;
     }
   }
 
   await input.waitFor({ state: 'visible', timeout: 8000 });
-  // Triple-click to select any existing value, then clear it
-  await input.click({ clickCount: 3 });
-  await page.keyboard.press('Control+a');
-  await page.keyboard.press('Delete');
-  // Type character by character to ensure DX Form captures each keystroke
-  // and browser autofill does not override the value (fill() can trigger autofill)
-  await input.pressSequentially(value, { delay: 30 });
-  await page.keyboard.press('Tab'); // confirm in DX + trigger onValueChanged
+  await input.fill(value);
+  await expect(input).toHaveValue(value);
 }
 
 /**
@@ -169,23 +165,6 @@ function crudDialogBody(page: Page, name?: RegExp) {
  * El FilterRow de DX usa textboxes — encontramos el que corresponde a la columna Nombre
  * buscando la celda de filtro que está debajo del columnheader "Columna Nombre".
  */
-async function filterGridByName(page: Page, name: string) {
-  // Product grid "Básico" preset exposes a Name filter with a stable aria-label.
-  let input = page.getByRole('textbox', { name: /Filtrar (Name|Nombre)/i });
-  if (!(await input.isVisible({ timeout: 3000 }).catch(() => false))) {
-    input = page.locator('.nb-datagrid__filter-row input[type="text"]').first();
-    await input.waitFor({ state: 'visible', timeout: 5000 });
-  }
-
-  await input.click({ clickCount: 3 });
-  await input.fill(name);
-  // A grid re-render right after load can wipe the filter value — that race
-  // was the historical flakiness of "02 - Verificar producto seed". Confirm
-  // the value stuck (re-filling if not) before trusting the filtered rows.
-  await expect(input).toHaveValue(name, { timeout: 2000 });
-  await page.waitForTimeout(500); // 300ms debounce + re-render
-}
-
 /**
  * Espera a que la URL del hash coincida con el patrón dado.
  * Playwright no tiene soporte nativo para hash routing; lo hacemos con waitForURL
@@ -239,10 +218,9 @@ async function ensureLoggedIn(page: Page) {
 
   // Also wait for the login form — give more time for SPA to initialize and redirect
   const loginForm = page.locator('form.login-form');
-  const isLoginPage =
-    isLoginUrl || (await loginForm.isVisible({ timeout: 8000 }).catch(() => false));
+  const isLoginPage = isLoginUrl || (await loginForm.isVisible({ timeout: 8000 }).catch(() => false));
   if (!isLoginPage) {
-    return; // already authenticated
+    return;
   }
 
   // Re-login
@@ -384,6 +362,16 @@ test.describe('Happy Path — flujo completo de venta', () => {
       recordVideo: { dir: 'var/test-results/videos/', size: { width: 1280, height: 720 } },
     });
     page = await context.newPage();
+    page.on('pageerror', (error) => {
+      // eslint-disable-next-line no-console
+      console.error('[E2E pageerror]', error.message);
+    });
+    page.on('console', (message) => {
+      if (message.type() === 'error') {
+        // eslint-disable-next-line no-console
+        console.error('[E2E console]', message.text());
+      }
+    });
   });
 
   test.afterAll(async () => {
@@ -472,23 +460,26 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 2 — Verificar producto seed
   // ───────────────────────────────────────────────────────────────────────────
   test('02 - Verificar producto seed', async () => {
-    await gotoProtectedRoute(page, 'product');
+    await gotoProtectedRoute(page, 'catalog/products');
     await waitForGridLoad(page);
-    await expect(page.locator('.grid.theme-dependent').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('.nb-datagrid:visible').first()).toBeVisible({ timeout: 15000 });
 
-    // Retry the whole filter→row cycle: re-applies the filter when a late
-    // grid re-render swallowed it instead of waiting 15s for a row that can
-    // no longer appear.
-    const productRow = page
-      .locator('.nb-datagrid__row')
-      .filter({ hasText: SEED_PRODUCT_NAME })
-      .filter({ hasNotText: SEED_PRODUCT_2_NAME });
-    await expect(async () => {
-      await filterGridByName(page, SEED_PRODUCT_NAME);
-      await waitForGridLoad(page);
-      await expect(productRow.first()).toBeVisible({ timeout: 5000 });
-    }).toPass({ timeout: 30000 });
-    await expect(productRow.first()).toContainText(SEED_PRODUCT_PRICE);
+    // The current basic product preset has no filter row and can paginate the
+    // deterministic seed product out of view. Verify it through the same API
+    // used by the grid instead of depending on a hidden legacy filter input.
+    const seedProducts = await page.evaluate(async () => {
+      const response = await fetch('/api/products?rows=1000');
+      if (!response.ok) {
+        throw new Error(`GET /api/products failed with ${response.status}`);
+      }
+      const payload = await response.json();
+      return Array.isArray(payload)
+        ? payload
+        : (payload.data ?? payload.items ?? payload.member ?? payload['hydra:member'] ?? []);
+    });
+    const seedProduct = seedProducts.find((product: { name?: string }) => product.name === SEED_PRODUCT_NAME);
+    expect(seedProduct).toBeTruthy();
+    expect(Number(seedProduct.salePrice)).toBe(Number(SEED_PRODUCT_PRICE));
 
     posProductName = SEED_PRODUCT_NAME;
   });
@@ -597,7 +588,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Filtrar y verificar el cliente seed del entorno E2E', async () => {
       // NativeDataGridView: RUC/DNI is the first text filter input (nth(0))
-      const rucFilterInput = page.locator('.nb-datagrid__filter-row input[type="text"]').nth(0);
+      const rucFilterInput = page.locator('.nb-datagrid__filter-row input[type="text"]:visible').first();
       try {
         await rucFilterInput.waitFor({ state: 'visible', timeout: 5000 });
         await rucFilterInput.click({ clickCount: 3 });
@@ -606,7 +597,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await waitForGridLoad(page);
       } catch {
         // fallback: try any text filter input
-        const inputs = page.locator('.nb-datagrid__filter-row input[type="text"]');
+        const inputs = page.locator('.nb-datagrid__filter-row input[type="text"]:visible');
         const count = await inputs.count();
         if (count > 0) {
           await inputs.nth(0).click({ clickCount: 3 });
@@ -628,6 +619,11 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 6 — Registrar venta en POS
   // ───────────────────────────────────────────────────────────────────────────
   test('06 - Venta en POS', async () => {
+    await test.step('Asegurar caja abierta', async () => {
+      openedCashSessionId = await recoverCashSessionId(page);
+      expect(openedCashSessionId, 'debe haber una caja abierta para cobrar en POS').not.toBeNull();
+    });
+
     await test.step('Navegar a /#/pos', async () => {
       await gotoProtectedRoute(page, 'pos');
 
@@ -711,11 +707,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await page.getByTestId('pos-checkout-btn').click();
     });
 
-    await test.step('Verificar overlay "¡Venta completada!"', async () => {
-      // POSCheckoutPanel renderiza .pos-postsale con role="status" y aria-live="assertive"
-      // Contiene <h2 data-testid="pos-postsale-title">¡Venta completada!</h2>
+    await test.step('Verificar confirmación "¡Venta cobrada!"', async () => {
+      // POSCheckoutPanel renderiza .pos-postsale con role="status" y aria-live="assertive".
       await expect(
-        page.getByTestId('pos-postsale-title').filter({ hasText: '¡Venta completada!' }),
+        page.getByTestId('pos-postsale-title').filter({ hasText: /¡Venta cobrada!/i }),
       ).toBeVisible({ timeout: 20000 });
 
       // Cerrar el overlay (botón "Nueva venta")
@@ -736,8 +731,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
       expect(openedCashSessionId, 'debe haber una caja abierta para registrar ventas').not.toBeNull();
     });
 
-    await test.step('Navegar a /#/sale', async () => {
-      await gotoProtectedRoute(page, 'sale');
+    await test.step('Navegar a /#/billing/sales', async () => {
+      await gotoProtectedRoute(page, 'billing/sales');
       await dismissDevToolbar(page);
       await waitForGridLoad(page);
       await expect(page.locator('.nb-datagrid__toolbar').filter({ hasText: 'Ventas' }).first()).toBeVisible({
@@ -753,7 +748,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await waitForSaleFormReady(crudShellBody(page));
     });
 
-    await test.step('Seleccionar almacén si es visible', async () => {
+    await test.step('Verificar el almacén activo', async () => {
       const body = crudShellBody(page);
       const almacenInput = body
         .locator('#nb-form-warehouse, input[aria-label="Almacen"], input[aria-label="Almacén"]')
@@ -765,13 +760,12 @@ test.describe('Happy Path — flujo completo de venta', () => {
         if (currentVal.trim().length === 0) {
           await almacenInput.click();
           await page.waitForTimeout(300);
-          const firstOption = page.locator('.nb-form__lookup-menu button[role="option"]').first();
-          const optVisible = await firstOption.isVisible({ timeout: 5000 }).catch(() => false);
-          if (optVisible) {
-            await firstOption.click();
-          }
+          const firstWarehouse = page.locator('.nb-form__lookup-menu button[role="option"]').first();
+          await firstWarehouse.waitFor({ state: 'visible', timeout: 8000 });
+          await firstWarehouse.click();
           await page.waitForTimeout(300);
         }
+        await expect(almacenInput).not.toHaveValue('');
       }
     });
 

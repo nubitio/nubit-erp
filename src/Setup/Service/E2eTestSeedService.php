@@ -130,6 +130,25 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $this->openE2eCashSession($cashRegister, $branch, $user);
         $this->ensureVoucherSeries($branch);
 
+        // Login may keep the installation's default branch selected. Ensure
+        // its POS also has an open register owned by the disposable E2E user.
+        foreach ($this->cashRegisterRepository->findAll() as $availableRegister) {
+            if ($availableRegister->getId() === $cashRegister->getId()) {
+                continue;
+            }
+            $availableBranch = $availableRegister->getBranch();
+            if (!$availableBranch instanceof Branch) {
+                continue;
+            }
+            $openSession = $this->entityManager->getRepository(CashSession::class)->findOneBy([
+                'cashRegister' => $availableRegister,
+                'status' => 'OPEN',
+            ]);
+            if (!$openSession instanceof CashSession) {
+                $this->openE2eCashSession($availableRegister, $availableBranch, $user);
+            }
+        }
+
         $customer = $this->upsertCustomer();
         $supplier = $this->supplierRepository->findOneBy(['ruc' => self::E2E_SUPPLIER_RUC]);
         if (!$supplier instanceof Supplier) {
@@ -170,7 +189,20 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
         $user = $this->userRepository->findOneBy(['username' => self::E2E_USERNAME]);
         if ($user instanceof User && $user->getId() !== null) {
-            $this->purgeE2eStockEntries((int) $user->getId());
+            $userId = (int) $user->getId();
+            $this->purgeE2eStockEntries($userId);
+            // Opening movements reference both the session and its author with
+            // restrictive foreign keys, so remove them before their sessions.
+            $this->connection->executeStatement('DELETE FROM cash_movements WHERE created_by = :user_id', [
+                'user_id' => $userId,
+            ]);
+            $this->purgeE2eCashSessionsByUser($userId);
+            // A flow may close a pre-existing session that was opened by a
+            // different fixture user. Keep that session, but detach the
+            // disposable E2E closer before removing the user.
+            $this->connection->executeStatement('UPDATE cash_sessions SET closed_by = NULL WHERE closed_by = :user_id', [
+                'user_id' => $userId,
+            ]);
             if ($this->connection->createSchemaManager()->tablesExist(['nubit_refresh_token'])) {
                 $this->connection->executeStatement('DELETE FROM nubit_refresh_token WHERE user_identifier = :username', [
                     'username' => self::E2E_USERNAME,
@@ -202,6 +234,37 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $this->connection->executeStatement(
             'DELETE FROM stock_entries WHERE id IN (?)',
             [$entryIds],
+            [ArrayParameterType::STRING],
+        );
+    }
+
+    private function purgeE2eCashSessionsByUser(int $userId): void
+    {
+        $sessionIds = $this->connection->fetchFirstColumn(
+            'SELECT id FROM cash_sessions WHERE opened_by = :user_id',
+            ['user_id' => $userId],
+        );
+        if ($sessionIds === []) {
+            return;
+        }
+
+        $saleIds = $this->connection->fetchFirstColumn(
+            'SELECT id FROM sales WHERE cash_session_id IN (?)',
+            [$sessionIds],
+            [ArrayParameterType::STRING],
+        );
+        if ($saleIds !== []) {
+            $this->purgeSalesByIds($saleIds);
+        }
+
+        $this->connection->executeStatement(
+            'DELETE FROM cashier_daily_summary WHERE cash_session_id IN (?)',
+            [$sessionIds],
+            [ArrayParameterType::STRING],
+        );
+        $this->connection->executeStatement(
+            'DELETE FROM cash_sessions WHERE id IN (?)',
+            [$sessionIds],
             [ArrayParameterType::STRING],
         );
     }
@@ -418,20 +481,23 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
             $this->entityManager->flush();
         }
 
-        // Upsert the per-warehouse stock so the POS sees stock > 0
-        $productStock = $this->productStockRepository->findByProductAndWarehouse($product, $warehouse);
-        if ($productStock instanceof ProductStock) {
-            $productStock->setStock(100.0);
-            $productStock->updateTimestamps();
-        } else {
-            $productStock = new ProductStock();
-            $productStock->setProduct($product)->setWarehouse($warehouse)->setStock(100.0)->setMinStock(0.0);
-            $this->entityManager->persist($productStock);
-        }
-        $this->entityManager->flush();
+        // The E2E user can land on the installation's default branch without a
+        // branch picker. Keep the deterministic products sellable in every
+        // warehouse exposed to that super-admin session.
+        foreach ($this->warehouseRepository->findAll() as $stockWarehouse) {
+            $productStock = $this->productStockRepository->findByProductAndWarehouse($product, $stockWarehouse);
+            if ($productStock instanceof ProductStock) {
+                $productStock->setStock(100.0);
+                $productStock->updateTimestamps();
+            } else {
+                $productStock = new ProductStock();
+                $productStock->setProduct($product)->setWarehouse($stockWarehouse)->setStock(100.0)->setMinStock(0.0);
+                $this->entityManager->persist($productStock);
+            }
+            $this->entityManager->flush();
 
-        $this->connection->executeStatement(
-            <<<'SQL'
+            $this->connection->executeStatement(
+                <<<'SQL'
                 INSERT INTO stock_items (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, version)
                 VALUES (:warehouse_id, :product_id, :qty_on_hand, 0, NOW(), 1)
                 ON DUPLICATE KEY UPDATE
@@ -440,12 +506,13 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
                     updated_at = NOW(),
                     version = version + 1
                 SQL,
-            [
-                'warehouse_id' => (string) $warehouse->getId(),
-                'product_id' => (string) $product->getId(),
-                'qty_on_hand' => '100.000000',
-            ],
-        );
+                [
+                    'warehouse_id' => (string) $stockWarehouse->getId(),
+                    'product_id' => (string) $product->getId(),
+                    'qty_on_hand' => '100.000000',
+                ],
+            );
+        }
 
         return $product;
     }

@@ -57,8 +57,6 @@ RUN install-php-extensions \
     soap \
     imagick \
     opcache \
-    protobuf \
-    opentelemetry \
     bcmath
 
 # Install WeasyPrint

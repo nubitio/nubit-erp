@@ -107,6 +107,10 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
                 $description,
                 $user->userId,
             ]);
+            // MariaDB exposes the connection-scoped identity while the INSERT
+            // transaction is still active. DBAL 4 may report NoIdentityValue
+            // when lastInsertId() is deferred until after commit().
+            $newId = (int) $this->connection->lastInsertId();
             $this->connection->commit();
         } catch (\Throwable $exception) {
             if ($this->connection->isTransactionActive()) {
@@ -115,8 +119,6 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
 
             throw $exception;
         }
-
-        $newId = (int) $this->connection->lastInsertId();
 
         // Set the generated PK on the entity so API Platform can build the IRI.
         $idProp = new \ReflectionProperty(CashMovement::class, 'id');
