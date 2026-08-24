@@ -10,6 +10,7 @@ import {
   persistProducts,
   updateCachedProductPrice,
 } from '@offline/catalog';
+import { toMoneyString } from '@shared/pos/helpers';
 import type { Category, PosItem } from '@shared/pos/types';
 import { extractCollection, normalizeProduct } from '@shared/pos/helpers';
 
@@ -78,13 +79,14 @@ export const useOfflineCatalog = () => {
     return;
   }, [isOnline]);
 
-  const updateProductPrice = useCallback((productId: string, salePrice: number) => {
+  const updateProductPrice = useCallback((productId: string, salePrice: string | number) => {
+    const normalizedPrice = toMoneyString(salePrice);
     setMenuData((prev) =>
       prev.map((product) =>
-        product.id === productId ? { ...product, salePrice } : product,
+        product.id === productId ? { ...product, salePrice: normalizedPrice } : product,
       ),
     );
-    void updateCachedProductPrice(productId, salePrice);
+    void updateCachedProductPrice(productId, normalizedPrice);
   }, []);
 
   return useMemo(

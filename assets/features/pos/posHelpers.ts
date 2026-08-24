@@ -11,6 +11,7 @@ export {
   nowUtcIso,
   parseBooleanSetting,
   todayBusinessDate,
+  toMoneyString,
   toNumber,
   toOptionalNumber,
   toUtcIso,

@@ -5,7 +5,8 @@ export type { SunatTaxType };
 export interface PosItem {
   id: string;
   name: string;
-  salePrice: number;
+  /** Canonical decimal amount from the API; never store currency as a JS float. */
+  salePrice: string;
   productType?: 'STOCKABLE' | 'SERVICE' | 'DIGITAL' | 'COMPOSITE' | 'CONSUMABLE';
   trackInventory?: boolean;
   saleUnitCode?: string;

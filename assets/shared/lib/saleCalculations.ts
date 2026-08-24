@@ -25,6 +25,7 @@
  */
 
 import type { Discount, SaleTotals, SunatTaxType } from '@shared/domain/sale.types';
+import { formatMinorUnits } from '@nubitio/core';
 
 /**
  * The standard Peruvian IGV rate (18%).
@@ -34,8 +35,69 @@ import type { Discount, SaleTotals, SunatTaxType } from '@shared/domain/sale.typ
  */
 export const IGV_RATE = 0.18;
 
-/** Round a number to 2 decimal places (standard half-up rounding). */
-export const round2 = (value: number): number => Math.round(value * 100) / 100;
+const MONEY_SCALE = 2;
+
+interface DecimalValue {
+  coefficient: bigint;
+  scale: number;
+}
+
+export type MoneyInput = string | number;
+
+/** Normalize an API decimal string or legacy JS number once; arithmetic stays integer-only. */
+const decimalValue = (value: MoneyInput): DecimalValue => {
+  if (typeof value === 'number' && !Number.isFinite(value)) {
+    return { coefficient: 0n, scale: 0 };
+  }
+
+  const raw = typeof value === 'number' ? value.toFixed(12) : value.trim().replace(',', '.');
+  if (!/^[+-]?\d+(?:\.\d+)?$/.test(raw)) return { coefficient: 0n, scale: 0 };
+  const negative = raw.startsWith('-');
+  const fixed = raw.replace(/^[+-]/, '').replace(/0+$/, '').replace(/\.$/, '');
+  const [integer = '0', fraction = ''] = fixed.split('.');
+  const coefficient = BigInt(`${integer}${fraction}` || '0');
+
+  return { coefficient: negative ? -coefficient : coefficient, scale: fraction.length };
+};
+
+const powerOfTen = (scale: number): bigint => 10n ** BigInt(scale);
+
+/** Integer division rounded half away from zero (HALF_UP for positive money). */
+const divideHalfUp = (numerator: bigint, denominator: bigint): bigint => {
+  if (denominator === 0n) return 0n;
+  const negative = (numerator < 0n) !== (denominator < 0n);
+  const absoluteNumerator = numerator < 0n ? -numerator : numerator;
+  const absoluteDenominator = denominator < 0n ? -denominator : denominator;
+  const rounded = (absoluteNumerator + absoluteDenominator / 2n) / absoluteDenominator;
+  return negative ? -rounded : rounded;
+};
+
+const decimalToMinor = (value: MoneyInput): bigint => {
+  const decimal = decimalValue(value);
+  return divideHalfUp(
+    decimal.coefficient * powerOfTen(MONEY_SCALE),
+    powerOfTen(decimal.scale),
+  );
+};
+
+const multiplyToMinor = (left: MoneyInput, right: MoneyInput): bigint => {
+  const a = decimalValue(left);
+  const b = decimalValue(right);
+  return divideHalfUp(
+    a.coefficient * b.coefficient * powerOfTen(MONEY_SCALE),
+    powerOfTen(a.scale + b.scale),
+  );
+};
+
+const percentageOfMinor = (amount: bigint, percent: number): bigint => {
+  const rate = decimalValue(percent);
+  return divideHalfUp(amount * rate.coefficient, 100n * powerOfTen(rate.scale));
+};
+
+const minorToNumber = (value: bigint): number => Number(formatMinorUnits(value, MONEY_SCALE));
+
+/** Round a number to 2 decimal places using exact minor-unit HALF_UP rounding. */
+export const round2 = (value: number): number => minorToNumber(decimalToMinor(value));
 
 /**
  * Returns true if the given SUNAT tax type is subject to IGV.
@@ -59,13 +121,17 @@ export const isExonerado = (taxType: SunatTaxType | undefined): boolean =>
  */
 export const computeLineAmount = (
   quantity: number,
-  unitPrice: number,
+  unitPrice: MoneyInput,
   discountPercent: number,
 ): { grossAmount: number; discountAmount: number; netAmount: number } => {
-  const grossAmount = round2(quantity * unitPrice);
-  const discountAmount = round2(grossAmount * (discountPercent / 100));
-  const netAmount = round2(grossAmount - discountAmount);
-  return { grossAmount, discountAmount, netAmount };
+  const grossMinor = multiplyToMinor(quantity, unitPrice);
+  const discountMinor = percentageOfMinor(grossMinor, discountPercent);
+  const netMinor = grossMinor - discountMinor;
+  return {
+    grossAmount: minorToNumber(grossMinor),
+    discountAmount: minorToNumber(discountMinor),
+    netAmount: minorToNumber(netMinor),
+  };
 };
 
 /**
@@ -85,27 +151,54 @@ export const computeTotals = (
   discount: Pick<Discount, 'percent'>,
   taxRate: number = IGV_RATE,
 ): SaleTotals => {
-  const subtotal = round2(lines.reduce((sum, l) => sum + l.netAmount, 0));
-  const discountAmount = round2(subtotal * (discount.percent / 100));
-  const afterDiscount = round2(subtotal - discountAmount);
+  const subtotalMinor = lines.reduce((sum, line) => sum + decimalToMinor(line.netAmount), 0n);
+  const discountMinor = percentageOfMinor(subtotalMinor, discount.percent);
+  const afterDiscountMinor = subtotalMinor - discountMinor;
 
   // Split the subtotal by tax group before proportional discount allocation.
-  const gravadoSubtotal = round2(
-    lines.filter((l) => isGravado(l.taxType)).reduce((sum, l) => sum + l.netAmount, 0),
-  );
-  const exoneradoSubtotal = round2(
-    lines.filter((l) => isExonerado(l.taxType)).reduce((sum, l) => sum + l.netAmount, 0),
-  );
+  const gravadoSubtotalMinor = lines
+    .filter((line) => isGravado(line.taxType))
+    .reduce((sum, line) => sum + decimalToMinor(line.netAmount), 0n);
+  const exoneradoSubtotalMinor = lines
+    .filter((line) => isExonerado(line.taxType))
+    .reduce((sum, line) => sum + decimalToMinor(line.netAmount), 0n);
+  const inafectoSubtotalMinor = subtotalMinor - gravadoSubtotalMinor - exoneradoSubtotalMinor;
   // Proportional allocation of header discount across each group.
-  const allocate = (groupSubtotal: number): number =>
-    subtotal > 0 ? round2(afterDiscount * (groupSubtotal / subtotal)) : 0;
+  const allocate = (groupSubtotal: bigint): bigint =>
+    subtotalMinor > 0n
+      ? divideHalfUp(afterDiscountMinor * groupSubtotal, subtotalMinor)
+      : 0n;
 
-  const gravadoBase = allocate(gravadoSubtotal);
-  const exoneradoBase = allocate(exoneradoSubtotal);
-  // Compute inafectoBase as the remainder to eliminate accumulated rounding error.
-  const inafectoBase = round2(afterDiscount - gravadoBase - exoneradoBase);
+  let gravadoBaseMinor = allocate(gravadoSubtotalMinor);
+  let exoneradoBaseMinor = allocate(exoneradoSubtotalMinor);
+  let inafectoBaseMinor = allocate(inafectoSubtotalMinor);
 
-  const igv = round2(gravadoBase * (taxRate / (1 + taxRate)));
+  // Assign the rounding remainder to the last non-empty tax group. This keeps
+  // the group bases equal to the sale total without inventing a -0.01 base for
+  // a group that had no lines.
+  if (inafectoSubtotalMinor > 0n) {
+    inafectoBaseMinor = afterDiscountMinor - gravadoBaseMinor - exoneradoBaseMinor;
+  } else if (exoneradoSubtotalMinor > 0n) {
+    exoneradoBaseMinor = afterDiscountMinor - gravadoBaseMinor;
+    inafectoBaseMinor = 0n;
+  } else {
+    gravadoBaseMinor = afterDiscountMinor;
+    exoneradoBaseMinor = 0n;
+    inafectoBaseMinor = 0n;
+  }
+
+  const rate = decimalValue(taxRate);
+  const igvMinor = divideHalfUp(
+    gravadoBaseMinor * rate.coefficient,
+    powerOfTen(rate.scale) + rate.coefficient,
+  );
+
+  const subtotal = minorToNumber(subtotalMinor);
+  const discountAmount = minorToNumber(discountMinor);
+  const gravadoBase = minorToNumber(gravadoBaseMinor);
+  const exoneradoBase = minorToNumber(exoneradoBaseMinor);
+  const inafectoBase = minorToNumber(inafectoBaseMinor);
+  const igv = minorToNumber(igvMinor);
 
   return {
     subtotal,
@@ -115,7 +208,7 @@ export const computeTotals = (
     inafectoBase,
     taxableBase: gravadoBase, // backward-compat alias
     igv,
-    total: afterDiscount,
+    total: minorToNumber(afterDiscountMinor),
   };
 };
 
@@ -130,7 +223,7 @@ export const computeTotals = (
  *                        Defaults to `IGV_RATE` — prefer passing the tenant's rate.
  */
 export const computeCartTotals = (
-  items: { price: number; quantity: number; taxType?: SunatTaxType }[],
+  items: { price: MoneyInput; quantity: number; taxType?: SunatTaxType }[],
   discountPercent: number,
   taxRate: number = IGV_RATE,
 ): {
@@ -144,7 +237,7 @@ export const computeCartTotals = (
 } => {
   // Reuse computeTotals by converting each item to a minimal SaleLine-like object.
   const lines = items.map((item) => ({
-    netAmount: round2(item.price * item.quantity),
+    netAmount: minorToNumber(multiplyToMinor(item.price, item.quantity)),
     taxType: item.taxType,
   }));
 

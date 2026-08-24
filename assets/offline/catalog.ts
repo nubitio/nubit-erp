@@ -33,7 +33,7 @@ export const getLastProductsSyncAt = async () => {
   return row?.lastSyncedAt ?? null;
 };
 
-export const updateCachedProductPrice = async (productId: string, salePrice: number) => {
+export const updateCachedProductPrice = async (productId: string, salePrice: string) => {
   const row = await offlineDb.products.get(productId);
   if (!row || !row.raw || typeof row.raw !== 'object') {
     return;

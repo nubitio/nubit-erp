@@ -1,5 +1,11 @@
 import { isCashPaymentMethod } from '@shared/pos/helpers';
 import type { PaymentMethodOption } from '@shared/pos/types';
+import {
+  formatMinorUnits,
+  parseMoneyInput as parseCoreMoneyInput,
+  type MoneyValue,
+  toMinorUnits,
+} from '@nubitio/core';
 
 export interface SalePaymentLineDraft {
   methodId: number | null;
@@ -14,34 +20,72 @@ export interface SalePaymentPayloadLine {
   change_amount?: string;
 }
 
-const MONEY_TOLERANCE = 0.01;
+const PAYMENT_CURRENCY = 'PEN';
+const PAYMENT_SCALE = 2;
 
-export const roundMoney = (value: number): number => Number(value.toFixed(2));
+const zeroMoney = (): MoneyValue => ({
+  amount: '0.00',
+  currency: PAYMENT_CURRENCY,
+  scale: PAYMENT_SCALE,
+});
 
-export const parseMoneyInput = (value: string | number | null | undefined): number => {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return roundMoney(value);
-  }
+/**
+ * Normalizes a value once at the legacy number/string boundary. All arithmetic
+ * below this point uses exact minor units; no IEEE-754 values are accumulated.
+ */
+const moneyValue = (value: string | number | null | undefined): MoneyValue => {
+  if (value === null || value === undefined || value === '') return zeroMoney();
+  if (typeof value === 'number' && !Number.isFinite(value)) return zeroMoney();
 
-  const parsed = Number.parseFloat(String(value ?? '').replace(',', '.'));
-  return Number.isFinite(parsed) ? roundMoney(parsed) : 0;
+  const raw = typeof value === 'number'
+    ? value.toFixed(PAYMENT_SCALE)
+    : value.trim().replace(',', '.');
+  const parsed = parseCoreMoneyInput(raw, PAYMENT_CURRENCY, PAYMENT_SCALE, 'en-US');
+
+  if (parsed.ok) return parsed.value;
+
+  // Preserve the previous public helper's rounding behavior for legacy callers
+  // that still hand us numbers/strings with more than two decimal places.
+  const fallback = Number.parseFloat(raw);
+  if (!Number.isFinite(fallback)) return zeroMoney();
+  const rounded = parseCoreMoneyInput(
+    fallback.toFixed(PAYMENT_SCALE),
+    PAYMENT_CURRENCY,
+    PAYMENT_SCALE,
+    'en-US',
+  );
+
+  return rounded.ok ? rounded.value : zeroMoney();
 };
+
+const minorUnits = (value: string | number | null | undefined): bigint =>
+  toMinorUnits(moneyValue(value));
+
+const minorToString = (minor: bigint): string => formatMinorUnits(minor, PAYMENT_SCALE);
+
+const minorToNumber = (minor: bigint): number => Number(minorToString(minor));
+
+export const roundMoney = (value: number): number => minorToNumber(minorUnits(value));
+
+export const parseMoneyInput = (value: string | number | null | undefined): number =>
+  minorToNumber(minorUnits(value));
 
 export const sumPaymentAmounts = (lines: SalePaymentLineDraft[]): number =>
-  roundMoney(lines.reduce((sum, line) => sum + parseMoneyInput(line.amount), 0));
+  minorToNumber(lines.reduce((sum, line) => sum + minorUnits(line.amount), 0n));
 
-export const paymentsMatchTotal = (lines: SalePaymentLineDraft[], total: number): boolean => {
-  const diff = Math.abs(sumPaymentAmounts(lines) - roundMoney(total));
-  return diff <= MONEY_TOLERANCE;
-};
+export const paymentsMatchTotal = (lines: SalePaymentLineDraft[], total: number): boolean =>
+  lines.reduce((sum, line) => sum + minorUnits(line.amount), 0n) === minorUnits(total);
 
 /** Like paymentsMatchTotal, but also accepts a sum below the total — the "venta a crédito" case. */
 export const paymentsWithinTotal = (lines: SalePaymentLineDraft[], total: number): boolean =>
-  sumPaymentAmounts(lines) <= roundMoney(total) + MONEY_TOLERANCE;
+  lines.reduce((sum, line) => sum + minorUnits(line.amount), 0n) <= minorUnits(total);
 
 export const remainingPaymentAmount = (lines: SalePaymentLineDraft[], total: number): number => {
-  const remaining = roundMoney(total) - sumPaymentAmounts(lines);
-  return remaining > MONEY_TOLERANCE ? remaining : 0;
+  const remaining = minorUnits(total) - lines.reduce(
+    (sum, line) => sum + minorUnits(line.amount),
+    0n,
+  );
+  return remaining > 0n ? minorToNumber(remaining) : 0;
 };
 
 export const summarizePaymentLines = (
@@ -64,10 +108,10 @@ export const summarizePaymentLines = (
   }
 
   const parts = lines
-    .filter((line) => line.methodId != null && parseMoneyInput(line.amount) > 0)
+    .filter((line) => line.methodId != null && minorUnits(line.amount) > 0n)
     .map((line) => {
       const name = methodById.get(line.methodId as number) ?? 'Pago';
-      return `${name} S/ ${parseMoneyInput(line.amount).toFixed(2)}`;
+      return `${name} S/ ${minorToString(minorUnits(line.amount))}`;
     });
 
   return {
@@ -81,7 +125,7 @@ export const createPaymentLine = (
   amount: number,
 ): SalePaymentLineDraft => ({
   methodId,
-  amount: roundMoney(amount).toFixed(2),
+  amount: minorToString(minorUnits(amount)),
 });
 
 export const createSinglePaymentLine = (
@@ -95,12 +139,14 @@ export const createSplitPaymentLines = (
   primaryAmount: number,
   total: number,
 ): SalePaymentLineDraft[] => {
-  const normalizedPrimary = roundMoney(Math.min(Math.max(primaryAmount, 0), total));
-  const secondaryAmount = roundMoney(total - normalizedPrimary);
+  const totalMinor = minorUnits(total);
+  const primaryMinor = minorUnits(primaryAmount);
+  const normalizedPrimary = primaryMinor < 0n ? 0n : primaryMinor > totalMinor ? totalMinor : primaryMinor;
+  const secondaryAmount = totalMinor - normalizedPrimary;
 
   return [
-    createPaymentLine(primaryMethodId, normalizedPrimary),
-    createPaymentLine(secondaryMethodId, secondaryAmount),
+    { methodId: primaryMethodId, amount: minorToString(normalizedPrimary) },
+    { methodId: secondaryMethodId, amount: minorToString(secondaryAmount) },
   ];
 };
 
@@ -135,14 +181,15 @@ export const rebalancePaymentLines = (
 
   const head = lines.slice(0, -1);
   const tail = lines[lines.length - 1];
-  const headSum = sumPaymentAmounts(head);
-  const tailAmount = Math.max(0, roundMoney(total - headSum));
+  const headSum = head.reduce((sum, line) => sum + minorUnits(line.amount), 0n);
+  const remainder = minorUnits(total) - headSum;
+  const tailAmount = remainder > 0n ? remainder : 0n;
 
   return [
     ...head,
     {
       ...tail,
-      amount: tailAmount.toFixed(2),
+      amount: minorToString(tailAmount),
     },
   ];
 };
@@ -200,7 +247,7 @@ export const removePaymentLine = (
     return lines;
   }
 
-  const removedAmount = parseMoneyInput(lines[index]?.amount);
+  const removedAmount = minorUnits(lines[index]?.amount);
   const next = lines.filter((_, lineIndex) => lineIndex !== index);
 
   if (next.length === 1) {
@@ -209,10 +256,10 @@ export const removePaymentLine = (
 
   const lastIndex = next.length - 1;
   const lastLine = next[lastIndex];
-  next[lastIndex] = createPaymentLine(
-    lastLine.methodId,
-    parseMoneyInput(lastLine.amount) + removedAmount,
-  );
+  next[lastIndex] = {
+    ...lastLine,
+    amount: minorToString(minorUnits(lastLine.amount) + removedAmount),
+  };
 
   return rebalancePaymentLines(next, total);
 };
@@ -225,23 +272,23 @@ export const buildPaymentPayload = (
   const methodById = new Map(paymentMethods.map((method) => [method.id, method]));
 
   return lines
-    .filter((line) => line.methodId != null && parseMoneyInput(line.amount) > 0)
+    .filter((line) => line.methodId != null && minorUnits(line.amount) > 0n)
     .map((line) => {
       const method = methodById.get(line.methodId as number);
-      const amount = parseMoneyInput(line.amount);
+      const amount = minorUnits(line.amount);
       const isCash = isCashPaymentMethod(method);
       const tendered = isCash
-        ? parseMoneyInput(line.tenderedAmount ?? line.amount)
+        ? minorUnits(line.tenderedAmount ?? line.amount)
         : amount;
-      const change = isCash ? Math.max(0, roundMoney(tendered - amount)) : 0;
+      const change = isCash && tendered > amount ? tendered - amount : 0n;
 
       return {
         payment_method_id: line.methodId as number,
-        amount: amount.toFixed(2),
+        amount: minorToString(amount),
         ...(isCash
           ? {
-              tendered_amount: tendered.toFixed(2),
-              change_amount: change.toFixed(2),
+              tendered_amount: minorToString(tendered),
+              change_amount: minorToString(change),
             }
           : {}),
       };
@@ -254,8 +301,8 @@ export const totalCashChangeAmount = (
   total: number,
 ): number => {
   const payload = buildPaymentPayload(lines, paymentMethods, total);
-  return roundMoney(
-    payload.reduce((sum, payment) => sum + parseMoneyInput(payment.change_amount), 0),
+  return minorToNumber(
+    payload.reduce((sum, payment) => sum + minorUnits(payment.change_amount), 0n),
   );
 };
 
@@ -269,7 +316,7 @@ export const validatePaymentLines = (
   total: number,
   allowPartial = false,
 ): PaymentValidationResult => {
-  if (total <= 0) {
+  if (minorUnits(total) <= 0n) {
     return { valid: false, message: 'El total debe ser mayor a cero.' };
   }
 
@@ -284,15 +331,15 @@ export const validatePaymentLines = (
       return { valid: false, message: `Selecciona el método de pago ${index + 1}.` };
     }
 
-    const amount = parseMoneyInput(line.amount);
-    if (amount <= 0) {
+    const amount = minorUnits(line.amount);
+    if (amount <= 0n) {
       return { valid: false, message: `El monto del pago ${index + 1} debe ser mayor a cero.` };
     }
 
     const method = methodById.get(line.methodId);
     if (method && isCashPaymentMethod(method)) {
-      const tendered = parseMoneyInput(line.tenderedAmount ?? line.amount);
-      if (tendered + MONEY_TOLERANCE < amount) {
+      const tendered = minorUnits(line.tenderedAmount ?? line.amount);
+      if (tendered < amount) {
         return {
           valid: false,
           message: `El efectivo recibido en el pago ${index + 1} es menor al monto asignado.`,

@@ -13,7 +13,7 @@ import { productService } from '@features/product/services/productService';
 import { usePosCustomers } from './usePosCustomers';
 import { usePosCheckout } from './usePosCheckout';
 import { usePosCatalogData } from './usePosCatalogData';
-import { normalizeText, toNumber } from './posHelpers';
+import { normalizeText, toMoneyString, toNumber } from './posHelpers';
 import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { useOutboxSync } from '@offline/hooks/useOutboxSync';
 import { ConfirmDialog } from '@nubitio/ui';
@@ -82,7 +82,7 @@ const POSPage = () => {
   // When the selected customer has a price list, fetch the resolved prices from
   // GET /api/price-lists/{id}/apply and overlay them onto the catalog.
   // The base catalog (menuData / offline DB) is never mutated.
-  const [priceListOverrides, setPriceListOverrides] = useState<Map<string, number>>(new Map());
+  const [priceListOverrides, setPriceListOverrides] = useState<Map<string, string>>(new Map());
 
   useEffect(() => {
     const priceListId = customersState.priceListId;
@@ -105,10 +105,10 @@ const POSPage = () => {
         const items: Array<{ id: string; price: string }> = Array.isArray(raw)
           ? (raw as Array<{ id: string; price: string }>)
           : ((raw as Record<string, unknown>)['hydra:member'] as Array<{ id: string; price: string }> ?? []);
-        const map = new Map<string, number>();
+        const map = new Map<string, string>();
         for (const item of items) {
-          const price = parseFloat(item.price);
-          if (Number.isFinite(price)) map.set(String(item.id), price);
+          const price = toMoneyString(item.price, '');
+          if (price !== '') map.set(String(item.id), price);
         }
         setPriceListOverrides(map);
       })

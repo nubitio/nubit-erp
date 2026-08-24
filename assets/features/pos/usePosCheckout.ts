@@ -4,7 +4,14 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import type { CartItem, PaymentMethodOption, PosItem } from './types';
-import { isCashPaymentMethod, isWeightUnitCode, nowUtcIso, todayBusinessDate, toNumber } from './posHelpers';
+import {
+  isCashPaymentMethod,
+  isWeightUnitCode,
+  nowUtcIso,
+  todayBusinessDate,
+  toMoneyString,
+  toNumber,
+} from './posHelpers';
 import {
   buildPaymentPayload,
   createSinglePaymentLine,
@@ -18,7 +25,7 @@ import {
   LocalAgentNotAvailableError,
   waitForStableWeight,
 } from '@features/sales/lib/localAgentClient';
-import { computeCartTotals } from '@shared/lib/saleCalculations';
+import { computeCartTotals, computeLineAmount } from '@shared/lib/saleCalculations';
 import { useTenantIgvRate } from '@shared/hooks/useTenantIgvRate';
 import { useWarehouseStock } from './useWarehouseStock';
 import { offlineDb } from '@offline/db';
@@ -185,8 +192,8 @@ export const usePosCheckout = ({
           return cartItem;
         }
 
-        const nextPrice = toNumber(catalogItem.salePrice);
-        if (toNumber(cartItem.salePrice) === nextPrice) {
+        const nextPrice = catalogItem.salePrice;
+        if (cartItem.salePrice === nextPrice) {
           return cartItem;
         }
 
@@ -369,8 +376,8 @@ export const usePosCheckout = ({
   };
 
   const updateLinePrice = (id: string, nextPrice: number) => {
-    const normalizedPrice = Number(nextPrice.toFixed(2));
-    if (!Number.isFinite(normalizedPrice) || normalizedPrice < 0) {
+    const normalizedPrice = toMoneyString(nextPrice, '');
+    if (normalizedPrice === '' || nextPrice < 0) {
       toast('El precio debe ser mayor o igual a cero', 'warning');
       return;
     }
@@ -393,7 +400,7 @@ export const usePosCheckout = ({
   const { subtotal, discountAmount, total, includedTax, gravadoBase, exoneradoBase, inafectoBase } =
     computeCartTotals(
       cart.map((item) => ({
-        price: toNumber(item.salePrice),
+        price: item.salePrice,
         quantity: item.quantity,
         taxType: item.taxType,
       })),
@@ -481,10 +488,10 @@ export const usePosCheckout = ({
         writeItems: cart.map((item) => ({
           product: getIRI(`${API}products`, String(item.id)),
           qty: Number(item.quantity),
-          unitPrice: toNumber(item.salePrice).toFixed(2),
+          unitPrice: item.salePrice,
           description: item.lineDescription?.trim() || item.name,
           discountAmount: '0.00',
-          netAmount: (toNumber(item.salePrice) * item.quantity).toFixed(2),
+          netAmount: computeLineAmount(item.quantity, item.salePrice, 0).netAmount.toFixed(2),
         })),
       };
 

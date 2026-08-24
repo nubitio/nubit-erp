@@ -1,5 +1,11 @@
 import { DateTime } from 'luxon';
-import { getCoreTimezone, getCoreApiBaseUrl } from '@nubitio/core';
+import {
+  formatMinorUnits,
+  getCoreTimezone,
+  getCoreApiBaseUrl,
+  parseMoneyInput,
+  toMinorUnits,
+} from '@nubitio/core';
 
 import type { PaymentMethodOption, PosItem, SunatTaxType } from './types';
 
@@ -25,6 +31,12 @@ export const toOptionalNumber = (value: unknown): number | undefined => {
 
   const parsed = Number.parseFloat(String(value));
   return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+export const toMoneyString = (value: unknown, fallback = '0.00'): string => {
+  const raw = String(value ?? '').trim().replace(',', '.');
+  const parsed = parseMoneyInput(raw, 'PEN', 2, 'en-US');
+  return parsed.ok ? formatMinorUnits(toMinorUnits(parsed.value), 2) : fallback;
 };
 
 export const isWeightUnitCode = (unitCode?: string): boolean => {
@@ -91,7 +103,7 @@ export const normalizeProduct = (raw: unknown): PosItem => {
     ...record,
     id: String(record.id ?? ''),
     name: String(record.name ?? 'Producto'),
-    salePrice: toNumber(record.salePrice ?? record.precio_unitario ?? record.price, 0),
+    salePrice: toMoneyString(record.salePrice ?? record.precio_unitario ?? record.price),
     productType,
     trackInventory: nonStockable
       ? false
