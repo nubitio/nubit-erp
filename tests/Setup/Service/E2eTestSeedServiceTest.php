@@ -250,7 +250,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $schemaManager->method('tablesExist')->with(['nubit_refresh_token'])->willReturn(true);
         $connection->method('createSchemaManager')->willReturn($schemaManager);
         $connection
-            ->expects($this->exactly(7))
+            ->expects($this->exactly(9))
             ->method('executeStatement')
             ->willReturnCallback(function (string $sql, array $params = []) use (&$executeCalls): int {
                 $executeCalls[] = [$sql, $params];
@@ -308,6 +308,8 @@ final class E2eTestSeedServiceTest extends TestCase
                     [['stock-entry-e2e-1']],
                 ],
                 ['DELETE FROM stock_entries WHERE id IN (?)', [['stock-entry-e2e-1']]],
+                ['DELETE FROM cash_movements WHERE created_by = :user_id', ['user_id' => 9]],
+                ['UPDATE cash_sessions SET closed_by = NULL WHERE closed_by = :user_id', ['user_id' => 9]],
                 ['DELETE FROM nubit_refresh_token WHERE user_identifier = :username', ['username' => 'ci_e2e_user']],
             ],
             $executeCalls,

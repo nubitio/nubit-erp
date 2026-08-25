@@ -16,6 +16,7 @@ import { subscriptionPlanApiUrl, subscriptionPlanEvents, subscriptionPlanFormLay
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { useTranslation } from 'react-i18next';
 import { moneyCell } from '@shared/ui/crudFormatters';
+import { hasPermission } from '@shared/permissions';
 
 interface SubscriptionPlanRecord extends DataRecord {
   id: string;
@@ -147,8 +148,16 @@ const subscriptionPlanResource = defineResource<SubscriptionPlanRecord>(subscrip
 
 export const SubscriptionPlanPage = () => {
   const { t } = useTranslation();
+  const resource = {
+    ...subscriptionPlanResource,
+    permissions: {
+      canAdd: hasPermission('subscriptions.create'),
+      canEdit: hasPermission('subscriptions.edit'),
+      canDelete: hasPermission('subscriptions.cancel'),
+    },
+  };
 
-  return <SchemaCrudPage resource={{ ...subscriptionPlanResource, title: t('subscriptionPlan.title', 'Planes de suscripción') }} />;
+  return <SchemaCrudPage resource={{ ...resource, title: t('subscriptionPlan.title', 'Planes de suscripción') }} />;
 };
 
 SubscriptionPlanPage.EVENTS = subscriptionPlanEvents;

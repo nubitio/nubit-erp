@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { EntityDropdown } from '@nubitio/crud';
-import { Badge, Chip, EmptyState, IconButton, TextField, Toggle } from '@nubitio/ui';
+import { Badge, Chip, EmptyState, IconButton, TextAreaField, TextField, Toggle } from '@nubitio/ui';
 import type { SalePaymentLineDraft } from '@shared/lib/salePayments';
 import { SplitPaymentsField } from '@shared/ui/split-payments/SplitPaymentsField';
 import { formatPosCustomerLabel } from './lib/mapPosCustomer';
@@ -86,8 +86,8 @@ export function POSCheckoutPanel({
   onCustomerChange,
   clearSelectedCustomer,
   focusCustomerTrigger,
-  note: _note,
-  setNote: _setNote,
+  note,
+  setNote,
   updateQuantity,
   updateLinePrice,
   allowLinePriceOverride = true,
@@ -318,7 +318,7 @@ export function POSCheckoutPanel({
                   className={`pos-line${newItemIds.has(item.id) ? ' is-new' : ''}${isWeighted ? ' is-weighted' : ''}`}
                 >
                   <div className="pos-line__body">
-                    {isWeighted && editingNameId === item.id ? (
+                    {editingNameId === item.id ? (
                       <input
                         type="text"
                         className="pos-line__name-input"
@@ -333,7 +333,7 @@ export function POSCheckoutPanel({
                         }}
                         aria-label={`Descripcion de ${item.name}`}
                       />
-                    ) : isWeighted ? (
+                    ) : (
                       <button
                         type="button"
                         className="pos-line__name pos-line__name--editable"
@@ -345,8 +345,6 @@ export function POSCheckoutPanel({
                       >
                         {displayName}
                       </button>
-                    ) : (
-                      <div className="pos-line__name">{item.name}</div>
                     )}
                     {allowLinePriceOverride && editingPriceId === item.id ? (
                       <div className="pos-line__unit pos-line__unit--editing">
@@ -390,7 +388,7 @@ export function POSCheckoutPanel({
                         {displayUnit}
                       </div>
                     )}
-                    {isWeighted && hasCustomName && (
+                    {hasCustomName && (
                       <div className="pos-line__base-name">Producto: {item.name}</div>
                     )}
                   </div>
@@ -485,6 +483,24 @@ export function POSCheckoutPanel({
             })
           )}
         </div>
+        {!quickMode && (
+          <div className="pos-note-section">
+            <label className="pos-note-section__field">
+              <span>Nota interna</span>
+              <TextAreaField
+                rows={2}
+                maxLength={2000}
+                placeholder="Referencia, instrucciones o comentario de la venta..."
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                aria-label="Nota interna de la venta"
+              />
+            </label>
+            <span className="pos-note-section__help">
+              No modifica la descripción que aparece en las líneas del comprobante.
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ── Fixed footer: everything non-scrolling ── */}

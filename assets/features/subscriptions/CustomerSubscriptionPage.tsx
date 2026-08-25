@@ -8,6 +8,7 @@ import {
   type DataRecord,
   type Field,
   type GridCellContext,
+  type ResourceToolbarContext,
   type SmartCrudFieldPatch,
 } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
@@ -21,6 +22,9 @@ import {
 import { subscriptionPlanApiUrl } from './model/constants';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { useTranslation } from 'react-i18next';
+import { httpClient } from '@shared/api/HttpClient';
+import toast from '@shared/lib/SharedUtils';
+import { hasPermission } from '@shared/permissions';
 
 interface CustomerSubscriptionRecord extends DataRecord {
   id: string;
@@ -32,6 +36,10 @@ interface CustomerSubscriptionRecord extends DataRecord {
   currentPeriodEnd: string | null;
   nextBillingDate: string;
   autoRenew: boolean;
+  serviceReference: string | null;
+  customDescription: string | null;
+  agreedAmount: string | null;
+  endDate: string | null;
 }
 
 function toPatch(field: Field): SmartCrudFieldPatch<CustomerSubscriptionRecord> {
@@ -89,6 +97,31 @@ const customerSubscriptionResource = defineResource<CustomerSubscriptionRecord>(
   columnPresets: CUSTOMER_SUBSCRIPTION_COLUMN_PRESETS,
   viewMode: { mode: 'drawer', drawerSize: 'md' },
   formLayout: customerSubscriptionFormLayout,
+  toolbar: ({ selectedRow }: ResourceToolbarContext<CustomerSubscriptionRecord>) => ({
+    selection: hasPermission('subscriptions.generate') ? [
+      {
+        text: 'Generar cargo ahora',
+        icon: 'ph-receipt',
+        type: 'success',
+        group: 'billing',
+        groupLabel: 'Facturación',
+        onClick: () => {
+          const id = selectedRow?.id;
+          if (!id) {
+            toast('Selecciona una suscripción', 'warning');
+            return;
+          }
+
+          httpClient
+            .post(customerSubscriptionApiUrl + '/' + id + '/generate', { id })
+            .then(() => toast('Cargo generado y enviado a Cuentas por cobrar', 'success'))
+            .catch((error: { response?: { data?: { detail?: string } } }) =>
+              toast(error.response?.data?.detail ?? 'No se pudo generar el cargo', 'error'),
+            );
+        },
+      },
+    ] : [],
+  }),
   fieldContract: defineFields<CustomerSubscriptionRecord>({
     source: 'hydra',
     strategy: 'augment',
@@ -121,23 +154,72 @@ const customerSubscriptionResource = defineResource<CustomerSubscriptionRecord>(
       },
       {
         kind: 'override',
+        key: 'serviceReference',
+        patch: {
+          order: 2,
+          layoutHint: 'fullWidth',
+          label: 'Referencia del servicio',
+          helpText: 'Dominio, servidor, contrato, sede u otro identificador del servicio.',
+        },
+      },
+      {
+        kind: 'override',
+        key: 'customDescription',
+        patch: {
+          order: 3,
+          layoutHint: 'fullWidth',
+          label: 'Descripción para el comprobante',
+          helpText: 'Se combinará con la referencia y el período facturado.',
+        },
+      },
+      {
+        kind: 'override',
+        key: 'agreedAmount',
+        patch: {
+          order: 4,
+          layoutHint: 'money',
+          label: 'Precio pactado',
+          helpText: 'Vacío usa el monto definido en el plan.',
+        },
+      },
+      {
+        kind: 'override',
         key: 'status',
-        patch: { ...statusPatch, order: 2, layoutHint: 'short' },
+        patch: { ...statusPatch, order: 5, layoutHint: 'short' },
       },
       {
         kind: 'override',
         key: 'startDate',
-        patch: { ...startDatePatch, order: 3, layoutHint: 'short' },
+        patch: { ...startDatePatch, order: 6, layoutHint: 'short' },
       },
       {
         kind: 'override',
         key: 'nextBillingDate',
-        patch: { ...nextBillingDatePatch, order: 4, layoutHint: 'short' },
+        patch: { ...nextBillingDatePatch, order: 7, layoutHint: 'short' },
+      },
+      {
+        kind: 'override',
+        key: 'endDate',
+        patch: {
+          ...toPatch(
+            dateField()
+              .name('endDate')
+              .label('Fecha de término')
+              .formatter((cell: GridCellContext) =>
+                SharedUtils.dateFormatter(cell.value as string | Date | null | undefined),
+              )
+              .valueType('date')
+              .build(),
+          ),
+          order: 8,
+          layoutHint: 'short',
+          helpText: 'Opcional. No se generarán períodos posteriores a esta fecha.',
+        },
       },
       {
         kind: 'override',
         key: 'autoRenew',
-        patch: { order: 5, layoutHint: 'short', label: 'Renovación automática', type: FieldType.SWITCH },
+        patch: { order: 9, layoutHint: 'short', label: 'Renovación automática', type: FieldType.SWITCH },
       },
       { kind: 'remove', key: 'currentPeriodStart' },
       { kind: 'remove', key: 'currentPeriodEnd' },
@@ -147,10 +229,18 @@ const customerSubscriptionResource = defineResource<CustomerSubscriptionRecord>(
 
 export const CustomerSubscriptionPage = () => {
   const { t } = useTranslation();
+  const resource = {
+    ...customerSubscriptionResource,
+    permissions: {
+      canAdd: hasPermission('subscriptions.create'),
+      canEdit: hasPermission('subscriptions.edit'),
+      canDelete: hasPermission('subscriptions.cancel'),
+    },
+  };
 
   return (
     <SchemaCrudPage
-      resource={{ ...customerSubscriptionResource, title: t('customerSubscription.title', 'Suscripciones') }}
+      resource={{ ...resource, title: t('customerSubscription.title', 'Suscripciones') }}
     />
   );
 };

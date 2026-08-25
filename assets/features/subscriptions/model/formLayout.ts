@@ -22,8 +22,12 @@ export const customerSubscriptionFormLayout: FormLayout = {
       fields: ['customer', 'plan', 'status', 'autoRenew'],
     },
     {
+      label: 'Servicio contratado',
+      fields: ['serviceReference', 'customDescription', 'agreedAmount'],
+    },
+    {
       label: 'Fechas',
-      fields: ['startDate', 'nextBillingDate'],
+      fields: ['startDate', 'nextBillingDate', 'endDate'],
     },
   ],
 };

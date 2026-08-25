@@ -1,4 +1,5 @@
 import { FeatureHubLayout } from '@nubitio/admin';
+import { hasPermission } from '@shared/permissions';
 
 export const SubscriptionsHubLayout = () => {
   return (
@@ -10,13 +11,27 @@ export const SubscriptionsHubLayout = () => {
       defaultPath="/subscriptions/plans"
       tabsAriaLabel="Secciones de suscripciones"
       tabs={[
-        { key: 'plans', label: 'Planes', path: '/subscriptions/plans', icon: 'ph-package', visible: true },
+        { key: 'plans', label: 'Planes', path: '/subscriptions/plans', icon: 'ph-package', visible: hasPermission('subscriptions.view') },
         {
           key: 'customer-subscriptions',
           label: 'Suscripciones de clientes',
           path: '/subscriptions/customer-subscriptions',
           icon: 'ph-arrows-clockwise',
-          visible: true,
+          visible: hasPermission('subscriptions.view'),
+        },
+        {
+          key: 'runs',
+          label: 'Emisiones',
+          path: '/subscriptions/runs',
+          icon: 'ph-receipt',
+          visible: hasPermission('subscriptions.view'),
+        },
+        {
+          key: 'lines',
+          label: 'Líneas',
+          path: '/subscriptions/lines',
+          icon: 'ph-list-plus',
+          visible: hasPermission('subscriptions.view'),
         },
       ]}
     />

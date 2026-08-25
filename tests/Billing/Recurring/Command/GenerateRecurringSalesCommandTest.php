@@ -5,8 +5,14 @@ declare(strict_types=1);
 namespace App\Tests\Billing\Recurring\Command;
 
 use App\Billing\Recurring\Command\GenerateRecurringSalesCommand;
+use App\Billing\Recurring\Dto\GenerateSubscriptionChargeDto;
 use App\Billing\Recurring\Entity\CustomerSubscription;
+use App\Billing\Recurring\Entity\CustomerSubscriptionLine;
+use App\Billing\Recurring\Entity\CustomerSubscriptionRun;
 use App\Billing\Recurring\Entity\SubscriptionPlan;
+use App\Billing\Recurring\Repository\CustomerSubscriptionLineRepository;
+use App\Billing\Recurring\Service\SubscriptionChargeGenerator;
+use App\Billing\Recurring\State\GenerateSubscriptionChargeProcessor;
 use App\Catalog\Entity\Category;
 use App\Catalog\Entity\Product;
 use App\Catalog\Entity\UnitOfMeasure;
@@ -15,6 +21,9 @@ use App\Inventory\Entity\Warehouse;
 use App\Organization\Entity\Branch;
 use App\Organization\Entity\Company;
 use App\Settings\Repository\TenantSettingsRepository;
+use App\Identity\Dto\AuthUserDto;
+use App\Identity\Security\Security;
+use ApiPlatform\Metadata\Post;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -122,7 +131,8 @@ function newCommand(
     Connection $connection,
     \Psr\Log\LoggerInterface $logger,
 ): GenerateRecurringSalesCommand {
-    $command = new GenerateRecurringSalesCommand($em, $settings, $connection);
+    $generator = newSubscriptionChargeGenerator($em, $settings);
+    $command = new GenerateRecurringSalesCommand($em, $connection, $generator);
 
     // logger is normally injected by the container via #[Required] initDependencies();
     // set directly since we bypass PerTenantCommand::execute() (and its tenant-registry
@@ -131,6 +141,18 @@ function newCommand(
     $loggerProperty->setValue($command, $logger);
 
     return $command;
+}
+
+function newSubscriptionChargeGenerator(
+    EntityManagerInterface $em,
+    TenantSettingsRepository $settings,
+): SubscriptionChargeGenerator {
+    /** @var \App\Billing\Recurring\Repository\CustomerSubscriptionRunRepository $runRepository */
+    $runRepository = $em->getRepository(CustomerSubscriptionRun::class);
+    /** @var CustomerSubscriptionLineRepository $lineRepository */
+    $lineRepository = $em->getRepository(\App\Billing\Recurring\Entity\CustomerSubscriptionLine::class);
+
+    return new SubscriptionChargeGenerator($em, $settings, $runRepository, $lineRepository);
 }
 
 function runTenantCommand(GenerateRecurringSalesCommand $command): int
@@ -163,11 +185,19 @@ it('generates a sale for a subscription whose billing date is due', function ():
     // (it walks the full object graph, including the EntityManager reachable
     // through lazy-loaded associations) if the assertion ever fails.
     $sale = $this->connection->fetchAssociative(
-        'SELECT grand_total, balance_due, paid_total, seller_user_id FROM sales WHERE customer_subscription_id = ?',
+        'SELECT grand_total, balance_due, paid_total, seller_user_id, note FROM sales WHERE customer_subscription_id = ?',
+        [$subscription->getId()],
+    );
+    $item = $this->connection->fetchAssociative(
+        'SELECT si.name_snapshot, si.unit_price FROM sale_items si JOIN sales s ON s.id = si.sale_id WHERE s.customer_subscription_id = ?',
         [$subscription->getId()],
     );
     $itemCount = (int) $this->connection->fetchOne(
         'SELECT COUNT(*) FROM sale_items si JOIN sales s ON s.id = si.sale_id WHERE s.customer_subscription_id = ?',
+        [$subscription->getId()],
+    );
+    $runCount = (int) $this->connection->fetchOne(
+        'SELECT COUNT(*) FROM customer_subscription_run WHERE subscription_id = ?',
         [$subscription->getId()],
     );
 
@@ -175,14 +205,93 @@ it('generates a sale for a subscription whose billing date is due', function ():
         ->and($sale['grand_total'])->toBe('49.90')
         ->and($sale['balance_due'])->toBe('49.90')
         ->and($sale['paid_total'])->toBe('0.00')
+        ->and($sale['note'])->toBe('Cargo recurrente: Plan mensual')
         ->and((int) $sale['seller_user_id'])->toBe($adminId)
-        ->and($itemCount)->toBe(1);
+        ->and($item['name_snapshot'])->toContain('Hosting mensual')
+        ->and($item['name_snapshot'])->toContain('Periodo')
+        ->and($item['unit_price'])->toBe('49.9000')
+        ->and($itemCount)->toBe(1)
+        ->and($runCount)->toBe(1);
 
     $nextBillingDate = $this->connection->fetchOne(
         'SELECT next_billing_date FROM customer_subscription WHERE id = ?',
         [$subscription->getId()],
     );
-    expect($nextBillingDate)->toBe($today->modify('+1 month')->format('Y-m-d'));
+    expect($nextBillingDate)->toBe($today->modify('-1 day')->modify('+1 month')->format('Y-m-d'));
+});
+
+it('generates all configured subscription lines and sums them exactly', function (): void {
+    makeAdminUser($this->connection);
+    $plan = makeSubscriptionPlan($this->em, '49.90');
+    $today = new \DateTimeImmutable('today', new \DateTimeZone('America/Lima'));
+    $subscription = makeCustomerSubscription($this->em, $plan, $today);
+
+    $lineOne = (new CustomerSubscriptionLine())
+        ->setSubscription($subscription)
+        ->setProduct($plan->getProduct())
+        ->setDescription('Hosting Docker')
+        ->setQuantity('1.000')
+        ->setUnitPrice('100.0000')
+        ->setSortOrder(1);
+    $lineTwo = (new CustomerSubscriptionLine())
+        ->setSubscription($subscription)
+        ->setProduct($plan->getProduct())
+        ->setDescription('Soporte administrado')
+        ->setQuantity('2.000')
+        ->setUnitPrice('25.5000')
+        ->setSortOrder(2);
+    $this->em->persist($lineOne);
+    $this->em->persist($lineTwo);
+    $this->em->flush();
+
+    $command = newCommand($this->em, static::getContainer()->get(TenantSettingsRepository::class), $this->connection, static::getContainer()->get('logger'));
+    expect(runTenantCommand($command))->toBe(0);
+
+    $sale = $this->connection->fetchAssociative(
+        'SELECT id, grand_total FROM sales WHERE customer_subscription_id = ?',
+        [$subscription->getId()],
+    );
+    $items = $this->connection->fetchAllAssociative(
+        'SELECT name_snapshot, qty, unit_price, net_amount FROM sale_items WHERE sale_id = ? ORDER BY line_no',
+        [$sale['id']],
+    );
+
+    expect($sale['grand_total'])->toBe('151.00')
+        ->and($items)->toHaveCount(2)
+        ->and($items[0]['name_snapshot'])->toContain('Hosting Docker')
+        ->and($items[0]['net_amount'])->toBe('100.00')
+        ->and($items[1]['name_snapshot'])->toContain('Soporte administrado')
+        ->and($items[1]['net_amount'])->toBe('51.00');
+});
+
+it('uses the subscription description, service reference and agreed amount', function (): void {
+    makeAdminUser($this->connection);
+    $plan = makeSubscriptionPlan($this->em, '49.90', 'ANNUAL');
+    $today = new \DateTimeImmutable('today', new \DateTimeZone('America/Lima'));
+    $subscription = makeCustomerSubscription($this->em, $plan, $today);
+    $subscription
+        ->setCustomDescription('Hosting Docker administrado')
+        ->setServiceReference('example.com')
+        ->setAgreedAmount('450.00');
+    $this->em->flush();
+
+    $command = newCommand($this->em, static::getContainer()->get(TenantSettingsRepository::class), $this->connection, static::getContainer()->get('logger'));
+    expect(runTenantCommand($command))->toBe(0);
+
+    $item = $this->connection->fetchAssociative(
+        'SELECT si.name_snapshot, si.unit_price FROM sale_items si JOIN sales s ON s.id = si.sale_id WHERE s.customer_subscription_id = ?',
+        [$subscription->getId()],
+    );
+    $total = $this->connection->fetchOne(
+        'SELECT grand_total FROM sales WHERE customer_subscription_id = ?',
+        [$subscription->getId()],
+    );
+
+    expect($item)->not->toBeFalse()
+        ->and($item['name_snapshot'])->toContain('Hosting Docker administrado - example.com')
+        ->and($item['name_snapshot'])->toContain($today->format('d/m/Y'))
+        ->and($item['unit_price'])->toBe('450.0000')
+        ->and($total)->toBe('450.00');
 });
 
 it('does not generate a sale for a subscription that is not yet due', function (): void {
@@ -202,6 +311,52 @@ it('does not generate a sale for a subscription that is not yet due', function (
         [$subscription->getId()],
     );
     expect($saleCount)->toBe(0);
+});
+
+it('manual generation rejects a future billing period', function (): void {
+    $plan = makeSubscriptionPlan($this->em, '49.90');
+    $today = new \DateTimeImmutable('today', new \DateTimeZone('America/Lima'));
+    $subscription = makeCustomerSubscription($this->em, $plan, $today->modify('+5 days'));
+    $this->em->flush();
+
+    $security = new class implements Security {
+        public function isAuthenticated(): bool { return true; }
+        public function connectedUser(): ?AuthUserDto { return new AuthUserDto(99, 'tester'); }
+        public function hasPermission(string $permission): bool { return $permission === 'subscriptions.generate'; }
+    };
+    $processor = new GenerateSubscriptionChargeProcessor(
+        $this->em,
+        $security,
+        newSubscriptionChargeGenerator($this->em, static::getContainer()->get(TenantSettingsRepository::class)),
+    );
+
+    expect(fn () => $processor->process(
+        new GenerateSubscriptionChargeDto((string) $subscription->getId()),
+        new Post(),
+    ))->toThrow(\Symfony\Component\HttpKernel\Exception\ConflictHttpException::class);
+});
+
+it('manual generation requires subscriptions.generate permission', function (): void {
+    $plan = makeSubscriptionPlan($this->em, '49.90');
+    $today = new \DateTimeImmutable('today', new \DateTimeZone('America/Lima'));
+    $subscription = makeCustomerSubscription($this->em, $plan, $today);
+    $this->em->flush();
+
+    $security = new class implements Security {
+        public function isAuthenticated(): bool { return true; }
+        public function connectedUser(): ?AuthUserDto { return new AuthUserDto(99, 'tester'); }
+        public function hasPermission(string $permission): bool { return false; }
+    };
+    $processor = new GenerateSubscriptionChargeProcessor(
+        $this->em,
+        $security,
+        newSubscriptionChargeGenerator($this->em, static::getContainer()->get(TenantSettingsRepository::class)),
+    );
+
+    expect(fn () => $processor->process(
+        new GenerateSubscriptionChargeDto((string) $subscription->getId()),
+        new Post(),
+    ))->toThrow(\Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException::class);
 });
 
 it('fails when no admin/super-admin user exists to attribute the sale to', function (): void {

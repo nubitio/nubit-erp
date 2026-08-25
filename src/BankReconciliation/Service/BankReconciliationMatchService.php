@@ -39,12 +39,16 @@ readonly class BankReconciliationMatchService
         $sourceField = match (true) {
             $source instanceof SupplierPayment => 'supplierPayment',
             $source instanceof SalePayment => 'salePayment',
-            $source instanceof CashMovement => 'cashMovement',
+            $source instanceof CashMovement => 'cashMovementId',
         };
+        $sourceValue = $source instanceof CashMovement ? $source->getId() : $source;
+        if ($sourceValue === null) {
+            throw new UnprocessableEntityHttpException('El movimiento de caja no tiene un identificador válido.');
+        }
 
         $existing = $this->entityManager
             ->getRepository(BankReconciliationMatch::class)
-            ->findOneBy([$sourceField => $source]);
+            ->findOneBy([$sourceField => $sourceValue]);
         if ($existing !== null) {
             throw new UnprocessableEntityHttpException('El movimiento ya fue conciliado con otra línea del extracto.');
         }
@@ -57,7 +61,7 @@ readonly class BankReconciliationMatchService
         match (true) {
             $source instanceof SupplierPayment => $match->setSupplierPayment($source),
             $source instanceof SalePayment => $match->setSalePayment($source),
-            $source instanceof CashMovement => $match->setCashMovement($source),
+            $source instanceof CashMovement => $match->setCashMovementId($sourceValue),
         };
 
         $line->setStatus(BankStatementLine::MATCHED);

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace App\Billing\Recurring\Command;
 
 use App\Billing\Recurring\Entity\CustomerSubscription;
-use App\Sales\Entity\SaleItemRecord;
-use App\Sales\Entity\SaleRecord;
-use App\Settings\Repository\TenantSettingsRepository;
+use App\Billing\Recurring\Service\SubscriptionChargeGenerator;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\DBAL\Connection;
@@ -52,8 +50,8 @@ final class GenerateRecurringSalesCommand extends PerTenantCommand
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly TenantSettingsRepository $tenantSettingsRepository,
         private readonly Connection $connection,
+        private readonly SubscriptionChargeGenerator $chargeGenerator,
     ) {
         parent::__construct();
     }
@@ -93,15 +91,20 @@ final class GenerateRecurringSalesCommand extends PerTenantCommand
                 return self::FAILURE;
             }
 
-            $defaultTermDays = $this->tenantSettingsRepository->getOrCreate()->getDefaultPaymentTermDays();
-
             $generated = 0;
 
             foreach ($dueSubscriptions as $subscription) {
-                $sale = $this->buildSaleForPeriod($subscription, $today, $defaultTermDays, $systemSellerId);
-                $this->entityManager->persist($sale);
-                $this->advancePeriod($subscription, $today);
-                $this->entityManager->flush();
+                if (
+                    $subscription->getEndDate() !== null
+                    && $subscription->getNextBillingDate() > $subscription->getEndDate()
+                ) {
+                    $subscription->setStatus('cancelled');
+                    $this->entityManager->flush();
+
+                    continue;
+                }
+
+                $this->chargeGenerator->generate($subscription, $today, $systemSellerId, 'scheduler');
                 ++$generated;
             }
 
@@ -117,61 +120,6 @@ final class GenerateRecurringSalesCommand extends PerTenantCommand
 
             return self::FAILURE;
         }
-    }
-
-    private function buildSaleForPeriod(
-        CustomerSubscription $subscription,
-        DateTimeImmutable $today,
-        int $defaultTermDays,
-        int $sellerUserId,
-    ): SaleRecord {
-        $plan = $subscription->getPlan();
-        $product = $plan->getProduct();
-        $termDays = $plan->getPaymentTermDays() ?? $defaultTermDays;
-
-        $sale = new SaleRecord();
-        $sale->setCustomer($subscription->getCustomer());
-        $sale->setCustomerSubscriptionId($subscription->getId());
-        $sale->setBranch($plan->getBranch());
-        $sale->setWarehouse($plan->getWarehouse());
-        $sale->setSellerUserId($sellerUserId);
-        $sale->setStatus('COMPLETED');
-        $sale->setCurrency('PEN');
-        $sale->setIssuedAt(\DateTime::createFromImmutable($today));
-        $sale->setIssuedDate($today);
-        $sale->setDueDate($today->modify(sprintf('+%d days', $termDays)));
-        $sale->setSubtotal($plan->getAmount());
-        $sale->setGrandTotal($plan->getAmount());
-        $sale->setPaidTotal('0.00');
-        $sale->setBalanceDue($plan->getAmount());
-        $sale->setNote(sprintf('Cargo recurrente: %s', $plan->getName()));
-
-        $item = new SaleItemRecord();
-        $item->setProduct($product);
-        $item->setQty('1.000');
-        $item->setUnitPrice($plan->getAmount());
-        $item->setGrossAmount($plan->getAmount());
-        $item->setNetAmount($plan->getAmount());
-        $item->setNameSnapshot($product->getName());
-        $item->setSkuSnapshot($product->getSku());
-        $baseUnit = $product->getBaseUnit();
-        if ($baseUnit !== null) {
-            $item->setUomSnapshot($baseUnit->getCode());
-        }
-        $sale->addSaleItemRecord($item);
-
-        return $sale;
-    }
-
-    private function advancePeriod(CustomerSubscription $subscription, DateTimeImmutable $today): void
-    {
-        $cycle = $subscription->getPlan()->getBillingCycleEnum();
-        $periodStart = $subscription->getNextBillingDate() > $today ? $subscription->getNextBillingDate() : $today;
-        $periodEnd = $periodStart->modify(sprintf('+%d months', $cycle->months()));
-
-        $subscription->setCurrentPeriodStart($periodStart);
-        $subscription->setCurrentPeriodEnd($periodEnd);
-        $subscription->setNextBillingDate($periodEnd);
     }
 
     /**

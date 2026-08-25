@@ -26,7 +26,13 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: SubscriptionPlanRepository::class)]
 #[ORM\Table(name: 'subscription_plan')]
 #[ApiResource(
-    operations: [new GetCollection(), new Post(), new Get(), new Patch(), new Delete()],
+    operations: [
+        new GetCollection(security: "is_granted('perm:subscriptions.view')"),
+        new Post(security: "is_granted('perm:subscriptions.create')"),
+        new Get(security: "is_granted('perm:subscriptions.view')"),
+        new Patch(security: "is_granted('perm:subscriptions.edit')"),
+        new Delete(security: "is_granted('perm:subscriptions.cancel')"),
+    ],
     normalizationContext: ['groups' => ['subscription_plan:read']],
     denormalizationContext: ['groups' => ['subscription_plan:write']],
     filters: [DataGridFilter::class],

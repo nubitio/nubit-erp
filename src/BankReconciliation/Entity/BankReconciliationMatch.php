@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\BankReconciliation\Entity;
 
 use App\AccountsPayable\Entity\SupplierPayment;
-use App\CashRegister\Entity\CashMovement;
 use App\Identity\Entity\User;
 use App\Sales\Entity\SalePayment;
 use DateTimeImmutable;
@@ -48,9 +47,10 @@ class BankReconciliationMatch
     #[ORM\JoinColumn(name: 'sale_payment_id', referencedColumnName: 'id', nullable: true)]
     private ?SalePayment $salePayment = null;
 
-    #[ORM\ManyToOne(targetEntity: CashMovement::class)]
-    #[ORM\JoinColumn(name: 'cash_movement_id', referencedColumnName: 'id', nullable: true)]
-    private ?CashMovement $cashMovement = null;
+    // CashMovement is a DBAL-backed API model, not a Doctrine entity. Keep
+    // its v2 cash_movements identifier as a scalar without an ORM relation.
+    #[ORM\Column(name: 'cash_movement_id', type: Types::INTEGER, nullable: true)]
+    private ?int $cashMovementId = null;
 
     #[ORM\Column(name: 'match_type', length: 20)]
     private string $matchType;
@@ -108,14 +108,14 @@ class BankReconciliationMatch
         return $this;
     }
 
-    public function getCashMovement(): ?CashMovement
+    public function getCashMovementId(): ?int
     {
-        return $this->cashMovement;
+        return $this->cashMovementId;
     }
 
-    public function setCashMovement(?CashMovement $cashMovement): static
+    public function setCashMovementId(?int $cashMovementId): static
     {
-        $this->cashMovement = $cashMovement;
+        $this->cashMovementId = $cashMovementId;
 
         return $this;
     }

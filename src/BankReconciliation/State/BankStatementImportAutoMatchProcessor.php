@@ -11,6 +11,8 @@ use App\BankReconciliation\Entity\BankStatementImport;
 use App\BankReconciliation\Repository\BankStatementLineRepository;
 use App\BankReconciliation\Service\BankReconciliationMatchingService;
 use App\BankReconciliation\Service\BankReconciliationMatchService;
+use App\CashRegister\Entity\CashMovement;
+use App\CashRegister\Service\CashMovementHydrator;
 use App\Identity\Entity\User;
 use App\Identity\Security\Security;
 use Doctrine\ORM\EntityManagerInterface;
@@ -35,6 +37,7 @@ readonly class BankStatementImportAutoMatchProcessor implements ProcessorInterfa
         private BankStatementLineRepository $lineRepository,
         private BankReconciliationMatchingService $matchingService,
         private BankReconciliationMatchService $matchService,
+        private CashMovementHydrator $cashMovementHydrator,
     ) {}
 
     /**
@@ -76,7 +79,9 @@ readonly class BankStatementImportAutoMatchProcessor implements ProcessorInterfa
                 continue;
             }
 
-            $source = $this->entityManager->find($sourceClass, $top->sourceId);
+            $source = $sourceClass === CashMovement::class
+                ? $this->cashMovementHydrator->findById((int) $top->sourceId)
+                : $this->entityManager->find($sourceClass, $top->sourceId);
             if ($source === null) {
                 continue;
             }

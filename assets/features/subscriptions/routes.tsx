@@ -7,6 +7,14 @@ const CustomerSubscriptionPage = lazyNamed(
   () => import('./CustomerSubscriptionPage'),
   'CustomerSubscriptionPage',
 );
+const CustomerSubscriptionRunPage = lazyNamed(
+  () => import('./CustomerSubscriptionRunPage'),
+  'CustomerSubscriptionRunPage',
+);
+const CustomerSubscriptionLinePage = lazyNamed(
+  () => import('./CustomerSubscriptionLinePage'),
+  'CustomerSubscriptionLinePage',
+);
 
 export const subscriptionsRoutes: AppRouteDefinition[] = [
   {
@@ -15,6 +23,8 @@ export const subscriptionsRoutes: AppRouteDefinition[] = [
     children: [
       { path: 'plans', element: SubscriptionPlanPage },
       { path: 'customer-subscriptions', element: CustomerSubscriptionPage },
+      { path: 'runs', element: CustomerSubscriptionRunPage },
+      { path: 'lines', element: CustomerSubscriptionLinePage },
     ],
   },
 ];

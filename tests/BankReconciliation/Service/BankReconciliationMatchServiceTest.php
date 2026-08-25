@@ -8,10 +8,12 @@ use App\AccountsPayable\Entity\SupplierPayment;
 use App\BankReconciliation\Entity\BankReconciliationMatch;
 use App\BankReconciliation\Entity\BankStatementLine;
 use App\BankReconciliation\Service\BankReconciliationMatchService;
+use App\CashRegister\Entity\CashMovement;
 use App\Identity\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 final class BankReconciliationMatchServiceTest extends TestCase
@@ -54,6 +56,31 @@ final class BankReconciliationMatchServiceTest extends TestCase
 
         $this->expectException(UnprocessableEntityHttpException::class);
         $service->confirmMatch($line, $source, $user, BankReconciliationMatch::MANUAL);
+    }
+
+    public function testConfirmCashMovementStoresItsV2ScalarIdentifier(): void
+    {
+        $line = new BankStatementLine();
+        $source = new CashMovement();
+        new ReflectionProperty(CashMovement::class, 'id')->setValue($source, 321);
+        $user = new User();
+
+        $repository = $this->createMock(EntityRepository::class);
+        $repository->expects(self::once())
+            ->method('findOneBy')
+            ->with(['cashMovementId' => 321])
+            ->willReturn(null);
+
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('getRepository')->willReturn($repository);
+        $entityManager->expects(self::once())->method('persist');
+        $entityManager->expects(self::once())->method('flush');
+
+        $match = new BankReconciliationMatchService($entityManager)
+            ->confirmMatch($line, $source, $user, BankReconciliationMatch::MANUAL);
+
+        self::assertSame(321, $match->getCashMovementId());
+        self::assertSame(BankStatementLine::MATCHED, $line->getStatus());
     }
 
     public function testConfirmMatchThrowsWhenSourceAlreadyMatched(): void

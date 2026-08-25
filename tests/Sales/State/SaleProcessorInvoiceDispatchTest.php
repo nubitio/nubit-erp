@@ -201,6 +201,9 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
             $processor,
             new \App\Efact\Domain\ActiveReferenceGuard(),
         );
+        // The production constructor defaults this optional dependency to
+        // null. Reflection bypasses constructor defaults, so mirror it here.
+        $processorReflection->getProperty('messageBus')->setValue($processor, null);
 
         return $processor;
     }

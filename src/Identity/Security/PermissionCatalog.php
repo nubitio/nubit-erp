@@ -35,7 +35,7 @@ final class PermissionCatalog
                 'permissions' => [
                     'pos.access' => 'Acceder al POS',
                     'pos.discount' => 'Aplicar descuentos',
-                    'pos.price_override' => 'Modificar precios',
+                    'pos.price_override' => 'Modificar precio de línea en el POS',
                     'pos.offline_sale' => 'Sincronizar ventas offline',
                 ],
             ],
@@ -65,7 +65,7 @@ final class PermissionCatalog
                 'permissions' => [
                     'catalog.view' => 'Ver productos',
                     'catalog.create' => 'Crear productos',
-                    'catalog.edit' => 'Editar productos',
+                    'catalog.edit' => 'Editar productos y precios del catálogo',
                     'catalog.delete' => 'Eliminar productos',
                 ],
             ],
@@ -125,6 +125,7 @@ final class PermissionCatalog
                     'subscriptions.view' => 'Ver suscripciones',
                     'subscriptions.create' => 'Crear suscripciones',
                     'subscriptions.edit' => 'Editar suscripciones',
+                    'subscriptions.generate' => 'Generar cargos de suscripción',
                     'subscriptions.cancel' => 'Cancelar suscripciones',
                 ],
             ],

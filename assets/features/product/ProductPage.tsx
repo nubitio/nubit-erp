@@ -342,7 +342,10 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
           visible: false,
           visibleOnForm: true,
           filterable: false,
-          visibleWhen: (formData) => formData.productKind === 'GOOD',
+          visibleWhen: (formData) =>
+            formData.productKind === 'GOOD' ||
+            formData.productKind === 'SERVICE' ||
+            formData.productKind === 'DIGITAL',
           textField: 'description',
           filters: [{ field: 'catalog', operator: '=', value: 54 }],
           itemFormatter: renderDetractionOption,

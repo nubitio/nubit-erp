@@ -11,7 +11,9 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
+use App\Billing\Recurring\Dto\GenerateSubscriptionChargeDto;
 use App\Billing\Recurring\Repository\CustomerSubscriptionRepository;
+use App\Billing\Recurring\State\GenerateSubscriptionChargeProcessor;
 use App\Contacts\Entity\Customer;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -24,7 +26,23 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'customer_subscription')]
 #[ORM\Index(name: 'idx_customer_subscription_status_next_billing', columns: ['status', 'next_billing_date'])]
 #[ApiResource(
-    operations: [new GetCollection(), new Post(), new Get(), new Patch(), new Delete()],
+    operations: [
+        new GetCollection(security: "is_granted('perm:subscriptions.view')"),
+        new Post(security: "is_granted('perm:subscriptions.create')"),
+        new Get(security: "is_granted('perm:subscriptions.view')"),
+        new Patch(security: "is_granted('perm:subscriptions.edit')"),
+        new Delete(security: "is_granted('perm:subscriptions.cancel')"),
+        new Post(
+            uriTemplate: '/customer-subscriptions/{id}/generate',
+            denormalizationContext: [],
+            normalizationContext: ['groups' => ['customer_subscription_run:read']],
+            input: GenerateSubscriptionChargeDto::class,
+            output: CustomerSubscriptionRun::class,
+            processor: GenerateSubscriptionChargeProcessor::class,
+            security: "is_granted('perm:subscriptions.generate')",
+            name: 'customer_subscription_generate',
+        ),
+    ],
     normalizationContext: ['groups' => ['customer_subscription:read']],
     denormalizationContext: ['groups' => ['customer_subscription:write']],
     filters: [DataGridFilter::class],
@@ -32,7 +50,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class CustomerSubscription
 {
-    #[Groups(['customer_subscription:read'])]
+    #[Groups(['customer_subscription:read', 'customer_subscription_run:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
@@ -84,6 +102,30 @@ class CustomerSubscription
     #[ApiProperty(description: 'customer_subscription.auto_renew.label')]
     #[ORM\Column(name: 'auto_renew', options: ['default' => true])]
     private bool $autoRenew = true;
+
+    #[Groups(['customer_subscription:read', 'customer_subscription:write', 'customer_subscription_run:read'])]
+    #[ApiProperty(description: 'customer_subscription.service_reference.label')]
+    #[Assert\Length(max: 255)]
+    #[ORM\Column(name: 'service_reference', length: 255, nullable: true)]
+    private ?string $serviceReference = null;
+
+    #[Groups(['customer_subscription:read', 'customer_subscription:write'])]
+    #[ApiProperty(description: 'customer_subscription.custom_description.label')]
+    #[Assert\Length(max: 255)]
+    #[ORM\Column(name: 'custom_description', length: 255, nullable: true)]
+    private ?string $customDescription = null;
+
+    #[Groups(['customer_subscription:read', 'customer_subscription:write'])]
+    #[ApiProperty(description: 'customer_subscription.agreed_amount.label')]
+    #[Assert\Positive]
+    #[ORM\Column(name: 'agreed_amount', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $agreedAmount = null;
+
+    #[Groups(['customer_subscription:read', 'customer_subscription:write'])]
+    #[ApiProperty(description: 'customer_subscription.end_date.label')]
+    #[Assert\GreaterThanOrEqual(propertyPath: 'startDate')]
+    #[ORM\Column(name: 'end_date', type: Types::DATE_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $endDate = null;
 
     public function getId(): ?string
     {
@@ -184,5 +226,64 @@ class CustomerSubscription
         $this->autoRenew = $autoRenew;
 
         return $this;
+    }
+
+    public function getServiceReference(): ?string
+    {
+        return $this->serviceReference;
+    }
+
+    public function setServiceReference(?string $serviceReference): static
+    {
+        $this->serviceReference = self::trimToNull($serviceReference);
+
+        return $this;
+    }
+
+    public function getCustomDescription(): ?string
+    {
+        return $this->customDescription;
+    }
+
+    public function setCustomDescription(?string $customDescription): static
+    {
+        $this->customDescription = self::trimToNull($customDescription);
+
+        return $this;
+    }
+
+    public function getAgreedAmount(): ?string
+    {
+        return $this->agreedAmount;
+    }
+
+    public function setAgreedAmount(?string $agreedAmount): static
+    {
+        $this->agreedAmount = self::trimToNull($agreedAmount);
+
+        return $this;
+    }
+
+    public function getEndDate(): ?\DateTimeImmutable
+    {
+        return $this->endDate;
+    }
+
+    public function setEndDate(?\DateTimeImmutable $endDate): static
+    {
+        $this->endDate = $endDate;
+
+        return $this;
+    }
+
+    private static function trimToNull(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim($value);
+
+        return $value === '' ? null : $value;
     }
 }

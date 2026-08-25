@@ -34,6 +34,7 @@ use Nubit\Platform\Exception\ServiceException;
 use Nubit\Platform\Http\ApiResponse;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SaleRecordRepository::class)]
 #[ORM\Table(name: 'sales')]
@@ -383,7 +384,10 @@ class SaleRecord
     #[Groups(['sale_record:write'])]
     private ?bool $emitInvoice = null;
 
-    #[Groups(['sale_record:write'])]
+    #[Groups(['sale_record:read', 'sale_record:write'])]
+    #[ApiProperty(description: 'sale_record.note.label')]
+    #[Assert\Length(max: 2000)]
+    #[ORM\Column(name: 'note', type: Types::TEXT, nullable: true)]
     private ?string $note = null;
 
     /**
