@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Billing\Recurring\Repository\CustomerSubscriptionLineRepository;
@@ -26,6 +27,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new GetCollection(security: "is_granted('perm:subscriptions.view')"),
+        new GetCollection(
+            uriTemplate: '/customer-subscriptions/{id}/lines',
+            uriVariables: [
+                'id' => new Link(fromProperty: 'lines', fromClass: CustomerSubscription::class),
+            ],
+            normalizationContext: ['groups' => ['customer_subscription_line:read']],
+            paginationEnabled: false,
+            security: "is_granted('perm:subscriptions.view')",
+        ),
         new Post(security: "is_granted('perm:subscriptions.edit')"),
         new Get(security: "is_granted('perm:subscriptions.view')"),
         new Patch(security: "is_granted('perm:subscriptions.edit')"),
@@ -37,7 +47,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 class CustomerSubscriptionLine
 {
-    #[Groups(['customer_subscription_line:read'])]
+    #[Groups(['customer_subscription_line:read', 'customer_subscription:write'])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
@@ -46,32 +56,32 @@ class CustomerSubscriptionLine
 
     #[Groups(['customer_subscription_line:read', 'customer_subscription_line:write'])]
     #[ApiProperty(readableLink: true)]
-    #[ORM\ManyToOne(targetEntity: CustomerSubscription::class)]
+    #[ORM\ManyToOne(targetEntity: CustomerSubscription::class, inversedBy: 'lines')]
     #[ORM\JoinColumn(name: 'subscription_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private CustomerSubscription $subscription;
 
-    #[Groups(['customer_subscription_line:read', 'customer_subscription_line:write'])]
+    #[Groups(['customer_subscription_line:read', 'customer_subscription_line:write', 'customer_subscription:write'])]
     #[ApiProperty(readableLink: true)]
     #[ORM\ManyToOne(targetEntity: Product::class)]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'producto_id', nullable: false)]
     private Product $product;
 
-    #[Groups(['customer_subscription_line:read', 'customer_subscription_line:write'])]
+    #[Groups(['customer_subscription_line:read', 'customer_subscription_line:write', 'customer_subscription:write'])]
     #[Assert\Length(max: 255)]
     #[ORM\Column(name: 'description', length: 255, nullable: true)]
     private ?string $description = null;
 
-    #[Groups(['customer_subscription_line:read', 'customer_subscription_line:write'])]
+    #[Groups(['customer_subscription_line:read', 'customer_subscription_line:write', 'customer_subscription:write'])]
     #[Assert\Positive]
     #[ORM\Column(name: 'quantity', type: Types::DECIMAL, precision: 12, scale: 3)]
     private string $quantity = '1.000';
 
-    #[Groups(['customer_subscription_line:read', 'customer_subscription_line:write'])]
+    #[Groups(['customer_subscription_line:read', 'customer_subscription_line:write', 'customer_subscription:write'])]
     #[Assert\PositiveOrZero]
     #[ORM\Column(name: 'unit_price', type: Types::DECIMAL, precision: 12, scale: 4)]
     private string $unitPrice = '0.0000';
 
-    #[Groups(['customer_subscription_line:read', 'customer_subscription_line:write'])]
+    #[Groups(['customer_subscription_line:read', 'customer_subscription_line:write', 'customer_subscription:write'])]
     #[ORM\Column(name: 'sort_order', type: Types::INTEGER, options: ['default' => 0])]
     private int $sortOrder = 0;
 

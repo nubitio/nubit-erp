@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { httpClient } from '@shared/api/HttpClient';
 import toast from '@shared/lib/SharedUtils';
 import { hasPermission } from '@shared/permissions';
+import { subscriptionLineFields } from './model/subscriptionLineFields';
 
 interface CustomerSubscriptionRecord extends DataRecord {
   id: string;
@@ -40,6 +41,7 @@ interface CustomerSubscriptionRecord extends DataRecord {
   customDescription: string | null;
   agreedAmount: string | null;
   endDate: string | null;
+  lines?: unknown[];
 }
 
 function toPatch(field: Field): SmartCrudFieldPatch<CustomerSubscriptionRecord> {
@@ -95,8 +97,17 @@ const customerSubscriptionResource = defineResource<CustomerSubscriptionRecord>(
   events: customerSubscriptionEvents,
   defaultPreset: 'basic',
   columnPresets: CUSTOMER_SUBSCRIPTION_COLUMN_PRESETS,
-  viewMode: { mode: 'drawer', drawerSize: 'md' },
+  viewMode: { mode: 'drawer', drawerSize: 'xl' },
   formLayout: customerSubscriptionFormLayout,
+  formDetail: {
+    propertyName: 'lines',
+    url: customerSubscriptionApiUrl + '/{id}/lines',
+    fields: subscriptionLineFields(),
+    allowAdding: hasPermission('subscriptions.create') || hasPermission('subscriptions.edit'),
+    allowUpdating: hasPermission('subscriptions.edit'),
+    allowDeleting: hasPermission('subscriptions.edit'),
+    required: false,
+  },
   toolbar: ({ selectedRow }: ResourceToolbarContext<CustomerSubscriptionRecord>) => ({
     selection: hasPermission('subscriptions.generate') ? [
       {

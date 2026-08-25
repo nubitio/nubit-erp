@@ -11,6 +11,7 @@ use App\AccountsPayable\Entity\SupplierBill;
 use App\BankReconciliation\Entity\BankAccount;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Recurring\Entity\CustomerSubscription;
+use App\Billing\Recurring\Entity\CustomerSubscriptionLine;
 use App\Billing\Recurring\Entity\SubscriptionPlan;
 use App\Billing\Recurring\Enum\BillingCycle;
 use App\Billing\Service\InvoiceCalculator;
@@ -336,6 +337,17 @@ final class PresentationDemoSeeder
                 ->setCustomDescription('Hosting WordPress administrado por 12 meses')
                 ->setAgreedAmount('480.00');
             $this->entityManager->persist($subscription);
+        }
+
+        if ($subscription->getLines()->isEmpty()) {
+            $subscription->addLine(
+                (new CustomerSubscriptionLine())
+                    ->setProduct($product)
+                    ->setDescription('Hosting WordPress administrado')
+                    ->setQuantity('1.000')
+                    ->setUnitPrice('480.0000')
+                    ->setSortOrder(1),
+            );
         }
 
         $this->entityManager->flush();

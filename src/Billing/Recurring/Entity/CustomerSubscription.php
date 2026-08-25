@@ -14,7 +14,10 @@ use ApiPlatform\Metadata\Post;
 use App\Billing\Recurring\Dto\GenerateSubscriptionChargeDto;
 use App\Billing\Recurring\Repository\CustomerSubscriptionRepository;
 use App\Billing\Recurring\State\GenerateSubscriptionChargeProcessor;
+use App\Billing\Recurring\State\CustomerSubscriptionWriteProcessor;
 use App\Contacts\Entity\Customer;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
@@ -28,9 +31,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new GetCollection(security: "is_granted('perm:subscriptions.view')"),
-        new Post(security: "is_granted('perm:subscriptions.create')"),
+        new Post(
+            processor: CustomerSubscriptionWriteProcessor::class,
+            security: "is_granted('perm:subscriptions.create')",
+        ),
         new Get(security: "is_granted('perm:subscriptions.view')"),
-        new Patch(security: "is_granted('perm:subscriptions.edit')"),
+        new Patch(
+            processor: CustomerSubscriptionWriteProcessor::class,
+            security: "is_granted('perm:subscriptions.edit')",
+        ),
         new Delete(security: "is_granted('perm:subscriptions.cancel')"),
         new Post(
             uriTemplate: '/customer-subscriptions/{id}/generate',
@@ -126,6 +135,22 @@ class CustomerSubscription
     #[Assert\GreaterThanOrEqual(propertyPath: 'startDate')]
     #[ORM\Column(name: 'end_date', type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $endDate = null;
+
+    /** @var Collection<int, CustomerSubscriptionLine> */
+    #[Groups(['customer_subscription:read', 'customer_subscription:write'])]
+    #[ORM\OneToMany(
+        targetEntity: CustomerSubscriptionLine::class,
+        mappedBy: 'subscription',
+        cascade: ['persist', 'remove'],
+        orphanRemoval: true,
+    )]
+    #[ORM\OrderBy(['sortOrder' => 'ASC'])]
+    private Collection $lines;
+
+    public function __construct()
+    {
+        $this->lines = new ArrayCollection();
+    }
 
     public function getId(): ?string
     {
@@ -267,6 +292,29 @@ class CustomerSubscription
     public function getEndDate(): ?\DateTimeImmutable
     {
         return $this->endDate;
+    }
+
+    /** @return Collection<int, CustomerSubscriptionLine> */
+    public function getLines(): Collection
+    {
+        return $this->lines;
+    }
+
+    public function addLine(CustomerSubscriptionLine $line): static
+    {
+        if (!$this->lines->contains($line)) {
+            $this->lines->add($line);
+            $line->setSubscription($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLine(CustomerSubscriptionLine $line): static
+    {
+        $this->lines->removeElement($line);
+
+        return $this;
     }
 
     public function setEndDate(?\DateTimeImmutable $endDate): static
