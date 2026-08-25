@@ -111,6 +111,7 @@ final class SeedPresentationDemoCommand extends PerTenantCommand
         $io->table(['Incluye', 'Cantidad'], [
             ['Clientes', $stats['customers']],
             ['Productos', $stats['products']],
+            ['Suscripciones de hosting', $stats['subscriptions']],
             ['Proveedores', $stats['suppliers']],
             ['Ventas (hoy + histórico 12 meses)', $stats['sales']],
             ['Compras y cuentas por pagar', $stats['purchases']],

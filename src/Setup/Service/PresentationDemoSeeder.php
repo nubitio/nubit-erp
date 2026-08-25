@@ -10,6 +10,9 @@ use App\AccountsPayable\Entity\ExpenseCategory;
 use App\AccountsPayable\Entity\SupplierBill;
 use App\BankReconciliation\Entity\BankAccount;
 use App\Billing\Entity\TaxDocument;
+use App\Billing\Recurring\Entity\CustomerSubscription;
+use App\Billing\Recurring\Entity\SubscriptionPlan;
+use App\Billing\Recurring\Enum\BillingCycle;
 use App\Billing\Service\InvoiceCalculator;
 use App\Billing\Service\InvoiceLineInput;
 use App\CashRegister\Entity\CashRegister;
@@ -24,6 +27,8 @@ use App\FixedAssets\Entity\FixedAsset;
 use App\Identity\Entity\User;
 use App\Inventory\Entity\ProductStock;
 use App\Inventory\Entity\Warehouse;
+use App\Inventory\Core\Enum\InventoryBehavior;
+use App\Inventory\Core\Enum\ProductKind;
 use App\Organization\Entity\Branch;
 use App\Organization\Entity\Company;
 use App\Payroll\Entity\AfpRate;
@@ -84,6 +89,13 @@ final class PresentationDemoSeeder
         $categories = $this->seedCategories();
         $products = $this->seedProducts($categories, $unit, $warehouse);
         $customers = $this->seedCustomers();
+        $subscriptionCount = $this->seedHostingSubscription(
+            $branch,
+            $warehouse,
+            $categories['Tecnología'],
+            $unit,
+            $customers[0],
+        );
         $suppliers = $this->seedSuppliers();
         $paymentMethods = $this->indexPaymentMethods();
 
@@ -98,7 +110,8 @@ final class PresentationDemoSeeder
 
         return [
             'customers' => count($customers),
-            'products' => count($products),
+            'products' => count($products) + 1,
+            'subscriptions' => $subscriptionCount,
             'suppliers' => count($suppliers),
             'sales' => count($sales),
             'purchases' => count($purchases),
@@ -264,6 +277,70 @@ final class PresentationDemoSeeder
         $this->entityManager->flush();
 
         return $customers;
+    }
+
+    private function seedHostingSubscription(
+        Branch $branch,
+        Warehouse $warehouse,
+        Category $category,
+        UnitOfMeasure $unit,
+        Customer $customer,
+    ): int {
+        $productRepository = $this->entityManager->getRepository(Product::class);
+        $product = $productRepository->findOneBy(['code' => 'HOST-WEB']);
+        if (!$product instanceof Product) {
+            $product = (new Product())
+                ->setCode('HOST-WEB')
+                ->setName('Web Hosting')
+                ->setType(2)
+                ->setCategory($category)
+                ->setUnitOfMeasure($unit)
+                ->setProductKind(ProductKind::DIGITAL)
+                ->setInventoryBehavior(InventoryBehavior::NOT_TRACKED)
+                ->setPurchasePrice('0.00')
+                ->setSalePrice('480.00')
+                ->setMinStock('0.000');
+            $this->entityManager->persist($product);
+        }
+
+        $planRepository = $this->entityManager->getRepository(SubscriptionPlan::class);
+        $plan = $planRepository->findOneBy(['name' => 'Hosting anual']);
+        if (!$plan instanceof SubscriptionPlan) {
+            $plan = (new SubscriptionPlan())
+                ->setName('Hosting anual')
+                ->setProduct($product)
+                ->setBillingCycle(BillingCycle::ANNUAL)
+                ->setAmount('480.00')
+                ->setPaymentTermDays(7)
+                ->setBranch($branch)
+                ->setWarehouse($warehouse);
+            $this->entityManager->persist($plan);
+        }
+
+        $subscriptionRepository = $this->entityManager->getRepository(CustomerSubscription::class);
+        $subscription = $subscriptionRepository->findOneBy(['serviceReference' => 'andinaretail.pe']);
+        if (!$subscription instanceof CustomerSubscription) {
+            $periodStart = new DateTimeImmutable('first day of this month', new DateTimeZone(PresentationDemoCatalog::TIMEZONE));
+            $periodEnd = $periodStart->modify('+1 year -1 day');
+            $subscription = (new CustomerSubscription())
+                ->setCustomer($customer)
+                ->setPlan($plan)
+                ->setStatus('active')
+                ->setStartDate($periodStart)
+                ->setCurrentPeriodStart($periodStart)
+                ->setCurrentPeriodEnd($periodEnd)
+                ->setNextBillingDate($periodStart->modify('+1 year'))
+                ->setEndDate($periodEnd)
+                ->setAutoRenew(false)
+                ->setServiceReference('andinaretail.pe')
+                ->setCustomDescription('Hosting WordPress administrado por 12 meses')
+                ->setAgreedAmount('480.00');
+            $this->entityManager->persist($subscription);
+        }
+
+        $this->entityManager->flush();
+
+        return 1;
     }
 
     /**
