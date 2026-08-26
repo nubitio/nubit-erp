@@ -140,10 +140,12 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
             if (!$availableBranch instanceof Branch) {
                 continue;
             }
-            $openSession = $this->entityManager->getRepository(CashSession::class)->findOneBy([
-                'cashRegister' => $availableRegister,
-                'status' => 'OPEN',
-            ]);
+            $openSession = $this->entityManager
+                ->getRepository(CashSession::class)
+                ->findOneBy([
+                    'cashRegister' => $availableRegister,
+                    'status' => 'OPEN',
+                ]);
             if (!$openSession instanceof CashSession) {
                 $this->openE2eCashSession($availableRegister, $availableBranch, $user);
             }
@@ -240,10 +242,9 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
     private function purgeE2eCashSessionsByUser(int $userId): void
     {
-        $sessionIds = $this->connection->fetchFirstColumn(
-            'SELECT id FROM cash_sessions WHERE opened_by = :user_id',
-            ['user_id' => $userId],
-        );
+        $sessionIds = $this->connection->fetchFirstColumn('SELECT id FROM cash_sessions WHERE opened_by = :user_id', [
+            'user_id' => $userId,
+        ]);
         if ($sessionIds === []) {
             return;
         }
@@ -498,14 +499,14 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
             $this->connection->executeStatement(
                 <<<'SQL'
-                INSERT INTO stock_items (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, version)
-                VALUES (:warehouse_id, :product_id, :qty_on_hand, 0, NOW(), 1)
-                ON DUPLICATE KEY UPDATE
-                    qty_on_hand = VALUES(qty_on_hand),
-                    qty_reserved = 0,
-                    updated_at = NOW(),
-                    version = version + 1
-                SQL,
+                    INSERT INTO stock_items (warehouse_id, product_id, qty_on_hand, qty_reserved, updated_at, version)
+                    VALUES (:warehouse_id, :product_id, :qty_on_hand, 0, NOW(), 1)
+                    ON DUPLICATE KEY UPDATE
+                        qty_on_hand = VALUES(qty_on_hand),
+                        qty_reserved = 0,
+                        updated_at = NOW(),
+                        version = version + 1
+                    SQL,
                 [
                     'warehouse_id' => (string) $stockWarehouse->getId(),
                     'product_id' => (string) $product->getId(),
@@ -750,7 +751,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     private function openE2eCashSession(CashRegister $cashRegister, Branch $branch, User $user): void
     {
         $now = new DateTimeImmutable();
-        $session = (new CashSession())
+        $session = new CashSession()
             ->setCashRegister($cashRegister)
             ->setBranch($branch)
             ->setOpenedBy($user)

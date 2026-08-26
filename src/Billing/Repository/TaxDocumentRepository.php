@@ -67,20 +67,23 @@ class TaxDocumentRepository extends ServiceEntityRepository
 
     public function hasAnnullingCreditNote(TaxDocument $relatedDocument): bool
     {
-        return (int) $this->getEntityManager()
-            ->createQueryBuilder()
-            ->select('COUNT(creditNote.id)')
-            ->from(TaxDocument::class, 'creditNote')
-            ->where('creditNote.relatedTaxDocument = :relatedDocument')
-            ->andWhere('creditNote.documentType = :documentType')
-            ->andWhere('creditNote.reasonCode IN (:reasonCodes)')
-            ->andWhere('creditNote.voidTicket IS NULL')
-            ->andWhere('creditNote.voidCorrelation IS NULL')
-            ->setParameter('relatedDocument', $relatedDocument)
-            ->setParameter('documentType', '07')
-            ->setParameter('reasonCodes', ['01', '02', '06'])
-            ->getQuery()
-            ->getSingleScalarResult() > 0;
+        return (
+            (int) $this
+                ->getEntityManager()
+                ->createQueryBuilder()
+                ->select('COUNT(creditNote.id)')
+                ->from(TaxDocument::class, 'creditNote')
+                ->where('creditNote.relatedTaxDocument = :relatedDocument')
+                ->andWhere('creditNote.documentType = :documentType')
+                ->andWhere('creditNote.reasonCode IN (:reasonCodes)')
+                ->andWhere('creditNote.voidTicket IS NULL')
+                ->andWhere('creditNote.voidCorrelation IS NULL')
+                ->setParameter('relatedDocument', $relatedDocument)
+                ->setParameter('documentType', '07')
+                ->setParameter('reasonCodes', ['01', '02', '06'])
+                ->getQuery()
+                ->getSingleScalarResult() > 0
+        );
     }
 
     /**

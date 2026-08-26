@@ -37,10 +37,11 @@ final readonly class AssistantThreadService
 
     public function startNewThread(User $user): AssistantThread
     {
-        $open = $this->entityManager->createQuery(<<<'DQL'
-            SELECT t FROM App\AI\Entity\AssistantThread t
-            WHERE t.userId = :userId AND t.status = :status
-            DQL)
+        $open = $this->entityManager
+            ->createQuery(<<<'DQL'
+                SELECT t FROM App\AI\Entity\AssistantThread t
+                WHERE t.userId = :userId AND t.status = :status
+                DQL)
             ->setParameter('userId', $user->getId())
             ->setParameter('status', AssistantThread::OPEN)
             ->getResult();
@@ -111,11 +112,12 @@ final readonly class AssistantThreadService
 
     private function findLatestOpen(User $user): ?AssistantThread
     {
-        $found = $this->entityManager->createQuery(<<<'DQL'
-            SELECT t FROM App\AI\Entity\AssistantThread t
-            WHERE t.userId = :userId AND t.status = :status
-            ORDER BY t.updatedAt DESC
-            DQL)
+        $found = $this->entityManager
+            ->createQuery(<<<'DQL'
+                SELECT t FROM App\AI\Entity\AssistantThread t
+                WHERE t.userId = :userId AND t.status = :status
+                ORDER BY t.updatedAt DESC
+                DQL)
             ->setParameter('userId', $user->getId())
             ->setParameter('status', AssistantThread::OPEN)
             ->setMaxResults(1)
@@ -153,11 +155,7 @@ final readonly class AssistantThreadService
     private function appendIfNew(AssistantThread $thread, string $role, string $content, ?array $actions): void
     {
         $last = $thread->getMessages()->last();
-        if (
-            $last instanceof AssistantThreadMessage
-            && $last->getRole() === $role
-            && $last->getContent() === $content
-        ) {
+        if ($last instanceof AssistantThreadMessage && $last->getRole() === $role && $last->getContent() === $content) {
             return;
         }
 

@@ -24,7 +24,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Get(security: "is_granted('perm:roles.view')"),
         new Post(security: "is_granted('perm:roles.edit')"),
         new Patch(security: "is_granted('perm:roles.edit') and (object.getId() > 1 or is_granted('ROLE_SUPER_ADMIN'))"),
-        new Delete(security: "is_granted('perm:roles.edit') and (object.getId() > 1 or is_granted('ROLE_SUPER_ADMIN'))"),
+        new Delete(
+            security: "is_granted('perm:roles.edit') and (object.getId() > 1 or is_granted('ROLE_SUPER_ADMIN'))",
+        ),
     ],
     filters: [DataGridFilter::class],
     mercure: true,

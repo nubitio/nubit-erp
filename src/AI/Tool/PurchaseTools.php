@@ -35,7 +35,8 @@ final readonly class PurchaseTools
         $to = $this->parseDate($hasta) ?? new DateTimeImmutable('today');
         $from = $this->parseDate($desde) ?? $to->modify('-6 days');
 
-        $qb = $this->purchaseRepository->createQueryBuilder('p')
+        $qb = $this->purchaseRepository
+            ->createQueryBuilder('p')
             ->select('COUNT(p.id) AS totalPurchases', 'COALESCE(SUM(p.grandTotal), 0) AS totalAmount')
             ->andWhere('p.issuedAt >= :from')
             ->andWhere('p.issuedAt < :toExclusive')
@@ -60,7 +61,8 @@ final readonly class PurchaseTools
     {
         $limit = max(1, min(20, $limit));
         /** @var list<Purchase> $purchases */
-        $purchases = $this->purchaseRepository->createQueryBuilder('p')
+        $purchases = $this->purchaseRepository
+            ->createQueryBuilder('p')
             ->orderBy('p.issuedAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()

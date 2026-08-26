@@ -21,11 +21,10 @@ final readonly class TrialBalanceQuery
             $period = date('Ym');
         }
 
-        $from = substr($period, 0, 4).'-'.substr($period, 4, 2).'-01';
+        $from = substr($period, 0, 4) . '-' . substr($period, 4, 2) . '-01';
         $to = date('Y-m-t', strtotime($from) ?: time());
 
-        $rows = $this->connection->fetchAllAssociative(
-            'SELECT a.code, a.name, a.type,
+        $rows = $this->connection->fetchAllAssociative('SELECT a.code, a.name, a.type,
                     COALESCE(SUM(l.debit), 0) AS debit,
                     COALESCE(SUM(l.credit), 0) AS credit
              FROM chart_of_accounts a
@@ -34,9 +33,7 @@ final readonly class TrialBalanceQuery
                   AND e.entry_date >= :from AND e.entry_date <= :to
              WHERE a.is_header = 0 AND a.is_active = 1
              GROUP BY a.id, a.code, a.name, a.type
-             ORDER BY a.code',
-            ['from' => $from, 'to' => $to],
-        );
+             ORDER BY a.code', ['from' => $from, 'to' => $to]);
 
         $accounts = [];
         $totalDebit = BigDecimal::zero();
@@ -45,7 +42,9 @@ final readonly class TrialBalanceQuery
             $debit = Money::money($row['debit']);
             $credit = Money::money($row['credit']);
             $net = Money::sub($debit, $credit);
-            $deudor = $net->isPositive() || $net->isZero() ? Money::toString($net->isPositive() ? $net : BigDecimal::zero()) : '0.00';
+            $deudor = $net->isPositive() || $net->isZero()
+                ? Money::toString($net->isPositive() ? $net : BigDecimal::zero())
+                : '0.00';
             $acreedor = $net->isNegative() ? Money::toString($net->abs()) : '0.00';
             if ($debit->isZero() && $credit->isZero()) {
                 continue;

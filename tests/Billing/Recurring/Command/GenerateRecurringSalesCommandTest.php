@@ -147,7 +147,10 @@ beforeEach(function (): void {
 });
 
 it('generates a sale for a subscription whose billing date is due', function (): void {
-    $adminId = makeAdminUser($this->connection);
+    makeAdminUser($this->connection);
+    $expectedAdminId = (int) $this->connection->fetchOne(
+        'SELECT usuario_id FROM usuario WHERE rol_id IN (1, 2) ORDER BY usuario_id ASC LIMIT 1',
+    );
     $plan = makeSubscriptionPlan($this->em, '49.90');
     $today = new \DateTimeImmutable('today', new \DateTimeZone('America/Lima'));
     $subscription = makeCustomerSubscription($this->em, $plan, $today->modify('-1 day'));
@@ -175,7 +178,7 @@ it('generates a sale for a subscription whose billing date is due', function ():
         ->and($sale['grand_total'])->toBe('49.90')
         ->and($sale['balance_due'])->toBe('49.90')
         ->and($sale['paid_total'])->toBe('0.00')
-        ->and((int) $sale['seller_user_id'])->toBe($adminId)
+        ->and((int) $sale['seller_user_id'])->toBe($expectedAdminId)
         ->and($itemCount)->toBe(1);
 
     $nextBillingDate = $this->connection->fetchOne(
@@ -205,6 +208,11 @@ it('does not generate a sale for a subscription that is not yet due', function (
 });
 
 it('fails when no admin/super-admin user exists to attribute the sale to', function (): void {
+    $this->connection->executeStatement(
+        'INSERT INTO rol (rol_id, descripcion) VALUES (3, ?) ON DUPLICATE KEY UPDATE descripcion = descripcion',
+        ['Non-admin'],
+    );
+    $this->connection->executeStatement('UPDATE usuario SET rol_id = 3 WHERE rol_id IN (1, 2)');
     $plan = makeSubscriptionPlan($this->em, '49.90');
     $today = new \DateTimeImmutable('today', new \DateTimeZone('America/Lima'));
     makeCustomerSubscription($this->em, $plan, $today->modify('-1 day'));

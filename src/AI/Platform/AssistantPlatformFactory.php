@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\AI\Platform;
 
-use SensitiveParameter;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use SensitiveParameter;
 use Symfony\AI\Platform\Bridge\OpenAi\Contract\OpenAiContract;
 use Symfony\AI\Platform\Bridge\OpenAi\Gpt\ResultConverter;
 use Symfony\AI\Platform\Bridge\OpenAi\PlatformFactory as OpenAiPlatformFactory;
@@ -47,10 +47,6 @@ final readonly class AssistantPlatformFactory
 
         $openaiKey = $openaiApiKey !== '' ? $openaiApiKey : 'sk-not-configured';
 
-        return OpenAiPlatformFactory::create(
-            $openaiKey,
-            $this->httpClient,
-            eventDispatcher: $this->eventDispatcher,
-        );
+        return OpenAiPlatformFactory::create($openaiKey, $this->httpClient, eventDispatcher: $this->eventDispatcher);
     }
 }

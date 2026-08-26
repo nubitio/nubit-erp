@@ -26,10 +26,11 @@ class JournalEntryRepository extends ServiceEntityRepository
     public function nextEntryNo(int $year): string
     {
         $prefix = sprintf('A%s-', $year);
-        $last = $this->createQueryBuilder('e')
+        $last = $this
+            ->createQueryBuilder('e')
             ->select('e.entryNo')
             ->where('e.entryNo LIKE :prefix')
-            ->setParameter('prefix', $prefix.'%')
+            ->setParameter('prefix', $prefix . '%')
             ->orderBy('e.entryNo', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
@@ -37,9 +38,9 @@ class JournalEntryRepository extends ServiceEntityRepository
 
         $seq = 1;
         if (is_array($last) && isset($last['entryNo']) && is_string($last['entryNo'])) {
-            $seq = ((int) substr($last['entryNo'], strlen($prefix))) + 1;
+            $seq = (int) substr($last['entryNo'], strlen($prefix)) + 1;
         }
 
-        return $prefix.str_pad((string) $seq, 6, '0', STR_PAD_LEFT);
+        return $prefix . str_pad((string) $seq, 6, '0', STR_PAD_LEFT);
     }
 }

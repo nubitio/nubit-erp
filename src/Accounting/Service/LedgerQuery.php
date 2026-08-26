@@ -16,10 +16,9 @@ final readonly class LedgerQuery
     /** @return array<string, mixed> */
     public function compute(string $accountCode, string $from, string $to): array
     {
-        $account = $this->connection->fetchAssociative(
-            'SELECT id, code, name, type FROM chart_of_accounts WHERE code = :code AND is_active = 1',
-            ['code' => $accountCode],
-        );
+        $account = $this->connection->fetchAssociative('SELECT id, code, name, type FROM chart_of_accounts WHERE code = :code AND is_active = 1', [
+            'code' => $accountCode,
+        ]);
         if ($account === false) {
             return [
                 'account' => null,

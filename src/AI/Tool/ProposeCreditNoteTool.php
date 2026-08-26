@@ -168,8 +168,8 @@ final readonly class ProposeCreditNoteTool
         $status = (string) ($document->getSunatStatus() ?? '');
         $statusNum = (int) $status;
 
-        return ($statusNum >= 2000 && $statusNum < 4000)
-            || in_array(strtolower($status), ['rejected', 'error', 'rechazado'], true);
+        return $statusNum >= 2000 && $statusNum < 4000
+        || in_array(strtolower($status), ['rejected', 'error', 'rechazado'], true);
     }
 
     private function resolve(?string $id, ?string $series, ?string $number): ?TaxDocument

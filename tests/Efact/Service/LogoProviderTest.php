@@ -65,10 +65,10 @@ final class LogoProviderTest extends TestCase
         $tenantContext = $this->createStub(TenantContext::class);
         $tenantContext->method('getTenantName')->willReturn('demo');
 
-        $logo = (new Media())
+        $logo = new Media()
             ->setPath('logo.png')
             ->setMimeType('image/png');
-        $company = (new Company())->setLogo($logo);
+        $company = new Company()->setLogo($logo);
 
         $query = $this->createMock(Query::class);
         $query->method('setMaxResults')->with(1)->willReturnSelf();
@@ -78,11 +78,7 @@ final class LogoProviderTest extends TestCase
         $entityManager->method('createQuery')->willReturn($query);
 
         $filesystem = $this->createMock(FilesystemOperator::class);
-        $filesystem
-            ->expects(static::once())
-            ->method('read')
-            ->with('demo/images/logo.png')
-            ->willReturn('png contents');
+        $filesystem->expects(static::once())->method('read')->with('demo/images/logo.png')->willReturn('png contents');
 
         $provider = new LogoProvider(
             $entityManager,
@@ -91,9 +87,6 @@ final class LogoProviderTest extends TestCase
             $filesystem,
         );
 
-        static::assertSame(
-            'data:image/png;base64,' . base64_encode('png contents'),
-            $provider->embedded(),
-        );
+        static::assertSame('data:image/png;base64,' . base64_encode('png contents'), $provider->embedded());
     }
 }

@@ -54,9 +54,10 @@ final readonly class ProposeProductTool
             $payload['salePrice'] = $salePrice;
         }
 
-        $summary = $code !== null && $code !== ''
-            ? sprintf('Crear producto %s (%s)', $name, $code)
-            : sprintf('Crear producto %s', $name);
+        $summary =
+            $code !== null && $code !== ''
+                ? sprintf('Crear producto %s (%s)', $name, $code)
+                : sprintf('Crear producto %s', $name);
 
         $action = $this->factory->propose(AssistantProposedAction::KIND_CREATE_PRODUCT, $summary, $payload);
 

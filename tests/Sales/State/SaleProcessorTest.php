@@ -155,9 +155,13 @@ final class SaleProcessorTest extends TestCase
             'pos.price_override',
             'pos.offline_sale',
         ];
-        $this->security->method('hasPermission')->willReturnCallback(
-            fn(string $permission): bool => in_array($permission, $this->grantedPermissions, true),
-        );
+        $this->security
+            ->method('hasPermission')
+            ->willReturnCallback(fn(string $permission): bool => in_array(
+                $permission,
+                $this->grantedPermissions,
+                true,
+            ));
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->saleInvoicing = $this->createMock(InvoiceCreatorInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
@@ -1038,10 +1042,7 @@ final class SaleProcessorTest extends TestCase
             ->method('findByOfflineRetryKey')
             ->with($idempotencyKey)
             ->willReturn($existingSale);
-        $this->saleRecordRepository
-            ->expects($this->once())
-            ->method('enrichWithTaxDocuments')
-            ->with([$existingSale]);
+        $this->saleRecordRepository->expects($this->once())->method('enrichWithTaxDocuments')->with([$existingSale]);
 
         $request = new Request();
         $request->headers->set('Idempotency-Key', $idempotencyKey);

@@ -95,10 +95,16 @@ final readonly class TenantRuntimeConfigProvider
                 'reporting.advanced' => $this->capability($advancedReports),
                 'exports.excel' => $this->capability($excelExport),
                 'payroll.core' => $this->capability($this->isFeatureEnabled($entitlements, 'payroll')),
-                'treasury.bank_reconciliation' => $this->capability($this->isFeatureEnabled($entitlements, 'bank_reconciliation')),
+                'treasury.bank_reconciliation' => $this->capability($this->isFeatureEnabled(
+                    $entitlements,
+                    'bank_reconciliation',
+                )),
                 'fixed_assets.tracking' => $this->capability($this->isFeatureEnabled($entitlements, 'fixed_assets')),
                 'expense_reports.core' => $this->capability($this->isFeatureEnabled($entitlements, 'expense_reports')),
-                'accounting.general_ledger' => $this->capability($this->isFeatureEnabled($entitlements, 'general_ledger')),
+                'accounting.general_ledger' => $this->capability($this->isFeatureEnabled(
+                    $entitlements,
+                    'general_ledger',
+                )),
             ],
             'settings' => [
                 'requireCashRegister' => $settings->isRequireCashRegister(),

@@ -53,10 +53,7 @@ final readonly class ConfirmProposedActionService
         }
 
         if (!$action->isPending()) {
-            throw ServiceException::create(
-                'Esta propuesta ya no se puede confirmar.',
-                Response::HTTP_CONFLICT,
-            );
+            throw ServiceException::create('Esta propuesta ya no se puede confirmar.', Response::HTTP_CONFLICT);
         }
 
         try {
@@ -118,7 +115,10 @@ final readonly class ConfirmProposedActionService
         }
 
         if ($action->getUserId() !== $user->getId()) {
-            throw ServiceException::create('No puedes confirmar una propuesta de otro usuario.', Response::HTTP_FORBIDDEN);
+            throw ServiceException::create(
+                'No puedes confirmar una propuesta de otro usuario.',
+                Response::HTTP_FORBIDDEN,
+            );
         }
 
         if ($action->isExpired() && $action->getStatus() === AssistantProposedAction::PENDING) {

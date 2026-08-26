@@ -51,22 +51,26 @@ final class SeedPresentationDemoCommand extends PerTenantCommand
     protected function configure(): void
     {
         parent::configure();
-        $this
-            ->addOption('password', null, InputOption::VALUE_OPTIONAL, 'Password for demo@empresa.pe', self::DEFAULT_PASSWORD)
-            ->setHelp(<<<'HELP'
-                Creates an owner account and a concise mini-ERP dataset for a product demonstration:
-                catalog, sales, purchases, receivables/payables, quotes, payroll, banks, assets and ledger.
+        $this->addOption(
+            'password',
+            null,
+            InputOption::VALUE_OPTIONAL,
+            'Password for demo@empresa.pe',
+            self::DEFAULT_PASSWORD,
+        )->setHelp(<<<'HELP'
+            Creates an owner account and a concise mini-ERP dataset for a product demonstration:
+            catalog, sales, purchases, receivables/payables, quotes, payroll, banks, assets and ledger.
 
-                The command is idempotent: once a tenant has products or sales it stops without changing
-                operational data. Use it only on a fresh, dedicated presentation tenant.
+            The command is idempotent: once a tenant has products or sales it stops without changing
+            operational data. Use it only on a fresh, dedicated presentation tenant.
 
-                Example:
-                  php bin/console app:demo:seed --tenant=demo --no-interaction
+            Example:
+              php bin/console app:demo:seed --tenant=demo --no-interaction
 
-                Login after seeding:
-                  usuario: demo@empresa.pe
-                  contraseña: Demo.2026! (or the value passed with --password)
-                HELP);
+            Login after seeding:
+              usuario: demo@empresa.pe
+              contraseña: Demo.2026! (or the value passed with --password)
+            HELP);
     }
 
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
@@ -74,7 +78,9 @@ final class SeedPresentationDemoCommand extends PerTenantCommand
         $io = new SymfonyStyle($input, $output);
 
         if (!$this->initialSetupService->status()->configured) {
-            $io->error('Primero complete el setup inicial del tenant. El seed de presentación no configura empresas reales.');
+            $io->error(
+                'Primero complete el setup inicial del tenant. El seed de presentación no configura empresas reales.',
+            );
 
             return Command::FAILURE;
         }
@@ -117,7 +123,9 @@ final class SeedPresentationDemoCommand extends PerTenantCommand
             ['Empleados y planilla', $stats['employees']],
         ]);
         $io->writeln(sprintf('<info>Acceso: %s / %s</info>', self::USERNAME, $password));
-        $io->note('También incluye cotizaciones, bancos, activos fijos, asientos contables y caja abierta para el POS.');
+        $io->note(
+            'También incluye cotizaciones, bancos, activos fijos, asientos contables y caja abierta para el POS.',
+        );
 
         return Command::SUCCESS;
     }
@@ -128,18 +136,18 @@ final class SeedPresentationDemoCommand extends PerTenantCommand
         // depending on a tenant's custom administrator grants.
         $role = $this->roleRepository->find(1);
         if (!$role instanceof Role) {
-            throw new \RuntimeException('No existe el rol Super Administrador. Ejecute el setup inicial antes del seed.');
+            throw new \RuntimeException(
+                'No existe el rol Super Administrador. Ejecute el setup inicial antes del seed.',
+            );
         }
 
         $user = $this->userRepository->findOneBy(['username' => self::USERNAME]);
         if (!$user instanceof User) {
-            $user = (new User())->setUsername(self::USERNAME);
+            $user = new User()->setUsername(self::USERNAME);
             $this->entityManager->persist($user);
         }
 
-        $user
-            ->setRole($role)
-            ->setPassword($this->passwordHasher->hashPassword($user, $password));
+        $user->setRole($role)->setPassword($this->passwordHasher->hashPassword($user, $password));
 
         $this->entityManager->flush();
 

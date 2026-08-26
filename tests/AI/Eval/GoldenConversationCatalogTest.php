@@ -67,15 +67,15 @@ final class GoldenConversationCatalogTest extends TestCase
 
     private function toolIsImplemented(string $projectDir, string $toolName): bool
     {
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($projectDir . '/src/AI/Tool'),
-        );
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($projectDir . '/src/AI/Tool'));
         foreach ($iterator as $file) {
             if (!$file instanceof \SplFileInfo || $file->getExtension() !== 'php') {
                 continue;
             }
             $source = (string) file_get_contents($file->getPathname());
-            if (str_contains($source, "name: '" . $toolName . "'") || str_contains($source, 'name: "' . $toolName . '"')) {
+            if (
+                str_contains($source, "name: '" . $toolName . "'") || str_contains($source, 'name: "' . $toolName . '"')
+            ) {
                 return true;
             }
         }

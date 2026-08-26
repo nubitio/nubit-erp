@@ -12,8 +12,8 @@ use App\CashRegister\State\CashRegisterCloseProcessor;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Entity\User;
 use App\Identity\Security\Security;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -48,7 +48,7 @@ final class CashRegisterCloseProcessorTest extends TestCase
     {
         $cashSession = new CashSession();
         $openedBy = new User();
-        (new \ReflectionProperty(User::class, 'id'))->setValue($openedBy, 1);
+        new \ReflectionProperty(User::class, 'id')->setValue($openedBy, 1);
         $cashSession->setOpenedBy($openedBy);
         $this->entityManager->method('find')->willReturn($cashSession);
         $this->entityManager->method('getReference')->willReturn(new User());
@@ -83,7 +83,7 @@ final class CashRegisterCloseProcessorTest extends TestCase
     {
         $cashSession = new CashSession();
         $openedBy = new User();
-        (new \ReflectionProperty(User::class, 'id'))->setValue($openedBy, 1);
+        new \ReflectionProperty(User::class, 'id')->setValue($openedBy, 1);
         $cashSession->setOpenedBy($openedBy);
         $this->entityManager->method('find')->willReturn($cashSession);
         $this->entityManager->method('getReference')->willReturn(new User());
@@ -110,7 +110,7 @@ final class CashRegisterCloseProcessorTest extends TestCase
     {
         $cashSession = new CashSession();
         $openedBy = new User();
-        (new \ReflectionProperty(User::class, 'id'))->setValue($openedBy, 99);
+        new \ReflectionProperty(User::class, 'id')->setValue($openedBy, 99);
         $cashSession->setOpenedBy($openedBy);
         $this->entityManager->method('find')->willReturn($cashSession);
         $this->security->method('hasPermission')->willReturn(false);

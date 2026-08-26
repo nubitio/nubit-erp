@@ -65,7 +65,7 @@ readonly class LogoProvider
 
         $mimeType = $logo->getMimeType();
         if ($mimeType === null || !str_starts_with($mimeType, 'image/')) {
-            $mimeType = (new \finfo(FILEINFO_MIME_TYPE))->buffer($contents) ?: 'application/octet-stream';
+            $mimeType = new \finfo(FILEINFO_MIME_TYPE)->buffer($contents) ?: 'application/octet-stream';
         }
 
         return sprintf('data:%s;base64,%s', $mimeType, base64_encode($contents));

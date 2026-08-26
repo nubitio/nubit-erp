@@ -46,12 +46,30 @@ count = 1
 file = "src/AI/Controller/AssistantStreamController.php"
 code = "possibly-false-operand"
 message = "Possibly false middle operand used in string concatenation (type `false|non-empty-string`)."
+count = 2
+
+[[issues]]
+file = "src/AI/Controller/AssistantStreamController.php"
+code = "possibly-invalid-argument"
+message = 'Possible argument type mismatch for argument #2 of `Symfony\Bundle\FrameworkBundle\Controller\AbstractController::json`: expected `int`, but possibly received `int|truthy-string`.'
 count = 1
 
 [[issues]]
 file = "src/AI/Controller/AssistantStreamController.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$data`."
+count = 1
+
+[[issues]]
+file = "src/AI/Entity/AssistantProposedAction.php"
+code = "write-only-property"
+message = "Property `$createdAt` is written to but never read."
+count = 1
+
+[[issues]]
+file = "src/AI/Entity/AssistantThread.php"
+code = "write-only-property"
+message = "Property `$createdAt` is written to but never read."
 count = 1
 
 [[issues]]
@@ -127,63 +145,135 @@ message = "Expression being iterated (type `false|list<string>`) might be `false
 count = 1
 
 [[issues]]
+file = "src/AI/Platform/XaiGptModelClient.php"
+code = "impossible-condition"
+message = "This condition (type `false`) will always evaluate to false."
+count = 1
+
+[[issues]]
+file = "src/AI/Platform/XaiGptModelClient.php"
+code = "impossible-type-comparison"
+message = "Impossible type assertion: `$payload` of type `array<int|string, mixed>` can never be `string`."
+count = 1
+
+[[issues]]
+file = "src/AI/Platform/XaiGptModelClient.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `mixed`."
+count = 3
+
+[[issues]]
+file = "src/AI/Platform/XaiGptModelClient.php"
+code = "mixed-array-assignment"
+message = "Unsafe array assignment on type `mixed`."
+count = 5
+
+[[issues]]
+file = "src/AI/Platform/XaiGptModelClient.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/AI/Service/AssistantCallLogger.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/AI/Service/AssistantCallLogger.php"
+code = "redundant-logical-operation"
+message = "Redundant `||` operation: left operand is always false and right operand is evaluated."
+count = 1
+
+[[issues]]
+file = "src/AI/Service/AssistantCallLogger.php"
+code = "redundant-type-comparison"
+message = "Redundant condition: variable `$data` (type `array<string, mixed>`) is already known to be `array<array-key, mixed>`."
+count = 2
+
+[[issues]]
+file = "src/AI/Service/AssistantCallLogger.php"
+code = "redundant-type-comparison"
+message = "Redundant type assertion: `$data` is already `array<string, mixed>`."
+count = 1
+
+[[issues]]
+file = "src/AI/Service/AssistantPromptAssembler.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/AI/Service/AssistantPromptAssembler.php"
+code = "redundant-comparison"
+message = "Redundant `!==` comparison: left-hand side is always not identical to right-hand side."
+count = 1
+
+[[issues]]
+file = "src/AI/Service/AssistantPromptAssembler.php"
+code = "redundant-logical-operation"
+message = "Redundant `&&` operation: left operand is evaluated and right operand is always truthy."
+count = 1
+
+[[issues]]
+file = "src/AI/Service/AssistantThreadService.php"
+code = "impossible-condition"
+message = "This condition (type `false`) will always evaluate to false."
+count = 1
+
+[[issues]]
+file = "src/AI/Service/AssistantThreadService.php"
+code = "invalid-iterator"
+message = "The expression provided to `foreach` is not iterable. It resolved to type `mixed`, which is not iterable."
+count = 1
+
+[[issues]]
+file = "src/AI/Service/AssistantThreadService.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 3
+
+[[issues]]
+file = "src/AI/Service/AssistantTokenQuotaService.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/AI/Service/AssistantTokenQuotaService.php"
+code = "mixed-assignment"
+message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/AI/Service/ConfirmProposedActionService.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 4
+
+[[issues]]
+file = "src/AI/Service/ConfirmProposedActionService.php"
+code = "mixed-operand"
+message = "Casting `mixed` to `bool`."
+count = 1
+
+[[issues]]
+file = "src/AI/Service/ProposedActionFactory.php"
+code = "possibly-null-argument"
+message = 'Argument #1 of method `App\AI\Entity\AssistantProposedAction::setUserId` is possibly `null`, but parameter type `int` does not accept it.'
+count = 1
+
+[[issues]]
 file = "src/AI/Service/SessionContextBuilder.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 3
 
 [[issues]]
-file = "src/AI/State/ApiDocsProvider.php"
-code = "incompatible-parameter-name"
-message = 'Parameter #1 of `App\AI\State\ApiDocsProvider::provide()` is named `$_operation` but parent `ApiPlatform\State\ProviderInterface::provide()` names it `$operation`'
-count = 1
-
-[[issues]]
-file = "src/AI/State/ApiDocsProvider.php"
-code = "incompatible-parameter-name"
-message = 'Parameter #2 of `App\AI\State\ApiDocsProvider::provide()` is named `$_uriVariables` but parent `ApiPlatform\State\ProviderInterface::provide()` names it `$uriVariables`'
-count = 1
-
-[[issues]]
-file = "src/AI/State/ApiDocsProvider.php"
-code = "incompatible-parameter-name"
-message = 'Parameter #3 of `App\AI\State\ApiDocsProvider::provide()` is named `$_context` but parent `ApiPlatform\State\ProviderInterface::provide()` names it `$context`'
-count = 1
-
-[[issues]]
-file = "src/AI/State/InvokeHydraOperationProcessor.php"
-code = "incompatible-parameter-name"
-message = 'Parameter #2 of `App\AI\State\InvokeHydraOperationProcessor::process()` is named `$_operation` but parent `ApiPlatform\State\ProcessorInterface::process()` names it `$operation`'
-count = 1
-
-[[issues]]
-file = "src/AI/State/InvokeHydraOperationProcessor.php"
-code = "incompatible-parameter-name"
-message = 'Parameter #3 of `App\AI\State\InvokeHydraOperationProcessor::process()` is named `$_uriVariables` but parent `ApiPlatform\State\ProcessorInterface::process()` names it `$uriVariables`'
-count = 1
-
-[[issues]]
-file = "src/AI/State/InvokeHydraOperationProcessor.php"
-code = "incompatible-parameter-name"
-message = 'Parameter #4 of `App\AI\State\InvokeHydraOperationProcessor::process()` is named `$_context` but parent `ApiPlatform\State\ProcessorInterface::process()` names it `$context`'
-count = 1
-
-[[issues]]
-file = "src/AI/State/ReadHydraResourceProcessor.php"
-code = "incompatible-parameter-name"
-message = 'Parameter #2 of `App\AI\State\ReadHydraResourceProcessor::process()` is named `$_operation` but parent `ApiPlatform\State\ProcessorInterface::process()` names it `$operation`'
-count = 1
-
-[[issues]]
-file = "src/AI/State/ReadHydraResourceProcessor.php"
-code = "incompatible-parameter-name"
-message = 'Parameter #3 of `App\AI\State\ReadHydraResourceProcessor::process()` is named `$_uriVariables` but parent `ApiPlatform\State\ProcessorInterface::process()` names it `$uriVariables`'
-count = 1
-
-[[issues]]
-file = "src/AI/State/ReadHydraResourceProcessor.php"
-code = "incompatible-parameter-name"
-message = 'Parameter #4 of `App\AI\State\ReadHydraResourceProcessor::process()` is named `$_context` but parent `ApiPlatform\State\ProcessorInterface::process()` names it `$context`'
+file = "src/AI/Tool/AccountsPayableTools.php"
+code = "invalid-type-cast"
+message = "Non numeric string of type `string` implicitly cast to `float`."
 count = 1
 
 [[issues]]
@@ -211,6 +301,18 @@ message = "Redundant cast to `(string)`: the expression already has this type."
 count = 4
 
 [[issues]]
+file = "src/AI/Tool/InventoryMovementTools.php"
+code = "impossible-condition"
+message = "This condition (type `false`) will always evaluate to false."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/InventoryMovementTools.php"
+code = "redundant-null-coalesce"
+message = "Redundant null coalesce: left-hand side can never be `null` or undefined."
+count = 1
+
+[[issues]]
 file = "src/AI/Tool/ProductTools.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
@@ -220,6 +322,168 @@ count = 1
 file = "src/AI/Tool/ProductTools.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$product`."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeCreditNoteTool.php"
+code = "invalid-operand"
+message = "Invalid type for left operand."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeCreditNoteTool.php"
+code = "invalid-return-statement"
+message = '''Invalid return type for function `App\AI\Tool\ProposeCreditNoteTool::proposeCreditNote`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeCreditNoteTool.php"
+code = "invalid-type-cast"
+message = "Casting `mixed` to `float`."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeCreditNoteTool.php"
+code = "mixed-argument"
+message = "Invalid argument type for argument #2 of `sprintf`: expected `Stringable|null|scalar`, but found `mixed`."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeCreditNoteTool.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/AI/Tool/ProposeCreditNoteTool.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeCreditNoteTool.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$originalLines`."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeCustomerTool.php"
+code = "invalid-return-statement"
+message = '''Invalid return type for function `App\AI\Tool\ProposeCustomerTool::proposeCustomer`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeCustomerTool.php"
+code = "redundant-comparison"
+message = "Redundant `!==` comparison: left-hand side is always not identical to right-hand side."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeCustomerTool.php"
+code = "redundant-logical-operation"
+message = "Redundant `&&` operation: left operand is always truthy and right operand is evaluated."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeOnboardingFillTool.php"
+code = "invalid-return-statement"
+message = '''Invalid return type for function `App\AI\Tool\ProposeOnboardingFillTool::proposeOnboardingFill`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeOnboardingFillTool.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeProductFromImageTool.php"
+code = "invalid-return-statement"
+message = '''Invalid return type for function `App\AI\Tool\ProposeProductFromImageTool::proposeProductFromImage`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeProductTool.php"
+code = "invalid-return-statement"
+message = '''Invalid return type for function `App\AI\Tool\ProposeProductTool::proposeProduct`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeReplaceRejectedTool.php"
+code = "invalid-return-statement"
+message = '''Invalid return type for function `App\AI\Tool\ProposeReplaceRejectedTool::proposeReplaceRejected`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeReplaceRejectedTool.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeSaleTool.php"
+code = "invalid-operand"
+message = "Invalid type for left operand."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeSaleTool.php"
+code = "invalid-return-statement"
+message = '''Invalid return type for function `App\AI\Tool\ProposeSaleTool::proposeSale`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeSaleTool.php"
+code = "invalid-type-cast"
+message = "Non numeric string of type `string` implicitly cast to `float`."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeSaleTool.php"
+code = "less-specific-argument"
+message = 'Argument type mismatch for argument #1 of `App\AI\Tool\ProposeSaleTool::resolveLine`: expected `array<string, mixed>`, but provided type `array<array-key, mixed>` is less specific.'
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeSaleTool.php"
+code = "mixed-argument"
+message = "Invalid argument type for argument #2 of `sprintf`: expected `Stringable|null|scalar`, but found `mixed`."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeSaleTool.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 3
+
+[[issues]]
+file = "src/AI/Tool/ProposeSaleTool.php"
+code = "mixed-assignment"
+message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeSaleTool.php"
+code = "possibly-undefined-string-array-index"
+message = "Possibly undefined array key 'name' accessed on `array{'name'?: string, 'productId'?: string, 'qty'?: float, 'unitPrice'?: string}`."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeSaleTool.php"
+code = "possibly-undefined-string-array-index"
+message = "Possibly undefined array key 'qty' accessed on `array{'name'?: string, 'productId'?: string, 'qty'?: float, 'unitPrice'?: string}`."
+count = 1
+
+[[issues]]
+file = "src/AI/Tool/ProposeSaleTool.php"
+code = "possibly-undefined-string-array-index"
+message = "Possibly undefined array key accessed on `array{'name': string, 'productId': string, 'qty': float, 'unitPrice': string}|array{}`."
+count = 2
+
+[[issues]]
+file = "src/AI/Tool/PurchaseTools.php"
+code = "invalid-type-cast"
+message = "Casting `mixed` to `float`."
 count = 1
 
 [[issues]]
@@ -238,6 +502,24 @@ count = 3
 file = "src/AI/Tool/SunatStatusTool.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
+count = 1
+
+[[issues]]
+file = "src/Accounting/Command/AccountingBackfillCommand.php"
+code = "invalid-type-cast"
+message = "Casting `mixed` to `float`."
+count = 1
+
+[[issues]]
+file = "src/Accounting/Controller/AccountingReportController.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 4
+
+[[issues]]
+file = "src/Accounting/Repository/JournalEntryRepository.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 1
 
 [[issues]]
@@ -295,12 +577,6 @@ message = "Possibly null right operand used in string concatenation (type `null|
 count = 1
 
 [[issues]]
-file = "src/BankReconciliation/Controller/UnreconciledMovementsController.php"
-code = "possibly-null-operand"
-message = "Possibly null right operand used in string concatenation (type `null|string`)."
-count = 1
-
-[[issues]]
 file = "src/BankReconciliation/Repository/BankStatementLineRepository.php"
 code = "mixed-return-statement"
 message = 'Could not infer a precise return type for function `App\BankReconciliation\Repository\BankStatementLineRepository::findUnmatchedByImportBatch`. Saw type `mixed`.'
@@ -308,14 +584,20 @@ count = 1
 
 [[issues]]
 file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::cashMovementCandidates`: expected `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|string, 'sourceType': string}>`, but found `array<array-key, array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|null, 'sourceType': string('cash_movement')}>|list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|null, 'sourceType': string('cash_movement')}>`.'''
+code = "invalid-argument"
+message = '''Invalid argument type for argument #1 of `array_map`: expected `(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}): App\CashRegister\Entity\CashMovement)|(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}, ('S.array_map() extends mixed)): App\CashRegister\Entity\CashMovement)|null`, but found `(closure(array{'amount': string, 'cash_session_id': int|null|string, 'category_id': int|null|string, 'created_at': string, 'description': null|string, 'id': int|string, 'movement_type': string}): App\CashRegister\Entity\CashMovement)`.'''
 count = 1
 
 [[issues]]
 file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
 code = "invalid-return-statement"
-message = '''Invalid return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::salePaymentCandidates`: expected `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|string, 'sourceType': string}>`, but found `array<array-key, array{'date': DateTimeImmutable&static, 'label': truthy-string, 'sourceId': int|null, 'sourceType': string('sale_payment')}>|list<array{'date': DateTimeImmutable&static, 'label': truthy-string, 'sourceId': int|null, 'sourceType': string('sale_payment')}>`.'''
+message = '''Invalid return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::cashMovementCandidates`: expected `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|string, 'sourceType': string}>`, but found `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|null, 'sourceType': string('cash_movement')}>`.'''
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "invalid-return-statement"
+message = '''Invalid return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::salePaymentCandidates`: expected `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|string, 'sourceType': string}>`, but found `array<array-key, array{'date': DateTimeImmutable&static, 'label': string, 'sourceId': int|null, 'sourceType': string('sale_payment')}>|list<array{'date': DateTimeImmutable&static, 'label': string, 'sourceId': int|null, 'sourceType': string('sale_payment')}>`.'''
 count = 1
 
 [[issues]]
@@ -333,12 +615,6 @@ count = 1
 [[issues]]
 file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
 code = "mixed-argument"
-message = '''Invalid argument type for argument #2 of `array_map`: expected `array<('K.array_map() extends array-key), App\CashRegister\Entity\CashMovement>`, but found `mixed`.'''
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "mixed-argument"
 message = '''Invalid argument type for argument #2 of `array_map`: expected `array<('K.array_map() extends array-key), App\Sales\Entity\SalePayment>`, but found `mixed`.'''
 count = 1
 
@@ -346,13 +622,7 @@ count = 1
 file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 3
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "mixed-return-statement"
-message = 'Could not infer a precise return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::unreconciledCashMovements`. Saw type `mixed`.'
-count = 1
+count = 2
 
 [[issues]]
 file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
@@ -368,6 +638,12 @@ count = 1
 
 [[issues]]
 file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
+code = "possibly-invalid-argument"
+message = '''Possible argument type mismatch for argument #1 of `App\CashRegister\Service\CashMovementHydrator::fromRow`: expected `array{'amount': string, 'cash_session_id': int|null|string, 'category_id': int|null|string, 'created_at': string, 'description': null|string, 'id': int|string, 'movement_type': string}`, but possibly received `array<string, mixed>`.'''
+count = 1
+
+[[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
 code = "possibly-null-argument"
 message = "Argument #1 of function `mb_strtolower` is possibly `null`, but parameter type `string` does not accept it."
 count = 1
@@ -376,12 +652,6 @@ count = 1
 file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
 code = "possibly-null-argument"
 message = "Argument #1 of method `DateTimeImmutable::createFromInterface` is possibly `null`, but parameter type `DateTimeInterface` does not accept it."
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "possibly-null-operand"
-message = "Possibly null right operand used in string concatenation (type `null|string`)."
 count = 1
 
 [[issues]]
@@ -1171,6 +1441,12 @@ message = "Redundant docblock type for variable `$line`."
 count = 1
 
 [[issues]]
+file = "src/Billing/Service/CreditNoteStockReverser.php"
+code = "redundant-null-coalesce"
+message = "Redundant null coalesce: left-hand side can never be `null` or undefined."
+count = 1
+
+[[issues]]
 file = "src/Billing/Service/InvoiceCreationService.php"
 code = "mixed-operand"
 message = "Invalid left operand: type `truthy-mixed` cannot be reliably used in string concatenation."
@@ -1268,33 +1544,9 @@ count = 2
 
 [[issues]]
 file = "src/Billing/State/TaxDocumentProcessor.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `App\Billing\Entity\TaxDocument::setAffectedDocument`: expected `null|string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Billing/State/TaxDocumentProcessor.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `App\Billing\Entity\TaxDocument::setCustomer`: expected `App\Contacts\Entity\Customer|null`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Billing/State/TaxDocumentProcessor.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `App\Billing\Entity\TaxDocument::setSaleRecord`: expected `App\Sales\Entity\SaleRecord|null`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Billing/State/TaxDocumentProcessor.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `App\Billing\Entity\TaxDocument::setTotal`: expected `string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Billing/State/TaxDocumentProcessor.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
+count = 2
 
 [[issues]]
 file = "src/Billing/State/TaxDocumentProcessor.php"
@@ -1306,7 +1558,7 @@ count = 1
 file = "src/Billing/State/TaxDocumentProcessor.php"
 code = "possible-method-access-on-null"
 message = "Attempting to call a method on `null`."
-count = 6
+count = 1
 
 [[issues]]
 file = "src/Billing/State/TaxDocumentProcessor.php"
@@ -1316,20 +1568,14 @@ count = 1
 
 [[issues]]
 file = "src/Billing/State/TaxDocumentProcessor.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Billing\Repository\TaxDocumentRepository::getNextSequenceNumber` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Billing/State/TaxDocumentProcessor.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Billing\Repository\TaxDocumentRepository::getTaxDocumentSeriesByBranch` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Billing/State/TaxDocumentProcessor.php"
 code = "possibly-null-operand"
 message = "Left operand in `!=` comparison might be `null` (type `null|string`)."
+count = 1
+
+[[issues]]
+file = "src/Billing/State/TaxDocumentProcessor.php"
+code = "redundant-cast"
+message = "Redundant cast to `(float)`: the expression already has this type."
 count = 1
 
 [[issues]]
@@ -1621,6 +1867,72 @@ message = 'Could not infer a precise return type for function `App\CashRegister\
 count = 1
 
 [[issues]]
+file = "src/CashRegister/Repository/CashSessionRepository.php"
+code = "mixed-return-statement"
+message = 'Could not infer a precise return type for function `App\CashRegister\Repository\CashSessionRepository::findLatestByCashRegister`. Saw type `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/CashRegister/Service/CashMovementHydrator.php"
+code = "possibly-invalid-argument"
+message = '''Possible argument type mismatch for argument #1 of `App\CashRegister\Service\CashMovementHydrator::fromRow`: expected `array{'amount': string, 'cash_session_id': int|null|string, 'category_id': int|null|string, 'created_at': string, 'description': null|string, 'id': int|string, 'movement_type': string}`, but possibly received `array<string, mixed>`.'''
+count = 1
+
+[[issues]]
+file = "src/CashRegister/Service/CashMovementHydrator.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 3
+
+[[issues]]
+file = "src/CashRegister/State/CashMovementCollectionProvider.php"
+code = "invalid-argument"
+message = '''Invalid argument type for argument #1 of `array_map`: expected `(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}): App\CashRegister\Entity\CashMovement)|(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}, ('S.array_map() extends mixed)): App\CashRegister\Entity\CashMovement)|null`, but found `(closure(array{'amount': string, 'cash_session_id': int|null|string, 'category_id': int|null|string, 'created_at': string, 'description': null|string, 'id': int|string, 'movement_type': string}): App\CashRegister\Entity\CashMovement)`.'''
+count = 1
+
+[[issues]]
+file = "src/CashRegister/State/CashMovementCollectionProvider.php"
+code = "mixed-assignment"
+message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/CashRegister/State/CashMovementWriteProcessor.php"
+code = "mixed-operand"
+message = "Casting `mixed` to `bool`."
+count = 1
+
+[[issues]]
+file = "src/CashRegister/State/CashMovementWriteProcessor.php"
+code = "no-value"
+message = "Argument #1 passed to function `number_format` has type `never`, meaning it cannot produce a value."
+count = 1
+
+[[issues]]
+file = "src/CashRegister/State/CashMovementWriteProcessor.php"
+code = "redundant-comparison"
+message = "Redundant `!==` comparison: left-hand side is always not identical to right-hand side."
+count = 1
+
+[[issues]]
+file = "src/CashRegister/State/CashMovementWriteProcessor.php"
+code = "redundant-condition"
+message = "Redundant ternary operator: condition is always truthy."
+count = 1
+
+[[issues]]
+file = "src/CashRegister/State/CashMovementWriteProcessor.php"
+code = "redundant-logical-operation"
+message = "Redundant `&&` operation: left operand is always truthy and right operand is evaluated."
+count = 1
+
+[[issues]]
+file = "src/CashRegister/State/CashMovementWriteProcessor.php"
+code = "redundant-type-comparison"
+message = "Redundant type assertion: `$amount` is already `numeric-string`."
+count = 1
+
+[[issues]]
 file = "src/CashRegister/State/CashRegisterCloseProcessor.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
@@ -1703,6 +2015,12 @@ file = "src/CashRegister/State/CashSessionClosureSummaryProvider.php"
 code = "mixed-assignment"
 message = "Assigning `truthy-mixed` type to a variable may lead to unexpected behavior."
 count = 2
+
+[[issues]]
+file = "src/CashRegister/State/CashSessionMovementsProvider.php"
+code = "invalid-argument"
+message = '''Invalid argument type for argument #1 of `array_map`: expected `(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}): App\CashRegister\Entity\CashMovement)|(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}, ('S.array_map() extends mixed)): App\CashRegister\Entity\CashMovement)|null`, but found `(closure(array{'amount': string, 'cash_session_id': int|null|string, 'category_id': int|null|string, 'created_at': string, 'description': null|string, 'id': int|string, 'movement_type': string}): App\CashRegister\Entity\CashMovement)`.'''
+count = 1
 
 [[issues]]
 file = "src/CashRegister/State/CashSessionMovementsProvider.php"
@@ -2781,7 +3099,7 @@ count = 1
 [[issues]]
 file = "src/Efact/Audit/AuditLogMessageHandler.php"
 code = "mixed-return-statement"
-message = "Could not infer a precise return type for function `{closure:src/Efact/Audit/AuditLogMessageHandler.php:52:63}`. Saw type `mixed`."
+message = "Could not infer a precise return type for function `{closure:src/Efact/Audit/AuditLogMessageHandler.php:54:63}`. Saw type `mixed`."
 count = 1
 
 [[issues]]
@@ -2959,12 +3277,6 @@ message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
 
 [[issues]]
-file = "src/Efact/EventListener/TenantMetricsListener.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
 file = "src/Efact/RateLimit/TenantRateLimiter.php"
 code = "possibly-null-operand"
 message = "Possibly null middle operand used in string concatenation (type `null|string`)."
@@ -3136,6 +3448,12 @@ count = 1
 file = "src/Efact/Web/CspNonceListener.php"
 code = "possibly-null-argument"
 message = "Argument #1 of function `str_contains` is possibly `null`, but parameter type `string` does not accept it."
+count = 1
+
+[[issues]]
+file = "src/FixedAssets/Command/GenerateDepreciationEntriesCommand.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
 
 [[issues]]
@@ -3865,10 +4183,130 @@ message = "Assigning `mixed` type to a variable may lead to unexpected behavior.
 count = 1
 
 [[issues]]
+file = "src/Onboarding/Controller/OpeningReceivableImportController.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/Onboarding/OpeningBalanceRow.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/Onboarding/OpeningBalanceRow.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 1
+
+[[issues]]
+file = "src/Onboarding/OpeningReceivableImporter.php"
+code = "redundant-condition"
+message = "Redundant ternary operator: condition is always truthy."
+count = 1
+
+[[issues]]
+file = "src/Onboarding/OpeningReceivableImporter.php"
+code = "redundant-type-comparison"
+message = "Redundant type assertion: `$raw` is already `array<string, mixed>`."
+count = 1
+
+[[issues]]
 file = "src/Organization/Entity/Branch.php"
 code = "invalid-property-assignment-value"
 message = 'Invalid type for property `$company`: expected `App\Organization\Entity\Company`, but got `App\Organization\Entity\Company|null`.'
 count = 1
+
+[[issues]]
+file = "src/Payroll/Repository/AfpRateRepository.php"
+code = "mixed-return-statement"
+message = 'Could not infer a precise return type for function `App\Payroll\Repository\AfpRateRepository::findEffectiveRate`. Saw type `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Payroll/Service/PayrollCalculationService.php"
+code = "possibly-null-argument"
+message = 'Argument #1 of method `App\Payroll\Repository\AfpRateRepository::findEffectiveRate` is possibly `null`, but parameter type `string` does not accept it.'
+count = 1
+
+[[issues]]
+file = "src/Payroll/Service/PayrollCalculationService.php"
+code = "possibly-null-argument"
+message = 'Argument #2 of method `App\Payroll\Service\PayrollCalculationService::days360` is possibly `null`, but parameter type `DateTimeImmutable` does not accept it.'
+count = 1
+
+[[issues]]
+file = "src/Payroll/Service/PayrollCalculationService.php"
+code = "possibly-null-operand"
+message = "Left operand in `<` comparison might be `null` (type `DateTimeImmutable|null`)."
+count = 1
+
+[[issues]]
+file = "src/Payroll/Service/PayrollCalculationService.php"
+code = "possibly-null-operand"
+message = "Right operand in `>` comparison might be `null` (type `DateTimeImmutable|null`)."
+count = 1
+
+[[issues]]
+file = "src/Payroll/Service/PayrollPlameExportService.php"
+code = "invalid-iterator"
+message = "The expression provided to `foreach` is not iterable. It resolved to type `mixed`, which is not iterable."
+count = 1
+
+[[issues]]
+file = "src/Payroll/Service/PayrollPlameExportService.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #2 of `App\Payroll\Service\PayrollPlameExportService::deductionLine`: expected `string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Payroll/Service/PayrollPlameExportService.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #2 of `App\Payroll\Service\PayrollPlameExportService::earningsLine`: expected `string`, but found `mixed`.'
+count = 5
+
+[[issues]]
+file = "src/Payroll/Service/PayrollPlameExportService.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #2 of `App\Payroll\Service\PayrollPlameExportService::pensionDeductionLines`: expected `string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Payroll/Service/PayrollPlameExportService.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #3 of `App\Payroll\Service\PayrollPlameExportService::pensionDeductionLines`: expected `App\Payroll\Entity\Employee`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Payroll/Service/PayrollPlameExportService.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #4 of `App\Payroll\Service\PayrollPlameExportService::deductionLine`: expected `string`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Payroll/Service/PayrollPlameExportService.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #4 of `App\Payroll\Service\PayrollPlameExportService::earningsLine`: expected `string`, but found `mixed`.'
+count = 5
+
+[[issues]]
+file = "src/Payroll/Service/PayrollPlameExportService.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #4 of `App\Payroll\Service\PayrollPlameExportService::pensionDeductionLines`: expected `App\Payroll\Entity\PayslipEntry`, but found `mixed`.'
+count = 1
+
+[[issues]]
+file = "src/Payroll/Service/PayrollPlameExportService.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 4
+
+[[issues]]
+file = "src/Payroll/Service/PayrollPlameExportService.php"
+code = "mixed-method-access"
+message = "Attempting to access a method on a non-object type (`mixed`)."
+count = 8
 
 [[issues]]
 file = "src/Purchasing/Command/PurchasesMenuMigrateCommand.php"
@@ -3997,10 +4435,82 @@ message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
 
 [[issues]]
+file = "src/Reporting/Financial/Api/FinancialReportController.php"
+code = "mixed-argument"
+message = "Invalid argument type for argument #2 of `sprintf`: expected `Stringable|null|scalar`, but found `mixed`."
+count = 1
+
+[[issues]]
+file = "src/Reporting/Financial/Api/FinancialReportController.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 6
+
+[[issues]]
+file = "src/Reporting/Financial/Application/Query/CashFlowQuery.php"
+code = "invalid-type-cast"
+message = "Casting `mixed` to `float`."
+count = 6
+
+[[issues]]
+file = "src/Reporting/Financial/Application/Query/ProfitAndLossQuery.php"
+code = "invalid-type-cast"
+message = "Casting `mixed` to `float`."
+count = 5
+
+[[issues]]
+file = "src/Reporting/Financial/Application/Query/ProfitAndLossQuery.php"
+code = "mixed-assignment"
+message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/Reporting/Financial/Service/FinancialReportExportService.php"
+code = "invalid-iterator"
+message = "The expression provided to `foreach` is not iterable. It resolved to type `mixed`, which is not iterable."
+count = 3
+
+[[issues]]
+file = "src/Reporting/Financial/Service/FinancialReportExportService.php"
+code = "invalid-type-cast"
+message = "Casting `mixed` to `float`."
+count = 8
+
+[[issues]]
+file = "src/Reporting/Financial/Service/FinancialReportExportService.php"
+code = "mixed-argument"
+message = "Invalid argument type for argument #2 of `sprintf`: expected `Stringable|null|scalar`, but found `mixed`."
+count = 1
+
+[[issues]]
+file = "src/Reporting/Financial/Service/FinancialReportExportService.php"
+code = "mixed-argument"
+message = "Invalid argument type for argument #3 of `sprintf`: expected `Stringable|null|scalar`, but found `mixed`."
+count = 1
+
+[[issues]]
+file = "src/Reporting/Financial/Service/FinancialReportExportService.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `mixed`."
+count = 16
+
+[[issues]]
+file = "src/Reporting/Financial/Service/FinancialReportExportService.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 4
+
+[[issues]]
+file = "src/Reporting/Financial/Service/FinancialReportExportService.php"
+code = "mixed-operand"
+message = "Invalid right operand: type `mixed` cannot be reliably used in string concatenation."
+count = 1
+
+[[issues]]
 file = "src/Reporting/Ple/PleLedgerValidator.php"
 code = "invalid-type-cast"
 message = "Casting `mixed` to `float`."
-count = 3
+count = 5
 
 [[issues]]
 file = "src/Reporting/Ple/PleLedgerValidator.php"
@@ -4012,13 +4522,13 @@ count = 2
 file = "src/Reporting/Ple/PleLedgerValidator.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
+count = 4
 
 [[issues]]
 file = "src/Reporting/Ple/PleLedgerValidator.php"
 code = "mixed-assignment"
 message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
-count = 2
+count = 3
 
 [[issues]]
 file = "src/Reporting/Ple/PurchaseLedgerExporter.php"
@@ -4144,7 +4654,7 @@ count = 1
 file = "src/Sales/Repository/DashboardRepository.php"
 code = "invalid-type-cast"
 message = "Casting `mixed` to `float`."
-count = 33
+count = 35
 
 [[issues]]
 file = "src/Sales/Repository/DashboardRepository.php"
@@ -4162,7 +4672,7 @@ count = 14
 file = "src/Sales/Repository/DashboardRepository.php"
 code = "mixed-argument"
 message = 'Invalid argument type for argument #2 of `Doctrine\DBAL\Connection::fetchAssociative`: expected `array<string, mixed>|list<mixed>`, but found `mixed`.'
-count = 6
+count = 9
 
 [[issues]]
 file = "src/Sales/Repository/DashboardRepository.php"
@@ -4180,7 +4690,7 @@ count = 6
 file = "src/Sales/Repository/DashboardRepository.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 29
+count = 32
 
 [[issues]]
 file = "src/Sales/Repository/DashboardRepository.php"
@@ -4413,25 +4923,13 @@ count = 1
 [[issues]]
 file = "src/Sales/State/SaleProcessor.php"
 code = "invalid-type-cast"
-message = "Casting `mixed` to `float`."
-count = 3
+message = "Non numeric string of type `string` implicitly cast to `float`."
+count = 1
 
 [[issues]]
 file = "src/Sales/State/SaleProcessor.php"
 code = "less-specific-nested-argument-type"
 message = 'Argument type mismatch for argument #1 of `App\Sales\State\SaleProcessor::buildSaleItems`: expected `array<int, array<string, mixed>>`, but provided type `array<int, mixed>` is less specific.'
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleProcessor.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `App\Sales\Entity\SaleItemRecord::setDiscountAmount`: expected `string`, but found `nonnull`.'
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleProcessor.php"
-code = "mixed-argument"
-message = "Invalid argument type for argument #2 of `sprintf`: expected `Stringable|null|scalar`, but found `nonnull`."
 count = 1
 
 [[issues]]
@@ -4468,6 +4966,12 @@ count = 1
 file = "src/Sales/State/SaleProcessor.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$item`."
+count = 1
+
+[[issues]]
+file = "src/Sales/State/SaleProcessor.php"
+code = "redundant-null-coalesce"
+message = "Redundant null coalesce: left-hand side can never be `null` or undefined."
 count = 1
 
 [[issues]]
@@ -4508,8 +5012,20 @@ count = 1
 
 [[issues]]
 file = "src/Sales/State/SaleQuoteProvider.php"
+code = "impossible-condition"
+message = "This condition (type `false`) will always evaluate to false."
+count = 1
+
+[[issues]]
+file = "src/Sales/State/SaleQuoteProvider.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/Sales/State/SaleQuoteProvider.php"
+code = "possibly-invalid-argument"
+message = 'Possible argument type mismatch for argument #1 of `App\Sales\State\SaleQuoteProvider::detachMissingProducts`: expected `array<array-key, App\Sales\Entity\SaleQuote>`, but possibly received `list{ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|App\Sales\Entity\SaleQuote}`.'
 count = 1
 
 [[issues]]
@@ -4534,6 +5050,12 @@ count = 1
 file = "src/Sales/State/SaleUtils.php"
 code = "possibly-null-argument"
 message = 'Argument #1 of method `App\Sales\State\SaleUtils::getSaleNumber` is possibly `null`, but parameter type `string` does not accept it.'
+count = 1
+
+[[issues]]
+file = "src/Sales/State/SaleUtils.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
 
 [[issues]]
@@ -4765,6 +5287,12 @@ message = "Redundant docblock type for variable `$data`."
 count = 1
 
 [[issues]]
+file = "src/Setup/Command/SeedPresentationDemoCommand.php"
+code = "ambiguous-object-method-access"
+message = "Cannot statically verify method call on a generic `object` type."
+count = 2
+
+[[issues]]
 file = "src/Setup/Command/SeedTestDataCommand.php"
 code = "less-specific-argument"
 message = 'Argument type mismatch for argument #1 of `App\Setup\Command\SeedTestDataCommand::purgeTestData`: expected `Doctrine\DBAL\Connection`, but provided type `object` is less specific.'
@@ -4844,8 +5372,56 @@ count = 1
 
 [[issues]]
 file = "src/Setup/Service/E2eTestSeedService.php"
+code = "impossible-condition"
+message = "This condition (type `false`) will always evaluate to false."
+count = 1
+
+[[issues]]
+file = "src/Setup/Service/E2eTestSeedService.php"
 code = "less-specific-nested-argument-type"
 message = 'Argument type mismatch for argument #1 of `App\Setup\Service\E2eTestSeedService::purgeSalesByIds`: expected `list<string>`, but provided type `non-empty-list<mixed>` is less specific.'
+count = 3
+
+[[issues]]
+file = "src/Setup/Service/PresentationDemoSeeder.php"
+code = "deprecated-class"
+message = 'Class `App\Inventory\Entity\ProductStock` is deprecated and should no longer be used.'
+count = 1
+
+[[issues]]
+file = "src/Setup/Service/PresentationDemoSeeder.php"
+code = "impossible-condition"
+message = "This condition (type `false`) will always evaluate to false."
+count = 1
+
+[[issues]]
+file = "src/Setup/Service/PresentationDemoSeeder.php"
+code = "invalid-type-cast"
+message = "Non numeric string of type `string` implicitly cast to `float`."
+count = 11
+
+[[issues]]
+file = "src/Setup/Service/PresentationDemoSeeder.php"
+code = "possibly-null-operand"
+message = "Possibly null left operand used in string concatenation (type `null|string`)."
+count = 1
+
+[[issues]]
+file = "src/Setup/Service/PresentationDemoSeeder.php"
+code = "possibly-null-operand"
+message = "Possibly null right operand used in string concatenation (type `null|string`)."
+count = 1
+
+[[issues]]
+file = "src/Setup/Service/PresentationDemoSeeder.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 4
+
+[[issues]]
+file = "src/Setup/Service/PresentationDemoSeeder.php"
+code = "redundant-null-coalesce"
+message = "Redundant null coalesce: left-hand side can never be `null` or undefined."
 count = 2
 
 [[issues]]
@@ -4993,10 +5569,94 @@ message = "Argument #2 of function `date` is possibly `false`, but parameter typ
 count = 1
 
 [[issues]]
+file = "tests/AI/Knowledge/KnowledgeIndexCorpusTest.php"
+code = "mixed-argument"
+message = "Invalid argument type for argument #1 of `array_column`: expected `array<array-key, array<string('source'), ('V.array_column() extends mixed)>|object>|list<array<string('source'), ('V.array_column() extends mixed)>|object>`, but found `mixed`."
+count = 1
+
+[[issues]]
+file = "tests/AI/Service/AssistantPromptAssemblerTest.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertStringContainsString`: expected `string`, but found `mixed`.'
+count = 3
+
+[[issues]]
+file = "tests/AI/Service/AssistantPromptAssemblerTest.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
 file = "tests/AI/Tool/CustomerIntelligenceToolTest.php"
 code = "possibly-undefined-string-array-index"
 message = "Possibly undefined array key accessed on `array{'avg_ticket': float, 'customer_id': int, 'days_since_last_purchase': int, 'document_number': string, 'document_type': string, 'first_purchase_date': string, 'frequency': string, 'last_purchase_date': string, 'name': string, 'top_products': list<array{'product_name': string, 'qty': float, 'times_purchased': int}>, 'total_purchases': int, 'total_spent': float}|array{'error': string}`."
 count = 12
+
+[[issues]]
+file = "tests/AI/Tool/ProposeCreditNoteToolTest.php"
+code = "possibly-null-argument"
+message = 'Argument #2 of method `PHPUnit\Framework\Assert::assertStringContainsString` is possibly `null`, but parameter type `string` does not accept it.'
+count = 3
+
+[[issues]]
+file = "tests/AI/Tool/ProposeCreditNoteToolTest.php"
+code = "possibly-undefined-string-array-index"
+message = "Possibly undefined array key accessed on `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`."
+count = 3
+
+[[issues]]
+file = "tests/AI/Tool/ProposeOnboardingFillToolTest.php"
+code = "possibly-null-argument"
+message = 'Argument #2 of method `PHPUnit\Framework\Assert::assertStringContainsString` is possibly `null`, but parameter type `string` does not accept it.'
+count = 1
+
+[[issues]]
+file = "tests/AI/Tool/ProposeOnboardingFillToolTest.php"
+code = "possibly-undefined-string-array-index"
+message = "Possibly undefined array key accessed on `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`."
+count = 1
+
+[[issues]]
+file = "tests/AI/Tool/ProposeProductFromImageToolTest.php"
+code = "possibly-null-argument"
+message = 'Argument #2 of method `PHPUnit\Framework\Assert::assertStringContainsString` is possibly `null`, but parameter type `string` does not accept it.'
+count = 1
+
+[[issues]]
+file = "tests/AI/Tool/ProposeProductFromImageToolTest.php"
+code = "possibly-undefined-string-array-index"
+message = "Possibly undefined array key accessed on `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`."
+count = 1
+
+[[issues]]
+file = "tests/AI/Tool/ProposeReplaceRejectedToolTest.php"
+code = "possibly-null-argument"
+message = 'Argument #2 of method `PHPUnit\Framework\Assert::assertStringContainsString` is possibly `null`, but parameter type `string` does not accept it.'
+count = 1
+
+[[issues]]
+file = "tests/AI/Tool/ProposeReplaceRejectedToolTest.php"
+code = "possibly-undefined-string-array-index"
+message = "Possibly undefined array key accessed on `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`."
+count = 1
+
+[[issues]]
+file = "tests/AI/Tool/ProposeSaleToolTest.php"
+code = "possibly-null-argument"
+message = 'Argument #2 of method `PHPUnit\Framework\Assert::assertStringContainsString` is possibly `null`, but parameter type `string` does not accept it.'
+count = 1
+
+[[issues]]
+file = "tests/AI/Tool/ProposeSaleToolTest.php"
+code = "possibly-undefined-string-array-index"
+message = "Possibly undefined array key accessed on `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`."
+count = 1
+
+[[issues]]
+file = "tests/AI/Tool/TaxDocumentToolsTest.php"
+code = "possibly-undefined-string-array-index"
+message = "Possibly undefined array key accessed on `array{'document_type': string, 'id': string, 'issue_date': string, 'number': string, 'sale_id': null|string, 'series': string, 'sunat_message': null|string, 'sunat_status': null|string, 'total': string}|array{'error': string}`."
+count = 2
 
 [[issues]]
 file = "tests/AI/ToolCoherenceTest.php"
@@ -5020,6 +5680,30 @@ count = 1
 file = "tests/AI/ToolCoherenceTest.php"
 code = "reference-to-undefined-variable"
 message = "Reference created from a previously undefined variable `$sectionMatch`."
+count = 1
+
+[[issues]]
+file = "tests/Accounting/Service/DefaultPostingServiceTest.php"
+code = "invalid-type-cast"
+message = "Non numeric string of type `string` implicitly cast to `float`."
+count = 2
+
+[[issues]]
+file = "tests/Accounting/Service/DefaultPostingServiceTest.php"
+code = "possibly-undefined-string-array-index"
+message = "Possibly undefined array key 'credit' accessed on `array{'code': string, 'credit'?: string, 'debit'?: string, 'memo'?: string}`."
+count = 4
+
+[[issues]]
+file = "tests/Accounting/Service/DefaultPostingServiceTest.php"
+code = "possibly-undefined-string-array-index"
+message = "Possibly undefined array key 'debit' accessed on `array{'code': string, 'credit'?: string, 'debit'?: string, 'memo'?: string}`."
+count = 3
+
+[[issues]]
+file = "tests/Accounting/Service/DefaultPostingServiceTest.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$service`."
 count = 1
 
 [[issues]]
@@ -5272,6 +5956,12 @@ count = 2
 file = "tests/Billing/Service/SaleV2LoaderTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$warehouseRepo`."
+count = 1
+
+[[issues]]
+file = "tests/Billing/State/TaxDocumentProcessorTest.php"
+code = "invalid-method-access"
+message = "Attempting to access a method on a non-object type (`false`)."
 count = 1
 
 [[issues]]
@@ -5917,6 +6607,36 @@ message = "Redundant docblock type for variable `$stub`."
 count = 1
 
 [[issues]]
+file = "tests/Identity/Security/CriticalApiPermissionsTest.php"
+code = "ambiguous-object-method-access"
+message = "Cannot statically verify method call on a generic `object` type."
+count = 1
+
+[[issues]]
+file = "tests/Identity/Security/CriticalApiPermissionsTest.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "tests/Identity/Security/CriticalApiPermissionsTest.php"
+code = "mixed-method-access"
+message = "Attempting to access a method on a non-object type (`mixed`)."
+count = 3
+
+[[issues]]
+file = "tests/Identity/Security/CriticalApiPermissionsTest.php"
+code = "mixed-return-statement"
+message = "Could not infer a precise return type for function `{closure:tests/Identity/Security/CriticalApiPermissionsTest.php:100:13}`. Saw type `mixed`."
+count = 1
+
+[[issues]]
+file = "tests/Identity/Security/CriticalApiPermissionsTest.php"
+code = "possibly-null-argument"
+message = "Argument #1 of function `iterator_to_array` is possibly `null`, but parameter type `Traversable<('K.iteratoraggregate extends mixed), ('V.iteratoraggregate extends mixed)>|array<('K.iteratoraggregate extends mixed), ('V.iteratoraggregate extends mixed)>` does not accept it."
+count = 1
+
+[[issues]]
 file = "tests/Identity/State/UserPasswordHasherTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
@@ -6067,28 +6787,52 @@ message = "Assigning `mixed` type to a variable may lead to unexpected behavior.
 count = 1
 
 [[issues]]
-file = "tests/Purchasing/State/PurchaseVoidProcessorTest.php"
-code = "too-few-arguments"
-message = 'Too few arguments provided for method `App\Purchasing\State\PurchaseVoidProcessor::__construct`.'
-count = 1
-
-[[issues]]
 file = "tests/Purchasing/State/PurchaseVoidServiceTest.php"
 code = "invalid-type-cast"
 message = "Casting `mixed` to `float`."
 count = 2
 
 [[issues]]
-file = "tests/Reporting/Ple/PlePreviewServiceTest.php"
+file = "tests/Reporting/Financial/Application/Query/CashFlowQueryTest.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertCount`: expected `Countable|iterable<mixed, mixed>`, but found `mixed`.'
+count = 2
+
+[[issues]]
+file = "tests/Reporting/Financial/Application/Query/CashFlowQueryTest.php"
 code = "mixed-array-access"
 message = "Unsafe array access on type `mixed`."
-count = 4
+count = 12
+
+[[issues]]
+file = "tests/Reporting/Financial/Application/Query/CashFlowQueryTest.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "tests/Reporting/Financial/Application/Query/ProfitAndLossQueryTest.php"
+code = "mixed-argument"
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertCount`: expected `Countable|iterable<mixed, mixed>`, but found `mixed`.'
+count = 2
+
+[[issues]]
+file = "tests/Reporting/Financial/Application/Query/ProfitAndLossQueryTest.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `mixed`."
+count = 12
+
+[[issues]]
+file = "tests/Reporting/Ple/AccountingBookExporterTest.php"
+code = "invalid-type-cast"
+message = "Casting `mixed` to `float`."
+count = 2
 
 [[issues]]
 file = "tests/Reporting/Ple/PlePreviewServiceTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
+count = 1
 
 [[issues]]
 file = "tests/Reporting/Ple/PlePreviewServiceTest.php"
@@ -6160,7 +6904,7 @@ count = 1
 file = "tests/Sales/Repository/DashboardRepositoryTest.php"
 code = "mixed-array-access"
 message = "Unsafe array access on type `mixed`."
-count = 23
+count = 26
 
 [[issues]]
 file = "tests/Sales/Repository/DashboardRepositoryTest.php"
@@ -6220,7 +6964,7 @@ count = 1
 file = "tests/Sales/State/SaleProcessorTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 8
+count = 10
 
 [[issues]]
 file = "tests/Sales/State/SaleProcessorTest.php"
@@ -6319,10 +7063,28 @@ message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::a
 count = 1
 
 [[issues]]
+file = "tests/Sales/State/SaleUtilsTest.php"
+code = "unreachable-match-arm"
+message = "This match arm is unreachable."
+count = 3
+
+[[issues]]
+file = "tests/Sales/State/SaleUtilsTest.php"
+code = "unreachable-match-default-arm"
+message = "This default arm is unreachable."
+count = 1
+
+[[issues]]
 file = "tests/Settings/Runtime/TenantRuntimeConfigProviderTest.php"
 code = "mixed-array-access"
 message = "Unsafe array access on type `mixed`."
-count = 6
+count = 20
+
+[[issues]]
+file = "tests/Settings/Runtime/TenantRuntimeConfigProviderTest.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
 
 [[issues]]
 file = "tests/Settings/Runtime/TenantRuntimeConfigProviderTest.php"

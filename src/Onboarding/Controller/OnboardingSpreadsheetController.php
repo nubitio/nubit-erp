@@ -48,13 +48,16 @@ final class OnboardingSpreadsheetController extends AbstractController
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->fromArray($definition['headers'], null, 'A1');
         $sheet->fromArray($definition['sample'], null, 'A2');
-        $sheet->getStyle('A1:'.$sheet->getHighestColumn().'1')->getFont()->setBold(true);
+        $sheet
+            ->getStyle('A1:' . $sheet->getHighestColumn() . '1')
+            ->getFont()
+            ->setBold(true);
         foreach (range('A', $sheet->getHighestColumn()) as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 
         $response = new StreamedResponse(static function () use ($spreadsheet): void {
-            (new Xlsx($spreadsheet))->save('php://output');
+            new Xlsx($spreadsheet)->save('php://output');
             $spreadsheet->disconnectWorksheets();
         });
         $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -77,7 +80,9 @@ final class OnboardingSpreadsheetController extends AbstractController
             $allRows = $spreadsheet->getActiveSheet()->toArray(null, true, true, false);
             $spreadsheet->disconnectWorksheets();
         } catch (\Throwable) {
-            throw new BadRequestHttpException('No se pudo leer el archivo Excel. Descarga la plantilla y vuelve a intentarlo.');
+            throw new BadRequestHttpException(
+                'No se pudo leer el archivo Excel. Descarga la plantilla y vuelve a intentarlo.',
+            );
         }
 
         $headers = array_map([$this, 'normaliseHeader'], array_shift($allRows) ?? []);
@@ -87,7 +92,7 @@ final class OnboardingSpreadsheetController extends AbstractController
 
         $rows = [];
         foreach ($allRows as $values) {
-            if (!array_filter($values, static fn (mixed $value): bool => trim((string) $value) !== '')) {
+            if (!array_filter($values, static fn(mixed $value): bool => trim((string) $value) !== '')) {
                 continue;
             }
             $row = [];

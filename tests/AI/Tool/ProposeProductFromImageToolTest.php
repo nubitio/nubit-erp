@@ -31,7 +31,11 @@ final class ProposeProductFromImageToolTest extends TestCase
     public function testRejectsDuplicateProductName(): void
     {
         $repo = $this->createMock(ProductRepository::class);
-        $repo->expects(self::once())->method('findOneBy')->with(['name' => 'Pan'])->willReturn($this->createStub(Product::class));
+        $repo
+            ->expects(self::once())
+            ->method('findOneBy')
+            ->with(['name' => 'Pan'])
+            ->willReturn($this->createStub(Product::class));
 
         $tool = new ProposeProductFromImageTool(
             new ReflectionClass(ProposedActionFactory::class)->newInstanceWithoutConstructor(),

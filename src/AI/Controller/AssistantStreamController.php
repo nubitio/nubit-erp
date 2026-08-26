@@ -10,9 +10,9 @@ use App\AI\Service\AssistantCallLogger;
 use App\AI\Service\AssistantPromptAssembler;
 use App\AI\Service\AssistantThreadService;
 use App\AI\Service\AssistantTokenQuotaService;
-use Nubit\Platform\Exception\ServiceException;
 use App\AI\Service\ProposedActionCollector;
 use App\Identity\Entity\User;
+use Nubit\Platform\Exception\ServiceException;
 use Nubit\Platform\Feature\Attribute\RequiresFeature;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Psr\Log\LoggerInterface;
@@ -77,7 +77,10 @@ class AssistantStreamController extends AbstractController
         try {
             $this->tokenQuota->assertWithinQuota();
         } catch (ServiceException $exception) {
-            return $this->json(['error' => $exception->getMessage()], $exception->getCode() ?: Response::HTTP_PAYMENT_REQUIRED);
+            return $this->json(
+                ['error' => $exception->getMessage()],
+                $exception->getCode() ?: Response::HTTP_PAYMENT_REQUIRED,
+            );
         }
 
         /** @var AssistantRequest $data */
@@ -98,7 +101,20 @@ class AssistantStreamController extends AbstractController
         $model = $this->model;
 
         return new StreamedResponse(
-            function () use ($messageBag, $data, $agent, $logger, $callLogger, $collector, $threadService, $tokenQuota, $authenticatedUser, $user, $tenant, $model): void {
+            function () use (
+                $messageBag,
+                $data,
+                $agent,
+                $logger,
+                $callLogger,
+                $collector,
+                $threadService,
+                $tokenQuota,
+                $authenticatedUser,
+                $user,
+                $tenant,
+                $model,
+            ): void {
                 // Disable output buffering so tokens reach the client immediately
                 if (ob_get_level() > 0) {
                     ob_end_clean();
