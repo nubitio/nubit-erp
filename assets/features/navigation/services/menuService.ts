@@ -91,7 +91,9 @@ const DAILY_OPERATION_ORDER = [
   'config',
 ] as const;
 
-const DAILY_OPERATION_INDEX = new Map(DAILY_OPERATION_ORDER.map((path, index) => [path, index]));
+const DAILY_OPERATION_INDEX = new Map<string, number>(
+  DAILY_OPERATION_ORDER.map((path, index) => [path, index]),
+);
 
 function menuItemSortIndex(item: AdminMenuItem): number {
   const ownIndex = DAILY_OPERATION_INDEX.get(normalizePath(item.path));

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Platform;
 
+use SensitiveParameter;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\AI\Platform\Bridge\OpenAi\Contract\OpenAiContract;
 use Symfony\AI\Platform\Bridge\OpenAi\Gpt\ResultConverter;
@@ -22,8 +23,10 @@ final readonly class AssistantPlatformFactory
         private HttpClientInterface $httpClient,
         private EventDispatcherInterface $eventDispatcher,
         #[Autowire('%env(default::XAI_API_KEY)%')]
+        #[SensitiveParameter]
         private ?string $xaiApiKey,
         #[Autowire('%env(default::OPENAI_API_KEY)%')]
+        #[SensitiveParameter]
         private ?string $openaiApiKey,
     ) {}
 
