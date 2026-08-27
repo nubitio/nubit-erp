@@ -71,18 +71,79 @@ class CustomerSubscriptionRun
         $this->createdAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?string { return $this->id; }
-    public function getSubscription(): CustomerSubscription { return $this->subscription; }
-    public function setSubscription(CustomerSubscription $subscription): static { $this->subscription = $subscription; return $this; }
-    public function getPeriodStart(): \DateTimeImmutable { return $this->periodStart; }
-    public function setPeriodStart(\DateTimeImmutable $periodStart): static { $this->periodStart = $periodStart; return $this; }
-    public function getPeriodEnd(): \DateTimeImmutable { return $this->periodEnd; }
-    public function setPeriodEnd(\DateTimeImmutable $periodEnd): static { $this->periodEnd = $periodEnd; return $this; }
-    public function getSource(): string { return $this->source; }
-    public function setSource(string $source): static { $this->source = $source; return $this; }
-    public function getStatus(): string { return $this->status; }
-    public function setStatus(string $status): static { $this->status = $status; return $this; }
-    public function getSaleId(): string { return $this->saleId; }
-    public function setSaleId(string $saleId): static { $this->saleId = $saleId; return $this; }
-    public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getSubscription(): CustomerSubscription
+    {
+        return $this->subscription;
+    }
+
+    public function setSubscription(CustomerSubscription $subscription): static
+    {
+        $this->subscription = $subscription;
+        return $this;
+    }
+
+    public function getPeriodStart(): \DateTimeImmutable
+    {
+        return $this->periodStart;
+    }
+
+    public function setPeriodStart(\DateTimeImmutable $periodStart): static
+    {
+        $this->periodStart = $periodStart;
+        return $this;
+    }
+
+    public function getPeriodEnd(): \DateTimeImmutable
+    {
+        return $this->periodEnd;
+    }
+
+    public function setPeriodEnd(\DateTimeImmutable $periodEnd): static
+    {
+        $this->periodEnd = $periodEnd;
+        return $this;
+    }
+
+    public function getSource(): string
+    {
+        return $this->source;
+    }
+
+    public function setSource(string $source): static
+    {
+        $this->source = $source;
+        return $this;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+        return $this;
+    }
+
+    public function getSaleId(): string
+    {
+        return $this->saleId;
+    }
+
+    public function setSaleId(string $saleId): static
+    {
+        $this->saleId = $saleId;
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 }

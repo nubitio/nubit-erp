@@ -41,9 +41,12 @@ readonly class BankReconciliationMatchService
             $source instanceof SalePayment => 'salePayment',
             $source instanceof CashMovement => 'cashMovementId',
         };
-        $sourceValue = $source instanceof CashMovement ? $source->getId() : $source;
-        if ($sourceValue === null) {
-            throw new UnprocessableEntityHttpException('El movimiento de caja no tiene un identificador válido.');
+        $sourceValue = $source;
+        if ($source instanceof CashMovement) {
+            $sourceValue = $source->getId();
+            if ($sourceValue === null) {
+                throw new UnprocessableEntityHttpException('El movimiento de caja no tiene un identificador válido.');
+            }
         }
 
         $existing = $this->entityManager
@@ -58,11 +61,17 @@ readonly class BankReconciliationMatchService
             ->setMatchType($matchType)
             ->setMatchedBy($matchedBy);
 
-        match (true) {
-            $source instanceof SupplierPayment => $match->setSupplierPayment($source),
-            $source instanceof SalePayment => $match->setSalePayment($source),
-            $source instanceof CashMovement => $match->setCashMovementId($sourceValue),
-        };
+        if ($source instanceof SupplierPayment) {
+            $match->setSupplierPayment($source);
+        } elseif ($source instanceof SalePayment) {
+            $match->setSalePayment($source);
+        } elseif ($source instanceof CashMovement) {
+            $cashMovementId = $source->getId();
+            if ($cashMovementId === null) {
+                throw new UnprocessableEntityHttpException('El movimiento de caja no tiene un identificador válido.');
+            }
+            $match->setCashMovementId($cashMovementId);
+        }
 
         $line->setStatus(BankStatementLine::MATCHED);
 

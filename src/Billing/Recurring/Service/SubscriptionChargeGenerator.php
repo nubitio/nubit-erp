@@ -34,8 +34,9 @@ final readonly class SubscriptionChargeGenerator
         $periodStart = $subscription->getNextBillingDate();
         $periodEndExclusive = $periodStart->modify(sprintf('+%d months', $plan->getBillingCycleEnum()->months()));
         $periodEndInclusive = $periodEndExclusive->modify('-1 day');
-        if ($subscription->getEndDate() !== null && $subscription->getEndDate() < $periodEndInclusive) {
-            $periodEndInclusive = $subscription->getEndDate();
+        $endDate = $subscription->getEndDate();
+        if ($endDate !== null && $endDate < $periodEndInclusive) {
+            $periodEndInclusive = $endDate;
         }
 
         $existing = $this->runRepository->findOneBy([
@@ -53,21 +54,19 @@ final readonly class SubscriptionChargeGenerator
             $amount = Money::money($subscription->getAgreedAmount() ?? $plan->getAmount());
         } else {
             foreach ($configuredLines as $configuredLine) {
-                $amount = Money::add(
-                    $amount,
-                    Money::mul(
-                        Money::of($configuredLine->getQuantity()),
-                        Money::of($configuredLine->getUnitPrice()),
-                    ),
-                );
+                $amount = Money::add($amount, Money::mul(
+                    Money::of($configuredLine->getQuantity()),
+                    Money::of($configuredLine->getUnitPrice()),
+                ));
             }
         }
         $amountString = Money::toString($amount);
 
-        $termDays = $plan->getPaymentTermDays()
-            ?? $this->tenantSettingsRepository->getOrCreate()->getDefaultPaymentTermDays();
+        $termDays = $plan->getPaymentTermDays() ?? $this->tenantSettingsRepository
+            ->getOrCreate()
+            ->getDefaultPaymentTermDays();
 
-        $sale = (new SaleRecord())
+        $sale = new SaleRecord()
             ->setCustomer($subscription->getCustomer())
             ->setCustomerSubscriptionId($subscription->getId())
             ->setBranch($plan->getBranch())
@@ -121,7 +120,7 @@ final readonly class SubscriptionChargeGenerator
         }
         $this->entityManager->persist($sale);
 
-        $run = (new CustomerSubscriptionRun())
+        $run = new CustomerSubscriptionRun()
             ->setSubscription($subscription)
             ->setPeriodStart($periodStart)
             ->setPeriodEnd($periodEndInclusive)
@@ -133,10 +132,7 @@ final readonly class SubscriptionChargeGenerator
             ->setCurrentPeriodStart($periodStart)
             ->setCurrentPeriodEnd($periodEndExclusive)
             ->setNextBillingDate($periodEndExclusive);
-        if (
-            !$subscription->isAutoRenew()
-            || ($subscription->getEndDate() !== null && $periodEndExclusive > $subscription->getEndDate())
-        ) {
+        if (!$subscription->isAutoRenew() || $endDate !== null && $periodEndExclusive > $endDate) {
             $subscription->setStatus('cancelled');
         }
 
@@ -157,16 +153,13 @@ final readonly class SubscriptionChargeGenerator
         \DateTimeImmutable $periodStart,
         \DateTimeImmutable $periodEnd,
     ): void {
-        if ($subscription->getServiceReference() !== null) {
-            $description .= ' - ' . $subscription->getServiceReference();
+        $serviceReference = $subscription->getServiceReference();
+        if ($serviceReference !== null) {
+            $description .= ' - ' . $serviceReference;
         }
-        $description .= sprintf(
-            ' - Periodo %s al %s',
-            $periodStart->format('d/m/Y'),
-            $periodEnd->format('d/m/Y'),
-        );
+        $description .= sprintf(' - Periodo %s al %s', $periodStart->format('d/m/Y'), $periodEnd->format('d/m/Y'));
 
-        $item = (new SaleItemRecord())
+        $item = new SaleItemRecord()
             ->setLineNo($lineNumber)
             ->setProduct($product)
             ->setQty($quantity)
@@ -175,8 +168,9 @@ final readonly class SubscriptionChargeGenerator
             ->setNetAmount($lineAmount)
             ->setNameSnapshot(mb_substr($description, 0, 255))
             ->setSkuSnapshot($product->getSku());
-        if ($product->getBaseUnit() !== null) {
-            $item->setUomSnapshot($product->getBaseUnit()->getCode());
+        $baseUnit = $product->getBaseUnit();
+        if ($baseUnit !== null) {
+            $item->setUomSnapshot($baseUnit->getCode());
         }
         $sale->addSaleItemRecord($item);
     }

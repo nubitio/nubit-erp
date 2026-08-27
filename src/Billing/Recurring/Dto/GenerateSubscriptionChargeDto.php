@@ -6,5 +6,7 @@ namespace App\Billing\Recurring\Dto;
 
 final class GenerateSubscriptionChargeDto
 {
-    public function __construct(public string $id) {}
+    public function __construct(
+        public string $id,
+    ) {}
 }

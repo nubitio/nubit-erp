@@ -85,17 +85,74 @@ class CustomerSubscriptionLine
     #[ORM\Column(name: 'sort_order', type: Types::INTEGER, options: ['default' => 0])]
     private int $sortOrder = 0;
 
-    public function getId(): ?string { return $this->id; }
-    public function getSubscription(): CustomerSubscription { return $this->subscription; }
-    public function setSubscription(CustomerSubscription $subscription): static { $this->subscription = $subscription; return $this; }
-    public function getProduct(): Product { return $this->product; }
-    public function setProduct(Product $product): static { $this->product = $product; return $this; }
-    public function getDescription(): ?string { return $this->description; }
-    public function setDescription(?string $description): static { $this->description = $description === null || trim($description) === '' ? null : trim($description); return $this; }
-    public function getQuantity(): string { return $this->quantity; }
-    public function setQuantity(string $quantity): static { $this->quantity = $quantity; return $this; }
-    public function getUnitPrice(): string { return $this->unitPrice; }
-    public function setUnitPrice(string $unitPrice): static { $this->unitPrice = $unitPrice; return $this; }
-    public function getSortOrder(): int { return $this->sortOrder; }
-    public function setSortOrder(int $sortOrder): static { $this->sortOrder = $sortOrder; return $this; }
+    public function getId(): ?string
+    {
+        return $this->id;
+    }
+
+    public function getSubscription(): CustomerSubscription
+    {
+        return $this->subscription;
+    }
+
+    public function setSubscription(CustomerSubscription $subscription): static
+    {
+        $this->subscription = $subscription;
+        return $this;
+    }
+
+    public function getProduct(): Product
+    {
+        return $this->product;
+    }
+
+    public function setProduct(Product $product): static
+    {
+        $this->product = $product;
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): static
+    {
+        $this->description = $description === null || trim($description) === '' ? null : trim($description);
+        return $this;
+    }
+
+    public function getQuantity(): string
+    {
+        return $this->quantity;
+    }
+
+    public function setQuantity(string $quantity): static
+    {
+        $this->quantity = $quantity;
+        return $this;
+    }
+
+    public function getUnitPrice(): string
+    {
+        return $this->unitPrice;
+    }
+
+    public function setUnitPrice(string $unitPrice): static
+    {
+        $this->unitPrice = $unitPrice;
+        return $this;
+    }
+
+    public function getSortOrder(): int
+    {
+        return $this->sortOrder;
+    }
+
+    public function setSortOrder(int $sortOrder): static
+    {
+        $this->sortOrder = $sortOrder;
+        return $this;
+    }
 }

@@ -94,10 +94,8 @@ final class GenerateRecurringSalesCommand extends PerTenantCommand
             $generated = 0;
 
             foreach ($dueSubscriptions as $subscription) {
-                if (
-                    $subscription->getEndDate() !== null
-                    && $subscription->getNextBillingDate() > $subscription->getEndDate()
-                ) {
+                $endDate = $subscription->getEndDate();
+                if ($endDate !== null && $subscription->getNextBillingDate() > $endDate) {
                     $subscription->setStatus('cancelled');
                     $this->entityManager->flush();
 

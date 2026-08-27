@@ -26,10 +26,10 @@ use App\Contacts\Entity\Customer;
 use App\Contacts\Entity\Supplier;
 use App\FixedAssets\Entity\FixedAsset;
 use App\Identity\Entity\User;
-use App\Inventory\Entity\ProductStock;
-use App\Inventory\Entity\Warehouse;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\ProductKind;
+use App\Inventory\Entity\ProductStock;
+use App\Inventory\Entity\Warehouse;
 use App\Organization\Entity\Branch;
 use App\Organization\Entity\Company;
 use App\Payroll\Entity\AfpRate;
@@ -295,7 +295,7 @@ final class PresentationDemoSeeder
         $productRepository = $this->entityManager->getRepository(Product::class);
         $product = $productRepository->findOneBy(['code' => 'HOST-WEB']);
         if (!$product instanceof Product) {
-            $product = (new Product())
+            $product = new Product()
                 ->setCode('HOST-WEB')
                 ->setName('Web Hosting')
                 ->setType(2)
@@ -312,7 +312,7 @@ final class PresentationDemoSeeder
         $planRepository = $this->entityManager->getRepository(SubscriptionPlan::class);
         $plan = $planRepository->findOneBy(['name' => 'Hosting anual']);
         if (!$plan instanceof SubscriptionPlan) {
-            $plan = (new SubscriptionPlan())
+            $plan = new SubscriptionPlan()
                 ->setName('Hosting anual')
                 ->setProduct($product)
                 ->setBillingCycle(BillingCycle::ANNUAL)
@@ -326,9 +326,12 @@ final class PresentationDemoSeeder
         $subscriptionRepository = $this->entityManager->getRepository(CustomerSubscription::class);
         $subscription = $subscriptionRepository->findOneBy(['serviceReference' => 'andinaretail.pe']);
         if (!$subscription instanceof CustomerSubscription) {
-            $periodStart = new DateTimeImmutable('first day of this month', new DateTimeZone(PresentationDemoCatalog::TIMEZONE));
+            $periodStart = new DateTimeImmutable(
+                'first day of this month',
+                new DateTimeZone(PresentationDemoCatalog::TIMEZONE),
+            );
             $periodEnd = $periodStart->modify('+1 year -1 day');
-            $subscription = (new CustomerSubscription())
+            $subscription = new CustomerSubscription()
                 ->setCustomer($customer)
                 ->setPlan($plan)
                 ->setStatus('active')
@@ -346,7 +349,7 @@ final class PresentationDemoSeeder
 
         if ($subscription->getLines()->isEmpty()) {
             $subscription->addLine(
-                (new CustomerSubscriptionLine())
+                new CustomerSubscriptionLine()
                     ->setProduct($product)
                     ->setDescription('Hosting WordPress administrado')
                     ->setQuantity('1.000')

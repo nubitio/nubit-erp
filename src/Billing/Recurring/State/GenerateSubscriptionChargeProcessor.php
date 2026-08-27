@@ -57,11 +57,6 @@ final readonly class GenerateSubscriptionChargeProcessor implements ProcessorInt
             ));
         }
 
-        return $this->generator->generate(
-            $subscription,
-            $today,
-            $user->userId,
-            'manual',
-        );
+        return $this->generator->generate($subscription, $today, $user->userId, 'manual');
     }
 }

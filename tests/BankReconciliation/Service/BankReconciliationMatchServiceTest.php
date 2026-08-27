@@ -66,18 +66,19 @@ final class BankReconciliationMatchServiceTest extends TestCase
         $user = new User();
 
         $repository = $this->createMock(EntityRepository::class);
-        $repository->expects(self::once())
-            ->method('findOneBy')
-            ->with(['cashMovementId' => 321])
-            ->willReturn(null);
+        $repository->expects(self::once())->method('findOneBy')->with(['cashMovementId' => 321])->willReturn(null);
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->method('getRepository')->willReturn($repository);
         $entityManager->expects(self::once())->method('persist');
         $entityManager->expects(self::once())->method('flush');
 
-        $match = new BankReconciliationMatchService($entityManager)
-            ->confirmMatch($line, $source, $user, BankReconciliationMatch::MANUAL);
+        $match = new BankReconciliationMatchService($entityManager)->confirmMatch(
+            $line,
+            $source,
+            $user,
+            BankReconciliationMatch::MANUAL,
+        );
 
         self::assertSame(321, $match->getCashMovementId());
         self::assertSame(BankStatementLine::MATCHED, $line->getStatus());

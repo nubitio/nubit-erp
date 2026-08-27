@@ -38,7 +38,7 @@
     "build": "yarn build:themes && vite build",
     "build:themes": "node scripts/copy-themes.mjs",
     "generate:api-types": "openapi-typescript http://localhost/api/docs.json -o assets/api/types.generated.ts",
-    "postinstall": "yarn build:themes",
+    "postinstall": "yarn build:themes && sh scripts/setup-git-hooks.sh",
     "test": "vitest run --coverage --coverage.reportsDirectory=var/coverage/frontend",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
@@ -49,7 +49,7 @@
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
-    "prepare": "husky"
+    "prepare": "sh scripts/setup-git-hooks.sh"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
