@@ -25,9 +25,11 @@ final class OpeningReceivableImportController extends AbstractController
     public function import(Request $request): JsonResponse
     {
         $payload = json_decode($request->getContent(), true);
-        $rows = is_array($payload) ? ($payload['rows'] ?? $payload) : null;
+        $rows = is_array($payload) ? $payload['rows'] ?? $payload : null;
         if (!is_array($rows)) {
-            return $this->json(['detail' => 'Envía { "rows": [ ... ] } con los saldos por cobrar.'], Response::HTTP_BAD_REQUEST);
+            return $this->json([
+                'detail' => 'Envía { "rows": [ ... ] } con los saldos por cobrar.',
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         try {

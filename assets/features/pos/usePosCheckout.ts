@@ -21,7 +21,6 @@ import {
   validatePaymentLines,
 } from '@shared/lib/salePayments';
 import {
-  fetchScaleStatus,
   LocalAgentNotAvailableError,
   waitForStableWeight,
 } from '@features/sales/lib/localAgentClient';
@@ -33,6 +32,7 @@ import { useCurrencySettings } from '@shared/hooks/useCurrencySettings';
 import { generateIdempotencyKey, submitSale } from './saleSubmitter';
 import { publicSaleCode } from './posPresentation';
 import { useQueryClient } from '@tanstack/react-query';
+import { useScaleReady } from './useScaleReady';
 
 let posCheckoutInFlight = false;
 let posCheckoutAttemptKey: string | null = null;
@@ -114,7 +114,7 @@ export const usePosCheckout = ({
   const [creditSale, setCreditSale] = useState(false);
   const { currency, exchangeRate, setCurrency, setExchangeRate } = useCurrencySettings();
   const { igvRate } = useTenantIgvRate();
-  const [scaleReady, setScaleReady] = useState(false);
+  const scaleReady = useScaleReady();
 
   // Persist cart draft on every change (strip photo to keep storage lean)
   useEffect(() => {
@@ -140,25 +140,6 @@ export const usePosCheckout = ({
     visibleProducts,
     useWarehouseStockChecks,
   );
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchScaleStatus()
-      .then((status) => {
-        if (!cancelled) {
-          setScaleReady(status.enabled && status.connected);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setScaleReady(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const readScaleQuantity = async (): Promise<number | null> => {
     if (!scaleReady) {

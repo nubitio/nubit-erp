@@ -15,10 +15,10 @@ use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Override;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
@@ -77,21 +77,22 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
 
         $this->connection->beginTransaction();
         try {
-            $sessionRow = $this->connection->fetchAssociative(
-                'SELECT status, opened_by FROM cash_sessions WHERE id = :id FOR UPDATE',
-                ['id' => $cashSession->getId()],
-            );
+            $sessionRow = $this->connection->fetchAssociative('SELECT status, opened_by FROM cash_sessions WHERE id = :id FOR UPDATE', [
+                'id' => $cashSession->getId(),
+            ]);
             if ($sessionRow === false || $sessionRow['status'] !== 'OPEN') {
                 throw new UnprocessableEntityHttpException('La sesión de caja no existe o está cerrada.');
             }
-            if ((int) $sessionRow['opened_by'] !== $user->userId && !$this->security->hasPermission('cash.movement_any')) {
+            if (
+                (int) $sessionRow['opened_by'] !== $user->userId
+                && !$this->security->hasPermission('cash.movement_any')
+            ) {
                 throw new AccessDeniedHttpException('No puedes registrar movimientos en la caja de otro usuario.');
             }
 
-            $categoryRow = $this->connection->fetchAssociative(
-                'SELECT type, active FROM cash_movement_category WHERE id = :id',
-                ['id' => $categoryId],
-            );
+            $categoryRow = $this->connection->fetchAssociative('SELECT type, active FROM cash_movement_category WHERE id = :id', [
+                'id' => $categoryId,
+            ]);
             if ($categoryRow === false || !(bool) $categoryRow['active']) {
                 throw new UnprocessableEntityHttpException('La categoría de movimiento no existe o está inactiva.');
             }
@@ -131,7 +132,7 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
             source: EconomicEvent::SOURCE_CASH,
             sourceId: (string) $newId,
             kind: $movementType === 'CASH_OUT' ? EconomicEvent::CASH_OUT : EconomicEvent::CASH_IN,
-            occurredOn: (new DateTimeImmutable())->format('Y-m-d'),
+            occurredOn: new DateTimeImmutable()->format('Y-m-d'),
             description: $description !== null && $description !== '' ? $description : 'Movimiento de caja',
             total: is_string($amount) ? $amount : number_format((float) $amount, 2, '.', ''),
         ));

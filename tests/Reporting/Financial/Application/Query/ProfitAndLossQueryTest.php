@@ -143,8 +143,17 @@ final class ProfitAndLossQueryTest extends TestCase
         $this->connection->insert('return_items', ['return_id' => 'r1', 'sale_item_id' => 1, 'qty_returned' => 1]);
         // Voided sale — its cost must not count.
         $this->connection->insert('sales', ['id' => 's2', 'status' => 'VOIDED', 'issued_at' => '2026-06-06 10:00:00']);
-        $this->connection->insert('sale_items', ['id' => 3, 'sale_id' => 's2', 'qty' => 5, 'unit_cost_snapshot' => 1000]);
-        $this->connection->insert('returns', ['id' => 'r2', 'status' => 'COMPLETED', 'created_at' => '2026-06-19 12:00:00']);
+        $this->connection->insert('sale_items', [
+            'id' => 3,
+            'sale_id' => 's2',
+            'qty' => 5,
+            'unit_cost_snapshot' => 1000,
+        ]);
+        $this->connection->insert('returns', [
+            'id' => 'r2',
+            'status' => 'COMPLETED',
+            'created_at' => '2026-06-19 12:00:00',
+        ]);
         $this->connection->insert('return_items', ['return_id' => 'r2', 'sale_item_id' => 3, 'qty_returned' => 1]);
 
         $this->connection->insert('expense_category', ['id' => 1, 'name' => 'Alquiler']);

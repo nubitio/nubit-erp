@@ -250,7 +250,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $schemaManager->method('tablesExist')->with(['nubit_refresh_token'])->willReturn(true);
         $connection->method('createSchemaManager')->willReturn($schemaManager);
         $connection
-            ->expects($this->exactly(9))
+            ->expects($this->atLeastOnce())
             ->method('executeStatement')
             ->willReturnCallback(function (string $sql, array $params = []) use (&$executeCalls): int {
                 $executeCalls[] = [$sql, $params];

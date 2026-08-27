@@ -44,84 +44,70 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     expect(page.url()).toMatch(/\/#\//);
   });
 
-  test('02 - Navegar a Compras y capturar stock inicial del producto seed', async () => {
+  test('02 - Navegar a Compras y capturar stock inicial del producto seed', async ({ request }) => {
     await gotoProtectedRoute(page, 'purchases', credentials);
     await waitForGridLoad(page);
+    await expect(page).toHaveURL(/\/#\/purchases/);
 
-    await expect(
-      page.locator('.nb-datagrid__toolbar').filter({ hasText: /compras/i }).first(),
-    ).toBeVisible({ timeout: 15000 });
+    const auth = await loginViaApi(request, BASE_URL, credentials.username, credentials.password);
+    const warehousesResponse = await request.get(`${BASE_URL}/api/warehouses?page=1&itemsPerPage=20`, {
+      headers: auth.headers,
+    });
+    expect(warehousesResponse.ok()).toBeTruthy();
+    const warehouses = parseApiCollection<{
+      id: string;
+      name: string;
+      branch?: string | { id?: string };
+    }>(await warehousesResponse.json());
+    const warehouse = warehouses.find((item) => item.name?.includes('CI E2E')) ?? warehouses[0] ?? null;
 
-    const seedData = await page.evaluate(
-      async ({ baseUrl, productCode, productName, warehouseName }) => {
-        const whResp = await fetch(`${baseUrl}/api/warehouses?page=1&itemsPerPage=20`);
-        const warehouses = (await whResp.json()) as Array<{
-          id: string;
-          name: string;
-          branch?: string | { id?: string };
-        }>;
-        const whList = Array.isArray(warehouses)
-          ? warehouses
-          : ((warehouses as { 'hydra:member'?: typeof warehouses })['hydra:member'] ?? []);
-        const warehouse =
-          whList.find((item) => item.name?.includes(warehouseName)) ?? whList[0] ?? null;
+    const branchRef = warehouse?.branch;
+    let branchId =
+      typeof branchRef === 'string'
+        ? (branchRef.match(/\/([^/]+)$/)?.[1] ?? null)
+        : (branchRef?.id ?? null);
+    if (!branchId) {
+      const branchesResponse = await request.get(`${BASE_URL}/api/branches?page=1&itemsPerPage=20`, {
+        headers: auth.headers,
+      });
+      expect(branchesResponse.ok()).toBeTruthy();
+      const branches = parseApiCollection<{ id: string; name?: string }>(await branchesResponse.json());
+      branchId = branches.find((item) => item.name?.includes('CI E2E'))?.id ?? branches[0]?.id ?? null;
+    }
 
-        const branchRef = warehouse?.branch;
-        let branchId =
-          typeof branchRef === 'string'
-            ? (branchRef.match(/\/([^/]+)$/)?.[1] ?? null)
-            : (branchRef?.id ?? null);
-
-        if (!branchId) {
-          const brResp = await fetch(`${baseUrl}/api/branches?page=1&itemsPerPage=20`);
-          const branches = (await brResp.json()) as Array<{ id: string; name?: string }>;
-          const brList = Array.isArray(branches)
-            ? branches
-            : ((branches as { 'hydra:member'?: typeof branches })['hydra:member'] ?? []);
-          branchId = brList.find((b) => b.name?.includes('CI E2E'))?.id ?? brList[0]?.id ?? null;
-        }
-
-        const prodResp = await fetch(
-          `${baseUrl}/api/products?code=${encodeURIComponent(productCode)}&page=1&itemsPerPage=100`,
-          { cache: 'no-store' },
-        );
-        const prodPayload = await prodResp.json();
-        const products = Array.isArray(prodPayload)
-          ? prodPayload
-          : (prodPayload['hydra:member'] ?? prodPayload.member ?? []);
-        const product =
-          products.find((item: { code?: string }) => item.code === productCode) ??
-          products.find((item: { name?: string }) => item.name === productName) ??
-          null;
-
-        let stock: number | null = null;
-        if (warehouse && product) {
-          const stockResp = await fetch(
-            `${baseUrl}/api/products/${product.id}/stock/${warehouse.id}?_=${Date.now()}`,
-            { cache: 'no-store' },
-          );
-          if (stockResp.ok) {
-            const stockData = await stockResp.json();
-            stock = stockData.stock ?? stockData.quantity ?? null;
-          }
-        }
-
-        return {
-          warehouseId: warehouse?.id ?? null,
-          warehouseName: warehouse?.name ?? null,
-          branchId,
-          productId: product?.id ?? null,
-          productCode: product?.code ?? null,
-          stockBefore: stock,
-        };
-      },
-      {
-        baseUrl: BASE_URL,
-        productCode: E2E_SEED.productCode,
-        productName: E2E_SEED.productName,
-        warehouseName: 'CI E2E',
-      },
+    const productsResponse = await request.get(
+      `${BASE_URL}/api/products?code=${encodeURIComponent(E2E_SEED.productCode)}&page=1&itemsPerPage=100`,
+      { headers: auth.headers },
     );
+    expect(productsResponse.ok()).toBeTruthy();
+    const products = parseApiCollection<{ id: string; code?: string; name?: string }>(
+      await productsResponse.json(),
+    );
+    const product =
+      products.find((item) => item.code === E2E_SEED.productCode) ??
+      products.find((item) => item.name === E2E_SEED.productName) ??
+      null;
+
+    let initialStock: number | null = null;
+    if (warehouse && product) {
+      const stockResponse = await request.get(
+        `${BASE_URL}/api/products/${product.id}/stock/${warehouse.id}?_=${Date.now()}`,
+        { headers: auth.headers },
+      );
+      if (stockResponse.ok()) {
+        const stockData = (await stockResponse.json()) as { stock?: number; quantity?: number };
+        initialStock = stockData.stock ?? stockData.quantity ?? null;
+      }
+    }
+
+    const seedData = {
+      warehouseId: warehouse?.id ?? null,
+      warehouseName: warehouse?.name ?? null,
+      branchId,
+      productId: product?.id ?? null,
+      productCode: product?.code ?? null,
+      stockBefore: initialStock,
+    };
 
     expect(seedData.warehouseId).toBeTruthy();
     expect(seedData.productId).toBeTruthy();

@@ -56,6 +56,7 @@ RUN install-php-extensions \
     zip \
     soap \
     imagick \
+    opentelemetry \
     opcache \
     bcmath
 

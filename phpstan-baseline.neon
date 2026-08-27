@@ -1,0 +1,133 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Call to function is_array\(\) with array\<string, mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/AI/Service/AssistantCallLogger.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between non\-empty\-string and '''' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/AI/Service/AssistantPromptAssembler.php
+
+		-
+			message: '#^Instanceof between App\\AI\\Entity\\AssistantThreadMessage and App\\AI\\Entity\\AssistantThreadMessage will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: src/AI/Service/AssistantThreadService.php
+
+		-
+			message: '#^Dead catch \- Psr\\Cache\\InvalidArgumentException is never thrown in the try block\.$#'
+			identifier: catch.neverThrown
+			count: 2
+			path: src/AI/Service/AssistantTokenQuotaService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/AI/Service/ConfirmProposedActionService.php
+
+		-
+			message: '#^Instanceof between App\\Inventory\\ApiResource\\StockMovement and App\\Inventory\\ApiResource\\StockMovement will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: src/AI/Tool/InventoryMovementTools.php
+
+		-
+			message: '#^Offset ''name'' on array\{id\: string, name\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: src/AI/Tool/InventoryMovementTools.php
+
+		-
+			message: '#^Property App\\Accounting\\Entity\\JournalEntryLine\:\:\$entry type mapping mismatch\: property can contain App\\Accounting\\Entity\\JournalEntry\|null but database expects App\\Accounting\\Entity\\JournalEntry\.$#'
+			identifier: doctrine.associationType
+			count: 1
+			path: src/Accounting/Entity/JournalEntryLine.php
+
+		-
+			message: '#^Variable \$reasonCode on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: src/Billing/Service/CreditNoteStockReverser.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Doctrine\\DBAL\\Connection\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: src/Billing/State/TaxDocumentProcessor.php
+
+		-
+			message: '#^Call to function is_string\(\) with numeric\-string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/CashRegister/State/CashMovementWriteProcessor.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: src/CashRegister/State/CashMovementWriteProcessor.php
+
+		-
+			message: '#^Method App\\Onboarding\\OpeningBalanceRow\:\:pick\(\) has parameter \$aliases with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Onboarding/OpeningBalanceRow.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<string, mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Onboarding/OpeningReceivableImporter.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: src/Sales/State/SaleProcessor.php
+
+		-
+			message: '#^Instanceof between App\\Sales\\Entity\\SaleQuoteItem and App\\Sales\\Entity\\SaleQuoteItem will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: src/Sales/State/SaleQuoteProvider.php
+
+		-
+			message: '#^Instanceof between App\\Organization\\Entity\\Branch and App\\Organization\\Entity\\Branch will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: src/Setup/Service/E2eTestSeedService.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 2
+			path: src/Setup/Service/PresentationDemoSeeder.php
+
+		-
+			message: '#^Instanceof between App\\Inventory\\Entity\\Warehouse and App\\Inventory\\Entity\\Warehouse will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: src/Setup/Service/PresentationDemoSeeder.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type App\\Catalog\\Entity\\UnitOfMeasure\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: src/Setup/Service/PresentationDemoSeeder.php
+
+		-
+			message: '#^Method App\\Tests\\Identity\\Security\\CriticalApiPermissionsTest\:\:operationSecurities\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: tests/Identity/Security/CriticalApiPermissionsTest.php
+
+		-
+			message: '#^Method App\\Tests\\Identity\\Security\\CriticalApiPermissionsTest\:\:operations\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: tests/Identity/Security/CriticalApiPermissionsTest.php

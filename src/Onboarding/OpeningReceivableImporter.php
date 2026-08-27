@@ -44,8 +44,12 @@ final readonly class OpeningReceivableImporter
     {
         $branch = $this->resolveBranch();
         $warehouse = $this->resolveWarehouse($branch);
-        $paymentMethod = $this->paymentMethodRepository->findOneBy(['name' => 'Credito'])
-            ?? ($this->paymentMethodRepository->findBy([], ['id' => 'ASC'], 1)[0] ?? null);
+        $paymentMethod =
+            $this->paymentMethodRepository->findOneBy(['name' => 'Credito']) ?? $this->paymentMethodRepository->findBy(
+                [],
+                ['id' => 'ASC'],
+                1,
+            )[0] ?? null;
         $user = $this->security->getUser();
         $userId = $user instanceof User ? (int) $user->getId() : 0;
         $now = new DateTimeImmutable('now', new DateTimeZone('America/Lima'));
@@ -78,7 +82,9 @@ final readonly class OpeningReceivableImporter
     private function resolveBranch(): Branch
     {
         $branchId = $this->branchContext->getCurrentBranchId();
-        $branch = $branchId !== null ? $this->branchRepository->find($branchId) : $this->branchRepository->findOneBy([]);
+        $branch = $branchId !== null
+            ? $this->branchRepository->find($branchId)
+            : $this->branchRepository->findOneBy([]);
         if (!$branch instanceof Branch) {
             throw new RuntimeException('No hay un local seleccionado para importar saldos.');
         }
@@ -88,8 +94,9 @@ final readonly class OpeningReceivableImporter
 
     private function resolveWarehouse(Branch $branch): Warehouse
     {
-        $warehouse = $this->warehouseRepository->findOneBy(['branch' => $branch])
-            ?? $this->warehouseRepository->findOneBy([]);
+        $warehouse = $this->warehouseRepository->findOneBy([
+            'branch' => $branch,
+        ]) ?? $this->warehouseRepository->findOneBy([]);
         if (!$warehouse instanceof Warehouse) {
             throw new RuntimeException('No hay un almacén para importar saldos.');
         }
@@ -108,7 +115,7 @@ final readonly class OpeningReceivableImporter
             return $existing;
         }
 
-        $customer = (new Customer())
+        $customer = new Customer()
             ->setRuc($row->ruc)
             ->setBusinessName($row->name)
             ->setPhone($row->phone)
@@ -129,11 +136,12 @@ final readonly class OpeningReceivableImporter
     ): SaleRecord {
         $issuedDate = $now->setTime(0, 0);
         $issuedAt = DateTime::createFromImmutable($now);
-        $number = $row->number !== null && $row->number !== ''
-            ? $row->number
-            : 'SI-'.substr(bin2hex(random_bytes(4)), 0, 8);
+        $number =
+            $row->number !== null && $row->number !== ''
+                ? $row->number
+                : 'SI-' . substr(bin2hex(random_bytes(4)), 0, 8);
 
-        $sale = (new SaleRecord())
+        $sale = new SaleRecord()
             ->setWarehouse($warehouse)
             ->setAlmacen($warehouse)
             ->setBranch($branch)
@@ -162,7 +170,7 @@ final readonly class OpeningReceivableImporter
             ->setSerie('SI')
             ->setNumero($number);
 
-        $item = (new SaleItemRecord())
+        $item = new SaleItemRecord()
             ->setLineNo(1)
             ->setQty('1.000')
             ->setUnitPrice($row->amount)

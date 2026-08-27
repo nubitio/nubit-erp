@@ -109,10 +109,10 @@ final class CashMovementWriteProcessorTest extends TestCase
     public function testPostInsertsRowAndSetsIdOnEntity(): void
     {
         $conn = $this->createMock(Connection::class);
-        $conn->method('fetchAssociative')->willReturnOnConsecutiveCalls(
-            ['status' => 'OPEN', 'opened_by' => 1],
-            ['type' => 'income', 'active' => 1],
-        );
+        $conn->method('fetchAssociative')->willReturnOnConsecutiveCalls(['status' => 'OPEN', 'opened_by' => 1], [
+            'type' => 'income',
+            'active' => 1,
+        ]);
         $conn
             ->expects(self::once())
             ->method('executeStatement')
@@ -137,10 +137,10 @@ final class CashMovementWriteProcessorTest extends TestCase
         $capturedParams = [];
 
         $conn = $this->createStub(Connection::class);
-        $conn->method('fetchAssociative')->willReturnOnConsecutiveCalls(
-            ['status' => 'OPEN', 'opened_by' => 1],
-            ['type' => 'expense', 'active' => 1],
-        );
+        $conn->method('fetchAssociative')->willReturnOnConsecutiveCalls(['status' => 'OPEN', 'opened_by' => 1], [
+            'type' => 'expense',
+            'active' => 1,
+        ]);
         $conn->method('executeStatement')->willReturnCallback(static function (string $sql, array $params) use (
             &$capturedSql,
             &$capturedParams,

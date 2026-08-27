@@ -28,11 +28,13 @@ final readonly class AssistantPromptAssembler
         $staticPromptPath = $this->projectDir . '/prompts/assistant.md';
         $staticPrompt = is_file($staticPromptPath) ? (string) file_get_contents($staticPromptPath) : '';
 
-        return $this->sessionContextBuilder->build()
+        return (
+            $this->sessionContextBuilder->build()
             . $this->runtimeBlock()
             . $this->screenBlock($data)
             . "\n\n---\n\n"
-            . $staticPrompt;
+            . $staticPrompt
+        );
     }
 
     private function runtimeBlock(): string
@@ -66,9 +68,7 @@ final readonly class AssistantPromptAssembler
             sprintf('- Nivel de navegación: %s', (string) ($profile['navigationTier'] ?? 'basic')),
             sprintf('- Gestión de almacenes visible: %s', $showWarehouses ? 'sí' : 'no'),
             sprintf('- Capacidades activas: %s', $enabled === [] ? 'ninguna' : implode(', ', $enabled)),
-            $simpleStore
-                ? '- No pidas al usuario que elija sucursal ni almacén.'
-                : '',
+            $simpleStore ? '- No pidas al usuario que elija sucursal ni almacén.' : '',
         ]);
     }
 

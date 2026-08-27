@@ -102,7 +102,9 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
                     throw new ServiceException('No se puede generar otra nota de crédito para una venta anulada.');
                 }
                 if ($this->taxDocumentRepository->hasAnnullingCreditNote($related)) {
-                    throw new ServiceException('No se puede generar otra nota de crédito para un comprobante ya anulado.');
+                    throw new ServiceException(
+                        'No se puede generar otra nota de crédito para un comprobante ya anulado.',
+                    );
                 }
                 $branchId = $this->branchContextService->getCurrentBranchId();
                 $relatedBranchId = $related->getBranch()?->getId() ?? $related->getSaleRecord()?->getBranch()?->getId();

@@ -97,15 +97,23 @@ readonly class DefaultPostingService
                 ['code' => self::OTHER_EXPENSE, 'debit' => Money::toString($total)],
                 ['code' => self::CASH, 'credit' => Money::toString($total)],
             ],
-            default => throw new InvalidArgumentException(sprintf('Tipo de hecho económico no soportado: %s', $event->kind)),
+            default => throw new InvalidArgumentException(sprintf(
+                'Tipo de hecho económico no soportado: %s',
+                $event->kind,
+            )),
         };
     }
 
     /**
      * @return list<array{code: string, debit?: string, credit?: string, memo?: string}>
      */
-    private function saleLines(string $debitAccount, BigDecimal $total, BigDecimal $net, BigDecimal $tax, BigDecimal $cogs): array
-    {
+    private function saleLines(
+        string $debitAccount,
+        BigDecimal $total,
+        BigDecimal $net,
+        BigDecimal $tax,
+        BigDecimal $cogs,
+    ): array {
         $lines = [
             ['code' => $debitAccount, 'debit' => Money::toString($total), 'memo' => 'Cobro / cuenta por cobrar'],
             ['code' => self::SALES, 'credit' => Money::toString($net), 'memo' => 'Venta neta'],
@@ -114,7 +122,11 @@ readonly class DefaultPostingService
 
         if (!$cogs->isZero()) {
             $lines[] = ['code' => self::COGS, 'debit' => Money::toString($cogs), 'memo' => 'Costo de lo vendido'];
-            $lines[] = ['code' => self::INVENTORY, 'credit' => Money::toString($cogs), 'memo' => 'Salida de mercadería'];
+            $lines[] = [
+                'code' => self::INVENTORY,
+                'credit' => Money::toString($cogs),
+                'memo' => 'Salida de mercadería',
+            ];
         }
 
         return $lines;

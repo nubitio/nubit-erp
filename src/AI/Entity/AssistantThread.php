@@ -39,7 +39,12 @@ class AssistantThread
     private DateTimeImmutable $updatedAt;
 
     /** @var Collection<int, AssistantThreadMessage> */
-    #[ORM\OneToMany(targetEntity: AssistantThreadMessage::class, mappedBy: 'thread', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OneToMany(
+        targetEntity: AssistantThreadMessage::class,
+        mappedBy: 'thread',
+        cascade: ['persist'],
+        orphanRemoval: true,
+    )]
     #[ORM\OrderBy(['createdAt' => 'ASC'])]
     private Collection $messages;
 

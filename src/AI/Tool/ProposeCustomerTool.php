@@ -47,13 +47,16 @@ final readonly class ProposeCustomerTool
             return ['error' => sprintf('Ya existe un cliente con el documento %s.', $ruc)];
         }
 
-        $payload = array_filter([
-            'ruc' => $ruc,
-            'businessName' => $businessName,
-            'fiscalAddress' => $fiscalAddress !== null ? trim($fiscalAddress) : null,
-            'phone' => $phone !== null ? trim($phone) : null,
-            'email' => $email !== null ? trim($email) : null,
-        ], static fn(mixed $value): bool => $value !== null && $value !== '');
+        $payload = array_filter(
+            [
+                'ruc' => $ruc,
+                'businessName' => $businessName,
+                'fiscalAddress' => $fiscalAddress !== null ? trim($fiscalAddress) : null,
+                'phone' => $phone !== null ? trim($phone) : null,
+                'email' => $email !== null ? trim($email) : null,
+            ],
+            static fn(mixed $value): bool => $value !== null && $value !== '',
+        );
 
         $summary = sprintf('Crear cliente %s · %s', $businessName, $ruc);
         $action = $this->factory->propose(AssistantProposedAction::KIND_CREATE_CUSTOMER, $summary, $payload);

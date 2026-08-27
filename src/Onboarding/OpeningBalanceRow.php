@@ -98,7 +98,7 @@ final readonly class OpeningBalanceRow
 
         $zone = new DateTimeZone('America/Lima');
         foreach (['Y-m-d', 'd/m/Y', 'd-m-Y'] as $format) {
-            $parsed = DateTimeImmutable::createFromFormat('!'.$format, $value, $zone);
+            $parsed = DateTimeImmutable::createFromFormat('!' . $format, $value, $zone);
             if ($parsed instanceof DateTimeImmutable) {
                 return $parsed;
             }

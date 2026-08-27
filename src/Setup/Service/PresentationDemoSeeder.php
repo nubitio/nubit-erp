@@ -174,7 +174,7 @@ final class PresentationDemoSeeder
         foreach (PresentationDemoCatalog::categories() as $group) {
             $parent = $this->entityManager->getRepository(Category::class)->findOneBy(['name' => $group['name']]);
             if (!$parent instanceof Category) {
-                $parent = (new Category())->setName($group['name']);
+                $parent = new Category()->setName($group['name']);
                 $this->entityManager->persist($parent);
             }
             $byName[$group['name']] = $parent;
@@ -182,7 +182,9 @@ final class PresentationDemoSeeder
             foreach ($group['children'] as $childName) {
                 $child = $this->entityManager->getRepository(Category::class)->findOneBy(['name' => $childName]);
                 if (!$child instanceof Category) {
-                    $child = (new Category())->setName($childName)->setParent($parent);
+                    $child = new Category()
+                        ->setName($childName)
+                        ->setParent($parent);
                     $this->entityManager->persist($child);
                 }
                 $byName[$childName] = $child;
@@ -207,9 +209,12 @@ final class PresentationDemoSeeder
             if (!$product instanceof Product) {
                 $category = $categories[$row['category']] ?? null;
                 if (!$category instanceof Category) {
-                    throw new RuntimeException(sprintf('Missing category "%s" for presentation products.', $row['category']));
+                    throw new RuntimeException(sprintf(
+                        'Missing category "%s" for presentation products.',
+                        $row['category'],
+                    ));
                 }
-                $product = (new Product())
+                $product = new Product()
                     ->setCode($row['code'])
                     ->setName($row['name'])
                     ->setType(1)
@@ -220,7 +225,7 @@ final class PresentationDemoSeeder
                     ->setMinStock($row['minStock']);
                 $this->entityManager->persist($product);
 
-                $stock = (new ProductStock())
+                $stock = new ProductStock()
                     ->setProduct($product)
                     ->setWarehouse($warehouse)
                     ->setStock((float) $row['stock'])
@@ -264,7 +269,7 @@ final class PresentationDemoSeeder
         foreach (PresentationDemoCatalog::customers() as $row) {
             $customer = $this->entityManager->getRepository(Customer::class)->findOneBy(['ruc' => $row['ruc']]);
             if (!$customer instanceof Customer) {
-                $customer = (new Customer())
+                $customer = new Customer()
                     ->setRuc($row['ruc'])
                     ->setBusinessName($row['name'])
                     ->setFiscalAddress($row['address'])
@@ -364,7 +369,7 @@ final class PresentationDemoSeeder
         foreach (PresentationDemoCatalog::suppliers() as $row) {
             $supplier = $this->entityManager->getRepository(Supplier::class)->findOneBy(['ruc' => $row['ruc']]);
             if (!$supplier instanceof Supplier) {
-                $supplier = (new Supplier())
+                $supplier = new Supplier()
                     ->setRuc($row['ruc'])
                     ->setBusinessName($row['name'])
                     ->setFiscalAddress($row['address'])
@@ -432,7 +437,7 @@ final class PresentationDemoSeeder
 
             $lineCount = 1 + ($index % 3);
             $lineInputs = [];
-            $sale = (new SaleRecord())
+            $sale = new SaleRecord()
                 ->setAlmacen($warehouse)
                 ->setWarehouse($warehouse)
                 ->setBranch($branch)
@@ -445,7 +450,7 @@ final class PresentationDemoSeeder
                 ->setNumero($number)
                 ->setDescuento('0.00')
                 ->setHasInvoice(true)
-                ->setInvoice($series.'-'.$number)
+                ->setInvoice($series . '-' . $number)
                 ->setCajaId(1)
                 ->setEstado(1)
                 ->setStatus('COMPLETED')
@@ -466,7 +471,7 @@ final class PresentationDemoSeeder
                 $unitPrice = $product->getSalePrice() ?? '0.00';
                 $lineInputs[] = new InvoiceLineInput(quantity: $qty, unitPrice: (string) $unitPrice);
 
-                $item = (new SaleItemRecord())
+                $item = new SaleItemRecord()
                     ->setProduct($product)
                     ->setQty(number_format((float) $qty, 3, '.', ''))
                     ->setUnitPrice(number_format((float) $unitPrice, 4, '.', ''))
@@ -482,7 +487,7 @@ final class PresentationDemoSeeder
                 $sale->addSaleItemRecord($item);
             }
 
-            $amounts = (new InvoiceCalculator($lineInputs, '0', $igv, '0'))->calculate();
+            $amounts = new InvoiceCalculator($lineInputs, '0', $igv, '0')->calculate();
             $sale
                 ->setSubtotal($amounts->getSubtotal())
                 ->setTaxTotal($amounts->getTax())
@@ -506,7 +511,7 @@ final class PresentationDemoSeeder
                 ++$lineIndex;
             }
 
-            $taxDocument = (new TaxDocument())
+            $taxDocument = new TaxDocument()
                 ->setSaleRecord($sale)
                 ->setCustomer($customer)
                 ->setBranch($branch)
@@ -545,20 +550,17 @@ final class PresentationDemoSeeder
             }
 
             $paidAt = $sale->getIssuedAt() ?? new DateTime();
-            $this->connection->executeStatement(
-                'INSERT INTO sale_payments (sale_id, payment_method_id, amount, currency, paid_at, created_at, sync_status, version_no, last_modified_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)',
-                [
-                    (string) $sale->getId(),
-                    $method->getId(),
-                    $sale->getGrandTotal(),
-                    'PEN',
-                    $paidAt->format('Y-m-d H:i:s'),
-                    $paidAt->format('Y-m-d H:i:s'),
-                    'SYNCED',
-                    $paidAt->format('Y-m-d H:i:s'),
-                ],
-            );
+            $this->connection->executeStatement('INSERT INTO sale_payments (sale_id, payment_method_id, amount, currency, paid_at, created_at, sync_status, version_no, last_modified_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)', [
+                (string) $sale->getId(),
+                $method->getId(),
+                $sale->getGrandTotal(),
+                'PEN',
+                $paidAt->format('Y-m-d H:i:s'),
+                $paidAt->format('Y-m-d H:i:s'),
+                'SYNCED',
+                $paidAt->format('Y-m-d H:i:s'),
+            ]);
         }
 
         return $sales;
@@ -578,8 +580,7 @@ final class PresentationDemoSeeder
         array $products,
     ): array {
         $expenseRepo = $this->entityManager->getRepository(ExpenseCategory::class);
-        $category = $expenseRepo->findOneBy(['code' => 'other_operating_expense'])
-            ?? $expenseRepo->findOneBy([]);
+        $category = $expenseRepo->findOneBy(['code' => 'other_operating_expense']) ?? $expenseRepo->findOneBy([]);
         if (!$category instanceof ExpenseCategory) {
             throw new RuntimeException('No expense category found. Run initial setup first.');
         }
@@ -599,7 +600,7 @@ final class PresentationDemoSeeder
             $tax = round($gross * $igvRate, 2);
             $total = round($gross + $tax, 2);
 
-            $purchase = (new Purchase())
+            $purchase = new Purchase()
                 ->setBranch($branch)
                 ->setWarehouse($warehouse)
                 ->setSupplier($supplier)
@@ -616,7 +617,7 @@ final class PresentationDemoSeeder
                 ->setCreatedAt($issuedMutable)
                 ->setNote('Recepción de mercadería para demostración');
 
-            $item = (new PurchaseItem())
+            $item = new PurchaseItem()
                 ->setProduct($product)
                 ->setLineNo(1)
                 ->setNameSnapshot($product->getName())
@@ -630,8 +631,8 @@ final class PresentationDemoSeeder
             $purchase->addItem($item);
             $this->entityManager->persist($purchase);
 
-            $paid = $offset % 3 === 0;
-            $bill = (new SupplierBill())
+            $paid = ($offset % 3) === 0;
+            $bill = new SupplierBill()
                 ->setSupplier($supplier)
                 ->setBranch($branch)
                 ->setPurchase($purchase)
@@ -668,7 +669,7 @@ final class PresentationDemoSeeder
         $tax = round($gross * 0.18, 2);
         $total = round($gross + $tax, 2);
 
-        $order = (new PurchaseOrder())
+        $order = new PurchaseOrder()
             ->setBranch($branch)
             ->setWarehouse($warehouse)
             ->setSupplier($suppliers[0])
@@ -677,10 +678,10 @@ final class PresentationDemoSeeder
             ->setSubtotal(number_format($gross, 2, '.', ''))
             ->setTaxTotal(number_format($tax, 2, '.', ''))
             ->setGrandTotal(number_format($total, 2, '.', ''))
-            ->setExpectedDate((new DateTimeImmutable('+5 days')))
+            ->setExpectedDate(new DateTimeImmutable('+5 days'))
             ->setNote('Pedido abierto de reposición');
 
-        $item = (new PurchaseOrderItem())
+        $item = new PurchaseOrderItem()
             ->setProduct($product)
             ->setLineNo(1)
             ->setNameSnapshot($product->getName())
@@ -715,14 +716,14 @@ final class PresentationDemoSeeder
             $product = $products[$index % count($products)];
             $qty = '2.000';
             $unitPrice = (string) ($product->getSalePrice() ?? '10.00');
-            $amounts = (new InvoiceCalculator(
+            $amounts = new InvoiceCalculator(
                 [new InvoiceLineInput(quantity: $qty, unitPrice: $unitPrice)],
                 '0',
                 $igv,
                 '0',
-            ))->calculate();
+            )->calculate();
 
-            $quote = (new SaleQuote())
+            $quote = new SaleQuote()
                 ->setBranch($branch)
                 ->setWarehouse($warehouse)
                 ->setCustomer($customers[$index % count($customers)])
@@ -736,7 +737,7 @@ final class PresentationDemoSeeder
                 ->setNote('Cotización de demostración');
             $quote->setSellerUserId($demoUser->getId());
 
-            $item = (new SaleQuoteItem())
+            $item = new SaleQuoteItem()
                 ->setProduct($product)
                 ->setLineNo(1)
                 ->setQty($qty)
@@ -757,14 +758,16 @@ final class PresentationDemoSeeder
     private function seedEmployeesAndPayroll(Company $company): void
     {
         foreach (PresentationDemoCatalog::afpRates() as $row) {
-            $existing = $this->entityManager->getRepository(AfpRate::class)->findOneBy([
-                'afpProvider' => $row['provider'],
-            ]);
+            $existing = $this->entityManager
+                ->getRepository(AfpRate::class)
+                ->findOneBy([
+                    'afpProvider' => $row['provider'],
+                ]);
             if ($existing instanceof AfpRate) {
                 continue;
             }
 
-            $rate = (new AfpRate())
+            $rate = new AfpRate()
                 ->setAfpProvider($row['provider'])
                 ->setMandatoryContributionRate($row['mandatory'])
                 ->setInsurancePremiumRate($row['insurance'])
@@ -778,7 +781,7 @@ final class PresentationDemoSeeder
         foreach (PresentationDemoCatalog::employees() as $row) {
             $employee = $this->entityManager->getRepository(Employee::class)->findOneBy(['dni' => $row['dni']]);
             if (!$employee instanceof Employee) {
-                $employee = (new Employee())
+                $employee = new Employee()
                     ->setCompany($company)
                     ->setDni($row['dni'])
                     ->setFirstName($row['firstName'])
@@ -809,16 +812,18 @@ final class PresentationDemoSeeder
         DateTimeImmutable $period,
         string $status,
     ): void {
-        $existing = $this->entityManager->getRepository(PayrollRun::class)->findOneBy([
-            'company' => $company,
-            'period' => $period,
-            'type' => PayrollRun::REGULAR,
-        ]);
+        $existing = $this->entityManager
+            ->getRepository(PayrollRun::class)
+            ->findOneBy([
+                'company' => $company,
+                'period' => $period,
+                'type' => PayrollRun::REGULAR,
+            ]);
         if ($existing instanceof PayrollRun) {
             return;
         }
 
-        $run = (new PayrollRun())
+        $run = new PayrollRun()
             ->setCompany($company)
             ->setPeriod($period)
             ->setType(PayrollRun::REGULAR)
@@ -841,14 +846,16 @@ final class PresentationDemoSeeder
     private function seedTreasuryMasters(): void
     {
         foreach (PresentationDemoCatalog::bankAccounts() as $row) {
-            $existing = $this->entityManager->getRepository(BankAccount::class)->findOneBy([
-                'accountNumber' => $row['accountNumber'],
-            ]);
+            $existing = $this->entityManager
+                ->getRepository(BankAccount::class)
+                ->findOneBy([
+                    'accountNumber' => $row['accountNumber'],
+                ]);
             if ($existing instanceof BankAccount) {
                 continue;
             }
 
-            $account = (new BankAccount())
+            $account = new BankAccount()
                 ->setBank($row['bank'])
                 ->setAlias($row['alias'])
                 ->setAccountNumber($row['accountNumber'])
@@ -860,14 +867,16 @@ final class PresentationDemoSeeder
 
         $now = new DateTimeImmutable('now', new DateTimeZone(PresentationDemoCatalog::TIMEZONE));
         foreach (PresentationDemoCatalog::fixedAssets() as $row) {
-            $existing = $this->entityManager->getRepository(FixedAsset::class)->findOneBy([
-                'description' => $row['description'],
-            ]);
+            $existing = $this->entityManager
+                ->getRepository(FixedAsset::class)
+                ->findOneBy([
+                    'description' => $row['description'],
+                ]);
             if ($existing instanceof FixedAsset) {
                 continue;
             }
 
-            $asset = (new FixedAsset())
+            $asset = new FixedAsset()
                 ->setDescription($row['description'])
                 ->setPurchaseDate($now->modify(sprintf('-%d months', $row['monthsAgoPurchased'])))
                 ->setCost($row['cost'])
@@ -889,7 +898,7 @@ final class PresentationDemoSeeder
             $issued = $sale->getIssuedAt() ?? new DateTimeImmutable();
             $cogsTotal = 0.0;
             foreach ($sale->getSaleItemRecords() as $item) {
-                $cogsTotal += ((float) $item->getQty()) * ((float) ($item->getUnitCostSnapshot() ?? '0'));
+                $cogsTotal += (float) $item->getQty() * (float) ($item->getUnitCostSnapshot() ?? '0');
             }
             $cogs = number_format($cogsTotal, 2, '.', '');
 
@@ -898,7 +907,7 @@ final class PresentationDemoSeeder
                 sourceId: (string) $sale->getId(),
                 kind: (float) $sale->getBalanceDue() > 0 ? EconomicEvent::SALE_CREDIT : EconomicEvent::SALE_CASH,
                 occurredOn: DateTimeImmutable::createFromInterface($issued)->format('Y-m-d'),
-                description: 'Venta '.trim($sale->getSerie().'-'.$sale->getNumero(), '-'),
+                description: 'Venta ' . trim($sale->getSerie() . '-' . $sale->getNumero(), '-'),
                 total: (string) $sale->getGrandTotal(),
                 tax: (string) $sale->getTaxTotal(),
                 cogs: $cogs,
@@ -912,7 +921,7 @@ final class PresentationDemoSeeder
                 sourceId: (string) $purchase->getId(),
                 kind: EconomicEvent::PURCHASE,
                 occurredOn: DateTimeImmutable::createFromInterface($issued)->format('Y-m-d'),
-                description: 'Compra '.(string) ($purchase->getSupplierDocNumber() ?? $purchase->getId()),
+                description: 'Compra ' . (string) ($purchase->getSupplierDocNumber() ?? $purchase->getId()),
                 total: $purchase->getGrandTotal(),
                 tax: $purchase->getTaxTotal(),
             ));
@@ -941,10 +950,12 @@ final class PresentationDemoSeeder
             return;
         }
 
-        $open = $this->entityManager->getRepository(CashSession::class)->findOneBy([
-            'cashRegister' => $cashRegister,
-            'status' => 'OPEN',
-        ]);
+        $open = $this->entityManager
+            ->getRepository(CashSession::class)
+            ->findOneBy([
+                'cashRegister' => $cashRegister,
+                'status' => 'OPEN',
+            ]);
         if ($open instanceof CashSession) {
             return;
         }
@@ -960,7 +971,7 @@ final class PresentationDemoSeeder
             throw new RuntimeException('No se pudo resolver el usuario de presentación para abrir caja.');
         }
 
-        $session = (new CashSession())
+        $session = new CashSession()
             ->setCashRegister($cashRegister)
             ->setBranch($branch)
             ->setOpenedBy($openedBy)

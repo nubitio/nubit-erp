@@ -16,6 +16,7 @@ import {
   type SerialPortInfo,
 } from '@features/sales/lib/localAgentClient';
 import './HardwareAgentDialog.scss';
+import { notifyHardwareConfigChanged } from './hardwareAgentEvents';
 
 type TabId = 'status' | 'printer' | 'scale';
 
@@ -142,6 +143,7 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
       setConfigPath(result.path);
       if (successMessage) toast(successMessage, 'success');
       await refresh();
+      notifyHardwareConfigChanged();
       return true;
     } catch (err) {
       toast(err instanceof Error ? err.message : 'No se pudo guardar', 'error');

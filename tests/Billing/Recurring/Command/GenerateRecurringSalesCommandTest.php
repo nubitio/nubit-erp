@@ -169,7 +169,10 @@ beforeEach(function (): void {
 });
 
 it('generates a sale for a subscription whose billing date is due', function (): void {
-    $adminId = makeAdminUser($this->connection);
+    makeAdminUser($this->connection);
+    $expectedAdminId = (int) $this->connection->fetchOne(
+        'SELECT usuario_id FROM usuario WHERE rol_id IN (1, 2) ORDER BY usuario_id ASC LIMIT 1',
+    );
     $plan = makeSubscriptionPlan($this->em, '49.90');
     $today = new \DateTimeImmutable('today', new \DateTimeZone('America/Lima'));
     $subscription = makeCustomerSubscription($this->em, $plan, $today->modify('-1 day'));
@@ -206,7 +209,7 @@ it('generates a sale for a subscription whose billing date is due', function ():
         ->and($sale['balance_due'])->toBe('49.90')
         ->and($sale['paid_total'])->toBe('0.00')
         ->and($sale['note'])->toBe('Cargo recurrente: Plan mensual')
-        ->and((int) $sale['seller_user_id'])->toBe($adminId)
+        ->and((int) $sale['seller_user_id'])->toBe($expectedAdminId)
         ->and($item['name_snapshot'])->toContain('Hosting mensual')
         ->and($item['name_snapshot'])->toContain('Periodo')
         ->and($item['unit_price'])->toBe('49.9000')
@@ -360,6 +363,11 @@ it('manual generation requires subscriptions.generate permission', function (): 
 });
 
 it('fails when no admin/super-admin user exists to attribute the sale to', function (): void {
+    $this->connection->executeStatement(
+        'INSERT INTO rol (rol_id, descripcion) VALUES (3, ?) ON DUPLICATE KEY UPDATE descripcion = descripcion',
+        ['Non-admin'],
+    );
+    $this->connection->executeStatement('UPDATE usuario SET rol_id = 3 WHERE rol_id IN (1, 2)');
     $plan = makeSubscriptionPlan($this->em, '49.90');
     $today = new \DateTimeImmutable('today', new \DateTimeZone('America/Lima'));
     makeCustomerSubscription($this->em, $plan, $today->modify('-1 day'));

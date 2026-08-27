@@ -30,13 +30,17 @@ final readonly class AssistantCallLogger
         ?string $tenant,
         array $extra = [],
     ): void {
-        $this->logger->info('Assistant response generated', array_merge([
-            'model' => $model,
-            'user' => $user,
-            'tenant' => $tenant,
-            'latency_ms' => (int) round((microtime(true) - $startedAt) * 1000),
-            'chars' => $this->contentLength($result),
-        ], $this->usageFields($result), $extra));
+        $this->logger->info('Assistant response generated', array_merge(
+            [
+                'model' => $model,
+                'user' => $user,
+                'tenant' => $tenant,
+                'latency_ms' => (int) round((microtime(true) - $startedAt) * 1000),
+                'chars' => $this->contentLength($result),
+            ],
+            $this->usageFields($result),
+            $extra,
+        ));
     }
 
     /**
@@ -92,8 +96,12 @@ final readonly class AssistantCallLogger
         $usage = $data['usage'];
 
         return [
-            'prompt_tokens' => isset($usage['input_tokens']) ? (int) $usage['input_tokens'] : (isset($usage['prompt_tokens']) ? (int) $usage['prompt_tokens'] : null),
-            'completion_tokens' => isset($usage['output_tokens']) ? (int) $usage['output_tokens'] : (isset($usage['completion_tokens']) ? (int) $usage['completion_tokens'] : null),
+            'prompt_tokens' => isset($usage['input_tokens'])
+                ? (int) $usage['input_tokens']
+                : (isset($usage['prompt_tokens']) ? (int) $usage['prompt_tokens'] : null),
+            'completion_tokens' => isset($usage['output_tokens'])
+                ? (int) $usage['output_tokens']
+                : (isset($usage['completion_tokens']) ? (int) $usage['completion_tokens'] : null),
             'total_tokens' => isset($usage['total_tokens']) ? (int) $usage['total_tokens'] : null,
         ];
     }

@@ -76,11 +76,15 @@ final class TenantListenerTest extends TestCase
 
     public function testResolvesConfiguredTenantForLocalhost(): void
     {
-        $this->tenantRegistry->expects($this->once())->method('getTenantByName')->with('demo')->willReturn([
-            'id' => 1,
-            'name' => 'demo',
-            'status' => 'active',
-        ]);
+        $this->tenantRegistry
+            ->expects($this->once())
+            ->method('getTenantByName')
+            ->with('demo')
+            ->willReturn([
+                'id' => 1,
+                'name' => 'demo',
+                'status' => 'active',
+            ]);
         $this->switcher->expects($this->never())->method('switchConnection');
 
         ($this->listener)($this->createEvent('localhost'));
@@ -114,11 +118,15 @@ final class TenantListenerTest extends TestCase
 
     public function testResolvesConfiguredTenantForLoopbackIp(): void
     {
-        $this->tenantRegistry->expects($this->once())->method('getTenantByName')->with('demo')->willReturn([
-            'id' => 1,
-            'name' => 'demo',
-            'status' => 'active',
-        ]);
+        $this->tenantRegistry
+            ->expects($this->once())
+            ->method('getTenantByName')
+            ->with('demo')
+            ->willReturn([
+                'id' => 1,
+                'name' => 'demo',
+                'status' => 'active',
+            ]);
         $this->switcher->expects($this->never())->method('switchConnection');
 
         ($this->listener)($this->createEvent('127.0.0.1'));

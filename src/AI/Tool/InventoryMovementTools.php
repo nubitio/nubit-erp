@@ -58,7 +58,7 @@ final readonly class InventoryMovementTools
                 'type' => $row->movementTypeLabel ?? $row->movementType,
                 'qty_in' => $row->qtyIn,
                 'qty_out' => $row->qtyOut,
-                'warehouse' => is_array($row->warehouse) ? ($row->warehouse['name'] ?? null) : null,
+                'warehouse' => is_array($row->warehouse) ? $row->warehouse['name'] ?? null : null,
                 'source' => $row->sourceId,
             ];
         }

@@ -35,14 +35,17 @@ final readonly class QuoteTools
     public function quoteSearch(?string $term = null, int $limit = 5): array
     {
         $limit = max(1, min(20, $limit));
-        $qb = $this->saleQuoteRepository->createQueryBuilder('q')
+        $qb = $this->saleQuoteRepository
+            ->createQueryBuilder('q')
             ->leftJoin('q.customer', 'c')
             ->orderBy('q.issuedAt', 'DESC')
             ->setMaxResults($limit);
 
         if ($term !== null && trim($term) !== '') {
-            $qb->andWhere('c.businessName LIKE :term OR c.ruc LIKE :term')
-                ->setParameter('term', '%' . trim($term) . '%');
+            $qb->andWhere('c.businessName LIKE :term OR c.ruc LIKE :term')->setParameter(
+                'term',
+                '%' . trim($term) . '%',
+            );
         }
 
         /** @var list<SaleQuote> $quotes */

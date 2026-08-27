@@ -178,6 +178,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         $this->set($processorReflection, $processor, 'tenantSettings', $this->tenantSettings);
         $this->set($processorReflection, $processor, 'saleInvoicing', $this->saleInvoicing);
         $this->set($processorReflection, $processor, 'logger', $this->logger);
+        $this->set($processorReflection, $processor, 'messageBus', null);
 
         // Inject no-op stubs for final-class properties not exercised by tests.
         $this->injectNoOpStub($processorReflection, $processor, 'saleUtils');

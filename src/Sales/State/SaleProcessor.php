@@ -7,6 +7,7 @@ namespace App\Sales\State;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Accounting\Message\EconomicEvent;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\Product;
 use App\Contacts\Entity\Customer;
@@ -19,7 +20,6 @@ use App\Organization\Repository\BranchRepository;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Port\InvoiceCreatorInterface;
-use App\Accounting\Message\EconomicEvent;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\Service\SalePaymentPlanService;
 use App\Settings\Service\TenantSettingsService;
@@ -34,8 +34,8 @@ use Nubit\Platform\Exception\ValidationException;
 use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Uid\Uuid;
 
@@ -116,10 +116,8 @@ readonly class SaleProcessor implements ProcessorInterface
         // A well-formed key is required so retries cannot duplicate the physical transaction.
         $offlineSaleHeader = $request instanceof Request && $request->headers->get('X-Offline-Sale') === 'true';
         $idempotencyKey = $request instanceof Request ? $request->headers->get('Idempotency-Key') ?? '' : '';
-        $isUuidIdempotencyKey = preg_match(
-            '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
-            $idempotencyKey,
-        ) === 1;
+        $isUuidIdempotencyKey =
+            preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $idempotencyKey) === 1;
         $isOfflineSale = $offlineSaleHeader && $isUuidIdempotencyKey;
         if ($offlineSaleHeader && !$isOfflineSale) {
             $this->logger->warning('X-Offline-Sale header rejected: missing or malformed Idempotency-Key', [
@@ -455,10 +453,7 @@ readonly class SaleProcessor implements ProcessorInterface
     {
         $cogs = BigDecimal::zero();
         foreach ($sale->getSaleItemRecords() as $item) {
-            $cogs = $cogs->plus(Money::mul(
-                Money::of($item->getQty()),
-                Money::of($item->getUnitCostSnapshot() ?? '0'),
-            ));
+            $cogs = $cogs->plus(Money::mul(Money::of($item->getQty()), Money::of($item->getUnitCostSnapshot() ?? '0')));
         }
 
         $issued = $sale->getIssuedAt() ?? new DateTimeImmutable();
@@ -471,7 +466,7 @@ readonly class SaleProcessor implements ProcessorInterface
             sourceId: (string) $sale->getId(),
             kind: $sale->isCreditSale() ? EconomicEvent::SALE_CREDIT : EconomicEvent::SALE_CASH,
             occurredOn: $issued->format('Y-m-d'),
-            description: 'Venta '.$label,
+            description: 'Venta ' . $label,
             total: $sale->getTotal() ?? '0.00',
             tax: $sale->getTaxTotal(),
             cogs: Money::toString($cogs),

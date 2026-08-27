@@ -120,7 +120,8 @@ readonly class PurchaseProcessor implements ProcessorInterface
                 sourceId: (string) $data->getId(),
                 kind: EconomicEvent::PURCHASE,
                 occurredOn: $issued->format('Y-m-d'),
-                description: 'Compra '.($data->getReceiptNo() !== null ? (string) $data->getReceiptNo() : (string) $data->getId()),
+                description: 'Compra '
+                . ($data->getReceiptNo() !== null ? (string) $data->getReceiptNo() : (string) $data->getId()),
                 total: $data->getGrandTotal(),
                 tax: $data->getTaxTotal(),
                 currency: $data->getCurrency(),

@@ -34,7 +34,8 @@ final readonly class AccountsPayableTools
         $today = new DateTimeImmutable('today');
 
         /** @var list<SupplierBill> $open */
-        $open = $this->supplierBillRepository->createQueryBuilder('b')
+        $open = $this->supplierBillRepository
+            ->createQueryBuilder('b')
             ->andWhere('b.status IN (:open)')
             ->setParameter('open', [SupplierBill::PENDING, SupplierBill::PARTIAL])
             ->orderBy('b.dueDate', 'ASC')

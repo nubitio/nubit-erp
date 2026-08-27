@@ -50,7 +50,9 @@ final readonly class ProposeSaleTool
     ): array {
         $parsed = json_decode($itemsJson, true);
         if (!is_array($parsed) || $parsed === []) {
-            return ['error' => 'itemsJson debe ser un JSON array de líneas, por ejemplo [{"name":"Coca Cola","qty":2}].'];
+            return [
+                'error' => 'itemsJson debe ser un JSON array de líneas, por ejemplo [{"name":"Coca Cola","qty":2}].',
+            ];
         }
 
         $cashError = $this->requireOpenCashSession();
@@ -99,10 +101,11 @@ final readonly class ProposeSaleTool
             'total' => round($total, 2),
         ];
 
-        $itemSummary = implode(', ', array_map(
-            static fn(array $line): string => sprintf('%sx %s', $line['qty'], $line['name']),
-            $lines,
-        ));
+        $itemSummary = implode(', ', array_map(static fn(array $line): string => sprintf(
+            '%sx %s',
+            $line['qty'],
+            $line['name'],
+        ), $lines));
         $doc = $emitInvoice ? 'Boleta' : 'Nota de venta';
         $who = is_string($payload['customerName']) ? ' · ' . $payload['customerName'] : '';
         $summary = sprintf('%s · %s · S/ %s%s', $doc, $itemSummary, number_format($total, 2, '.', ''), $who);
@@ -167,7 +170,10 @@ final readonly class ProposeSaleTool
         $ruc = trim($customerRuc);
         $customer = $this->customerRepository->findOneBy(['ruc' => $ruc]);
         if (!$customer instanceof Customer) {
-            return ['error' => sprintf('No hay un cliente con documento %s. Créalo primero con propose_customer.', $ruc)];
+            return ['error' => sprintf(
+                'No hay un cliente con documento %s. Créalo primero con propose_customer.',
+                $ruc,
+            )];
         }
 
         return ['id' => $customer->getId(), 'name' => $customer->getBusinessName()];
@@ -181,11 +187,12 @@ final readonly class ProposeSaleTool
         }
 
         try {
-            $open = (int) $this->entityManager->createQuery(<<<'DQL'
-                SELECT COUNT(cs.id)
-                FROM App\CashRegister\Entity\CashSession cs
-                WHERE cs.openedBy = :userId AND cs.status = :status
-                DQL)
+            $open = (int) $this->entityManager
+                ->createQuery(<<<'DQL'
+                    SELECT COUNT(cs.id)
+                    FROM App\CashRegister\Entity\CashSession cs
+                    WHERE cs.openedBy = :userId AND cs.status = :status
+                    DQL)
                 ->setParameter('userId', $user->getId())
                 ->setParameter('status', 'OPEN')
                 ->getSingleScalarResult();

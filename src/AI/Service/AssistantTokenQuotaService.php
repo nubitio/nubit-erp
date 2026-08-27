@@ -11,9 +11,9 @@ use Nubit\Platform\Exception\ServiceException;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use Psr\Cache\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\AI\Platform\Result\ResultInterface;
 use Symfony\AI\Platform\TokenUsage\TokenUsage;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
@@ -71,7 +71,7 @@ final readonly class AssistantTokenQuotaService
     {
         try {
             $value = $this->cacheManager->get($this->cacheKey());
-        } catch (InvalidArgumentException | Throwable $throwable) {
+        } catch (InvalidArgumentException|Throwable $throwable) {
             $this->logger->warning('Assistant token quota read failed', [
                 'error' => $throwable->getMessage(),
             ]);
@@ -87,7 +87,7 @@ final readonly class AssistantTokenQuotaService
         try {
             $used = $this->usedThisMonth() + max(0, $tokens);
             $this->cacheManager->set($this->cacheKey(), $used, $this->ttlUntilNextMonth());
-        } catch (InvalidArgumentException | Throwable $throwable) {
+        } catch (InvalidArgumentException|Throwable $throwable) {
             $this->logger->warning('Assistant token quota write failed', [
                 'error' => $throwable->getMessage(),
             ]);

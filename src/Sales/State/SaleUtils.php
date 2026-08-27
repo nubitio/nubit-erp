@@ -62,26 +62,22 @@ readonly class SaleUtils
     private function provisionInternalSaleSeries(string $wareHouseId): ?string
     {
         /** @var false|string $branchId */
-        $branchId = $this->connection->fetchOne(
-            'SELECT local_id FROM almacen WHERE almacen_id = ?',
-            [$wareHouseId],
-        );
+        $branchId = $this->connection->fetchOne('SELECT local_id FROM almacen WHERE almacen_id = ?', [$wareHouseId]);
         if ($branchId === false || $branchId === '') {
             return null;
         }
 
-        $voucherTypeExists = $this->connection->fetchOne(
-            'SELECT codigo FROM tipo_comprobante WHERE codigo = ?',
-            [DocType::NOTA_VENTA->value],
-        );
+        $voucherTypeExists = $this->connection->fetchOne('SELECT codigo FROM tipo_comprobante WHERE codigo = ?', [
+            DocType::NOTA_VENTA->value,
+        ]);
         if ($voucherTypeExists === false) {
             return null;
         }
 
-        $existing = $this->connection->fetchOne(
-            'SELECT series FROM local_comprobante WHERE local_id = ? AND tipo_comprobante_id = ? LIMIT 1',
-            [$branchId, DocType::NOTA_VENTA->value],
-        );
+        $existing = $this->connection->fetchOne('SELECT series FROM local_comprobante WHERE local_id = ? AND tipo_comprobante_id = ? LIMIT 1', [
+            $branchId,
+            DocType::NOTA_VENTA->value,
+        ]);
         if (is_string($existing) && $existing !== '') {
             return $existing;
         }
@@ -99,9 +95,12 @@ readonly class SaleUtils
     private function missingSeriesMessage(string $docType): string
     {
         return match ($docType) {
-            DocType::FACTURA->value => 'Esta sucursal no tiene serie de factura (F001). Configúrala en Configuración → Series de comprobantes.',
-            DocType::BOLETA->value => 'Esta sucursal no tiene serie de boleta (B001). Configúrala en Configuración → Series de comprobantes.',
-            DocType::NOTA_VENTA->value => 'Esta sucursal no tiene serie de nota de venta (N001). Configúrala en Configuración → Series de comprobantes.',
+            DocType::FACTURA->value
+                => 'Esta sucursal no tiene serie de factura (F001). Configúrala en Configuración → Series de comprobantes.',
+            DocType::BOLETA->value
+                => 'Esta sucursal no tiene serie de boleta (B001). Configúrala en Configuración → Series de comprobantes.',
+            DocType::NOTA_VENTA->value
+                => 'Esta sucursal no tiene serie de nota de venta (N001). Configúrala en Configuración → Series de comprobantes.',
             default => 'Esta sucursal no tiene serie para el tipo de comprobante seleccionado. Configúrala en Configuración → Series de comprobantes.',
         };
     }

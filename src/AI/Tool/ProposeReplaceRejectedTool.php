@@ -38,7 +38,8 @@ final readonly class ProposeReplaceRejectedTool
 
         $status = (string) ($document->getSunatStatus() ?? '');
         $statusNum = (int) $status;
-        $isRejected = ($statusNum >= 2000 && $statusNum < 4000)
+        $isRejected =
+            $statusNum >= 2000 && $statusNum < 4000
             || in_array(strtolower($status), ['rejected', 'error', 'rechazado'], true);
 
         if (!$isRejected) {

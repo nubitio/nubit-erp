@@ -14,9 +14,9 @@ use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Service\CreditNoteStockReverserInterface;
 use App\Billing\State\TaxDocumentProcessor;
 use App\Identity\Auth\BranchContextService;
+use App\Organization\Entity\Branch;
 use App\Organization\Repository\BranchRepository;
 use App\Settings\Service\TenantSettingsService;
-use App\Organization\Entity\Branch;
 use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
 use Nubit\AdminBundle\Auth\JWTManager;
 use Nubit\Platform\Exception\ServiceException;
@@ -251,7 +251,7 @@ final class TaxDocumentProcessorTest extends TestCase
         $doc->setNumber('00001');
         $doc->setTotal('118.00');
         $branch = new Branch();
-        (new \ReflectionProperty(Branch::class, 'id'))->setValue($branch, 'branch-001');
+        new \ReflectionProperty(Branch::class, 'id')->setValue($branch, 'branch-001');
         $doc->setBranch($branch);
 
         // Add at least one line so prepareCreditNoteLines() doesn't throw.
