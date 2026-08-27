@@ -1,0 +1,5 @@
+<h1>Continúa configurando {{ tenant_name }}</h1>
+<p>Tu empresa está creada, pero todavía no registra actividad comercial.</p>
+<p>El asistente de configuración te ayudará a completar los datos de empresa, local, almacén y SUNAT.</p>
+{% if tenant_url %}<p><a href="{{ tenant_url }}">Continuar configuración</a></p>{% endif %}
+{% if stage == 3 %}<p>Si no utilizas esta empresa, se archivará automáticamente. Podrás solicitar su restauración antes de la purga definitiva.</p>{% endif %}

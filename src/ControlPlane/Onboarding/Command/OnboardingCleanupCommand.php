@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Onboarding\Command;
 
+use App\ControlPlane\Onboarding\Service\OnboardingLifecycleService;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\Persistence\ConnectionRegistry;
@@ -14,26 +15,45 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Scheduler\Attribute\AsCronTask;
 
+#[AsCronTask('15 9 * * *', timezone: 'America/Lima')]
 #[AsCommand(name: 'app:onboarding:cleanup', description: 'Clean up unverified accounts and stale provisioning records')]
 final class OnboardingCleanupCommand extends Command
 {
     public function __construct(
         private readonly ConnectionRegistry $connectionRegistry,
         private readonly LoggerInterface $logger,
+        private readonly OnboardingLifecycleService $lifecycle,
     ) {
         parent::__construct();
     }
 
     protected function configure(): void
     {
-        $this->addOption(
-            'hours',
-            null,
-            InputOption::VALUE_REQUIRED,
-            'Delete unverified accounts older than N hours',
-            '24',
-        )->addOption('dry-run', null, InputOption::VALUE_NONE, 'Only show what would be deleted');
+        $this
+            ->addOption(
+                'hours',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Delete unverified accounts older than N hours',
+                '336',
+            )
+            ->addOption(
+                'archive-days',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Archive unused free tenants after N days',
+                '30',
+            )
+            ->addOption(
+                'purge-days',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Purge safely archived tenants after N days',
+                '90',
+            )
+            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'Only show what would change');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -42,6 +62,10 @@ final class OnboardingCleanupCommand extends Command
         $hours = max(1, (int) $input->getOption('hours'));
         $dryRun = (bool) $input->getOption('dry-run');
         $conn = $this->cp();
+
+        if (!$dryRun) {
+            $this->lifecycle->sendReminders();
+        }
 
         $cutoff = new \DateTimeImmutable(sprintf('-%d hours', $hours))->format('Y-m-d H:i:s');
 
@@ -62,16 +86,10 @@ final class OnboardingCleanupCommand extends Command
         $io->writeln(sprintf('Unverified accounts older than %d hours: %d', $hours, $unverifiedCount));
         $io->writeln(sprintf('Failed provisions (no tenant) older than %d hours: %d', $hours, $staleProvisionCount));
 
-        if ($dryRun) {
-            $io->note('Dry run - no changes made.');
-
-            return Command::SUCCESS;
-        }
-
         $deletedAccounts = 0;
         $deletedProvisions = 0;
 
-        if ($unverifiedCount > 0) {
+        if (!$dryRun && $unverifiedCount > 0) {
             $deletedAccounts = $conn->executeStatement(
                 'DELETE FROM accounts WHERE verified_at IS NULL AND created_at < ?',
                 [$cutoff],
@@ -81,7 +99,7 @@ final class OnboardingCleanupCommand extends Command
             $this->logger->info('Cleaned up unverified accounts', ['count' => $deletedAccounts]);
         }
 
-        if ($staleProvisionCount > 0) {
+        if (!$dryRun && $staleProvisionCount > 0) {
             $deletedProvisions = $conn->executeStatement(
                 "DELETE FROM tenant_provisions WHERE status = 'failed' AND tenant_id IS NULL AND created_at < ?",
                 [$cutoff],
@@ -91,7 +109,25 @@ final class OnboardingCleanupCommand extends Command
             $this->logger->info('Cleaned up stale provisions', ['count' => $deletedProvisions]);
         }
 
-        $io->success(sprintf('Deleted %d account(s) and %d provision(s).', $deletedAccounts, $deletedProvisions));
+        $archiveIds = $this->lifecycle->findArchivableTenantIds(max(1, (int) $input->getOption('archive-days')));
+        $purgeIds = $this->lifecycle->findPurgeableTenantIds(max(1, (int) $input->getOption('purge-days')));
+        if (!$dryRun) {
+            $this->lifecycle->archiveTenants($archiveIds);
+            $this->lifecycle->purgeTenants($purgeIds);
+        }
+
+        if ($dryRun) {
+            $io->note('Dry run - no changes made and no email sent.');
+        }
+
+        $io->success(sprintf(
+            '%s %d account(s), %d provision(s); archived %d and purged %d safe tenant(s).',
+            $dryRun ? 'Would delete' : 'Deleted',
+            $dryRun ? $unverifiedCount : $deletedAccounts,
+            $dryRun ? $staleProvisionCount : $deletedProvisions,
+            count($archiveIds),
+            count($purgeIds),
+        ));
 
         return Command::SUCCESS;
     }

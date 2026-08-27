@@ -146,6 +146,12 @@ export function TenantOnboardingGate() {
       if (snapshot.warehouse) {
         setWarehouse({ name: snapshot.warehouse.name ?? '' });
       }
+
+      // Resume at the first incomplete step instead of restarting the wizard
+      // after a refresh or a later login.
+      if (snapshot.warehouse) setStep(5);
+      else if (snapshot.branch) setStep(4);
+      else if (snapshot.company) setStep(2);
     });
   }, [snapshotQuery.data]);
 
