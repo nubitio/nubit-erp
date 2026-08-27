@@ -38,7 +38,7 @@ const formatMoney = (value: number, currency: string) =>
 
 const TENDER_BILLS = [10, 20, 50, 100, 200];
 
-const buildTenderSuggestions = (amount: number): number[] => {
+export const buildTenderSuggestions = (amount: number): number[] => {
   const options = new Set<number>([roundMoney(amount)]);
   const nextTen = Math.ceil(amount / 10) * 10;
   if (nextTen > amount) {
@@ -49,7 +49,7 @@ const buildTenderSuggestions = (amount: number): number[] => {
       options.add(bill);
     }
   });
-  return [...options].sort((a, b) => a - b).slice(0, 4);
+  return [...options].sort((a, b) => a - b);
 };
 
 export function SplitPaymentsEditor({
