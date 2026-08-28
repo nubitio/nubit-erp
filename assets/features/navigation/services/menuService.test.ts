@@ -22,6 +22,7 @@ function runtimeConfig(
     settings: {
       requireCashRegister: false,
       autoInvoice: true,
+      autoPrint: true,
       printMethod: 'WEBUSB',
       defaultCurrency: 'PEN',
       negativeStockPolicy: 'BLOCK',

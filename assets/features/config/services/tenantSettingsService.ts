@@ -12,6 +12,7 @@ export interface TenantSettingsDto {
   requireCashRegister: boolean;
   printMethod: 'WEBUSB' | 'LOCAL_AGENT';
   autoInvoice: boolean;
+  autoPrint: boolean;
   defaultCurrency: 'PEN' | 'USD';
   negativeStockPolicy: 'STRICT' | 'WARNING_ONLY' | 'ALLOW_NEGATIVE';
 }

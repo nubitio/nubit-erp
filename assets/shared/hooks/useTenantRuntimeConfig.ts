@@ -28,6 +28,7 @@ export interface TenantRuntimeConfig {
   settings: {
     requireCashRegister: boolean;
     autoInvoice: boolean;
+    autoPrint: boolean;
     printMethod: string;
     defaultCurrency: string;
     negativeStockPolicy: string;

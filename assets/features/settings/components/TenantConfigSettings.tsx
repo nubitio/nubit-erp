@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { AppDropdown, Button, TextField, Toggle } from '@nubitio/ui';
 import {
   ConfigKey,
@@ -6,8 +7,10 @@ import {
   type ConfigDto,
   isTechnical,
   tenantSettingsService,
+  type TenantSettingsDto,
 } from '@features/config';
 import { settings } from '@shared/settings';
+import { TENANT_RUNTIME_CONFIG_QUERY_KEY } from '@shared/hooks';
 import toast from '@shared/lib/SharedUtils';
 import '../../admin/ConfigPage.scss';
 
@@ -52,11 +55,6 @@ const CONFIG_META: Record<string, ConfigMeta> = {
       { value: 'WEBUSB', label: 'WebUSB (navegador, sin instalación)' },
       { value: 'LOCAL_AGENT', label: 'Agente eFact (hardware local: impresora y balanza)' },
     ],
-  },
-  app_option_auto_invoice: {
-    label: 'Facturación automática',
-    description: 'Emite el comprobante electrónico automáticamente.',
-    group: 'sales',
   },
   sales_default_currency: {
     label: 'Moneda por defecto',
@@ -409,6 +407,92 @@ export const SunatSettingsSection = () => {
             </div>
           )}
         </div>
+      </div>
+    </section>
+  );
+};
+
+/**
+ * Point-of-sale behaviour toggles backed by the typed /api/tenant/settings
+ * endpoint. These control the *defaults* the POS starts each sale with; the
+ * cashier can still override per sale from the checkout panel.
+ */
+export const PosBehaviorSettings = () => {
+  const queryClient = useQueryClient();
+  const [state, setState] = useState<TenantSettingsDto | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [savingField, setSavingField] = useState<keyof TenantSettingsDto | null>(null);
+
+  useEffect(() => {
+    tenantSettingsService
+      .getSettings()
+      .then(setState)
+      .catch(() => toast('Error al cargar la configuración del punto de venta', 'error'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const patch = async (field: 'autoInvoice' | 'autoPrint', value: boolean) => {
+    if (!state) return;
+    setSavingField(field);
+    try {
+      const updated = await tenantSettingsService.patchSettings({ [field]: value });
+      setState(updated);
+      settings.invalidate();
+      void queryClient.invalidateQueries({ queryKey: [...TENANT_RUNTIME_CONFIG_QUERY_KEY] });
+      toast('Configuración guardada', 'success');
+    } catch {
+      toast('No se pudo guardar la configuración', 'error');
+    } finally {
+      setSavingField(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="settings-loading">
+        <i className="ph ph-circle-notch settings-loading__icon" aria-hidden="true" />
+        Cargando configuración del punto de venta…
+      </div>
+    );
+  }
+  if (!state) return null;
+
+  return (
+    <section className="config-group">
+      <h3 className="config-group-title">Punto de venta</h3>
+
+      <div className="config-toggle-row">
+        <div className="config-toggle-info">
+          <span className="config-toggle-label">Emitir boleta/factura por defecto</span>
+          <span className="config-toggle-description">
+            {state.autoInvoice
+              ? 'Cada venta nueva arranca con el comprobante electrónico activado. El cajero puede desactivarlo por venta.'
+              : 'Las ventas nuevas arrancan sin comprobante. El cajero puede activarlo por venta.'}
+          </span>
+        </div>
+        <Toggle
+          checked={state.autoInvoice}
+          onChange={(checked) => void patch('autoInvoice', checked)}
+          disabled={savingField !== null}
+          aria-label="Emitir boleta o factura por defecto"
+        />
+      </div>
+
+      <div className="config-toggle-row">
+        <div className="config-toggle-info">
+          <span className="config-toggle-label">Impresión automática</span>
+          <span className="config-toggle-description">
+            {state.autoPrint
+              ? 'El ticket se envía a la impresora automáticamente al cerrar cada venta.'
+              : 'La venta se registra sin imprimir. Usa el botón "Imprimir" del panel de última venta.'}
+          </span>
+        </div>
+        <Toggle
+          checked={state.autoPrint}
+          onChange={(checked) => void patch('autoPrint', checked)}
+          disabled={savingField !== null}
+          aria-label="Impresión automática al cerrar la venta"
+        />
       </div>
     </section>
   );

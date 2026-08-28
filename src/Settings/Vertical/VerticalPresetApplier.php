@@ -63,6 +63,7 @@ final readonly class VerticalPresetApplier
             ->setIgv($values->igv)
             ->setRequireCashRegister($values->requireCashRegister)
             ->setAutoInvoice($values->autoInvoice)
+            ->setAutoPrint($values->autoPrint)
             ->setDefaultCurrency($values->defaultCurrency)
             ->setNegativeStockPolicy($values->negativeStockPolicy)
             ->setPrintMethod($values->printMethod);

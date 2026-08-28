@@ -41,6 +41,7 @@ final class PharmacyPreset implements VerticalPresetInterface
             igv: 18.0,
             requireCashRegister: true,
             autoInvoice: true,
+            autoPrint: true,
             defaultCurrency: DefaultCurrency::PEN,
             negativeStockPolicy: StockPolicy::STRICT,
             printMethod: PrintMethod::WEBUSB,

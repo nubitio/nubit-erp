@@ -60,6 +60,7 @@ type UsePosCheckoutParams = {
   printSaleInvoice: (saleId: string) => Promise<void>;
   onCashSessionRequired?: () => void;
   autoInvoice?: boolean;
+  autoPrint?: boolean;
 };
 
 export const usePosCheckout = ({
@@ -77,6 +78,7 @@ export const usePosCheckout = ({
   printSaleInvoice,
   onCashSessionRequired,
   autoInvoice = true,
+  autoPrint = true,
 }: UsePosCheckoutParams) => {
   const queryClient = useQueryClient();
   // ── Draft-persistence helpers ────────────────────────────────────────────
@@ -525,9 +527,11 @@ export const usePosCheckout = ({
         posCheckoutAttemptKey = null;
         clearCart();
         void queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });
-        printSaleInvoice(submitResult.serverSaleId).catch(() => {
-          toast('Venta registrada, pero no se pudo imprimir el ticket.', 'warning');
-        });
+        if (autoPrint) {
+          printSaleInvoice(submitResult.serverSaleId).catch(() => {
+            toast('Venta registrada, pero no se pudo imprimir el ticket.', 'warning');
+          });
+        }
         return;
       }
 
@@ -563,9 +567,11 @@ export const usePosCheckout = ({
         posCheckoutAttemptKey = null;
         clearCart();
         void queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });
-        printSaleInvoice(syncedSale.serverSaleId).catch(() => {
-          toast('Venta sincronizada, pero no se pudo imprimir el ticket.', 'warning');
-        });
+        if (autoPrint) {
+          printSaleInvoice(syncedSale.serverSaleId).catch(() => {
+            toast('Venta sincronizada, pero no se pudo imprimir el ticket.', 'warning');
+          });
+        }
       } else if (syncedSale?.status === 'error') {
         if (syncedSale.errorCode === 'SALE_CASH_SESSION_REQUIRED') {
           onCashSessionRequired?.();

@@ -35,6 +35,7 @@ final readonly class TenantSettingsPatchProcessor implements ProcessorInterface
                 'requireCashRegister' => $settings->setRequireCashRegister($data->isRequireCashRegister()),
                 'printMethod' => $settings->setPrintMethod($data->getPrintMethod()),
                 'autoInvoice' => $settings->setAutoInvoice($data->isAutoInvoice()),
+                'autoPrint' => $settings->setAutoPrint($data->isAutoPrint()),
                 'defaultCurrency' => $settings->setDefaultCurrency($data->getDefaultCurrency()),
                 'negativeStockPolicy' => $settings->setNegativeStockPolicy($data->getNegativeStockPolicy()),
                 default => null,

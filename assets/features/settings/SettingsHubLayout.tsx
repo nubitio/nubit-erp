@@ -27,7 +27,9 @@ export const SettingsHubLayout = () => {
           label: 'General',
           path: '/config/general',
           icon: 'ph-sliders-horizontal',
-          visible: showAdminTabs,
+          // Always reachable: it hosts POS behaviour toggles (auto-invoice,
+          // auto-print) that a single-store tenant must be able to change.
+          visible: true,
         },
       ]}
     />

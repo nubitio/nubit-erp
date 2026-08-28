@@ -204,6 +204,7 @@ const POSPage = () => {
       setActivePanel('cart');
     },
     autoInvoice: runtimeConfig?.settings.autoInvoice !== false,
+    autoPrint: runtimeConfig?.settings.autoPrint !== false,
   });
 
   useEffect(() => {

@@ -23,5 +23,6 @@ final readonly class VerticalPresetSettings
         public DefaultCurrency $defaultCurrency,
         public StockPolicy $negativeStockPolicy,
         public PrintMethod $printMethod,
+        public bool $autoPrint = true,
     ) {}
 }

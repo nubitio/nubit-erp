@@ -76,6 +76,15 @@ class TenantSettings
     #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
     private bool $autoInvoice = true;
 
+    /**
+     * When true, the POS sends the sale ticket to the printer automatically
+     * after every checkout. When false, the operator prints on demand from the
+     * "última venta" panel.
+     */
+    #[ORM\Column]
+    #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
+    private bool $autoPrint = true;
+
     #[ORM\Column(enumType: DefaultCurrency::class)]
     #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
     private DefaultCurrency $defaultCurrency = DefaultCurrency::PEN;
@@ -185,6 +194,17 @@ class TenantSettings
     public function setAutoInvoice(bool $autoInvoice): static
     {
         $this->autoInvoice = $autoInvoice;
+        return $this;
+    }
+
+    public function isAutoPrint(): bool
+    {
+        return $this->autoPrint;
+    }
+
+    public function setAutoPrint(bool $autoPrint): static
+    {
+        $this->autoPrint = $autoPrint;
         return $this;
     }
 

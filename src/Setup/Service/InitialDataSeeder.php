@@ -71,6 +71,7 @@ readonly class InitialDataSeeder
             $settings->setIgv(18.0);
             $settings->setRc(0.0);
             $settings->setAutoInvoice(true);
+            $settings->setAutoPrint(true);
             $settings->setPrintLogo(true);
             $settings->setRequireCashRegister(true);
             $settings->setPrintMethod(\App\Settings\Enum\PrintMethod::WEBUSB);
