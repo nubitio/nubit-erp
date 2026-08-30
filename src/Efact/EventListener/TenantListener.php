@@ -55,6 +55,9 @@ readonly class TenantListener
             '/account',
             '/webhook/paypal',
             '/webhook/mercadopago',
+            // The integration API resolves its tenant from the API key, not the
+            // host — ApiKeyAuthenticator switches the connection itself.
+            '/api/v1',
         ];
 
         foreach ($excludedPaths as $excludedPath) {

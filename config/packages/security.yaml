@@ -59,6 +59,16 @@ security:
                 secret: '%kernel.secret%'
                 lifetime: 604800   # 7 días
                 path: /admin
+        # Machine-to-machine integration API. Must sit before `main` so
+        # `^/api/v1` is claimed here and authenticated by the API key, not the
+        # tenant JWT. The key names its own tenant (see ApiKeyAuthenticator).
+        integration_api:
+            pattern: ^/api/v1
+            stateless: true
+            provider: user_provider
+            custom_authenticators:
+                - App\Integration\Security\ApiKeyAuthenticator
+            entry_point: App\Integration\Security\ApiKeyAuthenticator
         main:
             lazy: true
             stateless: true
@@ -98,6 +108,7 @@ security:
         # E2E seed/reset routes — only registered in dev/test (config/routes/e2e.yaml),
         # so this rule is a no-op in prod (routes 404 before access_control is checked).
         - { path: '^/api/test/e2e/(seed|reset)', roles: PUBLIC_ACCESS }
+        - { path: ^/api/v1, roles: ROLE_INTEGRATION }
         - { path: ^/api/settings, roles: ROLE_USER }
         - { path: ^/api/setup, roles: PUBLIC_ACCESS }
         - { path: ^/api/sales/report, roles: ROLE_USER }
