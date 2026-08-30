@@ -431,7 +431,7 @@ export const PosBehaviorSettings = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const patch = async (field: 'autoInvoice' | 'autoPrint', value: boolean) => {
+  const patch = async (field: 'autoInvoice' | 'autoPrint' | 'cashRoundingEnabled', value: boolean) => {
     if (!state) return;
     setSavingField(field);
     try {
@@ -492,6 +492,23 @@ export const PosBehaviorSettings = () => {
           onChange={(checked) => void patch('autoPrint', checked)}
           disabled={savingField !== null}
           aria-label="Impresión automática al cerrar la venta"
+        />
+      </div>
+
+      <div className="config-toggle-row">
+        <div className="config-toggle-info">
+          <span className="config-toggle-label">Redondeo de efectivo a S/ 0.10</span>
+          <span className="config-toggle-description">
+            {state.cashRoundingEnabled
+              ? 'Las ventas 100% en efectivo se redondean hacia abajo a favor del cliente. Tarjeta, crédito y pagos mixtos mantienen céntimos exactos.'
+              : 'Las ventas conservan céntimos exactos. Actívalo solo si este negocio aplica redondeo en efectivo.'}
+          </span>
+        </div>
+        <Toggle
+          checked={state.cashRoundingEnabled}
+          onChange={(checked) => void patch('cashRoundingEnabled', checked)}
+          disabled={savingField !== null}
+          aria-label="Redondeo de efectivo a diez céntimos"
         />
       </div>
     </section>

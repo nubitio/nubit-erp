@@ -51,7 +51,6 @@ function SettingsFieldRow({
 export const SettingsCompanyTab = () => {
   const [form, setForm] = useState<CompanyFormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
-  const [savingCashRounding, setSavingCashRounding] = useState(false);
   const [verifyingRuc, setVerifyingRuc] = useState(false);
 
   const companyQuery = useQuery({
@@ -136,19 +135,6 @@ export const SettingsCompanyTab = () => {
       toast('Error al guardar los datos de empresa', 'error');
     } finally {
       setSaving(false);
-    }
-  };
-
-  const toggleCashRounding = async (enabled: boolean) => {
-    setSavingCashRounding(true);
-    try {
-      await tenantSettingsService.patchSettings({ cashRoundingEnabled: enabled });
-      await settingsQuery.refetch();
-      toast(enabled ? 'Redondeo de efectivo habilitado' : 'Redondeo de efectivo deshabilitado', 'success');
-    } catch {
-      toast('No se pudo actualizar el redondeo de efectivo', 'error');
-    } finally {
-      setSavingCashRounding(false);
     }
   };
 
@@ -241,27 +227,6 @@ export const SettingsCompanyTab = () => {
             </SettingsFieldRow>
             <SettingsFieldRow label="Zona horaria">
               <TextField value="America/Lima (UTC-5)" disabled />
-            </SettingsFieldRow>
-          </div>
-        </section>
-
-        <section className="settings-section" aria-labelledby="settings-cash-rounding-heading">
-          <h3 id="settings-cash-rounding-heading" className="settings-section__heading">
-            Cobros en efectivo
-          </h3>
-          <div className="settings-fields">
-            <SettingsFieldRow label="Redondear a S/ 0.10">
-              <label className="settings-toggle">
-                <input
-                  type="checkbox"
-                  checked={settingsQuery.data?.cashRoundingEnabled === true}
-                  disabled={settingsQuery.isLoading || savingCashRounding}
-                  onChange={(event) => void toggleCashRounding(event.target.checked)}
-                />
-                <span>
-                  Redondear hacia abajo a favor del cliente solo en pagos 100% en efectivo.
-                </span>
-              </label>
             </SettingsFieldRow>
           </div>
         </section>
