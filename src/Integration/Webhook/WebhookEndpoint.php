@@ -57,7 +57,7 @@ class WebhookEndpoint
     {
         $this->url = $url;
         $this->secret = $secret;
-        $this->subscribedTypes = [] === $subscribedTypes ? ['*'] : array_values($subscribedTypes);
+        $this->subscribedTypes = [] === $subscribedTypes ? ['*'] : $subscribedTypes;
         $this->createdAt = new \DateTimeImmutable();
     }
 

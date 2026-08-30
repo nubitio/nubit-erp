@@ -44,7 +44,7 @@ final class ApiKeyAuthenticator extends AbstractAuthenticator implements Authent
         private readonly ?TenantContext $tenantContext = null,
     ) {}
 
-    public function supports(Request $request): ?bool
+    public function supports(Request $request): bool
     {
         if (!str_starts_with($request->getPathInfo(), self::PREFIX)) {
             return false;
@@ -125,7 +125,7 @@ final class ApiKeyAuthenticator extends AbstractAuthenticator implements Authent
         return null;
     }
 
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
     {
         return $this->deny($exception->getMessageKey());
     }

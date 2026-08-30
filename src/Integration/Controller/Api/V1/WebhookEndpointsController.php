@@ -40,14 +40,19 @@ final class WebhookEndpointsController extends AbstractController
     public function create(Request $request): JsonResponse
     {
         $body = json_decode($request->getContent(), associative: true);
-        $url = is_array($body) && is_string($body['url'] ?? null) ? $body['url'] : '';
+        if (!is_array($body)) {
+            return $this->fail('the request body must be a JSON object');
+        }
+
+        $url = is_string($body['url'] ?? null) ? $body['url'] : '';
         if (!str_starts_with($url, 'https://')) {
             return $this->fail('url must be an https URL');
         }
 
         $types = [];
-        if (is_array($body) && is_array($body['types'] ?? null)) {
-            foreach ($body['types'] as $type) {
+        $rawTypes = $body['types'] ?? null;
+        if (is_array($rawTypes)) {
+            foreach ($rawTypes as $type) {
                 if (is_string($type) && '' !== trim($type)) {
                     $types[] = trim($type);
                 }
