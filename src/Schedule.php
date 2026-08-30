@@ -57,6 +57,13 @@ readonly class Schedule implements ScheduleProviderInterface
                 '0 6 1 * *',
                 new RunCommandMessage('app:accounting:generate-depreciation-entries', throwOnFailure: false),
                 'America/Lima',
+            ))
+            // Integration webhooks — every minute, per tenant: drain the event
+            // outbox into deliveries and attempt every delivery whose retry
+            // time is due.
+            ->add(RecurringMessage::every(
+                '1 minute',
+                new RunCommandMessage('app:integration:webhooks:tick', throwOnFailure: false),
             ));
     }
 }
