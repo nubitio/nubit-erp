@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Billing\Sunat\Domain;
 
+use App\Billing\Invoice\Domain\Voucher;
 use App\Billing\Invoice\Service\VoucherHydratorInterface;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Shared\Enum\ChargeType;
@@ -36,10 +37,16 @@ readonly class BillCreateUseCase
     ) {}
 
     /**
+     * @param Voucher|null $voucher When given, the invoice is built from it
+     *                              directly instead of reconstructing one from a
+     *                              backing Sale. The integration channel
+     *                              (/api/v1/documents) has no Sale, so it hands
+     *                              in a synthetic voucher.
+     *
      * @throws DateMalformedStringException
      * @throws MathException
      */
-    public function __invoke(string $taxDocumentId): Invoice
+    public function __invoke(string $taxDocumentId, ?Voucher $voucher = null): Invoice
     {
         $taxDocument = $this->taxDocumentRepository->find($taxDocumentId);
 
@@ -47,7 +54,7 @@ readonly class BillCreateUseCase
             throw new ServiceException('Invoice not found');
         }
 
-        $voucher = $this->taxDocumentRepository->getVoucherByTaxDocumentId($taxDocumentId);
+        $voucher ??= $this->taxDocumentRepository->getVoucherByTaxDocumentId($taxDocumentId);
         $hydratedVoucher = $this->voucherHydrator->hydrate($voucher);
 
         $company = $this->companyRepository->findOneBy([]);
