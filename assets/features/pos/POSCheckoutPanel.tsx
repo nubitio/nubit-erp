@@ -661,7 +661,7 @@ export function POSCheckoutPanel({
 
         <SplitPaymentsField
           paymentMethods={paymentMethods}
-          total={total}
+          total={payableTotal}
           currency={currency}
           value={paymentLines}
           onChange={setPaymentLines}

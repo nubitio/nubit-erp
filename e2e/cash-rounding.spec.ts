@@ -49,6 +49,11 @@ test('POS redondea efectivo S/10.63 a S/10.60 y persiste el ajuste', async ({ pa
       .locator('label.split-payments-field__method').filter({ hasText: /efectivo/i }).first().click();
     await expect(page.getByTestId('pos-cash-rounding')).toContainText('0.03');
     await expect(page.getByTestId('pos-checkout-btn')).toContainText('10.60');
+    await page.getByTestId('pos-payments-trigger').click();
+    await expect(page.getByText('S/ 10.60').first()).toBeVisible();
+    await page.getByRole('button', { name: 'S/ 20.00' }).click();
+    await expect(page.getByText('Vuelto S/ 9.40')).toBeVisible();
+    await page.getByRole('dialog', { name: 'Configurar pagos' }).getByRole('button', { name: 'Cerrar' }).click();
     await waitForPosCheckoutReady(page);
 
     const saleResponsePromise = page.waitForResponse((response) =>
