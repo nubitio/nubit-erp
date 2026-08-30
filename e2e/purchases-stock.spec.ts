@@ -117,10 +117,6 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     resolvedProductId = seedData.productId;
     stockBefore = seedData.stockBefore;
 
-    console.log(
-      `[E2E] Stock inicial de "${E2E_SEED.productName}" (${seedData.productCode ?? seedData.productId}) ` +
-        `en almacén ${seedData.warehouseName} (${seedData.warehouseId}): ${seedData.stockBefore}`,
-    );
   });
 
   test('03 - Crear compra y verificar stock incrementado', async ({ request }) => {
@@ -187,10 +183,6 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         quantity?: number | string;
       };
       const stockAfter = stockPayload.stock ?? stockPayload.quantity ?? null;
-
-      console.log(
-        `[E2E] Stock después de compra: ${stockAfter} (antes: ${stockBefore}, qty: ${PURCHASE_QTY})`,
-      );
 
       expect(stockBefore, 'stock inicial debe estar disponible').not.toBeNull();
       expect(stockAfter, 'stock final debe estar disponible').not.toBeNull();

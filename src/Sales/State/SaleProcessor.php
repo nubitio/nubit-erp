@@ -24,6 +24,7 @@ use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\Service\SalePaymentPlanService;
 use App\Settings\Service\TenantSettingsService;
 use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -252,8 +253,11 @@ readonly class SaleProcessor implements ProcessorInterface
         $data->setSubtotal(Money::toString($subtotal));
         $discountRate = Money::rate($data->getDescuento());
         $discountAmount = Money::money($subtotal->multipliedBy($discountRate));
-        $total = Money::money($subtotal->minus($discountAmount));
+        $totalBeforeCashRounding = Money::money($subtotal->minus($discountAmount));
+        $cashRoundingAdjustment = $this->resolveCashRoundingAdjustment($data, $totalBeforeCashRounding, $request);
+        $total = Money::money($totalBeforeCashRounding->minus($cashRoundingAdjustment));
         $data->setTotal(Money::toString($total));
+        $data->setCashRoundingAdjustment(Money::toString($cashRoundingAdjustment));
         $data->setStatus('COMPLETED');
         $this->detractionCalculator->applyFromItems($data);
         if ($isOperationalSale) {
@@ -269,6 +273,7 @@ readonly class SaleProcessor implements ProcessorInterface
             'item_count' => $itemCount,
             'subtotal' => Money::toString($subtotal),
             'discount_percentage' => $data->getDescuento(),
+            'cash_rounding_adjustment' => Money::toString($cashRoundingAdjustment),
             'total' => Money::toString($total),
         ]);
 
@@ -708,6 +713,48 @@ readonly class SaleProcessor implements ProcessorInterface
         }
 
         $sale->setCliente($defaultCustomer);
+    }
+
+    /**
+     * Recalculate the optional cash adjustment server-side. This field must
+     * never become a client-controlled discount.
+     */
+    private function resolveCashRoundingAdjustment(SaleRecord $sale, BigDecimal $total, ?Request $request): BigDecimal
+    {
+        $payload = $request instanceof Request ? json_decode($request->getContent(), true) : null;
+        $requested = Money::money(
+            is_array($payload) && array_key_exists('cashRoundingAdjustment', $payload)
+                ? $payload['cashRoundingAdjustment']
+                : $sale->getCashRoundingAdjustment(),
+        );
+        if ($requested->isZero()) {
+            return BigDecimal::zero();
+        }
+
+        if (!$this->tenantSettings->isCashRoundingEnabled()) {
+            throw new ServiceException('El redondeo de efectivo no está habilitado para este negocio.');
+        }
+
+        if ($sale->isCreditSale() || strtoupper(trim($sale->getCurrency())) !== 'PEN') {
+            throw new ServiceException('El redondeo aplica únicamente a ventas al contado en soles.');
+        }
+
+        $payments = $sale->getPayments();
+        if (count($payments) !== 1 || (int) ($payments[0]['payment_method_id'] ?? 0) !== PaymentMethod::CASH) {
+            throw new ServiceException('El redondeo aplica únicamente a pagos 100% en efectivo.');
+        }
+
+        $roundedTotal = $total
+            ->dividedBy('0.10', 0, RoundingMode::DOWN)
+            ->multipliedBy('0.10')
+            ->toScale(2, RoundingMode::HALF_UP);
+        $expected = Money::money($total->minus($roundedTotal));
+
+        if (!$requested->isEqualTo($expected)) {
+            throw new ServiceException('El ajuste de redondeo de efectivo no coincide con el total de la venta.');
+        }
+
+        return $expected;
     }
 
     /**

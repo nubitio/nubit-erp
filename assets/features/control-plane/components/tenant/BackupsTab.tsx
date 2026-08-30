@@ -5,7 +5,7 @@ import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { BackupRecord } from '../../types';
 import { formatBytes } from '../../utils/format';
-import { RowActions, useConfirm } from '@nubitio/ui';
+import { useConfirm } from '@nubitio/ui';
 import { CpAlert, CpForm, CpFormActions, CpMetricGrid, DataTable, Stack } from '../layout';
 
 interface BackupsTabProps {

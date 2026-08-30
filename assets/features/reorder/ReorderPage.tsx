@@ -238,7 +238,7 @@ export const ReorderPage = () => {
           variant: 'success',
         },
       }),
-    [makeActionsCell],
+    [makeActionsCell, navigate],
   );
 
   return (

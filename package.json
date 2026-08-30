@@ -45,7 +45,7 @@
     "test:e2e": "playwright test",
     "test:e2e:control-plane": "playwright test e2e/control-plane-visual.spec.ts",
     "test:e2e:control-plane:update": "playwright test e2e/control-plane-visual.spec.ts --update-snapshots",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",

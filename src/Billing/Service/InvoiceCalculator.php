@@ -153,7 +153,10 @@ readonly class InvoiceCalculator
         $diff = $expectedTotal->minus($computedTotal)->toScale(Money::SCALE, RoundingMode::HALF_UP);
         $diffCents = Money::toMinor($diff);
 
-        if (!in_array($diffCents, [-1, 1], true)) {
+        // Cash-only customer-favourable rounding in Peru may differ by up to
+        // S/0.09. The persisted sale total is authoritative for the fiscal
+        // document, so reconcile that small final difference on the last line.
+        if ($diffCents < -9 || $diffCents > 9) {
             return $lines;
         }
 

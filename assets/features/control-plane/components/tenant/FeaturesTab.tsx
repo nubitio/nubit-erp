@@ -15,7 +15,7 @@ import {
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { FeatureOverrideRecord } from '../../types';
-import { RowActions, useConfirm } from '@nubitio/ui';
+import { useConfirm } from '@nubitio/ui';
 import { CpAlert, CpForm, CpFormActions, DataTable, Stack } from '../layout';
 
 interface FeaturesTabProps {

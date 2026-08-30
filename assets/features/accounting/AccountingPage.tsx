@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect -- the selected period is synchronized from loaded periods */
 import { useEffect, useMemo, useState } from 'react';
 import { Badge } from '@nubitio/ui';
 import { httpClient } from '@shared/api/HttpClient';

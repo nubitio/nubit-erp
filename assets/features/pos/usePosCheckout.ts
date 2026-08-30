@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect -- checkout resets dependent payment and customer state */
 import { useCallback, useEffect, useState } from 'react';
 import toast, { getIRI } from '@shared/lib/SharedUtils';
 import { getCoreApiBaseUrl } from '@nubitio/core';
@@ -25,6 +26,7 @@ import {
   waitForStableWeight,
 } from '@features/sales/lib/localAgentClient';
 import { computeCartTotals, computeLineAmount } from '@shared/lib/saleCalculations';
+import { cashRoundingAdjustment } from '@shared/lib/cashRounding';
 import { useTenantIgvRate } from '@shared/hooks/useTenantIgvRate';
 import { useWarehouseStock } from './useWarehouseStock';
 import { offlineDb } from '@offline/db';
@@ -61,6 +63,7 @@ type UsePosCheckoutParams = {
   onCashSessionRequired?: () => void;
   autoInvoice?: boolean;
   autoPrint?: boolean;
+  cashRoundingEnabled?: boolean;
 };
 
 export const usePosCheckout = ({
@@ -79,6 +82,7 @@ export const usePosCheckout = ({
   onCashSessionRequired,
   autoInvoice = true,
   autoPrint = true,
+  cashRoundingEnabled = false,
 }: UsePosCheckoutParams) => {
   const queryClient = useQueryClient();
   // ── Draft-persistence helpers ────────────────────────────────────────────
@@ -379,6 +383,15 @@ export const usePosCheckout = ({
     localStorage.removeItem(storageKey);
   };
 
+  // A new sale should always start from the safest, most common tender type.
+  // Keep this separate from clearCart so manually emptying a cart does not
+  // unexpectedly change an in-progress payment choice.
+  const resetPaymentToCash = () => {
+    const defaultMethod =
+      paymentMethods.find((method) => isCashPaymentMethod(method)) ?? paymentMethods[0];
+    setPaymentLines(defaultMethod ? [createSinglePaymentLine(defaultMethod.id, 0)] : []);
+  };
+
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const { subtotal, discountAmount, total, includedTax, gravadoBase, exoneradoBase, inafectoBase } =
     computeCartTotals(
@@ -390,6 +403,19 @@ export const usePosCheckout = ({
       discountPercent,
       igvRate,
     );
+  const singlePaymentMethod = paymentMethods.find(
+    (method) => method.id === paymentLines[0]?.methodId,
+  );
+  const cashRoundingAdjustmentAmount =
+    cashRoundingEnabled &&
+    !creditSale &&
+    currency === 'PEN' &&
+    paymentLines.length === 1 &&
+    singlePaymentMethod !== undefined &&
+    isCashPaymentMethod(singlePaymentMethod)
+      ? cashRoundingAdjustment(total)
+      : 0;
+  const payableTotal = Number((total - cashRoundingAdjustmentAmount).toFixed(2));
   useEffect(() => {
     if (paymentMethods.length === 0 || total <= 0) {
       return;
@@ -399,21 +425,21 @@ export const usePosCheckout = ({
       if (previousLines.length === 0) {
         const defaultMethod =
           paymentMethods.find((method) => isCashPaymentMethod(method)) ?? paymentMethods[0];
-        return [createSinglePaymentLine(defaultMethod.id, total)];
+        return [createSinglePaymentLine(defaultMethod.id, payableTotal)];
       }
 
       if (previousLines.length === 1) {
-        return [createSinglePaymentLine(previousLines[0].methodId, total)];
+        return [createSinglePaymentLine(previousLines[0].methodId, payableTotal)];
       }
 
-      return rebalancePaymentLines(previousLines, total);
+      return rebalancePaymentLines(previousLines, payableTotal);
     });
-  }, [paymentMethods, total]);
+  }, [paymentMethods, payableTotal, total]);
 
-  const paymentValidation = validatePaymentLines(paymentLines, paymentMethods, total, creditSale);
-  const resolvedPayments = buildPaymentPayload(paymentLines, paymentMethods, total);
+  const paymentValidation = validatePaymentLines(paymentLines, paymentMethods, payableTotal, creditSale);
+  const resolvedPayments = buildPaymentPayload(paymentLines, paymentMethods, payableTotal);
   const primaryPaymentMethodId = paymentLines[0]?.methodId ?? null;
-  const changeAmount = totalCashChangeAmount(paymentLines, paymentMethods, total);
+  const changeAmount = totalCashChangeAmount(paymentLines, paymentMethods, payableTotal);
 
   const checkoutDisabled =
     cart.length === 0 ||
@@ -463,11 +489,12 @@ export const usePosCheckout = ({
         payments: resolvedPayments,
         note: note.trim() || null,
         discountPercent: discountPercent.toFixed(2),
+        cashRoundingAdjustment: cashRoundingAdjustmentAmount.toFixed(2),
         emitInvoice,
         creditSale,
         currency,
         exchangeRate: currency === 'USD' ? exchangeRate : '1.000000',
-        grandTotal: total.toFixed(2),
+        grandTotal: payableTotal.toFixed(2),
         writeItems: cart.map((item) => ({
           product: getIRI(`${API}products`, String(item.id)),
           qty: Number(item.quantity),
@@ -509,7 +536,7 @@ export const usePosCheckout = ({
           subtotal,
           igv: includedTax,
           discount: discountAmount,
-          total,
+          total: payableTotal,
         },
         isOnline,
         idempotencyKey,
@@ -526,6 +553,7 @@ export const usePosCheckout = ({
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
         clearCart();
+        resetPaymentToCash();
         void queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });
         if (autoPrint) {
           printSaleInvoice(submitResult.serverSaleId).catch(() => {
@@ -548,6 +576,7 @@ export const usePosCheckout = ({
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
         clearCart();
+        resetPaymentToCash();
         await onQueuedSaleCreated();
         return;
       }
@@ -566,6 +595,7 @@ export const usePosCheckout = ({
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
         clearCart();
+        resetPaymentToCash();
         void queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });
         if (autoPrint) {
           printSaleInvoice(syncedSale.serverSaleId).catch(() => {
@@ -583,6 +613,7 @@ export const usePosCheckout = ({
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
         clearCart();
+        resetPaymentToCash();
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo registrar la venta.';
@@ -632,6 +663,8 @@ export const usePosCheckout = ({
     /** Active IGV rate (decimal fraction) used for display. */
     igvRate,
     changeAmount,
+    cashRoundingAdjustment: cashRoundingAdjustmentAmount,
+    payableTotal,
     checkoutDisabled,
     handleCheckout,
     lastCheckoutSucceeded,

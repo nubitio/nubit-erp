@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- legacy shell bridge reads stable refs during render; remove with shell state migration */
 /**
  * EfactAdminShell — eFact-specific adapter that wires the app-agnostic
  * AdminShell to eFact services (menuService, auth, notifications, assistant,

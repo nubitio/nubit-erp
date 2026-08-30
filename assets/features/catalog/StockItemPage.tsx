@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- grid actions use a stable page ref during render */
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';

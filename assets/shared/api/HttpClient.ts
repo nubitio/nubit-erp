@@ -6,6 +6,7 @@ import type { DataRecord } from '@nubitio/core';
 
 const API_BASE_URL = getCoreApiBaseUrl(); // local alias for this legacy client only
 import { handleSessionExpired } from '../lib/sessionExpiredEvent';
+import { StorageUtils } from '../lib/StorageUtils';
 
 /**
  * Serializes request params to bracket-notation query strings.
@@ -125,8 +126,11 @@ class HttpClient {
   }
 
   private buildHeaders(extraHeaders?: Record<string, string>): Record<string, string> {
+    const token = StorageUtils.getItem('auth_token');
+
     return {
       'Accept-Language': this.locale,
+      ...(typeof token === 'string' && token !== '' ? { Authorization: `Bearer ${token}` } : {}),
       ...extraHeaders,
     };
   }
@@ -287,6 +291,7 @@ class HttpClient {
   }
 
   private handleTokenRefreshError() {
+    StorageUtils.removeItem('auth_token');
     if (!this.tokenExpiredModalShown) {
       this.tokenExpiredModalShown = true;
       handleSessionExpired();

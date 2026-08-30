@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs, react-hooks/set-state-in-effect -- checkout and hardware flows synchronize imperative state */
 import React, { useEffect, useRef, useState } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { EntityDropdown } from '@nubitio/crud';
@@ -57,6 +58,8 @@ interface POSCheckoutPanelProps {
   includedTax: number;
   igvRate?: number;
   total: number;
+  payableTotal: number;
+  cashRoundingAdjustment: number;
   changeAmount: number;
   checkoutDisabled: boolean;
   handleCheckout: () => void;
@@ -81,7 +84,6 @@ export function POSCheckoutPanel({
   selectedWarehouseName: _selectedWarehouseName,
   cajaAbierta,
   quickMode,
-  selectedCustomer,
   selectedCustomerId,
   onCustomerChange,
   clearSelectedCustomer,
@@ -112,6 +114,8 @@ export function POSCheckoutPanel({
   includedTax,
   igvRate,
   total,
+  payableTotal,
+  cashRoundingAdjustment,
   changeAmount,
   checkoutDisabled,
   handleCheckout,
@@ -129,9 +133,29 @@ export function POSCheckoutPanel({
   scaleReady = false,
 }: POSCheckoutPanelProps) {
   const customerDropdownRef = useRef<HTMLDivElement>(null);
+  const cartBodyRef = useRef<HTMLDivElement>(null);
   // Collapsed by default to save vertical space — auto-opens when a discount is
   // already active so an in-progress sale never hides its own state.
   const [optionsOpen, setOptionsOpen] = useState(discountPercent > 0);
+  // Notes are exceptional in the checkout flow. Keep their editor out of the
+  // way, except when restoring a draft that already contains one.
+  const [noteOpen, setNoteOpen] = useState(Boolean(note.trim()));
+
+  // The payment footer is fixed while the cart scrolls. When the note opens,
+  // bring the whole editor above that footer instead of leaving its lower half
+  // hidden until the cashier scrolls manually.
+  useEffect(() => {
+    if (!noteOpen) return;
+
+    // TextAreaField finishes its layout after the open-state paint. Waiting a
+    // moment prevents scrolling to the former, shorter note height.
+    const timer = window.setTimeout(() => {
+      const cartBody = cartBodyRef.current;
+      cartBody?.scrollTo({ top: cartBody.scrollHeight, behavior: 'smooth' });
+    }, 100);
+
+    return () => window.clearTimeout(timer);
+  }, [noteOpen]);
   // Inline quantity editing
   const [editingQtyId, setEditingQtyId] = useState<string | null>(null);
   const [editingQtyVal, setEditingQtyVal] = useState<string>('');
@@ -277,7 +301,7 @@ export function POSCheckoutPanel({
       )}
 
       {/* ── Scrollable body: cart items + note only ── */}
-      <div className="pos-cart-body">
+      <div ref={cartBodyRef} className="pos-cart-body">
         <div className="pos-cart-lines">
           {cart.length === 0 ? (
             <EmptyState
@@ -485,20 +509,34 @@ export function POSCheckoutPanel({
         </div>
         {!quickMode && (
           <div className="pos-note-section">
-            <label className="pos-note-section__field">
+            <button
+              type="button"
+              className="pos-note-section__toggle"
+              onClick={() => setNoteOpen((open) => !open)}
+              aria-expanded={noteOpen}
+              aria-controls="pos-internal-note"
+            >
+              <i className={`ph ph-caret-${noteOpen ? 'down' : 'right'}`} aria-hidden="true" />
               <span>Nota interna</span>
-              <TextAreaField
-                rows={2}
-                maxLength={2000}
-                placeholder="Referencia, instrucciones o comentario de la venta..."
-                value={note}
-                onChange={(event) => setNote(event.target.value)}
-                aria-label="Nota interna de la venta"
-              />
-            </label>
-            <span className="pos-note-section__help">
-              No modifica la descripción que aparece en las líneas del comprobante.
-            </span>
+              {!noteOpen && note.trim() && <span className="pos-note-section__badge">Con contenido</span>}
+            </button>
+            {noteOpen && (
+              <div id="pos-internal-note" className="pos-note-section__content">
+                <label className="pos-note-section__field">
+                  <TextAreaField
+                    rows={2}
+                    maxLength={2000}
+                    placeholder="Referencia, instrucciones o comentario de la venta..."
+                    value={note}
+                    onChange={(event) => setNote(event.target.value)}
+                    aria-label="Nota interna de la venta"
+                  />
+                </label>
+                <span className="pos-note-section__help">
+                  No modifica la descripción que aparece en las líneas del comprobante.
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -614,6 +652,13 @@ export function POSCheckoutPanel({
           <strong>{formatMoney(total)}</strong>
         </div>
 
+        {cashRoundingAdjustment > 0 && (
+          <div className="pos-change-row pos-cash-rounding" data-testid="pos-cash-rounding">
+            <span>Redondeo en efectivo</span>
+            <strong>− {formatMoney(cashRoundingAdjustment)}</strong>
+          </div>
+        )}
+
         <SplitPaymentsField
           paymentMethods={paymentMethods}
           total={total}
@@ -647,7 +692,7 @@ export function POSCheckoutPanel({
           ) : (
             <>
               <span>Cobrar</span>
-              <strong>{formatMoney(total)}</strong>
+              <strong>{formatMoney(payableTotal)}</strong>
             </>
           )}
         </button>

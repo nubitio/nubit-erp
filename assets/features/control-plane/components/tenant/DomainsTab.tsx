@@ -4,7 +4,7 @@ import { Button, Card, Code, EmptyState, FormField, TextField, Toggle } from '@n
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { TenantDomain } from '../../types';
-import { RowActions, useConfirm } from '@nubitio/ui';
+import { useConfirm } from '@nubitio/ui';
 import { CpAlert, CpForm, Col, DataTable, Grid } from '../layout';
 
 interface DomainsTabProps {

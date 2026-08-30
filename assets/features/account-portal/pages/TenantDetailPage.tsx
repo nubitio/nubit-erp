@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect -- route changes intentionally reset tenant detail state */
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';

@@ -409,11 +409,16 @@
                                 </tr>
                             {% endif %}
 
-                            {% if voucher.voucher_discount_amount and voucher.voucher_discount_amount > 0 %}
+                            {% set cash_rounding = voucher.voucher_cash_rounding_adjustment|default(0) %}
+                            {% set commercial_discount = (voucher.voucher_discount_amount|default(0)) - cash_rounding %}
+                            {% if commercial_discount > 0 %}
                                 <tr>
                                     <td class="label">Descuento global</td>
-                                    <td class="value">-{{ currency_symbol }} {{ voucher.voucher_discount_amount|number_format(2, '.', '') }}</td>
+                                    <td class="value">-{{ currency_symbol }} {{ commercial_discount|number_format(2, '.', '') }}</td>
                                 </tr>
+                            {% endif %}
+                            {% if cash_rounding > 0 %}
+                                <tr><td class="label">Redondeo en efectivo</td><td class="value">-{{ currency_symbol }} {{ cash_rounding|number_format(2, '.', '') }}</td></tr>
                             {% endif %}
 
                             {% if voucher.voucher_type != '00' %}

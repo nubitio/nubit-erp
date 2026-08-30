@@ -23,6 +23,7 @@ function runtimeConfig(
       requireCashRegister: false,
       autoInvoice: true,
       autoPrint: true,
+      cashRoundingEnabled: false,
       printMethod: 'WEBUSB',
       defaultCurrency: 'PEN',
       negativeStockPolicy: 'BLOCK',

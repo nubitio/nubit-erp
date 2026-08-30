@@ -33,6 +33,7 @@ class Voucher
         public ?string $voucher_currency = null,
         public ?string $voucher_exchange_rate = null,
         public ?string $voucher_discount_amount = null,
+        public ?string $voucher_cash_rounding_adjustment = null,
         public ?string $voucher_discount_percentage = null,
         public ?string $voucher_consumption_surcharge_amount = null,
         public ?string $voucher_consumption_surcharge_percentage = null,

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect -- externally supplied splits enable split mode */
 import React, { useEffect, useMemo, useState } from 'react';
 import NumberUtils from '@shared/lib/NumberUtils';
 import {

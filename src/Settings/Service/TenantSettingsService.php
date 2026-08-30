@@ -62,6 +62,11 @@ readonly class TenantSettingsService
         return $this->get()->isAutoInvoice();
     }
 
+    public function isCashRoundingEnabled(): bool
+    {
+        return $this->get()->isCashRoundingEnabled();
+    }
+
     public function getDefaultCurrency(): DefaultCurrency
     {
         return $this->get()->getDefaultCurrency();

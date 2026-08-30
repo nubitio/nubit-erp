@@ -79,6 +79,11 @@ export default defineConfig({
 
     // Navigation timeout (waitForURL, goto, etc.)
     navigationTimeout: 30_000,
+
+    // The PWA worker can retain a pre-restart auth cookie or old asset graph.
+    // E2E validates the application against the live server, so block workers
+    // to keep every browser context isolated and deterministic.
+    serviceWorkers: 'block',
   },
 
   // Global timeout per test

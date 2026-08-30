@@ -526,6 +526,9 @@ class TaxDocumentRepository extends ServiceEntityRepository
             voucherExchangeRate: $taxDocument?->getExchangeRate() ?? $salesCurrencyData['exchange_rate'],
             voucherDiscountAmount: $taxDocument?->getDiscountAmount()
             ?? ($sale->getDiscountTotal() !== '0.00' ? $sale->getDiscountTotal() : null),
+            voucherCashRoundingAdjustment: $sale->getCashRoundingAdjustment() !== '0.00'
+                ? $sale->getCashRoundingAdjustment()
+                : null,
             voucherDiscountPercentage: (string) ($taxDocument?->getDiscountPercent() ?? $sale->getDescuento() ?? 0),
             voucherConsumptionSurchargeAmount: $taxDocument?->getRcAmount(),
             voucherConsumptionSurchargePercentage: (string) ($sale->getRecargoConsumo() ?? 0),

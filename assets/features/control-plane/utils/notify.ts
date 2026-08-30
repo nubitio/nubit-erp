@@ -14,10 +14,7 @@ const emit = (message: string, type: NotificationType, durationMs: number) => {
     return;
   }
 
-  // Fallback before provider mounts (e.g. tests).
-  if (typeof document !== 'undefined') {
-    console.info(`[cp-notify:${type}] ${message}`);
-  }
+  // Notifications emitted before the provider mounts are intentionally ignored.
 };
 
 export const cpNotify = {

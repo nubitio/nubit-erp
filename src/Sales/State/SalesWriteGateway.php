@@ -74,6 +74,8 @@ readonly class SalesWriteGateway
         $subtotal = Money::money($sale->getSubtotal());
         $discountPercent = Money::of($sale->getDescuento() ?? '0');
         $discountAmount = Money::mul($subtotal, Money::rate($discountPercent));
+        $cashRoundingAdjustment = Money::money($sale->getCashRoundingAdjustment());
+        $totalDiscountAmount = Money::money($discountAmount->plus($cashRoundingAdjustment));
         $grandTotal = Money::money($sale->getTotal());
         $currencyData = $this->saleCurrencyResolver->resolveForWrite($sale);
         $paymentLines = $this->salePaymentPlanService->resolveForWrite(
@@ -153,7 +155,7 @@ readonly class SalesWriteGateway
             $termDays = $this->tenantSettingsService->get()->getDefaultPaymentTermDays();
             $sale->setDueDate($issuedDate->modify(sprintf('+%d days', $termDays)));
         }
-        $sale->setDiscountTotal(Money::toString($discountAmount));
+        $sale->setDiscountTotal(Money::toString($totalDiscountAmount));
         $sale->setCurrency($currencyData['currency']);
         $sale->setExchangeRate((string) $currencyData['exchange_rate']);
         $sale->setBranch($branch);

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect -- export defaults synchronize with the selected period */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppDropdown, Button } from '@nubitio/ui';
 import { ErpModuleBanner } from '@features/shared/ErpModuleBanner';

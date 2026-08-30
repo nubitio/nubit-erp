@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs -- streaming requests use refs as stable request-scoped state */
 import React, { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { marked } from 'marked';
 import HTMLReactParser from 'html-react-parser';

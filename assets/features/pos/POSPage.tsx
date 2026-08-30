@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect -- POS initialization synchronizes branch and cash-session state */
 import React, { lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import './POSPage.scss';
 import './HardwareAgentDialog.scss';
@@ -174,6 +175,8 @@ const POSPage = () => {
     subtotal,
     discountAmount,
     total,
+    payableTotal,
+    cashRoundingAdjustment,
     includedTax,
     changeAmount,
     checkoutDisabled,
@@ -205,6 +208,7 @@ const POSPage = () => {
     },
     autoInvoice: runtimeConfig?.settings.autoInvoice !== false,
     autoPrint: runtimeConfig?.settings.autoPrint !== false,
+    cashRoundingEnabled: runtimeConfig?.settings.cashRoundingEnabled === true,
   });
 
   useEffect(() => {
@@ -541,6 +545,8 @@ const POSPage = () => {
         discountAmount={discountAmount}
         includedTax={includedTax}
         total={total}
+        payableTotal={payableTotal}
+        cashRoundingAdjustment={cashRoundingAdjustment}
         igvRate={igvRate}
         changeAmount={changeAmount}
         checkoutDisabled={checkoutDisabled}

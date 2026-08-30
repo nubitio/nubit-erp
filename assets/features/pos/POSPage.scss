@@ -1592,13 +1592,49 @@
 }
 
 .pos-note-section {
-  padding: var(--space-2) var(--space-4) var(--space-3);
+  // Keep this occasional control next to the checkout actions rather than
+  // floating below a short cart or its empty state.
+  margin-top: auto;
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-4);
   border-top: 1px solid var(--pos-border);
+}
+
+.pos-note-section__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-height: 1.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pos-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  i { font-size: 0.75rem; }
+
+  &:hover { color: var(--pos-text); }
+}
+
+.pos-note-section__badge {
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: var(--pos-warning-soft);
+  color: var(--pos-warning);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.pos-note-section__content {
+  padding: 0.25rem 0 var(--space-2);
 }
 
 .pos-note-section__field {
   display: grid;
-  gap: var(--space-1);
   color: var(--pos-text-soft);
   font-size: var(--font-size-xs);
   font-weight: 600;

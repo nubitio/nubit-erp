@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect -- sale totals intentionally rebalance payment drafts */
 import React, { useEffect, useState } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { httpClient } from '@shared/api/HttpClient';

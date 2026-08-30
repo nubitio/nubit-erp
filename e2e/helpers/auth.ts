@@ -3,16 +3,19 @@ import { E2E_SEED } from '../support/seedConstants';
 import { getE2EBaseUrl } from '../support/e2eSeed';
 
 async function fillDxInput(page: Page, ariaLabel: string, value: string) {
+  const loginInputIds: Record<string, string> = {
+    Usuario: '#login-username',
+    'Contraseña': '#login-password',
+  };
   const input = page
     .locator(
-      `input[aria-label="${ariaLabel}"], textarea[aria-label="${ariaLabel}"], [role="textbox"][aria-label="${ariaLabel}"]`,
+      loginInputIds[ariaLabel]
+        ? `${loginInputIds[ariaLabel]}:visible`
+        : `input[aria-label="${ariaLabel}"], textarea[aria-label="${ariaLabel}"], [role="textbox"][aria-label="${ariaLabel}"]`,
     )
     .first();
   await input.waitFor({ state: 'visible', timeout: 8000 });
-  await input.click({ clickCount: 3 });
-  await page.keyboard.press('Control+a');
-  await page.keyboard.press('Delete');
-  await input.pressSequentially(value, { delay: 30 });
+  await input.fill(value);
   await page.keyboard.press('Tab');
 }
 

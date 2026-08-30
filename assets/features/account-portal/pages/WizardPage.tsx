@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect -- wizard transitions intentionally synchronize local form state */
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';

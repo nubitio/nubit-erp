@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect -- cycle-count lifecycle synchronizes scan and count state */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';

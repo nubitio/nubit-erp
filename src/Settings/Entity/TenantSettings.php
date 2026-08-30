@@ -85,6 +85,11 @@ class TenantSettings
     #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
     private bool $autoPrint = true;
 
+    /** Apply Peru's customer-favourable S/ 0.10 rounding to cash-only POS sales. */
+    #[ORM\Column]
+    #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
+    private bool $cashRoundingEnabled = false;
+
     #[ORM\Column(enumType: DefaultCurrency::class)]
     #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
     private DefaultCurrency $defaultCurrency = DefaultCurrency::PEN;
@@ -205,6 +210,17 @@ class TenantSettings
     public function setAutoPrint(bool $autoPrint): static
     {
         $this->autoPrint = $autoPrint;
+        return $this;
+    }
+
+    public function isCashRoundingEnabled(): bool
+    {
+        return $this->cashRoundingEnabled;
+    }
+
+    public function setCashRoundingEnabled(bool $cashRoundingEnabled): static
+    {
+        $this->cashRoundingEnabled = $cashRoundingEnabled;
         return $this;
     }
 

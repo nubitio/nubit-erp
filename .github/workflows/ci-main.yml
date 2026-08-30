@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Start backend stack
         run: |
@@ -69,11 +69,17 @@ jobs:
         run: |
           docker compose exec -T web php scripts/ci/check-php-coverage.php var/coverage/php/clover.xml ${{ env.COVERAGE_MIN_PHP }}
 
+      - name: Copy backend coverage from Docker volume
+        run: |
+          mkdir -p var/coverage/php
+          docker compose cp web:/app/var/coverage/php/. var/coverage/php/
+
       - name: Upload backend coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: backend-coverage
           path: var/coverage/php
+          if-no-files-found: error
 
       - name: Stop backend stack
         if: always()
@@ -85,10 +91,10 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20.19.0'
 
@@ -110,7 +116,7 @@ jobs:
         run: yarn test
 
       - name: Upload frontend coverage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: frontend-coverage
           path: var/coverage/frontend
@@ -131,7 +137,7 @@ jobs:
       CONTROL_PLANE_DATABASE_URL: mysql://efact:changeme@database:3306/efact?serverVersion=10.7.1-MariaDB&charset=utf8mb4
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Start full stack
         run: docker compose up -d database redis otel-collector web

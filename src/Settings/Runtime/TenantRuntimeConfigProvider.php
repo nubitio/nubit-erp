@@ -110,6 +110,7 @@ final readonly class TenantRuntimeConfigProvider
                 'requireCashRegister' => $settings->isRequireCashRegister(),
                 'autoInvoice' => $settings->isAutoInvoice(),
                 'autoPrint' => $settings->isAutoPrint(),
+                'cashRoundingEnabled' => $settings->isCashRoundingEnabled(),
                 'printMethod' => $settings->getPrintMethod()->value,
                 'defaultCurrency' => $settings->getDefaultCurrency()->value,
                 'negativeStockPolicy' => $settings->getNegativeStockPolicy()->value,

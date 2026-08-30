@@ -46,6 +46,9 @@ window.addEventListener('load', () => {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') checkForUpdate();
       });
+    }).catch(() => {
+      // Service workers can be unavailable in private browsing and isolated
+      // test contexts. The SPA must remain usable without offline support.
     });
   }
 

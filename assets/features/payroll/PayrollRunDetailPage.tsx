@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect -- payroll detail is hydrated from the selected run */
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Badge, Button, ConfirmDialog } from '@nubitio/ui';

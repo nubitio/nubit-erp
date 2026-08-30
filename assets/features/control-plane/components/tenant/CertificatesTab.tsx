@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect -- certificate routes hydrate the edit form */
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
@@ -15,7 +16,6 @@ import {
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
 import type { CertificateRecord } from '../../types';
-import { RowActions } from '@nubitio/ui';
 import { CpAlert, CpDescriptionList, CpForm, CpFormActions, Col, DataTable, Grid } from '../layout';
 
 interface CertificatesTabProps {

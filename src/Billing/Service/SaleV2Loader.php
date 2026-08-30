@@ -50,6 +50,7 @@ readonly class SaleV2Loader
                     s.subtotal,
                     s.tax_total,
                     s.discount_total,
+                    s.cash_rounding_adjustment,
                     s.grand_total,
                     s.issued_at,
                     s.created_at,
@@ -101,6 +102,7 @@ readonly class SaleV2Loader
         $sale->setSubtotal($row['subtotal']);
         $sale->setTotal($row['grand_total']);
         $sale->setDiscountTotal($row['discount_total'] ?? '0.00');
+        $sale->setCashRoundingAdjustment((string) ($row['cash_rounding_adjustment'] ?? '0.00'));
         $sale->setEstado($row['status'] === 'VOIDED' ? 0 : 1);
 
         if (!empty($row['series'])) {

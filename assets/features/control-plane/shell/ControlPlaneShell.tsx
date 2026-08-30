@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { Outlet } from 'react-router-dom';
 import { AdminShell, type AdminMenuItem } from '@nubitio/admin';
-import { Avatar } from '@nubitio/ui';
-import { ThemeSwitcher } from '@app/shell/components/ThemeSwitcher';
+import { Avatar, ThemeSwitcher } from '@nubitio/ui';
 import { useControlPlaneRoles } from '../hooks/useControlPlaneRoles';
 import { CP_STRINGS } from '../i18n/es';
 

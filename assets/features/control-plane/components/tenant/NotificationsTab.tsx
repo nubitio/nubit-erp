@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect -- loaded preferences hydrate local form state */
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {

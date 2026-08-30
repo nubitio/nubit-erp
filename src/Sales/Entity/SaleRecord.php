@@ -137,7 +137,7 @@ class SaleRecord
     #[ORM\Column(name: 'offline_retry_key', type: 'string', length: 36, nullable: true, unique: true)]
     private ?string $offlineRetryKey = null;
 
-    #[Groups(['sale_record:read', 'sale_record:write'])]
+    #[Groups(['sale:read', 'sale_record:read', 'sale_record:write'])]
     #[ORM\ManyToOne(targetEntity: Branch::class)]
     #[ORM\JoinColumn(name: 'branch_id', referencedColumnName: 'local_id', nullable: true)]
     #[ApiProperty(description: 'sale_record.branch.label')]
@@ -202,6 +202,18 @@ class SaleRecord
     #[ORM\Column(name: 'grand_total', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
     #[ApiProperty(description: 'sale_record.grand_total.label')]
     private string $grandTotal = '0.00';
+
+    /**
+     * Cash-only rounding granted to the customer.  It is kept separately from
+     * a commercial discount so the payment, cash session and audit trail can
+     * explain why the amount collected is lower than the merchandise total.
+     */
+    #[Groups(['sale:read', 'sale_record:read', 'sale_record:write'])]
+    #[ORM\Column(name: 'cash_rounding_adjustment', type: Types::DECIMAL, precision: 12, scale: 2, options: [
+        'default' => '0.00',
+    ])]
+    #[ApiProperty(description: 'sale_record.cash_rounding_adjustment.label')]
+    private string $cashRoundingAdjustment = '0.00';
 
     #[Groups(['sale_record:read'])]
     #[ORM\Column(name: 'paid_total', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
@@ -682,6 +694,18 @@ class SaleRecord
     public function setGrandTotal(string $grandTotal): static
     {
         $this->grandTotal = $grandTotal;
+
+        return $this;
+    }
+
+    public function getCashRoundingAdjustment(): string
+    {
+        return $this->cashRoundingAdjustment;
+    }
+
+    public function setCashRoundingAdjustment(string $cashRoundingAdjustment): static
+    {
+        $this->cashRoundingAdjustment = $cashRoundingAdjustment;
 
         return $this;
     }
