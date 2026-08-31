@@ -38,8 +38,12 @@ docker exec -e OTEL_SDK_DISABLED=true "$WEB_CONTAINER" \
 
 echo "==> [backend] pest"
 TEST_DATABASE_URL="mysql://root:${MYSQL_ROOT_PASSWORD:-changeme}@database:3306/demo_test?serverVersion=10.7.1-MariaDB&charset=utf8mb4"
+# Recreate demo_test from scratch every run. A non-pristine demo_test trips a
+# Doctrine DBAL / MariaDB schema-introspection assertion during migrate
+# (AbstractSchemaManager::introspectTableByUnquotedName), and every failed run
+# corrupts it further. A clean database migrates all revisions reliably.
 docker compose exec -T database mariadb -uroot -p"${MYSQL_ROOT_PASSWORD:-changeme}" \
-  -e "CREATE DATABASE IF NOT EXISTS demo_test CHARACTER SET utf8mb4;"
+  -e "DROP DATABASE IF EXISTS demo_test; CREATE DATABASE demo_test CHARACTER SET utf8mb4;"
 docker compose exec -T -e APP_ENV=test -e DATABASE_URL="$TEST_DATABASE_URL" web \
   php bin/console doctrine:migrations:migrate --no-interaction
 docker exec -e OTEL_SDK_DISABLED=true -e APP_ENV=test -e DATABASE_URL="$TEST_DATABASE_URL" "$WEB_CONTAINER" \
