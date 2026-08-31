@@ -106,8 +106,15 @@ management behind `webhooks:manage`.
 - Delivery runs inside the per-minute `tick` command, not a dedicated Messenger
   transport. Fine at expected volume; revisit if a tenant fans out thousands of
   events per tick.
-- No React management screen yet — endpoints are managed via the `/api/v1`
-  routes or `app:integration:webhook-endpoint:create`.
+
+**Delivered after the fact**
+
+- A settings UI (Configuración → Integraciones) manages API keys and webhook
+  endpoints, with a one-time secret reveal and a per-endpoint delivery log +
+  retry. It is served by `src/Integration/Controller/Settings/*` under the
+  tenant JWT firewall and `perm:settings.edit` — a separate surface from the
+  `/api/v1` API-key firewall. The `app:integration:*` commands remain for
+  scripted provisioning.
 
 **Negative**
 
