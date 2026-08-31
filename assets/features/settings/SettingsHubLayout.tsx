@@ -22,6 +22,7 @@ export const SettingsHubLayout = () => {
         { key: 'users', label: 'Usuarios', path: '/config/users', icon: 'ph-users', visible: showAdminTabs },
         { key: 'roles', label: 'Roles', path: '/config/roles', icon: 'ph-user-gear', visible: showAdminTabs },
         { key: 'branches', label: 'Sucursales', path: '/config/branches', icon: 'ph-map-pin', visible: showAdminTabs },
+        { key: 'integrations', label: 'Integraciones', path: '/config/integrations', icon: 'ph-plugs-connected', visible: showAdminTabs },
         {
           key: 'general',
           label: 'General',

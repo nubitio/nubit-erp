@@ -5,6 +5,7 @@ import { SettingsHubLayout } from './SettingsHubLayout';
 import { SettingsCompanyTab } from './SettingsCompanyTab';
 import { SettingsSunatTab } from './SettingsSunatTab';
 import { SettingsGeneralTab } from './SettingsGeneralTab';
+import { SettingsIntegrationsTab } from './SettingsIntegrationsTab';
 import { SettingsCrudPanel } from './SettingsCrudPanel';
 import { useTenantRuntimeConfig } from '@shared/hooks';
 
@@ -62,6 +63,7 @@ export const settingsRoutes: AppRouteDefinition[] = [
       { path: 'roles', element: SettingsRolesTab },
       { path: 'branches', element: SettingsBranchesTab },
       { path: 'general', element: SettingsGeneralTab },
+      { path: 'integrations', element: SettingsIntegrationsTab },
     ],
   },
 ];

@@ -52,4 +52,24 @@ class WebhookDeliveryRepository extends ServiceEntityRepository
 
         return $rows;
     }
+
+    /**
+     * Most recent delivery attempts against one endpoint, for the settings UI.
+     *
+     * @return list<WebhookDelivery>
+     */
+    public function findRecentForEndpoint(string $endpointId, int $limit = 20): array
+    {
+        /** @var list<WebhookDelivery> $rows */
+        $rows = $this
+            ->createQueryBuilder('d')
+            ->where('d.endpoint = :endpoint')
+            ->setParameter('endpoint', $endpointId)
+            ->orderBy('d.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return $rows;
+    }
 }
