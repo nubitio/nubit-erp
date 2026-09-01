@@ -105,56 +105,58 @@ readonly class InitialSetupService
             throw new BadRequestHttpException('La configuración inicial ya fue completada.');
         }
 
-        $this->connection->beginTransaction();
-        try {
-            $superAdminRole = $this->ensureDefaultRoles();
-            $this->seedDefaultRolePermissions();
+        // No explicit outer transaction here on purpose. Wrapping this whole
+        // sequence in a manual beginTransaction()/commit() forced every nested
+        // $em->flush() into a DBAL savepoint (SAVEPOINT DOCTRINE_2, _3, …). The
+        // AuditTrailListener runs a second $em->flush() inside postFlush, and
+        // the seeders below (UbigeoImportService, TimeDimensionSeeder) open
+        // their own transactions — the resulting savepoint nesting broke with
+        // "SAVEPOINT DOCTRINE_2 does not exist" on a fresh tenant. Each unit
+        // below (the ORM flush, each seeder) manages its own transaction, which
+        // is enough: this only ever runs once, against an empty tenant DB, and
+        // a failed run is recovered by dropping and re-provisioning the tenant.
+        $superAdminRole = $this->ensureDefaultRoles();
+        $this->seedDefaultRolePermissions();
 
-            $company = new Company()
-                ->setRuc($input->companyRuc)
-                ->setBusinessName($input->companyBusinessName)
-                ->setTradeName($input->companyTradeName)
-                ->setFiscalAddress($input->companyFiscalAddress)
-                ->setPhone($input->companyPhone);
+        $company = new Company()
+            ->setRuc($input->companyRuc)
+            ->setBusinessName($input->companyBusinessName)
+            ->setTradeName($input->companyTradeName)
+            ->setFiscalAddress($input->companyFiscalAddress)
+            ->setPhone($input->companyPhone);
 
-            $this->entityManager->persist($company);
+        $this->entityManager->persist($company);
 
-            $branch = new Branch()
-                ->setName($input->branchName)
-                ->setAddress($input->branchAddress)
-                ->setPhone($input->branchPhone)
-                ->setCompany($company);
+        $branch = new Branch()
+            ->setName($input->branchName)
+            ->setAddress($input->branchAddress)
+            ->setPhone($input->branchPhone)
+            ->setCompany($company);
 
-            $this->entityManager->persist($branch);
+        $this->entityManager->persist($branch);
 
-            $warehouse = new Warehouse()
-                ->setName('Almacén Principal')
-                ->setBranch($branch);
-            $this->entityManager->persist($warehouse);
+        $warehouse = new Warehouse()
+            ->setName('Almacén Principal')
+            ->setBranch($branch);
+        $this->entityManager->persist($warehouse);
 
-            $user = new User()
-                ->setUsername($input->adminUsername)
-                ->setRole($superAdminRole);
-            $hashedPassword = $this->passwordHasher->hashPassword($user, $input->adminPassword);
-            $user->setPassword($hashedPassword);
+        $user = new User()
+            ->setUsername($input->adminUsername)
+            ->setRole($superAdminRole);
+        $hashedPassword = $this->passwordHasher->hashPassword($user, $input->adminPassword);
+        $user->setPassword($hashedPassword);
 
-            $this->entityManager->persist($user);
-            $this->entityManager->flush();
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
 
-            $this->seedSettings();
-            $this->seedReferenceData();
-            $this->seedUbigeoFromResource();
-            $this->seedTimeDimension();
-            $this->menuSeedService->seed();
-            $this->ensureVoucherSeriesForBranch($branch);
-            $this->ensureCashRegisterForBranch($branch);
-            $this->assignFullMenuToRole(intval($superAdminRole->getId()));
-
-            $this->connection->commit();
-        } catch (Throwable $throwable) {
-            $this->connection->rollBack();
-            throw $throwable;
-        }
+        $this->seedSettings();
+        $this->seedReferenceData();
+        $this->seedUbigeoFromResource();
+        $this->seedTimeDimension();
+        $this->menuSeedService->seed();
+        $this->ensureVoucherSeriesForBranch($branch);
+        $this->ensureCashRegisterForBranch($branch);
+        $this->assignFullMenuToRole(intval($superAdminRole->getId()));
 
         return $this->status();
     }
