@@ -42,20 +42,29 @@ function abbreviateDayLabel(label: string): string {
   return DAY_ABBREV[key] ?? label.slice(0, 3).toLowerCase();
 }
 
-/** Always returns 7 consecutive days — fills missing days with zero total. */
+/**
+ * Last 7 calendar days, oldest → newest.
+ *
+ * `salesByDay` is the current month's per-day totals, keyed by day-of-month — so
+ * a day is only matched when it actually falls in the current month, otherwise
+ * it is zero-filled (e.g. early in the month the leading days have no data).
+ * Labels come from the real date, keeping the 7 weekday names distinct (a
+ * previous version matched by day number across months and could emit duplicate
+ * labels, which broke the chart's category axis).
+ */
 export function pickLast7SalesDays(salesByDay: SalesByDay[]): Array<{ label: string; total: number }> {
   const today = DateTime.now().setZone('America/Lima');
 
   return Array.from({ length: 7 }, (_, i) => {
-    const dt = today.minus({ days: i });
-    const found = salesByDay.find((row) => row.day === dt.day);
+    const dt = today.minus({ days: 6 - i });
+    const found = dt.hasSame(today, 'month')
+      ? salesByDay.find((row) => row.day === dt.day)
+      : undefined;
     return {
-      label: found
-        ? abbreviateDayLabel(found.label)
-        : abbreviateDayLabel(dt.setLocale('es').weekdayLong ?? dt.toFormat('ccc')),
-      total: found ? found.total : 0,
+      label: abbreviateDayLabel(dt.setLocale('es').weekdayLong ?? dt.toFormat('ccc')),
+      total: found?.total ?? 0,
     };
-  }).reverse();
+  });
 }
 
 export type EfactDeclarativeDashboardPayload = {
