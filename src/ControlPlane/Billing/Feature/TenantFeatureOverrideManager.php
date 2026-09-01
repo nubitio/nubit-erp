@@ -57,7 +57,6 @@ final class TenantFeatureOverrideManager
                     'expires_at' => $expiresAtStr,
                     'reason' => $reason,
                     'cleaned_at' => null,
-                    'updated_at' => $now,
                 ],
                 ['id' => $existing->id],
             );
@@ -71,7 +70,6 @@ final class TenantFeatureOverrideManager
                 'reason' => $reason,
                 'cleaned_at' => null,
                 'created_at' => $now,
-                'updated_at' => $now,
             ]);
         }
 
