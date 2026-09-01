@@ -257,3 +257,13 @@ body {
     transparent
   );
 }
+
+// @nubitio/ui forces `table-layout: fixed` on any DataTable that has a
+// row-actions column, which splits the remaining width equally across the
+// data columns. On tables with few or narrow columns (tenants, users) that
+// leaves a large empty band before the sticky actions cell. Size columns to
+// content instead — the actions column keeps its own fixed 3.5rem + sticky
+// positioning from the library.
+.nb-data-table--has-actions {
+  table-layout: auto;
+}
