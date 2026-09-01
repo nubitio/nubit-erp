@@ -19,6 +19,18 @@ final class TenantResourceCatalog
     ];
 
     /**
+     * Quota resources whose plan limit is a per-calendar-month allowance
+     * (reset on the 1st, America/Lima) rather than a lifetime cap, mapped to
+     * the table column holding each record's fiscal date. Everything else in
+     * {@see quotaResources()} counts all-time rows.
+     *
+     * @var array<string, string>
+     */
+    private const array MONTHLY_QUOTA_DATE_COLUMN = [
+        'invoices' => 'issue_date',
+    ];
+
+    /**
      * @return list<string>
      */
     public function quotaResources(): array
@@ -48,5 +60,14 @@ final class TenantResourceCatalog
     public function allowedPlanLimitKeys(): array
     {
         return ['users', 'customers', 'products', 'invoices', 'branches', 'storage_mb'];
+    }
+
+    /**
+     * The date column a monthly quota count must be scoped by, or null when
+     * the resource is a lifetime cap.
+     */
+    public function monthlyQuotaDateColumn(string $resource): ?string
+    {
+        return self::MONTHLY_QUOTA_DATE_COLUMN[$resource] ?? null;
     }
 }

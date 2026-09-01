@@ -79,9 +79,7 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
 
         $this->acquireQuotaLock($connection, $tenantName, $resource);
 
-        $current = (int) $connection->fetchOne(
-            'SELECT COUNT(*) FROM ' . $connection->quoteSingleIdentifier($tableName),
-        );
+        $current = $this->countResourceUsage($connection, $resource, $tableName);
 
         return new QuotaCheckResult($current < $limit, $resource, $current, $limit);
     }
@@ -125,13 +123,9 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
             $tableName = $this->resolveTableNameFromList($resource, $existingTables);
 
             try {
-                if ($tableName === null) {
-                    $current = 0;
-                } else {
-                    $current = (int) $connection->fetchOne(
-                        'SELECT COUNT(*) FROM ' . $connection->quoteSingleIdentifier($tableName),
-                    );
-                }
+                $current = $tableName === null
+                    ? 0
+                    : $this->countResourceUsage($connection, $resource, $tableName);
             } catch (\Throwable) {
                 $current = 0;
             }
@@ -153,6 +147,32 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
         $summary['storage_bytes'] = ['current' => $storageBytes, 'limit' => $storageLimitBytes];
 
         return $summary;
+    }
+
+    /**
+     * Current usage count for a quota resource. Monthly resources
+     * (see {@see TenantResourceCatalog::monthlyQuotaDateColumn()}) are scoped
+     * to the current calendar month in America/Lima — the allowance resets on
+     * the 1st. Every other resource is an all-time row count.
+     */
+    private function countResourceUsage(TenantConnection $connection, string $resource, string $tableName): int
+    {
+        $countFrom = 'SELECT COUNT(*) FROM ' . $connection->quoteSingleIdentifier($tableName);
+
+        $dateColumn = $this->resourceCatalog->monthlyQuotaDateColumn($resource);
+        if ($dateColumn === null) {
+            return (int) $connection->fetchOne($countFrom);
+        }
+
+        $monthStart = new \DateTimeImmutable('now', new \DateTimeZone('America/Lima'))
+            ->modify('first day of this month')
+            ->setTime(0, 0)
+            ->format('Y-m-d H:i:s');
+
+        return (int) $connection->fetchOne(
+            $countFrom . ' WHERE ' . $connection->quoteSingleIdentifier($dateColumn) . ' >= ?',
+            [$monthStart],
+        );
     }
 
     /**

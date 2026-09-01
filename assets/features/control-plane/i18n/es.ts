@@ -262,6 +262,13 @@ export const CP_STRINGS = {
       quotaTitle: 'Uso de cuotas',
       quotaEmpty: 'Sin datos de cuota disponibles.',
       atPercent: (resource: string, percent: number) => `${resource} al ${percent}%`,
+      perMonth: 'mensual, se reinicia el 1',
+      deltasTitle: 'Cambios en las últimas 24 h',
+      deltasEmpty: 'Aún no hay datos de uso.',
+      deltaColResource: 'Recurso',
+      deltaColBefore: 'Hace 24 h',
+      deltaColNow: 'Ahora',
+      deltaColChange: 'Cambio',
     },
     subscription: {
       title: 'Suscripción',

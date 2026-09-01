@@ -89,6 +89,24 @@ body {
   margin-bottom: var(--space-1, 0.25rem);
 }
 
+.cp-quota-item__period {
+  color: var(--text-secondary, #6b7280);
+  font-size: var(--font-size-xs, 0.75rem);
+}
+
+.cp-delta {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary, #6b7280);
+}
+
+.cp-delta--up {
+  color: var(--success-color, #16a34a);
+}
+
+.cp-delta--down {
+  color: var(--danger-color, #dc2626);
+}
+
 .cp-matrix-wrap {
   overflow-x: auto;
 }

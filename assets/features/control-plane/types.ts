@@ -34,7 +34,7 @@ export interface TenantDetailPayload {
   usage: {
     quotaSummary: Record<string, QuotaUsage>;
     usageLatest: Record<string, number>;
-    usageDeltas: Record<string, number>;
+    usageDeltas: Record<string, { previous: number; current: number; delta: number }>;
     usageHistory: unknown[];
     quotaAlerts: Array<{ resource: string; percent: number }>;
     error?: string;

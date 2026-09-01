@@ -245,6 +245,70 @@ final class TenantQuotaServiceTest extends TestCase
         $service->getUsageSummary('missing');
     }
 
+    public function testInvoiceQuotaCountsOnlyTheCurrentCalendarMonth(): void
+    {
+        $tenantContext = new TenantContext();
+        $tenantContext->setTenant(1, 'acme', null, null);
+
+        $tenant = ['id' => 1, 'name' => 'acme', 'connection' => 'acme_db', 'plan' => 'free'];
+        $tenantService = $this->createMock(TenantService::class);
+        $tenantService->method('getTenantByName')->with('acme')->willReturn($tenant);
+
+        $capturedSql = null;
+        $capturedParams = null;
+
+        $tenantConnection = $this->createStub(TenantConnection::class);
+        $tenantConnection->method('switchTenantParams');
+        $tenantConnection
+            ->method('quoteSingleIdentifier')
+            ->willReturnCallback(static fn(string $id): string => sprintf('`%s`', $id));
+        $schema = $this->createStub(AbstractSchemaManager::class);
+        $schema->method('listTableNames')->willReturn(['tax_document']);
+        $tenantConnection->method('createSchemaManager')->willReturn($schema);
+        $tenantConnection
+            ->method('fetchOne')
+            ->willReturnCallback(
+                static function (string $sql, array $params = []) use (&$capturedSql, &$capturedParams): int {
+                    if (str_contains($sql, 'GET_LOCK')) {
+                        return 1;
+                    }
+
+                    $capturedSql = $sql;
+                    $capturedParams = $params;
+
+                    return 3;
+                },
+            );
+
+        $registry = $this->createMock(ConnectionRegistry::class);
+        $registry->method('getConnection')->with('tenant')->willReturn($tenantConnection);
+
+        $service = $this->newService(
+            tenantContext: $tenantContext,
+            tenantService: $tenantService,
+            planManager: $this->planManagerWithPlans([
+                ['id' => 1, 'name' => 'free', 'limits' => ['invoices' => 500], 'is_default' => true],
+            ]),
+            registry: $registry,
+        );
+
+        $result = $service->check('invoices');
+
+        self::assertIsString($capturedSql);
+        self::assertStringContainsString('`tax_document`', $capturedSql);
+        self::assertStringContainsString('`issue_date` >=', $capturedSql);
+
+        $expectedMonthStart = new \DateTimeImmutable('now', new \DateTimeZone('America/Lima'))
+            ->modify('first day of this month')
+            ->setTime(0, 0)
+            ->format('Y-m-d H:i:s');
+        self::assertSame([$expectedMonthStart], $capturedParams);
+
+        self::assertTrue($result->allowed);
+        self::assertSame(3, $result->current);
+        self::assertSame(500, $result->limit);
+    }
+
     private function newService(
         TenantContext $tenantContext,
         TenantService $tenantService,

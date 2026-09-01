@@ -16,6 +16,17 @@ final class TenantResourceCatalogTest extends TestCase
         $this->assertSame(['tax_document'], $catalog->tablesForResource('invoices'));
     }
 
+    public function testInvoicesIsAMonthlyQuotaWhileOtherResourcesAreLifetime(): void
+    {
+        $catalog = new TenantResourceCatalog();
+
+        $this->assertSame('issue_date', $catalog->monthlyQuotaDateColumn('invoices'));
+        $this->assertNull($catalog->monthlyQuotaDateColumn('users'));
+        $this->assertNull($catalog->monthlyQuotaDateColumn('customers'));
+        $this->assertNull($catalog->monthlyQuotaDateColumn('products'));
+        $this->assertNull($catalog->monthlyQuotaDateColumn('branches'));
+    }
+
     public function testAllowedPlanKeysContainStorageAndCoreResources(): void
     {
         $catalog = new TenantResourceCatalog();

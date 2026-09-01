@@ -202,6 +202,7 @@ export const TenantDetailPage = () => {
             <UsageTab
               quotaSummary={detail.data.usage.quotaSummary}
               usageLatest={detail.data.usage.usageLatest}
+              usageDeltas={detail.data.usage.usageDeltas}
               quotaAlerts={detail.data.usage.quotaAlerts}
             />
           )}
