@@ -32,10 +32,7 @@ final class FeatureKeyScanner
      */
     public static function unknownKeys(ContainerBuilder $container): array
     {
-        $violations = array_merge(
-            self::fromAttributes($container),
-            self::fromSource(),
-        );
+        $violations = array_merge(self::fromAttributes($container), self::fromSource());
 
         return array_values(array_unique($violations));
     }
@@ -125,7 +122,7 @@ final class FeatureKeyScanner
                 continue;
             }
 
-            /** @var list<string> $captured */
+            /** @var list<non-empty-string> $captured */
             $captured = $matches[1];
             foreach ($captured as $raw) {
                 $key = strtolower($raw);

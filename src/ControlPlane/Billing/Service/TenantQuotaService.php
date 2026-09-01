@@ -123,9 +123,7 @@ final class TenantQuotaService implements QuotaEnforcerInterface, TenantUsageSum
             $tableName = $this->resolveTableNameFromList($resource, $existingTables);
 
             try {
-                $current = $tableName === null
-                    ? 0
-                    : $this->countResourceUsage($connection, $resource, $tableName);
+                $current = $tableName === null ? 0 : $this->countResourceUsage($connection, $resource, $tableName);
             } catch (\Throwable) {
                 $current = 0;
             }

@@ -16,7 +16,7 @@ final class RequireFeatureKeyPassTest extends TestCase
     {
         // Empty container → only the src/ scan runs. If src/ is clean this must
         // not throw; a real drift would fail here (and in cache:clear).
-        (new RequireFeatureKeyPass())->process(new ContainerBuilder());
+        new RequireFeatureKeyPass()->process(new ContainerBuilder());
 
         $this->addToAssertionCount(1);
     }
@@ -29,6 +29,6 @@ final class RequireFeatureKeyPassTest extends TestCase
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessageMatches('/totally_not_a_real_feature/');
 
-        (new RequireFeatureKeyPass())->process($container);
+        new RequireFeatureKeyPass()->process($container);
     }
 }

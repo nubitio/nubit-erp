@@ -45,7 +45,11 @@ final class FeatureCatalog
             'custom_branding' => self::boolFeature('Marca personalizada', self::CAT_COMMERCIAL, ['pro']),
             'advanced_reports' => self::boolFeature('Reportes avanzados', self::CAT_COMMERCIAL, ['basic', 'pro']),
             'backup_download' => self::boolFeature('Descarga de respaldos', self::CAT_COMMERCIAL, ['basic', 'pro']),
-            'sunat_auto_retry' => self::boolFeature('Reintento automático SUNAT', self::CAT_COMMERCIAL, ['basic', 'pro']),
+            'sunat_auto_retry' => self::boolFeature(
+                'Reintento automático SUNAT',
+                self::CAT_COMMERCIAL,
+                ['basic', 'pro'],
+            ),
             'webhooks' => self::boolFeature('Webhooks', self::CAT_COMMERCIAL, ['pro']),
             'priority_support' => self::boolFeature('Soporte prioritario', self::CAT_COMMERCIAL, ['pro']),
             'ai_assistant' => [
@@ -123,7 +127,7 @@ final class FeatureCatalog
      */
     public static function configKeys(): array
     {
-        return array_keys(array_filter(self::all(), static fn (array $f): bool => $f['hasConfig']));
+        return array_keys(array_filter(self::all(), static fn(array $f): bool => $f['hasConfig']));
     }
 
     public static function has(string $key): bool

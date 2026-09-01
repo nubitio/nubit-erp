@@ -46,11 +46,27 @@ final class PaymentMethodBreakdownReportTest extends TestCase
         $columns = $report->columns();
 
         self::assertSame(
-            ['sale_date', 'sale_time', 'document', 'customer_name', 'pm_3', 'pm_7', 'pm_other', 'total_paid', 'sale_total'],
+            [
+                'sale_date',
+                'sale_time',
+                'document',
+                'customer_name',
+                'pm_3',
+                'pm_7',
+                'pm_other',
+                'total_paid',
+                'sale_total',
+            ],
             array_keys($columns),
         );
 
-        foreach (['pm_3' => 'Efectivo', 'pm_7' => 'Yape', 'pm_other' => 'Otros métodos', 'total_paid' => 'Total pagado', 'sale_total' => 'Total comprobante'] as $key => $label) {
+        foreach ([
+            'pm_3' => 'Efectivo',
+            'pm_7' => 'Yape',
+            'pm_other' => 'Otros métodos',
+            'total_paid' => 'Total pagado',
+            'sale_total' => 'Total comprobante',
+        ] as $key => $label) {
             self::assertInstanceOf(XlsColumnSpec::class, $columns[$key]);
             self::assertSame($label, $columns[$key]->label);
             self::assertSame(XlsColumn::SUMMARY_SUM, $columns[$key]->summary->type);
@@ -64,8 +80,14 @@ final class PaymentMethodBreakdownReportTest extends TestCase
             ['id' => 7, 'name' => 'Yape'],
         ])->sql('');
 
-        self::assertStringContainsString('sum(case when sp.payment_method_id = 3 then sp.amount else 0 end) as pm_3', $sql);
-        self::assertStringContainsString('sum(case when sp.payment_method_id = 7 then sp.amount else 0 end) as pm_7', $sql);
+        self::assertStringContainsString(
+            'sum(case when sp.payment_method_id = 3 then sp.amount else 0 end) as pm_3',
+            $sql,
+        );
+        self::assertStringContainsString(
+            'sum(case when sp.payment_method_id = 7 then sp.amount else 0 end) as pm_7',
+            $sql,
+        );
         self::assertStringContainsString('sp.payment_method_id not in (3,7)', $sql);
         self::assertStringContainsString('as pm_other', $sql);
         self::assertStringContainsString('coalesce(sum(sp.amount), 0) as total_paid', $sql);

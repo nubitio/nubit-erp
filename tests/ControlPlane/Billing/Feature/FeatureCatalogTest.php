@@ -73,7 +73,10 @@ final class FeatureCatalogTest extends TestCase
     public function test_plan_default_falls_back_closed(): void
     {
         self::assertSame(['enabled' => false, 'config' => null], FeatureCatalog::planDefault('nope', 'free'));
-        self::assertSame(['enabled' => false, 'config' => null], FeatureCatalog::planDefault('payroll', 'no_such_plan'));
+        self::assertSame(
+            ['enabled' => false, 'config' => null],
+            FeatureCatalog::planDefault('payroll', 'no_such_plan'),
+        );
 
         $basic = FeatureCatalog::planDefault('payroll', 'basic');
         self::assertTrue($basic['enabled']);

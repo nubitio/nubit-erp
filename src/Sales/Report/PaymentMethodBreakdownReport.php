@@ -58,7 +58,7 @@ final class PaymentMethodBreakdownReport extends AbstractSaleReport
             $pivotSelects .= "sum(case when sp.payment_method_id = {$id} then sp.amount else 0 end) as pm_{$id},\n                ";
         }
 
-        $ids = array_map(static fn (array $m): int => $m['id'], $methods);
+        $ids = array_map(static fn(array $m): int => $m['id'], $methods);
         $idList = $ids === [] ? '0' : implode(',', $ids);
 
         return <<<SQL
@@ -133,10 +133,10 @@ final class PaymentMethodBreakdownReport extends AbstractSaleReport
             'SELECT id, name FROM payment_method WHERE is_active = 1 ORDER BY name',
         );
 
-        $this->methodsCache = array_map(
-            static fn (array $row): array => ['id' => (int) $row['id'], 'name' => (string) $row['name']],
-            $rows,
-        );
+        $this->methodsCache = array_map(static fn(array $row): array => [
+            'id' => (int) $row['id'],
+            'name' => (string) $row['name'],
+        ], $rows);
 
         return $this->methodsCache;
     }

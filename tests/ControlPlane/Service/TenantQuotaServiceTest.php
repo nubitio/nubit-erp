@@ -267,18 +267,19 @@ final class TenantQuotaServiceTest extends TestCase
         $tenantConnection->method('createSchemaManager')->willReturn($schema);
         $tenantConnection
             ->method('fetchOne')
-            ->willReturnCallback(
-                static function (string $sql, array $params = []) use (&$capturedSql, &$capturedParams): int {
-                    if (str_contains($sql, 'GET_LOCK')) {
-                        return 1;
-                    }
+            ->willReturnCallback(static function (string $sql, array $params = []) use (
+                &$capturedSql,
+                &$capturedParams,
+            ): int {
+                if (str_contains($sql, 'GET_LOCK')) {
+                    return 1;
+                }
 
-                    $capturedSql = $sql;
-                    $capturedParams = $params;
+                $capturedSql = $sql;
+                $capturedParams = $params;
 
-                    return 3;
-                },
-            );
+                return 3;
+            });
 
         $registry = $this->createMock(ConnectionRegistry::class);
         $registry->method('getConnection')->with('tenant')->willReturn($tenantConnection);

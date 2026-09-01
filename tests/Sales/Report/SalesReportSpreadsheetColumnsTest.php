@@ -254,10 +254,12 @@ final class SalesReportSpreadsheetColumnsTest extends TestCase
     {
         if ($reportClass === PaymentMethodBreakdownReport::class) {
             $connection = $this->createStub(Connection::class);
-            $connection->method('fetchAllAssociative')->willReturn([
-                ['id' => 1, 'name' => 'Efectivo'],
-                ['id' => 2, 'name' => 'Yape'],
-            ]);
+            $connection
+                ->method('fetchAllAssociative')
+                ->willReturn([
+                    ['id' => 1, 'name' => 'Efectivo'],
+                    ['id' => 2, 'name' => 'Yape'],
+                ]);
 
             return new PaymentMethodBreakdownReport($this->createStub(SunatStateService::class), $connection);
         }

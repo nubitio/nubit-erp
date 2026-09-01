@@ -75,12 +75,7 @@ final class SyncPlanFeaturesCommand extends Command
                 }
 
                 $default = FeatureCatalog::planDefault($featureKey, $planName);
-                $this->planFeatureManager->setFeature(
-                    $planName,
-                    $featureKey,
-                    $default['enabled'],
-                    $default['config'],
-                );
+                $this->planFeatureManager->setFeature($planName, $featureKey, $default['enabled'], $default['config']);
 
                 $existing === null ? ++$added : ++$reset;
             }
