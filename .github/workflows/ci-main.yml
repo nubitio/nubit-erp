@@ -71,14 +71,18 @@ jobs:
 
       - name: Copy backend coverage from Docker volume
         run: |
-          mkdir -p var/coverage/php
-          docker compose cp web:/app/var/coverage/php/. var/coverage/php/
+          # /app/var is a named Docker volume; the containerised steps write it
+          # as root, so the host ./var is not runner-writable. Extract into
+          # RUNNER_TEMP, which always is.
+          rm -rf "${RUNNER_TEMP}/php-coverage"
+          mkdir -p "${RUNNER_TEMP}/php-coverage"
+          docker compose cp web:/app/var/coverage/php/. "${RUNNER_TEMP}/php-coverage/"
 
       - name: Upload backend coverage artifact
         uses: actions/upload-artifact@v6
         with:
           name: backend-coverage
-          path: var/coverage/php
+          path: ${{ runner.temp }}/php-coverage
           if-no-files-found: error
 
       - name: Stop backend stack
