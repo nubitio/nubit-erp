@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\AI;
 
-use App\ControlPlane\Billing\Feature\PlanFeatureManager;
+use App\ControlPlane\Billing\Feature\FeatureCatalog;
 use PHPUnit\Framework\TestCase;
 
 final class McpRemovedTest extends TestCase
@@ -29,8 +29,8 @@ final class McpRemovedTest extends TestCase
 
     public function testAiAssistantIsInTheFeatureCatalogueAndMcpIsNot(): void
     {
-        self::assertContains('ai_assistant', PlanFeatureManager::FEATURE_KEYS);
-        self::assertContains('ai_assistant', PlanFeatureManager::CONFIG_FEATURE_KEYS);
-        self::assertNotContains('ai_mcp', PlanFeatureManager::FEATURE_KEYS);
+        self::assertContains('ai_assistant', FeatureCatalog::keys());
+        self::assertContains('ai_assistant', FeatureCatalog::configKeys());
+        self::assertNotContains('ai_mcp', FeatureCatalog::keys());
     }
 }

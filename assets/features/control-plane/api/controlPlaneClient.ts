@@ -1,6 +1,7 @@
 import { exceptionalFetch } from '@shared/api/network';
 import type {
   CertificateRecord,
+  FeatureCatalogEntry,
   TenantDetailPayload,
   TenantFeaturesPayload,
   TenantNotificationsPayload,
@@ -93,8 +94,8 @@ export interface AdminUsersPayload {
 
 export interface PlanFeatureMatrixPayload {
   plans: PlanRecord[];
-  featureKeys: string[];
-  configFeatureKeys: string[];
+  features: FeatureCatalogEntry[];
+  categories: Record<string, string>;
   matrix: Record<string, Record<string, { isEnabled: boolean; configJson: Record<string, unknown> | null }>>;
 }
 

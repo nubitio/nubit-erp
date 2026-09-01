@@ -8,3 +8,5 @@ source "$SCRIPT_DIR/common.sh"
 
 exec_web_php "bin/console app:control-plane:migrate --no-interaction"
 exec_web_php "bin/console app:tenants:migrate --no-interaction"
+# Reconcile plan_features with the FeatureCatalog (gap-fill; idempotent).
+exec_web_php "bin/console app:features:sync"

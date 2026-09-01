@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Operator\Api;
 
 use App\ControlPlane\Billing\Entity\PlanFeature;
+use App\ControlPlane\Billing\Feature\FeatureCatalog;
 use App\ControlPlane\Billing\Feature\PlanFeatureManager;
 use App\ControlPlane\Billing\Repository\PlanFeatureRepositoryInterface;
 use App\ControlPlane\Billing\Service\PlanManager;
@@ -34,7 +35,7 @@ final class PlanFeatureApiController extends AbstractController
         $plans = $this->planManager->getPlans();
         $matrix = [];
 
-        foreach (PlanFeatureManager::FEATURE_KEYS as $featureKey) {
+        foreach (FeatureCatalog::keys() as $featureKey) {
             $matrix[$featureKey] = [];
             foreach ($plans as $plan) {
                 $feature = $this->planFeatureRepository->findOneByPlanAndKey($plan['name'], $featureKey);
@@ -46,8 +47,8 @@ final class PlanFeatureApiController extends AbstractController
 
         return $this->json([
             'plans' => $plans,
-            'featureKeys' => PlanFeatureManager::FEATURE_KEYS,
-            'configFeatureKeys' => PlanFeatureManager::CONFIG_FEATURE_KEYS,
+            'features' => FeatureCatalog::list(),
+            'categories' => FeatureCatalog::categories(),
             'matrix' => $matrix,
         ]);
     }

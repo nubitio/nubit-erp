@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\ControlPlane\Operator\Api;
 
 use App\ControlPlane\Billing\Entity\TenantFeatureOverride;
-use App\ControlPlane\Billing\Feature\PlanFeatureManager;
+use App\ControlPlane\Billing\Feature\FeatureCatalog;
 use App\ControlPlane\Billing\Feature\TenantFeatureOverrideManager;
 use App\ControlPlane\Billing\Repository\TenantFeatureOverrideRepositoryInterface;
 use App\ControlPlane\Tenant\Application\TenantService;
@@ -40,7 +40,8 @@ final class TenantFeatureApiController extends AbstractController
 
         return $this->json([
             'overrides' => $overrides,
-            'featureKeys' => PlanFeatureManager::FEATURE_KEYS,
+            'features' => FeatureCatalog::list(),
+            'categories' => FeatureCatalog::categories(),
         ]);
     }
 
@@ -57,7 +58,7 @@ final class TenantFeatureApiController extends AbstractController
 
         try {
             $featureKey = trim((string) ($payload['featureKey'] ?? ''));
-            if (!in_array($featureKey, PlanFeatureManager::FEATURE_KEYS, true)) {
+            if (!FeatureCatalog::has($featureKey)) {
                 throw new InvalidArgumentException(sprintf('Invalid feature key: "%s".', $featureKey));
             }
 

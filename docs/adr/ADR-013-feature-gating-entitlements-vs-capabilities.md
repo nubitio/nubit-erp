@@ -42,3 +42,32 @@ Results are cached 300 seconds per tenant, with cache tags for invalidation. `Fe
 ## Alternatives Considered
 
 **A single unified "feature flag" system for both plan and vertical gating** — not built; the two were kept separate. This is likely deliberate given how cleanly they're named in `CONTEXT.md` (Capability vs. Entitlement are described as orthogonal concepts there), but no record exists of a single-system alternative being explicitly considered and rejected.
+
+## Amendment (2026-09-01) — entitlement keys centralised and enforced
+
+The "no single source" / "nothing forces the right choice" negatives above are
+addressed on the **entitlement** axis (the vertical/capability axis is unchanged):
+
+- **`src/ControlPlane/Billing/Feature/FeatureCatalog.php`** is now the single
+  code-defined catalogue of entitlement keys — key, label, category
+  (`commercial` add-on vs. `module` ERP), config flag, and per-plan defaults.
+  Pattern mirrors `src/Identity/Security/PermissionCatalog.php`. The
+  `PlanFeatureManager::FEATURE_KEYS` / `CONFIG_FEATURE_KEYS` constants are gone.
+- **`RequireFeatureKeyPass`** (compiler pass, registered in `src/Kernel.php`)
+  fails the container build if a `#[RequiresFeature]`, `->hasFeature('…')`,
+  `->requireFeature('…')`, `isFeatureEnabled($…, '…')`, or `IS_GRANTED('FEATURE_…')`
+  names a key absent from the catalogue. A typo now breaks `cache:clear` / CI.
+- **`app:features:sync`** reconciles `plan_features` to the catalogue
+  (gap-fill by default, `--force` to reset). It runs after migrations in
+  `scripts/dev/migrate.sh`. Adding a feature is now: one `FeatureCatalog` entry
+  + `app:features:sync` — no more one-migration-per-feature
+  (`SeedPlanFeatures` → `SeedAiAssistantFeature` → `SeedGeneralLedgerFeature` →
+  `SeedMiniErpFeatures`).
+- The control-plane plan-features matrix and the per-tenant override picker now
+  list **every** catalogue key, grouped *Comercial* / *Módulos ERP*, all
+  operator-editable — previously the 6 mini-ERP module keys (`payroll`,
+  `general_ledger`, `bank_reconciliation`, `fixed_assets`, `expense_reports`,
+  `recurring_billing`) were invisible because they weren't in the constant.
+
+Not addressed: the BOM-explosion gap, and unifying the entitlement vs.
+vertical-capability vocabularies (still deliberately separate).

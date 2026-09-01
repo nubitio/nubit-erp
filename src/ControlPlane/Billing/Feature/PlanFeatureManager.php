@@ -12,7 +12,7 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
  * feature cache tag is invalidated on every mutation.
  *
  * Validation rules:
- *   - feature_key must be in FEATURE_KEYS catalogue (fail-fast with clear message)
+ *   - feature_key must be in {@see FeatureCatalog} (fail-fast with clear message)
  *   - config is passed already-parsed (?array); JSON encoding is the repository's job
  *   - plan existence is enforced by the FK constraint in plan_features; the controller
  *     validates against PlanManager before calling this service
@@ -24,33 +24,6 @@ use Symfony\Contracts\Cache\TagAwareCacheInterface;
  */
 final class PlanFeatureManager
 {
-    /** Canonical catalogue of all feature keys. Single source of truth for the platform. */
-    public const array FEATURE_KEYS = [
-        'excel_export',
-        'pdf_bulk_download',
-        'api_access',
-        'multi_warehouse',
-        'lot_tracking',
-        'custom_branding',
-        'advanced_reports',
-        'backup_download',
-        'sunat_auto_retry',
-        'webhooks',
-        'priority_support',
-        'ai_assistant',
-        'api_rate_limit',
-        'retention_days',
-        'concurrent_sessions',
-    ];
-
-    /** Feature keys that carry a config_json payload (not purely boolean). */
-    public const array CONFIG_FEATURE_KEYS = [
-        'api_rate_limit',
-        'retention_days',
-        'concurrent_sessions',
-        'ai_assistant',
-    ];
-
     public function __construct(
         private readonly PlanFeatureRepositoryInterface $repository,
         private readonly TagAwareCacheInterface $featureCache,
@@ -75,14 +48,15 @@ final class PlanFeatureManager
     }
 
     /**
-     * Seeds all catalogue feature keys for a newly created plan, all disabled by default.
-     * Uses upsert so it is idempotent (safe to call multiple times).
+     * Seeds every catalogue feature for a newly created plan, using the
+     * catalogue's per-plan defaults. Uses upsert so it is idempotent.
      * No cache invalidation needed — a brand-new plan has no tenants yet.
      */
     public function seedFeaturesForNewPlan(string $planName): void
     {
-        foreach (self::FEATURE_KEYS as $featureKey) {
-            $this->repository->upsert($planName, $featureKey, false, null);
+        foreach (FeatureCatalog::keys() as $featureKey) {
+            $default = FeatureCatalog::planDefault($featureKey, $planName);
+            $this->repository->upsert($planName, $featureKey, $default['enabled'], $default['config']);
         }
     }
 
@@ -92,11 +66,11 @@ final class PlanFeatureManager
 
     private function assertFeatureKey(string $featureKey): void
     {
-        if (!in_array($featureKey, self::FEATURE_KEYS, true)) {
+        if (!FeatureCatalog::has($featureKey)) {
             throw new \InvalidArgumentException(sprintf(
                 'Unknown feature key "%s". Allowed keys: %s.',
                 $featureKey,
-                implode(', ', self::FEATURE_KEYS),
+                implode(', ', FeatureCatalog::keys()),
             ));
         }
     }

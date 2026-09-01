@@ -9527,3 +9527,9 @@ file = "tests/bootstrap.php"
 code = "explicit-octal"
 message = "Use explicit octal numeral notation."
 count = 1
+
+[[issues]]
+file = "src/ControlPlane/Billing/Feature/Compiler/FeatureKeyScanner.php"
+code = "kan-defect"
+message = "Class has a high kan defect score."
+count = 1

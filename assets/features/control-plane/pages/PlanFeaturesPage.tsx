@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect -- plan selection resets feature override state */
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Badge, Button, Card, TextAreaField, Toggle } from '@nubitio/ui';
@@ -109,43 +109,52 @@ export const PlanFeaturesPage = () => {
               </tr>
             </thead>
             <tbody>
-              {data.featureKeys.map((featureKey) => {
-                const isConfig = data.configFeatureKeys.includes(featureKey);
+              {Object.entries(data.categories).map(([categoryKey, categoryLabel]) => {
+                const rows = data.features.filter((f) => f.category === categoryKey);
+                if (rows.length === 0) return null;
                 return (
-                  <tr key={featureKey}>
-                    <td>
-                      <code>{featureKey}</code>
-                      {isConfig && (
-                        <Badge variant="secondary" size="sm">
-                          {CP_STRINGS.planFeatures.config}
-                        </Badge>
-                      )}
-                    </td>
-                    {data.plans.map((plan) => {
-                      const cell = data.matrix[featureKey]?.[plan.name] ?? {
-                        isEnabled: false,
-                        configJson: null,
-                      };
-                      const cellId = `${plan.name}:${featureKey}`;
-                      return (
-                        <PlanFeatureCell
-                          key={cellId}
-                          featureKey={featureKey}
-                          planName={plan.name}
-                          isEnabled={cell.isEnabled}
-                          configJson={
-                            cell.configJson ? JSON.stringify(cell.configJson, null, 2) : ''
-                          }
-                          isConfig={isConfig}
-                          saving={update.isPending}
-                          saved={savedCell === cellId}
-                          onSave={(payload) =>
-                            update.mutate({ planName: plan.name, featureKey, ...payload })
-                          }
-                        />
-                      );
-                    })}
-                  </tr>
+                  <Fragment key={categoryKey}>
+                    <tr className="cp-matrix-group">
+                      <th colSpan={data.plans.length + 1}>{categoryLabel}</th>
+                    </tr>
+                    {rows.map((feature) => (
+                      <tr key={feature.key}>
+                        <td>
+                          <span className="cp-matrix-feature-label">{feature.label}</span>{' '}
+                          <code>{feature.key}</code>
+                          {feature.hasConfig && (
+                            <Badge variant="secondary" size="sm">
+                              {CP_STRINGS.planFeatures.config}
+                            </Badge>
+                          )}
+                        </td>
+                        {data.plans.map((plan) => {
+                          const cell = data.matrix[feature.key]?.[plan.name] ?? {
+                            isEnabled: false,
+                            configJson: null,
+                          };
+                          const cellId = `${plan.name}:${feature.key}`;
+                          return (
+                            <PlanFeatureCell
+                              key={cellId}
+                              featureKey={feature.key}
+                              planName={plan.name}
+                              isEnabled={cell.isEnabled}
+                              configJson={
+                                cell.configJson ? JSON.stringify(cell.configJson, null, 2) : ''
+                              }
+                              isConfig={feature.hasConfig}
+                              saving={update.isPending}
+                              saved={savedCell === cellId}
+                              onSave={(payload) =>
+                                update.mutate({ planName: plan.name, featureKey: feature.key, ...payload })
+                              }
+                            />
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </Fragment>
                 );
               })}
             </tbody>

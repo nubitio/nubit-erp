@@ -162,9 +162,17 @@ export interface FeatureOverrideRecord {
   createdAt: string;
 }
 
+export interface FeatureCatalogEntry {
+  key: string;
+  label: string;
+  category: string;
+  hasConfig: boolean;
+}
+
 export interface TenantFeaturesPayload {
   overrides: FeatureOverrideRecord[];
-  featureKeys: string[];
+  features: FeatureCatalogEntry[];
+  categories: Record<string, string>;
 }
 
 export type TenantTab =

@@ -164,11 +164,19 @@ export const FeaturesTab = ({ tenantId, isAdmin }: FeaturesTabProps) => {
                   onChange={(e) => setForm((f) => ({ ...f, featureKey: e.target.value }))}
                 >
                   <option value="">{S.selectFeature}</option>
-                  {features.data.featureKeys.map((key) => (
-                    <option key={key} value={key}>
-                      {key}
-                    </option>
-                  ))}
+                  {Object.entries(features.data.categories).map(([categoryKey, categoryLabel]) => {
+                    const group = features.data.features.filter((f) => f.category === categoryKey);
+                    if (group.length === 0) return null;
+                    return (
+                      <optgroup key={categoryKey} label={categoryLabel}>
+                        {group.map((feature) => (
+                          <option key={feature.key} value={feature.key}>
+                            {feature.label} ({feature.key})
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
                 </SelectField>
               </FormField>
             )}
