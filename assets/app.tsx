@@ -3,11 +3,13 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UiStringsProvider, ES_UI_STRINGS } from '@nubitio/ui';
+// Vendor styles first so app-owned SCSS (styles.scss, custom.scss) reliably
+// cascades after them — lets eFact override design tokens and shell chrome.
+import '@nubitio/react-admin/style.css';
+import '@nubitio/ui/style.css';
 import { EfactApp } from '@app/shell/EfactApp';
 import { ErrorBoundary } from '@shared/components';
 import './i18n';
-import '@nubitio/react-admin/style.css';
-import '@nubitio/ui/style.css';
 import './app.scss';
 
 // Ensure all luxon DateTime operations default to Peru timezone (UTC-5, no DST)

@@ -34,3 +34,78 @@
 .p-2  { padding: var(--space-2); }
 .text-center { text-align: center; }
 .text-decoration-line-through { text-decoration: line-through; }
+
+// ── Shell retouch — modern SaaS chrome ──────────────────────────────────────
+// Overrides @nubitio/admin shell classes. Loaded after vendor CSS so equal
+// specificity wins. Goal: low-contrast dividers, flat surfaces, and an inset
+// rounded sidebar item instead of the full-bleed row + 3px accent bar.
+
+.nb-admin-layout-header {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.nb-admin-shell__panel {
+  border-right: 1px solid var(--border-subtle);
+}
+
+// Popover / header dropdown panels: softer edge, rounder, lighter shadow.
+.nb-admin-header-popover__panel {
+  border-color: var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+// Sidebar menu — expanded state only (compact rail keeps full-bleed rows).
+.nb-admin-menu:not(.compact) {
+  .nb-admin-menu__nav {
+    padding: var(--space-2);
+    gap: 2px;
+  }
+
+  .nb-admin-menu__section {
+    border-bottom: none;
+    padding-bottom: var(--space-2);
+    margin-bottom: var(--space-2);
+  }
+
+  .nb-admin-menu__section:not(:last-child) {
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .nb-admin-menu__item {
+    border-left: 0;
+    border-radius: var(--radius-md);
+    min-height: 34px;
+  }
+
+  .nb-admin-menu__item:hover {
+    background: var(--surface-2);
+    color: var(--text-primary);
+  }
+
+  .nb-admin-menu__item.is-selected {
+    background: var(--surface-selected);
+    border-left: 0;
+    color: var(--text-primary);
+  }
+
+  .nb-admin-menu__item.is-selected .nb-admin-menu__icon {
+    color: var(--accent-color);
+    opacity: 1;
+  }
+
+  // Child rows lose the icon-rail indent that now over-indents inside the
+  // padded nav; keep a smaller hanging indent.
+  .nb-admin-menu__item--child .nb-admin-menu__text {
+    padding-left: calc(var(--side-panel-min-width) - var(--space-2));
+  }
+}
+
+// Grid filter-row operator selector (~ / = / …): @nubitio/crud renders it as an
+// accent-tinted pill, which reads as noise on every data grid. Neutralise it so
+// the filter row stays calm — same selector as the vendor rule, loaded after it.
+.nb-datagrid__filter-wrap > .nb-datagrid__filter-operator.nb-dropdown .nb-dropdown__trigger {
+  background: var(--surface-2);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
