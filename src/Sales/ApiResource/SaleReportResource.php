@@ -46,6 +46,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
                             'voided-sales',
                             'credit-notes',
                             'payment-method-daily',
+                            'payment-method-breakdown',
                             'daily-summary',
                         ],
                     ],

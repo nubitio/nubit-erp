@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Sales report — "Ventas por método de pago (detallado)"** (`payment-method-breakdown`) — one row per comprobante in the range, a column per active payment method with the amount paid via that method, plus "Total pagado" / "Total comprobante", and a footer TOTALES row summing every method column. New `src/Sales/Report/PaymentMethodBreakdownReport.php` (tagged `app.sale_report`, pivots dynamically over `payment_method`), reachable from Consulta de ventas → report dropdown. Uses the existing `Nubit\Platform\Export\XlsExporter`; gated by the `excel_export` feature like the other exports.
 - **Integration platform (`src/Integration`, ADR-017)** — a reusable machine-to-machine surface, validated by SUNAT emission for `nubit-control`'s own hosting sales:
   - **Tenant-scoped API keys** (`nb_<env>_<tenant>_<secret>`, SHA-256, revocable) behind a new `integration_api` firewall on `^/api/v1`; `app:integration:api-key:create`.
   - **`POST /api/v1/documents`** builds a CPE without a `Sale` (`SyntheticVoucherFactory` + an optional-`Voucher` seam on `BillCreateUseCase`/`BillSendUseCase`), idempotent on `external_id`, dispatched through the existing SUNAT pipeline; `GET /api/v1/documents/{reference}` for polling.

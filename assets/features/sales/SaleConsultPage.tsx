@@ -24,6 +24,7 @@ const reportTypes = [
   { value: 'sale-by-product', text: 'Ventas por producto' },
   { value: 'accounting-report', text: 'Reporte contable' },
   { value: 'payment-method-daily', text: 'Pagos diarios por método' },
+  { value: 'payment-method-breakdown', text: 'Ventas por método de pago (detallado)' },
   { value: 'daily-summary', text: 'Resumen diario de ventas' },
   { value: 'voided-sales', text: 'Documentos anulados' },
   { value: 'credit-notes', text: 'Notas de crédito' },

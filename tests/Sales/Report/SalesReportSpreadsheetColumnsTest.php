@@ -9,11 +9,13 @@ use App\Sales\Report\AccountingReport;
 use App\Sales\Report\CreditNotesReport;
 use App\Sales\Report\DailySummaryReport;
 use App\Sales\Report\DetailedSalesReport;
+use App\Sales\Report\PaymentMethodBreakdownReport;
 use App\Sales\Report\PaymentMethodDailyReport;
 use App\Sales\Report\SaleByProductReport;
 use App\Sales\Report\SalesByLineReport;
 use App\Sales\Report\VoidedSalesReport;
 use App\Settings\Service\SunatStateService;
+use Doctrine\DBAL\Connection;
 use Nubit\Platform\Export\XlsColumn;
 use Nubit\Platform\Export\XlsColumnSpec;
 use Nubit\Platform\Export\XlsExporter;
@@ -129,6 +131,16 @@ final class SalesReportSpreadsheetColumnsTest extends TestCase
                 'total' => ['Total', '#,##0.00', XlsColumn::SUMMARY_SUM],
             ],
         ];
+        yield 'payment-method-breakdown' => [
+            PaymentMethodBreakdownReport::class,
+            [
+                'pm_1' => ['Efectivo', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'pm_2' => ['Yape', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'pm_other' => ['Otros métodos', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'total_paid' => ['Total pagado', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'sale_total' => ['Total comprobante', '#,##0.00', XlsColumn::SUMMARY_SUM],
+            ],
+        ];
         yield 'daily-summary' => [
             DailySummaryReport::class,
             [
@@ -205,6 +217,17 @@ final class SalesReportSpreadsheetColumnsTest extends TestCase
             ],
             ['transactions', 'total'],
         ];
+        yield 'payment-method-breakdown' => [
+            PaymentMethodBreakdownReport::class,
+            [
+                'pm_1' => '100.00',
+                'pm_2' => '50.00',
+                'pm_other' => '0.00',
+                'total_paid' => '150.00',
+                'sale_total' => '150.00',
+            ],
+            ['pm_1', 'pm_2', 'pm_other', 'total_paid', 'sale_total'],
+        ];
         yield 'daily-summary' => [
             DailySummaryReport::class,
             [
@@ -229,6 +252,16 @@ final class SalesReportSpreadsheetColumnsTest extends TestCase
      */
     private function newReport(string $reportClass): ExportableReportInterface
     {
+        if ($reportClass === PaymentMethodBreakdownReport::class) {
+            $connection = $this->createStub(Connection::class);
+            $connection->method('fetchAllAssociative')->willReturn([
+                ['id' => 1, 'name' => 'Efectivo'],
+                ['id' => 2, 'name' => 'Yape'],
+            ]);
+
+            return new PaymentMethodBreakdownReport($this->createStub(SunatStateService::class), $connection);
+        }
+
         if (is_subclass_of($reportClass, AbstractSaleReport::class)) {
             return new $reportClass($this->createStub(SunatStateService::class));
         }
