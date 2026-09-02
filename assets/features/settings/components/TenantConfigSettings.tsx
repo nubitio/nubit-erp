@@ -515,6 +515,75 @@ export const PosBehaviorSettings = () => {
   );
 };
 
+/**
+ * Comprobante print toggles backed by the typed /api/tenant/settings endpoint.
+ * `printLogo` lives on TenantSettings (not the generic `config` table), so it
+ * has no row in TenantBehaviorSettings' list — it needs its own control.
+ */
+export const ReceiptSettings = () => {
+  const queryClient = useQueryClient();
+  const [state, setState] = useState<TenantSettingsDto | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    tenantSettingsService
+      .getSettings()
+      .then(setState)
+      .catch(() => toast('Error al cargar la configuración de comprobantes', 'error'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const patch = async (field: 'printLogo', value: boolean) => {
+    if (!state) return;
+    setSaving(true);
+    try {
+      const updated = await tenantSettingsService.patchSettings({ [field]: value });
+      setState(updated);
+      settings.invalidate();
+      void queryClient.invalidateQueries({ queryKey: [...TENANT_RUNTIME_CONFIG_QUERY_KEY] });
+      toast('Configuración guardada', 'success');
+    } catch {
+      toast('No se pudo guardar la configuración', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="settings-loading">
+        <i className="ph ph-circle-notch settings-loading__icon" aria-hidden="true" />
+        Cargando configuración de comprobantes…
+      </div>
+    );
+  }
+  if (!state) return null;
+
+  return (
+    <section className="config-group">
+      <h3 className="config-group-title">Comprobantes</h3>
+
+      <div className="config-toggle-row">
+        <div className="config-toggle-info">
+          <span className="config-toggle-label">Imprimir logo en comprobantes</span>
+          <span className="config-toggle-description">
+            {state.printLogo
+              ? 'El logo de la empresa aparece en el ticket y en el PDF A4.'
+              : 'Los comprobantes se emiten sin logo, solo con los datos de la empresa.'}
+          </span>
+        </div>
+        <Toggle
+          checked={state.printLogo}
+          onChange={(checked) => void patch('printLogo', checked)}
+          disabled={saving}
+          aria-label="Imprimir logo en comprobantes"
+        />
+      </div>
+    </section>
+  );
+};
+
 export const TenantBehaviorSettings = () => {
   const [configs, setConfigs] = useState<ConfigDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -558,7 +627,9 @@ export const TenantBehaviorSettings = () => {
     toast('Configuración guardada', 'success');
   };
 
-  const visible = configs.filter((c) => !isTechnical(c.name));
+  // PRINT_LOGO has its own dedicated toggle in <ReceiptSettings>; keep it out
+  // of the generic list so a legacy `config` row doesn't render it twice.
+  const visible = configs.filter((c) => !isTechnical(c.name) && c.name !== ConfigKey.PRINT_LOGO);
   const general = visible.filter((c) => getMeta(c.name).group === 'general');
   const sales = visible.filter((c) => getMeta(c.name).group === 'sales');
   const inventory = visible.filter((c) => getMeta(c.name).group === 'inventory');
