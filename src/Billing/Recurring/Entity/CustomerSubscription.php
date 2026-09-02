@@ -137,7 +137,10 @@ class CustomerSubscription
     private ?\DateTimeImmutable $endDate = null;
 
     /** @var Collection<int, CustomerSubscriptionLine> */
-    #[Groups(['customer_subscription:read', 'customer_subscription:write'])]
+    // Lines are edited through /customer-subscriptions/{id}/lines. Sending the
+    // detail-grid rows again in the parent PATCH rehydrates incomplete child
+    // entities and can violate their required product/subscription relations.
+    #[Groups(['customer_subscription:read'])]
     #[ORM\OneToMany(
         targetEntity: CustomerSubscriptionLine::class,
         mappedBy: 'subscription',

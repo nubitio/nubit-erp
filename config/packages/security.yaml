@@ -59,11 +59,11 @@ security:
                 secret: '%kernel.secret%'
                 lifetime: 604800   # 7 días
                 path: /admin
-        # Machine-to-machine integration API. Must sit before `main` so
-        # `^/api/v1` is claimed here and authenticated by the API key, not the
-        # tenant JWT. The key names its own tenant (see ApiKeyAuthenticator).
+        # Machine-to-machine integration endpoints. Web-facing v1 routes
+        # (PLE, bank reconciliation, onboarding, etc.) must fall through to
+        # `main`, where the tenant JWT/cookie is authenticated.
         integration_api:
-            pattern: ^/api/v1
+            pattern: ^/api/v1/(?:documents|ping|webhook-endpoints)(?:/|$)
             stateless: true
             provider: user_provider
             custom_authenticators:
@@ -108,6 +108,12 @@ security:
         # E2E seed/reset routes — only registered in dev/test (config/routes/e2e.yaml),
         # so this rule is a no-op in prod (routes 404 before access_control is checked).
         - { path: '^/api/test/e2e/(seed|reset)', roles: PUBLIC_ACCESS }
+        # These /api/v1 endpoints are used by the ERP web UI, not API-key
+        # integrations. They must be evaluated before the integration-only
+        # catch-all below.
+        - { path: ^/api/v1/ple, roles: ROLE_ADMIN }
+        - { path: ^/api/v1/bank-reconciliation, roles: ROLE_USER }
+        - { path: ^/api/v1/bank-statement-imports, roles: ROLE_USER }
         - { path: ^/api/v1, roles: ROLE_INTEGRATION }
         - { path: ^/api/settings, roles: ROLE_USER }
         - { path: ^/api/setup, roles: PUBLIC_ACCESS }

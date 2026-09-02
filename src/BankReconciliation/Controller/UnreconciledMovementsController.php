@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * GET /api/v1/bank-reconciliation/unreconciled-movements
@@ -26,6 +27,7 @@ use Symfony\Component\Routing\Attribute\Route;
     name: 'bank_reconciliation_unreconciled_movements',
     methods: ['GET'],
 )]
+#[IsGranted('perm:bank_reconciliation.view')]
 final class UnreconciledMovementsController extends AbstractController
 {
     public function __construct(
