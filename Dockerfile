@@ -7,6 +7,9 @@
 # -----------------------------------------------------------------------------
 ARG PHP_VERSION=8.5
 ARG FRANKENPHP_VERSION=1.10
+# Semver tag of the build; promoted to ENV in the stg/prod stages and read by
+# Symfony as %env(APP_VERSION)% (surfaced in the UI: login + app footer).
+ARG APP_VERSION=dev
 
 # -----------------------------------------------------------------------------
 # Mago PHP toolchain
@@ -165,6 +168,11 @@ FROM base AS stg
 # Set environment
 ENV APP_ENV=staging
 
+# Build version — re-declared (ARGs don't cross stage boundaries) and promoted
+# to ENV so Symfony reads it as %env(APP_VERSION)% at runtime.
+ARG APP_VERSION=dev
+ENV APP_VERSION=${APP_VERSION}
+
 # Configure PHP for staging
 COPY --link docker/php/php.dev.ini $PHP_INI_DIR/conf.d/99-app.ini
 
@@ -202,6 +210,11 @@ FROM base AS prod
 
 # Set environment
 ENV APP_ENV=prod
+
+# Build version — re-declared (ARGs don't cross stage boundaries) and promoted
+# to ENV so Symfony reads it as %env(APP_VERSION)% at runtime.
+ARG APP_VERSION=dev
+ENV APP_VERSION=${APP_VERSION}
 
 # Configure PHP for production
 COPY --link docker/php/php.prod.ini $PHP_INI_DIR/conf.d/99-app.ini

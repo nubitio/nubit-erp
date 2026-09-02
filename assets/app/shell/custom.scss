@@ -109,3 +109,10 @@
   border-color: var(--border-color);
   color: var(--text-secondary);
 }
+
+// Build version next to the footer copyright — quiet, monospaced.
+.nb-admin-footer-version {
+  color: var(--text-disabled);
+  font-family: var(--font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.9em;
+}

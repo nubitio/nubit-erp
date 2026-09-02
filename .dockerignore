@@ -6,7 +6,6 @@
 .env.test
 .DS_Store
 .maintenance
-.version
 deploy_exclude.txt
 /node_modules
 /tests/

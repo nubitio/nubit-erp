@@ -47,7 +47,6 @@ desktop.ini
 ###< yarn ###
 /config/tenants.json
 .maintenance
-.version
 cookies.txt
 
 ###> symfony/phpunit-bridge ###

@@ -109,7 +109,14 @@ export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShe
           />
         )}
         renderThemeSwitcher={() => <ThemeSwitcher />}
-        footer={<span className="nb-admin-footer-copyright">© {new Date().getFullYear()} Nubit ERP</span>}
+        footer={
+          <span className="nb-admin-footer-copyright">
+            © {new Date().getFullYear()} Nubit ERP
+            {window.app_version && window.app_version !== 'dev' && (
+              <span className="nb-admin-footer-version"> · {window.app_version}</span>
+            )}
+          </span>
+        }
       >
         {children}
       </AdminShell>
