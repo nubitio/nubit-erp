@@ -148,6 +148,7 @@ const customerSubscriptionResource = defineResource<CustomerSubscriptionRecord>(
           textField: 'businessName',
           layoutHint: 'lookup',
           label: 'Cliente',
+          disabledWhen: (formData) => Boolean(formData.id),
         },
       },
       {
@@ -161,6 +162,7 @@ const customerSubscriptionResource = defineResource<CustomerSubscriptionRecord>(
           textField: 'name',
           layoutHint: 'lookup',
           label: 'Plan',
+          disabledWhen: (formData) => Boolean(formData.id),
         },
       },
       {

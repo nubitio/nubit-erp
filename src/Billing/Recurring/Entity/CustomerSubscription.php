@@ -39,6 +39,11 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Patch(
             processor: CustomerSubscriptionWriteProcessor::class,
             security: "is_granted('perm:subscriptions.edit')",
+            // A subscription can be billed by a plan from a branch other than
+            // the branch currently selected in the UI. Do not re-resolve the
+            // immutable customer/plan relations on PATCH: the branch filter
+            // would hide that plan and API Platform would turn it into a 500.
+            denormalizationContext: ['groups' => ['customer_subscription:patch']],
         ),
         new Delete(security: "is_granted('perm:subscriptions.cancel')"),
         new Post(
@@ -80,13 +85,13 @@ class CustomerSubscription
     #[ORM\JoinColumn(name: 'plan_id', referencedColumnName: 'id', nullable: false)]
     private SubscriptionPlan $plan;
 
-    #[Groups(['customer_subscription:read', 'customer_subscription:write'])]
+    #[Groups(['customer_subscription:read', 'customer_subscription:write', 'customer_subscription:patch'])]
     #[ApiProperty(description: 'customer_subscription.status.label')]
     #[ORM\Column(name: 'status', length: 20, options: ['default' => 'active'])]
     private string $status = 'active';
 
     #[Assert\NotNull]
-    #[Groups(['customer_subscription:read', 'customer_subscription:write'])]
+    #[Groups(['customer_subscription:read', 'customer_subscription:write', 'customer_subscription:patch'])]
     #[ApiProperty(description: 'customer_subscription.start_date.label')]
     #[ORM\Column(name: 'start_date', type: Types::DATE_IMMUTABLE)]
     private \DateTimeImmutable $startDate;
@@ -102,35 +107,35 @@ class CustomerSubscription
     private ?\DateTimeImmutable $currentPeriodEnd = null;
 
     #[Assert\NotNull]
-    #[Groups(['customer_subscription:read', 'customer_subscription:write'])]
+    #[Groups(['customer_subscription:read', 'customer_subscription:write', 'customer_subscription:patch'])]
     #[ApiProperty(description: 'customer_subscription.next_billing_date.label')]
     #[ORM\Column(name: 'next_billing_date', type: Types::DATE_IMMUTABLE)]
     private \DateTimeImmutable $nextBillingDate;
 
-    #[Groups(['customer_subscription:read', 'customer_subscription:write'])]
+    #[Groups(['customer_subscription:read', 'customer_subscription:write', 'customer_subscription:patch'])]
     #[ApiProperty(description: 'customer_subscription.auto_renew.label')]
     #[ORM\Column(name: 'auto_renew', options: ['default' => true])]
     private bool $autoRenew = true;
 
-    #[Groups(['customer_subscription:read', 'customer_subscription:write', 'customer_subscription_run:read'])]
+    #[Groups(['customer_subscription:read', 'customer_subscription:write', 'customer_subscription:patch', 'customer_subscription_run:read'])]
     #[ApiProperty(description: 'customer_subscription.service_reference.label')]
     #[Assert\Length(max: 255)]
     #[ORM\Column(name: 'service_reference', length: 255, nullable: true)]
     private ?string $serviceReference = null;
 
-    #[Groups(['customer_subscription:read', 'customer_subscription:write'])]
+    #[Groups(['customer_subscription:read', 'customer_subscription:write', 'customer_subscription:patch'])]
     #[ApiProperty(description: 'customer_subscription.custom_description.label')]
     #[Assert\Length(max: 255)]
     #[ORM\Column(name: 'custom_description', length: 255, nullable: true)]
     private ?string $customDescription = null;
 
-    #[Groups(['customer_subscription:read', 'customer_subscription:write'])]
+    #[Groups(['customer_subscription:read', 'customer_subscription:write', 'customer_subscription:patch'])]
     #[ApiProperty(description: 'customer_subscription.agreed_amount.label')]
     #[Assert\Positive]
     #[ORM\Column(name: 'agreed_amount', type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
     private ?string $agreedAmount = null;
 
-    #[Groups(['customer_subscription:read', 'customer_subscription:write'])]
+    #[Groups(['customer_subscription:read', 'customer_subscription:write', 'customer_subscription:patch'])]
     #[ApiProperty(description: 'customer_subscription.end_date.label')]
     #[Assert\GreaterThanOrEqual(propertyPath: 'startDate')]
     #[ORM\Column(name: 'end_date', type: Types::DATE_IMMUTABLE, nullable: true)]

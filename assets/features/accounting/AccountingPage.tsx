@@ -134,7 +134,7 @@ export function AccountingPage() {
       }
       if (tab === 'journal') {
         const response = await httpClient.get<{ 'hydra:member'?: JournalRow[] } | JournalRow[]>(
-          `${API}journal_entries?order[entryDate]=desc&itemsPerPage=50`,
+          `${API}journal-entries?order[entryDate]=desc&itemsPerPage=50`,
         );
         const payload = response.data;
         const rows = Array.isArray(payload) ? payload : (payload['hydra:member'] ?? []);

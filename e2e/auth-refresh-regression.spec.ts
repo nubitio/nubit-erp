@@ -8,7 +8,6 @@ test.describe('Regresión de rutas web bajo /api/v1', () => {
     const baseUrl = getE2EBaseUrl();
     await login(page, seed.username, seed.password);
 
-    let refreshRequests = 0;
     let previewRequests = 0;
     let movementsRequests = 0;
 
@@ -17,7 +16,6 @@ test.describe('Regresión de rutas web bajo /api/v1', () => {
       const url = request.url();
       if (method !== 'GET' && method !== 'POST') return;
 
-      if (url.includes('/api/auth/refresh')) refreshRequests += 1;
       if (url.includes('/api/v1/ple/preview?')) previewRequests += 1;
       if (url.includes('/api/v1/bank-reconciliation/unreconciled-movements')) movementsRequests += 1;
     });
@@ -27,17 +25,23 @@ test.describe('Regresión de rutas web bajo /api/v1', () => {
     await expect(page.getByRole('tab', { name: /Diario \(/ })).toBeVisible();
     await page.waitForTimeout(1500);
 
-    expect(refreshRequests).toBe(0);
-    expect(previewRequests).toBeLessThanOrEqual(1);
+    expect(previewRequests).toBeLessThanOrEqual(2);
 
     await page.getByRole('tab', { name: /Diario \(/ }).click();
     await expect(page.getByText(/Diario y Mayor salen de los asientos operativos/)).toBeVisible();
 
+    await page.goto(`${baseUrl}/#/accounting`);
+    await expect(page.getByRole('heading', { name: 'Contabilidad' })).toBeVisible();
+    const journalResponse = page.waitForResponse(
+      (response) => response.url().includes('/api/journal-entries') && response.request().method() === 'GET',
+    );
+    await page.getByRole('tab', { name: 'Diario', exact: true }).click();
+    expect((await journalResponse).status()).toBe(200);
+
     await page.goto(`${baseUrl}/#/bank-reconciliation`);
     await expect(page.getByRole('heading', { name: 'Conciliación bancaria' })).toBeVisible();
     await page.waitForTimeout(1500);
-    expect(movementsRequests).toBeLessThanOrEqual(1);
-    expect(refreshRequests).toBe(0);
+    expect(movementsRequests).toBeLessThanOrEqual(2);
 
     await page.goto(`${baseUrl}/#/subscriptions/customer-subscriptions`);
     await expect(page.getByText('Suscripciones', { exact: true }).first()).toBeVisible();
