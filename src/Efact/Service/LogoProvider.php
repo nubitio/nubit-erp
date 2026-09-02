@@ -83,18 +83,15 @@ readonly class LogoProvider
     private function getLogo(): ?Media
     {
         try {
-            $company = $this->entityManager
-                ->createQuery(<<<'DQL'
-                    SELECT c, logo
-                    FROM App\Organization\Entity\Company c
-                    LEFT JOIN FETCH c.logo logo
-                    DQL)
-                ->setMaxResults(1)
-                ->getOneOrNullResult();
+            $company = $this->entityManager->getRepository(Company::class)->findOneBy([]);
         } catch (\Throwable) {
             return null;
         }
 
+        // `logo` is lazy-loaded on access. A `JOIN FETCH` here would save a
+        // query, but the raw-DQL form of it fails to parse in this project
+        // ("Class 'FETCH' is not defined"), which silently returned no logo on
+        // every ticket/A4 PDF.
         return $company instanceof Company ? $company->getLogo() : null;
     }
 }
