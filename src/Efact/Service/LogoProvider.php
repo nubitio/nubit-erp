@@ -8,10 +8,10 @@ use App\Efact\Config\EfactConstants;
 use App\Efact\Filesystem\S3UrlResolver;
 use App\Organization\Entity\Company;
 use Doctrine\ORM\EntityManagerInterface;
-use League\Flysystem\FilesystemOperator;
 use Nubit\AdminBundle\Media\Entity\Media;
+use Nubit\Platform\Filesystem\FileManager;
 use Nubit\Platform\Tenant\Context\TenantContext;
-use Nubit\Platform\Tenant\Scope\TenantScope;
+use Psr\Log\LoggerInterface;
 
 readonly class LogoProvider
 {
@@ -19,7 +19,8 @@ readonly class LogoProvider
         private EntityManagerInterface $entityManager,
         private S3UrlResolver $s3UrlResolver,
         private TenantContext $tenantContext,
-        private FilesystemOperator $defaultFilesystem,
+        private FileManager $fileManager,
+        private LoggerInterface $logger,
     ) {}
 
     public function __invoke(): string
@@ -40,13 +41,15 @@ readonly class LogoProvider
     }
 
     /**
-     * Returns a self-contained image source so PDF rendering does not depend on
-     * WeasyPrint being able to fetch the public S3/CDN URL.
+     * Returns a self-contained image source (data: URI) so PDF/ticket rendering
+     * does not depend on the renderer being able to fetch the public S3/CDN URL.
+     *
+     * Reads through the same {@see FileManager} the media library uploads with,
+     * so the storage path (tenant prefix + media directory) always matches.
      */
     public function embedded(): string
     {
-        $tenantName = $this->tenantContext->getTenantName();
-        if ($tenantName === null) {
+        if ($this->tenantContext->getTenantName() === null) {
             return '';
         }
 
@@ -55,11 +58,17 @@ readonly class LogoProvider
             return '';
         }
 
+        $location = EfactConstants::IMAGE_DIR . '/' . $logo->getPath();
+
         try {
-            $contents = $this->defaultFilesystem->read(
-                TenantScope::sanitize($tenantName) . '/' . EfactConstants::IMAGE_DIR . '/' . $logo->getPath(),
-            );
-        } catch (\Throwable) {
+            $contents = $this->fileManager->read($location);
+        } catch (\Throwable $exception) {
+            $this->logger->warning('LogoProvider: could not read the company logo for embedding', [
+                'location' => $location,
+                'media_path' => $logo->getPath(),
+                'exception' => $exception->getMessage(),
+            ]);
+
             return '';
         }
 
