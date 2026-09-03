@@ -35,6 +35,7 @@ import { generateIdempotencyKey, submitSale } from './saleSubmitter';
 import { publicSaleCode } from './posPresentation';
 import { useQueryClient } from '@tanstack/react-query';
 import { useScaleReady } from './useScaleReady';
+import { Setting, settings } from '@shared/settings';
 
 let posCheckoutInFlight = false;
 let posCheckoutAttemptKey: string | null = null;
@@ -64,6 +65,8 @@ type UsePosCheckoutParams = {
   autoInvoice?: boolean;
   autoPrint?: boolean;
   cashRoundingEnabled?: boolean;
+  /** Clears state owned by the POS page (for example the selected customer). */
+  onSaleCompleted?: () => void;
 };
 
 export const usePosCheckout = ({
@@ -83,6 +86,7 @@ export const usePosCheckout = ({
   autoInvoice = true,
   autoPrint = true,
   cashRoundingEnabled = false,
+  onSaleCompleted,
 }: UsePosCheckoutParams) => {
   const queryClient = useQueryClient();
   // ── Draft-persistence helpers ────────────────────────────────────────────
@@ -392,6 +396,22 @@ export const usePosCheckout = ({
     setPaymentLines(defaultMethod ? [createSinglePaymentLine(defaultMethod.id, 0)] : []);
   };
 
+  const resetForNextSale = () => {
+    clearCart();
+    resetPaymentToCash();
+    setEmitInvoice(autoInvoice);
+    setCreditSale(false);
+
+    const configuredCurrency = settings.getCached(Setting.DEFAULT_CURRENCY)?.value;
+    setCurrency(configuredCurrency === 'USD' ? 'USD' : 'PEN');
+    const configuredRate = settings.getCached(Setting.DEFAULT_USD_EXCHANGE_RATE)?.value;
+    if ((typeof configuredRate === 'string' || typeof configuredRate === 'number') && Number(configuredRate) > 0) {
+      setExchangeRate(String(configuredRate));
+    }
+
+    onSaleCompleted?.();
+  };
+
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const { subtotal, discountAmount, total, includedTax, gravadoBase, exoneradoBase, inafectoBase } =
     computeCartTotals(
@@ -552,8 +572,7 @@ export const usePosCheckout = ({
         setLastSaleReceiptUrl(submitResult.publicReceiptUrl);
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
-        clearCart();
-        resetPaymentToCash();
+        resetForNextSale();
         void queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });
         if (autoPrint) {
           printSaleInvoice(submitResult.serverSaleId).catch(() => {
@@ -575,8 +594,7 @@ export const usePosCheckout = ({
         setLastSaleReceiptUrl(null);
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
-        clearCart();
-        resetPaymentToCash();
+        resetForNextSale();
         await onQueuedSaleCreated();
         return;
       }
@@ -594,8 +612,7 @@ export const usePosCheckout = ({
         setLastSaleTotal(total);
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
-        clearCart();
-        resetPaymentToCash();
+        resetForNextSale();
         void queryClient.invalidateQueries({ queryKey: ['dashboard-overview'] });
         if (autoPrint) {
           printSaleInvoice(syncedSale.serverSaleId).catch(() => {
@@ -612,8 +629,7 @@ export const usePosCheckout = ({
         setLastSaleTotal(total);
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
-        clearCart();
-        resetPaymentToCash();
+        resetForNextSale();
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'No se pudo registrar la venta.';

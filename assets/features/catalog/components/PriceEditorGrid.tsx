@@ -139,6 +139,10 @@ export const PriceEditorGrid = forwardRef<PriceEditorGridHandle>(function PriceE
 
   return (
     <div className="price-editor-grid">
+      <div className="price-editor-grid__explanation" role="note">
+        Edita sólo los productos que necesiten un precio diferente. La columna <b>Origen</b>
+        indica si el importe viene de un precio especial, del factor general o del precio normal.
+      </div>
       <div className="price-editor-grid__toolbar">
         <TextField
           className="price-editor-grid__search"

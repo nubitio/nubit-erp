@@ -1,10 +1,13 @@
 import { Button, Card, FormField, TextField } from '@nubitio/ui';
 import { EntityDropdown } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import saleCollectService from './services/saleCollectService';
 import toast from '@shared/lib/SharedUtils';
+import { httpClient } from '@shared/api/HttpClient';
+import { saleEndpoints } from './api/saleEndpoints';
+import NumberUtils from '@shared/lib/NumberUtils';
 
 const API = getCoreApiBaseUrl();
 
@@ -12,13 +15,37 @@ type SaleCollectPaymentParams = {
   id: string;
 };
 
+type CollectableSale = {
+  customer?: { businessName?: string } | null;
+  invoiceFullNumber?: string | null;
+  currency?: string;
+  grandTotal: string;
+  paidTotal: string;
+  balanceDue: string;
+  payments?: Array<{ method_name?: string | null; amount?: string; paid_at?: string | null; reference?: string | null }>;
+};
+
 export const SaleCollectPayment = () => {
   const amountRef = useRef<HTMLInputElement>(null);
   const referenceRef = useRef<HTMLInputElement>(null);
   const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [sale, setSale] = useState<CollectableSale | null>(null);
   const { id } = useParams<SaleCollectPaymentParams>();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!id) return;
+    const controller = new AbortController();
+    httpClient
+      .get<CollectableSale>(saleEndpoints.detail(id), { signal: controller.signal })
+      .then(({ data }) => {
+        setSale(data);
+        if (amountRef.current) amountRef.current.value = data.balanceDue;
+      })
+      .catch(() => toast('No se pudo cargar el estado de cuenta', 'error'));
+    return () => controller.abort();
+  }, [id]);
 
   const registerCollection = () => {
     const raw = amountRef.current?.value;
@@ -47,6 +74,30 @@ export const SaleCollectPayment = () => {
 
   return (
     <Card title="Registrar cobro de venta">
+      {sale ? (
+        <div style={{ marginBottom: 20, maxWidth: 640 }}>
+          <h3 style={{ marginBottom: 6 }}>{sale.customer?.businessName ?? 'Cliente'}</h3>
+          <p style={{ margin: '0 0 10px', color: 'var(--text-muted)' }}>
+            {sale.invoiceFullNumber ?? 'Saldo inicial'} · Total {NumberUtils.formatCurrency(Number(sale.grandTotal), sale.currency ?? 'PEN')} ·{' '}
+            Pagado {NumberUtils.formatCurrency(Number(sale.paidTotal), sale.currency ?? 'PEN')} ·{' '}
+            <strong>Saldo {NumberUtils.formatCurrency(Number(sale.balanceDue), sale.currency ?? 'PEN')}</strong>
+          </p>
+          {sale.payments?.length ? (
+            <div aria-label="Historial de pagos">
+              <strong>Pagos registrados</strong>
+              <ul style={{ marginTop: 6 }}>
+                {sale.payments.map((payment, index) => (
+                  <li key={`${payment.paid_at ?? 'payment'}-${index}`}>
+                    {payment.paid_at ? `${payment.paid_at.slice(0, 10)} · ` : ''}
+                    {payment.method_name ?? 'Pago'} · {NumberUtils.formatCurrency(Number(payment.amount ?? 0), sale.currency ?? 'PEN')}
+                    {payment.reference ? ` · Ref. ${payment.reference}` : ''}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       <form
         style={{ width: 320 }}
         onSubmit={(e) => {

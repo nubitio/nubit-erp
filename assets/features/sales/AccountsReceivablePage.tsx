@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   DataGridView,
@@ -12,11 +12,11 @@ import {
   type GridCellContext,
 } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
-import { Button } from '@nubitio/ui';
 import { saleEndpoints } from './api/saleEndpoints';
 import { dateCell, entityNameCell, moneyCell, receivableStatusCell } from '@shared/ui/crudFormatters';
 import { OwnerRowButtons } from '@shared/ui/OwnerRowButtons';
-import { addDays, formatInvoiceNumber, startOfToday, toIsoDate } from '@shared/lib/displayFormat';
+import { formatInvoiceNumber } from '@shared/lib/displayFormat';
+import NumberUtils from '@shared/lib/NumberUtils';
 
 const API = getCoreApiBaseUrl();
 
@@ -28,11 +28,11 @@ interface AccountsReceivableRecord extends DataRecord {
   grandTotal: string;
   paidTotal: string;
   balanceDue: string;
+  currency?: string;
+  payments?: Array<{ method_name?: string | null; amount?: string; paid_at?: string | null; reference?: string | null }>;
   invoiceFullNumber?: string | null;
   status: string;
 }
-
-type AgingKey = 'all' | 'overdue' | 'week';
 
 function customerPhone(customer: AccountsReceivableRecord['customer']): string {
   if (customer && typeof customer === 'object' && typeof customer.phone === 'string') {
@@ -43,22 +43,6 @@ function customerPhone(customer: AccountsReceivableRecord['customer']): string {
 
 export const AccountsReceivablePage = () => {
   const navigate = useNavigate();
-  const [aging, setAging] = useState<AgingKey>('all');
-
-  const filter = useMemo(() => {
-    const rules: Array<{ field: string; operator: string; value: string | number }> = [
-      { field: 'balanceDue', operator: '>', value: 0 },
-    ];
-    const today = startOfToday();
-    if (aging === 'overdue') {
-      rules.push({ field: 'dueDate', operator: '<', value: toIsoDate(today) });
-    }
-    if (aging === 'week') {
-      rules.push({ field: 'dueDate', operator: '>=', value: toIsoDate(today) });
-      rules.push({ field: 'dueDate', operator: '<=', value: toIsoDate(addDays(today, 7)) });
-    }
-    return rules;
-  }, [aging]);
 
   const fields = useMemo(
     () => [
@@ -76,7 +60,27 @@ export const AccountsReceivablePage = () => {
       dateField().name('issuedDate').label('Fecha de emisión').formatter(dateCell).build(),
       dateField().name('dueDate').label('Fecha de vencimiento').formatter(dateCell).build(),
       currencyField().name('grandTotal').label('Total').align('right').formatter(moneyCell).build(),
+      currencyField().name('paidTotal').label('Pagado').align('right').formatter(moneyCell).build(),
       currencyField().name('balanceDue').label('Saldo').align('right').formatter(moneyCell).build(),
+      textField()
+        .name('payments')
+        .label('Pagos realizados')
+        .filterable(false)
+        .sortable(false)
+        .minWidth(220)
+        .formatter((cell: GridCellContext) => {
+          const payments = (cell.value ?? []) as AccountsReceivableRecord['payments'];
+          if (!payments?.length) return 'Sin pagos';
+          return payments
+            .map((payment) => {
+              const date = payment.paid_at ? ` · ${String(payment.paid_at).slice(0, 10)}` : '';
+              const reference = payment.reference ? ` · Ref. ${payment.reference}` : '';
+              const currency = String((cell.data as AccountsReceivableRecord | undefined)?.currency ?? 'PEN');
+              return `${payment.method_name ?? 'Pago'} ${NumberUtils.formatCurrency(Number(payment.amount ?? 0), currency)}${date}${reference}`;
+            })
+            .join(' | ');
+        })
+        .build(),
       textField().name('status').label('Estado').filterable(false).formatter(receivableStatusCell).build(),
       textField()
         .name('_collect')
@@ -122,8 +126,8 @@ export const AccountsReceivablePage = () => {
         url={saleEndpoints.list()}
         fields={fields}
         adapter={HydraAdapter}
-        filter={filter}
-        filterRow={false}
+        filter={[{ field: 'balanceDue', operator: '>', value: 0 }]}
+        filterRow
         allowAdd={false}
         allowEdit={false}
         allowDelete={false}
@@ -133,26 +137,6 @@ export const AccountsReceivablePage = () => {
           description: 'Las ventas a crédito y los saldos importados desde Excel aparecen aquí.',
           icon: 'hand-coins',
         }}
-        aboveGrid={
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, margin: '0 0 12px' }}>
-            {(
-              [
-                ['all', 'Todas'],
-                ['overdue', 'Vencidas'],
-                ['week', 'Vencen en 7 días'],
-              ] as const
-            ).map(([key, label]) => (
-              <Button
-                key={key}
-                size="sm"
-                variant={aging === key ? 'primary' : 'secondary'}
-                onClick={() => setAging(key)}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-        }
       />
     </div>
   );

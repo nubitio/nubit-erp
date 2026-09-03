@@ -63,12 +63,8 @@ readonly class SalePaymentService
             ->setAmount(Money::toString($amountMoney))
             ->setCurrency($sale->getCurrency() !== '' ? $sale->getCurrency() : 'PEN')
             ->setPaidAt(\DateTime::createFromImmutable($paidAt))
+            ->setReference($reference)
             ->setCreatedAt(\DateTime::createFromImmutable(new DateTimeImmutable()));
-
-        // $reference is accepted for API/UI symmetry with SupplierPayment but
-        // has nowhere to land: sale_payments has no reference/note column
-        // (unlike supplier_payment). Not persisted; would need a migration to
-        // add one if this turns out to matter in practice.
 
         $newPaidTotal = Money::money($sale->getPaidTotal())->plus($amountMoney);
         $newBalanceDue = $balanceDue->minus($amountMoney);

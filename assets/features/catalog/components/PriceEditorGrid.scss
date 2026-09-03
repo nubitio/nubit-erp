@@ -6,6 +6,16 @@
   min-height: 320px;
 }
 
+.price-editor-grid__explanation {
+  display: block;
+  margin-bottom: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-color, #dfe3e8);
+  border-radius: 0.65rem;
+  background: var(--surface-subtle, #f7f9fb);
+  color: var(--text-muted, #667085);
+}
+
 .price-editor-grid__toolbar {
   display: flex;
   align-items: center;

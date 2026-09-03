@@ -8,8 +8,8 @@ export const PriceListFields = () => {
   fields.push(
     numberField()
       .name('multiplier')
-      .label('Multiplicador')
-      .helpText('Opcional. Si se define, el precio efectivo es precio_base × multiplicador cuando no hay precio individual. Ej: 0.90 = 10% de descuento, 1.10 = 10% de recargo.')
+      .label('Factor general de precios')
+      .helpText('Se aplica automáticamente a todos los productos que no tengan un precio especial. Usa 0.90 para cobrar 10% menos, 1.00 para mantener el precio normal o 1.10 para cobrar 10% más.')
       .precision(4)
       .validators([{ type: 'range', options: { min: 0, max: 99.9999 } }])
       .build(),

@@ -117,7 +117,12 @@ class CustomerSubscription
     #[ORM\Column(name: 'auto_renew', options: ['default' => true])]
     private bool $autoRenew = true;
 
-    #[Groups(['customer_subscription:read', 'customer_subscription:write', 'customer_subscription:patch', 'customer_subscription_run:read'])]
+    #[Groups([
+        'customer_subscription:read',
+        'customer_subscription:write',
+        'customer_subscription:patch',
+        'customer_subscription_run:read',
+    ])]
     #[ApiProperty(description: 'customer_subscription.service_reference.label')]
     #[Assert\Length(max: 255)]
     #[ORM\Column(name: 'service_reference', length: 255, nullable: true)]

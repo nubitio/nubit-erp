@@ -45,6 +45,9 @@ class SalePayment
     #[ORM\Column(name: 'paid_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?DateTimeInterface $paidAt = null;
 
+    #[ORM\Column(name: 'reference', type: 'string', length: 120, nullable: true)]
+    private ?string $reference = null;
+
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?DateTimeInterface $createdAt = null;
 
@@ -154,6 +157,19 @@ class SalePayment
     public function setPaidAt(?DateTimeInterface $paidAt): static
     {
         $this->paidAt = $paidAt;
+
+        return $this;
+    }
+
+    public function getReference(): ?string
+    {
+        return $this->reference;
+    }
+
+    public function setReference(?string $reference): static
+    {
+        $normalized = trim((string) $reference);
+        $this->reference = $normalized !== '' ? $normalized : null;
 
         return $this;
     }

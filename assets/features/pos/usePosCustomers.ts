@@ -13,14 +13,21 @@ export const usePosCustomers = () => {
   const [priceListId, setPriceListId] = useState<number | null>(null);
   const clearedRef = useRef(false);
 
-  const applyCustomer = useCallback((mapped: CustomerOption | null) => {
+  const applyCustomer = useCallback((
+    mapped: CustomerOption | null,
+    preserveKnownPriceList = false,
+  ) => {
     if (!mapped) {
       return;
     }
 
     setSelectedCustomerId(mapped.id);
     setSelectedCustomer(mapped);
-    setPriceListId(mapped.priceListId ?? null);
+    setPriceListId((current) =>
+      preserveKnownPriceList && mapped.priceListId == null
+        ? current
+        : (mapped.priceListId ?? null),
+    );
   }, []);
 
   useEffect(() => {
@@ -59,6 +66,15 @@ export const usePosCustomers = () => {
     setPriceListId(null);
   }, []);
 
+  // Completing a sale starts again with the configured walk-in customer. This
+  // differs from an explicit user clear, which must leave the field empty.
+  const resetSelectedCustomer = useCallback(() => {
+    clearedRef.current = false;
+    setSelectedCustomerId(null);
+    setSelectedCustomer(null);
+    setPriceListId(null);
+  }, []);
+
   const selectCustomer = useCallback((value: string | null, item?: unknown) => {
     if (!value) {
       clearSelectedCustomer();
@@ -79,9 +95,12 @@ export const usePosCustomers = () => {
     setPriceListId(mappedFromItem?.priceListId ?? null);
 
     void httpClient
-      .get<unknown>(customerEndpoints.detail(id))
+      .get<unknown>(`${customerEndpoints.detail(id)}?_=${Date.now()}`)
       .then(({ data }) => {
-        applyCustomer(mapPosCustomer(data));
+        // Some customer detail projections omit the relation even though the
+        // search result included it. Do not erase a tariff we already resolved
+        // from the selected option in that case.
+        applyCustomer(mapPosCustomer(data), true);
       })
       .catch(() => {
         /* keep the lightweight selection if detail fetch fails */
@@ -94,5 +113,6 @@ export const usePosCustomers = () => {
     priceListId,
     selectCustomer,
     clearSelectedCustomer,
+    resetSelectedCustomer,
   };
 };

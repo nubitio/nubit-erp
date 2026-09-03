@@ -167,7 +167,7 @@ class SaleRecordRepository extends ServiceEntityRepository
             ->getEntityManager()
             ->getConnection()
             ->fetchAllAssociative(sprintf(<<<'SQL'
-                SELECT sp.sale_id, sp.payment_method_id, sp.amount
+                SELECT sp.sale_id, sp.payment_method_id, sp.amount, sp.paid_at, sp.reference
                 FROM sale_payments sp
                 WHERE sp.sale_id IN (%s)
                 ORDER BY sp.sale_id, sp.id ASC
@@ -194,6 +194,8 @@ class SaleRecordRepository extends ServiceEntityRepository
                 'payment_method_id' => $pmId,
                 'method_name' => $method?->getName(),
                 'amount' => (string) $row['amount'],
+                'paid_at' => $row['paid_at'] !== null ? (string) $row['paid_at'] : null,
+                'reference' => $row['reference'] !== null ? (string) $row['reference'] : null,
             ];
 
             if (isset($assigned[$saleId])) {

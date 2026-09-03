@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatPosQuantity } from './posHelpers';
+import { formatPosQuantity, toMoneyString } from './posHelpers';
+
+describe('toMoneyString', () => {
+  it('normalizes four-decimal API prices for display in the POS', () => {
+    expect(toMoneyString('5.0000', '')).toBe('5.00');
+  });
+});
 
 describe('formatPosQuantity', () => {
   it('does not append weight units for non-weight products', () => {

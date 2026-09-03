@@ -233,6 +233,18 @@ export function POSCheckoutPanel({
     if (discountPercent > 0) setOptionsOpen(true);
   }, [discountPercent]);
 
+  // A completed checkout is a hard boundary between sales. Besides clearing
+  // the data in the checkout hook, close transient editors so the next order
+  // starts from the same compact, predictable layout.
+  useEffect(() => {
+    if (!lastCheckoutSucceeded || cart.length > 0) return;
+    setOptionsOpen(false);
+    setNoteOpen(false);
+    setEditingQtyId(null);
+    setEditingPriceId(null);
+    setEditingNameId(null);
+  }, [cart.length, lastCheckoutSucceeded]);
+
   useEffect(() => {
     if (!focusCustomerTrigger) return;
     clearSelectedCustomer();

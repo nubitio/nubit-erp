@@ -35,6 +35,16 @@ export const toOptionalNumber = (value: unknown): number | undefined => {
 
 export const toMoneyString = (value: unknown, fallback = '0.00'): string => {
   const raw = String(value ?? '').trim().replace(',', '.');
+  // API decimal columns commonly arrive with four fractional digits
+  // (for example "5.0000"). The localized input parser intentionally caps
+  // user-entered money at two decimals, so normalize canonical API decimals
+  // directly before falling back to that parser.
+  if (/^-?\d+(?:\.\d+)?$/.test(raw)) {
+    const numeric = Number(raw);
+    if (Number.isFinite(numeric)) {
+      return numeric.toFixed(2);
+    }
+  }
   const parsed = parseMoneyInput(raw, 'PEN', 2, 'en-US');
   return parsed.ok ? formatMinorUnits(toMinorUnits(parsed.value), 2) : fallback;
 };

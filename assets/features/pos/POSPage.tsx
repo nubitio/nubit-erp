@@ -105,7 +105,9 @@ const POSPage = () => {
         const raw = response.data;
         const items: Array<{ id: string; price: string }> = Array.isArray(raw)
           ? (raw as Array<{ id: string; price: string }>)
-          : ((raw as Record<string, unknown>)['hydra:member'] as Array<{ id: string; price: string }> ?? []);
+          : (((raw as Record<string, unknown>).member as Array<{ id: string; price: string }> | undefined)
+            ?? ((raw as Record<string, unknown>)['hydra:member'] as Array<{ id: string; price: string }> | undefined)
+            ?? []);
         const map = new Map<string, string>();
         for (const item of items) {
           const price = toMoneyString(item.price, '');
@@ -209,6 +211,7 @@ const POSPage = () => {
     autoInvoice: runtimeConfig?.settings.autoInvoice !== false,
     autoPrint: runtimeConfig?.settings.autoPrint !== false,
     cashRoundingEnabled: runtimeConfig?.settings.cashRoundingEnabled === true,
+    onSaleCompleted: customersState.resetSelectedCustomer,
   });
 
   useEffect(() => {

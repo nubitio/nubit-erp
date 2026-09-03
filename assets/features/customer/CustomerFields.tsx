@@ -4,13 +4,15 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 const API = getCoreApiBaseUrl();
 import type { FormHandle, GridCellContext } from '@nubitio/crud';
 import { Field } from '@nubitio/crud';
-import { entityField, textField, textareaField } from '@nubitio/crud';
+import { entityField, switchField, textField, textareaField } from '@nubitio/crud';
 import { consultService } from '@features/consult';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 
 type ValidationEvent = {
   value?: unknown;
 };
+
+type FieldButtonForm = Pick<FormHandle, 'getFieldValue' | 'setFieldValue'>;
 
 export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
   const fields: Field[] = [];
@@ -65,13 +67,14 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
           options: {
             icon: 'search',
             stylingMode: 'text',
-            onClick: () => {
-              const doc = String(formRef.current?.getFieldValue('ruc') ?? '').trim();
+            onClick: (_event: unknown, form: FieldButtonForm) => {
+              const activeForm = form ?? formRef.current;
+              const doc = String(activeForm?.getFieldValue('ruc') ?? '').trim();
               if (doc.length === 8) {
                 consultService
                   .consultDni(doc)
                   .then((response) => {
-                    formRef.current?.setFieldValue('businessName', response.data.name);
+                    activeForm?.setFieldValue('businessName', response.data.name);
                   })
                   .catch(() => toast('No se pudo consultar el DNI', 'error'));
               } else if (doc.length === 11) {
@@ -82,8 +85,8 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
                       toast('El RUC ingresado no se encuentra activo', 'error');
                       return;
                     }
-                    formRef.current?.setFieldValue('businessName', response.data.name);
-                    formRef.current?.setFieldValue('fiscalAddress', response.data.address);
+                    activeForm?.setFieldValue('businessName', response.data.name);
+                    activeForm?.setFieldValue('fiscalAddress', response.data.address);
                   })
                   .catch(() => toast('No se pudo consultar el RUC', 'error'));
               }
@@ -134,6 +137,14 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
       .layoutHint('lookup')
       .formatter((cell: GridCellContext) => (cell.value as { name?: string } | undefined)?.name)
       .valueType('number')
+      .build(),
+  );
+  fields.push(
+    switchField()
+      .name('isActive')
+      .label('Activo')
+      .layoutHint('short')
+      .formatter((cell: GridCellContext) => SharedUtils.booleanFormatter(Boolean(cell.value)))
       .build(),
   );
 
