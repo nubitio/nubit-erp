@@ -114,7 +114,7 @@ final readonly class TenantCertificateRepository implements TenantCertificateRep
     {
         $rows = $this->connection()->fetchAllAssociative(
             "SELECT * FROM tenant_certificates
-             WHERE lycet_sync_status NOT IN ('synced')
+             WHERE lycet_sync_status IN ('upsert_pending', 'upsert_failed', 'revocation_pending', 'revocation_failed')
                AND lycet_sync_updated_at IS NOT NULL
                AND lycet_sync_updated_at <= DATE_SUB(NOW(), INTERVAL ? MINUTE)
              ORDER BY lycet_sync_updated_at ASC",

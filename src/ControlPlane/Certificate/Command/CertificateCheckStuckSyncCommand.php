@@ -55,7 +55,15 @@ final class CertificateCheckStuckSyncCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $minutesThreshold = (int) $input->getOption('minutes');
+        $minutesOption = $input->getOption('minutes');
+
+        if (!is_string($minutesOption) || !ctype_digit($minutesOption) || (int) $minutesOption < 1) {
+            $io->error('--minutes must be a positive integer.');
+
+            return Command::INVALID;
+        }
+
+        $minutesThreshold = (int) $minutesOption;
 
         $stuckCertificates = $this->certificates->findStuckLycetSyncs($minutesThreshold);
 

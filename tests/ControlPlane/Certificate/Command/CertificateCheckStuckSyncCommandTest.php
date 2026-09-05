@@ -79,4 +79,33 @@ final class CertificateCheckStuckSyncCommandTest extends TestCase
         self::assertStringContainsString('acme', $tester->getDisplay());
         self::assertStringContainsString('upsert_failed', $tester->getDisplay());
     }
+
+    /**
+     * @param non-empty-string $invalidValue
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidMinutesProvider')]
+    public function testRejectsInvalidMinutesOption(string $invalidValue): void
+    {
+        $certificates = $this->createMock(CertificateLifecycleServiceInterface::class);
+        $certificates->expects(self::never())->method('findStuckLycetSyncs');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::never())->method('warning');
+
+        $tester = new CommandTester(new CertificateCheckStuckSyncCommand($certificates, $logger));
+        $exitCode = $tester->execute(['--minutes' => $invalidValue]);
+
+        self::assertSame(Command::INVALID, $exitCode);
+    }
+
+    /**
+     * @return iterable<string, array{non-empty-string}>
+     */
+    public static function invalidMinutesProvider(): iterable
+    {
+        yield 'zero' => ['0'];
+        yield 'negative' => ['-5'];
+        yield 'non-numeric' => ['abc'];
+        yield 'decimal' => ['1.5'];
+    }
 }
