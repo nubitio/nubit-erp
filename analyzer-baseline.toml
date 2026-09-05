@@ -583,6 +583,12 @@ message = 'Could not infer a precise return type for function `App\BankReconcili
 count = 1
 
 [[issues]]
+file = "src/BankReconciliation/Service/BankReconciliationMatchService.php"
+code = "redundant-condition"
+message = "This condition (type `true`) will always evaluate to true."
+count = 1
+
+[[issues]]
 file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
 code = "invalid-argument"
 message = '''Invalid argument type for argument #1 of `array_map`: expected `(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}): App\CashRegister\Entity\CashMovement)|(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}, ('S.array_map() extends mixed)): App\CashRegister\Entity\CashMovement)|null`, but found `(closure(array{'amount': string, 'cash_session_id': int|null|string, 'category_id': int|null|string, 'created_at': string, 'description': null|string, 'id': int|string, 'movement_type': string}): App\CashRegister\Entity\CashMovement)`.'''
@@ -3289,12 +3295,6 @@ message = "Redundant docblock type for variable `$current`."
 count = 1
 
 [[issues]]
-file = "src/Efact/Service/LogoProvider.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
 file = "src/Efact/Util/ArrayHelper.php"
 code = "less-specific-argument"
 message = 'Argument type mismatch for argument #1 of `App\Efact\Util\ArrayHelper::flatten`: expected `array<string, mixed>`, but provided type `array<array-key, mixed>` is less specific.'
@@ -3544,6 +3544,84 @@ count = 1
 file = "src/Identity/State/UserPasswordHasher.php"
 code = "incompatible-parameter-type"
 message = 'Parameter `$data` of `App\Identity\State\UserPasswordHasher::process()` expects type `App\Identity\Entity\User` but parent `ApiPlatform\State\ProcessorInterface::process()` expects type `mixed`'
+count = 1
+
+[[issues]]
+file = "src/Integration/Command/ApiKeyCreateCommand.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/Integration/Command/WebhookEndpointCreateCommand.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 3
+
+[[issues]]
+file = "src/Integration/Command/WebhooksTickCommand.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/Integration/Controller/Api/V1/DocumentsController.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
+file = "src/Integration/Controller/Api/V1/WebhookEndpointsController.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 3
+
+[[issues]]
+file = "src/Integration/Controller/Settings/ApiKeysSettingsController.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/Integration/Controller/Settings/WebhooksSettingsController.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/Integration/Fiscal/DocumentIntake.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 1
+
+[[issues]]
+file = "src/Integration/Fiscal/SunatOutcomeMapper.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 3
+
+[[issues]]
+file = "src/Integration/Fiscal/Validation/FieldReader.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 3
+
+[[issues]]
+file = "src/Integration/Repository/WebhookDeliveryRepository.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$rows`."
+count = 1
+
+[[issues]]
+file = "src/Integration/Repository/WebhookEndpointRepository.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$rows`."
+count = 1
+
+[[issues]]
+file = "src/Integration/Webhook/WebhookDelivery.php"
+code = "write-only-property"
+message = "Property `$responseBody` is written to but never read."
 count = 1
 
 [[issues]]
@@ -4645,6 +4723,12 @@ message = "Non numeric string of type `string` implicitly cast to `float`."
 count = 2
 
 [[issues]]
+file = "src/Sales/Report/PaymentMethodBreakdownReport.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 1
+
+[[issues]]
 file = "src/Sales/Repository/DashboardRepository.php"
 code = "invalid-iterator"
 message = "The expression provided to `foreach` is not iterable. It resolved to type `mixed`, which is not iterable."
@@ -4774,6 +4858,12 @@ count = 2
 file = "src/Sales/Repository/SalesAnalyticsRepository.php"
 code = "mixed-method-access"
 message = "Attempting to access a method on a non-object type (`mixed`)."
+count = 2
+
+[[issues]]
+file = "src/Sales/Service/ExplicitSaleSettlementResolver.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 2
 
 [[issues]]
@@ -4936,7 +5026,7 @@ count = 1
 file = "src/Sales/State/SaleProcessor.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 4
+count = 5
 
 [[issues]]
 file = "src/Sales/State/SaleProcessor.php"
@@ -5038,12 +5128,6 @@ count = 1
 file = "src/Sales/State/SaleQuoteProvider.php"
 code = "possibly-null-iterator"
 message = 'Expression being iterated (type `ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|iterable<mixed, object>|null|object`) might be `null` at runtime.'
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleUtils.php"
-code = "possible-method-access-on-null"
-message = "Attempting to call a method on `null`."
 count = 1
 
 [[issues]]
@@ -5991,13 +6075,13 @@ count = 1
 [[issues]]
 file = "tests/Billing/State/TaxDocumentProviderTest.php"
 code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<mixed, mixed>|array<array-key, mixed>`, but found `mixed`.'
 count = 6
 
 [[issues]]
 file = "tests/Billing/State/TaxDocumentProviderTest.php"
 code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayNotHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayNotHasKey`: expected `ArrayAccess<mixed, mixed>|array<array-key, mixed>`, but found `mixed`.'
 count = 2
 
 [[issues]]
@@ -6357,7 +6441,7 @@ count = 1
 [[issues]]
 file = "tests/ControlPlane/Integration/Billing/EntitlementsEndpointTest.php"
 code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<mixed, mixed>|array<array-key, mixed>`, but found `mixed`.'
 count = 6
 
 [[issues]]
@@ -6435,7 +6519,7 @@ count = 1
 [[issues]]
 file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
 code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<mixed, mixed>|array<array-key, mixed>`, but found `mixed`.'
 count = 1
 
 [[issues]]
@@ -6573,7 +6657,7 @@ count = 2
 [[issues]]
 file = "tests/Identity/EventSubscriber/BranchFilterSubscriberTest.php"
 code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<mixed, mixed>|array<array-key, mixed>`, but found `mixed`.'
 count = 2
 
 [[issues]]
@@ -6659,6 +6743,12 @@ file = "tests/Identity/State/UserSoftDeleteProcessorTest.php"
 code = "less-specific-nested-argument-type"
 message = 'Argument type mismatch for argument #1 of `App\Identity\State\UserSoftDeleteProcessor::__construct`: expected `ApiPlatform\State\ProcessorInterface<mixed, mixed>`, but provided type `ApiPlatform\State\ProcessorInterface<App\Identity\Entity\User, null>&PHPUnit\Framework\MockObject\MockObject` is less specific.'
 count = 3
+
+[[issues]]
+file = "tests/Integration/Webhook/WebhookDeliveryAttemptTest.php"
+code = "invalid-type-cast"
+message = "Casting `mixed` to `array`."
+count = 1
 
 [[issues]]
 file = "tests/Inventory/Adapter/InventoryServiceSalesInventoryPortTest.php"
@@ -7018,7 +7108,7 @@ count = 1
 file = "tests/Sales/State/SaleProcessorTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$stub`."
-count = 6
+count = 5
 
 [[issues]]
 file = "tests/Sales/State/SaleProviderTest.php"
