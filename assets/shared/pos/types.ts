@@ -37,6 +37,8 @@ export interface PaymentMethodOption {
   id: number;
   name: string;
   isActive: boolean;
+  /** Canonical API classification; optional only for cached/legacy responses. */
+  settlementBehavior?: 'COLLECTED' | 'RECEIVABLE';
 }
 
 export interface WarehouseOption {

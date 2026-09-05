@@ -1,4 +1,4 @@
-import { isCashPaymentMethod } from '@shared/pos/helpers';
+import { isCashPaymentMethod, isCreditPaymentMethod } from '@shared/pos/helpers';
 import type { PaymentMethodOption } from '@shared/pos/types';
 import {
   formatMinorUnits,
@@ -19,6 +19,13 @@ export interface SalePaymentPayloadLine {
   tendered_amount?: string;
   change_amount?: string;
 }
+
+export type SaleSettlementPayloadLine =
+  | ({ type: 'PAYMENT' } & SalePaymentPayloadLine)
+  | {
+      type: 'RECEIVABLE';
+      amount: string;
+    };
 
 const PAYMENT_CURRENCY = 'PEN';
 const PAYMENT_SCALE = 2;
@@ -72,6 +79,25 @@ export const parseMoneyInput = (value: string | number | null | undefined): numb
 
 export const sumPaymentAmounts = (lines: SalePaymentLineDraft[]): number =>
   minorToNumber(lines.reduce((sum, line) => sum + minorUnits(line.amount), 0n));
+
+export const creditPaymentAmount = (
+  lines: SalePaymentLineDraft[],
+  paymentMethods: PaymentMethodOption[],
+): number => {
+  const methodById = new Map(paymentMethods.map((method) => [method.id, method]));
+
+  return minorToNumber(lines.reduce(
+    (sum, line) => isCreditPaymentMethod(methodById.get(line.methodId ?? -1))
+      ? sum + minorUnits(line.amount)
+      : sum,
+    0n,
+  ));
+};
+
+export const hasCreditPayment = (
+  lines: SalePaymentLineDraft[],
+  paymentMethods: PaymentMethodOption[],
+): boolean => creditPaymentAmount(lines, paymentMethods) > 0;
 
 export const paymentsMatchTotal = (lines: SalePaymentLineDraft[], total: number): boolean =>
   lines.reduce((sum, line) => sum + minorUnits(line.amount), 0n) === minorUnits(total);
@@ -264,11 +290,11 @@ export const removePaymentLine = (
   return rebalancePaymentLines(next, total);
 };
 
-export const buildPaymentPayload = (
+export const buildSettlementPayload = (
   lines: SalePaymentLineDraft[],
   paymentMethods: PaymentMethodOption[],
   _total: number,
-): SalePaymentPayloadLine[] => {
+): SaleSettlementPayloadLine[] => {
   const methodById = new Map(paymentMethods.map((method) => [method.id, method]));
 
   return lines
@@ -276,6 +302,13 @@ export const buildPaymentPayload = (
     .map((line) => {
       const method = methodById.get(line.methodId as number);
       const amount = minorUnits(line.amount);
+      if (isCreditPaymentMethod(method)) {
+        return {
+          type: 'RECEIVABLE' as const,
+          amount: minorToString(amount),
+        };
+      }
+
       const isCash = isCashPaymentMethod(method);
       const tendered = isCash
         ? minorUnits(line.tenderedAmount ?? line.amount)
@@ -283,6 +316,7 @@ export const buildPaymentPayload = (
       const change = isCash && tendered > amount ? tendered - amount : 0n;
 
       return {
+        type: 'PAYMENT' as const,
         payment_method_id: line.methodId as number,
         amount: minorToString(amount),
         ...(isCash
@@ -294,6 +328,15 @@ export const buildPaymentPayload = (
       };
     });
 };
+
+export const buildPaymentPayload = (
+  lines: SalePaymentLineDraft[],
+  paymentMethods: PaymentMethodOption[],
+  total: number,
+): SalePaymentPayloadLine[] => buildSettlementPayload(lines, paymentMethods, total)
+  .filter((settlement): settlement is Extract<SaleSettlementPayloadLine, { type: 'PAYMENT' }> =>
+    settlement.type === 'PAYMENT')
+  .map(({ type: _type, ...payment }) => payment);
 
 export const totalCashChangeAmount = (
   lines: SalePaymentLineDraft[],

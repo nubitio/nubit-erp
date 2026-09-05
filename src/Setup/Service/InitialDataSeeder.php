@@ -12,6 +12,7 @@ use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Entity\UnitOfMeasure;
 use App\Catalog\Entity\VoucherType;
+use App\Catalog\Enum\SettlementBehavior;
 use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Repository\PaymentMethodRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
@@ -265,12 +266,15 @@ readonly class InitialDataSeeder
 
     private function getOrCreatePaymentMethod(string $name): void
     {
+        $behavior = $name === 'Credito' ? SettlementBehavior::RECEIVABLE : SettlementBehavior::COLLECTED;
         $existing = $this->paymentMethodRepository->findOneBy(['name' => $name]);
         if ($existing instanceof PaymentMethod) {
             return;
         }
 
-        $paymentMethod = new PaymentMethod()->setName($name);
+        $paymentMethod = new PaymentMethod()
+            ->setName($name)
+            ->setSettlementBehavior($behavior);
         $this->entityManager->persist($paymentMethod);
         $this->entityManager->flush();
     }

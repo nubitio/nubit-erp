@@ -64,7 +64,15 @@ final class InvoiceCreationServiceTest extends TestCase
                 : 0);
         // Only ONE executeStatement call: the sales-table UPDATE.
         // The legacy movimiento write-back has been removed.
-        $connection->expects(self::exactly(1))->method('executeStatement');
+        $connection
+            ->expects(self::exactly(1))
+            ->method('executeStatement')
+            ->with(self::callback(static function (string $sql): bool {
+                self::assertStringNotContainsString('paid_total', $sql);
+                self::assertStringNotContainsString('balance_due', $sql);
+
+                return true;
+            }));
 
         $service = $this->newService($connection);
 

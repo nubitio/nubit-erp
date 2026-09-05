@@ -18,13 +18,19 @@ type UsePosCatalogDataParams = {
 
 // ─── Payment Methods ──────────────────────────────────────────────────────────
 
-type PaymentMethodResponse = { id?: string | number; name?: string | null; isActive?: boolean };
+type PaymentMethodResponse = {
+  id?: string | number;
+  name?: string | null;
+  isActive?: boolean;
+  settlementBehavior?: 'COLLECTED' | 'RECEIVABLE';
+};
 
 const mapPaymentMethods = (responseData: unknown): PaymentMethodOption[] =>
   extractCollection<PaymentMethodResponse>(responseData).map((method) => ({
     id: Number(method.id),
     name: String(method.name ?? `Metodo ${method.id ?? ''}`),
     isActive: method.isActive !== false,
+    settlementBehavior: method.settlementBehavior,
   }));
 
 export function usePosPaymentMethods() {

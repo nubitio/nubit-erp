@@ -11,7 +11,7 @@ use Brick\Math\BigDecimal;
 use Nubit\Platform\Exception\ServiceException;
 
 /**
- * Resolves and validates payment lines for Sales V2 (single and mixed payments).
+ * Compatibility adapter for the former `payments` + `creditSale` write shape.
  */
 final class SalePaymentPlanService
 {

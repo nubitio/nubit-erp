@@ -1963,6 +1963,40 @@
   }
 }
 
+.pos-credit-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid color-mix(in srgb, var(--pos-warning) 35%, transparent);
+  border-radius: var(--pos-radius-sm);
+  background: var(--pos-warning-soft);
+  color: var(--pos-warning);
+
+  > i {
+    flex: 0 0 auto;
+    font-size: 1.15rem;
+  }
+
+  > span {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.08rem;
+  }
+
+  strong {
+    font-size: 0.8rem;
+    line-height: 1.2;
+  }
+
+  small {
+    color: var(--pos-text);
+    font-size: 0.7rem;
+    line-height: 1.25;
+  }
+}
+
 // Hero total — most prominent number in the UI
 .pos-total-hero {
   display: flex;

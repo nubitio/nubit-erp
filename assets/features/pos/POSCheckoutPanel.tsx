@@ -46,7 +46,7 @@ interface POSCheckoutPanelProps {
   emitInvoice: boolean;
   setEmitInvoice: (checked: boolean) => void;
   creditSale: boolean;
-  setCreditSale: (checked: boolean) => void;
+  creditAmount: number;
   currency: 'PEN' | 'USD';
   setCurrency: (value: 'PEN' | 'USD') => void;
   exchangeRate: string;
@@ -84,6 +84,7 @@ export function POSCheckoutPanel({
   selectedWarehouseName: _selectedWarehouseName,
   cajaAbierta,
   quickMode,
+  selectedCustomer,
   selectedCustomerId,
   onCustomerChange,
   clearSelectedCustomer,
@@ -103,7 +104,7 @@ export function POSCheckoutPanel({
   emitInvoice,
   setEmitInvoice,
   creditSale,
-  setCreditSale,
+  creditAmount,
   currency,
   setCurrency: _setCurrency,
   exchangeRate,
@@ -585,15 +586,6 @@ export function POSCheckoutPanel({
                 />
               </div>
 
-              <div className="pos-footer-option-row">
-                <span className="pos-discount-label">Venta a crédito</span>
-                <Toggle
-                  checked={creditSale}
-                  onChange={setCreditSale}
-                  aria-label="Venta a crédito"
-                />
-              </div>
-
               {allowDiscount && (
                 <div className="pos-footer-option-row">
                   <span className="pos-discount-label">Descuento</span>
@@ -679,8 +671,21 @@ export function POSCheckoutPanel({
           onChange={setPaymentLines}
           variant="pos"
           layout="drawer"
-          allowPartial={creditSale}
         />
+
+        {creditSale && (
+          <div className="pos-credit-notice" data-testid="pos-credit-notice" role="status">
+            <i className="ph ph-hand-coins" aria-hidden="true" />
+            <span>
+              <strong>Venta a crédito · {formatMoney(creditAmount)}</strong>
+              <small>
+                {selectedCustomerId == null || selectedCustomer?.doc === '00000000'
+                  ? 'Selecciona un cliente para registrar la cuenta por cobrar.'
+                  : 'Este saldo se registrará automáticamente en Cuentas por cobrar.'}
+              </small>
+            </span>
+          </div>
+        )}
 
         {changeAmount > 0 && (
           <div className="pos-change-row is-change">
@@ -703,7 +708,7 @@ export function POSCheckoutPanel({
             <span className="pos-checkout__processing">Caja cerrada</span>
           ) : (
             <>
-              <span>Cobrar</span>
+              <span>{creditSale ? 'Registrar crédito' : 'Cobrar'}</span>
               <strong>{formatMoney(payableTotal)}</strong>
             </>
           )}

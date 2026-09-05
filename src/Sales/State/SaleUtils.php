@@ -141,11 +141,9 @@ readonly class SaleUtils
     public function fillSaleValues(SaleRecord $sale, DocType $docType = DocType::NOTA_VENTA): SaleRecord
     {
         $sale->setTipoId(2);
-        if ($sale->getTipoPago()->getId() === 2) {
-            $sale->setFormaPago(2);
-        } else {
-            $sale->setFormaPago(1);
-        }
+        // This is only an initial value. SalesWriteGateway derives the final
+        // SUNAT condition from the canonical collected/receivable allocation.
+        $sale->setFormaPago(1);
         $sale->setSerie($this->getSaleSeries($docType->value, $sale->getAlmacen()?->getId() ?: ''));
         $sale->setNumero($this->getSaleNumber($sale->getSerie()));
 

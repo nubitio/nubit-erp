@@ -6,6 +6,7 @@ namespace App\Sales\State;
 
 use App\Catalog\Entity\PaymentMethod;
 use App\Efact\Domain\Money;
+use App\Sales\Domain\SaleSettlementType;
 use App\Sales\Entity\SaleDiscount;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SalePayment;
@@ -13,7 +14,7 @@ use App\Sales\Entity\SaleRecord;
 use App\Sales\Entity\SaleTax;
 use App\Sales\Repository\DashboardRepository;
 use App\Sales\Service\SaleCurrencyResolver;
-use App\Sales\Service\SalePaymentPlanService;
+use App\Sales\Service\SaleSettlementPlanService;
 use App\Settings\Service\TenantSettingsService;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
@@ -35,7 +36,7 @@ readonly class SalesWriteGateway
         private Connection $connection,
         private EntityManagerInterface $entityManager,
         private SaleCurrencyResolver $saleCurrencyResolver,
-        private SalePaymentPlanService $salePaymentPlanService,
+        private SaleSettlementPlanService $saleSettlementPlanService,
         private DashboardRepository $dashboardRepository,
         private TenantSettingsService $tenantSettingsService,
     ) {}
@@ -78,25 +79,31 @@ readonly class SalesWriteGateway
         $totalDiscountAmount = Money::money($discountAmount->plus($cashRoundingAdjustment));
         $grandTotal = Money::money($sale->getTotal());
         $currencyData = $this->saleCurrencyResolver->resolveForWrite($sale);
-        $paymentLines = $this->salePaymentPlanService->resolveForWrite(
+        $settlements = $this->saleSettlementPlanService->resolveForWrite(
             $sale,
             $currencyData['currency'],
             Money::toString($grandTotal),
-            $sale->isCreditSale(),
         );
         $paidTotal = BigDecimal::zero();
+        $balanceDue = BigDecimal::zero();
         $changeTotal = BigDecimal::zero();
-        foreach ($paymentLines as $paymentLine) {
-            $paidTotal = $paidTotal->plus(Money::of($paymentLine['amount']));
-            if ($paymentLine['change_amount'] !== null) {
-                $changeTotal = $changeTotal->plus(Money::of($paymentLine['change_amount']));
+        $paymentLines = [];
+        foreach ($settlements as $settlement) {
+            if ($settlement['type'] === SaleSettlementType::RECEIVABLE->value) {
+                $balanceDue = $balanceDue->plus(Money::of($settlement['amount']));
+                continue;
+            }
+
+            $paymentLines[] = $settlement;
+            $paidTotal = $paidTotal->plus(Money::of($settlement['amount']));
+            if ($settlement['change_amount'] !== null) {
+                $changeTotal = $changeTotal->plus(Money::of($settlement['change_amount']));
             }
         }
         $paidTotal = Money::money($paidTotal);
+        $balanceDue = Money::money($balanceDue);
         $changeTotal = Money::money($changeTotal);
-        $balanceDue = $grandTotal->isGreaterThan($paidTotal)
-            ? Money::money($grandTotal->minus($paidTotal))
-            : BigDecimal::zero();
+        $sale->setCreditSale($balanceDue->isGreaterThan(BigDecimal::zero()));
         $rawIssuedAt = $sale->getFecha() ?? $sale->getDateCreated() ?? new \DateTimeImmutable();
         $issuedAt = \DateTimeImmutable::createFromInterface($rawIssuedAt);
         $issuedAtMutable = \DateTime::createFromImmutable($issuedAt);
@@ -135,13 +142,7 @@ readonly class SalesWriteGateway
         $sale->setChangeTotal(Money::toString($changeTotal));
         $sale->setBalanceDue(Money::toString($balanceDue));
 
-        // formaPago drives the SUNAT "Forma de Pago" tag (Contado=1/Crédito=2).
-        // SaleUtils::fillSaleValues() sets an initial guess from the chosen
-        // payment method label, but that's a cosmetic pick independent of
-        // whether money is actually owed — a cashier could pick "Credito" and
-        // still pay in full, or pay partially with "Efectivo". balanceDue is
-        // the actual source of truth, so it wins here: the SUNAT tag and the
-        // real pending balance must never disagree.
+        // balanceDue is the source of truth for SUNAT's Contado/Crédito tag.
         if ($balanceDue->isGreaterThan(BigDecimal::zero())) {
             $sale->setFormaPago(2);
         } else {

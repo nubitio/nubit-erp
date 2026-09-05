@@ -2,8 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   addPaymentLine,
   buildPaymentPayload,
+  buildSettlementPayload,
+  creditPaymentAmount,
   createSplitPaymentLines,
   enableSplitPaymentLines,
+  hasCreditPayment,
   paymentsMatchTotal,
   paymentsWithinTotal,
   rebalancePaymentLines,
@@ -22,6 +25,35 @@ const methods: PaymentMethodOption[] = [
 ];
 
 describe('salePayments', () => {
+  it('derives the financed balance from the Crédito allocation', () => {
+    const creditMethods: PaymentMethodOption[] = [
+      ...methods,
+      { id: 2, name: 'Credito', isActive: true, settlementBehavior: 'RECEIVABLE' },
+    ];
+    const lines = [
+      { methodId: 1, amount: '30.00' },
+      { methodId: 2, amount: '70.00' },
+    ];
+
+    expect(hasCreditPayment(lines, creditMethods)).toBe(true);
+    expect(creditPaymentAmount(lines, creditMethods)).toBe(70);
+    expect(validatePaymentLines(lines, creditMethods, 100)).toEqual({ valid: true });
+    expect(buildSettlementPayload(lines, creditMethods, 100)).toEqual([
+      {
+        type: 'PAYMENT',
+        payment_method_id: 1,
+        amount: '30.00',
+        tendered_amount: '30.00',
+        change_amount: '0.00',
+      },
+      {
+        type: 'RECEIVABLE',
+        amount: '70.00',
+      },
+    ]);
+    expect(buildPaymentPayload(lines, creditMethods, 100)).toHaveLength(1);
+  });
+
   it('builds mixed cash and yape payload', () => {
     const lines = createSplitPaymentLines(1, 6, 30, 100);
     const payload = buildPaymentPayload(lines, methods, 100);

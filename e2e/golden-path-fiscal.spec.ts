@@ -83,8 +83,6 @@ test.describe('Golden path fiscal — POS a SUNAT y PDF', () => {
       const defaultEmitInvoice = await emitInvoiceToggle.isChecked();
       await page.locator('.pos-footer-option-row')
         .filter({ hasText: 'Emitir boleta/factura SUNAT' }).locator('label').click();
-      const creditRow = page.locator('.pos-footer-option-row').filter({ hasText: 'Venta a crédito' });
-      await creditRow.locator('label').click();
       await page.locator('.nb-chip').filter({ hasText: /^5%$/ }).click();
       const noteToggle = page.locator('.pos-note-section__toggle');
       await noteToggle.click();
@@ -123,7 +121,6 @@ test.describe('Golden path fiscal — POS a SUNAT y PDF', () => {
       );
       await page.locator('.pos-footer-options__toggle').click();
       await expect(page.getByLabel('Emitir boleta o factura SUNAT')).toBeChecked({ checked: defaultEmitInvoice });
-      await expect(page.getByLabel('Venta a crédito')).not.toBeChecked();
       await expect(page.locator('.nb-chip').filter({ hasText: /^Ninguno$/ })).toHaveClass(/is-active/);
       await page.locator('.pos-note-section__toggle').click();
       await expect(page.getByLabel('Nota interna de la venta')).toHaveValue('');

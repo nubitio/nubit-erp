@@ -66,7 +66,7 @@ class SaleUtilsTest extends TestCase
 
         $result = $this->utils->getSaleSeries('01', 'wh-uuid');
 
-        $this->assertSame('F001', $result);
+        static::assertSame('F001', $result);
     }
 
     public function testGetSaleSeriesThrowsServiceExceptionWhenNotFound(): void
@@ -84,7 +84,7 @@ class SaleUtilsTest extends TestCase
         $fetchOneCallCount = 0;
         $this->connection
             ->method('fetchOne')
-            ->willReturnCallback(function () use (&$fetchOneCallCount): false|string {
+            ->willReturnCallback(static function () use (&$fetchOneCallCount): false|string {
                 ++$fetchOneCallCount;
 
                 return match ($fetchOneCallCount) {
@@ -107,7 +107,7 @@ class SaleUtilsTest extends TestCase
 
         $result = $this->utils->getSaleSeries('00', 'wh-uuid');
 
-        $this->assertSame('N001', $result);
+        static::assertSame('N001', $result);
     }
 
     // ── getSaleNumber() ───────────────────────────────────────────────────────
@@ -121,7 +121,7 @@ class SaleUtilsTest extends TestCase
 
         $result = $this->utils->getSaleNumber('F001');
 
-        $this->assertSame('42', $result);
+        static::assertSame('42', $result);
     }
 
     public function testGetSaleNumberThrowsServiceExceptionWhenFetchOneReturnsFalse(): void
@@ -152,7 +152,7 @@ class SaleUtilsTest extends TestCase
 
     // ── fillSaleValues() ─────────────────────────────────────────────────────
 
-    public function testFillSaleValuesSetsFormaPagoCreditWhenPaymentMethodIdIs2(): void
+    public function testFillSaleValuesDoesNotInferCreditFromPaymentMethodId(): void
     {
         $sale = $this->buildSaleForFill(2, 5);
 
@@ -160,7 +160,7 @@ class SaleUtilsTest extends TestCase
         $fetchOneCallCount = 0;
         $this->connection
             ->method('fetchOne')
-            ->willReturnCallback(function () use (&$fetchOneCallCount): string {
+            ->willReturnCallback(static function () use (&$fetchOneCallCount): string {
                 ++$fetchOneCallCount;
                 return $fetchOneCallCount === 1 ? 'F001' : '1';
             });
@@ -172,7 +172,7 @@ class SaleUtilsTest extends TestCase
 
         $result = $this->utils->fillSaleValues($sale, DocType::NOTA_VENTA);
 
-        $this->assertSame(2, $result->getFormaPago());
+        static::assertSame(1, $result->getFormaPago());
     }
 
     public function testFillSaleValuesSetsFormaPagoCashWhenPaymentMethodIdIsNot2(): void
@@ -182,7 +182,7 @@ class SaleUtilsTest extends TestCase
         $fetchOneCallCount = 0;
         $this->connection
             ->method('fetchOne')
-            ->willReturnCallback(function () use (&$fetchOneCallCount): string {
+            ->willReturnCallback(static function () use (&$fetchOneCallCount): string {
                 ++$fetchOneCallCount;
                 return $fetchOneCallCount === 1 ? 'B001' : '5';
             });
@@ -194,6 +194,6 @@ class SaleUtilsTest extends TestCase
 
         $result = $this->utils->fillSaleValues($sale, DocType::BOLETA);
 
-        $this->assertSame(1, $result->getFormaPago());
+        static::assertSame(1, $result->getFormaPago());
     }
 }

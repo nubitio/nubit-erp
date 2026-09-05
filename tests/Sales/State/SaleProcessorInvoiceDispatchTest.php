@@ -14,7 +14,7 @@ use App\Organization\Repository\BranchRepository;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Port\InvoiceCreatorInterface;
 use App\Sales\Repository\SaleRecordRepository;
-use App\Sales\Service\SalePaymentPlanService;
+use App\Sales\Service\SaleSettlementPlanService;
 use App\Sales\State\CashSessionResolver;
 use App\Sales\State\DetractionCalculator;
 use App\Sales\State\SaleInventoryOrchestrator;
@@ -114,7 +114,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
      * with no prior ID (so SaleProcessor treats it as a new record) and with the
      * emitInvoice flag set to drive the auto-invoice path.
      *
-     * A minimal payments array is provided so SalePaymentPlanService can resolve
+     * A minimal payments array is provided so SaleSettlementPlanService can resolve
      * the payment plan without throwing. tipoPago is intentionally left null to
      * avoid triggering the SaleUtils::fillSaleValues() path (which requires DB).
      */
@@ -146,7 +146,7 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
      * Properties NOT exercised in these tests (e.g. salesWriteGateway,
      * goodsReceiptWriteGateway, cashSessionResolver, saleUtils,
      * branchRepository, detractionCalculator, inventoryOrchestrator,
-     * salePaymentPlanService) are never called because:
+     * saleSettlementPlanService) are never called because:
      * - tipoId=2 → no GoodsReceiptWriteGateway
      * - writeNewSchema=false → no SalesWriteGateway / CashSessionResolver
      * - tipoPago=null AND isNew → fillSaleValues / resolveForWrite never called
@@ -190,7 +190,10 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         $salesWriteGatewayMock = $this->createStub(SalesWriteGateway::class);
         $processorReflection->getProperty('salesWriteGateway')->setValue($processor, $salesWriteGatewayMock);
         $this->injectCashSessionResolverStub($processorReflection, $processor);
-        $this->injectNoOpStub($processorReflection, $processor, 'salePaymentPlanService');
+        $processorReflection->getProperty('saleSettlementPlanService')->setValue(
+            $processor,
+            new SaleSettlementPlanService(),
+        );
         $this->injectNoOpStub($processorReflection, $processor, 'detractionCalculator');
         $this->injectNoOpStub($processorReflection, $processor, 'inventoryOrchestrator');
         // saleRecordRepository: use a mock so findByAnyId() returns null without touching real Doctrine.

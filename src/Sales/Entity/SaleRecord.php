@@ -413,6 +413,15 @@ class SaleRecord
     private array $payments = [];
 
     /**
+     * Write-only settlement contract. PAYMENT entries represent collected
+     * money and RECEIVABLE entries represent customer financing.
+     *
+     * @var array<int, array<string, mixed>>
+     */
+    #[Groups(['sale_record:write'])]
+    private array $settlements = [];
+
+    /**
      * Items for write path (mapped to SaleItemRecord entities by processor).
      * Not in read group; use /api/sales/{id}/items sub-resource.
      *
@@ -422,9 +431,8 @@ class SaleRecord
     private array $writeItems = [];
 
     /**
-     * When true, SalePaymentPlanService::resolveForWrite() allows the sum of
-     * payment lines to be less than the total (balanceDue > 0) instead of
-     * requiring an exact match — the explicit "venta a crédito" opt-in.
+     * Compatibility flag for API/legacy clients that submit collected payment
+     * lines below the total. The POS derives it from its Crédito allocation.
      */
     #[Groups(['sale_record:write'])]
     private bool $creditSale = false;
@@ -1187,6 +1195,24 @@ class SaleRecord
     public function setPayments(array $payments): static
     {
         $this->payments = $payments;
+
+        return $this;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getSettlements(): array
+    {
+        return $this->settlements;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $settlements
+     */
+    public function setSettlements(array $settlements): static
+    {
+        $this->settlements = $settlements;
 
         return $this;
     }

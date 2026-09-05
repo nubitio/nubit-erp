@@ -162,7 +162,7 @@ const POSPage = () => {
     emitInvoice,
     setEmitInvoice,
     creditSale,
-    setCreditSale,
+    creditAmount,
     currency,
     setCurrency,
     exchangeRate,
@@ -193,6 +193,7 @@ const POSPage = () => {
     storeId: branchId || 'default-store',
     selectedWarehouseId,
     selectedCustomerId: customersState.selectedCustomerId,
+    selectedCustomer: customersState.selectedCustomer,
     paymentMethods,
     enforceStockCheck,
     warnOnNegativeStock: stockPolicy === 'WARNING_ONLY',
@@ -537,7 +538,7 @@ const POSPage = () => {
         emitInvoice={emitInvoice}
         setEmitInvoice={setEmitInvoice}
         creditSale={creditSale}
-        setCreditSale={setCreditSale}
+        creditAmount={creditAmount}
         currency={currency}
         setCurrency={setCurrency}
         exchangeRate={exchangeRate}

@@ -25,7 +25,7 @@ use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Port\InvoiceCreatorInterface;
 use App\Sales\Repository\SaleRecordRepository;
-use App\Sales\Service\SalePaymentPlanService;
+use App\Sales\Service\SaleSettlementPlanService;
 use App\Sales\State\CashSessionResolver;
 use App\Sales\State\DetractionCalculator;
 use App\Sales\State\SaleInventoryOrchestrator;
@@ -136,7 +136,7 @@ final class SaleProcessorTest extends TestCase
     private BranchContextService $branchContextService;
     private SaleInventoryOrchestrator $inventoryOrchestrator;
     private DetractionCalculator $detractionCalculator;
-    private SalePaymentPlanService $salePaymentPlanService;
+    private SaleSettlementPlanService $saleSettlementPlanService;
     private CashSessionResolver $cashSessionResolver;
 
     /** @var SunatCatalogRepository&MockObject */
@@ -177,7 +177,7 @@ final class SaleProcessorTest extends TestCase
         $this->branchContextService = $this->buildBranchContextStub(returnBranchId: null);
         $this->inventoryOrchestrator = $this->buildInventoryOrchestratorStub(shouldThrow: false);
         $this->detractionCalculator = $this->buildDetractionCalculatorStub();
-        $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '0.00');
+        $this->saleSettlementPlanService = $this->buildSaleSettlementPlanServiceStub();
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: null);
 
         // Default: persistProcessor returns the sale unchanged
@@ -687,7 +687,7 @@ final class SaleProcessorTest extends TestCase
         $sale->setPayments([['payment_method_id' => 1, 'amount' => '10.00']]);
 
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 77);
-        $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '10.00');
+        $this->saleSettlementPlanService = $this->buildSaleSettlementPlanServiceStub();
 
         $this->salesWriteGateway->expects($this->once())->method('write');
 
@@ -717,7 +717,7 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 77);
-        $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '10.00');
+        $this->saleSettlementPlanService = $this->buildSaleSettlementPlanServiceStub();
 
         $this->salesWriteGateway->method('write');
 
@@ -751,7 +751,7 @@ final class SaleProcessorTest extends TestCase
 
         $this->saleUtils->method('fillSaleValues')->willReturnArgument(0);
 
-        $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '50.00');
+        $this->saleSettlementPlanService = $this->buildSaleSettlementPlanServiceStub();
 
         /** @var EntityRepository<CashMovementCategory>&MockObject $categoryRepo */
         $categoryRepo = $this->createMock(EntityRepository::class);
@@ -886,7 +886,7 @@ final class SaleProcessorTest extends TestCase
         $this->persistProcessor->expects($this->never())->method('process');
 
         $this->cashSessionResolver = $this->buildCashSessionResolverStub(resolvedSessionId: 55);
-        $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '0.00');
+        $this->saleSettlementPlanService = $this->buildSaleSettlementPlanServiceStub();
 
         $result = $this->buildAndRunProcessor($sale, new Post());
 
@@ -914,7 +914,7 @@ final class SaleProcessorTest extends TestCase
 
         $this->saleUtils->method('fillSaleValues')->willReturnArgument(0);
 
-        $this->salePaymentPlanService = $this->buildSalePaymentPlanServiceStub(cashCollectedAmount: '50.00');
+        $this->saleSettlementPlanService = $this->buildSaleSettlementPlanServiceStub();
 
         $this->entityManager->expects($this->never())->method('persist');
 
@@ -1200,7 +1200,7 @@ final class SaleProcessorTest extends TestCase
         $inj('branchRepository', $this->branchRepository);
         $inj('salesWriteGateway', $this->salesWriteGateway);
         $inj('cashSessionResolver', $this->cashSessionResolver);
-        $inj('salePaymentPlanService', $this->salePaymentPlanService);
+        $inj('saleSettlementPlanService', $this->saleSettlementPlanService);
         $inj('detractionCalculator', $this->detractionCalculator);
         $inj('inventoryOrchestrator', $this->inventoryOrchestrator);
         $inj('saleRecordRepository', $this->saleRecordRepository);
@@ -1476,23 +1476,13 @@ final class SaleProcessorTest extends TestCase
     }
 
     /**
-     * Build a SalePaymentPlanService stub (final class).
+     * Build a SaleSettlementPlanService stub (final class).
      * resolveCashCollectedAmount() returns the given string amount.
      * resolveForWrite() returns a minimal plan so no ServiceException is thrown.
      */
-    private function buildSalePaymentPlanServiceStub(string $cashCollectedAmount): SalePaymentPlanService
+    private function buildSaleSettlementPlanServiceStub(): SaleSettlementPlanService
     {
-        $rc = new ReflectionClass(SalePaymentPlanService::class);
-        /** @var SalePaymentPlanService $stub */
-        $stub = $rc->newInstanceWithoutConstructor();
-
-        // SalePaymentPlanService has no declared properties — it is stateless.
-        // However, its methods access none of the injected deps directly (no constructor deps).
-        // All computation is inline. We cannot override the real methods.
-        // Strategy: inject a Sale with compatible payments array so resolveForWrite() succeeds.
-        // The amount='0.01' trick from existing tests covers zero-total sales.
-
-        return $stub;
+        return new SaleSettlementPlanService();
     }
 
     /**

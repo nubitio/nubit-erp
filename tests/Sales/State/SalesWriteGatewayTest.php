@@ -7,13 +7,15 @@ namespace App\Tests\Sales\State;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\Product;
 use App\Catalog\Entity\UnitOfMeasure;
+use App\Contacts\Entity\Customer;
 use App\Inventory\Entity\Warehouse;
 use App\Organization\Entity\Branch;
 use App\Sales\Entity\SaleItemRecord;
+use App\Sales\Entity\SalePayment;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Repository\DashboardRepository;
 use App\Sales\Service\SaleCurrencyResolver;
-use App\Sales\Service\SalePaymentPlanService;
+use App\Sales\Service\SaleSettlementPlanService;
 use App\Sales\State\SalesWriteGateway;
 use App\Settings\Service\TenantSettingsService;
 use Doctrine\DBAL\Connection;
@@ -36,8 +38,7 @@ class SalesWriteGatewayTest extends TestCase
         $this->connection = $this->createMock(Connection::class);
         $this->currencyResolver = $this->createMock(SaleCurrencyResolver::class);
 
-        // SalePaymentPlanService is final (no-arg constructor) — instantiate directly
-        $paymentPlanService = new SalePaymentPlanService();
+        $settlementPlanService = new SaleSettlementPlanService();
 
         $dashboardRepository = $this->createStub(DashboardRepository::class);
 
@@ -49,7 +50,7 @@ class SalesWriteGatewayTest extends TestCase
             $this->connection,
             $entityManager,
             $this->currencyResolver,
-            $paymentPlanService,
+            $settlementPlanService,
             $dashboardRepository,
             $tenantSettings,
         );
@@ -59,7 +60,7 @@ class SalesWriteGatewayTest extends TestCase
 
     /**
      * Build a Sale that satisfies all guard checks and works with the real
-     * SalePaymentPlanService (uses sale.payments array to avoid querying tipoPago).
+     * SaleSettlementPlanService (legacy payment fixtures remain supported).
      */
     private function buildMinimalSale(string $amount = '100.00'): SaleRecord
     {
@@ -74,6 +75,11 @@ class SalesWriteGatewayTest extends TestCase
         $sale->setId('sale-uuid-001');
         $sale->setBranch($branch);
         $sale->setAlmacen($warehouse);
+        $sale->setCustomer(
+            new Customer()
+                ->setRuc('20123456789')
+                ->setBusinessName('Cliente crédito'),
+        );
         $sale->setCajaId(10);
         $sale->setCreatedBy(42);
         $sale->setFecha(new \DateTimeImmutable('2024-01-01 10:00:00'));
@@ -82,7 +88,7 @@ class SalesWriteGatewayTest extends TestCase
         $sale->setTotal($amount);
         $sale->setDescuento(null);
         $sale->setIgv(null);
-        // Use explicit payments array so SalePaymentPlanService.resolveForWrite works without tipoPago
+        // Use explicit payments so the compatibility adapter works without tipoPago.
         $sale->setPayments([[
             'payment_method_id' => 1,
             'amount' => $amount,
@@ -222,7 +228,7 @@ class SalesWriteGatewayTest extends TestCase
             $this->connection,
             $em,
             $this->currencyResolver,
-            new SalePaymentPlanService(),
+            new SaleSettlementPlanService(),
             $this->createStub(DashboardRepository::class),
             $tenantSettings,
         );
@@ -252,7 +258,7 @@ class SalesWriteGatewayTest extends TestCase
             $this->connection,
             $this->createStub(EntityManagerInterface::class),
             $this->currencyResolver,
-            new SalePaymentPlanService(),
+            new SaleSettlementPlanService(),
             $this->createStub(DashboardRepository::class),
             $tenantSettings,
         );
@@ -262,6 +268,83 @@ class SalesWriteGatewayTest extends TestCase
         self::assertSame('60.00', $sale->getBalanceDue());
         self::assertSame(2, $sale->getFormaPago());
         self::assertSame('2024-01-16', $sale->getDueDate()?->format('Y-m-d'));
+    }
+
+    public function testReceivableSettlementCreatesDebtWithoutPaymentRecord(): void
+    {
+        $sale = $this->buildMinimalSale('100.00');
+        $sale->setSettlements([[
+            'type' => 'RECEIVABLE',
+            'amount' => '100.00',
+        ]]);
+        $this->stubCurrencyResolver();
+
+        $tenantSettingsEntity = $this->createStub(\App\Settings\Entity\TenantSettings::class);
+        $tenantSettingsEntity->method('getDefaultPaymentTermDays')->willReturn(15);
+        $tenantSettings = $this->createStub(TenantSettingsService::class);
+        $tenantSettings->method('getIgv')->willReturn(18.0);
+        $tenantSettings->method('get')->willReturn($tenantSettingsEntity);
+
+        $gateway = new SalesWriteGateway(
+            $this->connection,
+            $this->createStub(EntityManagerInterface::class),
+            $this->currencyResolver,
+            new SaleSettlementPlanService(),
+            $this->createStub(DashboardRepository::class),
+            $tenantSettings,
+        );
+
+        $gateway->write($sale, 1);
+
+        self::assertTrue($sale->isCreditSale());
+        self::assertSame('0.00', $sale->getPaidTotal());
+        self::assertSame('100.00', $sale->getBalanceDue());
+        self::assertSame(2, $sale->getFormaPago());
+        self::assertSame('2024-01-16', $sale->getDueDate()?->format('Y-m-d'));
+        self::assertCount(0, $sale->getSalePayments(), 'Crédito no es un cobro realizado.');
+    }
+
+    public function testMixedCashAndCreditOnlyCountsCollectedMoneyAsPaid(): void
+    {
+        $sale = $this->buildMinimalSale('100.00');
+        $sale->setSettlements([
+            [
+                'type' => 'PAYMENT',
+                'payment_method_id' => PaymentMethod::CASH,
+                'amount' => '40.00',
+                'tendered_amount' => '40.00',
+            ],
+            [
+                'type' => 'RECEIVABLE',
+                'amount' => '60.00',
+            ],
+        ]);
+        $this->stubCurrencyResolver();
+
+        $tenantSettingsEntity = $this->createStub(\App\Settings\Entity\TenantSettings::class);
+        $tenantSettingsEntity->method('getDefaultPaymentTermDays')->willReturn(15);
+        $tenantSettings = $this->createStub(TenantSettingsService::class);
+        $tenantSettings->method('getIgv')->willReturn(18.0);
+        $tenantSettings->method('get')->willReturn($tenantSettingsEntity);
+
+        $gateway = new SalesWriteGateway(
+            $this->connection,
+            $this->createStub(EntityManagerInterface::class),
+            $this->currencyResolver,
+            new SaleSettlementPlanService(),
+            $this->createStub(DashboardRepository::class),
+            $tenantSettings,
+        );
+
+        $gateway->write($sale, 1);
+
+        self::assertTrue($sale->isCreditSale());
+        self::assertSame('40.00', $sale->getPaidTotal());
+        self::assertSame('60.00', $sale->getBalanceDue());
+        self::assertCount(1, $sale->getSalePayments());
+        $payment = $sale->getSalePayments()->first();
+        self::assertInstanceOf(SalePayment::class, $payment);
+        self::assertSame('40.00', $payment->getAmount());
     }
 
     public function testWriteSetsFormaPagoContadoWhenFullyPaid(): void
@@ -476,7 +559,7 @@ class SalesWriteGatewayTest extends TestCase
             $this->connection,
             $em,
             $this->currencyResolver,
-            new SalePaymentPlanService(),
+            new SaleSettlementPlanService(),
             $this->createStub(DashboardRepository::class),
             $tenantSettings,
         );

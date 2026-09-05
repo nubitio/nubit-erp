@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import type { AdminMenuItem } from '@nubitio/admin';
 import type { TenantRuntimeConfig } from '@shared/hooks';
 import { filterMenuByRuntimeConfig } from './menuService';
@@ -52,6 +52,10 @@ function menu(paths: string[]): AdminMenuItem[] {
 function visiblePaths(items: AdminMenuItem[]): string[] {
   return items.map((item) => String(item.path));
 }
+
+afterEach(() => {
+  localStorage.clear();
+});
 
 describe('filterMenuByRuntimeConfig', () => {
   it('keeps only basic menu entries for basic tenants', () => {
@@ -155,5 +159,19 @@ describe('filterMenuByRuntimeConfig', () => {
     );
 
     expect(visiblePaths(filtered)).toEqual(['pos', 'employees', 'payroll-runs']);
+  });
+
+  it('treats receivables as sales and keeps supplier payables separately authorized', () => {
+    localStorage.setItem('user', JSON.stringify({
+      username: 'seller',
+      permissions: ['sales.view'],
+    }));
+
+    const filtered = filterMenuByRuntimeConfig(
+      menu(['accounts-receivable', 'accounts-payable']),
+      runtimeConfig('advanced'),
+    );
+
+    expect(visiblePaths(filtered)).toEqual(['accounts-receivable']);
   });
 });

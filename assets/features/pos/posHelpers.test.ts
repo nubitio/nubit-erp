@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatPosQuantity, toMoneyString } from './posHelpers';
+import { formatPosQuantity, isCreditPaymentMethod, toMoneyString } from './posHelpers';
 
 describe('toMoneyString', () => {
   it('normalizes four-decimal API prices for display in the POS', () => {
@@ -21,5 +21,24 @@ describe('formatPosQuantity', () => {
 
   it('formats gram quantities with grams', () => {
     expect(formatPosQuantity(250, 'GRM')).toBe('250 g');
+  });
+});
+
+describe('isCreditPaymentMethod', () => {
+  it('recognizes commercial credit without confusing card credit', () => {
+    expect(isCreditPaymentMethod({
+      id: 27,
+      name: 'Financiamiento cliente',
+      isActive: true,
+      settlementBehavior: 'RECEIVABLE',
+    })).toBe(true);
+    expect(isCreditPaymentMethod({
+      id: 2,
+      name: 'Credito',
+      isActive: true,
+      settlementBehavior: 'COLLECTED',
+    })).toBe(false);
+    expect(isCreditPaymentMethod({ id: 42, name: 'Crédito', isActive: true })).toBe(true);
+    expect(isCreditPaymentMethod({ id: 4, name: 'Tarjeta crédito', isActive: true })).toBe(false);
   });
 });

@@ -17,6 +17,7 @@ import { dateCell, entityNameCell, moneyCell, receivableStatusCell } from '@shar
 import { OwnerRowButtons } from '@shared/ui/OwnerRowButtons';
 import { formatInvoiceNumber } from '@shared/lib/displayFormat';
 import NumberUtils from '@shared/lib/NumberUtils';
+import { hasPermission } from '@shared/permissions';
 
 const API = getCoreApiBaseUrl();
 
@@ -43,6 +44,7 @@ function customerPhone(customer: AccountsReceivableRecord['customer']): string {
 
 export const AccountsReceivablePage = () => {
   const navigate = useNavigate();
+  const canCollect = hasPermission('sales.collect');
 
   const fields = useMemo(
     () => [
@@ -93,12 +95,13 @@ export const AccountsReceivablePage = () => {
           if (!row?.id) return null;
           const phone = customerPhone(row.customer ?? null);
           const name = entityNameCell(cell);
-          const actions: Array<{ label: string; onClick: () => void; variant?: 'primary' | 'secondary' }> = [
-            {
+          const actions: Array<{ label: string; onClick: () => void; variant?: 'primary' | 'secondary' }> = [];
+          if (canCollect) {
+            actions.push({
               label: 'Cobrar',
               onClick: () => navigate(`/sale/${row.id}/collect`),
-            },
-          ];
+            });
+          }
           if (phone) {
             actions.push({
               label: 'WhatsApp',
@@ -111,11 +114,11 @@ export const AccountsReceivablePage = () => {
               },
             });
           }
-          return <OwnerRowButtons actions={actions} />;
+          return actions.length > 0 ? <OwnerRowButtons actions={actions} /> : null;
         })
         .build(),
     ],
-    [navigate],
+    [canCollect, navigate],
   );
 
   return (

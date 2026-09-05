@@ -13,6 +13,7 @@ import {
   numberField,
   switchField,
   selectField,
+  textField,
   textareaField,
   noneField,
 } from '@nubitio/crud';
@@ -52,6 +53,19 @@ type CustomerSelectEvent = {
 type PriceListChangeEvent = {
   value?: string | number;
 };
+
+type ValidationEvent = {
+  data?: Record<string, unknown>;
+};
+
+const hasReceivableSettlement = (value: unknown): boolean =>
+  Array.isArray(value) &&
+  value.some(
+    (line) =>
+      line !== null &&
+      typeof line === 'object' &&
+      (line as { type?: unknown }).type === 'RECEIVABLE',
+  );
 
 /**
  * Mutable state shared between SaleFields (header) and SaleDetailFields (lines).
@@ -171,21 +185,13 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .build(),
   );
   fields.push(
-    switchField()
-      .name('creditSale')
-      .label('Venta a crédito')
-      .valueType('boolean')
-      .defaultValue(false)
-      .visibleOnForm(true)
-      .visible(false)
-      .build(),
-  );
-  fields.push(
     dateField()
       .name('issuedDate')
       .label('Fecha')
       .required(true)
-      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
+      .formatter((cell: GridCellContext) =>
+        SharedUtils.dateFormatter(cell.value as string | Date | null | undefined),
+      )
       .valueType('date')
       .build(),
   );
@@ -219,12 +225,33 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .width(240)
       .defaultValue(1)
       .required(true)
-      .formatter((cell: GridCellContext) => (cell.value as { businessName?: string } | undefined)?.businessName)
+      .validators([
+        {
+          type: 'custom',
+          options: {
+            validationCallback: ({ data }: ValidationEvent) => {
+              if (!hasReceivableSettlement(data?.settlements)) {
+                return true;
+              }
+
+              const document = String(data?.customerDocument ?? '').trim();
+              return document !== '' && document !== '00000000';
+            },
+            message: 'Selecciona un cliente identificado para registrar una cuenta por cobrar.',
+          },
+        },
+      ])
+      .formatter(
+        (cell: GridCellContext) =>
+          (cell.value as { businessName?: string } | undefined)?.businessName,
+      )
       .onSelect((e: unknown) => {
         const event = e as CustomerSelectEvent;
+        const customer = mapPosCustomer(event.itemData);
+        form?.setFieldValue('customerDocument', customer?.doc ?? '');
         // Same extraction as POS (mapPosCustomer): the API serializes the
         // customer's price list as an IRI string under `priceList`.
-        const priceListId = mapPosCustomer(event.itemData)?.priceListId;
+        const priceListId = customer?.priceListId;
         if (priceListId != null) {
           form?.setFieldValue('price_list', priceListId);
           void applyPriceListToSaleDetail(form, priceListId, callbacks?.stateRef);
@@ -250,6 +277,15 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
           },
         },
       ])
+      .build(),
+  );
+  fields.push(
+    noneField()
+      .name('customerDocument')
+      .label('')
+      .defaultValue('00000000')
+      .visible(false)
+      .visibleOnForm(false)
       .build(),
   );
   fields.push(
@@ -283,17 +319,19 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
           method_name?: string | null;
           amount?: string;
         }[];
-        if (payments.length > 1) {
+        const balanceDue = Number(cell.data.balanceDue ?? 0);
+        if (payments.length > 1 || balanceDue > 0) {
           const currency = (cell.data.currency as string) ?? 'PEN';
-          const label = payments
-            .map((payment) => payment.method_name)
-            .filter(Boolean)
-            .join(' + ');
-          const detail = payments
-            .map(
-              (payment) =>
-                `${payment.method_name ?? '—'} ${NumberUtils.formatCurrency(Number(payment.amount ?? 0), currency)}`,
-            )
+          const parts = payments.map((payment) => ({
+            name: payment.method_name ?? '—',
+            amount: Number(payment.amount ?? 0),
+          }));
+          if (balanceDue > 0) {
+            parts.push({ name: 'Crédito', amount: balanceDue });
+          }
+          const label = parts.map((part) => part.name).join(' + ');
+          const detail = parts
+            .map((part) => `${part.name} ${NumberUtils.formatCurrency(part.amount, currency)}`)
             .join(' · ');
           return <span title={detail}>{label}</span>;
         }
@@ -308,6 +346,16 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .visible(false)
       .visibleOnForm(false)
       .defaultValue(() => [])
+      .build(),
+  );
+  fields.push(
+    textField()
+      .name('settlements')
+      .label('')
+      .defaultValue(() => [])
+      .visible(false)
+      .visibleOnForm(false)
+      .hidden(true)
       .build(),
   );
   fields.push(
@@ -401,7 +449,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .name('grandTotal')
       .label('Total')
       .formatter((cell: GridCellContext) =>
-        NumberUtils.formatCurrency(cell.value as number, cell.data.currency as string ?? 'PEN'),
+        NumberUtils.formatCurrency(cell.value as number, (cell.data.currency as string) ?? 'PEN'),
       )
       .visibleOnForm(false)
       .disabled(true)
@@ -412,7 +460,9 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .name('dueDate')
       .label('Vencimiento')
       .visibleOnForm(false)
-      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
+      .formatter((cell: GridCellContext) =>
+        SharedUtils.dateFormatter(cell.value as string | Date | null | undefined),
+      )
       .valueType('date')
       .build(),
   );
@@ -423,7 +473,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .visibleOnForm(false)
       .disabled(true)
       .formatter((cell: GridCellContext) =>
-        NumberUtils.formatCurrency(cell.value as number, cell.data.currency as string ?? 'PEN'),
+        NumberUtils.formatCurrency(cell.value as number, (cell.data.currency as string) ?? 'PEN'),
       )
       .build(),
   );
@@ -461,7 +511,12 @@ export const SaleDetailFields = (
       .name('product')
       .label('Producto')
       .minWidth(300)
-      .onChange(async function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+      .onChange(async function (
+        this: FieldChangeContext,
+        rowData: DataRecord,
+        value: unknown,
+        currentRowData: DataRecord,
+      ) {
         const row = rowData as SaleDetailRow;
         const currentRow = currentRowData as SaleDetailRow;
         if (value === '' || value == null) {
@@ -510,7 +565,12 @@ export const SaleDetailFields = (
       .align('center')
       .valueType('number')
       .precision(2)
-      .onChange(async function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+      .onChange(async function (
+        this: FieldChangeContext,
+        rowData: DataRecord,
+        value: unknown,
+        currentRowData: DataRecord,
+      ) {
         const row = rowData as SaleDetailRow;
         const currentRow = currentRowData as SaleDetailRow;
         if (value === '') return;
@@ -528,7 +588,12 @@ export const SaleDetailFields = (
         const currentWarehouseId = callbacks?.stateRef?.current.warehouseId ?? '';
 
         const product = currentRow.product;
-        if (qty > 0 && stockPolicy?.value !== 'ALLOW_NEGATIVE' && product && isStockTrackedProduct(product)) {
+        if (
+          qty > 0 &&
+          stockPolicy?.value !== 'ALLOW_NEGATIVE' &&
+          product &&
+          isStockTrackedProduct(product)
+        ) {
           if (!currentWarehouseId) {
             toast('Seleccione un almacen para verificar el stock', 'error');
             return;
@@ -556,7 +621,12 @@ export const SaleDetailFields = (
       .width(110)
       .align('right')
       .defaultValue(0)
-      .onChange(async function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+      .onChange(async function (
+        this: FieldChangeContext,
+        rowData: DataRecord,
+        value: unknown,
+        currentRowData: DataRecord,
+      ) {
         const row = rowData as SaleDetailRow;
         const currentRow = currentRowData as SaleDetailRow;
         if (value === '') return;
@@ -567,7 +637,9 @@ export const SaleDetailFields = (
         row.netAmount = Number((grossAmount - discountAmount).toFixed(2));
         this.defaultSetCellValue(row, value, currentRow);
       })
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number, currency))
+      .formatter((cell: GridCellContext) =>
+        NumberUtils.formatCurrency(cell.value as number, currency),
+      )
       .required(true)
       .sortable(false)
       .build(),
@@ -581,7 +653,12 @@ export const SaleDetailFields = (
       .valueType('number')
       .precision(2)
       .defaultValue(0)
-      .onChange(async function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+      .onChange(async function (
+        this: FieldChangeContext,
+        rowData: DataRecord,
+        value: unknown,
+        currentRowData: DataRecord,
+      ) {
         const row = rowData as SaleDetailRow;
         const currentRow = currentRowData as SaleDetailRow;
         if (value === '') return;
@@ -601,11 +678,13 @@ export const SaleDetailFields = (
       .name('discountAmount')
       .label('Dto. S/')
       .defaultValue(0)
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency((cell.value as number | undefined) ?? 0, currency))
+      .formatter((cell: GridCellContext) =>
+        NumberUtils.formatCurrency((cell.value as number | undefined) ?? 0, currency),
+      )
       .filterable(false)
       .disabled(true)
       .sortable(false)
-      .visible(false)   // hidden — redundant alongside Dto. % and Total columns
+      .visible(false) // hidden — redundant alongside Dto. % and Total columns
       .build(),
   );
   fields.push(
@@ -615,14 +694,21 @@ export const SaleDetailFields = (
       .width(120)
       .align('right')
       .defaultValue(0)
-      .onChange(async function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+      .onChange(async function (
+        this: FieldChangeContext,
+        rowData: DataRecord,
+        value: unknown,
+        currentRowData: DataRecord,
+      ) {
         const row = rowData as SaleDetailRow;
         const currentRow = currentRowData as SaleDetailRow;
         if (value === '') return;
         this.defaultSetCellValue(row, value, currentRow);
         setTotal(form);
       })
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number, currency))
+      .formatter((cell: GridCellContext) =>
+        NumberUtils.formatCurrency(cell.value as number, currency),
+      )
       .required(true)
       .filterable(false)
       .disabled(true)

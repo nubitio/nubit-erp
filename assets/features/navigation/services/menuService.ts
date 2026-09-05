@@ -29,7 +29,8 @@ const MENU_VIEW_PERMISSION: Record<string, string> = {
   cashbox: 'cash.view',
   subscriptions: 'subscriptions.view',
   'accounts-payable': 'accounts_payable.view',
-  'accounts-receivable': 'accounts_payable.view',
+  // Receivables are outstanding customer sales, not supplier payables.
+  'accounts-receivable': 'sales.view',
   'bank-reconciliation': 'bank_reconciliation.view',
   'financial-reports': 'reports.view',
   accounting: 'accounting.view',

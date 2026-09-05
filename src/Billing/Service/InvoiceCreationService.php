@@ -257,8 +257,6 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
                 <<<'SQL'
                     UPDATE sales
                     SET grand_total = :total,
-                        paid_total = :total,
-                        balance_due = 0,
                         updated_at = UTC_TIMESTAMP(),
                         sync_status = 'SYNCED'
                     WHERE id = :sale_id OR legacy_movimiento_id = :sale_id

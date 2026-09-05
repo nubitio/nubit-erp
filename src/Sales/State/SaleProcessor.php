@@ -17,11 +17,12 @@ use App\Efact\Domain\Money;
 use App\Identity\Auth\BranchContextService;
 use App\Identity\Security\Security;
 use App\Organization\Repository\BranchRepository;
+use App\Sales\Domain\SaleSettlementType;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Port\InvoiceCreatorInterface;
 use App\Sales\Repository\SaleRecordRepository;
-use App\Sales\Service\SalePaymentPlanService;
+use App\Sales\Service\SaleSettlementPlanService;
 use App\Settings\Service\TenantSettingsService;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
@@ -64,7 +65,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private BranchRepository $branchRepository,
         private SalesWriteGateway $salesWriteGateway,
         private CashSessionResolverInterface $cashSessionResolver,
-        private SalePaymentPlanService $salePaymentPlanService,
+        private SaleSettlementPlanService $saleSettlementPlanService,
         private DetractionCalculatorInterface $detractionCalculator,
         private SaleInventoryOrchestrator $inventoryOrchestrator,
         private SaleRecordRepository $saleRecordRepository,
@@ -261,11 +262,10 @@ readonly class SaleProcessor implements ProcessorInterface
         $data->setStatus('COMPLETED');
         $this->detractionCalculator->applyFromItems($data);
         if ($isOperationalSale) {
-            $this->salePaymentPlanService->resolveForWrite(
+            $this->saleSettlementPlanService->resolveForWrite(
                 $data,
                 strtoupper(trim($data->getCurrency())) ?: 'PEN',
                 $data->getTotal() ?? '0.00',
-                $data->isCreditSale(),
             );
         }
 
@@ -360,10 +360,9 @@ readonly class SaleProcessor implements ProcessorInterface
         }
 
         if ($isNew && $isOperationalSale) {
-            $cashCollected = $this->salePaymentPlanService->resolveCashCollectedAmount(
+            $cashCollected = $this->saleSettlementPlanService->resolveCashCollectedAmount(
                 $data,
                 $data->getTotal() ?? '0.00',
-                $data->isCreditSale(),
             );
             if (Money::money($cashCollected)->isGreaterThan(BigDecimal::zero())) {
                 if ($resolvedCashSessionId !== null) {
@@ -735,12 +734,16 @@ readonly class SaleProcessor implements ProcessorInterface
             throw new ServiceException('El redondeo de efectivo no está habilitado para este negocio.');
         }
 
-        if ($sale->isCreditSale() || strtoupper(trim($sale->getCurrency())) !== 'PEN') {
+        if (strtoupper(trim($sale->getCurrency())) !== 'PEN') {
             throw new ServiceException('El redondeo aplica únicamente a ventas al contado en soles.');
         }
 
-        $payments = $sale->getPayments();
-        if (count($payments) !== 1 || (int) ($payments[0]['payment_method_id'] ?? 0) !== PaymentMethod::CASH) {
+        $settlements = $this->saleSettlementPlanService->resolveForWrite($sale, 'PEN', Money::toString($total));
+        if (
+            count($settlements) !== 1
+            || $settlements[0]['type'] !== SaleSettlementType::PAYMENT->value
+            || $settlements[0]['payment_method_id'] !== PaymentMethod::CASH
+        ) {
             throw new ServiceException('El redondeo aplica únicamente a pagos 100% en efectivo.');
         }
 

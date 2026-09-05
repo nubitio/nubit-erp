@@ -191,6 +191,25 @@ export const isCashPaymentMethod = (method: PaymentMethodOption | null | undefin
   return method.id === 1 || name.includes('efect');
 };
 
+/** Method 2 is the seeded commercial credit condition (not card credit). */
+export const isCreditPaymentMethod = (method: PaymentMethodOption | null | undefined) => {
+  if (!method) {
+    return false;
+  }
+
+  if (method.settlementBehavior !== undefined) {
+    return method.settlementBehavior === 'RECEIVABLE';
+  }
+
+  // Compatibility for cached responses created before settlementBehavior was
+  // added to the payment-method API.
+  const name = normalizeText(method.name)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
+  return method.id === 2 || name === 'credito';
+};
+
 export const buildCustomersUrl = (query: string, page: number) => {
   const params = new URLSearchParams();
   params.set('itemsPerPage', String(CUSTOMER_PAGE_SIZE));

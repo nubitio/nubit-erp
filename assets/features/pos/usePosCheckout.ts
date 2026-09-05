@@ -4,7 +4,7 @@ import toast, { getIRI } from '@shared/lib/SharedUtils';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import type { CartItem, PaymentMethodOption, PosItem } from './types';
+import type { CartItem, CustomerOption, PaymentMethodOption, PosItem } from './types';
 import {
   isCashPaymentMethod,
   isWeightUnitCode,
@@ -15,7 +15,10 @@ import {
 } from './posHelpers';
 import {
   buildPaymentPayload,
+  buildSettlementPayload,
+  creditPaymentAmount,
   createSinglePaymentLine,
+  hasCreditPayment,
   rebalancePaymentLines,
   totalCashChangeAmount,
   type SalePaymentLineDraft,
@@ -53,6 +56,7 @@ type UsePosCheckoutParams = {
   storeId: string;
   selectedWarehouseId: string;
   selectedCustomerId: number | null;
+  selectedCustomer: CustomerOption | null;
   paymentMethods: PaymentMethodOption[];
   enforceStockCheck: boolean;
   warnOnNegativeStock?: boolean;
@@ -74,6 +78,7 @@ export const usePosCheckout = ({
   storeId,
   selectedWarehouseId,
   selectedCustomerId,
+  selectedCustomer,
   paymentMethods,
   enforceStockCheck,
   warnOnNegativeStock = false,
@@ -121,7 +126,6 @@ export const usePosCheckout = ({
   useEffect(() => {
     setEmitInvoice(autoInvoice);
   }, [autoInvoice]);
-  const [creditSale, setCreditSale] = useState(false);
   const { currency, exchangeRate, setCurrency, setExchangeRate } = useCurrencySettings();
   const { igvRate } = useTenantIgvRate();
   const scaleReady = useScaleReady();
@@ -400,7 +404,6 @@ export const usePosCheckout = ({
     clearCart();
     resetPaymentToCash();
     setEmitInvoice(autoInvoice);
-    setCreditSale(false);
 
     const configuredCurrency = settings.getCached(Setting.DEFAULT_CURRENCY)?.value;
     setCurrency(configuredCurrency === 'USD' ? 'USD' : 'PEN');
@@ -426,6 +429,10 @@ export const usePosCheckout = ({
   const singlePaymentMethod = paymentMethods.find(
     (method) => method.id === paymentLines[0]?.methodId,
   );
+  const creditSale = hasCreditPayment(paymentLines, paymentMethods);
+  const creditAmount = creditPaymentAmount(paymentLines, paymentMethods);
+  const hasIdentifiedCreditCustomer =
+    selectedCustomerId != null && selectedCustomer?.doc !== '00000000';
   const cashRoundingAdjustmentAmount =
     cashRoundingEnabled &&
     !creditSale &&
@@ -456,7 +463,8 @@ export const usePosCheckout = ({
     });
   }, [paymentMethods, payableTotal, total]);
 
-  const paymentValidation = validatePaymentLines(paymentLines, paymentMethods, payableTotal, creditSale);
+  const paymentValidation = validatePaymentLines(paymentLines, paymentMethods, payableTotal);
+  const resolvedSettlements = buildSettlementPayload(paymentLines, paymentMethods, payableTotal);
   const resolvedPayments = buildPaymentPayload(paymentLines, paymentMethods, payableTotal);
   const primaryPaymentMethodId = paymentLines[0]?.methodId ?? null;
   const changeAmount = totalCashChangeAmount(paymentLines, paymentMethods, payableTotal);
@@ -465,6 +473,7 @@ export const usePosCheckout = ({
     cart.length === 0 ||
     isProcessingSale ||
     !selectedWarehouseId ||
+    (creditSale && !hasIdentifiedCreditCustomer) ||
     total <= 0 ||
     !paymentValidation.valid;
 
@@ -480,6 +489,10 @@ export const usePosCheckout = ({
       }
       if (!selectedWarehouseId) {
         toast('Selecciona un almacén', 'warning');
+        return;
+      }
+      if (creditSale && !hasIdentifiedCreditCustomer) {
+        toast('Selecciona un cliente para registrar la cuenta por cobrar.', 'warning');
         return;
       }
       if (!paymentValidation.valid) {
@@ -506,12 +519,11 @@ export const usePosCheckout = ({
         paymentMethod: primaryPaymentMethodId
           ? getIRI(`${API}payment-methods`, String(primaryPaymentMethodId))
           : null,
-        payments: resolvedPayments,
+        settlements: resolvedSettlements,
         note: note.trim() || null,
         discountPercent: discountPercent.toFixed(2),
         cashRoundingAdjustment: cashRoundingAdjustmentAmount.toFixed(2),
         emitInvoice,
-        creditSale,
         currency,
         exchangeRate: currency === 'USD' ? exchangeRate : '1.000000',
         grandTotal: payableTotal.toFixed(2),
@@ -657,7 +669,7 @@ export const usePosCheckout = ({
     emitInvoice,
     setEmitInvoice,
     creditSale,
-    setCreditSale,
+    creditAmount,
     currency,
     setCurrency,
     exchangeRate,

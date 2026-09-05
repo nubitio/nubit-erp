@@ -25,7 +25,13 @@ import {
 } from '@shared/ui/discount-dialog/DiscountDialog';
 import { applySaleAutoInvoiceOnAdd, saleEvents, useSalePageObservers } from './model';
 import { Setting, settings } from '@shared/settings';
-import { cloneSaleToForm, createInvoicePrinter, runMakeInvoiceAction, runReplaceRejectedAction, runVoidSaleAction } from './lib';
+import {
+  cloneSaleToForm,
+  createInvoicePrinter,
+  runMakeInvoiceAction,
+  runReplaceRejectedAction,
+  runVoidSaleAction,
+} from './lib';
 import { createSaleToolbar, useSalePrintPreview } from './ui';
 import { requestAssistantHelp } from '@features/assistant';
 import { useFeature } from '@shared/hooks';
@@ -36,12 +42,20 @@ import { useEvents } from '@nubitio/core';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import type { DataRecord } from '@nubitio/crud';
+import { mapPosCustomer } from '@features/pos/lib/mapPosCustomer';
 
 const SALE_COLUMN_PRESETS = [
   {
     key: 'basic',
     label: 'Básico',
-    columns: ['issuedDate', 'invoiceFullNumber', 'customer', 'paymentMethod', 'grandTotal', 'status'],
+    columns: [
+      'issuedDate',
+      'invoiceFullNumber',
+      'customer',
+      'paymentMethod',
+      'grandTotal',
+      'status',
+    ],
   },
   {
     key: 'full',
@@ -109,27 +123,30 @@ export const SalePage = () => {
   const { currentBranchId, currentUserId } = useSessionInfo();
   const assistantEnabled = useFeature('ai_assistant');
 
-  const formHandleProxy = useMemo<FormHandle>(() => ({
-    getFormData: () => formRef.current?.getFormData(),
-    getFieldValue: (name) => formRef.current?.getFieldValue(name),
-    setFieldValue: (name, value) => formRef.current?.setFieldValue(name, value),
-    getDetailData: () => formRef.current?.getDetailData(),
-    setDetailData: (data) => formRef.current?.setDetailData(data),
-    saveDetailData: () => formRef.current?.saveDetailData(),
-    reloadDetailData: () => formRef.current?.reloadDetailData(),
-    setValues: (data) => formRef.current?.setValues(data),
-    save: () => formRef.current?.save(),
-    deleteRow: (row) => formRef.current?.deleteRow(row),
-    setReadonly: (field, value) => formRef.current?.setReadonly(field, value),
-    setDisabled: (field, value) => formRef.current?.setDisabled(field, value),
-    enableValidation: (field) => formRef.current?.enableValidation(field),
-    disableValidation: (field) => formRef.current?.disableValidation(field),
-    setError: (field, message) => formRef.current?.setError(field, message),
-    showField: (field) => formRef.current?.showField(field),
-    hideField: (field) => formRef.current?.hideField(field),
-    validate: () => formRef.current?.validate() ?? false,
-    setIsEdit: (value) => formRef.current?.setIsEdit(value),
-  }), []);
+  const formHandleProxy = useMemo<FormHandle>(
+    () => ({
+      getFormData: () => formRef.current?.getFormData(),
+      getFieldValue: (name) => formRef.current?.getFieldValue(name),
+      setFieldValue: (name, value) => formRef.current?.setFieldValue(name, value),
+      getDetailData: () => formRef.current?.getDetailData(),
+      setDetailData: (data) => formRef.current?.setDetailData(data),
+      saveDetailData: () => formRef.current?.saveDetailData(),
+      reloadDetailData: () => formRef.current?.reloadDetailData(),
+      setValues: (data) => formRef.current?.setValues(data),
+      save: () => formRef.current?.save(),
+      deleteRow: (row) => formRef.current?.deleteRow(row),
+      setReadonly: (field, value) => formRef.current?.setReadonly(field, value),
+      setDisabled: (field, value) => formRef.current?.setDisabled(field, value),
+      enableValidation: (field) => formRef.current?.enableValidation(field),
+      disableValidation: (field) => formRef.current?.disableValidation(field),
+      setError: (field, message) => formRef.current?.setError(field, message),
+      showField: (field) => formRef.current?.showField(field),
+      hideField: (field) => formRef.current?.hideField(field),
+      validate: () => formRef.current?.validate() ?? false,
+      setIsEdit: (value) => formRef.current?.setIsEdit(value),
+    }),
+    [],
+  );
 
   const customerFields = useMemo(() => CustomerFields(customerFormRef), []);
 
@@ -154,10 +171,7 @@ export const SalePage = () => {
         onOpenDiscount: async ({ total, discountPercent }) => {
           await formRef.current?.saveDetailData();
           const rows = formRef.current?.getDetailData() ?? [];
-          const detailTotal = rows.reduce(
-            (sum, row) => sum + Number(row.netAmount ?? 0),
-            0,
-          );
+          const detailTotal = rows.reduce((sum, row) => sum + Number(row.netAmount ?? 0), 0);
           const currentDiscountPercent = Number(
             formRef.current?.getFieldValue('discountPercent') ?? discountPercent,
           );
@@ -199,7 +213,11 @@ export const SalePage = () => {
   );
 
   const detailFields = useMemo(
-    () => SaleDetailFields(formHandleProxy, 'PEN', { ...itemDiscountCallbacks, stateRef: saleFieldStateRef }),
+    () =>
+      SaleDetailFields(formHandleProxy, 'PEN', {
+        ...itemDiscountCallbacks,
+        stateRef: saleFieldStateRef,
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [formHandleProxy, itemDiscountCallbacks],
   );
@@ -219,11 +237,9 @@ export const SalePage = () => {
   );
   const gridDetailFields = useMemo(
     () => (parentRow: DataRecord) =>
-      SaleDetailFields(
-        formRef.current,
-        (parentRow?.currency as string) ?? 'PEN',
-        { stateRef: saleFieldStateRef },
-      ),
+      SaleDetailFields(formRef.current, (parentRow?.currency as string) ?? 'PEN', {
+        stateRef: saleFieldStateRef,
+      }),
     [],
   );
 
@@ -272,15 +288,18 @@ export const SalePage = () => {
     onCustomerCreated: (payload) => {
       const { data } = payload as { data?: unknown };
       formRef.current?.setFieldValue('customer', data);
+      formRef.current?.setFieldValue('customerDocument', mapPosCustomer(data)?.doc ?? '');
     },
     onSaleAdd: async () => {
       const defaultCurrency = settings.getCached(Setting.DEFAULT_CURRENCY)?.value ?? 'PEN';
-      const currency = (formRef.current?.getFieldValue('currency') as string | undefined) ?? defaultCurrency;
+      const currency =
+        (formRef.current?.getFieldValue('currency') as string | undefined) ?? defaultCurrency;
       if (currency === 'PEN' || !currency) {
         formRef.current?.hideField('exchangeRate');
       }
       window.setTimeout(() => {
-        const currentCurrency = (formRef.current?.getFieldValue('currency') as string | undefined) ?? defaultCurrency;
+        const currentCurrency =
+          (formRef.current?.getFieldValue('currency') as string | undefined) ?? defaultCurrency;
         if (currentCurrency === 'PEN' || !currentCurrency) {
           formRef.current?.hideField('exchangeRate');
         }
@@ -376,12 +395,13 @@ export const SalePage = () => {
       {
         text: 'Duplicar',
         icon: 'ph-copy',
-        onClick: () => cloneSaleToForm({
-          saleId,
-          emit,
-          addEventName: saleEvents.ADD,
-          loadingEventName: FORM_EVENTS.LOADING,
-        }),
+        onClick: () =>
+          cloneSaleToForm({
+            saleId,
+            emit,
+            addEventName: saleEvents.ADD,
+            loadingEventName: FORM_EVENTS.LOADING,
+          }),
       },
       {
         text: 'Anular',
@@ -405,10 +425,7 @@ export const SalePage = () => {
   );
 
   return (
-    <div
-      id={container}
-      className={saleFormOpen ? 'wrapper--with-page' : undefined}
-    >
+    <div id={container} className={saleFormOpen ? 'wrapper--with-page' : undefined}>
       {!saleFormOpen && (
         <DataGridView
           id={'sales'}

@@ -5,6 +5,7 @@ export {
   formatPosQuantity,
   IGV_RATE,
   isCashPaymentMethod,
+  isCreditPaymentMethod,
   isWeightUnitCode,
   normalizeProduct,
   normalizeText,

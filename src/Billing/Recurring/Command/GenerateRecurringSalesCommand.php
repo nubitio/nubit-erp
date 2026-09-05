@@ -24,13 +24,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * The generated sale has no SalePayment rows, so balanceDue equals grandTotal
  * — this is what makes it a "cuenta por cobrar" without a separate entity.
  *
- * The SUNAT voucher is NOT auto-issued here: InvoiceCreationService (shared
- * with the manual POS flow) marks a sale's paid_total = grandTotal and
- * balanceDue = 0 as soon as a voucher is created for it, because in this
- * system "invoiced" has always meant "collected". Auto-invoicing at
- * generation time would zero out the very receivable this command exists to
- * create. Staff issue the voucher manually (same "Emitir comprobante" action
- * as any other credit sale) once payment is actually collected.
+ * The SUNAT voucher is not auto-issued here. Document issuance and collection
+ * are independent: issuing one later preserves paidTotal and balanceDue.
  *
  * sellerUserId is required by the sales schema (POS legacy constraint) even
  * though no human cashier is involved — the first ROLE_SUPER_ADMIN/ROLE_ADMIN
