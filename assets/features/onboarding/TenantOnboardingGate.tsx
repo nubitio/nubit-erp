@@ -94,6 +94,7 @@ export function TenantOnboardingGate() {
   const [certificateFile, setCertificateFile] = useState<File | null>(null);
   const [sunat, setSunat] = useState({ solUser: '', solPass: '', certificatePassword: '' });
   const [sunatSkipped, setSunatSkipped] = useState(false);
+  const [lycetSyncStatus, setLycetSyncStatus] = useState<string | null>(null);
   const assistantEnabled = useFeature('ai_assistant');
 
   useEffect(() => {
@@ -166,6 +167,13 @@ export function TenantOnboardingGate() {
     return true;
   }, [branch, certificateFile, company, selectedPreset, step, sunat, sunatSkipped, warehouse]);
 
+  const sunatStatusLabel = useMemo(() => {
+    if (sunatSkipped) return 'se configura después en Ajustes';
+    if (lycetSyncStatus === null || lycetSyncStatus === 'synced') return 'configurada';
+
+    return 'pendiente de sincronización con SUNAT — reintenta desde Ajustes';
+  }, [lycetSyncStatus, sunatSkipped]);
+
   const saveCompany = useMutation({ mutationFn: tenantOnboardingService.saveCompany });
   const saveBranch = useMutation({ mutationFn: tenantOnboardingService.saveBranch });
   const saveWarehouse = useMutation({ mutationFn: tenantOnboardingService.saveWarehouse });
@@ -181,13 +189,20 @@ export function TenantOnboardingGate() {
         await saveCompany.mutateAsync(company);
       }
       if (step === 2 && !sunatSkipped && certificateFile) {
-        await uploadCertificate.mutateAsync({
+        const result = await uploadCertificate.mutateAsync({
           ruc: company.ruc,
           solUser: sunat.solUser,
           solPass: sunat.solPass,
           certificate: certificateFile,
           certificatePassword: sunat.certificatePassword,
         });
+        setLycetSyncStatus(result.certificate.lycetSyncStatus);
+        if (result.certificate.lycetSyncStatus !== 'synced') {
+          toast(
+            'El certificado se guardó, pero la sincronización con SUNAT quedó pendiente. Podrás reintentarla desde Ajustes.',
+            'warning',
+          );
+        }
       }
       if (step === 3) {
         await saveBranch.mutateAsync(branch);
@@ -353,7 +368,7 @@ export function TenantOnboardingGate() {
                 <li>Empresa: {company.businessName || company.ruc}</li>
                 <li>Local: {branch.name}</li>
                 <li>Almacén: {warehouse.name}</li>
-                <li>SUNAT: {sunatSkipped ? 'se configura después en Ajustes' : 'configurada'}</li>
+                <li>SUNAT: {sunatStatusLabel}</li>
                 <li>
                   Siguiente: importa tu Excel de productos y clientes desde{' '}
                   <button type="button" onClick={() => navigate('/setup/import')}>
