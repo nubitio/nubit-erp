@@ -38,6 +38,11 @@ jobs:
           docker compose exec -T web mago analyze
           docker compose exec -T web mago fmt --check
 
+      - name: Run Platform boundary guard
+        # ADR-012: this check existed but never ran in CI, so a PR could
+        # introduce exactly the import it's meant to catch undetected.
+        run: docker compose exec -T web php scripts/architecture/check-platform-boundary.php
+
       - name: Run PHPStan
         # Level is enforced via phpstan.dist.neon (min: 6, see SLICE-SEC-001)
         run: |
