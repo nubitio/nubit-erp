@@ -18,6 +18,7 @@ excludes = [
   "tests/FixedAssets/Command/GenerateDepreciationEntriesCommandTest.php",
   "tests/CashRegister/Controller/CashRegisterReportControllerTest.php",
   "tests/CashRegister/Migration/CashMovementsImmutabilityTriggerTest.php",
+  "tests/Setup/Command/SeedPresentationDemoCommandGuardTest.php",
 ]
 extensions = ["php"]
 
