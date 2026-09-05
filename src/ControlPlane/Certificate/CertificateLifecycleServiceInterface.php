@@ -38,4 +38,9 @@ interface CertificateLifecycleServiceInterface
      * @return list<TenantCertificate>
      */
     public function refreshExpiringStatuses(int $days = 30): array;
+
+    /**
+     * @return list<TenantCertificate>
+     */
+    public function findStuckLycetSyncs(int $minutesThreshold = 30): array;
 }

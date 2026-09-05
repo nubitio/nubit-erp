@@ -331,6 +331,25 @@ final class CertificateLifecycleServiceTest extends TestCase
         $service->retryUpsertSync('acme', '20123456789', '20123456789MODDATOS', 'secret', $pem);
     }
 
+    public function testFindStuckLycetSyncsDelegatesToRepository(): void
+    {
+        $stuck = $this->certificate(id: 11, status: CertificateStatus::Active);
+
+        $repository = $this->createMock(TenantCertificateRepositoryInterface::class);
+        $repository->expects(self::once())->method('findStuckLycetSyncs')->with(45)->willReturn([$stuck]);
+
+        $service = new CertificateLifecycleService(
+            $this->createMock(TenantRegistryInterface::class),
+            $repository,
+            new CertificateMetadataExtractor(),
+            new CertificateStatusPolicy(30),
+            $this->createMock(ElectronicBillingCompanyPortInterface::class),
+            $this->createMock(ConnectionRegistry::class),
+        );
+
+        self::assertSame([$stuck], $service->findStuckLycetSyncs(45));
+    }
+
     private function certificate(int $id, CertificateStatus $status): TenantCertificate
     {
         return new TenantCertificate(
