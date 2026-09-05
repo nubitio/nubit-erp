@@ -56,6 +56,10 @@ if ($coverage + 0.00001 < $minimum) {
 $directoryThresholds = [
     'src/EInvoicing/' => 70.0,
     'src/State/Sale/' => 70.0,
+    // #314: highest-risk module financially (cash ledger); was 68.32% before
+    // adding CashRegisterReportControllerTest (0/76 statements covered).
+    // Set below the current ~79% to leave headroom, not at the ceiling.
+    'src/CashRegister/' => 75.0,
 ];
 
 $directoryFailed = false;
