@@ -21,10 +21,7 @@ final readonly class SettlementPaymentMethodResolver
     public function id(array $settlement): ?int
     {
         return $this->normalizeId(
-            $settlement['payment_method_id']
-                ?? $settlement['paymentMethodId']
-                ?? $settlement['methodId']
-                ?? null,
+            $settlement['payment_method_id'] ?? $settlement['paymentMethodId'] ?? $settlement['methodId'] ?? null,
         );
     }
 
