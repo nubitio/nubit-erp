@@ -95,6 +95,12 @@ export function TenantOnboardingGate() {
   const [sunat, setSunat] = useState({ solUser: '', solPass: '', certificatePassword: '' });
   const [sunatSkipped, setSunatSkipped] = useState(false);
   const [lycetSyncStatus, setLycetSyncStatus] = useState<string | null>(null);
+  // Resuming the wizard via snapshot can jump straight past the SUNAT step
+  // (e.g. branch/warehouse already exist from an earlier session) without
+  // this session ever running the upload mutation, so lycetSyncStatus stays
+  // null even though the real backend status could be pending/failed —
+  // tracked separately so the Done summary doesn't misreport it as "configurada".
+  const [resumedPastSunatStep, setResumedPastSunatStep] = useState(false);
   const assistantEnabled = useFeature('ai_assistant');
 
   useEffect(() => {
@@ -150,9 +156,15 @@ export function TenantOnboardingGate() {
 
       // Resume at the first incomplete step instead of restarting the wizard
       // after a refresh or a later login.
-      if (snapshot.warehouse) setStep(5);
-      else if (snapshot.branch) setStep(4);
-      else if (snapshot.company) setStep(2);
+      if (snapshot.warehouse) {
+        setStep(5);
+        setResumedPastSunatStep(true);
+      } else if (snapshot.branch) {
+        setStep(4);
+        setResumedPastSunatStep(true);
+      } else if (snapshot.company) {
+        setStep(2);
+      }
     });
   }, [snapshotQuery.data]);
 
@@ -169,10 +181,12 @@ export function TenantOnboardingGate() {
 
   const sunatStatusLabel = useMemo(() => {
     if (sunatSkipped) return 'se configura después en Ajustes';
-    if (lycetSyncStatus === null || lycetSyncStatus === 'synced') return 'configurada';
+    if (lycetSyncStatus === 'synced') return 'configurada';
+    if (lycetSyncStatus !== null) return 'pendiente de sincronización con SUNAT — reintenta desde Ajustes';
+    if (resumedPastSunatStep) return 'verifica el estado de sincronización en Ajustes';
 
-    return 'pendiente de sincronización con SUNAT — reintenta desde Ajustes';
-  }, [lycetSyncStatus, sunatSkipped]);
+    return 'configurada';
+  }, [lycetSyncStatus, resumedPastSunatStep, sunatSkipped]);
 
   const saveCompany = useMutation({ mutationFn: tenantOnboardingService.saveCompany });
   const saveBranch = useMutation({ mutationFn: tenantOnboardingService.saveBranch });
