@@ -14,33 +14,38 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
  * the ADR-004 amendment gap: "nothing currently stops an application-layer
  * mutation of a persisted cash movement"). Inserts directly with foreign key
  * checks disabled — this test only cares about the trigger behavior on the
- * table itself, not the referential graph.
+ * table itself, not the referential graph. FOREIGN_KEY_CHECKS is restored
+ * immediately after the insert since it's a session setting, not scoped to
+ * the transaction, and would otherwise leak into later statements on the
+ * same connection.
  *
- * Uses a random id per run rather than relying on transactional rollback:
- * phpunit.coverage.xml (used by CI and scripts/quality-check.sh) does not
- * register DAMA\DoctrineTestBundle, so inserts here are not rolled back
- * between tests — and the DELETE trigger this test verifies makes the row
- * impossible to clean up afterwards regardless. This mirrors the
- * random-value pattern already used by other integration tests (e.g.
- * makeAdminUser() in GenerateRecurringSalesCommandTest.php) for the same
- * reason.
+ * Lets the DB assign the id via AUTO_INCREMENT rather than picking one at
+ * random: phpunit.coverage.xml (used by CI and scripts/quality-check.sh)
+ * does not register DAMA\DoctrineTestBundle, so this insert isn't rolled
+ * back between tests, and the DELETE trigger this test verifies makes the
+ * row impossible to clean up afterwards regardless — a caller-chosen random
+ * id would risk a collision with a real row (or a previous test run) over
+ * time, which AUTO_INCREMENT can't.
  */
 uses(KernelTestCase::class);
 
 beforeEach(function (): void {
     self::bootKernel();
-    $this->connection = static::getContainer()->get('doctrine.dbal.tenant_connection');
-    assert($this->connection instanceof Connection, 'doctrine.dbal.tenant_connection must be a DBAL Connection');
+    $connection = static::getContainer()->get('doctrine.dbal.tenant_connection');
+    if (!$connection instanceof Connection) {
+        throw new \RuntimeException('doctrine.dbal.tenant_connection must be a DBAL Connection');
+    }
 
-    $this->movementId = random_int(900_000_000, 999_999_999);
+    $this->connection = $connection;
     $this->connection->executeStatement('SET FOREIGN_KEY_CHECKS=0');
-    $this->connection->executeStatement('INSERT INTO cash_movements (id, cash_session_id, movement_type, amount, description, created_by, created_at)
-         VALUES (:id, 1, :type, :amount, :description, 1, NOW())', [
-        'id' => $this->movementId,
+    $this->connection->executeStatement('INSERT INTO cash_movements (cash_session_id, movement_type, amount, description, created_by, created_at)
+         VALUES (1, :type, :amount, :description, 1, NOW())', [
         'type' => 'CASH_IN',
         'amount' => '10.00',
         'description' => 'immutability trigger test',
     ]);
+    $this->movementId = (int) $this->connection->lastInsertId();
+    $this->connection->executeStatement('SET FOREIGN_KEY_CHECKS=1');
 });
 
 it('rejects UPDATE on cash_movements', function (): void {
