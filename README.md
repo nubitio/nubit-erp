@@ -271,6 +271,17 @@ make format-php    # mago fmt --check
 make lint          # eslint (frontend)
 ```
 
+### Pre-push hook
+
+`.husky/pre-push` corre `scripts/quality-check.sh`, que espeja los checks del job "Backend Quality & Coverage" de CI (mago, phpstan, pest) más eslint/tsc/vitest del frontend, contra el stack de Docker local. Requiere `docker compose up -d` corriendo antes de pushear.
+
+`mago analyze` corre con `--fail-on-out-of-sync-baseline`: falla tanto si aparece un issue nuevo no cubierto por `analyzer-baseline.toml` como si el baseline tiene entradas obsoletas (issues que ya no existen). Si el hook falla en este paso:
+
+- **Issue nuevo real**: corrígelo en el código, no lo agregues al baseline.
+- **Baseline desactualizado** (el mensaje dice "N entries not seen in this run" o similar): regeneralo con `docker exec efact-web mago analyze --generate-baseline` y commitea `analyzer-baseline.toml` junto con tu cambio — no es deuda tuya, pero bloquea el push hasta que se corrija.
+
+Si necesitas pushear sin correr el stack local (no recomendado salvo emergencia), la verificación real ocurre igual en CI al abrir el PR.
+
 ## Docker comandos útiles
 
 ```bash

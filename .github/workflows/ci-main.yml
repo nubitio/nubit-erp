@@ -35,7 +35,7 @@ jobs:
       - name: Run Mago lint + format check
         run: |
           docker compose exec -T web mago lint
-          docker compose exec -T web mago analyze
+          docker compose exec -T web mago analyze --fail-on-out-of-sync-baseline
           docker compose exec -T web mago fmt --check
 
       - name: Run Platform boundary guard
