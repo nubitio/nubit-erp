@@ -19,6 +19,16 @@ use Symfony\Component\Console\Output\BufferedOutput;
  * purchases or payroll loaded (no products/sales yet) passed the
  * pre-flight check and got demo data mixed in.
  *
+ * Each test asserts that the warning names the specific data source it
+ * inserted (e.g. "compras", not "productos"/"ventas"), so a test can't pass
+ * "by accident" via the pre-existing producto/sales guard instead of the new
+ * one it's meant to exercise. This is checked via message content rather
+ * than asserting producto/sales counts are 0: phpunit.coverage.xml (used by
+ * CI) doesn't roll back between tests, so other suites' fixture data
+ * (e.g. InventorySummaryServiceTest) can leave real rows in `producto`
+ * when this test runs as part of the full suite — the message check is
+ * unaffected by that pre-existing cross-test leakage.
+ *
  * Only exercises the guard branch (Command::FAILURE, no side effects) —
  * the full happy-path seed is exercised by PresentationDemoSeeder's own
  * tests, not duplicated here.
@@ -44,11 +54,11 @@ function markTenantAsConfigured(Connection $connection): void
     ]);
 }
 
-function runDemoSeedGuard(SeedPresentationDemoCommand $command): int
+function runDemoSeedGuard(SeedPresentationDemoCommand $command, BufferedOutput $output): int
 {
     $ref = new \ReflectionMethod($command, 'executeTenantCommand');
 
-    return $ref->invoke($command, new ArrayInput([]), new BufferedOutput());
+    return $ref->invoke($command, new ArrayInput([]), $output);
 }
 
 beforeEach(function (): void {
@@ -65,9 +75,11 @@ it('blocks seeding when the tenant already has purchases (goods_receipts) but no
         'id' => bin2hex(random_bytes(16)),
     ]);
 
-    $exitCode = runDemoSeedGuard($this->command);
+    $output = new BufferedOutput();
+    $exitCode = runDemoSeedGuard($this->command, $output);
 
-    expect($exitCode)->toBe(Command::FAILURE);
+    expect($exitCode)->toBe(Command::FAILURE)
+        ->and($output->fetch())->toContain('compras');
 });
 
 it('blocks seeding when the tenant already has payroll runs', function (): void {
@@ -77,9 +89,11 @@ it('blocks seeding when the tenant already has payroll runs', function (): void 
         'id' => bin2hex(random_bytes(16)),
     ]);
 
-    $exitCode = runDemoSeedGuard($this->command);
+    $output = new BufferedOutput();
+    $exitCode = runDemoSeedGuard($this->command, $output);
 
-    expect($exitCode)->toBe(Command::FAILURE);
+    expect($exitCode)->toBe(Command::FAILURE)
+        ->and($output->fetch())->toContain('planilla');
 });
 
 it('blocks seeding when the tenant already has accounting journal entries', function (): void {
@@ -92,7 +106,9 @@ it('blocks seeding when the tenant already has accounting journal entries', func
         ['id' => bin2hex(random_bytes(16)), 'entryNo' => 'JE-TEST-' . $suffix, 'sourceId' => 'src-' . $suffix],
     );
 
-    $exitCode = runDemoSeedGuard($this->command);
+    $output = new BufferedOutput();
+    $exitCode = runDemoSeedGuard($this->command, $output);
 
-    expect($exitCode)->toBe(Command::FAILURE);
+    expect($exitCode)->toBe(Command::FAILURE)
+        ->and($output->fetch())->toContain('asientos contables');
 });

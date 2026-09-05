@@ -106,7 +106,9 @@ final class SeedPresentationDemoCommand extends PerTenantCommand
 
         if ($foundExistingData !== []) {
             $summary = implode(', ', array_map(
-                static fn(string $label, int $count): string => sprintf('%d %s', $count, $label),
+                // "label: N" instead of "N label" sidesteps Spanish singular/plural
+                // agreement (e.g. "1 productos" would be wrong) without a pluralizer.
+                static fn(string $label, int $count): string => sprintf('%s: %d', $label, $count),
                 array_keys($foundExistingData),
                 array_values($foundExistingData),
             ));
