@@ -5374,7 +5374,7 @@ count = 1
 file = "src/Setup/Command/SeedPresentationDemoCommand.php"
 code = "ambiguous-object-method-access"
 message = "Cannot statically verify method call on a generic `object` type."
-count = 2
+count = 1
 
 [[issues]]
 file = "src/Setup/Command/SeedTestDataCommand.php"

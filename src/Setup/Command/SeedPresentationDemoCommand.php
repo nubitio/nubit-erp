@@ -86,14 +86,33 @@ final class SeedPresentationDemoCommand extends PerTenantCommand
         }
 
         $connection = $this->connectionRegistry->getConnection();
-        $productCount = (int) $connection->fetchOne('SELECT COUNT(*) FROM producto');
-        $saleCount = (int) $connection->fetchOne('SELECT COUNT(*) FROM sales');
 
-        if ($productCount > 0 || $saleCount > 0) {
+        /** @var array<string, string> $existingDataCounts */
+        $existingDataCounts = [
+            'productos' => 'SELECT COUNT(*) FROM producto',
+            'ventas' => 'SELECT COUNT(*) FROM sales',
+            'compras' => 'SELECT COUNT(*) FROM goods_receipts',
+            'planilla' => 'SELECT COUNT(*) FROM payroll_run',
+            'asientos contables' => 'SELECT COUNT(*) FROM journal_entry',
+        ];
+
+        $foundExistingData = [];
+        foreach ($existingDataCounts as $label => $query) {
+            $count = (int) $connection->fetchOne($query);
+            if ($count > 0) {
+                $foundExistingData[$label] = $count;
+            }
+        }
+
+        if ($foundExistingData !== []) {
+            $summary = implode(', ', array_map(
+                static fn(string $label, int $count): string => sprintf('%d %s', $count, $label),
+                array_keys($foundExistingData),
+                array_values($foundExistingData),
+            ));
             $io->warning(sprintf(
-                'El tenant ya contiene %d productos y %d ventas. No se mezclarán datos de presentación.',
-                $productCount,
-                $saleCount,
+                'El tenant ya contiene datos operativos (%s). No se mezclarán datos de presentación.',
+                $summary,
             ));
             $io->note('Cree un tenant demo nuevo para una presentación limpia.');
 
