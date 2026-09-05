@@ -16,6 +16,7 @@ excludes = [
   # false positives (undefined-variable, self/static-outside-class-scope).
   "tests/Billing/Recurring/Command/GenerateRecurringSalesCommandTest.php",
   "tests/FixedAssets/Command/GenerateDepreciationEntriesCommandTest.php",
+  "tests/CashRegister/Controller/CashRegisterReportControllerTest.php",
 ]
 extensions = ["php"]
 
