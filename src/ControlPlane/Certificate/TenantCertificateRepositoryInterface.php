@@ -22,6 +22,16 @@ interface TenantCertificateRepositoryInterface
      */
     public function findExpiringWithin(int $days): array;
 
+    /**
+     * Certificates stuck in a non-"synced" Lycet status for at least
+     * $minutesThreshold minutes (upsert_pending, upsert_failed,
+     * revocation_pending, revocation_failed) — candidates for
+     * app:control-plane:certificate:retry-sync or manual investigation.
+     *
+     * @return list<TenantCertificate>
+     */
+    public function findStuckLycetSyncs(int $minutesThreshold): array;
+
     public function insert(
         int $tenantId,
         string $tenantName,

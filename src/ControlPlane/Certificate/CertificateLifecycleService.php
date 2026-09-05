@@ -177,6 +177,14 @@ final readonly class CertificateLifecycleService implements CertificateLifecycle
     }
 
     /**
+     * @return list<TenantCertificate>
+     */
+    public function findStuckLycetSyncs(int $minutesThreshold = 30): array
+    {
+        return $this->repository->findStuckLycetSyncs($minutesThreshold);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function requireTenant(string $tenantName): array
