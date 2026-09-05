@@ -6075,13 +6075,13 @@ count = 1
 [[issues]]
 file = "tests/Billing/State/TaxDocumentProviderTest.php"
 code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<mixed, mixed>|array<array-key, mixed>`, but found `mixed`.'
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
 count = 6
 
 [[issues]]
 file = "tests/Billing/State/TaxDocumentProviderTest.php"
 code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayNotHasKey`: expected `ArrayAccess<mixed, mixed>|array<array-key, mixed>`, but found `mixed`.'
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayNotHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
 count = 2
 
 [[issues]]
@@ -6441,7 +6441,7 @@ count = 1
 [[issues]]
 file = "tests/ControlPlane/Integration/Billing/EntitlementsEndpointTest.php"
 code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<mixed, mixed>|array<array-key, mixed>`, but found `mixed`.'
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
 count = 6
 
 [[issues]]
@@ -6519,7 +6519,7 @@ count = 1
 [[issues]]
 file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
 code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<mixed, mixed>|array<array-key, mixed>`, but found `mixed`.'
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
 count = 1
 
 [[issues]]
@@ -6657,7 +6657,7 @@ count = 2
 [[issues]]
 file = "tests/Identity/EventSubscriber/BranchFilterSubscriberTest.php"
 code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<mixed, mixed>|array<array-key, mixed>`, but found `mixed`.'
+message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
 count = 2
 
 [[issues]]

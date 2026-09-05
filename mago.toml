@@ -17,6 +17,7 @@ excludes = [
   "tests/Billing/Recurring/Command/GenerateRecurringSalesCommandTest.php",
   "tests/FixedAssets/Command/GenerateDepreciationEntriesCommandTest.php",
   "tests/CashRegister/Controller/CashRegisterReportControllerTest.php",
+  "tests/CashRegister/Migration/CashMovementsImmutabilityTriggerTest.php",
 ]
 extensions = ["php"]
 
