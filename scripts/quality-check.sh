@@ -27,7 +27,11 @@ echo "==> [backend] mago lint"
 docker exec "$WEB_CONTAINER" mago lint
 
 echo "==> [backend] mago analyze"
-docker exec "$WEB_CONTAINER" mago analyze
+# --fail-on-out-of-sync-baseline: fail as soon as the baseline drifts (new
+# unbaselined issues OR stale entries for issues that no longer exist),
+# instead of only failing on new issues and letting stale entries pile up
+# silently for months.
+docker exec "$WEB_CONTAINER" mago analyze --fail-on-out-of-sync-baseline
 
 echo "==> [backend] mago fmt --check"
 docker exec "$WEB_CONTAINER" mago fmt --check
