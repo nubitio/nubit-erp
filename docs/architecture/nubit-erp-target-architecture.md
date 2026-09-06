@@ -178,10 +178,11 @@ Entregable (PR 1): `src/Pharmacy/{Entity,Repository,Service,Controller,Enum}` �
 Seguimiento (mismo #336): `Medicine`, `Prescription`, `ControlledProduct` + permisos finos — entidades dentro del contexto, no cambian la arquitectura.
 Criterio: PHPArkitect verde (Pharmacy→ERP permitido, ERP→Pharmacy prohibido — `PharmacyBoundaryTest`); `Catalog.Product` sin campos de farmacia (AR-007, verificado por test).
 
-**NB-11 · `PharmacyStockPolicy` vía punto de extensión**
-Objetivo: `StockPolicy` como seam en Inventory con `DefaultStockPolicy`; Pharmacy registra `PharmacyStockPolicy` (FEFO, bloqueo de vencidos, selección de lote).
-Entregable: interfaz + registro + tests.
-Criterio: venta de medicamento descuenta lote correcto y valida vencimiento sin que `Sales`/`Inventory` conozcan `Pharmacy` (reacción por evento `SaleConfirmed` o contrato `StockPolicy`).
+**NB-11 · `PharmacyStockValidationPolicy` (validación de vencimiento)** — hecho (PR de #337)
+Objetivo: Pharmacy especializa el seam de validación de stock sin que Inventory/Sales lo sepan.
+Entregable: `App\Pharmacy\Policy\PharmacyStockValidationPolicy` **decora** `StockValidationPolicyInterface` (de Inventory) vía `#[AsDecorator]` — Sales sigue inyectando la interfaz, el contenedor mete el decorator. Delega en el inner (chequeo de stock negativo) y encima aplica `ExpiryControl`: `BLOCK` rechaza si todos los lotes están vencidos, `WARN` avisa; producto sin perfil de farmacia o sin lotes registrados pasa igual. `Pharmacy.dependsOn` = `[Catalog, Inventory]` (Vertical→ERP permitido).
+Seguimiento (#337): **selección de lote FEFO en la deducción** — va con NB-12 (reacción a `SaleConfirmed` que registra el lote descontado); `PharmacyCatalogService::nextUsableBatch/fefoBatches` ya es el seam.
+Criterio: `PharmacyStockValidationPolicyTest` (block/warn/passthrough/inner-block); 511 tests de Sales+Inventory sin regresión; PHPArkitect verde.
 
 **NB-12 · Reacción por evento Pharmacy ↔ core**
 Objetivo: Pharmacy se suscribe a `SaleConfirmed` para `updateBatchStock`; `Sales` no importa `Pharmacy`.
