@@ -184,9 +184,11 @@ Entregable: `App\Pharmacy\Policy\PharmacyStockValidationPolicy` **decora** `Stoc
 Seguimiento (#337): **selección de lote FEFO en la deducción** — va con NB-12 (reacción a `SaleConfirmed` que registra el lote descontado); `PharmacyCatalogService::nextUsableBatch/fefoBatches` ya es el seam.
 Criterio: `PharmacyStockValidationPolicyTest` (block/warn/passthrough/inner-block); 511 tests de Sales+Inventory sin regresión; PHPArkitect verde.
 
-**NB-12 · Reacción por evento Pharmacy ↔ core**
-Objetivo: Pharmacy se suscribe a `SaleConfirmed` para `updateBatchStock`; `Sales` no importa `Pharmacy`.
-Criterio: quitar `src/Pharmacy` no rompe compilación de `src/Sales`.
+**NB-12 · Reacción por evento Pharmacy ↔ core** — hecho (PR de #338)
+Objetivo: Pharmacy reacciona a la confirmación de venta; `Sales` no importa `Pharmacy`.
+Entregable: `App\Sales\Event\SaleConfirmed` (+ `SaleConfirmedLine`) — value object **definido en Sales**, despachado por `SaleProcessor` tras persistir una venta nueva (try/catch, no fatal). `App\Pharmacy\MessageHandler\RecordBatchDrawdownOnSaleConfirmed` (`#[AsMessageHandler]`, en la vertical) escribe una fila append-only en `pharmacy_batch_movements` por línea de producto de farmacia, eligiendo el lote FEFO no vencido (fallback: el más antiguo). Idempotente por `saleId`. `Pharmacy.dependsOn` = `[Catalog, Inventory, Sales]`.
+Seguimiento: split de una línea entre varios lotes (necesita cantidades por lote de Inventory `stock_lots`).
+Criterio: `PharmacyBoundaryTest` — nada fuera de `src/Pharmacy` importa `App\Pharmacy` (incluye `src/Sales`); `RecordBatchDrawdownOnSaleConfirmedTest` (FEFO, skip no-farmacia/NONE, idempotencia, fallback); 284 tests de Sales sin regresión.
 
 ### Fase 4 — Endurecer propiedad de datos (AR-005)
 

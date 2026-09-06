@@ -20,6 +20,8 @@ use App\Organization\Repository\BranchRepository;
 use App\Sales\Domain\SaleSettlementType;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
+use App\Sales\Event\SaleConfirmed;
+use App\Sales\Event\SaleConfirmedLine;
 use App\Sales\Port\InvoiceCreatorInterface;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\Service\SaleSettlementPlanService;
@@ -431,6 +433,17 @@ readonly class SaleProcessor implements ProcessorInterface
             }
         }
 
+        if ($isNew && $this->messageBus !== null) {
+            try {
+                $this->dispatchSaleConfirmed($data);
+            } catch (\Throwable $exception) {
+                $this->logger->error('SaleConfirmed dispatch failed', [
+                    'sale_id' => $data->getId(),
+                    'error' => $exception->getMessage(),
+                ]);
+            }
+        }
+
         $this->logger->info('Sale processing completed successfully', [
             'sale_id' => $data->getId(),
         ]);
@@ -451,6 +464,23 @@ readonly class SaleProcessor implements ProcessorInterface
         ]);
 
         return $data;
+    }
+
+    private function dispatchSaleConfirmed(SaleRecord $sale): void
+    {
+        $lines = [];
+        foreach ($sale->getSaleItemRecords() as $item) {
+            $productId = $item->getProduct()?->getId();
+            if ($productId !== null) {
+                $lines[] = new SaleConfirmedLine((string) $productId, $item->getQty());
+            }
+        }
+
+        $this->messageBus?->dispatch(new SaleConfirmed(
+            saleId: (string) $sale->getId(),
+            warehouseId: (string) $sale->getAlmacen()?->getId(),
+            lines: $lines,
+        ));
     }
 
     private function dispatchSaleToLedger(SaleRecord $sale): void
