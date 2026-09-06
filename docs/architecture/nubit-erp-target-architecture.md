@@ -89,7 +89,7 @@ Observabilidad: cada operación relevante emite log estructurado con
 | G3 | **Catálogo de capabilities de 1ª clase incompleto.** Falta `CapabilityKey` enum, `CapabilityCatalog` con metadata (owner, dependencias, entitlement requerido, schema, defaults), `TenantCapabilityResolver` (fail-closed), tablas `tenant_capabilities` y `tenant_profile`. Hoy las capabilities se derivan, no se resuelven desde catálogo versionado. | `multivertical-capability-plan.md` Fase 1 sin implementar | Alto — habilita G1 sin `if vertical ===` |
 | G4 | **Sin separación física `apps/` · `modules/` · `verticals/`.** Todo plano bajo `src/`. No hay mecanismo de composición de "producto" más allá de `VerticalPreset`. | árbol `src/` | Medio — reconciliable, ver §3 decisión D1 |
 | G5 | **Propiedad de datos por módulo no forzada; naming de tablas inconsistente.** Mezcla legacy español (`producto`, `cliente`, `almacen`, `comprobante`, `movimiento`) y prefijado por contexto (`inventory_movements`, `payroll_*`, `bank_*`, `integration_*`). Namespace legacy `App\Entity\` aún referenciado. | `migrations/`, lista forbidden del guard | Medio — bloquea AR-005 verificable |
-| G6 | **Módulos no declaran sus dependencias** (`dependsOn`). No hay manifiesto por contexto. | — | Medio — necesario para verificar AR-003/AR-004/AR-008 |
+| G6 | **Módulos no declaran sus dependencias** (`dependsOn`). ~~No hay manifiesto por contexto.~~ Resuelto por NB-2: `architecture/contexts.yaml` + test de consistencia. | `architecture/contexts.yaml` | Cerrado |
 | G7 | **Sin namespacing de API por vertical** (`/api/pharmacy/*`, `/api/restaurant/*`). | rutas API actuales | Bajo — sigue a G1 |
 | G8 | **Puntos de extensión no sistematizados.** Existen seams sueltos (ADR-014 descuentos, interfaces `SaleInvoicing*`), pero no un registro `StockPolicy` / `PriceCalculator` / `TaxCalculator` / `PaymentProvider` con default + override por vertical. | `src/Sales`, `src/Taxes` | Medio — habilita especialización sin tocar core |
 | G9 | **Observabilidad de correlación entre módulos sin verificar.** OpenTelemetry auto-instrumentado, pero no confirmado el log estructurado por operación con `module` + `correlation_id` propagado por el bus de eventos. | `composer.json` open-telemetry/* | Bajo |
@@ -121,14 +121,14 @@ IDs `NB-n`. Cada tarea: **Objetivo · Entregable · Criterio de aceptación**. O
 
 **NB-1 · Verificador de reglas AR-001…AR-010** — hecho (commit tras #327)
 Objetivo: convertir las reglas en un check de CI, no sólo el guard Platform actual.
-Entregable: `phparkitect.php` con capas `Infra`, `Platform`, `ControlPlane`, `ErpCore`, `Assistant`, `Orchestration`, `Vertical_{Pharmacy,Restaurant,Hospitality}`; `phparkitect-baseline.json` (50 violaciones pre-existentes, sólo puede reducirse); `composer check:architecture`; job en `ci-main.yml` + `scripts/quality-check.sh` (pre-push).
+Entregable: `phparkitect.php` (capas derivadas de `architecture/contexts.yaml`, ver NB-2); `phparkitect-baseline.json` (violaciones pre-existentes, sólo puede reducirse); `composer check:architecture`; job en `ci-main.yml` + `scripts/quality-check.sh` (pre-push).
 Nota: se eligió PHPArkitect sobre Deptrac porque deptrac 3.0 empaqueta php-parser 4.x y no parsea la sintaxis PHP 8.4 `new Foo()->method()` usada en todo el repo.
 Criterio: el CI falla ante un import `src/Inventory` → `src/Pharmacy`; `main` verde con baseline.
 
-**NB-2 · Manifiesto de dependencias por contexto (D-ADR)**
-Objetivo: cada contexto declara `dependsOn` y su contrato público.
-Entregable: `src/<Context>/context.php` (o `architecture/contexts.yaml`) con `name`, `layer`, `dependsOn`, `publicContracts`, `ownsTables`. Un test lee el manifiesto y lo cruza con PHPArkitect.
-Criterio: `contexts.yaml` cubre los ~20 contextos; test verde; discrepancia manifiesto↔código real falla.
+**NB-2 · Manifiesto de dependencias por contexto** — hecho (PR de #328)
+Objetivo: cada contexto declara `layer`, `dependsOn`, `publicContracts`, `ownsTables`.
+Entregable: `architecture/contexts.yaml` (fuente única de verdad, 25 contextos); `phparkitect.php` deriva su mapa de capas de ahí; `tests/Architecture/ContextManifestTest.php` cruza manifiesto ↔ código (completitud bidireccional, `dependsOn` ⊇ refs reales, `ownsTables` ⊇ tablas de entidades y sin dueño doble, contratos existen).
+Criterio: `contexts.yaml` cubre todos los contextos bajo `src/`; test verde; quitar un `dependsOn` o una tabla real hace fallar el test.
 
 **NB-3 · Registrar el mapa de capas en ADR-018**
 Objetivo: elevar este documento a ADR aceptada, con D1–D4 resueltas.
