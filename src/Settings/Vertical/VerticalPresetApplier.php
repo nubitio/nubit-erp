@@ -8,7 +8,9 @@ use App\Inventory\Entity\Warehouse;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Repository\BranchRepository;
 use App\Settings\Capability\CapabilityCatalog;
+use App\Settings\Capability\SettingsCapabilitySync;
 use App\Settings\Entity\TenantCapability;
+use App\Settings\Entity\TenantSettings;
 use App\Settings\Enum\CapabilitySource;
 use App\Settings\Repository\TenantCapabilityRepository;
 use App\Settings\Repository\TenantProfileRepository;
@@ -36,6 +38,7 @@ final readonly class VerticalPresetApplier
         private WarehouseRepository $warehouseRepository,
         private TenantProfileRepository $profileRepository,
         private TenantCapabilityRepository $capabilityRepository,
+        private SettingsCapabilitySync $settingsCapabilitySync,
         private EntityManagerInterface $entityManager,
     ) {}
 
@@ -43,9 +46,10 @@ final readonly class VerticalPresetApplier
     {
         $notes = [];
 
-        $this->applySettings($preset);
+        $settings = $this->applySettings($preset);
         $this->profileRepository->getOrCreate()->recordApplied($preset->key(), $preset->version());
         $capabilitiesApplied = $this->applyCapabilities($preset);
+        $this->settingsCapabilitySync->sync($settings);
 
         $defaultWarehouseCreated = false;
         if ($preset->usesSingleStockLocation()) {
@@ -105,7 +109,7 @@ final readonly class VerticalPresetApplier
         return $applied;
     }
 
-    private function applySettings(VerticalPresetInterface $preset): void
+    private function applySettings(VerticalPresetInterface $preset): TenantSettings
     {
         $settings = $this->settingsRepository->getOrCreate();
         $values = $preset->settings();
@@ -119,6 +123,8 @@ final readonly class VerticalPresetApplier
             ->setDefaultCurrency($values->defaultCurrency)
             ->setNegativeStockPolicy($values->negativeStockPolicy)
             ->setPrintMethod($values->printMethod);
+
+        return $settings;
     }
 
     /**

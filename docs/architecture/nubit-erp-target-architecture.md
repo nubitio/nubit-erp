@@ -152,10 +152,10 @@ Objetivo: resolución única: existencia → entitlement comercial → dependenc
 Entregable: `src/Settings/Capability/TenantCapabilityResolver` (`isEnabled()`, `config()`, `require()`, `all()`) + `CapabilityNotAvailableException`; `defaultEnabled` en `CapabilityDefinition`/`CapabilityCatalog`; `TenantRuntimeConfigProvider` deriva su bloque `capabilities` del resolver (misma forma de salida; los 2 valores de config derivados de settings quedan overlaid hasta NB-7).
 Criterio: `TenantCapabilityResolverTest` (existencia, entitlement, dependencia incumplida, override de fila, `config` filtrado, `require`); `TenantRuntimeConfigProviderTest` sigue verde; `GET /api/tenant/runtime-config` expone `capabilities` con `enabled`+`config`.
 
-**NB-7 · Migrar flags dispersos a capabilities**
+**NB-7 · Migrar flags dispersos a capabilities** — hecho (PR de #333)
 Objetivo: mapear `requireCashRegister`→`cash.sessions`, `autoInvoice`→`billing.sunat`, `negativeStockPolicy`→`inventory.stock_tracking`, `printMethod`→`hardware.printing`.
-Entregable: lectura vía resolver; compat temporal en `TenantSettings` hasta que frontend/API migren.
-Criterio: ningún servicio central nuevo ramifica por `vertical`; POS lee runtime-config.
+Entregable: `SettingsCapabilitySync` (espejo desde `TenantSettings` a la config de las 4 filas), llamado en `TenantSettingsService::save()` y `VerticalPresetApplier`; migración `Version20260906050000` que rellena las filas por tenant; `TenantRuntimeConfigProvider` deriva `capabilities` sólo del resolver (overlay temporal eliminado). `TenantSettings` conserva columnas y getters como compat.
+Criterio: `/api/tenant/runtime-config` mantiene la salida; consumidores de dominio (SaleProcessor, políticas de stock) siguen leyendo `TenantSettings` en modo compat; sin ramificación por `vertical`.
 
 ### Fase 2 — Presets versionados y onboarding
 
