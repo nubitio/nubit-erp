@@ -1,0 +1,267 @@
+# Bounded-context manifest — the single source of truth for the architecture
+# layer map. Consumed by phparkitect.php (layer rules, NB-1) and enforced by
+# tests/Architecture/ContextManifestTest.php (NB-2). See ADR-018 and
+# docs/architecture/nubit-erp-target-architecture.md §1.
+#
+# Fields per context:
+#   namespace       PHP namespace root (App\<Context>).
+#   layer           One of: Infra, Platform, ControlPlane, ErpCore, Assistant,
+#                   Orchestration, Vertical. A layer may depend only on layers
+#                   below it (order above); ControlPlane and ErpCore are peers
+#                   that may not depend on each other.
+#   dependsOn       Other contexts this one currently references in code. This
+#                   is the ACTUAL graph, not the intended one — it may only
+#                   shrink. A reference to a context not listed here fails the
+#                   NB-2 test. Layer-direction violations inside this graph are
+#                   separately tracked in phparkitect-baseline.json.
+#   publicContracts Interfaces other contexts are meant to depend on. Best-effort
+#                   today; expanded by NB-21 (contract tests).
+#   ownsTables      Tables backed by a Doctrine entity in this namespace. Raw-SQL
+#                   and read-model tables are attributed later by NB-13 (#339);
+#                   the test only checks that every entity table appears here and
+#                   that no table is owned twice.
+#   retired         Present and true for namespaces kept only as a shim.
+
+layers:
+  - Infra
+  - Platform
+  - ControlPlane
+  - ErpCore
+  - Assistant
+  - Orchestration
+  - Vertical
+
+contexts:
+  Core:
+    namespace: App\Core
+    layer: Infra
+    retired: true
+    dependsOn: []
+    publicContracts: []
+    ownsTables: []
+
+  Efact:
+    namespace: App\Efact
+    layer: Infra
+    dependsOn: [Billing, ControlPlane, Organization, Sales]
+    publicContracts:
+      - App\Efact\Domain\ActivatableInterface
+    ownsTables: []
+
+  Identity:
+    namespace: App\Identity
+    layer: Platform
+    dependsOn: [Efact, Organization]
+    publicContracts:
+      - App\Identity\Auth\BranchContextServiceInterface
+      - App\Identity\Notification\UserNotificationServiceInterface
+    ownsTables: [usuario, rol, role_permission, user_notification]
+
+  Organization:
+    namespace: App\Organization
+    layer: Platform
+    dependsOn: [Efact, Inventory]
+    publicContracts: []
+    ownsTables: [empresa, local]
+
+  Settings:
+    namespace: App\Settings
+    layer: Platform
+    dependsOn: [Catalog, ControlPlane, Identity, Inventory, Organization]
+    publicContracts: []
+    ownsTables: [config, tenant_settings, sunat_operational_state, ubigeo, menu, menu_rol]
+
+  ControlPlane:
+    namespace: App\ControlPlane
+    layer: ControlPlane
+    dependsOn: [Billing, Catalog, Contacts, Efact, Identity, Organization, Setup]
+    publicContracts:
+      - App\ControlPlane\Certificate\CertificateLifecycleServiceInterface
+    ownsTables: []
+
+  Catalog:
+    namespace: App\Catalog
+    layer: ErpCore
+    dependsOn: [AI, Efact, Inventory, Organization]
+    publicContracts: []
+    ownsTables:
+      - producto
+      - categoria
+      - unidad
+      - product_units
+      - product_bom_items
+      - tipo_comprobante
+      - sunat_catalog
+      - exchange_rates
+      - local_comprobante
+      - payment_method
+
+  Contacts:
+    namespace: App\Contacts
+    layer: ErpCore
+    dependsOn: [Efact, Inventory]
+    publicContracts: []
+    ownsTables: [cliente, proveedor]
+
+  Inventory:
+    namespace: App\Inventory
+    layer: ErpCore
+    dependsOn: [Catalog, Efact, Identity, Organization, Sales, Settings]
+    publicContracts:
+      - App\Inventory\Core\Contract\SalesInventoryPortInterface
+      - App\Inventory\Core\Contract\StockValidationPolicyInterface
+    ownsTables:
+      - almacen
+      - operacion
+      - product_stock
+      - price_list
+      - stock_items
+      - stock_lots
+      - stock_entries
+      - stock_entry_items
+
+  Sales:
+    namespace: App\Sales
+    layer: ErpCore
+    dependsOn:
+      [Accounting, AccountsPayable, AI, Billing, CashRegister, Catalog, Contacts, Efact, Identity, Inventory, Organization, Settings]
+    publicContracts:
+      - App\Sales\Port\InvoiceCreatorInterface
+      - App\Sales\Port\SaleInvoicePrinterInterface
+      - App\Sales\Port\SaleVoiderInterface
+      - App\Sales\Port\RejectedDocumentReplacerInterface
+      - App\Sales\State\CashSessionResolverInterface
+      - App\Sales\State\DetractionCalculatorInterface
+    ownsTables:
+      - sales
+      - sale_items
+      - sale_payments
+      - sale_taxes
+      - sale_discounts
+      - sale_quotes
+      - sale_quote_items
+
+  Billing:
+    namespace: App\Billing
+    layer: ErpCore
+    dependsOn: [AI, CashRegister, Catalog, Contacts, ControlPlane, Efact, Identity, Inventory, Organization, Sales, Settings]
+    publicContracts:
+      - App\Billing\Sunat\Domain\BillRepositoryInterface
+      - App\Billing\Sunat\Domain\LycetCompanyServiceInterface
+    ownsTables:
+      - tax_document
+      - tax_document_line
+      - tax_document_event
+      - despatch_guide
+      - despatch_guide_line
+      - customer_subscription
+      - customer_subscription_line
+      - customer_subscription_run
+      - subscription_plan
+
+  CashRegister:
+    namespace: App\CashRegister
+    layer: ErpCore
+    dependsOn: [Accounting, Efact, Identity, Organization]
+    publicContracts: []
+    ownsTables: [cash_register, cash_sessions, cash_movement_category]
+
+  Purchasing:
+    namespace: App\Purchasing
+    layer: ErpCore
+    dependsOn: [Accounting, Catalog, Contacts, Efact, Identity, Inventory, Organization, Sales, Settings]
+    publicContracts: []
+    ownsTables: [purchase_orders, purchase_order_items, goods_receipts, goods_receipt_items]
+
+  Reporting:
+    namespace: App\Reporting
+    layer: ErpCore
+    dependsOn: [Accounting, ControlPlane, Efact]
+    publicContracts: []
+    ownsTables: [summary, time_dimension]
+
+  AccountsPayable:
+    namespace: App\AccountsPayable
+    layer: ErpCore
+    dependsOn: [Catalog, Contacts, Efact, Identity, Organization, Purchasing]
+    publicContracts: []
+    ownsTables: [supplier_bill, supplier_payment, expense_category]
+
+  BankReconciliation:
+    namespace: App\BankReconciliation
+    layer: ErpCore
+    dependsOn: [AccountsPayable, CashRegister, Catalog, Efact, Identity, Sales]
+    publicContracts: []
+    ownsTables: [bank_account, bank_statement_import, bank_statement_line, bank_reconciliation_match]
+
+  FixedAssets:
+    namespace: App\FixedAssets
+    layer: ErpCore
+    dependsOn: [AccountsPayable, Efact, Identity]
+    publicContracts: []
+    ownsTables: [fixed_asset, asset_depreciation_entry]
+
+  Payroll:
+    namespace: App\Payroll
+    layer: ErpCore
+    dependsOn: [Efact, Identity, Organization, Reporting]
+    publicContracts: []
+    ownsTables: [employee, payroll_run, payslip_entry, afp_rate]
+
+  ExpenseReports:
+    namespace: App\ExpenseReports
+    layer: ErpCore
+    dependsOn: [AccountsPayable, Identity, Organization]
+    publicContracts: []
+    ownsTables: [expense_report]
+
+  Accounting:
+    namespace: App\Accounting
+    layer: ErpCore
+    dependsOn: [Efact]
+    publicContracts: []
+    ownsTables: [chart_of_accounts, journal_entry, journal_entry_line]
+
+  Taxes:
+    namespace: App\Taxes
+    layer: ErpCore
+    dependsOn: []
+    publicContracts: []
+    ownsTables: []
+
+  Integration:
+    namespace: App\Integration
+    layer: ErpCore
+    dependsOn: [Billing, ControlPlane, Organization]
+    publicContracts: []
+    ownsTables:
+      - integration_api_client
+      - integration_api_key
+      - integration_document
+      - integration_event
+      - integration_webhook_endpoint
+      - integration_webhook_delivery
+
+  AI:
+    namespace: App\AI
+    layer: Assistant
+    dependsOn:
+      [AccountsPayable, Billing, CashRegister, Catalog, Contacts, Identity, Inventory, Purchasing, Reporting, Sales, Settings]
+    publicContracts:
+      - App\AI\Repository\SunatRejectionQueryInterface
+    ownsTables: [assistant_thread, assistant_thread_message, assistant_proposed_action]
+
+  Setup:
+    namespace: App\Setup
+    layer: Orchestration
+    dependsOn:
+      [Accounting, AccountsPayable, BankReconciliation, Billing, CashRegister, Catalog, Contacts, FixedAssets, Identity, Inventory, Organization, Payroll, Purchasing, Reporting, Sales, Settings]
+    publicContracts: []
+    ownsTables: []
+
+  Onboarding:
+    namespace: App\Onboarding
+    layer: Orchestration
+    dependsOn: [Catalog, Contacts, Identity, Inventory, Organization, Sales]
+    publicContracts: []
+    ownsTables: []
