@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DoctrineMigrations;
 
-use Doctrine\\DBAL\\Schema\\Schema;
-use Doctrine\\Migrations\\AbstractMigration;
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
 
 final class Version20260906030000_retire_cash_movements_triggers extends AbstractMigration
 {
