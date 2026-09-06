@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Settings\Service;
 
 use App\Inventory\Core\Enum\StockPolicy;
+use App\Settings\Capability\SettingsCapabilitySync;
 use App\Settings\Entity\TenantSettings;
 use App\Settings\Enum\DefaultCurrency;
 use App\Settings\Enum\PrintMethod;
@@ -23,6 +24,7 @@ readonly class TenantSettingsService
     public function __construct(
         private TenantSettingsRepository $repository,
         private EntityManagerInterface $em,
+        private SettingsCapabilitySync $capabilitySync,
     ) {}
 
     public function get(): TenantSettings
@@ -82,6 +84,7 @@ readonly class TenantSettingsService
     public function save(TenantSettings $settings): void
     {
         $this->em->persist($settings);
+        $this->capabilitySync->sync($settings);
         $this->em->flush();
     }
 }

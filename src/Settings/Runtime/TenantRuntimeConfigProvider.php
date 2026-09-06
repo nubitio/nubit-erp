@@ -7,7 +7,6 @@ namespace App\Settings\Runtime;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Repository\BranchRepository;
 use App\Settings\Capability\TenantCapabilityResolver;
-use App\Settings\Entity\TenantSettings;
 use App\Settings\Repository\TenantSettingsRepository;
 use App\Settings\Vertical\VerticalPresetRegistry;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
@@ -83,7 +82,7 @@ final readonly class TenantRuntimeConfigProvider
                         'name' => $defaultWarehouse->getName(),
                     ],
             ],
-            'capabilities' => $this->buildCapabilities($settings),
+            'capabilities' => $this->capabilityResolver->all(),
             'settings' => [
                 'requireCashRegister' => $settings->isRequireCashRegister(),
                 'autoInvoice' => $settings->isAutoInvoice(),
@@ -139,27 +138,5 @@ final readonly class TenantRuntimeConfigProvider
         }
 
         return 'basic';
-    }
-
-    /**
-     * Resolved capabilities from {@see TenantCapabilityResolver}, with the two
-     * legacy settings-derived config values still overlaid until NB-7 moves them
-     * onto the capability rows.
-     *
-     * @return array<string, array{enabled: bool, config: array<string, mixed>}>
-     */
-    private function buildCapabilities(TenantSettings $settings): array
-    {
-        $capabilities = $this->capabilityResolver->all();
-
-        if (($capabilities['cash.sessions']['enabled'] ?? false) === true) {
-            $capabilities['cash.sessions']['config']['requireOpenSession'] = $settings->isRequireCashRegister();
-        }
-        if (($capabilities['inventory.stock_tracking']['enabled'] ?? false) === true) {
-            $capabilities['inventory.stock_tracking']['config']['negativeStockPolicy'] =
-                $settings->getNegativeStockPolicy()->value;
-        }
-
-        return $capabilities;
     }
 }

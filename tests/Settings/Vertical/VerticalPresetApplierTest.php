@@ -8,6 +8,7 @@ use App\Inventory\Core\Enum\StockPolicy;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Entity\Branch;
 use App\Organization\Repository\BranchRepository;
+use App\Settings\Capability\SettingsCapabilitySync;
 use App\Settings\Entity\TenantCapability;
 use App\Settings\Entity\TenantProfile;
 use App\Settings\Entity\TenantSettings;
@@ -49,6 +50,7 @@ final class VerticalPresetApplierTest extends TestCase
             $warehouseRepo,
             $this->profileRepo($profile),
             $this->emptyCapabilityRepo(),
+            $this->capabilitySync(),
             $em,
         );
         $result = $applier->apply(new RetailPreset());
@@ -89,6 +91,7 @@ final class VerticalPresetApplierTest extends TestCase
             $this->stubWarehouseRepo(),
             $this->profileRepo(new TenantProfile()),
             $capabilityRepo,
+            $this->capabilitySync(),
             $em,
         );
         $result = $applier->apply(new RetailPreset());
@@ -114,6 +117,7 @@ final class VerticalPresetApplierTest extends TestCase
             $warehouseRepo,
             $this->profileRepo(new TenantProfile()),
             $this->emptyCapabilityRepo(),
+            $this->capabilitySync(),
             $em,
         );
         $result = $applier->apply(new PharmacyPreset());
@@ -140,12 +144,21 @@ final class VerticalPresetApplierTest extends TestCase
             $warehouseRepo,
             $this->profileRepo(new TenantProfile()),
             $this->emptyCapabilityRepo(),
+            $this->capabilitySync(),
             $em,
         );
         $result = $applier->apply(new RetailPreset());
 
         static::assertFalse($result->defaultWarehouseCreated);
         static::assertCount(1, $result->notes);
+    }
+
+    private function capabilitySync(): SettingsCapabilitySync
+    {
+        $repo = $this->createMock(TenantCapabilityRepository::class);
+        $repo->method('findByKey')->willReturn(null);
+
+        return new SettingsCapabilitySync($repo, $this->createMock(EntityManagerInterface::class));
     }
 
     private function settingsRepo(TenantSettings $settings): TenantSettingsRepository&MockObject
