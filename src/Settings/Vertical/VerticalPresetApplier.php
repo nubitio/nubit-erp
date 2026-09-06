@@ -7,15 +7,24 @@ namespace App\Settings\Vertical;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Repository\BranchRepository;
+use App\Settings\Capability\CapabilityCatalog;
+use App\Settings\Entity\TenantCapability;
+use App\Settings\Enum\CapabilitySource;
+use App\Settings\Repository\TenantCapabilityRepository;
+use App\Settings\Repository\TenantProfileRepository;
 use App\Settings\Repository\TenantSettingsRepository;
 use Doctrine\ORM\EntityManagerInterface;
+
+use function in_array;
 
 /**
  * Applies a vertical preset onto the current tenant.
  *
- * Scope is deliberately conservative: it configures the TenantSettings singleton
- * and ensures a Default Stock Location for single-location presets. It never
- * deletes existing branches/warehouses, so it is safe to re-run.
+ * Scope is deliberately conservative: it configures the TenantSettings
+ * singleton, records the tenant profile, enables the preset's desired
+ * capabilities, and ensures a Default Stock Location for single-location
+ * presets. It never deletes existing data, so it is safe to re-run. Manual and
+ * support capability overrides are left untouched.
  */
 final readonly class VerticalPresetApplier
 {
@@ -25,6 +34,8 @@ final readonly class VerticalPresetApplier
         private TenantSettingsRepository $settingsRepository,
         private BranchRepository $branchRepository,
         private WarehouseRepository $warehouseRepository,
+        private TenantProfileRepository $profileRepository,
+        private TenantCapabilityRepository $capabilityRepository,
         private EntityManagerInterface $entityManager,
     ) {}
 
@@ -33,6 +44,8 @@ final readonly class VerticalPresetApplier
         $notes = [];
 
         $this->applySettings($preset);
+        $this->profileRepository->getOrCreate()->recordApplied($preset->key(), $preset->version());
+        $capabilitiesApplied = $this->applyCapabilities($preset);
 
         $defaultWarehouseCreated = false;
         if ($preset->usesSingleStockLocation()) {
@@ -49,8 +62,47 @@ final readonly class VerticalPresetApplier
             presetVersion: $preset->version(),
             settingsApplied: true,
             defaultWarehouseCreated: $defaultWarehouseCreated,
+            capabilitiesApplied: $capabilitiesApplied,
             notes: $notes,
         );
+    }
+
+    /**
+     * Enables each capability the preset asks for, skipping unknown keys and
+     * leaving manual/support overrides in place.
+     */
+    private function applyCapabilities(VerticalPresetInterface $preset): int
+    {
+        $manualSources = [CapabilitySource::Manual, CapabilitySource::Support];
+        $applied = 0;
+
+        foreach ($preset->desiredCapabilities() as $key) {
+            $definition = CapabilityCatalog::get($key);
+            if ($definition === null) {
+                continue;
+            }
+
+            $capability = $this->capabilityRepository->findByKey($key);
+            if ($capability !== null && in_array($capability->getSource(), $manualSources, strict: true)) {
+                continue;
+            }
+
+            if ($capability === null) {
+                $capability = new TenantCapability($key);
+                $this->entityManager->persist($capability);
+            }
+
+            $capability
+                ->setEnabled(true)
+                ->setSource(CapabilitySource::Preset)
+                ->setPreset($preset->key(), $preset->version());
+            if ($capability->getConfig() === null && $definition->safeDefaults !== []) {
+                $capability->setConfig($definition->safeDefaults);
+            }
+            $applied++;
+        }
+
+        return $applied;
     }
 
     private function applySettings(VerticalPresetInterface $preset): void

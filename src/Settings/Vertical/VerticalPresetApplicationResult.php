@@ -17,6 +17,7 @@ final readonly class VerticalPresetApplicationResult
         public int $presetVersion,
         public bool $settingsApplied,
         public bool $defaultWarehouseCreated,
+        public int $capabilitiesApplied = 0,
         public array $notes = [],
     ) {}
 }
