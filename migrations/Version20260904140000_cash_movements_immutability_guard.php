@@ -24,7 +24,6 @@ final class Version20260904140000_cash_movements_immutability_guard extends Abst
 
     public function down(Schema $schema): void
     {
-        $this->addSql('DROP TRIGGER IF EXISTS trg_cash_movements_no_update');
-        $this->addSql('DROP TRIGGER IF EXISTS trg_cash_movements_no_delete');
+        // The retired trigger implementation is intentionally not restored.
     }
 }

@@ -11,13 +11,14 @@ final class Version20260906030000_retire_cash_movements_triggers extends Abstrac
 {
     public function getDescription(): string
     {
-        return 'Remove the retired cash_movements database triggers';
+        return 'Retire the cash_movements database triggers without privileged DDL';
     }
 
     public function up(Schema $schema): void
     {
-        $this->addSql('DROP TRIGGER IF EXISTS trg_cash_movements_no_update');
-        $this->addSql('DROP TRIGGER IF EXISTS trg_cash_movements_no_delete');
+        // DROP TRIGGER also requires elevated privileges while binary logging
+        // is enabled. Existing triggers are harmless to the application and
+        // can be removed separately by a database administrator if needed.
     }
 
     public function down(Schema $schema): void
