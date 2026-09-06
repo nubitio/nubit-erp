@@ -60,6 +60,12 @@ class TenantProvisionCommand extends Command
                 'Mark tenant migrations as executed instead of running them. Use only after loading a baseline schema dump.',
             )
             ->addOption('setup', null, InputOption::VALUE_NONE, 'Run initial setup (admin, company, branch)')
+            ->addOption(
+                'vertical',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Apply a vertical onboarding preset after setup (e.g. retail, pharmacy)',
+            )
             ->addOption('admin-user', null, InputOption::VALUE_OPTIONAL, 'Admin username')
             ->addOption(
                 'admin-password',
@@ -238,6 +244,25 @@ class TenantProvisionCommand extends Command
                 $io->writeln('  Initial setup completed.');
             } catch (BadRequestHttpException $e) {
                 $io->warning('Initial setup skipped: ' . $e->getMessage());
+            }
+        }
+
+        $vertical = trim((string) ($input->getOption('vertical') ?: ''));
+        if ($vertical !== '') {
+            $io->section('Applying vertical preset');
+            $applyPreset = new Process([
+                PHP_BINARY,
+                'bin/console',
+                'tenant:apply-preset',
+                $vertical,
+                '--tenant=' . $tenant,
+                '--no-interaction',
+            ]);
+            $applyPreset->setTimeout(120);
+            $applyPreset->run($this->processOutputCallback($io));
+
+            if (!$applyPreset->isSuccessful()) {
+                $io->warning('Vertical preset not applied: ' . trim($applyPreset->getErrorOutput()));
             }
         }
 
