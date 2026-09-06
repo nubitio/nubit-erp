@@ -99,12 +99,14 @@ Observabilidad: cada operación relevante emite log estructurado con
 
 ## 3. Decisiones a sentar
 
-| ID | Decisión | Propuesta | Estado |
-|---|---|---|---|
-| **D1** | ¿efact ES el monorepo Nubit, o un consumidor de paquetes publicados? | efact pasa a ser `apps/erp` conceptual del monorepo Nubit. `nubitio/*` (platform/api-platform/admin-bundle) siguen como paquetes publicados (Platform Core ya vive fuera). Los verticales nacen **dentro de `src/`** de efact como bounded contexts (`src/Pharmacy`, `src/Restaurant`), no como repos aparte, hasta que haya ≥3 verticales con necesidades repetidas. | Pendiente |
-| **D2** | ¿ERP Core se extrae a paquete `nubitio/erp-core`? | **No en este horizonte.** Se mantiene en `src/` (monorepo). Extracción sólo cuando otra app necesite versión distinta del core (ver extraction-plan §11). | Pendiente |
-| **D3** | Motor de verticales: ¿preset-only o bounded context + capabilities? | **Capabilities de 1ª clase** (G3) como unidad de comportamiento; `VerticalPreset` sólo empaqueta. Vertical con reglas/entidades propias ⇒ bounded context propio (`src/Pharmacy`). | Pendiente |
-| **D4** | Naming de tablas legacy español | Renombrar por contexto con prefijo (`catalog_products`, `sales_*`, …) vía migraciones + vistas de compatibilidad temporales, o congelar legacy y prefijar sólo lo nuevo. Decidir coste/beneficio. | Pendiente |
+**Resueltas en [ADR-018](../adr/ADR-018-nubit-multivertical-target-architecture.md) (2026-09-05).**
+
+| ID | Decisión | Resolución |
+|---|---|---|
+| **D1** | ¿efact ES el monorepo Nubit, o un consumidor de paquetes publicados? | efact **es** el monorepo Nubit (`apps/erp` conceptual). Los verticales nacen **dentro de `src/`** como bounded contexts. `nubitio/*` sigue igual; nada vuelve al repo. El árbol físico `apps/`/`modules/`/`verticals/` queda como ilustración, no como movimiento requerido. |
+| **D2** | ¿ERP Core se extrae a paquete `nubitio/erp-core`? | **No en este horizonte.** Un solo consumidor; extraer congela contratos sin beneficio. Revisar sólo si aparece una segunda app first-party. |
+| **D3** | Motor de verticales: ¿preset-only o bounded context + capabilities? | **Capabilities de 1ª clase** como unidad de comportamiento (catálogo versionado + `TenantCapabilityResolver` fail-closed). `VerticalPreset` sólo empaqueta, sin lógica. Prohibido `if vertical === …` en servicios de ERP Core / Commerce. |
+| **D4** | Naming de tablas legacy español | **Congelar legacy** (`producto`, `cliente`, …); no renombrado masivo (riesgo en código fiscal/migraciones). Toda tabla nueva `<context>_*`. Legacy registrado en el manifiesto `ownsTables` (NB-13). |
 
 ---
 

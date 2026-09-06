@@ -4,6 +4,10 @@
 
 > Decisions are recorded in `docs/adr/`. The section below summarises the agreed direction; see the referenced ADR for rationale and rejected alternatives.
 
+### Multivertical Target — ADR-018
+
+The agreed product direction is **Nubit**, a modular multivertical ERP (retail, pharmacy, restaurant, hospitality, distribution) on one reusable ERP core, with the dependency direction `Vertical → ERP → Platform` and rules AR-001…AR-010. Full target + gap analysis in [`docs/architecture/nubit-erp-target-architecture.md`](docs/architecture/nubit-erp-target-architecture.md); settled decisions in [ADR-018](docs/adr/ADR-018-nubit-multivertical-target-architecture.md) (eFact **is** the Nubit monorepo; verticals are bounded contexts under `src/`; ERP core is not extracted; capabilities — not presets — are the behavior switch, no `if vertical === …` in core; legacy Spanish table names are frozen, new tables are `<context>_*`). Convergence backlog: `nubitio/efact#326` (#327–#347).
+
 ### Architecture Style — ADR-001
 
 eFact is a **modular monolith with strict bounded contexts** (see [ADR-001](docs/adr/ADR-001-modular-monolith-strict-bounded-contexts.md)).
