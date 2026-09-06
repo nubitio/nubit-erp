@@ -272,13 +272,13 @@
         },
         {
             "fqcn": "App\\Settings\\Runtime\\TenantRuntimeConfigProvider",
-            "line": 19,
+            "line": 20,
             "filePath": "Settings\/Runtime\/TenantRuntimeConfigProvider.php",
             "error": "depends on App\\Inventory\\Repository\\WarehouseRepository, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
         },
         {
             "fqcn": "App\\Settings\\Service\\TenantSettingsService",
-            "line": 75,
+            "line": 77,
             "filePath": "Settings\/Service\/TenantSettingsService.php",
             "error": "depends on App\\Inventory\\Core\\Enum\\StockPolicy, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
         },
@@ -296,15 +296,21 @@
         },
         {
             "fqcn": "App\\Settings\\Vertical\\VerticalPresetApplier",
-            "line": 27,
+            "line": 38,
             "filePath": "Settings\/Vertical\/VerticalPresetApplier.php",
             "error": "depends on App\\Inventory\\Repository\\WarehouseRepository, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
         },
         {
             "fqcn": "App\\Settings\\Vertical\\VerticalPresetApplier",
-            "line": 88,
+            "line": 146,
             "filePath": "Settings\/Vertical\/VerticalPresetApplier.php",
             "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Vertical\\VerticalPresetPlanner",
+            "line": 31,
+            "filePath": "Settings\/Vertical\/VerticalPresetPlanner.php",
+            "error": "depends on App\\Inventory\\Repository\\WarehouseRepository, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
         },
         {
             "fqcn": "App\\Settings\\Vertical\\VerticalPresetSettings",
