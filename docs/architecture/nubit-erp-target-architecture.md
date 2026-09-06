@@ -165,8 +165,10 @@ Entregable: `VerticalPresetPlanner` (read-only) + `VerticalPresetPlan` VO (diff 
 Criterio: `VerticalPresetPlannerTest` (fresh tenant, re-apply no-op, override manual, warehouse); `tenant:apply-preset <key> --dry-run` no persiste.
 Nota: los presets siguen declarando sólo `settings` + `desiredCapabilities`; menús/seeds/uiDefaults declarativos en el `VerticalPresetInterface` quedan como seguimiento (no bloquean).
 
-**NB-9 · `--vertical=<key>` en provisioning/setup + selección de giro en onboarding**
-Criterio: tenant nuevo elegible como retail/farmacia sin tocar BD manualmente.
+**NB-9 · `--vertical=<key>` en provisioning + selección de giro en onboarding** — hecho (PR de #335)
+Frontend: el wizard `TenantOnboardingGate` ya tenía el paso de selección de giro (aplica `POST /api/tenant/apply-preset`) — sin cambios.
+Backend: `app:tenant:provision --vertical=<key>` corre `tenant:apply-preset` tras `--setup` (warning, no aborta); `--vertical` fluye por `ProvisionCommandRequest` → `ProvisionCommandRunner` → `TenantProvisioningService::run(vertical: …)` (default `''`, sin cambios para llamadores actuales).
+Criterio: un operador provisiona `app:tenant:provision acme --setup --vertical=pharmacy` sin tocar BD; el wizard sigue siendo la fuente de verdad post-provisión.
 
 ### Fase 3 — Primera vertical como bounded context: Pharmacy
 

@@ -23,6 +23,7 @@ final readonly class TenantProvisioningService
         string $domain,
         string $adminPassword,
         string $tenantDbPassword,
+        string $vertical = '',
     ): array {
         return $this->commandRunner->run(new ProvisionCommandRequest(
             tenant: $subdomain,
@@ -34,6 +35,7 @@ final readonly class TenantProvisioningService
             setup: true,
             adminPassword: $adminPassword,
             tenantDbPassword: $tenantDbPassword,
+            vertical: $vertical,
         ));
     }
 }

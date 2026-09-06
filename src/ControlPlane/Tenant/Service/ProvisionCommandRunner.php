@@ -76,6 +76,11 @@ final readonly class ProvisionCommandRunner implements ProvisionCommandRunnerInt
             $command[] = '--provision-id=' . $request->provisionId;
         }
 
+        $vertical = trim($request->vertical);
+        if ($vertical !== '') {
+            $command[] = '--vertical=' . $vertical;
+        }
+
         $env ??= [];
         if (trim($request->tenantDbPassword) !== '') {
             $env['TENANT_DB_PASS'] = $request->tenantDbPassword;

@@ -23,5 +23,6 @@ final readonly class ProvisionCommandRequest
         public string $branchName = 'Principal',
         public string $branchAddress = 'Pendiente por completar',
         public string $branchPhone = '999999999',
+        public string $vertical = '',
     ) {}
 }
