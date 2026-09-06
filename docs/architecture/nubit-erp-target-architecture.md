@@ -147,10 +147,10 @@ Objetivo: tablas `tenant_capabilities` y `tenant_profile`.
 Entregable: migración `Version20260906040000` + entidades `TenantCapability`/`TenantProfile` + repos; enum `CapabilitySource` (preset|manual|migration|support); `VerticalPresetApplier` graba el perfil y habilita `desiredCapabilities()` con los `safeDefaults` del catálogo, respetando overrides manual/support.
 Criterio: `doctrine:migrations:migrate` verde (109 migraciones); mapping válido; aplicar un preset deja el perfil y las capabilities poblados.
 
-**NB-6 · `TenantCapabilityResolver` fail-closed**
-Objetivo: resolución única: valida existencia → valida entitlement comercial → estado tenant → merge (defaults catálogo + preset + overrides) → falla cerrado ante clave desconocida o dependencia incumplida.
-Entregable: `TenantCapabilityResolver` con `isEnabled()`, `config()`, `require()`; integrado en `TenantRuntimeConfigProvider`.
-Criterio: tests de resolución, dependencias, y fail-closed; `GET /api/tenant/runtime-config` expone `capabilities` con `enabled`+`config`.
+**NB-6 · `TenantCapabilityResolver` fail-closed** — hecho (PR de #332)
+Objetivo: resolución única: existencia → entitlement comercial → dependencias → fila del tenant / `defaultEnabled` → falla cerrado.
+Entregable: `src/Settings/Capability/TenantCapabilityResolver` (`isEnabled()`, `config()`, `require()`, `all()`) + `CapabilityNotAvailableException`; `defaultEnabled` en `CapabilityDefinition`/`CapabilityCatalog`; `TenantRuntimeConfigProvider` deriva su bloque `capabilities` del resolver (misma forma de salida; los 2 valores de config derivados de settings quedan overlaid hasta NB-7).
+Criterio: `TenantCapabilityResolverTest` (existencia, entitlement, dependencia incumplida, override de fila, `config` filtrado, `require`); `TenantRuntimeConfigProviderTest` sigue verde; `GET /api/tenant/runtime-config` expone `capabilities` con `enabled`+`config`.
 
 **NB-7 · Migrar flags dispersos a capabilities**
 Objetivo: mapear `requireCashRegister`→`cash.sessions`, `autoInvoice`→`billing.sunat`, `negativeStockPolicy`→`inventory.stock_tracking`, `printMethod`→`hardware.printing`.

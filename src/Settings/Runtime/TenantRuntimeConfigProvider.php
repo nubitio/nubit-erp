@@ -6,6 +6,8 @@ namespace App\Settings\Runtime;
 
 use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Repository\BranchRepository;
+use App\Settings\Capability\TenantCapabilityResolver;
+use App\Settings\Entity\TenantSettings;
 use App\Settings\Repository\TenantSettingsRepository;
 use App\Settings\Vertical\VerticalPresetRegistry;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
@@ -18,6 +20,7 @@ final readonly class TenantRuntimeConfigProvider
         private BranchRepository $branchRepository,
         private WarehouseRepository $warehouseRepository,
         private VerticalPresetRegistry $presetRegistry,
+        private TenantCapabilityResolver $capabilityResolver,
     ) {}
 
     /**
@@ -80,32 +83,7 @@ final readonly class TenantRuntimeConfigProvider
                         'name' => $defaultWarehouse->getName(),
                     ],
             ],
-            'capabilities' => [
-                'sales.core' => $this->capability(true),
-                'billing.sunat' => $this->capability(true),
-                'billing.recurring' => $this->capability($this->isFeatureEnabled($entitlements, 'recurring_billing')),
-                'cash.sessions' => $this->capability(true, [
-                    'requireOpenSession' => $settings->isRequireCashRegister(),
-                ]),
-                'inventory.stock_tracking' => $this->capability(true, [
-                    'negativeStockPolicy' => $settings->getNegativeStockPolicy()->value,
-                ]),
-                'inventory.multi_warehouse' => $this->capability($multiWarehouse),
-                'inventory.lot_tracking' => $this->capability($lotTracking),
-                'reporting.advanced' => $this->capability($advancedReports),
-                'exports.excel' => $this->capability($excelExport),
-                'payroll.core' => $this->capability($this->isFeatureEnabled($entitlements, 'payroll')),
-                'treasury.bank_reconciliation' => $this->capability($this->isFeatureEnabled(
-                    $entitlements,
-                    'bank_reconciliation',
-                )),
-                'fixed_assets.tracking' => $this->capability($this->isFeatureEnabled($entitlements, 'fixed_assets')),
-                'expense_reports.core' => $this->capability($this->isFeatureEnabled($entitlements, 'expense_reports')),
-                'accounting.general_ledger' => $this->capability($this->isFeatureEnabled(
-                    $entitlements,
-                    'general_ledger',
-                )),
-            ],
+            'capabilities' => $this->buildCapabilities($settings),
             'settings' => [
                 'requireCashRegister' => $settings->isRequireCashRegister(),
                 'autoInvoice' => $settings->isAutoInvoice(),
@@ -164,14 +142,24 @@ final readonly class TenantRuntimeConfigProvider
     }
 
     /**
-     * @param array<string, mixed> $config
-     * @return array{enabled: bool, config: array<string, mixed>}
+     * Resolved capabilities from {@see TenantCapabilityResolver}, with the two
+     * legacy settings-derived config values still overlaid until NB-7 moves them
+     * onto the capability rows.
+     *
+     * @return array<string, array{enabled: bool, config: array<string, mixed>}>
      */
-    private function capability(bool $enabled, array $config = []): array
+    private function buildCapabilities(TenantSettings $settings): array
     {
-        return [
-            'enabled' => $enabled,
-            'config' => $config,
-        ];
+        $capabilities = $this->capabilityResolver->all();
+
+        if (($capabilities['cash.sessions']['enabled'] ?? false) === true) {
+            $capabilities['cash.sessions']['config']['requireOpenSession'] = $settings->isRequireCashRegister();
+        }
+        if (($capabilities['inventory.stock_tracking']['enabled'] ?? false) === true) {
+            $capabilities['inventory.stock_tracking']['config']['negativeStockPolicy'] =
+                $settings->getNegativeStockPolicy()->value;
+        }
+
+        return $capabilities;
     }
 }

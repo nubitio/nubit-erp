@@ -6,7 +6,9 @@ namespace App\Tests\Settings\Runtime;
 
 use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Repository\BranchRepository;
+use App\Settings\Capability\TenantCapabilityResolver;
 use App\Settings\Entity\TenantSettings;
+use App\Settings\Repository\TenantCapabilityRepository;
 use App\Settings\Repository\TenantSettingsRepository;
 use App\Settings\Runtime\TenantRuntimeConfigProvider;
 use App\Settings\Vertical\Preset\PharmacyPreset;
@@ -144,12 +146,17 @@ final class TenantRuntimeConfigProviderTest extends TestCase
         $warehouseRepository->method('count')->willReturn($warehouseCount);
         $warehouseRepository->method('findOneBy')->willReturn(null);
 
+        /** @var TenantCapabilityRepository&MockObject $capabilityRepository */
+        $capabilityRepository = $this->createMock(TenantCapabilityRepository::class);
+        $capabilityRepository->method('allByKey')->willReturn([]);
+
         return new TenantRuntimeConfigProvider(
             $featureChecker,
             $settingsRepository,
             $branchRepository,
             $warehouseRepository,
             new VerticalPresetRegistry([new RetailPreset(), new PharmacyPreset()]),
+            new TenantCapabilityResolver($featureChecker, $capabilityRepository),
         );
     }
 }
