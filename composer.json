@@ -89,6 +89,7 @@
   "require-dev": {
     "dama/doctrine-test-bundle": "^8.6",
     "pestphp/pest": "^4.7",
+    "phparkitect/phparkitect": "^1.3",
     "phpstan/phpstan": "^2.1",
     "phpstan/phpstan-doctrine": "^2.0",
     "phpunit/phpunit": "^12.0",
@@ -140,6 +141,7 @@
     },
     "check:platform-boundary": "php scripts/architecture/check-platform-boundary.php",
     "test:platform-boundary-guard": "php scripts/architecture/check-platform-boundary.php --self-test",
+    "check:architecture": "phparkitect check --config=phparkitect.php",
     "post-install-cmd": [
       "@auto-scripts"
     ],

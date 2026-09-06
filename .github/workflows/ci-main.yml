@@ -43,6 +43,12 @@ jobs:
         # introduce exactly the import it's meant to catch undetected.
         run: docker compose exec -T web php scripts/architecture/check-platform-boundary.php
 
+      - name: Run architecture rules (AR-001…AR-010)
+        # ADR-018: PHPArkitect enforces Vertical -> ErpCore -> Platform -> Infra
+        # and blocks new cross-layer coupling. Pre-existing debt is in
+        # phparkitect-baseline.json (that list may only shrink).
+        run: docker compose exec -T web composer check:architecture
+
       - name: Run PHPStan
         # Level is enforced via phpstan.dist.neon (min: 6, see SLICE-SEC-001)
         run: |

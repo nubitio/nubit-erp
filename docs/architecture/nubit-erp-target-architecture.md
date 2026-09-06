@@ -119,14 +119,15 @@ IDs `NB-n`. Cada tarea: **Objetivo · Entregable · Criterio de aceptación**. O
 
 ### Fase 0 — Sentar fronteras y tooling (habilita todo lo demás)
 
-**NB-1 · Verificador de reglas AR-001…AR-010**
-Objetivo: convertir las reglas en un check de CI (Deptrac o PHPStan/`deptrac.yaml`), no sólo el guard Platform actual.
-Entregable: `deptrac.yaml` con capas `Platform`, `ErpCore`, `Commerce`, `Vertical:*`, `Infra`; reglas de dependencia permitidas; job en `ci-main.yml` + pre-push.
-Criterio: el CI falla ante un import `src/Inventory` → `src/Pharmacy`; pasa en `main` actual (con baseline si hace falta para deuda existente).
+**NB-1 · Verificador de reglas AR-001…AR-010** — hecho (commit tras #327)
+Objetivo: convertir las reglas en un check de CI, no sólo el guard Platform actual.
+Entregable: `phparkitect.php` con capas `Infra`, `Platform`, `ControlPlane`, `ErpCore`, `Assistant`, `Orchestration`, `Vertical_{Pharmacy,Restaurant,Hospitality}`; `phparkitect-baseline.json` (50 violaciones pre-existentes, sólo puede reducirse); `composer check:architecture`; job en `ci-main.yml` + `scripts/quality-check.sh` (pre-push).
+Nota: se eligió PHPArkitect sobre Deptrac porque deptrac 3.0 empaqueta php-parser 4.x y no parsea la sintaxis PHP 8.4 `new Foo()->method()` usada en todo el repo.
+Criterio: el CI falla ante un import `src/Inventory` → `src/Pharmacy`; `main` verde con baseline.
 
 **NB-2 · Manifiesto de dependencias por contexto (D-ADR)**
 Objetivo: cada contexto declara `dependsOn` y su contrato público.
-Entregable: `src/<Context>/context.php` (o `architecture/contexts.yaml`) con `name`, `layer`, `dependsOn`, `publicContracts`, `ownsTables`. Un test lee el manifiesto y lo cruza con Deptrac.
+Entregable: `src/<Context>/context.php` (o `architecture/contexts.yaml`) con `name`, `layer`, `dependsOn`, `publicContracts`, `ownsTables`. Un test lee el manifiesto y lo cruza con PHPArkitect.
 Criterio: `contexts.yaml` cubre los ~20 contextos; test verde; discrepancia manifiesto↔código real falla.
 
 **NB-3 · Registrar el mapa de capas en ADR-018**
@@ -171,7 +172,7 @@ Criterio: tenant nuevo elegible como retail/farmacia sin tocar BD manualmente.
 **NB-10 · `src/Pharmacy` bounded context**
 Objetivo: entidades propias (`Medicine`, `PharmacyProduct` extendiendo `Catalog.Product` por composición, `Batch`, `ExpiryPolicy`, `Prescription`, `ControlledProduct`), tablas `pharmacy_*`.
 Entregable: contexto con `Entity/Repository/Service/State/Controller/Enum`, manifiesto `dependsOn: [Catalog, Inventory, Sales, Billing]`, API `/api/pharmacy/*`.
-Criterio: Deptrac verde (Pharmacy→ERP permitido, ERP→Pharmacy prohibido); `Catalog.Product` sin campos de farmacia (AR-007).
+Criterio: PHPArkitect verde (Pharmacy→ERP permitido, ERP→Pharmacy prohibido); `Catalog.Product` sin campos de farmacia (AR-007).
 
 **NB-11 · `PharmacyStockPolicy` vía punto de extensión**
 Objetivo: `StockPolicy` como seam en Inventory con `DefaultStockPolicy`; Pharmacy registra `PharmacyStockPolicy` (FEFO, bloqueo de vencidos, selección de lote).
@@ -219,7 +220,7 @@ Criterio: añadir una regla de vertical = registrar una implementación, cero ca
 
 1. Un tenant nuevo se provisiona como retail / farmacia / ferretería sin cambios manuales de BD.
 2. Las capabilities efectivas son visibles por API y auditables por soporte.
-3. Deptrac (o equivalente) verifica AR-001…AR-010 en CI; `main` verde.
+3. PHPArkitect verifica AR-001…AR-010 en CI (`composer check:architecture`); `main` verde.
 4. Existe al menos una vertical (`Pharmacy`) como bounded context propio, con `Catalog.Product` libre de campos de farmacia.
 5. El comportamiento del POS/core se decide por runtime-config, nunca por `if vertical === …`.
 6. Cada contexto declara `dependsOn`, contratos públicos y `ownsTables`; ningún módulo toca tablas de otro.

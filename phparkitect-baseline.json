@@ -1,0 +1,304 @@
+{
+    "violations": [
+        {
+            "fqcn": "App\\Billing\\Repository\\TaxDocumentEventRepository",
+            "line": 16,
+            "filePath": "Billing\/Repository\/TaxDocumentEventRepository.php",
+            "error": "depends on App\\AI\\Repository\\SunatRejectionQueryInterface, but should not depend on these namespaces: App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant or any vertical"
+        },
+        {
+            "fqcn": "App\\Catalog\\Repository\\ProductRepository",
+            "line": -1,
+            "filePath": "Catalog\/Repository\/ProductRepository.php",
+            "error": "depends on App\\AI\\Dto\\ProductSearchResultDto, but should not depend on these namespaces: App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant or any vertical"
+        },
+        {
+            "fqcn": "App\\Catalog\\Repository\\ProductRepository",
+            "line": 36,
+            "filePath": "Catalog\/Repository\/ProductRepository.php",
+            "error": "depends on App\\AI\\Dto\\ProductSearchResultDto, but should not depend on these namespaces: App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant or any vertical"
+        },
+        {
+            "fqcn": "App\\Catalog\\Repository\\ProductRepository",
+            "line": 36,
+            "filePath": "Catalog\/Repository\/ProductRepository.php",
+            "error": "depends on App\\AI\\Dto\\ProductSearchResultDto, but should not depend on these namespaces: App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant or any vertical"
+        },
+        {
+            "fqcn": "App\\ControlPlane\\Billing\\Quota\\EfactEntityQuotaResourceResolver",
+            "line": 18,
+            "filePath": "ControlPlane\/Billing\/Quota\/EfactEntityQuotaResourceResolver.php",
+            "error": "depends on App\\Contacts\\Entity\\Customer, but should not depend on these namespaces: App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-003: ControlPlane must not depend on ERP, Assistant or verticals"
+        },
+        {
+            "fqcn": "App\\ControlPlane\\Billing\\Quota\\EfactEntityQuotaResourceResolver",
+            "line": 19,
+            "filePath": "ControlPlane\/Billing\/Quota\/EfactEntityQuotaResourceResolver.php",
+            "error": "depends on App\\Catalog\\Entity\\Product, but should not depend on these namespaces: App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-003: ControlPlane must not depend on ERP, Assistant or verticals"
+        },
+        {
+            "fqcn": "App\\ControlPlane\\Billing\\Quota\\EfactEntityQuotaResourceResolver",
+            "line": 20,
+            "filePath": "ControlPlane\/Billing\/Quota\/EfactEntityQuotaResourceResolver.php",
+            "error": "depends on App\\Billing\\Entity\\TaxDocument, but should not depend on these namespaces: App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-003: ControlPlane must not depend on ERP, Assistant or verticals"
+        },
+        {
+            "fqcn": "App\\ControlPlane\\Tenant\\Adapter\\LycetElectronicBillingCompanyAdapter",
+            "line": 13,
+            "filePath": "ControlPlane\/Tenant\/Adapter\/LycetElectronicBillingCompanyAdapter.php",
+            "error": "depends on App\\Billing\\Sunat\\Domain\\LycetCompanyServiceInterface, but should not depend on these namespaces: App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-003: ControlPlane must not depend on ERP, Assistant or verticals"
+        },
+        {
+            "fqcn": "App\\Efact\\Command\\MigrateStorageToTenantPrefixCommand",
+            "line": 31,
+            "filePath": "Efact\/Command\/MigrateStorageToTenantPrefixCommand.php",
+            "error": "depends on App\\ControlPlane\\Tenant\\Application\\TenantService, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
+        },
+        {
+            "fqcn": "App\\Efact\\Command\\MigrateStorageToTenantPrefixCommand",
+            "line": 32,
+            "filePath": "Efact\/Command\/MigrateStorageToTenantPrefixCommand.php",
+            "error": "depends on App\\ControlPlane\\Tenant\\Service\\TenantConnectionSwitcher, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
+        },
+        {
+            "fqcn": "App\\Efact\\Doctrine\\Filter\\BranchFilter",
+            "line": 25,
+            "filePath": "Efact\/Doctrine\/Filter\/BranchFilter.php",
+            "error": "depends on App\\Billing\\Recurring\\Entity\\SubscriptionPlan, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
+        },
+        {
+            "fqcn": "App\\Efact\\Doctrine\\Filter\\SalesGridVirtualFields",
+            "line": 64,
+            "filePath": "Efact\/Doctrine\/Filter\/SalesGridVirtualFields.php",
+            "error": "depends on App\\Sales\\Entity\\SalePayment, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
+        },
+        {
+            "fqcn": "App\\Efact\\Doctrine\\Filter\\SalesGridVirtualFields",
+            "line": 84,
+            "filePath": "Efact\/Doctrine\/Filter\/SalesGridVirtualFields.php",
+            "error": "depends on App\\Billing\\Entity\\TaxDocument, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
+        },
+        {
+            "fqcn": "App\\Efact\\Service\\CompanyContext",
+            "line": 13,
+            "filePath": "Efact\/Service\/CompanyContext.php",
+            "error": "depends on App\\Organization\\Entity\\Company, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
+        },
+        {
+            "fqcn": "App\\Efact\\Service\\CompanyContext",
+            "line": 16,
+            "filePath": "Efact\/Service\/CompanyContext.php",
+            "error": "depends on App\\Organization\\Repository\\CompanyRepository, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
+        },
+        {
+            "fqcn": "App\\Efact\\Service\\CompanyContext",
+            "line": 19,
+            "filePath": "Efact\/Service\/CompanyContext.php",
+            "error": "depends on App\\Organization\\Entity\\Company, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
+        },
+        {
+            "fqcn": "App\\Efact\\Service\\CompanyContext",
+            "line": 21,
+            "filePath": "Efact\/Service\/CompanyContext.php",
+            "error": "depends on App\\Organization\\Entity\\Company, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
+        },
+        {
+            "fqcn": "App\\Efact\\Service\\CompanyContext",
+            "line": 26,
+            "filePath": "Efact\/Service\/CompanyContext.php",
+            "error": "depends on App\\Organization\\Entity\\Company, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
+        },
+        {
+            "fqcn": "App\\Efact\\Service\\LogoProvider",
+            "line": 86,
+            "filePath": "Efact\/Service\/LogoProvider.php",
+            "error": "depends on App\\Organization\\Entity\\Company, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
+        },
+        {
+            "fqcn": "App\\Efact\\Service\\LogoProvider",
+            "line": 95,
+            "filePath": "Efact\/Service\/LogoProvider.php",
+            "error": "depends on App\\Organization\\Entity\\Company, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
+        },
+        {
+            "fqcn": "App\\Organization\\Entity\\Branch",
+            "line": 76,
+            "filePath": "Organization\/Entity\/Branch.php",
+            "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Organization\\Entity\\Branch",
+            "line": 76,
+            "filePath": "Organization\/Entity\/Branch.php",
+            "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Organization\\Entity\\Branch",
+            "line": 157,
+            "filePath": "Organization\/Entity\/Branch.php",
+            "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Organization\\Entity\\Branch",
+            "line": 167,
+            "filePath": "Organization\/Entity\/Branch.php",
+            "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Sales\\Repository\\SalesAnalyticsRepository",
+            "line": -1,
+            "filePath": "Sales\/Repository\/SalesAnalyticsRepository.php",
+            "error": "depends on App\\AI\\Dto\\RecentSaleDto, but should not depend on these namespaces: App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant or any vertical"
+        },
+        {
+            "fqcn": "App\\Sales\\Repository\\SalesAnalyticsRepository",
+            "line": 25,
+            "filePath": "Sales\/Repository\/SalesAnalyticsRepository.php",
+            "error": "depends on App\\AI\\Dto\\SalesSummaryDto, but should not depend on these namespaces: App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant or any vertical"
+        },
+        {
+            "fqcn": "App\\Sales\\Repository\\SalesAnalyticsRepository",
+            "line": 62,
+            "filePath": "Sales\/Repository\/SalesAnalyticsRepository.php",
+            "error": "depends on App\\AI\\Dto\\SalesSummaryDto, but should not depend on these namespaces: App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant or any vertical"
+        },
+        {
+            "fqcn": "App\\Sales\\Repository\\SalesAnalyticsRepository",
+            "line": 96,
+            "filePath": "Sales\/Repository\/SalesAnalyticsRepository.php",
+            "error": "depends on App\\AI\\Dto\\RecentSaleDto, but should not depend on these namespaces: App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant or any vertical"
+        },
+        {
+            "fqcn": "App\\Sales\\Repository\\SalesAnalyticsRepository",
+            "line": 101,
+            "filePath": "Sales\/Repository\/SalesAnalyticsRepository.php",
+            "error": "depends on App\\AI\\Dto\\RecentSaleDto, but should not depend on these namespaces: App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant or any vertical"
+        },
+        {
+            "fqcn": "App\\Settings\\Controller\\TenantCertificateController",
+            "line": 32,
+            "filePath": "Settings\/Controller\/TenantCertificateController.php",
+            "error": "depends on App\\ControlPlane\\Certificate\\CertificateLifecycleServiceInterface, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Controller\\TenantCertificateController",
+            "line": 179,
+            "filePath": "Settings\/Controller\/TenantCertificateController.php",
+            "error": "depends on App\\ControlPlane\\Certificate\\TenantCertificate, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Controller\\TenantOnboardingController",
+            "line": 33,
+            "filePath": "Settings\/Controller\/TenantOnboardingController.php",
+            "error": "depends on App\\Inventory\\Repository\\WarehouseRepository, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Controller\\TenantOnboardingController",
+            "line": 34,
+            "filePath": "Settings\/Controller\/TenantOnboardingController.php",
+            "error": "depends on App\\Catalog\\Repository\\VoucherSeriesRepository, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Controller\\TenantOnboardingController",
+            "line": 35,
+            "filePath": "Settings\/Controller\/TenantOnboardingController.php",
+            "error": "depends on App\\Catalog\\Repository\\VoucherTypeRepository, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Controller\\TenantOnboardingController",
+            "line": 164,
+            "filePath": "Settings\/Controller\/TenantOnboardingController.php",
+            "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Controller\\TenantOnboardingController",
+            "line": 166,
+            "filePath": "Settings\/Controller\/TenantOnboardingController.php",
+            "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Controller\\TenantOnboardingController",
+            "line": 203,
+            "filePath": "Settings\/Controller\/TenantOnboardingController.php",
+            "error": "depends on App\\Catalog\\Entity\\VoucherSeries, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Controller\\TenantOnboardingController",
+            "line": 258,
+            "filePath": "Settings\/Controller\/TenantOnboardingController.php",
+            "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Entity\\TenantSettings",
+            "line": 108,
+            "filePath": "Settings\/Entity\/TenantSettings.php",
+            "error": "depends on App\\Inventory\\Core\\Enum\\StockPolicy, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Entity\\TenantSettings",
+            "line": 108,
+            "filePath": "Settings\/Entity\/TenantSettings.php",
+            "error": "depends on App\\Inventory\\Core\\Enum\\StockPolicy, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Entity\\TenantSettings",
+            "line": 110,
+            "filePath": "Settings\/Entity\/TenantSettings.php",
+            "error": "depends on App\\Inventory\\Core\\Enum\\StockPolicy, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Entity\\TenantSettings",
+            "line": 249,
+            "filePath": "Settings\/Entity\/TenantSettings.php",
+            "error": "depends on App\\Inventory\\Core\\Enum\\StockPolicy, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Entity\\TenantSettings",
+            "line": 254,
+            "filePath": "Settings\/Entity\/TenantSettings.php",
+            "error": "depends on App\\Inventory\\Core\\Enum\\StockPolicy, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Runtime\\TenantRuntimeConfigProvider",
+            "line": 19,
+            "filePath": "Settings\/Runtime\/TenantRuntimeConfigProvider.php",
+            "error": "depends on App\\Inventory\\Repository\\WarehouseRepository, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Service\\TenantSettingsService",
+            "line": 75,
+            "filePath": "Settings\/Service\/TenantSettingsService.php",
+            "error": "depends on App\\Inventory\\Core\\Enum\\StockPolicy, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Vertical\\Preset\\PharmacyPreset",
+            "line": 46,
+            "filePath": "Settings\/Vertical\/Preset\/PharmacyPreset.php",
+            "error": "depends on App\\Inventory\\Core\\Enum\\StockPolicy, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Vertical\\Preset\\RetailPreset",
+            "line": 48,
+            "filePath": "Settings\/Vertical\/Preset\/RetailPreset.php",
+            "error": "depends on App\\Inventory\\Core\\Enum\\StockPolicy, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Vertical\\VerticalPresetApplier",
+            "line": 27,
+            "filePath": "Settings\/Vertical\/VerticalPresetApplier.php",
+            "error": "depends on App\\Inventory\\Repository\\WarehouseRepository, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Vertical\\VerticalPresetApplier",
+            "line": 88,
+            "filePath": "Settings\/Vertical\/VerticalPresetApplier.php",
+            "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        },
+        {
+            "fqcn": "App\\Settings\\Vertical\\VerticalPresetSettings",
+            "line": 24,
+            "filePath": "Settings\/Vertical\/VerticalPresetSettings.php",
+            "error": "depends on App\\Inventory\\Core\\Enum\\StockPolicy, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
+        }
+    ]
+}

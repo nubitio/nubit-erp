@@ -39,6 +39,9 @@ docker exec "$WEB_CONTAINER" mago fmt --check
 echo "==> [backend] platform boundary guard"
 docker exec "$WEB_CONTAINER" php scripts/architecture/check-platform-boundary.php
 
+echo "==> [backend] architecture rules (phparkitect AR-001…AR-010)"
+docker exec "$WEB_CONTAINER" composer check:architecture
+
 echo "==> [backend] phpstan"
 docker exec -e OTEL_SDK_DISABLED=true "$WEB_CONTAINER" \
   php -d memory_limit=1G vendor/bin/phpstan analyse --configuration=phpstan.dist.neon --no-progress
