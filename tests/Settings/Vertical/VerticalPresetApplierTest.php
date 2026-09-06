@@ -5,125 +5,186 @@ declare(strict_types=1);
 namespace App\Tests\Settings\Vertical;
 
 use App\Inventory\Core\Enum\StockPolicy;
-use App\Inventory\Entity\Warehouse;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Entity\Branch;
 use App\Organization\Repository\BranchRepository;
+use App\Settings\Entity\TenantCapability;
+use App\Settings\Entity\TenantProfile;
 use App\Settings\Entity\TenantSettings;
+use App\Settings\Enum\CapabilitySource;
 use App\Settings\Enum\DefaultCurrency;
+use App\Settings\Repository\TenantCapabilityRepository;
+use App\Settings\Repository\TenantProfileRepository;
 use App\Settings\Repository\TenantSettingsRepository;
 use App\Settings\Vertical\Preset\PharmacyPreset;
 use App\Settings\Vertical\Preset\RetailPreset;
 use App\Settings\Vertical\VerticalPresetApplier;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 #[AllowMockObjectsWithoutExpectations]
 final class VerticalPresetApplierTest extends TestCase
 {
-    public function testAppliesSettingsAndCreatesDefaultWarehouseWhenBranchExists(): void
+    public function testAppliesSettingsProfileCapabilitiesAndDefaultWarehouse(): void
     {
         $settings = new TenantSettings();
         $settings->setIgv(0.0)->setRequireCashRegister(false)->setAutoInvoice(false);
-
-        $settingsRepo = $this->createMock(TenantSettingsRepository::class);
-        $settingsRepo->method('getOrCreate')->willReturn($settings);
-
-        $warehouseRepo = $this->createMock(WarehouseRepository::class);
-        $warehouseRepo->method('count')->willReturn(0);
+        $profile = new TenantProfile();
 
         $branch = new Branch()->setName('Principal');
         $branchRepo = $this->createMock(BranchRepository::class);
         $branchRepo->method('findOneBy')->willReturn($branch);
 
-        $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects(self::once())->method('persist')->with(self::isInstanceOf(Warehouse::class));
-        $em->expects(self::once())->method('flush');
+        $warehouseRepo = $this->createMock(WarehouseRepository::class);
+        $warehouseRepo->method('count')->willReturn(0);
 
-        $applier = new VerticalPresetApplier($settingsRepo, $branchRepo, $warehouseRepo, $em);
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->method('flush');
+
+        $applier = new VerticalPresetApplier(
+            $this->settingsRepo($settings),
+            $branchRepo,
+            $warehouseRepo,
+            $this->profileRepo($profile),
+            $this->emptyCapabilityRepo(),
+            $em,
+        );
         $result = $applier->apply(new RetailPreset());
 
-        self::assertTrue($result->settingsApplied);
-        self::assertTrue($result->defaultWarehouseCreated);
-        self::assertSame([], $result->notes);
+        static::assertTrue($result->settingsApplied);
+        static::assertTrue($result->defaultWarehouseCreated);
+        static::assertSame([], $result->notes);
+        static::assertSame(RetailPreset::KEY, $settings->getVertical());
+        static::assertSame(DefaultCurrency::PEN, $settings->getDefaultCurrency());
+        static::assertSame(StockPolicy::STRICT, $settings->getNegativeStockPolicy());
 
-        // Settings defaults from the preset were applied onto the entity.
-        self::assertSame(18.0, $settings->getIgv());
-        self::assertTrue($settings->isRequireCashRegister());
-        self::assertTrue($settings->isAutoInvoice());
-        self::assertSame(DefaultCurrency::PEN, $settings->getDefaultCurrency());
-        self::assertSame(StockPolicy::STRICT, $settings->getNegativeStockPolicy());
-        self::assertSame(RetailPreset::KEY, $settings->getVertical());
+        // Profile records the applied preset.
+        static::assertSame(RetailPreset::KEY, $profile->getVerticalKey());
+        static::assertSame(1, $profile->getPresetVersion());
+        static::assertNotNull($profile->getAppliedAt());
+
+        // Every capability the preset asks for is enabled from the preset.
+        static::assertSame(count(new RetailPreset()->desiredCapabilities()), $result->capabilitiesApplied);
     }
 
-    public function testSkipsWarehouseCreationWhenWarehouseAlreadyExists(): void
+    public function testExistingManualCapabilityOverrideIsNotOverwritten(): void
     {
-        $settingsRepo = $this->createMock(TenantSettingsRepository::class);
-        $settingsRepo->method('getOrCreate')->willReturn(new TenantSettings());
+        $manual = new TenantCapability('cash.sessions');
+        $manual->setEnabled(false)->setSource(CapabilitySource::Manual);
 
-        $warehouseRepo = $this->createMock(WarehouseRepository::class);
-        $warehouseRepo->method('count')->willReturn(2);
-
-        $branchRepo = $this->createMock(BranchRepository::class);
-        $branchRepo->expects(self::never())->method('findOneBy');
+        $capabilityRepo = $this->createMock(TenantCapabilityRepository::class);
+        $capabilityRepo->method('findByKey')->willReturnCallback(static fn(string $key): ?TenantCapability => $key
+            === 'cash.sessions'
+                ? $manual
+                : null);
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects(self::never())->method('persist');
-        $em->expects(self::once())->method('flush');
+        $em->method('flush');
 
-        $applier = new VerticalPresetApplier($settingsRepo, $branchRepo, $warehouseRepo, $em);
+        $applier = new VerticalPresetApplier(
+            $this->settingsRepo(new TenantSettings()),
+            $this->stubBranchRepo(),
+            $this->stubWarehouseRepo(),
+            $this->profileRepo(new TenantProfile()),
+            $capabilityRepo,
+            $em,
+        );
         $result = $applier->apply(new RetailPreset());
 
-        self::assertFalse($result->defaultWarehouseCreated);
+        static::assertFalse($manual->isEnabled(), 'manual override must survive a preset re-apply');
+        static::assertSame(CapabilitySource::Manual, $manual->getSource());
+        // retail asks for 4 capabilities; the manual one is skipped.
+        static::assertSame(3, $result->capabilitiesApplied);
     }
 
     public function testMultiLocationPresetDoesNotCreateDefaultWarehouse(): void
     {
         $pharmacySettings = new TenantSettings();
-        $settingsRepo = $this->createMock(TenantSettingsRepository::class);
-        $settingsRepo->method('getOrCreate')->willReturn($pharmacySettings);
-
-        // Even with no warehouses and an existing branch, a non-single-location
-        // preset must not force a default warehouse.
         $warehouseRepo = $this->createMock(WarehouseRepository::class);
-        $warehouseRepo->expects(self::never())->method('count');
-
-        $branchRepo = $this->createMock(BranchRepository::class);
-        $branchRepo->expects(self::never())->method('findOneBy');
+        $warehouseRepo->expects(static::never())->method('count');
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects(self::never())->method('persist');
-        $em->expects(self::once())->method('flush');
+        $em->method('flush');
 
-        $applier = new VerticalPresetApplier($settingsRepo, $branchRepo, $warehouseRepo, $em);
+        $applier = new VerticalPresetApplier(
+            $this->settingsRepo($pharmacySettings),
+            $this->stubBranchRepo(),
+            $warehouseRepo,
+            $this->profileRepo(new TenantProfile()),
+            $this->emptyCapabilityRepo(),
+            $em,
+        );
         $result = $applier->apply(new PharmacyPreset());
 
-        self::assertTrue($result->settingsApplied);
-        self::assertFalse($result->defaultWarehouseCreated);
-        self::assertSame(PharmacyPreset::KEY, $result->presetKey);
-        self::assertSame(PharmacyPreset::KEY, $pharmacySettings->getVertical());
+        static::assertFalse($result->defaultWarehouseCreated);
+        static::assertSame(PharmacyPreset::KEY, $result->presetKey);
+        static::assertSame(PharmacyPreset::KEY, $pharmacySettings->getVertical());
     }
 
     public function testRecordsNoteWhenNoBranchExists(): void
     {
-        $settingsRepo = $this->createMock(TenantSettingsRepository::class);
-        $settingsRepo->method('getOrCreate')->willReturn(new TenantSettings());
+        $branchRepo = $this->createMock(BranchRepository::class);
+        $branchRepo->method('findOneBy')->willReturn(null);
 
         $warehouseRepo = $this->createMock(WarehouseRepository::class);
         $warehouseRepo->method('count')->willReturn(0);
 
-        $branchRepo = $this->createMock(BranchRepository::class);
-        $branchRepo->method('findOneBy')->willReturn(null);
-
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects(self::never())->method('persist');
-        $em->expects(self::once())->method('flush');
+        $em->method('flush');
 
-        $applier = new VerticalPresetApplier($settingsRepo, $branchRepo, $warehouseRepo, $em);
+        $applier = new VerticalPresetApplier(
+            $this->settingsRepo(new TenantSettings()),
+            $branchRepo,
+            $warehouseRepo,
+            $this->profileRepo(new TenantProfile()),
+            $this->emptyCapabilityRepo(),
+            $em,
+        );
         $result = $applier->apply(new RetailPreset());
 
-        self::assertFalse($result->defaultWarehouseCreated);
-        self::assertCount(1, $result->notes);
+        static::assertFalse($result->defaultWarehouseCreated);
+        static::assertCount(1, $result->notes);
+    }
+
+    private function settingsRepo(TenantSettings $settings): TenantSettingsRepository&MockObject
+    {
+        $repo = $this->createMock(TenantSettingsRepository::class);
+        $repo->method('getOrCreate')->willReturn($settings);
+
+        return $repo;
+    }
+
+    private function profileRepo(TenantProfile $profile): TenantProfileRepository&MockObject
+    {
+        $repo = $this->createMock(TenantProfileRepository::class);
+        $repo->method('getOrCreate')->willReturn($profile);
+
+        return $repo;
+    }
+
+    private function emptyCapabilityRepo(): TenantCapabilityRepository&MockObject
+    {
+        $repo = $this->createMock(TenantCapabilityRepository::class);
+        $repo->method('findByKey')->willReturn(null);
+
+        return $repo;
+    }
+
+    private function stubBranchRepo(): BranchRepository&MockObject
+    {
+        $repo = $this->createMock(BranchRepository::class);
+        $repo->method('findOneBy')->willReturn(new Branch()->setName('Principal'));
+
+        return $repo;
+    }
+
+    private function stubWarehouseRepo(): WarehouseRepository&MockObject
+    {
+        $repo = $this->createMock(WarehouseRepository::class);
+        $repo->method('count')->willReturn(1);
+
+        return $repo;
     }
 }

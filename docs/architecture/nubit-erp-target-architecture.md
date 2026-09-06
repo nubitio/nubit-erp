@@ -137,15 +137,15 @@ Criterio: D1–D4 con decisión escrita y alternativas rechazadas.
 
 ### Fase 1 — Capabilities de 1ª clase (multivertical-plan Fase 1)
 
-**NB-4 · Catálogo operativo de capabilities**
-Objetivo: `CapabilityKey` enum + `CapabilityDefinition` (key, label, owner context, deps, requiresEntitlement, configSchema, safeDefaults) + `CapabilityCatalog` versionado.
-Entregable: código en `src/Settings/Capability/` + tests de integridad del catálogo (deps existen, no ciclos).
-Criterio: catálogo cubre las capabilities ya implícitas (`inventory.multi_warehouse`, `inventory.lot_tracking`, `cash.sessions`, `billing.sunat`, `catalog.weighted_items`, …).
+**NB-4 · Catálogo operativo de capabilities** — hecho (#349)
+Objetivo: `CapabilityKey` enum + `CapabilityDefinition` (key, label, owner context, deps, requiresEntitlement, configKeys, safeDefaults) + `CapabilityCatalog` versionado (`VERSION`).
+Entregable: `src/Settings/Capability/`; `CapabilityCatalogTest` (paridad enum↔catálogo, sin ciclos, `requiresEntitlement` en `FeatureCatalog`, `ownerContext` en `architecture/contexts.yaml`, `safeDefaults ⊆ configKeys`).
+Criterio: catálogo cubre las 20 capabilities ya implícitas (`inventory.multi_warehouse`, `inventory.lot_tracking`, `cash.sessions`, `billing.sunat`, `catalog.weighted_items`, `hardware.scale`, …).
 
-**NB-5 · Estado operacional por tenant**
+**NB-5 · Estado operacional por tenant** — hecho (PR de #331)
 Objetivo: tablas `tenant_capabilities` y `tenant_profile`.
-Entregable: migración + entidades + repos; `source` (preset|manual|migration|support), `preset_key/version`.
-Criterio: migración reversible; seed de tenant demo poblado desde preset.
+Entregable: migración `Version20260906040000` + entidades `TenantCapability`/`TenantProfile` + repos; enum `CapabilitySource` (preset|manual|migration|support); `VerticalPresetApplier` graba el perfil y habilita `desiredCapabilities()` con los `safeDefaults` del catálogo, respetando overrides manual/support.
+Criterio: `doctrine:migrations:migrate` verde (109 migraciones); mapping válido; aplicar un preset deja el perfil y las capabilities poblados.
 
 **NB-6 · `TenantCapabilityResolver` fail-closed**
 Objetivo: resolución única: valida existencia → valida entitlement comercial → estado tenant → merge (defaults catálogo + preset + overrides) → falla cerrado ante clave desconocida o dependencia incumplida.

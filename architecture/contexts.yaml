@@ -69,7 +69,8 @@ contexts:
     layer: Platform
     dependsOn: [Catalog, ControlPlane, Identity, Inventory, Organization]
     publicContracts: []
-    ownsTables: [config, tenant_settings, sunat_operational_state, ubigeo, menu, menu_rol]
+    ownsTables:
+      [config, tenant_settings, tenant_capabilities, tenant_profile, sunat_operational_state, ubigeo, menu, menu_rol]
 
   ControlPlane:
     namespace: App\ControlPlane
