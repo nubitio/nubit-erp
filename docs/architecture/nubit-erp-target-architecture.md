@@ -159,10 +159,11 @@ Criterio: `/api/tenant/runtime-config` mantiene la salida; consumidores de domin
 
 ### Fase 2 — Presets versionados y onboarding
 
-**NB-8 · `VerticalPresetCatalog` declarativo + `PresetApplier` con dry-run**
-Objetivo: presets sólo describen estado inicial (capabilities + defaults + menús + seeds + uiDefaults), sin lógica.
-Entregable: extender `src/Settings/Vertical/` a catálogo versionado; applier idempotente con dry-run, diff, auditoría, no borra overrides manuales.
-Criterio: `tenant:apply-preset <key> --dry-run` muestra diff; re-aplicar no cambia nada; auditoría registrada.
+**NB-8 · `PresetApplier` con dry-run** — hecho (PR de #334)
+Objetivo: poder previsualizar el efecto de aplicar un preset y confirmar que re-aplicar no cambia nada.
+Entregable: `VerticalPresetPlanner` (read-only) + `VerticalPresetPlan` VO (diff de settings campo→campo y de capabilities: `enable`/`config`/`noop`/`skip-manual`/`unknown`, + warehouse); `tenant:apply-preset --dry-run` imprime el diff en tablas; el aplicador registra auditoría estructurada (settings cambiados, capabilities habilitadas, warehouse) en el log del comando. Respeta overrides `manual`/`support` (los reporta como `skip-manual`).
+Criterio: `VerticalPresetPlannerTest` (fresh tenant, re-apply no-op, override manual, warehouse); `tenant:apply-preset <key> --dry-run` no persiste.
+Nota: los presets siguen declarando sólo `settings` + `desiredCapabilities`; menús/seeds/uiDefaults declarativos en el `VerticalPresetInterface` quedan como seguimiento (no bloquean).
 
 **NB-9 · `--vertical=<key>` en provisioning/setup + selección de giro en onboarding**
 Criterio: tenant nuevo elegible como retail/farmacia sin tocar BD manualmente.
