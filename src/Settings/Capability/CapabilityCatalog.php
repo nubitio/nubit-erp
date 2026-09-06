@@ -28,11 +28,17 @@ final class CapabilityCatalog
     public static function all(): array
     {
         $definitions = [
-            new CapabilityDefinition(key: CapabilityKey::SalesCore, label: 'Ventas', ownerContext: 'Sales'),
+            new CapabilityDefinition(
+                key: CapabilityKey::SalesCore,
+                label: 'Ventas',
+                ownerContext: 'Sales',
+                defaultEnabled: true,
+            ),
             new CapabilityDefinition(
                 key: CapabilityKey::BillingSunat,
                 label: 'Facturación electrónica SUNAT',
                 ownerContext: 'Billing',
+                defaultEnabled: true,
                 configKeys: ['autoInvoice'],
                 safeDefaults: ['autoInvoice' => false],
             ),
@@ -47,6 +53,7 @@ final class CapabilityCatalog
                 key: CapabilityKey::CashSessions,
                 label: 'Sesiones de caja',
                 ownerContext: 'CashRegister',
+                defaultEnabled: true,
                 configKeys: ['requireOpenSession'],
                 safeDefaults: ['requireOpenSession' => false],
             ),
@@ -54,6 +61,7 @@ final class CapabilityCatalog
                 key: CapabilityKey::InventoryStockTracking,
                 label: 'Control de stock',
                 ownerContext: 'Inventory',
+                defaultEnabled: true,
                 configKeys: ['negativeStockPolicy'],
                 safeDefaults: ['negativeStockPolicy' => 'STRICT'],
             ),
@@ -109,6 +117,7 @@ final class CapabilityCatalog
                 key: CapabilityKey::HardwarePrinting,
                 label: 'Impresión de comprobantes',
                 ownerContext: 'Settings',
+                defaultEnabled: true,
                 configKeys: ['method'],
                 safeDefaults: ['method' => 'WEBUSB'],
             ),
