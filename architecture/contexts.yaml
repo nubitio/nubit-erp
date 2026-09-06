@@ -270,6 +270,6 @@ contexts:
   Pharmacy:
     namespace: App\Pharmacy
     layer: Vertical
-    dependsOn: [Catalog, Inventory]
+    dependsOn: [Catalog, Inventory, Sales]
     publicContracts: []
-    ownsTables: [pharmacy_products, pharmacy_batches]
+    ownsTables: [pharmacy_products, pharmacy_batches, pharmacy_batch_movements]
