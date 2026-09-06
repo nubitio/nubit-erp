@@ -29,15 +29,16 @@ if [ "${RUN_MIGRATIONS}" = "true" ]; then
         sleep 1
     done
 
-    # Run control plane migrations
-    php /app/bin/console app:control-plane:migrate --no-interaction || {
-        echo "Control plane migration failed, but continuing startup..."
-    }
+    # Fail the migration container if either migration tree fails.  The web
+    # and worker services depend on this container completing successfully;
+    # swallowing an error here starts an application whose entity mappings
+    # may be ahead of the database schema and turns a deploy problem into a
+    # stream of opaque HTTP 500s.
+    echo "Running control-plane migrations..."
+    php /app/bin/console app:control-plane:migrate --no-interaction
 
-    # Run tenant-aware migrations
-    php /app/bin/console app:tenants:migrate --no-interaction || {
-        echo "Tenant migration failed, but continuing startup..."
-    }
+    echo "Running tenant migrations..."
+    php /app/bin/console app:tenants:migrate --no-interaction
 
     echo "Migrations completed"
 fi
