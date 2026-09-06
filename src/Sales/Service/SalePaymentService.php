@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Sales\Service;
 
 use App\Catalog\Entity\PaymentMethod;
+use App\Catalog\Enum\SettlementBehavior;
 use App\Efact\Domain\Money;
 use App\Identity\Entity\User;
 use App\Sales\Entity\SalePayment;
@@ -39,6 +40,15 @@ readonly class SalePaymentService
         ?string $reference,
         User $createdBy,
     ): SalePayment {
+        if (
+            !$paymentMethod->getIsActive()
+            || $paymentMethod->getSettlementBehavior() !== SettlementBehavior::COLLECTED
+        ) {
+            throw new UnprocessableEntityHttpException(
+                'Seleccione un método de pago activo que represente dinero recibido. Crédito no es un cobro.',
+            );
+        }
+
         if ($sale->getStatus() === 'VOIDED') {
             throw new UnprocessableEntityHttpException('No se puede registrar un cobro sobre una venta anulada.');
         }

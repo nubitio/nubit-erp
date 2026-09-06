@@ -1,8 +1,7 @@
-import { Button, Card, FormField, TextField } from '@nubitio/ui';
+import { AppDialog, Button, FormField, TextField } from '@nubitio/ui';
 import { EntityDropdown } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
 import saleCollectService from './services/saleCollectService';
 import toast from '@shared/lib/SharedUtils';
 import { httpClient } from '@shared/api/HttpClient';
@@ -10,10 +9,6 @@ import { saleEndpoints } from './api/saleEndpoints';
 import NumberUtils from '@shared/lib/NumberUtils';
 
 const API = getCoreApiBaseUrl();
-
-type SaleCollectPaymentParams = {
-  id: string;
-};
 
 type CollectableSale = {
   customer?: { businessName?: string } | null;
@@ -25,14 +20,12 @@ type CollectableSale = {
   payments?: Array<{ method_name?: string | null; amount?: string; paid_at?: string | null; reference?: string | null }>;
 };
 
-export const SaleCollectPayment = () => {
-  const amountRef = useRef<HTMLInputElement>(null);
+export const SaleCollectPayment = ({ id, onClose, onCollected }: { id: string; onClose: () => void; onCollected: () => void }) => {
+  const [amountValue, setAmountValue] = useState('');
   const referenceRef = useRef<HTMLInputElement>(null);
   const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [sale, setSale] = useState<CollectableSale | null>(null);
-  const { id } = useParams<SaleCollectPaymentParams>();
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!id) return;
@@ -41,17 +34,18 @@ export const SaleCollectPayment = () => {
       .get<CollectableSale>(saleEndpoints.detail(id), { signal: controller.signal })
       .then(({ data }) => {
         setSale(data);
-        if (amountRef.current) amountRef.current.value = data.balanceDue;
+        setAmountValue(data.balanceDue);
       })
-      .catch(() => toast('No se pudo cargar el estado de cuenta', 'error'));
+      .catch(() => { if (!controller.signal.aborted) toast('No se pudo cargar el estado de cuenta', 'error'); });
     return () => controller.abort();
   }, [id]);
 
   const registerCollection = () => {
-    const raw = amountRef.current?.value;
+    if (isProcessing || !sale) return;
+    const raw = amountValue;
     const amount = raw !== undefined && raw !== '' ? parseFloat(raw) : NaN;
 
-    if (id === undefined || isNaN(amount) || paymentMethodId === null) {
+    if (id === undefined || !Number.isFinite(amount) || amount <= 0 || amount > Number(sale.balanceDue) || paymentMethodId === null) {
       toast('Completa el monto y el método de pago', 'error');
       return;
     }
@@ -65,15 +59,16 @@ export const SaleCollectPayment = () => {
       })
       .then(() => {
         toast('Cobro registrado', 'success');
-        navigate('/accounts-receivable');
+        onCollected();
       })
+      .catch(() => { /* HttpClient displays the API error; keep the form open for correction. */ })
       .finally(() => {
         setIsProcessing(false);
       });
   };
 
   return (
-    <Card title="Registrar cobro de venta">
+    <AppDialog open title="Registrar cobro de venta" onClose={() => { if (!isProcessing) onClose(); }} width={640} closeOnOutsideClick={false}>
       {sale ? (
         <div style={{ marginBottom: 20, maxWidth: 640 }}>
           <h3 style={{ marginBottom: 6 }}>{sale.customer?.businessName ?? 'Cliente'}</h3>
@@ -99,7 +94,7 @@ export const SaleCollectPayment = () => {
         </div>
       ) : null}
       <form
-        style={{ width: 320 }}
+        style={{ width: '100%' }}
         onSubmit={(e) => {
           e.preventDefault();
           registerCollection();
@@ -108,10 +103,13 @@ export const SaleCollectPayment = () => {
         <div className="mb-3">
           <FormField label={<>Monto <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>*</span></>} htmlFor="sale-collect-amount">
             <TextField
-              ref={amountRef}
+              value={amountValue}
+              onChange={(event) => setAmountValue(event.target.value)}
+              disabled={!sale || isProcessing}
               id="sale-collect-amount"
               type="number"
-              min={0}
+              min={0.01}
+              max={sale ? Number(sale.balanceDue) : undefined}
               step={0.01}
               required
               placeholder="0.00"
@@ -123,6 +121,7 @@ export const SaleCollectPayment = () => {
           <FormField label={<>Método de pago <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>*</span></>} htmlFor="sale-collect-method">
             <EntityDropdown
               url={API + 'payment-methods'}
+              filters={[{ field: 'settlementBehavior', operator: '=', value: 'COLLECTED' }, { field: 'isActive', operator: '=', value: 1 }]}
               value={paymentMethodId}
               onChange={setPaymentMethodId}
               placeholder="Selecciona un método de pago"
@@ -142,11 +141,12 @@ export const SaleCollectPayment = () => {
           variant="success"
           fullWidth
           loading={isProcessing}
+          disabled={!sale || Number(sale.balanceDue) <= 0}
           data-testid="sale-collect-submit-btn"
         >
           {isProcessing ? 'Procesando...' : 'Registrar cobro'}
         </Button>
       </form>
-    </Card>
+    </AppDialog>
   );
 };

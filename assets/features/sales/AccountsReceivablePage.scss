@@ -1,0 +1,15 @@
+.accounts-receivable-page {
+  // Collection actions stay at the right edge while the table scrolls.
+  .nb-datagrid__table > thead > tr > :last-child,
+  .nb-datagrid__table > tbody > .nb-datagrid__row > :last-child {
+    position: sticky;
+    right: 0;
+    z-index: 2;
+    background: var(--surface-1);
+    box-shadow: -1px 0 0 var(--border-color);
+  }
+
+  .nb-datagrid__table > thead > tr > :last-child {
+    z-index: 4;
+  }
+}

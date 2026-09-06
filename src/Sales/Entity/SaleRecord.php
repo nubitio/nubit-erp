@@ -53,6 +53,12 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new GetCollection(security: "is_granted('perm:sales.view')"),
         new Get(security: "is_granted('perm:sales.view')"),
+        new Get(
+            uriTemplate: '/sales/{id}/payments',
+            controller: \App\Sales\Controller\SalePayments::class,
+            security: "is_granted('perm:sales.view')",
+            name: 'sale_payment_history',
+        ),
         new Post(security: "is_granted('perm:sales.create')"),
         new Post(
             uriTemplate: '/sales/{id}/invoice',
@@ -229,6 +235,16 @@ class SaleRecord
     #[ORM\Column(name: 'balance_due', type: Types::DECIMAL, precision: 12, scale: 2, options: ['default' => '0.00'])]
     #[ApiProperty(description: 'sale_record.balance_due.label')]
     private string $balanceDue = '0.00';
+
+    /** Remains true after the debt is fully collected. */
+    #[Groups(['sale_record:read'])]
+    #[ORM\Column(name: 'receivable_account', options: ['default' => false])]
+    private bool $receivableAccount = false;
+
+    public function isReceivableAccount(): bool
+    {
+        return $this->receivableAccount;
+    }
 
     #[Groups(['sale_record:read', 'sale_record:write'])]
     #[ORM\Column(name: 'issued_at', type: Types::DATETIME_MUTABLE, nullable: true)]
@@ -750,6 +766,9 @@ class SaleRecord
     public function setBalanceDue(string $balanceDue): static
     {
         $this->balanceDue = $balanceDue;
+        if (is_numeric($balanceDue) && (float) $balanceDue > 0) {
+            $this->receivableAccount = true;
+        }
 
         return $this;
     }

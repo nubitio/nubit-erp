@@ -9,10 +9,13 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Catalog\Enum\SettlementBehavior;
 use App\Catalog\Repository\PaymentMethodRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: PaymentMethodRepository::class)]
-#[ApiResource(mercure: true, normalizationContext: ['groups' => ['payment_method:read']])]
+#[ApiResource(filters: [DataGridFilter::class], mercure: true, normalizationContext: ['groups' => [
+    'payment_method:read',
+]])]
 class PaymentMethod
 {
     final public const int CASH = 1;
