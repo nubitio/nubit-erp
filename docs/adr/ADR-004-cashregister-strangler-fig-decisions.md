@@ -147,7 +147,7 @@ Implementations in `Infrastructure/Doctrine/` follow the naming `<Aggregate>Repo
 
 **Reopening closed sessions** — considered but rejected for the initial pilot. If a cashier closes with a discrepancy and needs to re-count, the current model requires either: (a) a new session, or (b) a future "reopen adjustment" feature. The team chose to defer this to a follow-up ADR.
 
-**Database-level triggers for append-only enforcement** — originally deferred in favor of a Doctrine listener (portable, testable, visible in the codebase). **Superseded 2026-09-04**: once `CashMovement` stopped being a Doctrine entity (2026-08-19 drop), a `preUpdate`/`preRemove` listener could no longer fire for it at all, so DB-level triggers became the only mechanism left that actually sits on the write path. Added in `Version20260904140000_cash_movements_immutability_guard`. See amendment row 6 below.
+**Database-level triggers for append-only enforcement** — originally deferred in favor of a Doctrine listener (portable, testable, visible in the codebase). The trigger experiment from `Version20260904140000_cash_movements_immutability_guard` was retired on 2026-09-06 because it required elevated MariaDB privileges with binary logging enabled. The application write path remains append-only and is protected by API operation restrictions plus architecture tests.
 
 ## Amendment (2026-08-19) — implementation status vs. this record
 
@@ -166,7 +166,7 @@ An audit of `src/CashRegister/` against this ADR's "Decision" section initially 
 **What this means going forward:**
 
 - The **functional migration succeeded**: the live POS open/close/movement/dashboard flow runs on `CashSession`/`CashMovement`, not `CashShift`/legacy tables. Don't design new work assuming `CashShift` is the live model — it isn't, for anything reachable from the tenant app.
-- The **architectural goals of this ADR (DDD aggregate, capability guard, immutable-ledger listener) were not built as originally specified** — `CashSession` is a plain mutable entity and sessions aren't capability-gated. `cash_movements` (the plural v2 ledger) is now append-only **by DB-enforced construction**, not just in practice — see the corrected row 6 above and `Version20260904140000_cash_movements_immutability_guard`.
+- The **architectural goals of this ADR (DDD aggregate, capability guard, immutable-ledger listener) were not built as originally specified** — `CashSession` is a plain mutable entity and sessions aren't capability-gated. `cash_movements` (the plural v2 ledger) is append-only **by application-enforced construction**: the public write operation is POST-only and production code contains no UPDATE/DELETE path.
 - **Bug found and fixed (2026-08-19, first pass)**: `App\AI\Tool\CashRegisterTools` read `CashShiftRepository`, a table nothing writes to anymore. Now reads `CashSessionRepository`.
 - **Three more bugs of the same species found and fixed (2026-08-19, second pass)**, all rooted in `CashMovement` (the ORM entity class) still being mapped to the frozen legacy `cash_movement` (singular) table while every write goes to v2 `cash_movements` (plural):
   1. `GetCollection()` on `/api/cash-movements` had no explicit provider, so API Platform's default ORM provider read the dead table. Fixed with `CashMovementCollectionProvider` (v2, DBAL).

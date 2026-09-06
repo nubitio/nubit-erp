@@ -11,30 +11,15 @@ final class Version20260904140000_cash_movements_immutability_guard extends Abst
 {
     public function getDescription(): string
     {
-        return 'Enforce cash_movements append-only invariant at the DB level with BEFORE UPDATE/DELETE triggers (ADR-004 amendment gap)';
+        return 'Retired: cash_movements append-only invariant is enforced at the application layer';
     }
 
     public function up(Schema $schema): void
     {
-        $this->addSql(<<<'SQL'
-CREATE TRIGGER trg_cash_movements_no_update
-BEFORE UPDATE ON cash_movements
-FOR EACH ROW
-BEGIN
-    SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'cash_movements is an append-only ledger: UPDATE is not allowed. Insert a correcting movement instead.';
-END
-SQL);
-
-        $this->addSql(<<<'SQL'
-CREATE TRIGGER trg_cash_movements_no_delete
-BEFORE DELETE ON cash_movements
-FOR EACH ROW
-BEGIN
-    SIGNAL SQLSTATE '45000'
-    SET MESSAGE_TEXT = 'cash_movements is an append-only ledger: DELETE is not allowed. Insert a correcting movement instead.';
-END
-SQL);
+        // This migration originally created MariaDB triggers. It is kept as
+        // a no-op because some tenants may already have recorded the version
+        // while others are still pending it. The following migration removes
+        // any triggers left by that earlier implementation.
     }
 
     public function down(Schema $schema): void
