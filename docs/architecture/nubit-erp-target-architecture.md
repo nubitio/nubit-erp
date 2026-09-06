@@ -172,10 +172,11 @@ Criterio: un operador provisiona `app:tenant:provision acme --setup --vertical=p
 
 ### Fase 3 — Primera vertical como bounded context: Pharmacy
 
-**NB-10 · `src/Pharmacy` bounded context**
-Objetivo: entidades propias (`Medicine`, `PharmacyProduct` extendiendo `Catalog.Product` por composición, `Batch`, `ExpiryPolicy`, `Prescription`, `ControlledProduct`), tablas `pharmacy_*`.
-Entregable: contexto con `Entity/Repository/Service/State/Controller/Enum`, manifiesto `dependsOn: [Catalog, Inventory, Sales, Billing]`, API `/api/pharmacy/*`.
-Criterio: PHPArkitect verde (Pharmacy→ERP permitido, ERP→Pharmacy prohibido); `Catalog.Product` sin campos de farmacia (AR-007).
+**NB-10 · `src/Pharmacy` bounded context** — esqueleto hecho (PR de #336)
+Objetivo: primera vertical como bounded context real, no un preset.
+Entregable (PR 1): `src/Pharmacy/{Entity,Repository,Service,Controller,Enum}` — `PharmacyProduct` (composición: `productId` int, `Catalog.Product` intacto), `PharmacyBatch` (metadata de lote; cantidad sigue en `stock_lots`), `ExpiryControl` enum, `PharmacyCatalogService`, `PharmacyExpiryReportController`; migración `Version20260906060000` (`pharmacy_products`, `pharmacy_batches`, sin FK cross-context); `architecture/contexts.yaml` gana el contexto `Pharmacy` (`layer: Vertical`, `dependsOn: []`) → activa la capa `Vertical_Pharmacy` de PHPArkitect; API Platform `/api/pharmacy/{products,batches}` + `/api/pharmacy/expiry-report`.
+Seguimiento (mismo #336): `Medicine`, `Prescription`, `ControlledProduct` + permisos finos — entidades dentro del contexto, no cambian la arquitectura.
+Criterio: PHPArkitect verde (Pharmacy→ERP permitido, ERP→Pharmacy prohibido — `PharmacyBoundaryTest`); `Catalog.Product` sin campos de farmacia (AR-007, verificado por test).
 
 **NB-11 · `PharmacyStockPolicy` vía punto de extensión**
 Objetivo: `StockPolicy` como seam en Inventory con `DefaultStockPolicy`; Pharmacy registra `PharmacyStockPolicy` (FEFO, bloqueo de vencidos, selección de lote).
