@@ -59,6 +59,11 @@ class PharmacyProduct
     #[Groups(['pharmacy_product:read'])]
     private bool $controlled = false;
 
+    /** DIGEMID controlled-substance list code, when {@see $controlled} is true. */
+    #[ORM\Column(length: 32, nullable: true)]
+    #[Groups(['pharmacy_product:read'])]
+    private ?string $controlledSubstanceCode = null;
+
     #[ORM\Column(enumType: ExpiryControl::class, length: 10)]
     #[Groups(['pharmacy_product:read'])]
     private ExpiryControl $expiryControl = ExpiryControl::None;
@@ -133,6 +138,19 @@ class PharmacyProduct
     public function setControlled(bool $controlled): self
     {
         $this->controlled = $controlled;
+        $this->touch();
+
+        return $this;
+    }
+
+    public function getControlledSubstanceCode(): ?string
+    {
+        return $this->controlledSubstanceCode;
+    }
+
+    public function setControlledSubstanceCode(?string $controlledSubstanceCode): self
+    {
+        $this->controlledSubstanceCode = $controlledSubstanceCode;
         $this->touch();
 
         return $this;
