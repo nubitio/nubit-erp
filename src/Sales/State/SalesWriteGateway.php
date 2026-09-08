@@ -27,8 +27,9 @@ use Doctrine\ORM\EntityManagerInterface;
  *
  * Fase 3: all writes to sales, sale_items, sale_payments, sale_taxes and
  * sale_discounts are performed through ORM entities (no raw DBAL INSERT/DELETE
- * for those tables). markVoided() and writeCashSaleMovement() remain DBAL
- * because they target tables without a full ORM entity.
+ * for those tables). markVoided(), writeCashSaleMovement() and
+ * writeReceivableCollectionMovement() remain DBAL because they target tables
+ * without a full ORM entity.
  */
 readonly class SalesWriteGateway
 {
@@ -516,6 +517,121 @@ readonly class SalesWriteGateway
                 'description' => $description ?? 'Venta en efectivo',
                 'created_by' => $createdBy,
                 'created_at' => $at->format('Y-m-d H:i:s'),
+                'local_uuid' => $offline['local_uuid'],
+                'idempotency_key' => $offline['idempotency_key'],
+                'synced_at' => $offline['synced_at'],
+                'device_id' => $offline['device_id'],
+                'version_no' => $offline['version_no'],
+                'last_modified_at' => $offline['last_modified_at'],
+            ],
+        );
+    }
+
+    /**
+     * The user's currently-open cash session id, if any. Raw SQL on purpose:
+     * Sales must not import App\CashRegister classes (ContextBoundaryTest), so
+     * the cash-drawer plumbing for a receivable collection lives here alongside
+     * writeCashSaleMovement().
+     *
+     * @throws Exception
+     */
+    public function findOpenCashSessionIdForUser(int $userId): ?int
+    {
+        $id = $this->connection->fetchOne(
+            <<<'SQL'
+                SELECT id FROM cash_sessions
+                WHERE opened_by = :user_id AND status = 'OPEN'
+                ORDER BY opened_at DESC
+                LIMIT 1
+                SQL,
+            ['user_id' => $userId],
+        );
+
+        return $id === false || $id === null ? null : (int) $id;
+    }
+
+    /**
+     * Writes the cash-drawer movement for a receivable collection paid in cash.
+     * Mirrors writeCashSaleMovement() but posts as CASH_IN (not a sale) with the
+     * `credit_payment` category, so the arqueo/cierre counts it as drawer income
+     * without inflating the SALE_IN payment-method breakdown. Keyed by the
+     * sale_payment id so each partial collection gets exactly one row.
+     *
+     * @throws Exception
+     */
+    public function writeReceivableCollectionMovement(
+        int $salePaymentId,
+        string $saleId,
+        int $cashSessionId,
+        int $createdBy,
+        string $amount,
+        int $paymentMethodId,
+        \DateTimeImmutable $createdAt,
+        ?string $description = null,
+    ): void {
+        $seed = sprintf('receivable-collect:%d', $salePaymentId);
+        $offline = $this->buildOfflineMeta($seed, $createdAt, 1);
+
+        $existing = $this->connection->fetchOne('SELECT id FROM cash_movements WHERE idempotency_key = :idempotency_key', [
+            'idempotency_key' => $offline['idempotency_key'],
+        ]);
+        if ($existing !== false && $existing !== null) {
+            return;
+        }
+
+        $categoryId = $this->connection->fetchOne(
+            "SELECT id FROM cash_movement_category WHERE code = 'credit_payment'",
+        );
+
+        $this->connection->executeStatement(
+            <<<'SQL'
+                INSERT INTO cash_movements (
+                    cash_session_id,
+                    movement_type,
+                    category_id,
+                    sale_id,
+                    return_id,
+                    payment_method_id,
+                    amount,
+                    description,
+                    created_by,
+                    created_at,
+                    local_uuid,
+                    idempotency_key,
+                    sync_status,
+                    synced_at,
+                    device_id,
+                    version_no,
+                    last_modified_at
+                ) VALUES (
+                    :cash_session_id,
+                    'CASH_IN',
+                    :category_id,
+                    :sale_id,
+                    NULL,
+                    :payment_method_id,
+                    :amount,
+                    :description,
+                    :created_by,
+                    :created_at,
+                    :local_uuid,
+                    :idempotency_key,
+                    'SYNCED',
+                    :synced_at,
+                    :device_id,
+                    :version_no,
+                    :last_modified_at
+                )
+                SQL,
+            [
+                'cash_session_id' => $cashSessionId,
+                'category_id' => $categoryId === false || $categoryId === null ? null : (int) $categoryId,
+                'sale_id' => $saleId,
+                'payment_method_id' => $paymentMethodId,
+                'amount' => Money::toString(Money::money($amount)),
+                'description' => $description ?? 'Cobro de cuenta por cobrar',
+                'created_by' => $createdBy,
+                'created_at' => $createdAt->format('Y-m-d H:i:s'),
                 'local_uuid' => $offline['local_uuid'],
                 'idempotency_key' => $offline['idempotency_key'],
                 'synced_at' => $offline['synced_at'],

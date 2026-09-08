@@ -57,6 +57,43 @@ final class DefaultPostingServiceTest extends TestCase
         $this->assertBalanced($lines);
     }
 
+    public function testReceivableCollectionInCashDebitsCajaAndCreditsReceivable(): void
+    {
+        $lines = $this->service()->linesFor(new EconomicEvent(
+            source: EconomicEvent::SOURCE_RECEIVABLE_COLLECT,
+            sourceId: 'payment-9',
+            kind: EconomicEvent::RECEIVABLE_COLLECT_CASH,
+            occurredOn: '2026-09-08',
+            description: 'Cobro B001-1',
+            total: '90.00',
+        ));
+
+        self::assertSame('101', $lines[0]['code']);
+        self::assertSame('90.00', $lines[0]['debit'] ?? null);
+        self::assertSame('121', $lines[1]['code']);
+        self::assertSame('90.00', $lines[1]['credit'] ?? null);
+        self::assertCount(2, $lines);
+        $this->assertBalanced($lines);
+    }
+
+    public function testReceivableCollectionByBankDebitsCuentaCorrienteNotCaja(): void
+    {
+        $lines = $this->service()->linesFor(new EconomicEvent(
+            source: EconomicEvent::SOURCE_RECEIVABLE_COLLECT,
+            sourceId: 'payment-10',
+            kind: EconomicEvent::RECEIVABLE_COLLECT_BANK,
+            occurredOn: '2026-09-08',
+            description: 'Cobro B001-2',
+            total: '150.00',
+        ));
+
+        self::assertSame('1041', $lines[0]['code']);
+        self::assertSame('150.00', $lines[0]['debit'] ?? null);
+        self::assertSame('121', $lines[1]['code']);
+        self::assertSame('150.00', $lines[1]['credit'] ?? null);
+        $this->assertBalanced($lines);
+    }
+
     /**
      * @param list<array{code: string, debit?: string, credit?: string, memo?: string}> $lines
      */
