@@ -39,14 +39,29 @@ final class ContextManifest
     /** @var array<string, ContextEntry> */
     public array $contexts;
 
+    /**
+     * Tenant-DB tables created by our migrations but owned by a vendor package
+     * or the framework, not by any src/ context: table name => owning package.
+     *
+     * @var array<string, string>
+     */
+    public array $externalTables;
+
     public function __construct()
     {
         $data = Yaml::parseFile(self::FILE);
         assert(is_array($data), 'contexts.yaml must parse to a mapping');
 
-        /** @var array{layers: list<string>, contexts: array<string, ContextEntry>} $data */
+        /**
+         * @var array{
+         *     layers: list<string>,
+         *     contexts: array<string, ContextEntry>,
+         *     externalTables?: array<string, string>,
+         * } $data
+         */
         $this->layers = $data['layers'];
         $this->contexts = $data['contexts'];
+        $this->externalTables = $data['externalTables'] ?? [];
     }
 
     /**

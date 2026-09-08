@@ -191,8 +191,9 @@ Criterio: `PharmacyBoundaryTest` — nada fuera de `src/Pharmacy` importa `App\P
 
 ### Fase 4 — Endurecer propiedad de datos (AR-005)
 
-**NB-13 · Inventario de propiedad de tablas**
-Entregable: `architecture/contexts.yaml` `ownsTables` completo; test que detecta una tabla sin dueño o con dos dueños.
+**NB-13 · Inventario de propiedad de tablas** — hecho (#339)
+Entregable: `architecture/contexts.yaml` `ownsTables` completo (121 tablas de dominio, cada una con un único dueño) + bloque top-level `externalTables` para las tablas de paquetes vendor/framework (`nubit_*`, `messenger_messages`, `doctrine_migration_versions`); tablas legacy sin código vivo marcadas `# dead`, pendientes de una migración DROP.
+Criterio: `tests/Architecture/TableOwnershipTest.php` (KernelTestCase) cruza el esquema vivo del tenant (`information_schema`, tras aplicar `migrations/`) contra el manifiesto — falla ante una tabla sin dueño, una tabla con dos dueños, o una entrada de `ownsTables`/`externalTables` sin tabla viva; se salta si no hay DB de tenant accesible.
 
 **NB-14 · Naming de tablas (según D4)**
 Entregable: plan de migración legacy español → prefijo por contexto, o congelación documentada.
