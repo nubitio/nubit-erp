@@ -16,11 +16,19 @@
 #                   separately tracked in phparkitect-baseline.json.
 #   publicContracts Interfaces other contexts are meant to depend on. Best-effort
 #                   today; expanded by NB-21 (contract tests).
-#   ownsTables      Tables backed by a Doctrine entity in this namespace. Raw-SQL
-#                   and read-model tables are attributed later by NB-13 (#339);
-#                   the test only checks that every entity table appears here and
-#                   that no table is owned twice.
+#   ownsTables      Every tenant-DB table whose data this context owns (AR-005) —
+#                   entity-backed, raw-SQL and read-model alike. NB-13 (#339)
+#                   completed the inventory: ContextManifestCodeTest checks entity
+#                   tables are covered and none is owned twice; TableOwnershipTest
+#                   checks the live schema against this file — every table owned
+#                   exactly once, here or in externalTables, with nothing stale.
+#                   Some entries are legacy tables with no live code (marked
+#                   `# dead` below) — owner = the context the concept belongs to,
+#                   pending a DROP migration.
 #   retired         Present and true for namespaces kept only as a shim.
+#
+# externalTables (top level): tenant-DB tables created by our migrations but
+# owned by a vendor package or the framework, not by any src/ context.
 
 layers:
   - Infra
@@ -30,6 +38,13 @@ layers:
   - Assistant
   - Orchestration
   - Vertical
+
+externalTables:
+  doctrine_migration_versions: doctrine/migrations
+  messenger_messages: symfony/messenger
+  nubit_audit_log: nubitio/admin-bundle
+  nubit_media: nubitio/admin-bundle
+  nubit_refresh_token: nubitio/admin-bundle
 
 contexts:
   Core:
@@ -46,7 +61,15 @@ contexts:
     dependsOn: [Billing, ControlPlane, Organization, Sales]
     publicContracts:
       - App\Efact\Domain\ActivatableInterface
-    ownsTables: []
+    # Cross-cutting infra tables. The offline-sync cluster and the tenant-side
+    # audit_log have no live code (the active audit trail is control_plane
+    # `audit_logs`) — dead, pending a DROP migration.
+    ownsTables:
+      - audit_log # dead
+      - conflict_resolutions # dead
+      - entity_versions # dead
+      - sync_inbox # dead
+      - sync_outbox_server # dead
 
   Identity:
     namespace: App\Identity
@@ -116,10 +139,17 @@ contexts:
       - operacion
       - product_stock
       - price_list
+      - price_list_detail
+      - price_history # dead
       - stock_items
       - stock_lots
       - stock_entries
       - stock_entry_items
+      - stock_movements
+      - stock_balances
+      - stock_transfers # dead
+      - stock_transfer_items # dead
+      - inventory_reconciliation_runs
 
   Sales:
     namespace: App\Sales
@@ -141,6 +171,15 @@ contexts:
       - sale_discounts
       - sale_quotes
       - sale_quote_items
+      - sale_sequences
+      - returns
+      - return_items
+      - refund_payments # dead
+      - branch_daily_summary
+      - cashier_daily_summary
+      - payment_method_daily_summary
+      - product_daily_summary
+      - sales_daily_summary # dead
 
   Billing:
     namespace: App\Billing
@@ -165,14 +204,30 @@ contexts:
     layer: ErpCore
     dependsOn: [Accounting, Efact, Identity, Organization]
     publicContracts: []
-    ownsTables: [cash_register, cash_sessions, cash_movement_category]
+    # cash_movements: append-only cash ledger (ADR-004, ADR-012). cash_counts /
+    # cash_reconciliations: no live code — dead, pending a DROP migration.
+    ownsTables:
+      - cash_register
+      - cash_sessions
+      - cash_movement_category
+      - cash_movements
+      - cash_counts # dead
+      - cash_reconciliations # dead
 
   Purchasing:
     namespace: App\Purchasing
     layer: ErpCore
     dependsOn: [Accounting, Catalog, Contacts, Efact, Identity, Inventory, Organization, Sales, Settings]
     publicContracts: []
-    ownsTables: [purchase_orders, purchase_order_items, goods_receipts, goods_receipt_items]
+    ownsTables:
+      - purchase_orders
+      - purchase_order_items
+      - purchase_order_sequences
+      - purchase_receipt_sequences
+      - goods_receipts
+      - goods_receipt_items
+      - purchases_daily_summary
+      - purchase_product_daily_summary
 
   Reporting:
     namespace: App\Reporting
@@ -228,7 +283,7 @@ contexts:
     layer: ErpCore
     dependsOn: []
     publicContracts: []
-    ownsTables: []
+    ownsTables: [retention_percepcion]
 
   Integration:
     namespace: App\Integration
