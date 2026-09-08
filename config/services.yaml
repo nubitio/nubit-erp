@@ -295,7 +295,7 @@ services:
     class: OpenTelemetry\Contrib\Logs\Monolog\Handler
     arguments:
       $loggerProvider: '@open_telemetry.logger_provider'
-      $level: !php/const Monolog\Level::Warning
+      $level: !php/const Monolog\Level::Info
 
   GuzzleHttp\ClientInterface:
     class: GuzzleHttp\Client

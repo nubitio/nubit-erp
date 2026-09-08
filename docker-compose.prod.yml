@@ -17,6 +17,10 @@ x-worker-env: &worker-env
   TENANTS_SOURCE: ${TENANTS_SOURCE:-db}
   # OpenTelemetry
   OTEL_PHP_AUTOLOAD_ENABLED: true
+  # Nubit registers Symfony, Doctrine, and Messenger instrumentation. Running
+  # the contrib Symfony/Doctrine instrumentation too creates nested scopes
+  # under FrankenPHP and can prevent telemetry from being exported.
+  OTEL_PHP_DISABLED_INSTRUMENTATIONS: symfony,doctrine
   OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME}
   OTEL_TRACES_EXPORTER: otlp
   OTEL_LOGS_EXPORTER: otlp
@@ -165,6 +169,9 @@ services:
       CADDY_GLOBAL_OPTIONS: ${CADDY_GLOBAL_OPTIONS:-admin 0.0.0.0:2019}
       # OpenTelemetry
       OTEL_PHP_AUTOLOAD_ENABLED: true
+      # Nubit owns the Symfony/Doctrine instrumentation; keep the SDK active
+      # while preventing duplicate contrib instrumentation.
+      OTEL_PHP_DISABLED_INSTRUMENTATIONS: symfony,doctrine
       OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME}
       OTEL_TRACES_EXPORTER: otlp
       OTEL_LOGS_EXPORTER: otlp
@@ -367,12 +374,11 @@ services:
         condition: service_healthy
     networks:
       - default
+    # The upstream collector image is distroless: it has no shell, wget, or
+    # curl. A container-local HTTP healthcheck would always report unhealthy.
+    # Monitor this endpoint externally instead.
     healthcheck:
-      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:13133/']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
+      disable: true
     logging:
       driver: 'json-file'
       options:
