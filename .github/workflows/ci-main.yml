@@ -19,11 +19,29 @@ env:
 jobs:
   backend:
     name: Backend Quality & Coverage
-    runs-on: ubuntu-latest
+    # Self-hosted (ops.efact, x64) — GitHub-hosted minutes are exhausted for the
+    # billing cycle. The runner needs Docker Engine + the compose v2 plugin and
+    # its user in the `docker` group.
+    runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 30
 
     steps:
+      - name: Reclaim workspace
+        # The web container runs as root and writes vendor/ & var/ into the
+        # bind-mounted workspace, so on the next run actions/checkout's
+        # `git clean -ffdx` hits "Permission denied". Hand the tree back to the
+        # runner user before checkout. github.workspace exists pre-checkout on a
+        # self-hosted runner.
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/w" -w /w busybox \
+            chown -R "$(id -u):$(id -g)" /w || true
+
       - uses: actions/checkout@v6
+
+      - name: Reset any leftover stack
+        # Self-hosted runners keep state between jobs; a cancelled run can leave
+        # a half-up stack that collides on container names / host ports.
+        run: docker compose down --volumes --remove-orphans || true
 
       - name: Start backend stack
         run: |
@@ -102,10 +120,19 @@ jobs:
 
   frontend:
     name: Frontend Lint, Tests & Coverage
-    runs-on: ubuntu-latest
+    # Self-hosted (ops.efact, x64). No Docker here — just Node via setup-node,
+    # which caches the toolchain under the runner's tool cache.
+    runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 15
 
     steps:
+      - name: Reclaim workspace
+        # Shares the workspace with the backend job, whose root-owned container
+        # writes would otherwise break actions/checkout's `git clean -ffdx`.
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/w" -w /w busybox \
+            chown -R "$(id -u):$(id -g)" /w || true
+
       - uses: actions/checkout@v6
 
       - name: Setup Node.js
@@ -138,7 +165,9 @@ jobs:
 
   e2e:
     name: End-to-End Workflows
-    runs-on: ubuntu-latest
+    # Self-hosted (ops.efact, x64). Also needs `jq` on the runner host (used by
+    # the seed step below) plus Docker + compose v2.
+    runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 20
     needs:
       - backend
@@ -152,7 +181,17 @@ jobs:
       CONTROL_PLANE_DATABASE_URL: mysql://efact:changeme@database:3306/efact?serverVersion=10.7.1-MariaDB&charset=utf8mb4
 
     steps:
+      - name: Reclaim workspace
+        # The backend job's root-owned container writes (vendor/, var/) would
+        # otherwise break actions/checkout's `git clean -ffdx`.
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/w" -w /w busybox \
+            chown -R "$(id -u):$(id -g)" /w || true
+
       - uses: actions/checkout@v6
+
+      - name: Reset any leftover stack
+        run: docker compose down --volumes --remove-orphans || true
 
       - name: Start full stack
         run: docker compose up -d database redis otel-collector web
