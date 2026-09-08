@@ -272,4 +272,4 @@ contexts:
     layer: Vertical
     dependsOn: [Catalog, Inventory, Sales]
     publicContracts: []
-    ownsTables: [pharmacy_products, pharmacy_batches, pharmacy_batch_movements]
+    ownsTables: [pharmacy_products, pharmacy_batches, pharmacy_batch_movements, pharmacy_prescriptions]

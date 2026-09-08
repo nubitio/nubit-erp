@@ -172,10 +172,9 @@ Criterio: un operador provisiona `app:tenant:provision acme --setup --vertical=p
 
 ### Fase 3 — Primera vertical como bounded context: Pharmacy
 
-**NB-10 · `src/Pharmacy` bounded context** — esqueleto hecho (PR de #336)
+**NB-10 · `src/Pharmacy` bounded context** — hecho (#355 + follow-up)
 Objetivo: primera vertical como bounded context real, no un preset.
-Entregable (PR 1): `src/Pharmacy/{Entity,Repository,Service,Controller,Enum}` — `PharmacyProduct` (composición: `productId` int, `Catalog.Product` intacto), `PharmacyBatch` (metadata de lote; cantidad sigue en `stock_lots`), `ExpiryControl` enum, `PharmacyCatalogService`, `PharmacyExpiryReportController`; migración `Version20260906060000` (`pharmacy_products`, `pharmacy_batches`, sin FK cross-context); `architecture/contexts.yaml` gana el contexto `Pharmacy` (`layer: Vertical`, `dependsOn: []`) → activa la capa `Vertical_Pharmacy` de PHPArkitect; API Platform `/api/pharmacy/{products,batches}` + `/api/pharmacy/expiry-report`.
-Seguimiento (mismo #336): `Medicine`, `Prescription`, `ControlledProduct` + permisos finos — entidades dentro del contexto, no cambian la arquitectura.
+Entregable: `src/Pharmacy/{Entity,Repository,Service,State,Controller,Enum,Policy,MessageHandler}` — `PharmacyProduct` (composición: `productId` int, `activeIngredient`/`sanitaryRegistration`/`requiresPrescription`/`controlled`/`controlledSubstanceCode`, `Catalog.Product` intacto), `PharmacyBatch` (metadata de lote; cantidad en `stock_lots`), `PharmacyBatchMovement` (ledger FEFO de #357), `Prescription` (+ `PrescriptionInput`/`Processor`), `ExpiryControl` enum, `PharmacyCatalogService`, `PharmacyExpiryReportController`; migraciones `Version20260906060000`/`070000`/`Version20260907090000` (sin FK cross-context); `architecture/contexts.yaml` gana `Pharmacy` (`layer: Vertical`, `dependsOn: [Catalog, Inventory, Sales]`) → capa `Vertical_Pharmacy` de PHPArkitect activa; API Platform `/api/pharmacy/{products,batches,prescriptions}` + `/api/pharmacy/expiry-report`.
 Criterio: PHPArkitect verde (Pharmacy→ERP permitido, ERP→Pharmacy prohibido — `PharmacyBoundaryTest`); `Catalog.Product` sin campos de farmacia (AR-007, verificado por test).
 
 **NB-11 · `PharmacyStockValidationPolicy` (validación de vencimiento)** — hecho (PR de #337)
