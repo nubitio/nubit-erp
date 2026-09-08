@@ -26,6 +26,16 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: Reclaim workspace
+        # The web container runs as root and writes vendor/ & var/ into the
+        # bind-mounted workspace, so on the next run actions/checkout's
+        # `git clean -ffdx` hits "Permission denied". Hand the tree back to the
+        # runner user before checkout. github.workspace exists pre-checkout on a
+        # self-hosted runner.
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/w" -w /w busybox \
+            chown -R "$(id -u):$(id -g)" /w || true
+
       - uses: actions/checkout@v6
 
       - name: Reset any leftover stack
@@ -116,6 +126,13 @@ jobs:
     timeout-minutes: 15
 
     steps:
+      - name: Reclaim workspace
+        # Shares the workspace with the backend job, whose root-owned container
+        # writes would otherwise break actions/checkout's `git clean -ffdx`.
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/w" -w /w busybox \
+            chown -R "$(id -u):$(id -g)" /w || true
+
       - uses: actions/checkout@v6
 
       - name: Setup Node.js
@@ -164,6 +181,13 @@ jobs:
       CONTROL_PLANE_DATABASE_URL: mysql://efact:changeme@database:3306/efact?serverVersion=10.7.1-MariaDB&charset=utf8mb4
 
     steps:
+      - name: Reclaim workspace
+        # The backend job's root-owned container writes (vendor/, var/) would
+        # otherwise break actions/checkout's `git clean -ffdx`.
+        run: |
+          docker run --rm -v "${{ github.workspace }}:/w" -w /w busybox \
+            chown -R "$(id -u):$(id -g)" /w || true
+
       - uses: actions/checkout@v6
 
       - name: Reset any leftover stack
