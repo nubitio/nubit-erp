@@ -19,11 +19,19 @@ env:
 jobs:
   backend:
     name: Backend Quality & Coverage
-    runs-on: ubuntu-latest
+    # Self-hosted (ops.efact, x64) — GitHub-hosted minutes are exhausted for the
+    # billing cycle. The runner needs Docker Engine + the compose v2 plugin and
+    # its user in the `docker` group.
+    runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v6
+
+      - name: Reset any leftover stack
+        # Self-hosted runners keep state between jobs; a cancelled run can leave
+        # a half-up stack that collides on container names / host ports.
+        run: docker compose down --volumes --remove-orphans || true
 
       - name: Start backend stack
         run: |
@@ -102,7 +110,9 @@ jobs:
 
   frontend:
     name: Frontend Lint, Tests & Coverage
-    runs-on: ubuntu-latest
+    # Self-hosted (ops.efact, x64). No Docker here — just Node via setup-node,
+    # which caches the toolchain under the runner's tool cache.
+    runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 15
 
     steps:
@@ -138,7 +148,9 @@ jobs:
 
   e2e:
     name: End-to-End Workflows
-    runs-on: ubuntu-latest
+    # Self-hosted (ops.efact, x64). Also needs `jq` on the runner host (used by
+    # the seed step below) plus Docker + compose v2.
+    runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 20
     needs:
       - backend
@@ -153,6 +165,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+
+      - name: Reset any leftover stack
+        run: docker compose down --volumes --remove-orphans || true
 
       - name: Start full stack
         run: docker compose up -d database redis otel-collector web
