@@ -16,6 +16,8 @@ final readonly class EconomicEvent
 
     public const string SOURCE_CASH = 'cash_movement';
 
+    public const string SOURCE_RECEIVABLE_COLLECT = 'receivable_collect';
+
     public const string SALE_CASH = 'SALE_CASH';
 
     public const string SALE_CREDIT = 'SALE_CREDIT';
@@ -25,6 +27,12 @@ final readonly class EconomicEvent
     public const string CASH_IN = 'CASH_IN';
 
     public const string CASH_OUT = 'CASH_OUT';
+
+    /** Collection of a receivable paid in cash: debit Caja, credit Facturas por cobrar. */
+    public const string RECEIVABLE_COLLECT_CASH = 'RECEIVABLE_COLLECT_CASH';
+
+    /** Collection of a receivable paid by transfer/POS/deposit: debit Banco, credit Facturas por cobrar. */
+    public const string RECEIVABLE_COLLECT_BANK = 'RECEIVABLE_COLLECT_BANK';
 
     public function __construct(
         public string $source,

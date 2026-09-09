@@ -19,6 +19,8 @@ readonly class DefaultPostingService
 
     public const string RECEIVABLE = '121';
 
+    public const string BANK = '1041';
+
     public const string INVENTORY = '201';
 
     public const string IGV = '40111';
@@ -96,6 +98,30 @@ readonly class DefaultPostingService
             EconomicEvent::CASH_OUT => [
                 ['code' => self::OTHER_EXPENSE, 'debit' => Money::toString($total)],
                 ['code' => self::CASH, 'credit' => Money::toString($total)],
+            ],
+            EconomicEvent::RECEIVABLE_COLLECT_CASH => [
+                [
+                    'code' => self::CASH,
+                    'debit' => Money::toString($total),
+                    'memo' => 'Cobranza de cuenta por cobrar (efectivo)',
+                ],
+                [
+                    'code' => self::RECEIVABLE,
+                    'credit' => Money::toString($total),
+                    'memo' => 'Aplicación a cuenta por cobrar',
+                ],
+            ],
+            EconomicEvent::RECEIVABLE_COLLECT_BANK => [
+                [
+                    'code' => self::BANK,
+                    'debit' => Money::toString($total),
+                    'memo' => 'Cobranza de cuenta por cobrar (banco)',
+                ],
+                [
+                    'code' => self::RECEIVABLE,
+                    'credit' => Money::toString($total),
+                    'memo' => 'Aplicación a cuenta por cobrar',
+                ],
             ],
             default => throw new InvalidArgumentException(sprintf(
                 'Tipo de hecho económico no soportado: %s',
