@@ -38,6 +38,33 @@ class SaleRecordRepository extends ServiceEntityRepository
     }
 
     /**
+     * A customer's sales that still owe money, oldest first — the FIFO order a
+     * "cobro a cuenta" (#381) applies a payment in. `balance_due > 0` and
+     * `receivable_account = 1` match the population the statement (#366) reads.
+     *
+     * @return list<SaleRecord>
+     */
+    public function findOpenReceivablesForCustomer(int $customerId): array
+    {
+        /** @var list<SaleRecord> $rows */
+        $rows = $this
+            ->createQueryBuilder('s')
+            ->where('s.customer = :customer')
+            ->andWhere('s.receivableAccount = true')
+            ->andWhere('s.balanceDue > 0')
+            ->andWhere("s.status <> 'VOIDED'")
+            ->andWhere('s.deletedAt IS NULL')
+            ->setParameter('customer', $customerId)
+            ->orderBy('s.issuedDate', 'ASC')
+            ->addOrderBy('s.issuedAt', 'ASC')
+            ->addOrderBy('s.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $rows;
+    }
+
+    /**
      * Find a SaleRecord already created for this offline-sale Idempotency-Key
      * header — lets SaleProcessor short-circuit a retried outbox request
      * instead of creating a duplicate sale. See SaleRecord::$offlineRetryKey.
