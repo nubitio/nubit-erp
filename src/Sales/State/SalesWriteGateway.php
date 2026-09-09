@@ -643,6 +643,97 @@ readonly class SalesWriteGateway
     }
 
     /**
+     * The single cash-drawer movement behind a "cobro a cuenta" (#381): one
+     * CASH_IN for the whole amount received from the customer, regardless of how
+     * many sales it is then applied to. Category `credit_payment` like
+     * writeReceivableCollectionMovement(), but with no `sale_id` — the payment
+     * belongs to the customer's account, not to one comprobante. Keyed by the
+     * caller-supplied collection id so a retry writes exactly one row.
+     *
+     * @throws Exception
+     */
+    public function writeOnAccountCollectionMovement(
+        string $collectionId,
+        int $cashSessionId,
+        int $createdBy,
+        string $amount,
+        int $paymentMethodId,
+        \DateTimeImmutable $createdAt,
+        ?string $description = null,
+    ): void {
+        $seed = sprintf('on-account-collect:%s', $collectionId);
+        $offline = $this->buildOfflineMeta($seed, $createdAt, 1);
+
+        $existing = $this->connection->fetchOne('SELECT id FROM cash_movements WHERE idempotency_key = :idempotency_key', [
+            'idempotency_key' => $offline['idempotency_key'],
+        ]);
+        if ($existing !== false && $existing !== null) {
+            return;
+        }
+
+        $categoryId = $this->connection->fetchOne(
+            "SELECT id FROM cash_movement_category WHERE code = 'credit_payment'",
+        );
+
+        $this->connection->executeStatement(
+            <<<'SQL'
+                INSERT INTO cash_movements (
+                    cash_session_id,
+                    movement_type,
+                    category_id,
+                    sale_id,
+                    return_id,
+                    payment_method_id,
+                    amount,
+                    description,
+                    created_by,
+                    created_at,
+                    local_uuid,
+                    idempotency_key,
+                    sync_status,
+                    synced_at,
+                    device_id,
+                    version_no,
+                    last_modified_at
+                ) VALUES (
+                    :cash_session_id,
+                    'CASH_IN',
+                    :category_id,
+                    NULL,
+                    NULL,
+                    :payment_method_id,
+                    :amount,
+                    :description,
+                    :created_by,
+                    :created_at,
+                    :local_uuid,
+                    :idempotency_key,
+                    'SYNCED',
+                    :synced_at,
+                    :device_id,
+                    :version_no,
+                    :last_modified_at
+                )
+                SQL,
+            [
+                'cash_session_id' => $cashSessionId,
+                'category_id' => $categoryId === false || $categoryId === null ? null : (int) $categoryId,
+                'payment_method_id' => $paymentMethodId,
+                'amount' => Money::toString(Money::money($amount)),
+                'description' => $description ?? 'Cobro a cuenta del cliente',
+                'created_by' => $createdBy,
+                'created_at' => $createdAt->format('Y-m-d H:i:s'),
+                'local_uuid' => $offline['local_uuid'],
+                'idempotency_key' => $offline['idempotency_key'],
+                'synced_at' => $offline['synced_at'],
+                'device_id' => $offline['device_id'],
+                'version_no' => $offline['version_no'],
+                'last_modified_at' => $offline['last_modified_at'],
+            ],
+        );
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function buildOfflineMeta(string $seed, \DateTimeImmutable $now, int $version): array
