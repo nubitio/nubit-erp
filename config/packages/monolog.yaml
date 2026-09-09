@@ -2,6 +2,7 @@ monolog:
     channels:
         - deprecation # Deprecations are logged in the dedicated "deprecation" channel when it exists
         - billing     # Dedicated channel for the billing flow (SPEC-003)
+        - operation   # Structured per-operation log stream, correlated across contexts (NB-20)
 
 when@dev:
     monolog:
