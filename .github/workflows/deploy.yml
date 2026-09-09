@@ -26,13 +26,15 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ${{ vars.CI_RUNNER_PROVIDER == 'github' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 20
     environment:
       name: ${{ inputs.environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
 
       - name: Deploy stack in Portainer
         env:
@@ -58,15 +60,14 @@ jobs:
           fi
 
           echo "Waiting for application to become healthy..."
-          sleep 20
-          for i in {1..12}; do
+          for i in {1..18}; do
             HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${APP_URL}/health/live" 2>/dev/null || true)
             if [ "$HTTP_STATUS" = "200" ]; then
-              echo "Healthy (HTTP 200)."
+              echo "Healthy (HTTP 200) after ${i} attempt(s)."
               exit 0
             fi
-            echo "Attempt ${i}/12 failed (HTTP ${HTTP_STATUS:-000}). Retrying..."
-            sleep 10
+            echo "Attempt ${i}/18 failed (HTTP ${HTTP_STATUS:-000}). Retrying..."
+            sleep 5
           done
 
           echo "Healthcheck failed."

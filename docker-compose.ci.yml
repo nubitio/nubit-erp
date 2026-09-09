@@ -1,0 +1,50 @@
+# Slim overlay for GitHub Actions. Used as:
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.ci.yml
+#
+# Drops bind mounts that only exist on a developer machine, stops waiting on
+# MinIO/OTEL, and tags the web image so CI can cache the `dev` target.
+services:
+  web:
+    image: efact-ci-web:local
+    ports: !reset []
+    depends_on: !override
+      database:
+        condition: service_started
+    volumes: !override
+      - .:/app
+      - app-var:/app/var
+      - app-public-uploads:/app/public/uploads
+    environment:
+      OTEL_SDK_DISABLED: 'true'
+      OTEL_PHP_AUTOLOAD_ENABLED: 'false'
+
+  vite:
+    ports: !reset []
+    volumes: !override
+      - .:/home/node/app
+
+  e2e:
+    volumes: !override
+      - .:/home/node/app
+
+  database:
+    ports: !reset []
+
+  redis:
+    ports: !reset []
+
+  mercure:
+    ports: !reset []
+
+  otel-collector:
+    profiles: ['observability']
+
+  minio:
+    profiles: ['object-storage']
+
+  minio-init:
+    profiles: ['object-storage']
+
+  messenger_worker:
+    profiles: ['async']
+    ports: !reset []

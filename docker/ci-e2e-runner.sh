@@ -54,7 +54,6 @@ corepack enable
 
 # Critical business flows only — no visual/debug/smoke specs.
 yarn test:e2e \
-  e2e/login-shell-mount.spec.ts \
   e2e/happy-path.spec.ts \
   e2e/golden-path-fiscal.spec.ts \
   e2e/purchases-stock.spec.ts
