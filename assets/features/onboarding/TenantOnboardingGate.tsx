@@ -46,7 +46,8 @@ const STEP_META: Record<StepKey, { title: string; subtitle: string }> = {
   },
   SUNAT: {
     title: 'Conexión con SUNAT',
-    subtitle: 'Ingresa tus credenciales SOL y el certificado para emitir comprobantes electrónicos.',
+    subtitle:
+      'Ingresa tus credenciales SOL y el certificado para emitir comprobantes electrónicos.',
   },
   Branch: {
     title: 'Tu primer local',
@@ -108,17 +109,24 @@ export function TenantOnboardingGate() {
       const payload = (event as CustomEvent<Record<string, unknown>>).detail ?? {};
       setCompany((current) => ({
         ...current,
-        ruc: typeof payload.ruc === 'string' ? payload.ruc.replace(/\D/g, '').slice(0, 11) : current.ruc,
-        businessName: typeof payload.businessName === 'string' ? payload.businessName : current.businessName,
+        ruc:
+          typeof payload.ruc === 'string'
+            ? payload.ruc.replace(/\D/g, '').slice(0, 11)
+            : current.ruc,
+        businessName:
+          typeof payload.businessName === 'string' ? payload.businessName : current.businessName,
         tradeName: typeof payload.tradeName === 'string' ? payload.tradeName : current.tradeName,
-        fiscalAddress: typeof payload.fiscalAddress === 'string' ? payload.fiscalAddress : current.fiscalAddress,
+        fiscalAddress:
+          typeof payload.fiscalAddress === 'string' ? payload.fiscalAddress : current.fiscalAddress,
         phone: typeof payload.phone === 'string' ? payload.phone : current.phone,
       }));
       setBranch((current) => ({
         ...current,
         name: typeof payload.branchName === 'string' ? payload.branchName : current.name,
-        invoiceSeries: typeof payload.invoiceSeries === 'string' ? payload.invoiceSeries : current.invoiceSeries,
-        receiptSeries: typeof payload.boletaSeries === 'string' ? payload.boletaSeries : current.receiptSeries,
+        invoiceSeries:
+          typeof payload.invoiceSeries === 'string' ? payload.invoiceSeries : current.invoiceSeries,
+        receiptSeries:
+          typeof payload.boletaSeries === 'string' ? payload.boletaSeries : current.receiptSeries,
       }));
       setWarehouse((current) => ({
         ...current,
@@ -172,9 +180,23 @@ export function TenantOnboardingGate() {
   const meta = STEP_META[currentStep];
   const canContinue = useMemo(() => {
     if (step === 0) return selectedPreset !== '';
-    if (step === 1) return company.ruc.length === 11 && company.businessName.trim() !== '' && company.fiscalAddress.trim() !== '';
-    if (step === 2) return sunatSkipped || (sunat.solUser.trim() !== '' && sunat.solPass.trim() !== '' && certificateFile !== null);
-    if (step === 3) return branch.name.trim() !== '' && branch.invoiceSeries.trim() !== '' && branch.receiptSeries.trim() !== '';
+    if (step === 1)
+      return (
+        company.ruc.length === 11 &&
+        company.businessName.trim() !== '' &&
+        company.fiscalAddress.trim() !== ''
+      );
+    if (step === 2)
+      return (
+        sunatSkipped ||
+        (sunat.solUser.trim() !== '' && sunat.solPass.trim() !== '' && certificateFile !== null)
+      );
+    if (step === 3)
+      return (
+        branch.name.trim() !== '' &&
+        branch.invoiceSeries.trim() !== '' &&
+        branch.receiptSeries.trim() !== ''
+      );
     if (step === 4) return warehouse.name.trim() !== '';
     return true;
   }, [branch, certificateFile, company, selectedPreset, step, sunat, sunatSkipped, warehouse]);
@@ -182,7 +204,8 @@ export function TenantOnboardingGate() {
   const sunatStatusLabel = useMemo(() => {
     if (sunatSkipped) return 'se configura después en Ajustes';
     if (lycetSyncStatus === 'synced') return 'configurada';
-    if (lycetSyncStatus !== null) return 'pendiente de sincronización con SUNAT — reintenta desde Ajustes';
+    if (lycetSyncStatus !== null)
+      return 'pendiente de sincronización con SUNAT — reintenta desde Ajustes';
     if (resumedPastSunatStep) return 'verifica el estado de sincronización en Ajustes';
 
     return 'configurada';
@@ -192,7 +215,13 @@ export function TenantOnboardingGate() {
   const saveBranch = useMutation({ mutationFn: tenantOnboardingService.saveBranch });
   const saveWarehouse = useMutation({ mutationFn: tenantOnboardingService.saveWarehouse });
 
-  const busy = applyPreset.isPending || saveCompany.isPending || uploadCertificate.isPending || saveBranch.isPending || saveWarehouse.isPending || completeOnboarding.isPending;
+  const busy =
+    applyPreset.isPending ||
+    saveCompany.isPending ||
+    uploadCertificate.isPending ||
+    saveBranch.isPending ||
+    saveWarehouse.isPending ||
+    completeOnboarding.isPending;
 
   const goNext = async () => {
     try {
@@ -282,123 +311,248 @@ export function TenantOnboardingGate() {
           </Timeline>
         </nav>
 
-        <div className={`tenant-onboarding__body tenant-onboarding__body--${currentStep.toLowerCase()}`}>
+        <div
+          className={`tenant-onboarding__body tenant-onboarding__body--${currentStep.toLowerCase()}`}
+        >
           <div className="tenant-onboarding__main">
-          {currentStep !== 'Done' ? (
-            <>
-              <h1>{meta.title}</h1>
-              <p>{meta.subtitle}</p>
-            </>
-          ) : null}
+            {currentStep !== 'Done' ? (
+              <>
+                <h1>{meta.title}</h1>
+                <p>{meta.subtitle}</p>
+              </>
+            ) : null}
 
-          {currentStep === 'Welcome' && (
-            <div className="tenant-onboarding__preset-grid">
-              {[
-                { key: 'retail', title: 'Retail / Tienda', description: 'Ventas rápidas, caja e inventario simple.' },
-                { key: 'pharmacy', title: 'Botica / Farmacia', description: 'Inventario estricto y lotes/vencimientos activables.' },
-              ].map((option) => (
-                <button
-                  key={option.key}
-                  className={`tenant-onboarding__preset ${selectedPreset === option.key ? 'is-selected' : ''}`}
-                  type="button"
-                  onClick={() => setSelectedPreset(option.key)}
-                >
-                  <i className={option.key === 'pharmacy' ? 'ph ph-pill' : 'ph ph-storefront'} aria-hidden="true" />
-                  <span className="tenant-onboarding__preset-copy">
-                  <strong>{option.title}</strong>
-                  <span>{option.description}</span>
-                  </span>
-                  <span className="tenant-onboarding__preset-check" aria-hidden="true">{selectedPreset === option.key ? '✓' : ''}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {currentStep === 'Company' && (
-            <div className="tenant-onboarding__grid">
-              <FormField label="RUC" className="tenant-onboarding__field tenant-onboarding__field--with-button">
-                <div>
-                  <TextField value={company.ruc} onChange={(e) => setCompany({ ...company, ruc: e.target.value.replace(/\D/g, '').slice(0, 11) })} />
-                  <Button type="button" variant="secondary" onClick={verifyRuc}>Consultar SUNAT</Button>
-                </div>
-              </FormField>
-              <FormField label="Razón social" className="tenant-onboarding__field"><TextField value={company.businessName} onChange={(e) => setCompany({ ...company, businessName: e.target.value })} /></FormField>
-              <FormField label="Nombre comercial (opcional)" className="tenant-onboarding__field"><TextField value={company.tradeName ?? ''} onChange={(e) => setCompany({ ...company, tradeName: e.target.value })} /></FormField>
-              <FormField label="Domicilio fiscal" className="tenant-onboarding__field"><TextField value={company.fiscalAddress} onChange={(e) => setCompany({ ...company, fiscalAddress: e.target.value })} /></FormField>
-              <FormField label="Teléfono" className="tenant-onboarding__field"><TextField value={company.phone ?? ''} onChange={(e) => setCompany({ ...company, phone: e.target.value })} /></FormField>
-              <FormField label="Moneda" className="tenant-onboarding__field"><TextField value="PEN — Sol" disabled /></FormField>
-            </div>
-          )}
-
-          {currentStep === 'SUNAT' && (
-            <div className="tenant-onboarding__grid">
-              <FormField label="Usuario SOL" className="tenant-onboarding__field"><TextField value={sunat.solUser} onChange={(e) => setSunat({ ...sunat, solUser: e.target.value })} placeholder="Ej. MODDATOS" disabled={sunatSkipped} /></FormField>
-              <FormField label="Clave SOL" className="tenant-onboarding__field"><TextField value={sunat.solPass} onChange={(e) => setSunat({ ...sunat, solPass: e.target.value })} type="password" disabled={sunatSkipped} /></FormField>
-              <FormField label="Certificado digital (.pfx o PEM)" className="tenant-onboarding__field tenant-onboarding__dropzone">
-                <FileDropzone
-                  accept=".pfx,.pem,.crt,.cer"
-                  value={certificateFile ? { fileName: certificateFile.name } : null}
-                  disabled={sunatSkipped}
-                  labels={{
-                    prompt: 'Suelta el archivo .pfx o haz clic para buscarlo',
-                    hint: 'Certificado digital SUNAT en formato PFX o PEM.',
-                    replace: 'Cambiar certificado',
-                    remove: 'Quitar certificado',
-                    open: 'Abrir certificado',
-                  }}
-                  onFileSelect={setCertificateFile}
-                  onClear={() => setCertificateFile(null)}
-                />
-              </FormField>
-              <FormField label="Contraseña del certificado" className="tenant-onboarding__field"><TextField value={sunat.certificatePassword} onChange={(e) => setSunat({ ...sunat, certificatePassword: e.target.value })} type="password" placeholder="Clave del PFX" disabled={sunatSkipped} /></FormField>
-              <Button className="tenant-onboarding__skip" variant="ghost" type="button" onClick={() => setSunatSkipped((value) => !value)}>
-                {sunatSkipped ? 'Configurar SUNAT ahora' : 'Configurar SUNAT más tarde'}
-              </Button>
-            </div>
-          )}
-
-          {currentStep === 'Branch' && (
-            <div className="tenant-onboarding__grid">
-              <FormField label="Nombre del local" className="tenant-onboarding__field"><TextField value={branch.name} onChange={(e) => setBranch({ ...branch, name: e.target.value })} placeholder="Ej. San Isidro" /></FormField>
-              <FormField label="Dirección" className="tenant-onboarding__field"><TextField value={branch.address ?? ''} onChange={(e) => setBranch({ ...branch, address: e.target.value })} placeholder="Calle, distrito, provincia" /></FormField>
-              <FormField label="Serie de factura" className="tenant-onboarding__field"><TextField value={branch.invoiceSeries} onChange={(e) => setBranch({ ...branch, invoiceSeries: e.target.value.toUpperCase().slice(0, 6) })} /></FormField>
-              <FormField label="Serie de boleta" className="tenant-onboarding__field"><TextField value={branch.receiptSeries} onChange={(e) => setBranch({ ...branch, receiptSeries: e.target.value.toUpperCase().slice(0, 6) })} /></FormField>
-            </div>
-          )}
-
-          {currentStep === 'Warehouse' && (
-            <div className="tenant-onboarding__grid">
-              <FormField label="Nombre del almacén" className="tenant-onboarding__field"><TextField value={warehouse.name} onChange={(e) => setWarehouse({ ...warehouse, name: e.target.value })} placeholder="Ej. Almacén principal" /></FormField>
-              <FormField label="Método de valuación" className="tenant-onboarding__field"><TextField value="Promedio ponderado (PP) — SUNAT" disabled /></FormField>
-            </div>
-          )}
-
-          {currentStep === 'Done' && (
-            <div className="tenant-onboarding__done">
-              <div className="tenant-onboarding__check">✓</div>
-              <h1>{meta.title}</h1>
-              <p>{meta.subtitle}</p>
-              <ul>
-                <li>Empresa: {company.businessName || company.ruc}</li>
-                <li>Local: {branch.name}</li>
-                <li>Almacén: {warehouse.name}</li>
-                <li>SUNAT: {sunatStatusLabel}</li>
-                <li>
-                  Siguiente: importa tu Excel de productos y clientes desde{' '}
-                  <button type="button" onClick={() => navigate('/setup/import')}>
-                    Traer datos
+            {currentStep === 'Welcome' && (
+              <div className="tenant-onboarding__preset-grid">
+                {[
+                  {
+                    key: 'retail',
+                    title: 'Retail / Tienda',
+                    description: 'Ventas rápidas, caja e inventario simple.',
+                  },
+                  {
+                    key: 'pharmacy',
+                    title: 'Botica / Farmacia',
+                    description: 'Inventario estricto y lotes/vencimientos activables.',
+                  },
+                ].map((option) => (
+                  <button
+                    key={option.key}
+                    className={`tenant-onboarding__preset ${selectedPreset === option.key ? 'is-selected' : ''}`}
+                    type="button"
+                    onClick={() => setSelectedPreset(option.key)}
+                  >
+                    <i
+                      className={option.key === 'pharmacy' ? 'ph ph-pill' : 'ph ph-storefront'}
+                      aria-hidden="true"
+                    />
+                    <span className="tenant-onboarding__preset-copy">
+                      <strong>{option.title}</strong>
+                      <span>{option.description}</span>
+                    </span>
+                    <span className="tenant-onboarding__preset-check" aria-hidden="true">
+                      {selectedPreset === option.key ? '✓' : ''}
+                    </span>
                   </button>
-                </li>
-              </ul>
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+
+            {currentStep === 'Company' && (
+              <div className="tenant-onboarding__grid">
+                <FormField
+                  label="RUC"
+                  className="tenant-onboarding__field tenant-onboarding__field--with-button"
+                >
+                  <div>
+                    <TextField
+                      value={company.ruc}
+                      onChange={(e) =>
+                        setCompany({
+                          ...company,
+                          ruc: e.target.value.replace(/\D/g, '').slice(0, 11),
+                        })
+                      }
+                    />
+                    <Button type="button" variant="secondary" onClick={verifyRuc}>
+                      Consultar SUNAT
+                    </Button>
+                  </div>
+                </FormField>
+                <FormField label="Razón social" className="tenant-onboarding__field">
+                  <TextField
+                    value={company.businessName}
+                    onChange={(e) => setCompany({ ...company, businessName: e.target.value })}
+                  />
+                </FormField>
+                <FormField label="Nombre comercial (opcional)" className="tenant-onboarding__field">
+                  <TextField
+                    value={company.tradeName ?? ''}
+                    onChange={(e) => setCompany({ ...company, tradeName: e.target.value })}
+                  />
+                </FormField>
+                <FormField label="Domicilio fiscal" className="tenant-onboarding__field">
+                  <TextField
+                    value={company.fiscalAddress}
+                    onChange={(e) => setCompany({ ...company, fiscalAddress: e.target.value })}
+                  />
+                </FormField>
+                <FormField label="Teléfono" className="tenant-onboarding__field">
+                  <TextField
+                    value={company.phone ?? ''}
+                    onChange={(e) => setCompany({ ...company, phone: e.target.value })}
+                  />
+                </FormField>
+                <FormField label="Moneda" className="tenant-onboarding__field">
+                  <TextField value="PEN — Sol" disabled />
+                </FormField>
+              </div>
+            )}
+
+            {currentStep === 'SUNAT' && (
+              <div className="tenant-onboarding__grid">
+                <FormField label="Usuario SOL (sin RUC)" className="tenant-onboarding__field">
+                  <TextField
+                    value={sunat.solUser}
+                    onChange={(e) => setSunat({ ...sunat, solUser: e.target.value })}
+                    placeholder="Ej. MODDATOS"
+                    disabled={sunatSkipped}
+                  />
+                </FormField>
+                <FormField label="Clave SOL" className="tenant-onboarding__field">
+                  <TextField
+                    value={sunat.solPass}
+                    onChange={(e) => setSunat({ ...sunat, solPass: e.target.value })}
+                    type="password"
+                    disabled={sunatSkipped}
+                  />
+                </FormField>
+                <FormField
+                  label="Certificado digital (.pfx o PEM)"
+                  className="tenant-onboarding__field tenant-onboarding__dropzone"
+                >
+                  <FileDropzone
+                    accept=".pfx,.pem,.crt,.cer"
+                    value={certificateFile ? { fileName: certificateFile.name } : null}
+                    disabled={sunatSkipped}
+                    labels={{
+                      prompt: 'Suelta el archivo .pfx o haz clic para buscarlo',
+                      hint: 'Certificado digital SUNAT en formato PFX o PEM.',
+                      replace: 'Cambiar certificado',
+                      remove: 'Quitar certificado',
+                      open: 'Abrir certificado',
+                    }}
+                    onFileSelect={setCertificateFile}
+                    onClear={() => setCertificateFile(null)}
+                  />
+                </FormField>
+                <FormField label="Contraseña del certificado" className="tenant-onboarding__field">
+                  <TextField
+                    value={sunat.certificatePassword}
+                    onChange={(e) => setSunat({ ...sunat, certificatePassword: e.target.value })}
+                    type="password"
+                    placeholder="Clave del PFX"
+                    disabled={sunatSkipped}
+                  />
+                </FormField>
+                <Button
+                  className="tenant-onboarding__skip"
+                  variant="ghost"
+                  type="button"
+                  onClick={() => setSunatSkipped((value) => !value)}
+                >
+                  {sunatSkipped ? 'Configurar SUNAT ahora' : 'Configurar SUNAT más tarde'}
+                </Button>
+              </div>
+            )}
+
+            {currentStep === 'Branch' && (
+              <div className="tenant-onboarding__grid">
+                <FormField label="Nombre del local" className="tenant-onboarding__field">
+                  <TextField
+                    value={branch.name}
+                    onChange={(e) => setBranch({ ...branch, name: e.target.value })}
+                    placeholder="Ej. San Isidro"
+                  />
+                </FormField>
+                <FormField label="Dirección" className="tenant-onboarding__field">
+                  <TextField
+                    value={branch.address ?? ''}
+                    onChange={(e) => setBranch({ ...branch, address: e.target.value })}
+                    placeholder="Calle, distrito, provincia"
+                  />
+                </FormField>
+                <FormField label="Serie de factura" className="tenant-onboarding__field">
+                  <TextField
+                    value={branch.invoiceSeries}
+                    onChange={(e) =>
+                      setBranch({
+                        ...branch,
+                        invoiceSeries: e.target.value.toUpperCase().slice(0, 6),
+                      })
+                    }
+                  />
+                </FormField>
+                <FormField label="Serie de boleta" className="tenant-onboarding__field">
+                  <TextField
+                    value={branch.receiptSeries}
+                    onChange={(e) =>
+                      setBranch({
+                        ...branch,
+                        receiptSeries: e.target.value.toUpperCase().slice(0, 6),
+                      })
+                    }
+                  />
+                </FormField>
+              </div>
+            )}
+
+            {currentStep === 'Warehouse' && (
+              <div className="tenant-onboarding__grid">
+                <FormField label="Nombre del almacén" className="tenant-onboarding__field">
+                  <TextField
+                    value={warehouse.name}
+                    onChange={(e) => setWarehouse({ ...warehouse, name: e.target.value })}
+                    placeholder="Ej. Almacén principal"
+                  />
+                </FormField>
+                <FormField label="Método de valuación" className="tenant-onboarding__field">
+                  <TextField value="Promedio ponderado (PP) — SUNAT" disabled />
+                </FormField>
+              </div>
+            )}
+
+            {currentStep === 'Done' && (
+              <div className="tenant-onboarding__done">
+                <div className="tenant-onboarding__check">✓</div>
+                <h1>{meta.title}</h1>
+                <p>{meta.subtitle}</p>
+                <ul>
+                  <li>Empresa: {company.businessName || company.ruc}</li>
+                  <li>Local: {branch.name}</li>
+                  <li>Almacén: {warehouse.name}</li>
+                  <li>SUNAT: {sunatStatusLabel}</li>
+                  <li>
+                    Siguiente: importa tu Excel de productos y clientes desde{' '}
+                    <button type="button" onClick={() => navigate('/setup/import')}>
+                      Traer datos
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
           <div className="tenant-onboarding__aside">
             <OnboardingHelp step={currentStep} />
             {assistantEnabled ? (
               <div className="tenant-onboarding__assistant">
                 <Suspense fallback={null}>
-                  <Assistant showToolbar={false} screen="onboarding" entityType="onboarding" entityId={currentStep} />
+                  <Assistant
+                    showToolbar={false}
+                    screen="onboarding"
+                    entityType="onboarding"
+                    entityId={currentStep}
+                  />
                 </Suspense>
               </div>
             ) : null}
@@ -406,8 +560,21 @@ export function TenantOnboardingGate() {
         </div>
 
         <footer className="tenant-onboarding__footer">
-          <Button type="button" variant="secondary" onClick={() => setStep((value) => Math.max(value - 1, 0) as OnboardingStep)} disabled={step === 0 || busy}>Atrás</Button>
-          <Button type="button" variant="primary" onClick={goNext} disabled={!canContinue || busy} loading={busy}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => setStep((value) => Math.max(value - 1, 0) as OnboardingStep)}
+            disabled={step === 0 || busy}
+          >
+            Atrás
+          </Button>
+          <Button
+            type="button"
+            variant="primary"
+            onClick={goNext}
+            disabled={!canContinue || busy}
+            loading={busy}
+          >
             {step === 5 ? 'Entrar al mini ERP' : busy ? 'Guardando…' : 'Continuar'}
           </Button>
         </footer>

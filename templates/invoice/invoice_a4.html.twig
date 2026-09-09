@@ -292,6 +292,10 @@
                             <div class="doc-title">FACTURA<br>ELECTRÓNICA</div>
                         {% elseif voucher.voucher_type == '03' %}
                             <div class="doc-title">BOLETA<br>ELECTRÓNICA</div>
+                        {% elseif voucher.voucher_type == '07' %}
+                            <div class="doc-title">NOTA DE CRÉDITO<br>ELECTRÓNICA</div>
+                        {% elseif voucher.voucher_type == '08' %}
+                            <div class="doc-title">NOTA DE DÉBITO<br>ELECTRÓNICA</div>
                         {% else %}
                             <div class="doc-title">NOTA<br>DE VENTA</div>
                         {% endif %}

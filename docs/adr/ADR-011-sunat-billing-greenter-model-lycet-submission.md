@@ -28,6 +28,12 @@ For e2e tests, `App\Setup\Infrastructure\Billing\E2eStubBillRepository` implemen
 - The "Greenter/SUNAT" framing in `docs/PRD.md` is misleading on its own — it reads as "we integrate with SUNAT via Greenter," when the actual integration point is a private HTTP API. Anyone debugging a submission failure should look at `BillRepository`/`LycetUrlBuilder` and the external service, not at Greenter's own SOAP client (which this codebase never calls).
 - "Bill" and "Lycet" being used interchangeably for the same service, with no canonical name recorded anywhere, is a minor but real source of confusion when searching the codebase or logs.
 
+## Amendment 2026-09-08: Tenant-Owned Printable Representation
+
+PDFs are not fiscal source data. eFact renders the printable representation for invoices, receipts and notes locally from its `Voucher` read model using `VoucherPdfRenderer` and the existing Twig A4 template. This makes the tenant's logo, bank account/CCI, QR and layout an eFact concern rather than configuration duplicated in the submission provider.
+
+Lycet remains the transitional provider for SUNAT submission and status/artefact retrieval. Its legacy PDF endpoints remain implemented behind repository interfaces for compatibility, but no tenant-facing download or invoice-email flow calls them.
+
 ## Alternatives Considered
 
 **Greenter's built-in SOAP client, signing, and XML generation, used directly against SUNAT** — not adopted. The external Lycet/Bill service does this instead, likely to centralize certificate/signing logic across multiple products (the PRD mentions three: `efact`, `efact-app`, `efact-site`) rather than duplicate SUNAT SOAP handling in each. Not documented anywhere as an explicit comparison — inferred from the architecture actually built.

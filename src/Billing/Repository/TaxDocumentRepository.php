@@ -465,6 +465,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
 
         $this->applyAmountsToLines($lines, $amounts, $header->voucherTaxPercentage ?? '0');
         $header->applyAmounts($amounts);
+        $header->voucherQrData = $this->buildQrData($sale, $creditNote, $amounts);
 
         $voucherItems = array_map(static fn(VoucherLineDto $line): VoucherItem => $line->toVoucherItem(), $lines);
 
@@ -485,11 +486,9 @@ class TaxDocumentRepository extends ServiceEntityRepository
         $branch = $sale->getBranch() ?? $sale->getAlmacen()?->getBranch();
         $company = $branch?->getCompany();
         $customerRuc = $customer?->getRuc();
-        $docType =
-            $relatedTaxDocument?->getDocumentType() ?? $taxDocument?->getDocumentType() ?? DocType::NOTA_VENTA->value;
-
-        $voucherSeries = $relatedTaxDocument?->getSeries() ?? $taxDocument?->getSeries() ?? $sale->getSerie();
-        $voucherNumber = $relatedTaxDocument?->getNumber() ?? $taxDocument?->getNumber() ?? $sale->getNumero();
+        $docType = $taxDocument?->getDocumentType() ?? DocType::NOTA_VENTA->value;
+        $voucherSeries = $taxDocument?->getSeries() ?? $sale->getSerie();
+        $voucherNumber = $taxDocument?->getNumber() ?? $sale->getNumero();
 
         $detractionCode = $taxDocument?->getDetractionCode() ?? $sale->getDetraccionCodigo();
         $detractionPaymentMethod = $taxDocument?->getDetractionPaymentMethod() ?? $sale->getDetraccionMedioPago();

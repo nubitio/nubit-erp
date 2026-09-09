@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace App\Billing\Sunat\Domain;
 
+use App\Billing\Receipt\Service\VoucherPdfRenderer;
+
 readonly class BillPdfUseCase
 {
     public function __construct(
-        private BillCreateUseCase $billCreateUseCase,
-        private BillRepositoryInterface $billRepository,
+        private VoucherPdfRenderer $pdfRenderer,
     ) {}
 
     public function __invoke(string $taxDocumentId): FileResponse
     {
-        $bill = $this->billCreateUseCase->__invoke($taxDocumentId);
-        $pdf = $this->billRepository->getPdf($bill);
-
-        return new FileResponse($pdf, $bill->getName() . '.pdf');
+        return $this->pdfRenderer->render($taxDocumentId);
     }
 }

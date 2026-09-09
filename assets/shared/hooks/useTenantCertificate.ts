@@ -28,6 +28,14 @@ export interface UploadTenantCertificateResponse {
   certificate: TenantCertificateSummary;
 }
 
+export interface TenantCertificateResponse {
+  certificate: TenantCertificateSummary | null;
+}
+
+export async function getTenantCertificate() {
+  return httpRequestData(httpClient.get<TenantCertificateResponse>('/api/tenant/certificate'));
+}
+
 async function uploadTenantCertificate(input: UploadTenantCertificateInput) {
   const formData = new FormData();
   if (input.ruc) {

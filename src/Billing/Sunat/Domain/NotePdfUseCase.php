@@ -4,23 +4,16 @@ declare(strict_types=1);
 
 namespace App\Billing\Sunat\Domain;
 
-use Nubit\Platform\Exception\ServiceException;
+use App\Billing\Receipt\Service\VoucherPdfRenderer;
 
 readonly class NotePdfUseCase
 {
     public function __construct(
-        private NoteCreateUseCase $noteCreateUseCase,
-        private NoteRepositoryInterface $noteRepository,
+        private VoucherPdfRenderer $pdfRenderer,
     ) {}
 
-    /**
-     * @throws ServiceException
-     */
     public function __invoke(string $taxDocumentId): FileResponse
     {
-        $note = $this->noteCreateUseCase->__invoke($taxDocumentId);
-        $pdf = $this->noteRepository->pdf($note);
-
-        return new FileResponse($pdf, $note->getName() . '.pdf');
+        return $this->pdfRenderer->render($taxDocumentId);
     }
 }

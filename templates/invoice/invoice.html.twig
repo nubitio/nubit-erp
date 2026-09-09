@@ -210,6 +210,10 @@
                 <div class="doc-title">Factura Electrónica</div>
             {% elseif voucher.voucher_type == '03' %}
                 <div class="doc-title">Boleta Electrónica</div>
+            {% elseif voucher.voucher_type == '07' %}
+                <div class="doc-title">Nota de Crédito Electrónica</div>
+            {% elseif voucher.voucher_type == '08' %}
+                <div class="doc-title">Nota de Débito Electrónica</div>
             {% else %}
                 <div class="doc-title">Nota de Venta</div>
             {% endif %}

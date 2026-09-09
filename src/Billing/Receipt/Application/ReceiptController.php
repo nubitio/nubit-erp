@@ -10,7 +10,7 @@ use App\Billing\Receipt\Domain\ReceiptRequest;
 use App\Billing\Receipt\Domain\ReceiptShowUseCase;
 use App\Billing\Receipt\Domain\ReceiptType;
 use App\Billing\Receipt\Domain\ReceiptXmlUseCase;
-use App\Billing\Repository\TaxDocumentRepository;
+use App\Billing\Receipt\Service\VoucherPdfRenderer;
 use App\Efact\Service\CompanyContext;
 use App\Sales\Domain\DocType;
 use App\Settings\Service\TenantSettingsService;
@@ -72,13 +72,11 @@ class ReceiptController extends BaseController
     public function ticket(
         Request $request,
         string $id,
-        TaxDocumentRepository $taxDocumentRepository,
+        VoucherPdfRenderer $voucherPdfRenderer,
         TenantSettingsService $tenantSettings,
         PdfExporter $pdfExporter,
     ): Response {
-        $voucher = $taxDocumentRepository->find($id) !== null
-            ? $taxDocumentRepository->getVoucherByTaxDocumentId($id)
-            : $taxDocumentRepository->getVoucher($id);
+        $voucher = $voucherPdfRenderer->voucher($id);
         $qr = '';
         if ($voucher->voucher_type != DocType::NOTA_VENTA->value) {
             $qr = new QRCode()->render(strval($voucher->voucher_qr_data));

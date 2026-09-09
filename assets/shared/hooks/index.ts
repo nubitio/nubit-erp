@@ -15,8 +15,9 @@ export type {
   ApplyTenantPresetResponse,
   CompleteTenantOnboardingResponse,
 } from './useTenantRuntimeConfig';
-export { useUploadTenantCertificate } from './useTenantCertificate';
+export { getTenantCertificate, useUploadTenantCertificate } from './useTenantCertificate';
 export type {
+  TenantCertificateResponse,
   TenantCertificateSummary,
   UploadTenantCertificateInput,
   UploadTenantCertificateResponse,

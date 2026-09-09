@@ -22,7 +22,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * The lifecycle and Lycet sync remain in the control plane; this controller is
  * the tenant-scoped adapter used by onboarding/settings.
  */
-#[Route('/api/tenant/certificate', name: 'api_tenant_certificate_upsert', methods: ['POST'])]
+#[Route('/api/tenant')]
 #[IsGranted('ROLE_USER')]
 final class TenantCertificateController extends AbstractController
 {
@@ -32,6 +32,7 @@ final class TenantCertificateController extends AbstractController
         private readonly CertificateLifecycleServiceInterface $certificates,
     ) {}
 
+    #[Route('/certificate', name: 'api_tenant_certificate_upsert', methods: ['POST'])]
     public function __invoke(Request $request): JsonResponse
     {
         $tenantName = $this->tenantContext->getTenantName();
@@ -42,7 +43,7 @@ final class TenantCertificateController extends AbstractController
         try {
             $payload = $this->readPayload($request);
             $ruc = $this->resolveRuc($payload['ruc'] ?? null);
-            $solUser = $this->requiredString($payload, 'solUser');
+            $solUser = $this->solUserWithRuc($this->requiredString($payload, 'solUser'), $ruc);
             $solPass = $this->requiredString($payload, 'solPass');
             $certificatePem = $this->extractCertificatePem($request, $payload);
 
@@ -63,6 +64,24 @@ final class TenantCertificateController extends AbstractController
         return $this->json([
             'certificate' => $this->serializeCertificate($certificate),
         ]);
+    }
+
+    #[Route('/certificate', name: 'api_tenant_certificate_get', methods: ['GET'])]
+    public function get(): JsonResponse
+    {
+        $tenantName = $this->tenantContext->getTenantName();
+        if ($tenantName === null) {
+            return $this->json(['error' => 'No tenant context'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $ruc = $this->resolveRuc(null);
+        foreach ($this->certificates->list($tenantName) as $certificate) {
+            if ($certificate->ruc === $ruc && $certificate->revokedAt === null) {
+                return $this->json(['certificate' => $this->serializeCertificate($certificate)]);
+            }
+        }
+
+        return $this->json(['certificate' => null]);
     }
 
     /**
@@ -107,6 +126,11 @@ final class TenantCertificateController extends AbstractController
         }
 
         return trim($value);
+    }
+
+    private function solUserWithRuc(string $solUser, string $ruc): string
+    {
+        return $ruc . (preg_replace('/^' . preg_quote($ruc, '/') . '/', '', $solUser) ?? $solUser);
     }
 
     /**
@@ -155,6 +179,10 @@ final class TenantCertificateController extends AbstractController
     private function certificateContentsToPem(string $contents, string $password): string
     {
         if (str_contains($contents, '-----BEGIN CERTIFICATE-----')) {
+            if (!str_contains($contents, 'PRIVATE KEY-----')) {
+                throw new \InvalidArgumentException('El PEM debe incluir el certificado y su clave privada.');
+            }
+
             return $contents;
         }
 
