@@ -1,0 +1,68 @@
+{
+    "App\\AI\\Repository\\SunatRejectionQueryInterface": [
+        "findRejections(): array"
+    ],
+    "App\\Billing\\Sunat\\Domain\\BillRepositoryInterface": [
+        "getPdf(Greenter\\Model\\Sale\\Invoice $invoice): string",
+        "getStatus(Greenter\\Model\\Sale\\Invoice $invoice): Greenter\\Model\\Response\\StatusCdrResult",
+        "getXml(Greenter\\Model\\Sale\\Invoice $invoice): string",
+        "sendBill(Greenter\\Model\\Sale\\Invoice $invoice): App\\Billing\\Sunat\\Model\\Response\\DocumentResponse"
+    ],
+    "App\\Billing\\Sunat\\Domain\\LycetCompanyServiceInterface": [
+        "removeCompany(string $ruc): void",
+        "uploadCompanyLogo(string $ruc, string $imageData): void",
+        "upsertCompany(string $ruc, string $solUser, string $solPass, string $certPem, array $urls?, ?string $clientId?, ?string $clientSecret?): void"
+    ],
+    "App\\ControlPlane\\Certificate\\CertificateLifecycleServiceInterface": [
+        "detail(string $tenantName, int $certificateId): App\\ControlPlane\\Certificate\\TenantCertificate",
+        "findStuckLycetSyncs(int $minutesThreshold?): array",
+        "list(string $tenantName): array",
+        "refreshExpiringStatuses(int $days?): array",
+        "retryRevocation(string $tenantName, string $ruc): void",
+        "retryUpsertSync(string $tenantName, string $ruc, string $solUser, string $solPass, string $certPem): App\\ControlPlane\\Certificate\\TenantCertificate",
+        "revoke(string $tenantName, string $ruc, string $revokedBy, string $reason): void",
+        "upsert(string $tenantName, string $ruc, string $solUser, string $solPass, string $certPem, ?string $uploadedBy?): App\\ControlPlane\\Certificate\\TenantCertificate"
+    ],
+    "App\\Efact\\Domain\\ActivatableInterface": [
+        "getIsActive(): bool"
+    ],
+    "App\\Identity\\Auth\\BranchContextServiceInterface": [
+        "getCurrentBranchId(): ?string",
+        "hasBranch(): bool"
+    ],
+    "App\\Identity\\Notification\\UserNotificationServiceInterface": [
+        "hasDuplicateRecent(int $userId, string $type, int $withinSeconds?): bool",
+        "notifyByRoles(array $roles, string $type, string $severity, string $title, string $body, ?string $actionUrl?): void",
+        "notifyByRolesDeduped(array $roles, string $type, string $severity, string $title, string $body, ?string $actionUrl?, int $withinSeconds?): void",
+        "notifyUser(int $userId, string $type, string $severity, string $title, string $body, ?string $actionUrl?): void"
+    ],
+    "App\\Inventory\\Core\\Contract\\SalesInventoryPortInterface": [
+        "applyMovementFromSaleItem(App\\Sales\\Entity\\SaleRecord $sale, App\\Sales\\Entity\\SaleItemRecord $item, int $lineNo, bool $enforceNonNegativeStock?): void",
+        "getStockForProductInWarehouse(App\\Catalog\\Entity\\Product $product, App\\Inventory\\Entity\\Warehouse $warehouse): float"
+    ],
+    "App\\Inventory\\Core\\Contract\\StockValidationPolicyInterface": [
+        "validateSale(App\\Catalog\\Entity\\Product $product, string $warehouseId, string $requestedQtyBase, string $onHandQtyBase): App\\Inventory\\Core\\Dto\\StockValidationResult"
+    ],
+    "App\\Sales\\Port\\InvoiceCreatorInterface": [
+        "createAndDispatchInvoiceForSaleId(string $saleId): array",
+        "createInvoiceForSaleId(string $saleId): App\\Sales\\Port\\Result\\InvoiceCreationResult"
+    ],
+    "App\\Sales\\Port\\RejectedDocumentReplacerInterface": [
+        "replaceRejectedDocument(string $saleId): App\\Sales\\Port\\Result\\RejectedDocumentReplacementResult"
+    ],
+    "App\\Sales\\Port\\SaleInvoicePrinterInterface": [
+        "printSaleInvoice(string $saleId, Symfony\\Component\\HttpFoundation\\Request $request): Symfony\\Component\\HttpFoundation\\Response"
+    ],
+    "App\\Sales\\Port\\SaleVoiderInterface": [
+        "voidSale(string $saleId, string $reason, int $userId, bool $restoreStock?): void"
+    ],
+    "App\\Sales\\State\\CashSessionResolverInterface": [
+        "resolveForSale(App\\Sales\\Entity\\SaleRecord $sale): int",
+        "resolveRegisterIdForSession(int $sessionId): ?int",
+        "tryResolveForSale(App\\Sales\\Entity\\SaleRecord $sale): ?int"
+    ],
+    "App\\Sales\\State\\DetractionCalculatorInterface": [
+        "applyFromItems(App\\Sales\\Entity\\SaleRecord $sale): void",
+        "getThreshold(string $code): float"
+    ]
+}
