@@ -94,6 +94,60 @@ final class DefaultPostingServiceTest extends TestCase
         $this->assertBalanced($lines);
     }
 
+    public function testCustomerAdvanceReceivedInCashDebitsCajaAndCreditsAnticipos(): void
+    {
+        $lines = $this->service()->linesFor(new EconomicEvent(
+            source: EconomicEvent::SOURCE_CUSTOMER_ADVANCE,
+            sourceId: 'advance-1',
+            kind: EconomicEvent::CUSTOMER_ADVANCE_RECEIVED_CASH,
+            occurredOn: '2026-09-09',
+            description: 'Anticipo cliente #9',
+            total: '500.00',
+        ));
+
+        self::assertSame('101', $lines[0]['code']);
+        self::assertSame('500.00', $lines[0]['debit'] ?? null);
+        self::assertSame('122', $lines[1]['code']);
+        self::assertSame('500.00', $lines[1]['credit'] ?? null);
+        $this->assertBalanced($lines);
+    }
+
+    public function testCustomerAdvanceReceivedByBankDebitsCuentaCorrienteAndCreditsAnticipos(): void
+    {
+        $lines = $this->service()->linesFor(new EconomicEvent(
+            source: EconomicEvent::SOURCE_CUSTOMER_ADVANCE,
+            sourceId: 'advance-2',
+            kind: EconomicEvent::CUSTOMER_ADVANCE_RECEIVED_BANK,
+            occurredOn: '2026-09-09',
+            description: 'Anticipo cliente #9',
+            total: '500.00',
+        ));
+
+        self::assertSame('1041', $lines[0]['code']);
+        self::assertSame('500.00', $lines[0]['debit'] ?? null);
+        self::assertSame('122', $lines[1]['code']);
+        self::assertSame('500.00', $lines[1]['credit'] ?? null);
+        $this->assertBalanced($lines);
+    }
+
+    public function testCustomerAdvanceAppliedDebitsAnticiposAndCreditsReceivable(): void
+    {
+        $lines = $this->service()->linesFor(new EconomicEvent(
+            source: EconomicEvent::SOURCE_CUSTOMER_ADVANCE,
+            sourceId: 'advance-2',
+            kind: EconomicEvent::CUSTOMER_ADVANCE_APPLIED,
+            occurredOn: '2026-09-10',
+            description: 'Aplicación anticipo a F001-9',
+            total: '300.00',
+        ));
+
+        self::assertSame('122', $lines[0]['code']);
+        self::assertSame('300.00', $lines[0]['debit'] ?? null);
+        self::assertSame('121', $lines[1]['code']);
+        self::assertSame('300.00', $lines[1]['credit'] ?? null);
+        $this->assertBalanced($lines);
+    }
+
     /**
      * @param list<array{code: string, debit?: string, credit?: string, memo?: string}> $lines
      */

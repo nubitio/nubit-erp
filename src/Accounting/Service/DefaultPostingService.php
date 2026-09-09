@@ -35,6 +35,8 @@ readonly class DefaultPostingService
 
     public const string OTHER_EXPENSE = '659';
 
+    public const string CUSTOMER_ADVANCE = '122';
+
     public function __construct(
         private JournalPoster $journalPoster,
         private LoggerInterface $logger,
@@ -116,6 +118,34 @@ readonly class DefaultPostingService
                     'code' => self::BANK,
                     'debit' => Money::toString($total),
                     'memo' => 'Cobranza de cuenta por cobrar (banco)',
+                ],
+                [
+                    'code' => self::RECEIVABLE,
+                    'credit' => Money::toString($total),
+                    'memo' => 'Aplicación a cuenta por cobrar',
+                ],
+            ],
+            EconomicEvent::CUSTOMER_ADVANCE_RECEIVED_CASH => [
+                ['code' => self::CASH, 'debit' => Money::toString($total), 'memo' => 'Anticipo de cliente (efectivo)'],
+                [
+                    'code' => self::CUSTOMER_ADVANCE,
+                    'credit' => Money::toString($total),
+                    'memo' => 'Anticipos de clientes',
+                ],
+            ],
+            EconomicEvent::CUSTOMER_ADVANCE_RECEIVED_BANK => [
+                ['code' => self::BANK, 'debit' => Money::toString($total), 'memo' => 'Anticipo de cliente (banco)'],
+                [
+                    'code' => self::CUSTOMER_ADVANCE,
+                    'credit' => Money::toString($total),
+                    'memo' => 'Anticipos de clientes',
+                ],
+            ],
+            EconomicEvent::CUSTOMER_ADVANCE_APPLIED => [
+                [
+                    'code' => self::CUSTOMER_ADVANCE,
+                    'debit' => Money::toString($total),
+                    'memo' => 'Aplicación de anticipo',
                 ],
                 [
                     'code' => self::RECEIVABLE,
