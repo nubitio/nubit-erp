@@ -119,6 +119,27 @@ final class ContextManifest
     }
 
     /**
+     * Lowercased, unique table names that appear as the target of a raw-SQL
+     * write (INSERT / UPDATE / DELETE / REPLACE / TRUNCATE) anywhere in the
+     * context's .php files. Reads (FROM / JOIN) are deliberately not matched:
+     * NB-15 guards a context *mutating* another context's tables, not
+     * denormalised read models.
+     *
+     * @return list<string>
+     */
+    public function rawSqlWriteTargets(string $context): array
+    {
+        $pattern =
+            '/\b(?:INSERT\s+(?:IGNORE\s+)?INTO|UPDATE|DELETE\s+FROM|REPLACE\s+INTO|TRUNCATE(?:\s+TABLE)?)'
+            . '\s+`?([a-z_][a-z0-9_]{2,})`?/i';
+
+        return array_values(array_unique(array_map(
+            static fn(string $table): string => strtolower($table),
+            $this->scan($context, $pattern),
+        )));
+    }
+
+    /**
      * Short names of interfaces declared anywhere in the context.
      *
      * @return list<string>
