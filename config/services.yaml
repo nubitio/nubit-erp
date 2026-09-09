@@ -27,6 +27,7 @@ services:
     autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
     bind:
       Psr\Log\LoggerInterface $billingLogger: '@monolog.logger.billing'
+      Psr\Log\LoggerInterface $operationLogger: '@monolog.logger.operation'
       string $mailerFrom: '%env(MAILER_FROM)%'
       string $weasyprintBinary: '%env(WEASYPRINT_BINARY)%'
       string $localTenantName: '%env(LOCAL_TENANT_NAME)%'

@@ -7,6 +7,7 @@ namespace App\Tests\Sales\Service;
 use App\Accounting\Message\EconomicEvent;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Enum\SettlementBehavior;
+use App\Efact\Observability\OperationLog;
 use App\Identity\Entity\User;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Service\SalePaymentService;
@@ -17,6 +18,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -48,7 +50,7 @@ final class SalePaymentServiceTest extends TestCase
 
     private function service(EntityManagerInterface $em): SalePaymentService
     {
-        return new SalePaymentService($em, $this->writeGateway, $this->messageBus);
+        return new SalePaymentService($em, $this->writeGateway, $this->messageBus, new OperationLog(new NullLogger()));
     }
 
     private function collectedMethod(int $id): PaymentMethod

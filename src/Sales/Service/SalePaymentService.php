@@ -8,6 +8,7 @@ use App\Accounting\Message\EconomicEvent;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Enum\SettlementBehavior;
 use App\Efact\Domain\Money;
+use App\Efact\Observability\OperationLog;
 use App\Identity\Entity\User;
 use App\Sales\Entity\SalePayment;
 use App\Sales\Entity\SaleRecord;
@@ -23,6 +24,7 @@ readonly class SalePaymentService
         private EntityManagerInterface $entityManager,
         private SalesWriteGateway $salesWriteGateway,
         private MessageBusInterface $messageBus,
+        private OperationLog $operationLog,
     ) {}
 
     /**
@@ -133,6 +135,13 @@ readonly class SalePaymentService
             total: Money::toString($amountMoney),
             currency: $payment->getCurrency(),
         ));
+
+        $this->operationLog->record('sales', 'receivable.collected', $sale->getId(), [
+            'sale_payment_id' => (int) $payment->getId(),
+            'amount' => Money::toString($amountMoney),
+            'currency' => $payment->getCurrency(),
+            'to_cash_session' => $cashSessionId,
+        ]);
 
         return $payment;
     }
