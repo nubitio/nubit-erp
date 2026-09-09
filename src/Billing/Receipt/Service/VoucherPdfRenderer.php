@@ -28,9 +28,10 @@ final readonly class VoucherPdfRenderer
     public function render(string $taxDocumentId): FileResponse
     {
         $voucher = $this->voucher($taxDocumentId);
-        $qr = $voucher->voucher_type === '00'
-            ? ''
-            : new QRCode()->render((string) $voucher->voucher_qr_data);
+        $qr = '';
+        if ($voucher->voucher_type !== '00') {
+            $qr = (string) new QRCode()->render((string) $voucher->voucher_qr_data);
+        }
         $html = $this->twig->render('invoice/invoice_a4.html.twig', [
             'voucher' => $voucher,
             'qr' => $qr,

@@ -436,7 +436,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
 
-        if (!$creditNote) {
+        if (!$creditNote instanceof TaxDocument) {
             throw new ServiceException('La nota de crédito no existe');
         }
 
