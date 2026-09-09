@@ -181,6 +181,72 @@ final class SalePaymentServiceTest extends TestCase
         self::assertSame(EconomicEvent::RECEIVABLE_COLLECT_BANK, $this->dispatched[0]->kind);
     }
 
+    public function testInactiveCashMethodIsRejectedBeforeResolvingTheCashSession(): void
+    {
+        // Regression for the split: an inactive method whose id happens to be
+        // CASH must still fail with the method error, not "abre tu caja", and
+        // must not query for an open session.
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::never())->method('persist');
+        $this->writeGateway->expects(self::never())->method('findOpenCashSessionIdForUser');
+
+        $method = $this->collectedMethod(PaymentMethod::CASH)->setIsActive(false);
+
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->expectExceptionMessage('Seleccione un método de pago activo');
+
+        $this->service($em)->registerPayment(
+            $this->creditSale(),
+            $method,
+            '40.00',
+            new DateTimeImmutable('2026-09-08'),
+            null,
+            new User(),
+        );
+    }
+
+    public function testAppendPaymentMovesDebtWithoutBookingTheMoney(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::once())->method('persist');
+        $em->expects(self::once())->method('flush');
+        $this->writeGateway->expects(self::never())->method('findOpenCashSessionIdForUser');
+        $this->writeGateway->expects(self::never())->method('writeReceivableCollectionMovement');
+
+        $sale = $this->creditSale();
+        $payment = $this->service($em)->appendPayment(
+            $sale,
+            $this->collectedMethod(PaymentMethod::CASH),
+            '30.00',
+            new DateTimeImmutable('2026-09-08'),
+            'partial',
+        );
+
+        self::assertSame('40.00', $sale->getPaidTotal());
+        self::assertSame('60.00', $sale->getBalanceDue());
+        self::assertSame('30.00', $payment->getAmount());
+        self::assertCount(1, $sale->getSalePayments());
+        self::assertSame([], $this->dispatched, 'appendPayment must not dispatch a ledger event');
+    }
+
+    public function testAppendPaymentRejectsAmountAboveBalanceBeforePersist(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::never())->method('persist');
+        $em->expects(self::never())->method('flush');
+        $sale = $this->creditSale();
+
+        $this->expectException(UnprocessableEntityHttpException::class);
+
+        $this->service($em)->appendPayment(
+            $sale,
+            $this->collectedMethod(PaymentMethod::CASH + 5),
+            '90.01',
+            new DateTimeImmutable(),
+            null,
+        );
+    }
+
     public function testRejectsCollectionAboveOutstandingBalance(): void
     {
         $em = $this->createMock(EntityManagerInterface::class);
