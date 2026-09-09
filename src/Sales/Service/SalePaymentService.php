@@ -61,6 +61,11 @@ readonly class SalePaymentService
         ?string $reference,
         User $createdBy,
     ): SalePayment {
+        // Same order as before the split: reject a bad method or a voided sale
+        // before touching the cash drawer, so the error and the (lack of) side
+        // effects are unchanged.
+        $this->assertCollectable($paymentMethod, $sale);
+
         $amountMoney = Money::money($amount);
 
         // Cash collections must land in a real drawer. Resolve the session
@@ -97,18 +102,7 @@ readonly class SalePaymentService
         DateTimeImmutable $paidAt,
         ?string $reference,
     ): SalePayment {
-        if (
-            !$paymentMethod->getIsActive()
-            || $paymentMethod->getSettlementBehavior() !== SettlementBehavior::COLLECTED
-        ) {
-            throw new UnprocessableEntityHttpException(
-                'Seleccione un método de pago activo que represente dinero recibido. Crédito no es un cobro.',
-            );
-        }
-
-        if ($sale->getStatus() === 'VOIDED') {
-            throw new UnprocessableEntityHttpException('No se puede registrar un cobro sobre una venta anulada.');
-        }
+        $this->assertCollectable($paymentMethod, $sale);
 
         $amountMoney = Money::money($amount);
         if ($amountMoney->isLessThanOrEqualTo(0)) {
@@ -190,6 +184,26 @@ readonly class SalePaymentService
             'currency' => $payment->getCurrency(),
             'to_cash_session' => $cashSessionId,
         ]);
+    }
+
+    /**
+     * A collection needs a method that represents money actually received, and
+     * a sale that is not voided.
+     */
+    private function assertCollectable(PaymentMethod $paymentMethod, SaleRecord $sale): void
+    {
+        if (
+            !$paymentMethod->getIsActive()
+            || $paymentMethod->getSettlementBehavior() !== SettlementBehavior::COLLECTED
+        ) {
+            throw new UnprocessableEntityHttpException(
+                'Seleccione un método de pago activo que represente dinero recibido. Crédito no es un cobro.',
+            );
+        }
+
+        if ($sale->getStatus() === 'VOIDED') {
+            throw new UnprocessableEntityHttpException('No se puede registrar un cobro sobre una venta anulada.');
+        }
     }
 
     private function collectionDescription(SaleRecord $sale): string

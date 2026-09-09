@@ -181,6 +181,30 @@ final class SalePaymentServiceTest extends TestCase
         self::assertSame(EconomicEvent::RECEIVABLE_COLLECT_BANK, $this->dispatched[0]->kind);
     }
 
+    public function testInactiveCashMethodIsRejectedBeforeResolvingTheCashSession(): void
+    {
+        // Regression for the split: an inactive method whose id happens to be
+        // CASH must still fail with the method error, not "abre tu caja", and
+        // must not query for an open session.
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(self::never())->method('persist');
+        $this->writeGateway->expects(self::never())->method('findOpenCashSessionIdForUser');
+
+        $method = $this->collectedMethod(PaymentMethod::CASH)->setIsActive(false);
+
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->expectExceptionMessage('Seleccione un método de pago activo');
+
+        $this->service($em)->registerPayment(
+            $this->creditSale(),
+            $method,
+            '40.00',
+            new DateTimeImmutable('2026-09-08'),
+            null,
+            new User(),
+        );
+    }
+
     public function testAppendPaymentMovesDebtWithoutBookingTheMoney(): void
     {
         $em = $this->createMock(EntityManagerInterface::class);
