@@ -10,6 +10,7 @@ use App\Catalog\Enum\SettlementBehavior;
 use App\Efact\Domain\Money;
 use App\Efact\Observability\OperationLog;
 use App\Identity\Entity\User;
+use App\Sales\Entity\CustomerPaymentApplication;
 use App\Sales\Entity\SalePayment;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\State\SalesWriteGateway;
@@ -26,6 +27,7 @@ readonly class SalePaymentService
         private SalesWriteGateway $salesWriteGateway,
         private MessageBusInterface $messageBus,
         private OperationLog $operationLog,
+        private CustomerAccountLedger $customerAccountLedger,
     ) {}
 
     /**
@@ -83,6 +85,8 @@ readonly class SalePaymentService
         $payment = $this->appendPayment($sale, $paymentMethod, $amount, $paidAt, $reference);
 
         $this->bookCollection($payment, $sale, $createdBy, $cashSessionId, $isCash, $amountMoney, $paidAt);
+
+        $this->recordOnCustomerLedger($sale, $payment, $amountMoney, $paidAt);
 
         return $payment;
     }
@@ -204,6 +208,47 @@ readonly class SalePaymentService
         if ($sale->getStatus() === 'VOIDED') {
             throw new UnprocessableEntityHttpException('No se puede registrar un cobro sobre una venta anulada.');
         }
+    }
+
+    /**
+     * Mirror a single-sale collection onto the customer's current account
+     * (#367): a `payment` ledger entry plus a `customer_payment_applications`
+     * row bound to this sale. Only for sales that hit the customer's account
+     * with a real customer — an anonymous cash sale never had a balance to
+     * track. The on-account flow (#381) writes its own ledger rows and does not
+     * go through here.
+     */
+    private function recordOnCustomerLedger(
+        SaleRecord $sale,
+        SalePayment $payment,
+        BigDecimal $amount,
+        DateTimeImmutable $paidAt,
+    ): void {
+        $customerId = $sale->getCustomer()?->getId();
+        if ($customerId === null || !$sale->isReceivableAccount()) {
+            return;
+        }
+
+        $entry = $this->customerAccountLedger->recordPayment(
+            customerId: (int) $customerId,
+            occurredOn: $paidAt,
+            amount: Money::toString($amount),
+            currency: $payment->getCurrency(),
+            saleId: (string) $sale->getId(),
+            source: 'sale_payment',
+            sourceId: (string) $payment->getId(),
+            description: $this->collectionDescription($sale),
+        );
+
+        $this->entityManager->persist(new CustomerPaymentApplication(
+            accountEntry: $entry,
+            saleId: (string) $sale->getId(),
+            appliedAmount: Money::toString($amount),
+            currency: $payment->getCurrency(),
+            appliedAt: $paidAt,
+            salePaymentId: (int) $payment->getId(),
+        ));
+        $this->entityManager->flush();
     }
 
     private function collectionDescription(SaleRecord $sale): string
