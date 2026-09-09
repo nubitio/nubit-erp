@@ -1,0 +1,92 @@
+{% extends 'base_report.html.twig' %}
+
+{% block title %}Estado de cuenta — {{ statement.customerName }}{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        @page { size: A4; margin: 14mm 12mm; }
+        * { box-sizing: border-box; }
+        body { font-family: "Helvetica Neue", Arial, sans-serif; color: #1f2937; font-size: 11px; margin: 0; }
+        h1 { font-size: 17px; margin: 0 0 2px; }
+        .muted { color: #6b7280; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+        .header .period { text-align: right; }
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            text-align: left; border-bottom: 1.5px solid #111827; padding: 5px 6px;
+            font-size: 10px; text-transform: uppercase; letter-spacing: .04em;
+        }
+        tbody td { padding: 4px 6px; border-bottom: 1px solid #e5e7eb; }
+        td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+        tr.opening td, tr.totals td { font-weight: 700; background: #f8fafc; }
+        tr.totals td { border-top: 1.5px solid #111827; }
+        .aging { margin-top: 16px; width: 60%; }
+        .aging th { background: #f3f4f6; }
+        .footnote { margin-top: 18px; font-size: 9px; }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {% set money = 'PEN ' %}
+    <div class="header">
+        <div>
+            <h1>Estado de cuenta</h1>
+            <div>{{ statement.customerName }}</div>
+            {% if statement.customerDoc %}<div class="muted">RUC/DNI: {{ statement.customerDoc }}</div>{% endif %}
+        </div>
+        <div class="period muted">
+            <div>Período</div>
+            <div>{{ statement.dateFrom }} — {{ statement.dateTo }}</div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th><th>Tipo</th><th>Documento</th><th>Detalle</th>
+                <th class="num">Cargo</th><th class="num">Abono</th><th class="num">Saldo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="opening">
+                <td>{{ statement.dateFrom }}</td><td colspan="3">Saldo inicial</td>
+                <td class="num"></td><td class="num"></td>
+                <td class="num">{{ money }}{{ statement.openingBalance }}</td>
+            </tr>
+            {% for line in statement.lines %}
+                <tr>
+                    <td>{{ line.date }}</td>
+                    <td>{{ line.type }}</td>
+                    <td>{{ line.document }}</td>
+                    <td>{{ line.detail }}</td>
+                    <td class="num">{{ line.charge != '0.00' ? money ~ line.charge : '' }}</td>
+                    <td class="num">{{ line.payment != '0.00' ? money ~ line.payment : '' }}</td>
+                    <td class="num">{{ money }}{{ line.balance }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="7" class="muted">Sin movimientos en el período.</td></tr>
+            {% endfor %}
+            <tr class="totals">
+                <td colspan="4">Totales del período</td>
+                <td class="num">{{ money }}{{ statement.totalCharges }}</td>
+                <td class="num">{{ money }}{{ statement.totalPayments }}</td>
+                <td class="num">{{ money }}{{ statement.closingBalance }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="aging">
+        <thead>
+            <tr><th colspan="2">Antigüedad del saldo al {{ statement.dateTo }}</th></tr>
+        </thead>
+        <tbody>
+            {% for bucket, amount in statement.aging %}
+                <tr><td>{{ bucket }} días</td><td class="num">{{ money }}{{ amount }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p class="footnote muted">
+        Documento informativo generado desde ventas al crédito y cobros registrados. No constituye comprobante de pago.
+    </p>
+{% endblock %}
