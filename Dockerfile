@@ -145,6 +145,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Mago
 COPY --from=mago /usr/local/bin/mago /usr/local/bin/mago
 
+# PCOV for CI coverage. Off unless the process is started with -d pcov.enabled=1.
+RUN install-php-extensions pcov
+
 # Install Xdebug
 #RUN install-php-extensions xdebug
 

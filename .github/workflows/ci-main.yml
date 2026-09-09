@@ -5,6 +5,18 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      runner_provider:
+        description: Override vars.CI_RUNNER_PROVIDER for this run (blacksmith or github)
+        required: false
+        type: string
+        default: ''
+      force_all_jobs:
+        description: Run backend, frontend, e2e and coverage regardless of path filters
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -12,84 +24,255 @@ concurrency:
 
 permissions:
   contents: read
+  actions: write
+  pull-requests: read
 
 env:
-  COVERAGE_MIN_PHP: '40' # SLICE-TEST-001: raised from 8% → 40% global threshold
+  COVERAGE_MIN_PHP: '40'
+  CI_RUNNER_PROVIDER: ${{ github.event.inputs.runner_provider || vars.CI_RUNNER_PROVIDER || 'blacksmith' }}
+  COMPOSE_FILE: docker-compose.yml:docker-compose.ci.yml
 
 jobs:
-  backend:
-    name: Backend Quality & Coverage
-    runs-on: blacksmith-4vcpu-ubuntu-2404
-    timeout-minutes: 30
-
+  changes:
+    name: Detect changes
+    runs-on: ${{ (github.event.inputs.runner_provider || vars.CI_RUNNER_PROVIDER || 'blacksmith') == 'github' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
+    timeout-minutes: 5
+    outputs:
+      runner: ${{ steps.runner.outputs.runner }}
+      runner_light: ${{ steps.runner.outputs.runner_light }}
+      use_blacksmith_docker: ${{ steps.runner.outputs.use_blacksmith_docker }}
+      provider: ${{ steps.runner.outputs.provider }}
+      backend: ${{ steps.jobs.outputs.backend }}
+      frontend: ${{ steps.jobs.outputs.frontend }}
+      e2e: ${{ steps.jobs.outputs.e2e }}
+      coverage: ${{ steps.jobs.outputs.coverage }}
     steps:
       - uses: actions/checkout@v6
+        if: env.CI_RUNNER_PROVIDER == 'auto'
+        with:
+          fetch-depth: 1
+
+      - name: Select runner
+        id: runner
+        env:
+          CI_GITHUB_INCLUDED_MINUTES: ${{ vars.CI_GITHUB_INCLUDED_MINUTES || '2000' }}
+          CI_BLACKSMITH_INCLUDED_MINUTES: ${{ vars.CI_BLACKSMITH_INCLUDED_MINUTES || '3000' }}
+          CI_RUNNER_RESERVE_MINUTES: ${{ vars.CI_RUNNER_RESERVE_MINUTES || '200' }}
+          CI_REPO_OWNER: ${{ github.repository_owner }}
+          CI_REPO_OWNER_TYPE: ${{ github.event.repository.owner.type }}
+          BLACKSMITH_ORG: ${{ vars.BLACKSMITH_ORG || github.repository_owner }}
+          BLACKSMITH_ORG_TOKEN: ${{ secrets.BLACKSMITH_ORG_TOKEN }}
+          CI_BILLING_TOKEN: ${{ secrets.CI_BILLING_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ "$CI_RUNNER_PROVIDER" = auto ]; then
+            bash scripts/ci/select-runner.sh
+            exit 0
+          fi
+          if [ "$CI_RUNNER_PROVIDER" = github ]; then
+            echo "runner=ubuntu-latest" >> "$GITHUB_OUTPUT"
+            echo "runner_light=ubuntu-latest" >> "$GITHUB_OUTPUT"
+            echo "use_blacksmith_docker=false" >> "$GITHUB_OUTPUT"
+            echo "provider=github" >> "$GITHUB_OUTPUT"
+            echo "Using GitHub-hosted ubuntu-latest."
+            exit 0
+          fi
+          echo "runner=blacksmith-4vcpu-ubuntu-2404" >> "$GITHUB_OUTPUT"
+          echo "runner_light=blacksmith-2vcpu-ubuntu-2404" >> "$GITHUB_OUTPUT"
+          echo "use_blacksmith_docker=true" >> "$GITHUB_OUTPUT"
+          echo "provider=blacksmith" >> "$GITHUB_OUTPUT"
+          echo "Using Blacksmith (4 vCPU heavy / 2 vCPU light)."
+
+      - name: Detect changed areas
+        id: filter
+        if: github.event_name == 'pull_request'
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'src/**'
+              - 'tests/**'
+              - 'config/**'
+              - 'migrations/**'
+              - 'migrations_control_plane/**'
+              - 'composer.json'
+              - 'composer.lock'
+              - 'symfony.lock'
+              - 'phpunit.xml.dist'
+              - 'phpunit.coverage.xml'
+              - 'phpstan.dist.neon'
+              - 'phpstan-baseline.neon'
+              - 'mago.toml'
+              - 'rector.php'
+              - 'phparkitect.php'
+              - 'phparkitect-baseline.json'
+              - 'linter-baseline.toml'
+              - 'analyzer-baseline.toml'
+              - 'scripts/architecture/**'
+              - 'scripts/ci/**'
+              - 'scripts/quality-check.sh'
+              - 'Dockerfile'
+              - 'docker-compose.yml'
+              - 'docker-compose.ci.yml'
+              - 'docker/**'
+              - 'bin/**'
+              - 'templates/**'
+              - 'translations/**'
+              - '.github/workflows/ci-main.yml'
+              - '.github/actions/**'
+            frontend:
+              - 'assets/**'
+              - 'package.json'
+              - 'yarn.lock'
+              - '.yarnrc.yml'
+              - 'vite.config.js'
+              - 'tsconfig.json'
+              - 'postcss.config.mjs'
+              - 'scripts/copy-themes.mjs'
+              - '.github/workflows/ci-main.yml'
+              - '.github/actions/**'
+            e2e:
+              - 'e2e/**'
+              - 'playwright.config.ts'
+              - 'assets/**'
+              - 'src/**'
+              - 'config/**'
+              - 'templates/**'
+              - 'translations/**'
+              - 'composer.json'
+              - 'composer.lock'
+              - 'package.json'
+              - 'yarn.lock'
+              - 'Dockerfile'
+              - 'docker-compose.yml'
+              - 'docker-compose.ci.yml'
+              - 'docker/**'
+              - 'public/**'
+              - '.github/workflows/ci-main.yml'
+              - '.github/actions/**'
+
+      - name: Resolve jobs
+        id: jobs
+        env:
+          FORCE_ALL: ${{ github.event_name != 'pull_request' || github.event.inputs.force_all_jobs }}
+          FILTER_BACKEND: ${{ steps.filter.outputs.backend }}
+          FILTER_FRONTEND: ${{ steps.filter.outputs.frontend }}
+          FILTER_E2E: ${{ steps.filter.outputs.e2e }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          if [ "$FORCE_ALL" = "true" ]; then
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+            echo "e2e=true" >> "$GITHUB_OUTPUT"
+            echo "coverage=true" >> "$GITHUB_OUTPUT"
+            echo "Running full suite (push to main, dispatch, or force_all_jobs)."
+            exit 0
+          fi
+
+          echo "backend=${FILTER_BACKEND:-false}" >> "$GITHUB_OUTPUT"
+          echo "frontend=${FILTER_FRONTEND:-false}" >> "$GITHUB_OUTPUT"
+
+          e2e="${FILTER_E2E:-false}"
+          if [ "$ACTOR" = "dependabot[bot]" ]; then
+            echo "Skipping e2e on Dependabot PRs."
+            e2e=false
+          fi
+          echo "e2e=${e2e}" >> "$GITHUB_OUTPUT"
+          echo "coverage=false" >> "$GITHUB_OUTPUT"
+
+  backend:
+    name: Backend Quality & Coverage
+    needs: changes
+    runs-on: ${{ needs.changes.outputs.backend == 'true' && needs.changes.outputs.runner || needs.changes.outputs.runner_light }}
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: mysql://root:changeme@database:3306/demo_test?serverVersion=10.7.1-MariaDB&charset=utf8mb4
+
+    steps:
+      - name: Skip (no backend changes)
+        if: needs.changes.outputs.backend != 'true'
+        run: echo "No backend-relevant changes on this PR."
+
+      - uses: actions/checkout@v6
+        if: needs.changes.outputs.backend == 'true'
+        with:
+          fetch-depth: 1
 
       - name: Start backend stack
-        run: |
-          docker compose up -d database redis otel-collector web
+        if: needs.changes.outputs.backend == 'true'
+        uses: ./.github/actions/ci-stack
+        with:
+          use_blacksmith_docker: ${{ needs.changes.outputs.use_blacksmith_docker }}
+          services: database redis web
 
       - name: Install backend dependencies
+        if: needs.changes.outputs.backend == 'true'
         run: docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
 
       - name: Run Mago lint + format check
+        if: needs.changes.outputs.backend == 'true'
         run: |
           docker compose exec -T web mago lint
           docker compose exec -T web mago analyze --fail-on-out-of-sync-baseline
           docker compose exec -T web mago fmt --check
 
       - name: Run Platform boundary guard
-        # ADR-012: this check existed but never ran in CI, so a PR could
-        # introduce exactly the import it's meant to catch undetected.
+        if: needs.changes.outputs.backend == 'true'
         run: docker compose exec -T web php scripts/architecture/check-platform-boundary.php
 
       - name: Run architecture rules (AR-001…AR-010)
-        # ADR-018: PHPArkitect enforces Vertical -> ErpCore -> Platform -> Infra
-        # and blocks new cross-layer coupling. Pre-existing debt is in
-        # phparkitect-baseline.json (that list may only shrink).
+        if: needs.changes.outputs.backend == 'true'
         run: docker compose exec -T web composer check:architecture
 
       - name: Run PHPStan
-        # Level is enforced via phpstan.dist.neon (min: 6, see SLICE-SEC-001)
+        if: needs.changes.outputs.backend == 'true'
         run: |
           docker compose exec -T \
             -e OTEL_SDK_DISABLED=true \
             web php -d memory_limit=1G vendor/bin/phpstan analyse --configuration=phpstan.dist.neon --no-progress
 
-      - name: Enable PCOV in web container
-        run: |
-          docker compose exec -T web sh -lc "php -m | grep -q '^pcov$' || (printf '\n' | pecl install pcov && echo extension=pcov.so > /usr/local/etc/php/conf.d/zz-pcov.ini)"
-
       - name: Create and migrate test database
+        if: needs.changes.outputs.backend == 'true'
         run: |
           docker compose exec -T database mariadb -uroot -pchangeme -e "CREATE DATABASE IF NOT EXISTS demo_test CHARACTER SET utf8mb4;"
           docker compose exec -T \
             -e APP_ENV=test \
-            -e DATABASE_URL="mysql://root:changeme@database:3306/demo_test?serverVersion=10.7.1-MariaDB&charset=utf8mb4" \
+            -e DATABASE_URL="${DATABASE_URL}" \
             web php bin/console doctrine:migrations:migrate --no-interaction
 
       - name: Run PHPUnit with coverage
+        if: needs.changes.outputs.backend == 'true' && needs.changes.outputs.coverage == 'true'
         run: |
           docker compose exec -T \
             -e OTEL_SDK_DISABLED=true \
             -e APP_ENV=test \
-            -e DATABASE_URL="mysql://root:changeme@database:3306/demo_test?serverVersion=10.7.1-MariaDB&charset=utf8mb4" \
+            -e DATABASE_URL="${DATABASE_URL}" \
             web php -d pcov.enabled=1 -d pcov.directory=/app/src ./vendor/bin/pest -c phpunit.coverage.xml
 
+      - name: Run PHPUnit
+        if: needs.changes.outputs.backend == 'true' && needs.changes.outputs.coverage != 'true'
+        run: |
+          docker compose exec -T \
+            -e OTEL_SDK_DISABLED=true \
+            -e APP_ENV=test \
+            -e DATABASE_URL="${DATABASE_URL}" \
+            web ./vendor/bin/pest
+
       - name: Enforce backend coverage threshold
+        if: needs.changes.outputs.backend == 'true' && needs.changes.outputs.coverage == 'true'
         run: |
           docker compose exec -T web php scripts/ci/check-php-coverage.php var/coverage/php/clover.xml ${{ env.COVERAGE_MIN_PHP }}
 
       - name: Copy backend coverage from Docker volume
+        if: needs.changes.outputs.backend == 'true' && needs.changes.outputs.coverage == 'true'
         run: |
-          # /app/var is a named Docker volume; the containerised steps write it
-          # as root, so the host ./var is not runner-writable. Extract into
-          # RUNNER_TEMP, which always is.
           rm -rf "${RUNNER_TEMP}/php-coverage"
           mkdir -p "${RUNNER_TEMP}/php-coverage"
           docker compose cp web:/app/var/coverage/php/. "${RUNNER_TEMP}/php-coverage/"
 
       - name: Upload backend coverage artifact
+        if: needs.changes.outputs.backend == 'true' && needs.changes.outputs.coverage == 'true'
         uses: actions/upload-artifact@v6
         with:
           name: backend-coverage
@@ -97,40 +280,61 @@ jobs:
           if-no-files-found: error
 
       - name: Stop backend stack
-        if: always()
+        if: always() && needs.changes.outputs.backend == 'true'
         run: docker compose down -v
 
   frontend:
     name: Frontend Lint, Tests & Coverage
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    needs: changes
+    runs-on: ${{ needs.changes.outputs.runner_light }}
     timeout-minutes: 15
 
     steps:
+      - name: Skip (no frontend changes)
+        if: needs.changes.outputs.frontend != 'true'
+        run: echo "No frontend-relevant changes on this PR."
+
       - uses: actions/checkout@v6
+        if: needs.changes.outputs.frontend == 'true'
+        with:
+          fetch-depth: 1
 
       - name: Setup Node.js
+        if: needs.changes.outputs.frontend == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: '20.19.0'
+          cache: yarn
+          cache-dependency-path: yarn.lock
 
       - name: Enable Corepack
+        if: needs.changes.outputs.frontend == 'true'
         run: |
           corepack enable
           corepack prepare yarn@4.9.1 --activate
 
       - name: Install frontend dependencies
+        if: needs.changes.outputs.frontend == 'true'
         run: yarn install --immutable
 
       - name: Lint JavaScript and TypeScript
+        if: needs.changes.outputs.frontend == 'true'
         run: yarn lint
 
       - name: TypeScript type check
+        if: needs.changes.outputs.frontend == 'true'
         run: yarn tsc --noEmit
 
-      - name: Run frontend unit tests with coverage gates
+      - name: Run frontend unit tests
+        if: needs.changes.outputs.frontend == 'true' && needs.changes.outputs.coverage != 'true'
+        run: yarn test:unit
+
+      - name: Run frontend tests with coverage
+        if: needs.changes.outputs.frontend == 'true' && needs.changes.outputs.coverage == 'true'
         run: yarn test
 
       - name: Upload frontend coverage artifact
+        if: needs.changes.outputs.frontend == 'true' && needs.changes.outputs.coverage == 'true'
         uses: actions/upload-artifact@v6
         with:
           name: frontend-coverage
@@ -138,11 +342,13 @@ jobs:
 
   e2e:
     name: End-to-End Workflows
-    runs-on: blacksmith-4vcpu-ubuntu-2404
-    timeout-minutes: 20
     needs:
+      - changes
       - backend
       - frontend
+    if: always() && !cancelled() && needs.changes.result == 'success' && needs.backend.result == 'success' && needs.frontend.result == 'success'
+    runs-on: ${{ needs.changes.outputs.e2e == 'true' && needs.changes.outputs.runner || needs.changes.outputs.runner_light }}
+    timeout-minutes: 20
 
     env:
       E2E_BASE_URL: http://web
@@ -152,12 +358,46 @@ jobs:
       CONTROL_PLANE_DATABASE_URL: mysql://efact:changeme@database:3306/efact?serverVersion=10.7.1-MariaDB&charset=utf8mb4
 
     steps:
-      - uses: actions/checkout@v6
+      - name: Skip (no e2e-relevant changes)
+        if: needs.changes.outputs.e2e != 'true'
+        run: echo "No e2e-relevant changes on this PR (or Dependabot)."
 
-      - name: Start full stack
-        run: docker compose up -d database redis otel-collector web
+      - uses: actions/checkout@v6
+        if: needs.changes.outputs.e2e == 'true'
+        with:
+          fetch-depth: 1
+
+      - name: Start e2e stack
+        if: needs.changes.outputs.e2e == 'true'
+        uses: ./.github/actions/ci-stack
+        with:
+          use_blacksmith_docker: ${{ needs.changes.outputs.use_blacksmith_docker }}
+          services: database redis mercure web
+
+      - name: Setup Node.js
+        if: needs.changes.outputs.e2e == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20.19.0'
+          cache: yarn
+          cache-dependency-path: yarn.lock
+
+      - name: Enable Corepack
+        if: needs.changes.outputs.e2e == 'true'
+        run: |
+          corepack enable
+          corepack prepare yarn@4.9.1 --activate
+
+      - name: Install frontend dependencies
+        if: needs.changes.outputs.e2e == 'true'
+        run: yarn install --immutable
+
+      - name: Build frontend for E2E
+        if: needs.changes.outputs.e2e == 'true'
+        run: yarn build
 
       - name: Wait for web to be healthy
+        if: needs.changes.outputs.e2e == 'true'
         run: |
           echo "Waiting for web container to pass health check..."
           for i in $(seq 1 24); do
@@ -174,6 +414,7 @@ jobs:
           exit 1
 
       - name: Provision tenant database for e2e
+        if: needs.changes.outputs.e2e == 'true'
         run: |
           docker compose exec -T database sh -lc "until mariadb-admin ping -h127.0.0.1 -uroot -pchangeme --silent; do sleep 1; done"
           docker compose exec -T database mariadb -h127.0.0.1 -uroot -pchangeme <<'SQL'
@@ -183,16 +424,12 @@ jobs:
           FLUSH PRIVILEGES;
           SQL
 
-      - name: Install dependencies for e2e
-        run: |
-          docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
-          docker compose run --rm --no-deps vite sh -lc "corepack enable && yarn install --immutable"
-
-      - name: Build frontend for E2E
-        run: |
-          docker compose run --rm --no-deps vite sh -lc "corepack enable && yarn build"
+      - name: Install PHP dependencies for e2e
+        if: needs.changes.outputs.e2e == 'true'
+        run: docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
 
       - name: Run database migrations for e2e
+        if: needs.changes.outputs.e2e == 'true'
         run: |
           docker compose exec -T \
             -e DATABASE_URL="${DATABASE_URL}" \
@@ -210,6 +447,7 @@ jobs:
             web php bin/console doctrine:migrations:migrate --no-interaction
 
       - name: Seed E2E data on-the-fly
+        if: needs.changes.outputs.e2e == 'true'
         run: |
           set -euo pipefail
           SEED_OUTPUT=$(docker compose exec -T \
@@ -229,6 +467,7 @@ jobs:
           echo "E2E_SALE_ID=$(echo "$E2E_SEED_JSON" | jq -r '.saleId')" >> "$GITHUB_ENV"
 
       - name: Run Playwright e2e tests
+        if: needs.changes.outputs.e2e == 'true'
         run: |
           docker compose --profile e2e run --rm --no-deps \
             -e E2E_USERNAME \
@@ -238,18 +477,6 @@ jobs:
             e2e \
             sh /home/node/app/docker/ci-e2e-runner.sh
 
-      - name: Cleanup E2E seeded data
-        if: always()
-        run: |
-          docker compose exec -T \
-            -e DATABASE_URL="${DATABASE_URL}" \
-            -e CONTROL_PLANE_DATABASE_URL="${CONTROL_PLANE_DATABASE_URL}" \
-            -e E2E_SEED_ENABLED=1 \
-            -e OTEL_TRACES_EXPORTER=none \
-            -e OTEL_LOGS_EXPORTER=none \
-            -e OTEL_METRICS_EXPORTER=none \
-            web php bin/console app:test:reset-e2e || true
-
       - name: Stop full stack
-        if: always()
+        if: always() && needs.changes.outputs.e2e == 'true'
         run: docker compose down -v

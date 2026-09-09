@@ -1,0 +1,57 @@
+name: Start CI stack
+description: Cache Composer vendor, build the web image, and start the slim compose stack
+
+inputs:
+  use_blacksmith_docker:
+    description: 'true to use Blacksmith BuildKit; false for GitHub Actions cache'
+    required: true
+  services:
+    description: Compose services to start
+    required: false
+    default: 'database redis web'
+
+runs:
+  using: composite
+  steps:
+    - name: Use CI compose overlay
+      shell: bash
+      run: echo "COMPOSE_FILE=docker-compose.yml:docker-compose.ci.yml" >> "$GITHUB_ENV"
+
+    - name: Restore Composer vendor cache
+      uses: actions/cache@v4
+      with:
+        path: vendor
+        key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+        restore-keys: |
+          composer-${{ runner.os }}-
+
+    - name: Setup Blacksmith Docker builder
+      if: inputs.use_blacksmith_docker == 'true'
+      uses: useblacksmith/setup-docker-builder@v1
+
+    - name: Setup Docker Buildx
+      if: inputs.use_blacksmith_docker != 'true'
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build web image (Blacksmith)
+      if: inputs.use_blacksmith_docker == 'true'
+      shell: bash
+      run: docker compose build web
+
+    - name: Build web image (GitHub cache)
+      if: inputs.use_blacksmith_docker != 'true'
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        target: dev
+        load: true
+        push: false
+        tags: efact-ci-web:local
+        cache-from: type=gha,scope=efact-web-dev
+        cache-to: type=gha,mode=min,scope=efact-web-dev
+        build-args: |
+          PHP_VERSION=8.5
+
+    - name: Start stack
+      shell: bash
+      run: docker compose up -d --no-build ${{ inputs.services }}
