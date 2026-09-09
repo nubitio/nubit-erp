@@ -9,7 +9,9 @@ use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Enum\SettlementBehavior;
 use App\Efact\Observability\OperationLog;
 use App\Identity\Entity\User;
+use App\Sales\Entity\CustomerAccountEntry;
 use App\Sales\Entity\SaleRecord;
+use App\Sales\Service\CustomerAccountLedger;
 use App\Sales\Service\SalePaymentService;
 use App\Sales\State\SalesWriteGateway;
 use DateTimeImmutable;
@@ -29,6 +31,7 @@ final class SalePaymentServiceTest extends TestCase
     /** @var SalesWriteGateway&MockObject */
     private SalesWriteGateway $writeGateway;
     private MessageBusInterface $messageBus;
+    private CustomerAccountLedger&MockObject $customerAccountLedger;
     /** @var list<EconomicEvent> */
     private array $dispatched = [];
 
@@ -36,6 +39,7 @@ final class SalePaymentServiceTest extends TestCase
     {
         $this->writeGateway = $this->createMock(SalesWriteGateway::class);
         $this->messageBus = $this->createMock(MessageBusInterface::class);
+        $this->customerAccountLedger = $this->createMock(CustomerAccountLedger::class);
         $this->dispatched = [];
         $this->messageBus
             ->method('dispatch')
@@ -50,7 +54,13 @@ final class SalePaymentServiceTest extends TestCase
 
     private function service(EntityManagerInterface $em): SalePaymentService
     {
-        return new SalePaymentService($em, $this->writeGateway, $this->messageBus, new OperationLog(new NullLogger()));
+        return new SalePaymentService(
+            $em,
+            $this->writeGateway,
+            $this->messageBus,
+            new OperationLog(new NullLogger()),
+            $this->customerAccountLedger,
+        );
     }
 
     private function collectedMethod(int $id): PaymentMethod
@@ -179,6 +189,64 @@ final class SalePaymentServiceTest extends TestCase
         self::assertSame('0.00', $sale->getBalanceDue());
         self::assertCount(1, $this->dispatched);
         self::assertSame(EconomicEvent::RECEIVABLE_COLLECT_BANK, $this->dispatched[0]->kind);
+    }
+
+    public function testRegisterPaymentMirrorsTheCollectionOntoTheCustomerLedger(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $persisted = [];
+        $em->method('persist')->willReturnCallback(static function (object $o) use (&$persisted): void {
+            $persisted[] = $o;
+        });
+
+        $sale = $this->creditSale();
+        $customer = new \App\Contacts\Entity\Customer();
+        new \ReflectionProperty(\App\Contacts\Entity\Customer::class, 'id')->setValue($customer, 77);
+        $sale->setCustomer($customer);
+
+        $this->customerAccountLedger
+            ->expects(self::once())
+            ->method('recordPayment')
+            ->with(
+                77,
+                self::anything(),
+                '40.00',
+                'PEN',
+                self::anything(),
+                'sale_payment',
+                self::anything(),
+                self::anything(),
+            )
+            ->willReturn($this->createStub(CustomerAccountEntry::class));
+
+        $this->service($em)->registerPayment(
+            $sale,
+            $this->collectedMethod(PaymentMethod::CASH + 5),
+            '40.00',
+            new DateTimeImmutable('2026-09-08'),
+            null,
+            new User(),
+        );
+
+        self::assertCount(1, array_filter(
+            $persisted,
+            static fn(object $o): bool => $o instanceof \App\Sales\Entity\CustomerPaymentApplication,
+        ));
+    }
+
+    public function testRegisterPaymentSkipsTheLedgerForAnAnonymousSale(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $this->customerAccountLedger->expects(self::never())->method('recordPayment');
+
+        $this->service($em)->registerPayment(
+            $this->creditSale(), // no customer
+            $this->collectedMethod(PaymentMethod::CASH + 5),
+            '40.00',
+            new DateTimeImmutable('2026-09-08'),
+            null,
+            new User(),
+        );
     }
 
     public function testInactiveCashMethodIsRejectedBeforeResolvingTheCashSession(): void
