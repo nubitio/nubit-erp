@@ -299,6 +299,14 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Must run before actions/setup-node: its `cache: yarn` step shells out to
+      # `yarn`, and the runner's global Yarn 1.x aborts on this repo's
+      # `packageManager: yarn@4.9.1`. Enabling Corepack first makes `yarn` the
+      # shim that honours that field.
+      - name: Enable Corepack
+        if: needs.changes.outputs.frontend == 'true'
+        run: corepack enable
+
       - name: Setup Node.js
         if: needs.changes.outputs.frontend == 'true'
         uses: actions/setup-node@v6
@@ -307,7 +315,7 @@ jobs:
           cache: yarn
           cache-dependency-path: yarn.lock
 
-      - name: Enable Corepack
+      - name: Activate pinned Yarn
         if: needs.changes.outputs.frontend == 'true'
         run: |
           corepack enable
@@ -374,6 +382,12 @@ jobs:
           use_blacksmith_docker: ${{ needs.changes.outputs.use_blacksmith_docker }}
           services: database redis mercure web
 
+      # See the frontend job: Corepack must be enabled before actions/setup-node
+      # so its `cache: yarn` step does not run the runner's global Yarn 1.x.
+      - name: Enable Corepack
+        if: needs.changes.outputs.e2e == 'true'
+        run: corepack enable
+
       - name: Setup Node.js
         if: needs.changes.outputs.e2e == 'true'
         uses: actions/setup-node@v6
@@ -382,7 +396,7 @@ jobs:
           cache: yarn
           cache-dependency-path: yarn.lock
 
-      - name: Enable Corepack
+      - name: Activate pinned Yarn
         if: needs.changes.outputs.e2e == 'true'
         run: |
           corepack enable
