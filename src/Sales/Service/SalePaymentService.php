@@ -13,6 +13,7 @@ use App\Identity\Entity\User;
 use App\Sales\Entity\SalePayment;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\State\SalesWriteGateway;
+use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -39,13 +40,18 @@ readonly class SalePaymentService
      * request each time, so it can't be used to append a single payment
      * without resubmitting the sale's entire payment history.
      *
-     * Side effects beyond the sale_payments row:
+     * This is the single-sale collection entrypoint: it appends the payment row
+     * (see {@see appendPayment()}) and then books the money exactly once —
      *  - Paid in cash: writes a CASH_IN cash movement into the collector's open
      *    cash session (category `credit_payment`), so the arqueo/cierre cuadra.
      *    A collection in cash with no open session for the user is rejected.
      *  - Always: dispatches an EconomicEvent so the ledger books
      *    debit Caja/Banco, credit Facturas por cobrar (121) — no revenue line,
      *    that was already recognised when the credit sale was posted.
+     *
+     * A collection that spreads one payment across several of a customer's
+     * sales (#381) calls {@see appendPayment()} per sale and books the money
+     * once itself, instead of calling this method in a loop.
      */
     public function registerPayment(
         SaleRecord $sale,
@@ -54,6 +60,42 @@ readonly class SalePaymentService
         DateTimeImmutable $paidAt,
         ?string $reference,
         User $createdBy,
+    ): SalePayment {
+        $amountMoney = Money::money($amount);
+
+        // Cash collections must land in a real drawer. Resolve the session
+        // before persisting so a missing session doesn't leave a dangling
+        // sale_payments row with no matching cash movement.
+        $isCash = $paymentMethod->getId() === PaymentMethod::CASH;
+        $cashSessionId = null;
+        if ($isCash) {
+            $cashSessionId = $this->salesWriteGateway->findOpenCashSessionIdForUser((int) $createdBy->getId());
+            if ($cashSessionId === null) {
+                throw new UnprocessableEntityHttpException('Abre tu caja para registrar cobros en efectivo.');
+            }
+        }
+
+        $payment = $this->appendPayment($sale, $paymentMethod, $amount, $paidAt, $reference);
+
+        $this->bookCollection($payment, $sale, $createdBy, $cashSessionId, $isCash, $amountMoney, $paidAt);
+
+        return $payment;
+    }
+
+    /**
+     * The debt side of a collection, and nothing else: validates the method and
+     * amount, appends one `sale_payments` row and recomputes the sale's
+     * paidTotal/balanceDue. No cash movement, no ledger event, no operation log
+     * — the caller owns those. Split out of {@see registerPayment()} so an
+     * on-account collection (#381) can append rows against several sales and
+     * still book the money a single time.
+     */
+    public function appendPayment(
+        SaleRecord $sale,
+        PaymentMethod $paymentMethod,
+        string $amount,
+        DateTimeImmutable $paidAt,
+        ?string $reference,
     ): SalePayment {
         if (
             !$paymentMethod->getIsActive()
@@ -82,18 +124,6 @@ readonly class SalePaymentService
             ));
         }
 
-        // Cash collections must land in a real drawer. Resolve the session
-        // before persisting so a missing session doesn't leave a dangling
-        // sale_payments row with no matching cash movement.
-        $isCash = $paymentMethod->getId() === PaymentMethod::CASH;
-        $cashSessionId = null;
-        if ($isCash) {
-            $cashSessionId = $this->salesWriteGateway->findOpenCashSessionIdForUser((int) $createdBy->getId());
-            if ($cashSessionId === null) {
-                throw new UnprocessableEntityHttpException('Abre tu caja para registrar cobros en efectivo.');
-            }
-        }
-
         $payment = new SalePayment()
             ->setSaleRecord($sale)
             ->setPaymentMethod($paymentMethod)
@@ -113,6 +143,24 @@ readonly class SalePaymentService
         $this->entityManager->persist($payment);
         $this->entityManager->flush();
 
+        return $payment;
+    }
+
+    /**
+     * Books the money behind a just-appended collection: the cash-drawer
+     * movement (cash only, into the resolved session) and the EconomicEvent,
+     * plus the operation-log line. Kept separate from {@see appendPayment()} so
+     * a multi-sale collection books once for the whole amount.
+     */
+    private function bookCollection(
+        SalePayment $payment,
+        SaleRecord $sale,
+        User $createdBy,
+        ?int $cashSessionId,
+        bool $isCash,
+        BigDecimal $amountMoney,
+        DateTimeImmutable $paidAt,
+    ): void {
         if ($cashSessionId !== null) {
             $this->salesWriteGateway->writeReceivableCollectionMovement(
                 salePaymentId: (int) $payment->getId(),
@@ -142,8 +190,6 @@ readonly class SalePaymentService
             'currency' => $payment->getCurrency(),
             'to_cash_session' => $cashSessionId,
         ]);
-
-        return $payment;
     }
 
     private function collectionDescription(SaleRecord $sale): string
