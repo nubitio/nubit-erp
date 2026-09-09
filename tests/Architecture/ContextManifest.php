@@ -78,9 +78,11 @@ final class ContextManifest
 
         $dirs = [];
         foreach ($scan as $entry) {
-            if ($entry !== '.' && $entry !== '..' && is_dir(self::SRC . '/' . $entry)) {
-                $dirs[] = $entry;
+            if (!($entry !== '.' && $entry !== '..' && is_dir(self::SRC . '/' . $entry))) {
+                continue;
             }
+
+            $dirs[] = $entry;
         }
 
         return $dirs;
@@ -96,9 +98,11 @@ final class ContextManifest
         $names = array_keys($this->contexts);
         $found = [];
         foreach ($this->scan($context, '/\bApp\\\\([A-Z][A-Za-z]+)\\\\/') as $hit) {
-            if ($hit !== $context && in_array($hit, $names, strict: true)) {
-                $found[$hit] = true;
+            if (!($hit !== $context && in_array($hit, $names, strict: true))) {
+                continue;
             }
+
+            $found[$hit] = true;
         }
 
         return array_keys($found);

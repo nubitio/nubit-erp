@@ -11,7 +11,7 @@ namespace App\Integration\Webhook;
 final class RetrySchedule
 {
     /** @var list<int> seconds to wait before attempt N+1 */
-    private const array DELAYS = [60, 300, 1800, 7200, 18000, 36000, 86400, 86400];
+    private const array DELAYS = [60, 300, 1800, 7200, 18_000, 36_000, 86_400, 86_400];
 
     public function nextDelaySeconds(int $completedAttempts): ?int
     {

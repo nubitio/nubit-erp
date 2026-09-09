@@ -41,9 +41,11 @@ final class CapabilityCatalogTest extends TestCase
 
         $cyclic = [];
         foreach (array_keys($graph) as $start) {
-            if ($this->reaches($graph, $start, $start)) {
-                $cyclic[] = $start;
+            if (!$this->reaches($graph, $start, $start)) {
+                continue;
             }
+
+            $cyclic[] = $start;
         }
 
         static::assertSame([], $cyclic, 'capabilities on a dependency cycle: ' . implode(', ', $cyclic));

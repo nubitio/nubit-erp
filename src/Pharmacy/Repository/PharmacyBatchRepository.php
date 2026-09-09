@@ -33,7 +33,6 @@ class PharmacyBatchRepository extends ServiceEntityRepository
      */
     public function expiringBy(\DateTimeImmutable $cutoff): array
     {
-        /** @var list<PharmacyBatch> $rows */
         $rows = $this
             ->createQueryBuilder('b')
             ->andWhere('b.expirationDate <= :cutoff')
@@ -41,7 +40,8 @@ class PharmacyBatchRepository extends ServiceEntityRepository
             ->orderBy('b.expirationDate', 'ASC')
             ->getQuery()
             ->getResult();
+        assert(is_array($rows), description: 'Doctrine query result must be an array.');
 
-        return $rows;
+        return array_values(array_filter($rows, static fn(mixed $batch): bool => $batch instanceof PharmacyBatch));
     }
 }

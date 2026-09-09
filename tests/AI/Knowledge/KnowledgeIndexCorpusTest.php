@@ -12,8 +12,8 @@ final class KnowledgeIndexCorpusTest extends TestCase
     public function testIndexesOnlyTheCashierUserManual(): void
     {
         $root = sys_get_temp_dir() . '/efact-knowledge-' . uniqid('', true);
-        mkdir($root . '/docs/adr', 0777, true);
-        mkdir($root . '/var', 0777, true);
+        mkdir($root . '/docs/adr', 0o777, true);
+        mkdir($root . '/var', 0o777, true);
 
         file_put_contents(
             $root . '/docs/cashier-user-manual.md',
@@ -38,8 +38,8 @@ final class KnowledgeIndexCorpusTest extends TestCase
     public function testBuildFailsWhenManualIsMissing(): void
     {
         $root = sys_get_temp_dir() . '/efact-knowledge-empty-' . uniqid('', true);
-        mkdir($root . '/docs', 0777, true);
-        mkdir($root . '/var', 0777, true);
+        mkdir($root . '/docs', 0o777, true);
+        mkdir($root . '/var', 0o777, true);
 
         $this->expectException(\RuntimeException::class);
         new KnowledgeIndex($root)->build();

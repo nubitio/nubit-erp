@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Billing\Receipt\Domain;
 
-use App\Billing\Sunat\Domain\FileResponse;
 use App\Billing\Receipt\Service\VoucherPdfRenderer;
+use App\Billing\Sunat\Domain\FileResponse;
 
 readonly class ReceiptPdfUseCase
 {

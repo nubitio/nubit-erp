@@ -26,7 +26,6 @@ class WebhookDeliveryRepository extends ServiceEntityRepository
      */
     public function findDue(\DateTimeImmutable $now, int $limit = 100): array
     {
-        /** @var list<WebhookDelivery> $rows */
         $rows = $this
             ->createQueryBuilder('d')
             ->where('d.status IN (:open)')
@@ -38,8 +37,12 @@ class WebhookDeliveryRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+        assert(is_array($rows), description: 'Doctrine query result must be an array.');
 
-        return $rows;
+        return array_values(array_filter(
+            $rows,
+            static fn(mixed $delivery): bool => $delivery instanceof WebhookDelivery,
+        ));
     }
 
     /**
@@ -47,10 +50,7 @@ class WebhookDeliveryRepository extends ServiceEntityRepository
      */
     public function findByEventId(string $eventId): array
     {
-        /** @var list<WebhookDelivery> $rows */
-        $rows = $this->findBy(['eventId' => $eventId], ['createdAt' => 'ASC']);
-
-        return $rows;
+        return $this->findBy(['eventId' => $eventId], ['createdAt' => 'ASC']);
     }
 
     /**
@@ -60,7 +60,6 @@ class WebhookDeliveryRepository extends ServiceEntityRepository
      */
     public function findRecentForEndpoint(string $endpointId, int $limit = 20): array
     {
-        /** @var list<WebhookDelivery> $rows */
         $rows = $this
             ->createQueryBuilder('d')
             ->where('d.endpoint = :endpoint')
@@ -69,7 +68,11 @@ class WebhookDeliveryRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+        assert(is_array($rows), description: 'Doctrine query result must be an array.');
 
-        return $rows;
+        return array_values(array_filter(
+            $rows,
+            static fn(mixed $delivery): bool => $delivery instanceof WebhookDelivery,
+        ));
     }
 }

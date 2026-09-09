@@ -70,9 +70,11 @@ final readonly class VerticalPresetPlanner
 
         $changes = [];
         foreach ($pairs as [$field, $from, $to]) {
-            if ($from !== $to) {
-                $changes[] = ['field' => $field, 'from' => $from, 'to' => $to];
+            if ($from === $to) {
+                continue;
             }
+
+            $changes[] = ['field' => $field, 'from' => $from, 'to' => $to];
         }
 
         return $changes;

@@ -23,9 +23,6 @@ class WebhookEndpointRepository extends ServiceEntityRepository
      */
     public function findEnabled(): array
     {
-        /** @var list<WebhookEndpoint> $rows */
-        $rows = $this->findBy(['status' => WebhookEndpoint::STATUS_ENABLED]);
-
-        return $rows;
+        return $this->findBy(['status' => WebhookEndpoint::STATUS_ENABLED]);
     }
 }

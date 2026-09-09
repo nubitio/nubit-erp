@@ -56,9 +56,11 @@ final readonly class VerticalPresetPlan
     {
         $keys = [];
         foreach ($this->capabilityChanges as $change) {
-            if ($change['change'] === self::CAP_ENABLE) {
-                $keys[] = $change['key'];
+            if ($change['change'] !== self::CAP_ENABLE) {
+                continue;
             }
+
+            $keys[] = $change['key'];
         }
 
         return $keys;

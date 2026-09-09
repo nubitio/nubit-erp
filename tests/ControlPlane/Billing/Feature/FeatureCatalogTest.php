@@ -84,6 +84,6 @@ final class FeatureCatalogTest extends TestCase
 
         $ai = FeatureCatalog::planDefault('ai_assistant', 'pro');
         self::assertTrue($ai['enabled']);
-        self::assertSame(['monthlyTokenCap' => 1000000, 'modelTier' => 'chat'], $ai['config']);
+        self::assertSame(['monthlyTokenCap' => 1_000_000, 'modelTier' => 'chat'], $ai['config']);
     }
 }

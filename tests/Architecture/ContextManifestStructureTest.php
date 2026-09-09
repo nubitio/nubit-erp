@@ -40,9 +40,11 @@ final class ContextManifestStructureTest extends TestCase
         $unknown = [];
 
         foreach ($manifest->contexts as $name => $context) {
-            if (!in_array($context['layer'], $manifest->layers, strict: true)) {
-                $unknown[] = sprintf('%s (%s)', $name, $context['layer']);
+            if (in_array($context['layer'], $manifest->layers, strict: true)) {
+                continue;
             }
+
+            $unknown[] = sprintf('%s (%s)', $name, $context['layer']);
         }
 
         static::assertSame([], $unknown, 'contexts.yaml uses undeclared layers: ' . implode(', ', $unknown));
@@ -56,9 +58,11 @@ final class ContextManifestStructureTest extends TestCase
 
         foreach ($manifest->contexts as $name => $context) {
             foreach ($context['dependsOn'] ?? [] as $target) {
-                if ($target === $name || !in_array($target, $names, strict: true)) {
-                    $problems[] = sprintf('%s -> %s', $name, $target);
+                if (!($target === $name || !in_array($target, $names, strict: true))) {
+                    continue;
                 }
+
+                $problems[] = sprintf('%s -> %s', $name, $target);
             }
         }
 

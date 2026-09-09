@@ -1280,45 +1280,9 @@ count = 2
 
 [[issues]]
 file = "src/Billing/Repository/TaxDocumentRepository.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `App\Billing\Repository\TaxDocumentRepository::resolveLegacySaleIdForVoucher`: expected `string`, but found `nonnull`.'
-count = 1
-
-[[issues]]
-file = "src/Billing/Repository/TaxDocumentRepository.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `App\Billing\Repository\TaxDocumentRepository::buildHeaderFromSale`: expected `App\Billing\Entity\TaxDocument|null`, but found `truthy-mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Billing/Repository/TaxDocumentRepository.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `App\Billing\Repository\TaxDocumentRepository::buildLinesForVoucher`: expected `App\Billing\Entity\TaxDocument|null`, but found `truthy-mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Billing/Repository/TaxDocumentRepository.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #3 of `App\Billing\Repository\TaxDocumentRepository::buildHeaderFromSale`: expected `App\Billing\Entity\TaxDocument|null`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Billing/Repository/TaxDocumentRepository.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #5 of `App\Billing\Repository\TaxDocumentRepository::calculateAmounts`: expected `null|string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Billing/Repository/TaxDocumentRepository.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 7
-
-[[issues]]
-file = "src/Billing/Repository/TaxDocumentRepository.php"
-code = "mixed-method-access"
-message = "Attempting to access a method on a non-object type (`truthy-mixed`)."
-count = 3
+count = 5
 
 [[issues]]
 file = "src/Billing/Repository/TaxDocumentRepository.php"
@@ -3613,16 +3577,16 @@ message = "Assigning `mixed` type to a variable may lead to unexpected behavior.
 count = 3
 
 [[issues]]
-file = "src/Integration/Repository/WebhookDeliveryRepository.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$rows`."
+file = "src/Integration/Repository/IntegrationEventRepository.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 1
 
 [[issues]]
-file = "src/Integration/Repository/WebhookEndpointRepository.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$rows`."
-count = 1
+file = "src/Integration/Repository/WebhookDeliveryRepository.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
 
 [[issues]]
 file = "src/Integration/Webhook/WebhookDelivery.php"
@@ -4393,6 +4357,18 @@ message = "Attempting to access a method on a non-object type (`mixed`)."
 count = 8
 
 [[issues]]
+file = "src/Payroll/State/PayrollRunCalculateProcessor.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 2
+
+[[issues]]
+file = "src/Pharmacy/Repository/PharmacyBatchRepository.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 1
+
+[[issues]]
 file = "src/Purchasing/Command/PurchasesMenuMigrateCommand.php"
 code = "mixed-operand"
 message = "Casting `mixed` to `bool`."
@@ -5060,6 +5036,12 @@ count = 1
 
 [[issues]]
 file = "src/Sales/State/SaleProcessor.php"
+code = "redundant-cast"
+message = "Redundant cast to `(string)`: the expression already has this type."
+count = 1
+
+[[issues]]
+file = "src/Sales/State/SaleProcessor.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$item`."
 count = 1
@@ -5279,6 +5261,12 @@ file = "src/Sales/State/SalesWriteGateway.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
 count = 4
+
+[[issues]]
+file = "src/Settings/Command/ApplyVerticalPresetCommand.php"
+code = "mixed-operand"
+message = "Casting `mixed` to `bool`."
+count = 1
 
 [[issues]]
 file = "src/Settings/Command/ImportUbigeoCommand.php"
@@ -5794,6 +5782,12 @@ count = 3
 file = "tests/Accounting/Service/DefaultPostingServiceTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$service`."
+count = 1
+
+[[issues]]
+file = "tests/Architecture/ContextManifest.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 1
 
 [[issues]]
@@ -7171,6 +7165,18 @@ message = "This default arm is unreachable."
 count = 1
 
 [[issues]]
+file = "tests/Settings/Capability/TenantCapabilityResolverTest.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$featureChecker`."
+count = 1
+
+[[issues]]
+file = "tests/Settings/Capability/TenantCapabilityResolverTest.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$repository`."
+count = 1
+
+[[issues]]
 file = "tests/Settings/Runtime/TenantRuntimeConfigProviderTest.php"
 code = "mixed-array-access"
 message = "Unsafe array access on type `mixed`."
@@ -7186,6 +7192,12 @@ count = 2
 file = "tests/Settings/Runtime/TenantRuntimeConfigProviderTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$branchRepository`."
+count = 1
+
+[[issues]]
+file = "tests/Settings/Runtime/TenantRuntimeConfigProviderTest.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$capabilityRepository`."
 count = 1
 
 [[issues]]
@@ -7210,6 +7222,30 @@ count = 1
 file = "tests/Settings/State/TenantSettingsPatchProcessorTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$service`."
+count = 1
+
+[[issues]]
+file = "tests/Settings/Vertical/VerticalPresetPlannerTest.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$branchRepo`."
+count = 1
+
+[[issues]]
+file = "tests/Settings/Vertical/VerticalPresetPlannerTest.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$capabilityRepo`."
+count = 1
+
+[[issues]]
+file = "tests/Settings/Vertical/VerticalPresetPlannerTest.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$settingsRepo`."
+count = 1
+
+[[issues]]
+file = "tests/Settings/Vertical/VerticalPresetPlannerTest.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$warehouseRepo`."
 count = 1
 
 [[issues]]

@@ -64,9 +64,11 @@ final class PharmacyBoundaryTest extends TestCase
             FilesystemIterator::SKIP_DOTS | FilesystemIterator::CURRENT_AS_PATHNAME,
         ));
         foreach ($iterator as $path) {
-            if (\is_string($path) && str_ends_with($path, '.php')) {
-                $files[] = $path;
+            if (!(\is_string($path) && str_ends_with($path, '.php'))) {
+                continue;
             }
+
+            $files[] = $path;
         }
 
         return $files;

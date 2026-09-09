@@ -52,9 +52,11 @@ final readonly class AssistantPromptAssembler
 
         $enabled = [];
         foreach ($capabilities as $key => $capability) {
-            if (is_array($capability) && ($capability['enabled'] ?? false) === true) {
-                $enabled[] = (string) $key;
+            if (!(is_array($capability) && ($capability['enabled'] ?? false) === true)) {
+                continue;
             }
+
+            $enabled[] = (string) $key;
         }
 
         $simpleStore = ($profile['simpleStoreMode'] ?? false) === true;

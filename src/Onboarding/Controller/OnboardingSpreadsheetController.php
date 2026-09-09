@@ -97,9 +97,11 @@ final class OnboardingSpreadsheetController extends AbstractController
             }
             $row = [];
             foreach ($headers as $index => $header) {
-                if ($header !== '') {
-                    $row[$header] = trim((string) ($values[$index] ?? ''));
+                if ($header === '') {
+                    continue;
                 }
+
+                $row[$header] = trim((string) ($values[$index] ?? ''));
             }
             $rows[] = $row;
         }

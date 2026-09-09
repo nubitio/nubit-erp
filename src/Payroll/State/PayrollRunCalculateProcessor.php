@@ -70,7 +70,6 @@ readonly class PayrollRunCalculateProcessor implements ProcessorInterface
      */
     private function findActiveEmployees(PayrollRun $payrollRun): array
     {
-        /** @var list<Employee> $employees */
         $employees = $this->entityManager
             ->getRepository(Employee::class)
             ->createQueryBuilder('e')
@@ -80,8 +79,12 @@ readonly class PayrollRunCalculateProcessor implements ProcessorInterface
             ->setParameter('status', Employee::ACTIVE)
             ->getQuery()
             ->getResult();
+        assert(is_array($employees), description: 'Doctrine query result must be an array.');
 
-        return $employees;
+        return array_values(array_filter(
+            $employees,
+            static fn(mixed $employee): bool => $employee instanceof Employee,
+        ));
     }
 
     /**
@@ -101,7 +104,6 @@ readonly class PayrollRunCalculateProcessor implements ProcessorInterface
         ));
         $monthEnd = $monthStart->modify('last day of this month');
 
-        /** @var list<Employee> $employees */
         $employees = $this->entityManager
             ->getRepository(Employee::class)
             ->createQueryBuilder('e')
@@ -114,8 +116,12 @@ readonly class PayrollRunCalculateProcessor implements ProcessorInterface
             ->setParameter('monthEnd', $monthEnd)
             ->getQuery()
             ->getResult();
+        assert(is_array($employees), description: 'Doctrine query result must be an array.');
 
-        return $employees;
+        return array_values(array_filter(
+            $employees,
+            static fn(mixed $employee): bool => $employee instanceof Employee,
+        ));
     }
 
     private function calculateFor(Employee $employee, PayrollRun $payrollRun): PayslipEntry

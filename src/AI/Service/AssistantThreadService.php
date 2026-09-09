@@ -47,10 +47,12 @@ final readonly class AssistantThreadService
             ->getResult();
 
         foreach ($open as $thread) {
-            if ($thread instanceof AssistantThread) {
-                $thread->setStatus(AssistantThread::CLOSED);
-                $thread->touch();
+            if (!$thread instanceof AssistantThread) {
+                continue;
             }
+
+            $thread->setStatus(AssistantThread::CLOSED);
+            $thread->touch();
         }
 
         $created = $this->createOpen($user);

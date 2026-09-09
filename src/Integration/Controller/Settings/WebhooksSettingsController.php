@@ -152,9 +152,11 @@ final class WebhooksSettingsController extends AbstractController
         $known = EventType::all();
         $types = [];
         foreach ($raw as $type) {
-            if (is_string($type) && ('*' === $type || in_array($type, $known, true) || str_ends_with($type, '.*'))) {
-                $types[] = $type;
+            if (!(is_string($type) && ('*' === $type || in_array($type, $known, true) || str_ends_with($type, '.*')))) {
+                continue;
             }
+
+            $types[] = $type;
         }
 
         return array_values(array_unique($types));

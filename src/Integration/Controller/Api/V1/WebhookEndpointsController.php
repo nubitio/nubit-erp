@@ -53,9 +53,11 @@ final class WebhookEndpointsController extends AbstractController
         $rawTypes = $body['types'] ?? null;
         if (is_array($rawTypes)) {
             foreach ($rawTypes as $type) {
-                if (is_string($type) && '' !== trim($type)) {
-                    $types[] = trim($type);
+                if (!(is_string($type) && '' !== trim($type))) {
+                    continue;
                 }
+
+                $types[] = trim($type);
             }
         }
 

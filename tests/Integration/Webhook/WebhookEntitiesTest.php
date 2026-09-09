@@ -28,7 +28,7 @@ final class WebhookEntitiesTest extends TestCase
         $endpoint = new WebhookEndpoint('https://x', 's', ['*']);
 
         for ($i = 1; $i <= 19; ++$i) {
-            self::assertFalse($endpoint->recordFailure(), "failure $i should not disable yet");
+            self::assertFalse($endpoint->recordFailure(), "failure {$i} should not disable yet");
         }
         self::assertTrue($endpoint->recordFailure(), 'the 20th failure disables');
         self::assertFalse($endpoint->isEnabled());

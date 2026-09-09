@@ -41,9 +41,11 @@ final class TableOwnershipTest extends KernelTestCase
 
         $stale = [];
         foreach ($owners as $table => $declared) {
-            if (!in_array($table, $live, true)) {
-                $stale[] = sprintf('%s (%s)', $table, implode(' + ', $declared));
+            if (in_array($table, $live, true)) {
+                continue;
             }
+
+            $stale[] = sprintf('%s (%s)', $table, implode(' + ', $declared));
         }
 
         sort($orphans);

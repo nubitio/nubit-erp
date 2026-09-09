@@ -56,7 +56,7 @@ final class WebhookSignerAndScheduleTest extends TestCase
 
         self::assertSame(60, $schedule->nextDelaySeconds(0));
         self::assertSame(300, $schedule->nextDelaySeconds(1));
-        self::assertSame(86400, $schedule->nextDelaySeconds(7));
+        self::assertSame(86_400, $schedule->nextDelaySeconds(7));
         self::assertNull($schedule->nextDelaySeconds(8), 'schedule is exhausted -> dead letter');
 
         $from = new \DateTimeImmutable('2026-08-30T00:00:00Z');

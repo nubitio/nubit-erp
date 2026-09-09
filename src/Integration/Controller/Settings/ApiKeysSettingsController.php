@@ -116,9 +116,11 @@ final class ApiKeysSettingsController extends AbstractController
 
         $scopes = [];
         foreach ($raw as $scope) {
-            if (is_string($scope) && in_array($scope, self::GRANTABLE_SCOPES, true)) {
-                $scopes[] = $scope;
+            if (!(is_string($scope) && in_array($scope, self::GRANTABLE_SCOPES, true))) {
+                continue;
             }
+
+            $scopes[] = $scope;
         }
 
         return array_values(array_unique($scopes));

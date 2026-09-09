@@ -38,7 +38,7 @@ final class PlanFeatureManagerTest extends TestCase
         self::assertSame(['enabled' => true, 'config' => null], $byKey['payroll']); // module on basic
         self::assertSame(['enabled' => false, 'config' => null], $byKey['multi_warehouse']); // add-on not on basic
         self::assertTrue($byKey['ai_assistant']['enabled']);
-        self::assertSame(['monthlyTokenCap' => 200000, 'modelTier' => 'chat'], $byKey['ai_assistant']['config']);
+        self::assertSame(['monthlyTokenCap' => 200_000, 'modelTier' => 'chat'], $byKey['ai_assistant']['config']);
     }
 
     public function test_seedFeaturesForNewPlan_defaults_everything_off_on_an_unknown_plan(): void

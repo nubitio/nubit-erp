@@ -25,7 +25,6 @@ class IntegrationEventRepository extends ServiceEntityRepository
      */
     public function findPending(int $limit = 100): array
     {
-        /** @var list<IntegrationEvent> $rows */
         $rows = $this
             ->createQueryBuilder('e')
             ->where('e.status = :pending')
@@ -34,7 +33,8 @@ class IntegrationEventRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+        assert(is_array($rows), description: 'Doctrine query result must be an array.');
 
-        return $rows;
+        return array_values(array_filter($rows, static fn(mixed $event): bool => $event instanceof IntegrationEvent));
     }
 }
