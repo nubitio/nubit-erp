@@ -82,17 +82,6 @@ final class CustomerAccountLedgerTest extends TestCase
         self::assertSame('-900.00', $entry->getRunningBalance());
     }
 
-    public function testAdvanceAppliedIsACreditBoundToASale(): void
-    {
-        [$ledger] = $this->makeLedger();
-
-        $entry = $ledger->recordAdvanceApplied(3, 'sale-x', new DateTimeImmutable('2026-03-03'), '300.00');
-
-        self::assertSame(CustomerAccountEntryType::ADVANCE_APPLIED, $entry->getEntryType());
-        self::assertSame('300.00', $entry->getCredit());
-        self::assertSame('sale-x', $entry->getSaleId());
-    }
-
     #[DataProvider('invalidAmounts')]
     public function testRecordRejectsAmountsThatAreNotSingleDirectionAndNonNegative(string $debit, string $credit): void
     {

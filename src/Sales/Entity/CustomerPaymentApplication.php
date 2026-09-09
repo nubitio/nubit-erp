@@ -10,8 +10,9 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Links a customer-account movement (a PAYMENT or ADVANCE_APPLIED entry) to one
- * sale it settles, and by how much. This is the piece that does not exist today:
+ * Links a customer-account entry to one sale it settles, and by how much. The
+ * entry is a PAYMENT (a collection spread across sales, #381) or an ADVANCE
+ * being applied to a sale (#382). This is the piece that does not exist today:
  * `sale_payments` has a hard FK to a single sale, so there is no way to record
  * that one payment covered several sales, or that an advance was applied later.
  *

@@ -85,7 +85,11 @@ readonly class CustomerAccountLedger
     }
 
     /**
-     * Money received with no target sale — a customer advance.
+     * Money received with no target sale — a customer advance. It moves the
+     * running balance into the customer's favour (credit). Applying it to a sale
+     * later adds no further entry: the caller records a
+     * `customer_payment_applications` row against this one and lowers the sale's
+     * balance_due, leaving the net running balance unchanged (#382).
      */
     public function recordAdvanceReceived(
         int $customerId,
@@ -105,31 +109,6 @@ readonly class CustomerAccountLedger
             currency: $currency,
             source: $source,
             sourceId: $sourceId,
-            description: $description,
-        );
-    }
-
-    /**
-     * A previously received advance consumed by a sale; no new money moves.
-     */
-    public function recordAdvanceApplied(
-        int $customerId,
-        string $saleId,
-        DateTimeImmutable $occurredOn,
-        string $amount,
-        string $currency = 'PEN',
-        ?string $description = null,
-    ): CustomerAccountEntry {
-        return $this->record(
-            $customerId,
-            CustomerAccountEntryType::ADVANCE_APPLIED,
-            $occurredOn,
-            debit: '0.00',
-            credit: $amount,
-            currency: $currency,
-            saleId: $saleId,
-            source: 'advance',
-            sourceId: null,
             description: $description,
         );
     }
