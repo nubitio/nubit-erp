@@ -180,6 +180,8 @@ contexts:
       - payment_method_daily_summary
       - product_daily_summary
       - sales_daily_summary # dead
+      - customer_account_entries # customer current account (#367)
+      - customer_payment_applications # abono <-> venta (#367)
 
   Billing:
     namespace: App\Billing
