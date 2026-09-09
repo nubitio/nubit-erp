@@ -9,9 +9,9 @@ namespace App\Sales\Report\CustomerStatement;
  * abonos with a running balance, period totals, and an aging breakdown of the
  * still-open balance at the cut-off date.
  *
- * Built only from `sales` (credit sales / `receivable_account = 1`, opening
- * balances included) and `sale_payments` — see issue #366. When #367 lands the
- * consolidated customer ledger, this becomes a read over that instead.
+ * Since #384 the movements are read from the customer ledger
+ * `customer_account_entries` (issue #367); `sales` is still joined for the
+ * document label and the `balance_due` the aging buckets by.
  */
 final readonly class CustomerStatement
 {
