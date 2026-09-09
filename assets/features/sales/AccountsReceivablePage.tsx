@@ -23,8 +23,39 @@ import { OwnerRowButtons } from '@shared/ui/OwnerRowButtons';
 import { formatInvoiceNumber } from '@shared/lib/displayFormat';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { hasPermission } from '@shared/permissions';
+import { httpClient } from '@shared/api/HttpClient';
 
 const API = getCoreApiBaseUrl();
+
+function customerId(customer: AccountsReceivableRecord['customer']): number | null {
+  if (customer && typeof customer === 'object') {
+    const raw = (customer as { id?: unknown })['id'];
+    const id = Number(typeof raw === 'string' ? raw.split('/').pop() : raw);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+  if (typeof customer === 'string') {
+    const id = Number(customer.split('/').pop());
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+  return null;
+}
+
+async function downloadCustomerStatement(id: number): Promise<void> {
+  const response = await httpClient.get<Blob>(
+    `${API}sales/reports/customer-statement?customer=${id}&format=pdf`,
+    { responseType: 'blob' },
+  );
+  const disposition = response.headers['content-disposition'] as string | undefined;
+  const match = disposition ? /filename="?([^";]+)"?/i.exec(disposition) : null;
+  const objectUrl = URL.createObjectURL(response.data);
+  const anchor = document.createElement('a');
+  anchor.href = objectUrl;
+  anchor.download = match?.[1] ?? `estado-cuenta-${id}.pdf`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(objectUrl);
+}
 
 interface AccountsReceivableRecord extends DataRecord {
   id: string;
@@ -115,6 +146,16 @@ export const AccountsReceivablePage = () => {
                   `Hola ${name}, te escribimos por el saldo pendiente ${formatInvoiceNumber(row.invoiceFullNumber) || ''}.`.trim(),
                 );
                 window.open(`https://wa.me/${phone}?text=${text}`, '_blank', 'noopener,noreferrer');
+              },
+            });
+          }
+          const clientId = customerId(row.customer ?? null);
+          if (clientId) {
+            actions.push({
+              label: 'Estado de cuenta',
+              variant: 'secondary',
+              onClick: () => {
+                void downloadCustomerStatement(clientId);
               },
             });
           }
