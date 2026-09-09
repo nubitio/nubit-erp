@@ -77,6 +77,26 @@ class CustomerAccountEntryRepository extends ServiceEntityRepository
         return $rows;
     }
 
+    /**
+     * Whether a CHARGE entry already exists for a sale — the idempotency guard
+     * for the credit-sale handler, which may see {@see \App\Sales\Event\SaleConfirmed}
+     * more than once.
+     */
+    public function hasChargeForSale(string $saleId): bool
+    {
+        $count = (int) $this
+            ->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->where('e.saleId = :sale')
+            ->andWhere('e.entryType = :type')
+            ->setParameter('sale', $saleId)
+            ->setParameter('type', CustomerAccountEntryType::CHARGE)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $count > 0;
+    }
+
     private function sumCredit(int $customerId, CustomerAccountEntryType $entryType): string
     {
         /** @var int|string|null $sum */
