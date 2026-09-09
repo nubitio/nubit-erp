@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * This sits *on top of* per-sale debt (`SaleRecord.balanceDue` + `sale_payments`),
  * it does not replace it. A CHARGE mirrors a credit sale; a PAYMENT / ADVANCE /
- * ADVANCE_APPLIED / CREDIT_NOTE moves the customer balance the other way. Every
+ * CREDIT_NOTE moves the customer balance the other way. Every
  * row also stores `runningBalance`, the customer's balance immediately after the
  * movement, so the statement (#366 / #384) reads it straight instead of
  * recomputing in PHP.

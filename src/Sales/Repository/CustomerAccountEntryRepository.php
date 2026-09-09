@@ -7,6 +7,7 @@ namespace App\Sales\Repository;
 use App\Efact\Domain\Money;
 use App\Sales\Domain\CustomerAccountEntryType;
 use App\Sales\Entity\CustomerAccountEntry;
+use App\Sales\Entity\CustomerPaymentApplication;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -42,15 +43,29 @@ class CustomerAccountEntryRepository extends ServiceEntityRepository
     }
 
     /**
-     * Available customer advance: ADVANCE received minus ADVANCE_APPLIED, as a
-     * non-negative string. Used by #382.
+     * Advance the customer has left to spend: every ADVANCE received minus what
+     * has already been applied to sales through `customer_payment_applications`
+     * rows bound to those ADVANCE entries. Non-negative string (#382).
      */
     public function availableAdvance(int $customerId): string
     {
         $received = $this->sumCredit($customerId, CustomerAccountEntryType::ADVANCE);
-        $applied = $this->sumCredit($customerId, CustomerAccountEntryType::ADVANCE_APPLIED);
 
-        $available = Money::money($received)->minus(Money::money($applied));
+        /** @var int|string|null $applied */
+        $applied = $this
+            ->getEntityManager()
+            ->createQueryBuilder()
+            ->select('COALESCE(SUM(a.appliedAmount), 0)')
+            ->from(CustomerPaymentApplication::class, 'a')
+            ->join('a.accountEntry', 'e')
+            ->where('e.customerId = :customer')
+            ->andWhere('e.entryType = :advance')
+            ->setParameter('customer', $customerId)
+            ->setParameter('advance', CustomerAccountEntryType::ADVANCE)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $available = Money::money($received)->minus(Money::money((string) ($applied ?? '0')));
 
         return Money::toString($available->isNegative() ? Money::money('0.00') : $available);
     }
