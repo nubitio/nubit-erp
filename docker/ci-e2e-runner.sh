@@ -35,7 +35,22 @@ until wget -qO- "$BASE/health/live" >/dev/null 2>&1; do
   echo "  attempt $i/24 — not ready yet, retrying in 5s..."
   sleep 5
 done
-echo "Web is ready."
+echo "Web is live."
+
+echo "Waiting for SPA shell at $BASE/ ..."
+i=0
+until wget -qO- "$BASE/" 2>/dev/null | grep -q 'id="root"' \
+  && wget -qO- "$BASE/" 2>/dev/null | grep -q '/build/'; do
+  i=$((i + 1))
+  if [ "$i" -ge 36 ]; then
+    echo "ERROR: SPA shell not ready after 72s"
+    wget -qO- "$BASE/" | head -n 40 || true
+    exit 1
+  fi
+  echo "  attempt $i/36 — SPA shell not ready yet, retrying in 2s..."
+  sleep 2
+done
+echo "SPA shell is ready."
 
 # Local runs without CI env vars: seed idempotently (same as e2e-entrypoint).
 if [ -z "${E2E_USERNAME:-}" ] || [ -z "${E2E_PASSWORD:-}" ] || [ -z "${E2E_SALE_ID:-}" ]; then

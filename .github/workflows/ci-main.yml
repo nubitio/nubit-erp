@@ -414,23 +414,6 @@ jobs:
         if: needs.changes.outputs.e2e == 'true'
         run: docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Wait for web to be healthy
-        if: needs.changes.outputs.e2e == 'true'
-        run: |
-          echo "Waiting for web container to pass health check..."
-          for i in $(seq 1 24); do
-            STATUS=$(docker inspect --format='{{.State.Health.Status}}' efact-web 2>/dev/null || echo "missing")
-            echo "  attempt $i/24: $STATUS"
-            if [ "$STATUS" = "healthy" ]; then
-              echo "web is healthy."
-              exit 0
-            fi
-            sleep 5
-          done
-          echo "web did not become healthy in time."
-          docker compose logs web | tail -40
-          exit 1
-
       - name: Provision tenant database for e2e
         if: needs.changes.outputs.e2e == 'true'
         run: |
@@ -480,10 +463,19 @@ jobs:
           echo "E2E_PASSWORD=$(echo "$E2E_SEED_JSON" | jq -r '.password')" >> "$GITHUB_ENV"
           echo "E2E_SALE_ID=$(echo "$E2E_SEED_JSON" | jq -r '.saleId')" >> "$GITHUB_ENV"
 
+      - name: Warm SPA before Playwright
+        if: needs.changes.outputs.e2e == 'true'
+        run: |
+          set -euo pipefail
+          docker compose exec -T --user www-data web php bin/console cache:clear --no-warmup --no-debug
+          docker compose exec -T --user www-data web php bin/console cache:warmup --no-debug
+          docker compose exec -T web sh /app/scripts/ci/wait-for-spa.sh http://127.0.0.1
+
       - name: Run Playwright e2e tests
         if: needs.changes.outputs.e2e == 'true'
         run: |
           docker compose --profile e2e run --rm --no-deps \
+            -e CI \
             -e E2E_USERNAME \
             -e E2E_PASSWORD \
             -e E2E_SALE_ID \
