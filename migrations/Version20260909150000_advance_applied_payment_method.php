@@ -10,7 +10,8 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * #382: an internal `payment_method` for a customer advance applied to a sale.
  * `settlement_behavior = 'ADVANCE'` — it produces a `sale_payments` row but no
- * cash movement, and the POS never offers it.
+ * cash movement. Seeded `is_active = 0` so it never appears in the POS / Ventas
+ * payment-method pickers; the advance-application flow looks it up by behaviour.
  */
 final class Version20260909150000_advance_applied_payment_method extends AbstractMigration
 {
@@ -23,7 +24,7 @@ final class Version20260909150000_advance_applied_payment_method extends Abstrac
     {
         $this->addSql(
             "INSERT INTO payment_method (name, settlement_behavior, is_active)
-             SELECT 'Anticipo aplicado', 'ADVANCE', 1
+             SELECT 'Anticipo aplicado', 'ADVANCE', 0
              FROM DUAL
              WHERE NOT EXISTS (SELECT 1 FROM payment_method WHERE name = 'Anticipo aplicado')",
         );

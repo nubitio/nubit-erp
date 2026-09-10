@@ -190,7 +190,7 @@ final class ApplyAdvanceServiceTest extends TestCase
     {
         $method = new PaymentMethod()
             ->setSettlementBehavior(SettlementBehavior::ADVANCE)
-            ->setIsActive(true);
+            ->setIsActive(false);
         new \ReflectionProperty(PaymentMethod::class, 'id')->setValue($method, 3);
 
         return $method;

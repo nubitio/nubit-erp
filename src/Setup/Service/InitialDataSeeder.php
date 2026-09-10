@@ -279,7 +279,10 @@ readonly class InitialDataSeeder
 
         $paymentMethod = new PaymentMethod()
             ->setName($name)
-            ->setSettlementBehavior($behavior);
+            ->setSettlementBehavior($behavior)
+            // "Anticipo aplicado" is internal: never offered in the POS / Ventas
+            // pickers, which filter on is_active.
+            ->setIsActive($behavior !== SettlementBehavior::ADVANCE);
         $this->entityManager->persist($paymentMethod);
         $this->entityManager->flush();
     }

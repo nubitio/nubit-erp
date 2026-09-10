@@ -126,7 +126,7 @@ readonly class SalePaymentService
         DateTimeImmutable $paidAt,
         ?string $reference,
     ): SalePayment {
-        if (!$advanceMethod->getIsActive() || $advanceMethod->getSettlementBehavior() !== SettlementBehavior::ADVANCE) {
+        if ($advanceMethod->getSettlementBehavior() !== SettlementBehavior::ADVANCE) {
             throw new UnprocessableEntityHttpException('El método de aplicación de anticipo no está configurado.');
         }
         if ($sale->getStatus() === 'VOIDED') {

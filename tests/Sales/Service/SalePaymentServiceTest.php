@@ -305,7 +305,7 @@ final class SalePaymentServiceTest extends TestCase
 
         $advanceMethod = new PaymentMethod()
             ->setSettlementBehavior(SettlementBehavior::ADVANCE)
-            ->setIsActive(true);
+            ->setIsActive(false);
         new \ReflectionProperty(PaymentMethod::class, 'id')->setValue($advanceMethod, 3);
 
         $sale = $this->creditSale();

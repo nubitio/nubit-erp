@@ -115,12 +115,11 @@ readonly class ApplyAdvanceService
 
     private function advanceMethod(): PaymentMethod
     {
+        // Looked up by behaviour, not is_active: it is an inactive internal
+        // method (hidden from the POS / Ventas pickers).
         $method = $this->entityManager
             ->getRepository(PaymentMethod::class)
-            ->findOneBy([
-                'settlementBehavior' => SettlementBehavior::ADVANCE,
-                'isActive' => true,
-            ]);
+            ->findOneBy(['settlementBehavior' => SettlementBehavior::ADVANCE]);
         if (!$method instanceof PaymentMethod) {
             throw new UnprocessableEntityHttpException('Falta configurar el método "Anticipo aplicado".');
         }
