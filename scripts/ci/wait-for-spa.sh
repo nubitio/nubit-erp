@@ -6,14 +6,12 @@
 # and failing to mount #/pos within 25s.
 #
 # Curl from inside the web container uses Host 127.0.0.1, which activates the
-# local demo tenant. Playwright talks to the container by Docker IP, which
-# skips tenant switching. Send a private non-loopback Host so this probe
-# matches the browser path and does not 404 with "Tenant not found".
+# local demo tenant without depending on Docker DNS or a network alias.
 set -e
 
 BASE="${1:-http://127.0.0.1}"
 MAX="${2:-36}"
-HOST_HEADER="${3:-10.0.0.1}"
+HOST_HEADER="${3:-127.0.0.1}"
 i=0
 BODY=""
 CODE="000"

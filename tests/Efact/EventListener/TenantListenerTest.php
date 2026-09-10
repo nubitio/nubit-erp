@@ -35,6 +35,7 @@ final class TenantListenerTest extends TestCase
             $this->tenantRegistry,
             $this->tenantContext,
             new NullLogger(),
+            'prod',
         );
     }
 

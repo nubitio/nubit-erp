@@ -8,6 +8,9 @@ set -e
 
 # Wait for the web server to be ready before running tests.
 # This guards against the web container being recreated by docker compose run.
+# Resolve the Docker service hostname to the address Playwright actually uses.
+# TenantListener permits this private container IP only in the explicitly
+# isolated e2e/test environments; production private-IP behavior is unchanged.
 if [ -z "$E2E_BASE_URL" ] || [ "$E2E_BASE_URL" = "http://web" ]; then
   WEB_IP=""
   for _ in $(seq 1 10); do
