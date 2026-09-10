@@ -90,7 +90,7 @@ contexts:
   Settings:
     namespace: App\Settings
     layer: Platform
-    dependsOn: [Catalog, ControlPlane, Identity, Inventory, Organization]
+    dependsOn: [Catalog, ControlPlane, Efact, Identity, Inventory, Organization]
     publicContracts: []
     ownsTables:
       [config, tenant_settings, tenant_capabilities, tenant_profile, sunat_operational_state, ubigeo, menu, menu_rol]
