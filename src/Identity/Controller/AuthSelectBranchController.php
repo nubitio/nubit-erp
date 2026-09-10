@@ -120,17 +120,18 @@ class AuthSelectBranchController extends AbstractController
 
         $companyId = $company->getId();
         $branchCompanyId = $branchCompany->getId();
-        $sameCompany = null !== $companyId && null !== $branchCompanyId
-            ? $companyId === $branchCompanyId
-            : $company === $branchCompany;
+        $sameCompany =
+            null !== $companyId && null !== $branchCompanyId
+                ? $companyId === $branchCompanyId
+                : $company === $branchCompany;
 
         if (!$sameCompany) {
             return false;
         }
 
-        // There is no user-to-branch assignment relation in this schema yet.
-        // Until it exists, only tenant administrators may mint branch claims.
-        return in_array('ROLE_ADMIN', $user->getRoles(), true)
-            || in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true);
+        // Tenant databases isolate users and branches. The company relation is
+        // the remaining application-level boundary in this schema; do not use
+        // the user's role as a cross-branch override.
+        return $sameCompany;
     }
 }
