@@ -443,6 +443,12 @@ jobs:
             -e OTEL_METRICS_EXPORTER=none \
             web php bin/console doctrine:migrations:migrate --no-interaction
 
+      - name: Provision local E2E tenant registry record
+        if: needs.changes.outputs.e2e == 'true'
+        run: |
+          docker compose exec -T database mariadb -uroot -pchangeme efact -e \
+            "INSERT INTO tenants (name, connection, status, created_at, updated_at) VALUES ('demo', 'demo', 'active', NOW(), NOW()) ON DUPLICATE KEY UPDATE connection = 'demo', status = 'active', updated_at = NOW();"
+
       - name: Seed E2E data on-the-fly
         if: needs.changes.outputs.e2e == 'true'
         run: |

@@ -16,31 +16,33 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class TenantListenerE2eTest extends TestCase
 {
-    public function testActivatesPrivateContainerIpInE2eEnvironment(): void
+    public function testActivatesPrivateContainerIpInE2eAndTestEnvironments(): void
     {
-        $registry = $this->createMock(TenantRegistryInterface::class);
-        $registry
-            ->expects($this->once())
-            ->method('getTenantByName')
-            ->with('demo')
-            ->willReturn(['id' => 1, 'name' => 'demo', 'status' => 'active']);
+        foreach (['e2e', 'test'] as $environment) {
+            $registry = $this->createMock(TenantRegistryInterface::class);
+            $registry
+                ->expects($this->once())
+                ->method('getTenantByName')
+                ->with('demo')
+                ->willReturn(['id' => 1, 'name' => 'demo', 'status' => 'active']);
 
-        $context = new TenantContext();
-        $listener = new TenantListener(
-            $this->createMock(TenantConnectionSwitcherInterface::class),
-            $registry,
-            $context,
-            new NullLogger(),
-            'e2e',
-        );
-        $event = new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            Request::create('http://172.20.0.2/api/something'),
-            HttpKernelInterface::MAIN_REQUEST,
-        );
+            $context = new TenantContext();
+            $listener = new TenantListener(
+                $this->createMock(TenantConnectionSwitcherInterface::class),
+                $registry,
+                $context,
+                new NullLogger(),
+                $environment,
+            );
+            $event = new RequestEvent(
+                $this->createMock(HttpKernelInterface::class),
+                Request::create('http://172.20.0.2/api/something'),
+                HttpKernelInterface::MAIN_REQUEST,
+            );
 
-        $listener($event);
+            $listener($event);
 
-        static::assertSame('demo', $context->getTenantName());
+            static::assertSame('demo', $context->getTenantName());
+        }
     }
 }
