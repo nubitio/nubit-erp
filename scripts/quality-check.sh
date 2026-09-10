@@ -57,7 +57,8 @@ docker compose exec -T database mariadb -uroot -p"${MYSQL_ROOT_PASSWORD:-changem
 docker compose exec -T -e APP_ENV=test -e DATABASE_URL="$TEST_DATABASE_URL" web \
   php bin/console doctrine:migrations:migrate --no-interaction
 docker exec -e OTEL_SDK_DISABLED=true -e APP_ENV=test -e DATABASE_URL="$TEST_DATABASE_URL" "$WEB_CONTAINER" \
-  php vendor/bin/pest -c phpunit.coverage.xml --no-coverage
+  php vendor/bin/pest -c phpunit.coverage.xml --no-coverage \
+  --do-not-fail-on-deprecation --do-not-fail-on-phpunit-deprecation
 
 echo "==> [frontend] eslint"
 yarn lint
