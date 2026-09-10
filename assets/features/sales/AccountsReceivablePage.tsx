@@ -1,5 +1,6 @@
 import './AccountsReceivablePage.scss';
 import { SaleCollectPayment } from './SaleCollectPayment';
+import { CollectOnAccountDialog } from './CollectOnAccountDialog';
 import { useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
@@ -84,6 +85,9 @@ export const AccountsReceivablePage = () => {
   const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null);
   const gridRef = useRef<GridHandle>(null);
   const [paymentHistoryVersion, setPaymentHistoryVersion] = useState(0);
+  const [onAccountCustomer, setOnAccountCustomer] = useState<
+    { id: number; name: string; currency: string } | null
+  >(null);
   const collectSaleId = selectedSaleId ?? routeSaleId;
   const closeCollection = () => {
     setSelectedSaleId(null);
@@ -150,6 +154,18 @@ export const AccountsReceivablePage = () => {
             });
           }
           const clientId = customerId(row.customer ?? null);
+          if (canCollect && clientId) {
+            actions.push({
+              label: 'Cobro a cuenta',
+              variant: 'secondary',
+              onClick: () =>
+                setOnAccountCustomer({
+                  id: clientId,
+                  name: typeof name === 'string' ? name : (row.customer as { businessName?: string })?.businessName ?? 'Cliente',
+                  currency: String(row.currency ?? 'PEN'),
+                }),
+            });
+          }
           if (clientId) {
             actions.push({
               label: 'Estado de cuenta',
@@ -214,6 +230,20 @@ export const AccountsReceivablePage = () => {
           onClose={closeCollection}
           onCollected={() => {
             closeCollection();
+            setPaymentHistoryVersion((version) => version + 1);
+            gridRef.current?.refresh();
+          }}
+        />
+      )}
+      {onAccountCustomer && canCollect && (
+        <CollectOnAccountDialog
+          key={`on-account-${onAccountCustomer.id}`}
+          customerId={onAccountCustomer.id}
+          customerName={onAccountCustomer.name}
+          currency={onAccountCustomer.currency}
+          onClose={() => setOnAccountCustomer(null)}
+          onDone={() => {
+            setOnAccountCustomer(null);
             setPaymentHistoryVersion((version) => version + 1);
             gridRef.current?.refresh();
           }}
