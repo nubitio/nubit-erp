@@ -282,7 +282,7 @@ final class AuthSelectBranchControllerTest extends TestCase
         return $security;
     }
 
-    /** @return array<string, mixed> */
+    /** @return array<array-key, mixed> */
     private function responsePayload(Response $response): array
     {
         $content = $response->getContent();
