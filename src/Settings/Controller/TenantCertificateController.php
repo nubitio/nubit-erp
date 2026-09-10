@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Settings\Controller;
 
 use App\ControlPlane\Certificate\CertificateLifecycleServiceInterface;
-use App\ControlPlane\Certificate\TenantCertificate;
 use App\Efact\Audit\AuditLogger;
 use App\Organization\Repository\CompanyRepository;
 use Nubit\Platform\Tenant\Context\TenantContext;
@@ -213,40 +212,57 @@ final class TenantCertificateController extends AbstractController
     /**
      * @return array<string, mixed>
      */
-    private function serializeCertificate(TenantCertificate $certificate): array
+    private function serializeCertificate(object $certificate): array
     {
+        $metadata = get_object_vars($certificate);
+        /** @var array{
+         *     id: int,
+         *     ruc: string,
+         *     status: \BackedEnum,
+         *     subjectCn: ?string,
+         *     issuerCn: ?string,
+         *     serialNumber: ?string,
+         *     fingerprintSha256: string,
+         *     validFrom: \DateTimeImmutable,
+         *     expiresAt: \DateTimeImmutable,
+         *     uploadedAt: \DateTimeImmutable,
+         *     lycetSyncStatus: string,
+         * } $metadata */
+
         return [
-            'id' => $certificate->id,
-            'ruc' => $certificate->ruc,
-            'status' => $certificate->status->value,
-            'subjectCn' => $certificate->subjectCn,
-            'issuerCn' => $certificate->issuerCn,
-            'serialNumber' => $certificate->serialNumber,
-            'fingerprintSha256' => $certificate->fingerprintSha256,
-            'validFrom' => $certificate->validFrom->format(DATE_ATOM),
-            'expiresAt' => $certificate->expiresAt->format(DATE_ATOM),
-            'uploadedAt' => $certificate->uploadedAt->format(DATE_ATOM),
-            'lycetSyncStatus' => $certificate->lycetSyncStatus,
+            'id' => $metadata['id'],
+            'ruc' => $metadata['ruc'],
+            'status' => $metadata['status']->value,
+            'subjectCn' => $metadata['subjectCn'],
+            'issuerCn' => $metadata['issuerCn'],
+            'serialNumber' => $metadata['serialNumber'],
+            'fingerprintSha256' => $metadata['fingerprintSha256'],
+            'validFrom' => $metadata['validFrom']->format(DATE_ATOM),
+            'expiresAt' => $metadata['expiresAt']->format(DATE_ATOM),
+            'uploadedAt' => $metadata['uploadedAt']->format(DATE_ATOM),
+            'lycetSyncStatus' => $metadata['lycetSyncStatus'],
         ];
     }
 
-    private function recordCertificateAudit(TenantCertificate $certificate): void
+    private function recordCertificateAudit(object $certificate): void
     {
+        $metadata = get_object_vars($certificate);
+
         try {
             $this->auditLogger->log(self::CERTIFICATE_UPSERT_AUDIT_ACTION, [
                 'outcome' => 'success',
-                'tenant_name' => $certificate->tenantName,
-                'ruc' => $certificate->ruc,
-                'fingerprint_sha256' => $certificate->fingerprintSha256,
+                'tenant_name' => $metadata['tenantName'],
+                'ruc' => $metadata['ruc'],
+                'fingerprint_sha256' => $metadata['fingerprintSha256'],
             ]);
         } catch (\Throwable) {
             // The certificate has already been persisted. Audit transport failure
             // must not turn that successful mutation into a misleading 502.
             $this->logger->warning('Certificate audit event could not be recorded after successful upsert.', [
                 'action' => self::CERTIFICATE_UPSERT_AUDIT_ACTION,
-                'tenant_name' => $certificate->tenantName,
-                'ruc' => $certificate->ruc,
-                'fingerprint_sha256' => $certificate->fingerprintSha256,
+                'tenant_name' => $metadata['tenantName'],
+                'ruc' => $metadata['ruc'],
+                'fingerprint_sha256' => $metadata['fingerprintSha256'],
             ]);
         }
     }
