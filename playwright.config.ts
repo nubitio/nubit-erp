@@ -38,6 +38,7 @@ const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: './e2e',
+  globalSetup: './e2e/global-setup.ts',
 
   // Run tests sequentially — the happy-path is a stateful flow
   fullyParallel: false,

@@ -299,6 +299,14 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Must run before actions/setup-node: its `cache: yarn` step shells out to
+      # `yarn`, and the runner's global Yarn 1.x aborts on this repo's
+      # `packageManager: yarn@4.9.1`. Enabling Corepack first makes `yarn` the
+      # shim that honours that field.
+      - name: Enable Corepack
+        if: needs.changes.outputs.frontend == 'true'
+        run: corepack enable
+
       - name: Setup Node.js
         if: needs.changes.outputs.frontend == 'true'
         uses: actions/setup-node@v6
@@ -307,7 +315,7 @@ jobs:
           cache: yarn
           cache-dependency-path: yarn.lock
 
-      - name: Enable Corepack
+      - name: Activate pinned Yarn
         if: needs.changes.outputs.frontend == 'true'
         run: |
           corepack enable
@@ -374,6 +382,12 @@ jobs:
           use_blacksmith_docker: ${{ needs.changes.outputs.use_blacksmith_docker }}
           services: database redis mercure web
 
+      # See the frontend job: Corepack must be enabled before actions/setup-node
+      # so its `cache: yarn` step does not run the runner's global Yarn 1.x.
+      - name: Enable Corepack
+        if: needs.changes.outputs.e2e == 'true'
+        run: corepack enable
+
       - name: Setup Node.js
         if: needs.changes.outputs.e2e == 'true'
         uses: actions/setup-node@v6
@@ -382,7 +396,7 @@ jobs:
           cache: yarn
           cache-dependency-path: yarn.lock
 
-      - name: Enable Corepack
+      - name: Activate pinned Yarn
         if: needs.changes.outputs.e2e == 'true'
         run: |
           corepack enable
@@ -396,22 +410,9 @@ jobs:
         if: needs.changes.outputs.e2e == 'true'
         run: yarn build
 
-      - name: Wait for web to be healthy
+      - name: Install PHP dependencies for e2e
         if: needs.changes.outputs.e2e == 'true'
-        run: |
-          echo "Waiting for web container to pass health check..."
-          for i in $(seq 1 24); do
-            STATUS=$(docker inspect --format='{{.State.Health.Status}}' efact-web 2>/dev/null || echo "missing")
-            echo "  attempt $i/24: $STATUS"
-            if [ "$STATUS" = "healthy" ]; then
-              echo "web is healthy."
-              exit 0
-            fi
-            sleep 5
-          done
-          echo "web did not become healthy in time."
-          docker compose logs web | tail -40
-          exit 1
+        run: docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
 
       - name: Provision tenant database for e2e
         if: needs.changes.outputs.e2e == 'true'
@@ -423,10 +424,6 @@ jobs:
           GRANT ALL PRIVILEGES ON demo.* TO 'demo'@'%';
           FLUSH PRIVILEGES;
           SQL
-
-      - name: Install PHP dependencies for e2e
-        if: needs.changes.outputs.e2e == 'true'
-        run: docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
 
       - name: Run database migrations for e2e
         if: needs.changes.outputs.e2e == 'true'
@@ -466,10 +463,19 @@ jobs:
           echo "E2E_PASSWORD=$(echo "$E2E_SEED_JSON" | jq -r '.password')" >> "$GITHUB_ENV"
           echo "E2E_SALE_ID=$(echo "$E2E_SEED_JSON" | jq -r '.saleId')" >> "$GITHUB_ENV"
 
+      - name: Warm SPA before Playwright
+        if: needs.changes.outputs.e2e == 'true'
+        run: |
+          set -euo pipefail
+          docker compose exec -T --user www-data web php bin/console cache:clear --no-warmup --no-debug
+          docker compose exec -T --user www-data web php bin/console cache:warmup --no-debug
+          docker compose exec -T web sh /app/scripts/ci/wait-for-spa.sh http://127.0.0.1
+
       - name: Run Playwright e2e tests
         if: needs.changes.outputs.e2e == 'true'
         run: |
           docker compose --profile e2e run --rm --no-deps \
+            -e CI \
             -e E2E_USERNAME \
             -e E2E_PASSWORD \
             -e E2E_SALE_ID \

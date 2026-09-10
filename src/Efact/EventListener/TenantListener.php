@@ -55,6 +55,8 @@ readonly class TenantListener
             '/account',
             '/webhook/paypal',
             '/webhook/mercadopago',
+            // Docker/K8s probes hit localhost before any tenant exists.
+            '/health',
             // The integration API resolves its tenant from the API key, not the
             // host — ApiKeyAuthenticator switches the connection itself.
             '/api/v1',

@@ -74,6 +74,26 @@ final class TenantListenerTest extends TestCase
         ($this->listener)($this->createEvent('app.example.com', '/api/account/session'));
     }
 
+    public function testSkipsHealthLiveOnLocalhost(): void
+    {
+        $this->tenantRegistry->expects($this->never())->method('getTenantByName');
+        $this->switcher->expects($this->never())->method('switchConnection');
+
+        ($this->listener)($this->createEvent('localhost', '/health/live'));
+
+        $this->assertNull($this->tenantContext->getTenantName());
+    }
+
+    public function testSkipsHealthCheckOnLocalhost(): void
+    {
+        $this->tenantRegistry->expects($this->never())->method('getTenantByName');
+        $this->switcher->expects($this->never())->method('switchConnection');
+
+        ($this->listener)($this->createEvent('localhost', '/health'));
+
+        $this->assertNull($this->tenantContext->getTenantName());
+    }
+
     public function testResolvesConfiguredTenantForLocalhost(): void
     {
         $this->tenantRegistry
