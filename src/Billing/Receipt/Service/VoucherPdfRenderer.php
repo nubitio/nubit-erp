@@ -53,7 +53,13 @@ final readonly class VoucherPdfRenderer
     {
         $taxDocument = $this->taxDocuments->find($taxDocumentId);
 
-        return $taxDocument !== null && in_array($taxDocument->getDocumentType(), ['07', '08'], true)
+        if ($taxDocument === null) {
+            // The sales UI can request a ticket for a sale that has not yet
+            // generated a fiscal document (for example, a nota de venta).
+            return $this->taxDocuments->getVoucher($taxDocumentId);
+        }
+
+        return in_array($taxDocument->getDocumentType(), ['07', '08'], true)
             ? $this->taxDocuments->getNoteVoucher($taxDocumentId)
             : $this->taxDocuments->getVoucherByTaxDocumentId($taxDocumentId);
     }

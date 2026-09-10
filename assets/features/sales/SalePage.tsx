@@ -379,13 +379,17 @@ export const SalePage = () => {
 
   const rowActions = (row: DataRecord) => {
     const saleId = row.id != null ? String(row.id) : undefined;
+    const taxDocumentId =
+      typeof row.taxDocumentId === 'string' && row.taxDocumentId !== ''
+        ? row.taxDocumentId
+        : saleId;
     if (!saleId) return [];
 
     return [
       {
         text: 'Vista previa',
         icon: 'ph-eye',
-        onClick: () => salePrintPreview.openPreview(saleId),
+        onClick: () => salePrintPreview.openPreview(taxDocumentId),
       },
       {
         text: 'Imprimir',
