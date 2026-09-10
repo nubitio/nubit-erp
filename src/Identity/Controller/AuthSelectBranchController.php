@@ -8,9 +8,11 @@ use App\Identity\Auth\SelectedBranchContext;
 use App\Identity\Entity\User;
 use App\Organization\Entity\Branch;
 use App\Organization\Repository\BranchRepository;
+use App\Organization\Repository\CompanyRepository;
 use Nubit\AdminBundle\Auth\JWTAuthenticator;
 use Nubit\AdminBundle\Auth\ResponseModeResolver;
 use Nubit\AdminBundle\Auth\TokenGenerator;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
@@ -29,6 +31,8 @@ class AuthSelectBranchController extends AbstractController
     public function __construct(
         private readonly SecurityComponent $security,
         private readonly BranchRepository $branchRepository,
+        private readonly CompanyRepository $companyRepository,
+        private readonly TenantContext $tenantContext,
         private readonly TokenGenerator $tokenGenerator,
         private readonly SelectedBranchContext $selectedBranch,
         private readonly ResponseModeResolver $responseModeResolver,
@@ -62,6 +66,15 @@ class AuthSelectBranchController extends AbstractController
             ], Response::HTTP_FORBIDDEN);
         }
 
+        if (!$this->canSelectBranch($user, $branch)) {
+            $this->logger->warning('Unauthorized branch token issuance attempt', [
+                'user_id' => $user->getId(),
+                'branch_id' => $branchId,
+            ]);
+
+            return new JsonResponse(['message' => 'No está autorizado para esta sucursal'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
             $this->selectedBranch->set($branch);
             $tokenPair = $this->tokenGenerator->generateTokenPair($user);
@@ -91,5 +104,33 @@ class AuthSelectBranchController extends AbstractController
         $response->setData($payload);
 
         return $response;
+    }
+
+    private function canSelectBranch(User $user, Branch $branch): bool
+    {
+        if (null !== $user->getDeletedAt() || null === $this->tenantContext->getTenantId()) {
+            return false;
+        }
+
+        $company = $this->companyRepository->findOneBy([]);
+        $branchCompany = $branch->getCompany();
+        if (null === $company || null === $branchCompany) {
+            return false;
+        }
+
+        $companyId = $company->getId();
+        $branchCompanyId = $branchCompany->getId();
+        $sameCompany = null !== $companyId && null !== $branchCompanyId
+            ? $companyId === $branchCompanyId
+            : $company === $branchCompany;
+
+        if (!$sameCompany) {
+            return false;
+        }
+
+        // There is no user-to-branch assignment relation in this schema yet.
+        // Until it exists, only tenant administrators may mint branch claims.
+        return in_array('ROLE_ADMIN', $user->getRoles(), true)
+            || in_array('ROLE_SUPER_ADMIN', $user->getRoles(), true);
     }
 }
