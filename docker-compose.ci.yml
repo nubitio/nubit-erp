@@ -7,6 +7,13 @@ services:
   web:
     image: nubit-erp-ci-web:local
     ports: !reset []
+    # `host` is a CI-only network alias. TenantListener treats this explicit
+    # infrastructure hostname as the local demo tenant, while still rejecting
+    # arbitrary private IP hosts in production.
+    networks:
+      default:
+        aliases:
+          - host
     depends_on: !override
       database:
         condition: service_started

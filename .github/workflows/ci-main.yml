@@ -350,16 +350,16 @@ jobs:
 
   e2e:
     name: End-to-End Workflows
-    needs:
-      - changes
-      - backend
-      - frontend
-    if: always() && !cancelled() && needs.changes.result == 'success' && needs.backend.result == 'success' && needs.frontend.result == 'success'
+    # E2E provisions its own stack and can run alongside the quality jobs.
+    # Keep change detection as the sole prerequisite so a failed detector
+    # cannot accidentally allow an E2E run.
+    needs: changes
+    if: needs.changes.result == 'success'
     runs-on: ${{ needs.changes.outputs.e2e == 'true' && needs.changes.outputs.runner || needs.changes.outputs.runner_light }}
     timeout-minutes: 20
 
     env:
-      E2E_BASE_URL: http://web
+      E2E_BASE_URL: http://host
       APP_ENV: e2e
       E2E_SEED_ENABLED: '1'
       DATABASE_URL: mysql://demo:changeme@database:3306/demo?serverVersion=10.7.1-MariaDB&charset=utf8mb4

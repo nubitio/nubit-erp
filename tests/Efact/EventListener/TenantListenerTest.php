@@ -112,6 +112,24 @@ final class TenantListenerTest extends TestCase
         $this->assertSame('demo', $this->tenantContext->getTenantName());
     }
 
+    public function testResolvesConfiguredTenantForHostAlias(): void
+    {
+        $this->tenantRegistry
+            ->expects($this->once())
+            ->method('getTenantByName')
+            ->with('demo')
+            ->willReturn([
+                'id' => 1,
+                'name' => 'demo',
+                'status' => 'active',
+            ]);
+        $this->switcher->expects($this->never())->method('switchConnection');
+
+        ($this->listener)($this->createEvent('host'));
+
+        $this->assertSame('demo', $this->tenantContext->getTenantName());
+    }
+
     public function testSkipsDevSubdomain(): void
     {
         $this->switcher->expects($this->never())->method('switchConnection');
