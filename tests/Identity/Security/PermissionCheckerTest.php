@@ -81,11 +81,7 @@ final class PermissionCheckerTest extends TestCase
             static::assertFalse($checker->hasPermission('settings.edit'));
         }
 
-        $adminChecker = $this->makeChecker(
-            $this->makeUser(2),
-            grants: ['settings.edit'],
-            expectedLookups: 1,
-        );
+        $adminChecker = $this->makeChecker($this->makeUser(2), grants: ['settings.edit'], expectedLookups: 1);
 
         static::assertTrue($adminChecker->hasPermission('settings.edit'));
     }
