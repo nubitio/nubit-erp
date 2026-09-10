@@ -21,19 +21,13 @@ final class TenantCertificateControllerAuthorizationTest extends TestCase
         $reflection = new \ReflectionClass(TenantCertificateController::class);
 
         static::assertSame([], $reflection->getAttributes(IsGranted::class));
-        static::assertSame(
-            ["perm:settings.edit"],
-            $this->grantsFor($reflection->getMethod('__invoke')),
-        );
-        static::assertSame(
-            ["perm:settings.view"],
-            $this->grantsFor($reflection->getMethod('get')),
-        );
+        static::assertSame(['perm:settings.edit'], $this->grantsFor($reflection->getMethod('__invoke')));
+        static::assertSame(['perm:settings.view'], $this->grantsFor($reflection->getMethod('get')));
     }
 
     public function testCertificateMetadataDoesNotExposeCredentialMaterial(): void
     {
-        $controller = (new \ReflectionClass(TenantCertificateController::class))->newInstanceWithoutConstructor();
+        $controller = new \ReflectionClass(TenantCertificateController::class)->newInstanceWithoutConstructor();
         $certificate = new TenantCertificate(
             id: 7,
             tenantId: 11,
