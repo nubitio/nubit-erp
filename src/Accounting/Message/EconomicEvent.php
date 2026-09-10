@@ -18,6 +18,8 @@ final readonly class EconomicEvent
 
     public const string SOURCE_RECEIVABLE_COLLECT = 'receivable_collect';
 
+    public const string SOURCE_CUSTOMER_ADVANCE = 'customer_advance';
+
     public const string SALE_CASH = 'SALE_CASH';
 
     public const string SALE_CREDIT = 'SALE_CREDIT';
@@ -33,6 +35,15 @@ final readonly class EconomicEvent
 
     /** Collection of a receivable paid by transfer/POS/deposit: debit Banco, credit Facturas por cobrar. */
     public const string RECEIVABLE_COLLECT_BANK = 'RECEIVABLE_COLLECT_BANK';
+
+    /** Customer advance received in cash: debit Caja, credit Anticipos de clientes (122). */
+    public const string CUSTOMER_ADVANCE_RECEIVED_CASH = 'CUSTOMER_ADVANCE_RECEIVED_CASH';
+
+    /** Customer advance received by transfer/POS/deposit: debit Banco, credit Anticipos de clientes (122). */
+    public const string CUSTOMER_ADVANCE_RECEIVED_BANK = 'CUSTOMER_ADVANCE_RECEIVED_BANK';
+
+    /** A held customer advance applied to a sale: debit Anticipos de clientes (122), credit Facturas por cobrar. */
+    public const string CUSTOMER_ADVANCE_APPLIED = 'CUSTOMER_ADVANCE_APPLIED';
 
     public function __construct(
         public string $source,
