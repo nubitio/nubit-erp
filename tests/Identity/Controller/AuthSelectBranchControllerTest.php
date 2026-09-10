@@ -134,11 +134,7 @@ final class AuthSelectBranchControllerTest extends TestCase
         $response = $controller($request);
 
         static::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
-        static::assertArrayNotHasKey('token', json_decode(
-            $response->getContent(),
-            associative: true,
-            flags: JSON_THROW_ON_ERROR,
-        ));
+        static::assertArrayNotHasKey('token', $this->responsePayload($response));
     }
 
     public function testReturnsForbiddenWhenUserSelectsBranchFromAnotherCompany(): void
@@ -182,11 +178,7 @@ final class AuthSelectBranchControllerTest extends TestCase
         ));
 
         static::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
-        static::assertArrayNotHasKey('token', json_decode(
-            $response->getContent(),
-            associative: true,
-            flags: JSON_THROW_ON_ERROR,
-        ));
+        static::assertArrayNotHasKey('token', $this->responsePayload($response));
     }
 
     public function testReturnsForbiddenWhenBranchBelongsToAnotherCompany(): void
@@ -230,11 +222,7 @@ final class AuthSelectBranchControllerTest extends TestCase
         ));
 
         static::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
-        static::assertArrayNotHasKey('token', json_decode(
-            $response->getContent(),
-            associative: true,
-            flags: JSON_THROW_ON_ERROR,
-        ));
+        static::assertArrayNotHasKey('token', $this->responsePayload($response));
     }
 
     public function testIssuesTokensForCashierInCurrentTenantCompany(): void
@@ -283,10 +271,7 @@ final class AuthSelectBranchControllerTest extends TestCase
         ));
 
         static::assertSame(Response::HTTP_OK, $response->getStatusCode());
-        static::assertSame(
-            'access-token',
-            json_decode($response->getContent(), associative: true, flags: JSON_THROW_ON_ERROR)['token'],
-        );
+        static::assertSame('access-token', $this->responsePayload($response)['token']);
     }
 
     private function securityFor(User $user): Security
@@ -295,6 +280,18 @@ final class AuthSelectBranchControllerTest extends TestCase
         $security->method('getUser')->willReturn($user);
 
         return $security;
+    }
+
+    /** @return array<string, mixed> */
+    private function responsePayload(Response $response): array
+    {
+        $content = $response->getContent();
+        static::assertIsString($content);
+
+        $payload = json_decode($content, associative: true, flags: JSON_THROW_ON_ERROR);
+        static::assertIsArray($payload);
+
+        return $payload;
     }
 
     private function tenantContext(): TenantContext&Stub
