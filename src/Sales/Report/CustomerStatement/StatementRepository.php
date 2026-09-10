@@ -86,9 +86,10 @@ final readonly class StatementRepository
 
     /**
      * Every abono on the customer ledger dated on or before $dateTo: a payment
-     * applied to a sale, or a credit note. Advances (`advance` /
-     * `advance_applied`) are left out until #382/#383 settle how they show on
-     * the statement.
+     * applied to a sale, a credit note, or an advance received (a credit that
+     * already moved the running balance into the customer's favour). Applying an
+     * advance to a sale is balance-neutral under model B (#382) — it produces no
+     * entry, only a lower `balance_due` — so it never shows as a statement line.
      *
      * @return list<array{date: string, document: string, amount: string, detail: string}>
      *
@@ -102,11 +103,15 @@ final readonly class StatementRepository
                     e.occurred_on AS date,
                     TRIM(BOTH '-' FROM CONCAT(COALESCE(s.series, ''), '-', COALESCE(s.number, ''))) AS document,
                     e.credit AS amount,
-                    CASE e.entry_type WHEN 'credit_note' THEN 'Nota de crédito' ELSE '' END AS detail
+                    CASE e.entry_type
+                        WHEN 'credit_note' THEN 'Nota de crédito'
+                        WHEN 'advance' THEN 'Anticipo recibido'
+                        ELSE ''
+                    END AS detail
                 FROM customer_account_entries e
                 LEFT JOIN sales s ON s.id = e.sale_id
                 WHERE e.customer_id = :customer
-                  AND e.entry_type IN ('payment', 'credit_note')
+                  AND e.entry_type IN ('payment', 'credit_note', 'advance')
                   AND e.occurred_on <= :date_to
                 ORDER BY e.id
                 SQL,
