@@ -661,7 +661,59 @@ readonly class SalesWriteGateway
         \DateTimeImmutable $createdAt,
         ?string $description = null,
     ): void {
-        $seed = sprintf('on-account-collect:%s', $collectionId);
+        $this->writeCustomerCashInMovement(
+            sprintf('on-account-collect:%s', $collectionId),
+            $cashSessionId,
+            $createdBy,
+            $amount,
+            $paymentMethodId,
+            $createdAt,
+            $description ?? 'Cobro a cuenta del cliente',
+        );
+    }
+
+    /**
+     * One CASH_IN for a customer advance received with no target sale (#382):
+     * same shape as writeOnAccountCollectionMovement(), keyed by the advance id.
+     *
+     * @throws Exception
+     */
+    public function writeCustomerAdvanceMovement(
+        string $advanceId,
+        int $cashSessionId,
+        int $createdBy,
+        string $amount,
+        int $paymentMethodId,
+        \DateTimeImmutable $createdAt,
+        ?string $description = null,
+    ): void {
+        $this->writeCustomerCashInMovement(
+            sprintf('customer-advance:%s', $advanceId),
+            $cashSessionId,
+            $createdBy,
+            $amount,
+            $paymentMethodId,
+            $createdAt,
+            $description ?? 'Anticipo de cliente',
+        );
+    }
+
+    /**
+     * Shared CASH_IN insert for customer-account money that is not tied to one
+     * sale (an on-account collection or an advance). Category `credit_payment`,
+     * `sale_id` NULL, one row per `$seed`.
+     *
+     * @throws Exception
+     */
+    private function writeCustomerCashInMovement(
+        string $seed,
+        int $cashSessionId,
+        int $createdBy,
+        string $amount,
+        int $paymentMethodId,
+        \DateTimeImmutable $createdAt,
+        string $description,
+    ): void {
         $offline = $this->buildOfflineMeta($seed, $createdAt, 1);
 
         $existing = $this->connection->fetchOne('SELECT id FROM cash_movements WHERE idempotency_key = :idempotency_key', [
@@ -720,7 +772,7 @@ readonly class SalesWriteGateway
                 'category_id' => $categoryId === false || $categoryId === null ? null : (int) $categoryId,
                 'payment_method_id' => $paymentMethodId,
                 'amount' => Money::toString(Money::money($amount)),
-                'description' => $description ?? 'Cobro a cuenta del cliente',
+                'description' => $description,
                 'created_by' => $createdBy,
                 'created_at' => $createdAt->format('Y-m-d H:i:s'),
                 'local_uuid' => $offline['local_uuid'],
