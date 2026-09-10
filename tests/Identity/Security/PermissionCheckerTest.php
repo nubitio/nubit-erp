@@ -68,4 +68,25 @@ final class PermissionCheckerTest extends TestCase
         static::assertFalse($checker->hasPermission('sales.void'));
         static::assertSame(['sales.view', 'pos.access'], $checker->permissionsFor($cashier));
     }
+
+    /**
+     * Only the tenant administrator role is seeded with settings.edit. A
+     * manager or cashier must not be able to mutate SUNAT credentials.
+     */
+    public function testOnlyTenantAdministratorCanEditSettings(): void
+    {
+        foreach ([3, 4] as $ordinaryRoleId) {
+            $checker = $this->makeChecker($this->makeUser($ordinaryRoleId), expectedLookups: 1);
+
+            static::assertFalse($checker->hasPermission('settings.edit'));
+        }
+
+        $adminChecker = $this->makeChecker(
+            $this->makeUser(2),
+            grants: ['settings.edit'],
+            expectedLookups: 1,
+        );
+
+        static::assertTrue($adminChecker->hasPermission('settings.edit'));
+    }
 }

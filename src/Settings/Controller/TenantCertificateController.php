@@ -6,6 +6,7 @@ namespace App\Settings\Controller;
 
 use App\ControlPlane\Certificate\CertificateLifecycleServiceInterface;
 use App\ControlPlane\Certificate\TenantCertificate;
+use App\Efact\Audit\AuditLogger;
 use App\Organization\Repository\CompanyRepository;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,16 +24,17 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
  * the tenant-scoped adapter used by onboarding/settings.
  */
 #[Route('/api/tenant')]
-#[IsGranted('ROLE_USER')]
 final class TenantCertificateController extends AbstractController
 {
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly CompanyRepository $companyRepository,
         private readonly CertificateLifecycleServiceInterface $certificates,
+        private readonly AuditLogger $auditLogger,
     ) {}
 
     #[Route('/certificate', name: 'api_tenant_certificate_upsert', methods: ['POST'])]
+    #[IsGranted('perm:settings.edit')]
     public function __invoke(Request $request): JsonResponse
     {
         $tenantName = $this->tenantContext->getTenantName();
@@ -55,6 +57,11 @@ final class TenantCertificateController extends AbstractController
                 $certificatePem,
                 $this->getUser()?->getUserIdentifier() ?? 'tenant-api',
             );
+            $this->auditLogger->log('sunat.certificate.upsert', [
+                'outcome' => 'success',
+                'ruc' => $certificate->ruc,
+                'fingerprint_sha256' => $certificate->fingerprintSha256,
+            ]);
         } catch (\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (\Throwable $e) {
@@ -67,6 +74,7 @@ final class TenantCertificateController extends AbstractController
     }
 
     #[Route('/certificate', name: 'api_tenant_certificate_get', methods: ['GET'])]
+    #[IsGranted('perm:settings.edit')]
     public function get(): JsonResponse
     {
         $tenantName = $this->tenantContext->getTenantName();
