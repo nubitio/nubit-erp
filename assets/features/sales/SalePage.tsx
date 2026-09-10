@@ -379,11 +379,12 @@ export const SalePage = () => {
 
   const rowActions = (row: DataRecord) => {
     const saleId = row.id != null ? String(row.id) : undefined;
+    if (!saleId) return [];
+
     const taxDocumentId =
       typeof row.taxDocumentId === 'string' && row.taxDocumentId !== ''
         ? row.taxDocumentId
         : saleId;
-    if (!saleId) return [];
 
     return [
       {
