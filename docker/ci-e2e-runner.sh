@@ -8,11 +8,22 @@ set -e
 
 # Wait for the web server to be ready before running tests.
 # This guards against the web container being recreated by docker compose run.
-# The CI overlay provides the `host` network alias. It is deliberately a
-# hostname (not the resolved private container IP), so TenantListener's local
-# tenant path can establish TenantContext without weakening production checks.
+# Resolve the Docker service hostname to the address Playwright actually uses.
+# TenantListener permits this private container IP only in the explicitly
+# isolated e2e/test environments; production private-IP behavior is unchanged.
 if [ -z "$E2E_BASE_URL" ] || [ "$E2E_BASE_URL" = "http://web" ]; then
-  export E2E_BASE_URL="http://host"
+  WEB_IP=""
+  for _ in $(seq 1 10); do
+    WEB_IP=$(getent hosts nubit-erp-web | awk '{print $1}' | head -1)
+    [ -n "$WEB_IP" ] && break
+    sleep 1
+  done
+
+  if [ -n "$WEB_IP" ]; then
+    export E2E_BASE_URL="http://${WEB_IP}"
+  else
+    export E2E_BASE_URL="http://nubit-erp-web"
+  fi
 fi
 
 BASE="$E2E_BASE_URL"

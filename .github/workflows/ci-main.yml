@@ -359,7 +359,7 @@ jobs:
     timeout-minutes: 20
 
     env:
-      E2E_BASE_URL: http://host
+      E2E_BASE_URL: http://web
       APP_ENV: e2e
       E2E_SEED_ENABLED: '1'
       DATABASE_URL: mysql://demo:changeme@database:3306/demo?serverVersion=10.7.1-MariaDB&charset=utf8mb4
