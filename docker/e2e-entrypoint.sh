@@ -31,7 +31,7 @@ if [ -d "node_modules/rollup" ] && [ ! -d "$ROLLUP_PKG_DIR" ]; then
 fi
 
 # ── 4. Resolve web service URL ────────────────────────────────────────────────
-# Use the numeric IP of the efact-web container rather than the DNS name.
+# Use the numeric IP of the nubit-erp-web container rather than the DNS name.
 # Chromium rejects page.goto() with extraHTTPHeaders.Host != URL hostname, so
 # we cannot set a custom Host header. Instead we navigate directly to the IP —
 # Caddy's SERVER_NAME=":80" matches any hostname, so no Host override is needed.
@@ -40,16 +40,16 @@ if [ -z "$E2E_BASE_URL" ]; then
   # Retry resolution up to 10s to handle race between e2e startup and web DNS propagation
   WEB_IP=""
   for i in $(seq 1 10); do
-    WEB_IP=$(getent hosts efact-web | awk '{print $1}' | head -1)
+    WEB_IP=$(getent hosts nubit-erp-web | awk '{print $1}' | head -1)
     [ -n "$WEB_IP" ] && break
     sleep 1
   done
   if [ -n "$WEB_IP" ]; then
     export E2E_BASE_URL="http://${WEB_IP}"
-    echo "[e2e-entrypoint] Resolved efact-web -> ${WEB_IP} -> E2E_BASE_URL=${E2E_BASE_URL}"
+    echo "[e2e-entrypoint] Resolved nubit-erp-web -> ${WEB_IP} -> E2E_BASE_URL=${E2E_BASE_URL}"
   else
-    echo "[e2e-entrypoint] WARNING: could not resolve efact-web, falling back to DNS name"
-    export E2E_BASE_URL="http://efact-web"
+    echo "[e2e-entrypoint] WARNING: could not resolve nubit-erp-web, falling back to DNS name"
+    export E2E_BASE_URL="http://nubit-erp-web"
   fi
 fi
 

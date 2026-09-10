@@ -1,4 +1,4 @@
-# eFact — Mini ERP
+# Nubit ERP
 
 SaaS multi-tenant de mini ERP para Perú: POS, inventario, compras, tesorería, contabilidad, planilla y facturación electrónica SUNAT. Construido con Symfony + API Platform + React.
 
@@ -13,8 +13,8 @@ SaaS multi-tenant de mini ERP para Perú: POS, inventario, compras, tesorería, 
 ### 2) Levantar entorno local
 
 ```bash
-git clone https://github.com/CompuExpress/efact.git
-cd efact
+git clone https://github.com/nubitio/nubit-erp.git
+cd nubit-erp
 cp .env .env.local
 
 make up
@@ -278,7 +278,7 @@ make lint          # eslint (frontend)
 `mago analyze` corre con `--fail-on-out-of-sync-baseline`: falla tanto si aparece un issue nuevo no cubierto por `analyzer-baseline.toml` como si el baseline tiene entradas obsoletas (issues que ya no existen). Si el hook falla en este paso:
 
 - **Issue nuevo real**: corrígelo en el código, no lo agregues al baseline.
-- **Baseline desactualizado** (el mensaje dice "N entries not seen in this run" o similar): regeneralo con `docker exec efact-web mago analyze --generate-baseline` y commitea `analyzer-baseline.toml` junto con tu cambio — no es deuda tuya, pero bloquea el push hasta que se corrija.
+- **Baseline desactualizado** (el mensaje dice "N entries not seen in this run" o similar): regeneralo con `docker exec nubit-erp-web mago analyze --generate-baseline` y commitea `analyzer-baseline.toml` junto con tu cambio — no es deuda tuya, pero bloquea el push hasta que se corrija.
 
 Si necesitas pushear sin correr el stack local (no recomendado salvo emergencia), la verificación real ocurre igual en CI al abrir el PR.
 

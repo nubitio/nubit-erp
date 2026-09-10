@@ -96,8 +96,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=efact-prod
-          cache-to: type=gha,mode=min,scope=efact-prod
+          cache-from: type=gha,scope=nubit-erp-prod
+          cache-to: type=gha,mode=min,scope=nubit-erp-prod
           build-args: |
             PHP_VERSION=${{ env.PHP_VERSION }}
             NODE_VERSION=${{ env.NODE_VERSION }}

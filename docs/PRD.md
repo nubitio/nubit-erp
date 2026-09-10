@@ -17,7 +17,7 @@ El producto combina tres superficies:
 |---|---|---|
 | Backend + Web POS | `efact` | Monolito Symfony/API Platform multi-tenant con frontend React |
 | Android POS | `efact-app` | Terminal POS tablet/offline con impresion local |
-| Marketing site | `efact-site` | Sitio publico, catalogo de planes y captacion |
+| Marketing site | `nubit-erp-site` | Sitio publico, catalogo de planes y captacion |
 
 La promesa principal es reducir el tiempo desde registro hasta primera venta facturada, manteniendo aislamiento por tenant, cumplimiento SUNAT y continuidad operativa ante cortes de internet.
 
@@ -54,7 +54,7 @@ El resultado es cola en caja, errores fiscales, stock poco confiable y alto cost
 | Cajero | Vender rapido, cobrar, imprimir y emitir comprobante sin pasos fiscales extras | Web POS / Android POS |
 | Supervisor o dueno | Revisar ventas, caja, inventario, series, comprobantes y reportes | Web admin tenant |
 | Operador eFact | Provisionar tenants, revisar planes, certificados, cuotas, backups y webhooks | `/admin` control plane |
-| Prospecto | Entender planes, beneficios y registrarse | `efact-site` |
+| Prospecto | Entender planes, beneficios y registrarse | `nubit-erp-site` |
 
 ---
 
