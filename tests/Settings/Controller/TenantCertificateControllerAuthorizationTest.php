@@ -56,6 +56,7 @@ final class TenantCertificateControllerAuthorizationTest extends TestCase
         );
 
         $method = new \ReflectionMethod(TenantCertificateController::class, 'serializeCertificate');
+        /** @var array<string, mixed> $payload */
         $payload = $method->invoke($controller, $certificate);
 
         static::assertIsArray($payload);
@@ -72,7 +73,13 @@ final class TenantCertificateControllerAuthorizationTest extends TestCase
     private function grantsFor(\ReflectionMethod $method): array
     {
         return array_map(
-            static fn (IsGranted $attribute): string => $attribute->attribute,
+            static function (IsGranted $attribute): string {
+                if (!is_string($attribute->attribute)) {
+                    throw new \UnexpectedValueException('Expected a string authorization attribute.');
+                }
+
+                return $attribute->attribute;
+            },
             $method->getAttributes(IsGranted::class, \ReflectionAttribute::IS_INSTANCEOF),
         );
     }
