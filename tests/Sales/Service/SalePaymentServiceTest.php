@@ -297,6 +297,44 @@ final class SalePaymentServiceTest extends TestCase
         self::assertSame([], $this->dispatched, 'appendPayment must not dispatch a ledger event');
     }
 
+    public function testAppendAdvancePaymentMovesDebtWithAnAdvanceMethodAndNoSideEffects(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $this->writeGateway->expects(self::never())->method('writeReceivableCollectionMovement');
+        $this->customerAccountLedger->expects(self::never())->method('recordPayment');
+
+        $advanceMethod = new PaymentMethod()
+            ->setSettlementBehavior(SettlementBehavior::ADVANCE)
+            ->setIsActive(true);
+        new \ReflectionProperty(PaymentMethod::class, 'id')->setValue($advanceMethod, 3);
+
+        $sale = $this->creditSale();
+        $payment = $this->service($em)->appendAdvancePayment(
+            $sale,
+            $advanceMethod,
+            '25.00',
+            new DateTimeImmutable('2026-09-10'),
+            'F001-9',
+        );
+
+        self::assertSame('35.00', $sale->getPaidTotal());
+        self::assertSame('65.00', $sale->getBalanceDue());
+        self::assertSame('25.00', $payment->getAmount());
+        self::assertSame([], $this->dispatched);
+    }
+
+    public function testAppendAdvancePaymentRejectsANonAdvanceMethod(): void
+    {
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->service($this->createMock(EntityManagerInterface::class))->appendAdvancePayment(
+            $this->creditSale(),
+            $this->collectedMethod(PaymentMethod::CASH),
+            '25.00',
+            new DateTimeImmutable(),
+            null,
+        );
+    }
+
     public function testAppendPaymentRejectsAmountAboveBalanceBeforePersist(): void
     {
         $em = $this->createMock(EntityManagerInterface::class);

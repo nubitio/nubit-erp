@@ -112,6 +112,43 @@ class CustomerAccountEntryRepository extends ServiceEntityRepository
         return $count > 0;
     }
 
+    /**
+     * The customer's ADVANCE entries that still have unallocated balance
+     * (credit minus what has been applied through `customer_payment_applications`
+     * rows bound to them), oldest first — the FIFO order an advance application
+     * draws from (#382).
+     *
+     * @return list<array{entryId: int, remaining: string}>
+     */
+    public function advancesWithRemaining(int $customerId): array
+    {
+        /** @var list<array{entryId: int|string, credit: string, applied: int|string}> $rows */
+        $rows = $this
+            ->getEntityManager()
+            ->createQueryBuilder()
+            ->select('e.id AS entryId', 'e.credit AS credit', 'COALESCE(SUM(a.appliedAmount), 0) AS applied')
+            ->from(CustomerAccountEntry::class, 'e')
+            ->leftJoin(CustomerPaymentApplication::class, 'a', 'WITH', 'a.accountEntry = e')
+            ->where('e.customerId = :customer')
+            ->andWhere('e.entryType = :advance')
+            ->setParameter('customer', $customerId)
+            ->setParameter('advance', CustomerAccountEntryType::ADVANCE)
+            ->groupBy('e.id, e.credit')
+            ->orderBy('e.id', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        $out = [];
+        foreach ($rows as $row) {
+            $remaining = Money::money((string) $row['credit'])->minus(Money::money((string) $row['applied']));
+            if ($remaining->isGreaterThan(0)) {
+                $out[] = ['entryId' => (int) $row['entryId'], 'remaining' => Money::toString($remaining)];
+            }
+        }
+
+        return $out;
+    }
+
     private function sumCredit(int $customerId, CustomerAccountEntryType $entryType): string
     {
         /** @var int|string|null $sum */

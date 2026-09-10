@@ -108,6 +108,45 @@ readonly class SalePaymentService
     ): SalePayment {
         $this->assertCollectable($paymentMethod, $sale);
 
+        return $this->persistPaymentRow($sale, $paymentMethod, $amount, $paidAt, $reference);
+    }
+
+    /**
+     * A `sale_payments` row funded by a customer advance being applied to this
+     * sale (#382). Same debt-side effect as {@see appendPayment()} — recomputes
+     * paidTotal/balanceDue — but the method must carry the ADVANCE settlement
+     * behaviour: no money moves now, it moved when the advance was received.
+     * The caller ({@see \App\Sales\Service\ApplyAdvanceService}) owns the ledger
+     * applications and the Dr 122 / Cr 121 posting.
+     */
+    public function appendAdvancePayment(
+        SaleRecord $sale,
+        PaymentMethod $advanceMethod,
+        string $amount,
+        DateTimeImmutable $paidAt,
+        ?string $reference,
+    ): SalePayment {
+        if (!$advanceMethod->getIsActive() || $advanceMethod->getSettlementBehavior() !== SettlementBehavior::ADVANCE) {
+            throw new UnprocessableEntityHttpException('El método de aplicación de anticipo no está configurado.');
+        }
+        if ($sale->getStatus() === 'VOIDED') {
+            throw new UnprocessableEntityHttpException('No se puede aplicar un anticipo a una venta anulada.');
+        }
+
+        return $this->persistPaymentRow($sale, $advanceMethod, $amount, $paidAt, $reference);
+    }
+
+    /**
+     * Builds and persists one `sale_payments` row against $sale and recomputes
+     * its paidTotal/balanceDue. Validation of the method is the caller's job.
+     */
+    private function persistPaymentRow(
+        SaleRecord $sale,
+        PaymentMethod $paymentMethod,
+        string $amount,
+        DateTimeImmutable $paidAt,
+        ?string $reference,
+    ): SalePayment {
         $amountMoney = Money::money($amount);
         if ($amountMoney->isLessThanOrEqualTo(0)) {
             throw new UnprocessableEntityHttpException('El monto del cobro debe ser mayor a 0.');

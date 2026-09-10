@@ -6,13 +6,16 @@ namespace App\Sales\ApiResource;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
+use App\Sales\Dto\AdvanceApplicationResult;
 use App\Sales\Dto\CustomerAdvanceReceipt;
+use App\Sales\Dto\SaleApplyAdvanceDto;
 use App\Sales\Dto\SaleReceiveAdvanceDto;
+use App\Sales\State\ApplyAdvanceProcessor;
 use App\Sales\State\ReceiveAdvanceProcessor;
 
 /**
- * Receiving a customer advance (#382): money in with no target sale. Books the
- * money once and appends an `ADVANCE` entry on the customer ledger.
+ * Customer advances (#382): receiving money with no target sale, and applying a
+ * held advance to open sales.
  */
 #[ApiResource(
     shortName: 'CustomerAdvance',
@@ -26,6 +29,16 @@ use App\Sales\State\ReceiveAdvanceProcessor;
             read: false,
             security: "is_granted('perm:sales.collect')",
             name: 'sales_receive_customer_advance',
+        ),
+        new Post(
+            uriTemplate: '/sales/customer-advances/apply',
+            status: 200,
+            input: SaleApplyAdvanceDto::class,
+            output: AdvanceApplicationResult::class,
+            processor: ApplyAdvanceProcessor::class,
+            read: false,
+            security: "is_granted('perm:sales.collect')",
+            name: 'sales_apply_customer_advance',
         ),
     ],
     normalizationContext: ['groups' => ['customer_advance:read']],
