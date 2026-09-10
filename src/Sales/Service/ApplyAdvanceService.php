@@ -113,16 +113,27 @@ readonly class ApplyAdvanceService
         );
     }
 
+    /**
+     * The internal "Anticipo aplicado" method, resolved by behaviour and
+     * created on first use. Seeded `is_active = false` so it never reaches the
+     * POS / Ventas payment-method pickers (which filter on it) — not seeded via
+     * a migration so it stays off the sale-creation path entirely.
+     */
     private function advanceMethod(): PaymentMethod
     {
-        // Looked up by behaviour, not is_active: it is an inactive internal
-        // method (hidden from the POS / Ventas pickers).
         $method = $this->entityManager
             ->getRepository(PaymentMethod::class)
             ->findOneBy(['settlementBehavior' => SettlementBehavior::ADVANCE]);
-        if (!$method instanceof PaymentMethod) {
-            throw new UnprocessableEntityHttpException('Falta configurar el método "Anticipo aplicado".');
+        if ($method instanceof PaymentMethod) {
+            return $method;
         }
+
+        $method = new PaymentMethod()
+            ->setName('Anticipo aplicado')
+            ->setSettlementBehavior(SettlementBehavior::ADVANCE)
+            ->setIsActive(false);
+        $this->entityManager->persist($method);
+        $this->entityManager->flush();
 
         return $method;
     }

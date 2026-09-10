@@ -98,16 +98,24 @@ final class ApplyAdvanceServiceTest extends TestCase
         $this->service()->apply(9, '150.00', new DateTimeImmutable(), []);
     }
 
-    public function testMissingAdvanceMethodIsRejected(): void
+    public function testTheAdvanceMethodIsCreatedOnFirstUseWhenMissing(): void
     {
-        $this->entries->method('availableAdvance')->willReturn('500.00');
-        $this->methodConfigured = false;
-        $this->salePaymentService->expects(self::never())->method('appendAdvancePayment');
+        $this->methodConfigured = false; // findOneBy -> null
+        $this->entries->method('availableAdvance')->willReturn('500.00', '400.00');
+        $this->entries->method('advancesWithRemaining')->willReturn([['entryId' => 1, 'remaining' => '500.00']]);
+        $this->sales->method('findOpenReceivablesForCustomer')->willReturn([$this->sale('s1', '100.00')]);
 
-        $this->expectException(UnprocessableEntityHttpException::class);
-        $this->expectExceptionMessage('Anticipo aplicado');
+        $this->service()->apply(9, '100.00', new DateTimeImmutable('2026-09-10'), []);
 
-        $this->service()->apply(9, '100.00', new DateTimeImmutable(), []);
+        $created = array_filter(
+            $this->persisted,
+            static fn(object $o): bool => (
+                $o instanceof PaymentMethod
+                && $o->getSettlementBehavior() === SettlementBehavior::ADVANCE
+                && $o->getIsActive() === false
+            ),
+        );
+        self::assertCount(1, $created);
     }
 
     public function testNoOpenSalesIsRejected(): void

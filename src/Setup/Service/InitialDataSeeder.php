@@ -122,7 +122,6 @@ readonly class InitialDataSeeder
             'Plin',
             'Link de pago',
             'Depósito',
-            'Anticipo aplicado',
         ];
         foreach ($paymentMethods as $method) {
             $this->getOrCreatePaymentMethod($method);
@@ -267,11 +266,7 @@ readonly class InitialDataSeeder
 
     private function getOrCreatePaymentMethod(string $name): void
     {
-        $behavior = match ($name) {
-            'Credito' => SettlementBehavior::RECEIVABLE,
-            'Anticipo aplicado' => SettlementBehavior::ADVANCE,
-            default => SettlementBehavior::COLLECTED,
-        };
+        $behavior = $name === 'Credito' ? SettlementBehavior::RECEIVABLE : SettlementBehavior::COLLECTED;
         $existing = $this->paymentMethodRepository->findOneBy(['name' => $name]);
         if ($existing instanceof PaymentMethod) {
             return;
@@ -279,10 +274,7 @@ readonly class InitialDataSeeder
 
         $paymentMethod = new PaymentMethod()
             ->setName($name)
-            ->setSettlementBehavior($behavior)
-            // "Anticipo aplicado" is internal: never offered in the POS / Ventas
-            // pickers, which filter on is_active.
-            ->setIsActive($behavior !== SettlementBehavior::ADVANCE);
+            ->setSettlementBehavior($behavior);
         $this->entityManager->persist($paymentMethod);
         $this->entityManager->flush();
     }
