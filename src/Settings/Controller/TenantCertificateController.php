@@ -9,6 +9,7 @@ use App\ControlPlane\Certificate\TenantCertificate;
 use App\Efact\Audit\AuditLogger;
 use App\Organization\Repository\CompanyRepository;
 use Nubit\Platform\Tenant\Context\TenantContext;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,11 +27,15 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/api/tenant')]
 final class TenantCertificateController extends AbstractController
 {
+    /** Keep tenant-facing certificate events aligned with the control-plane audit action. */
+    private const string CERTIFICATE_UPSERT_AUDIT_ACTION = 'tenant.certificate.upsert';
+
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly CompanyRepository $companyRepository,
         private readonly CertificateLifecycleServiceInterface $certificates,
         private readonly AuditLogger $auditLogger,
+        private readonly LoggerInterface $logger,
     ) {}
 
     #[Route('/certificate', name: 'api_tenant_certificate_upsert', methods: ['POST'])]
@@ -57,11 +62,7 @@ final class TenantCertificateController extends AbstractController
                 $certificatePem,
                 $this->getUser()?->getUserIdentifier() ?? 'tenant-api',
             );
-            $this->auditLogger->log('sunat.certificate.upsert', [
-                'outcome' => 'success',
-                'ruc' => $certificate->ruc,
-                'fingerprint_sha256' => $certificate->fingerprintSha256,
-            ]);
+            $this->recordCertificateAudit($certificate);
         } catch (\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (\Throwable $e) {
@@ -74,7 +75,7 @@ final class TenantCertificateController extends AbstractController
     }
 
     #[Route('/certificate', name: 'api_tenant_certificate_get', methods: ['GET'])]
-    #[IsGranted('perm:settings.edit')]
+    #[IsGranted('perm:settings.view')]
     public function get(): JsonResponse
     {
         $tenantName = $this->tenantContext->getTenantName();
@@ -227,5 +228,26 @@ final class TenantCertificateController extends AbstractController
             'uploadedAt' => $certificate->uploadedAt->format(DATE_ATOM),
             'lycetSyncStatus' => $certificate->lycetSyncStatus,
         ];
+    }
+
+    private function recordCertificateAudit(TenantCertificate $certificate): void
+    {
+        try {
+            $this->auditLogger->log(self::CERTIFICATE_UPSERT_AUDIT_ACTION, [
+                'outcome' => 'success',
+                'tenant_name' => $certificate->tenantName,
+                'ruc' => $certificate->ruc,
+                'fingerprint_sha256' => $certificate->fingerprintSha256,
+            ]);
+        } catch (\Throwable) {
+            // The certificate has already been persisted. Audit transport failure
+            // must not turn that successful mutation into a misleading 502.
+            $this->logger->warning('Certificate audit event could not be recorded after successful upsert.', [
+                'action' => self::CERTIFICATE_UPSERT_AUDIT_ACTION,
+                'tenant_name' => $certificate->tenantName,
+                'ruc' => $certificate->ruc,
+                'fingerprint_sha256' => $certificate->fingerprintSha256,
+            ]);
+        }
     }
 }
