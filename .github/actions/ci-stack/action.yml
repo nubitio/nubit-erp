@@ -46,9 +46,9 @@ runs:
         target: dev
         load: true
         push: false
-        tags: efact-ci-web:local
-        cache-from: type=gha,scope=efact-web-dev
-        cache-to: type=gha,mode=min,scope=efact-web-dev
+        tags: nubit-erp-ci-web:local
+        cache-from: type=gha,scope=nubit-erp-web-dev
+        cache-to: type=gha,mode=min,scope=nubit-erp-web-dev
         build-args: |
           PHP_VERSION=8.5
 

@@ -24,7 +24,7 @@ The eFact platform consists of three interconnected products:
 |---------|------|---------|
 | **eFact Backend + Web POS** | `efact` | PHP/Symfony multi-tenant SaaS backend with React web frontend |
 | **eFact Android POS** | `efact-app` | Native Kotlin/Compose Android app for tablet-based POS terminals |
-| **eFact Marketing Site** | `efact-site` | PHP/Symfony public marketing site with CMS and subscription plan catalog |
+| **Nubit ERP Marketing Site** | `nubit-erp-site` | PHP/Symfony public marketing site with CMS and subscription plan catalog |
 
 ---
 
@@ -83,7 +83,7 @@ The eFact platform consists of three interconnected products:
 |-----------|--------|
 | **Role** | SMB owner evaluating POS/invoicing solutions |
 | **Goal** | Understand eFact's features and pricing; sign up for a trial |
-| **Primary surface** | `efact-site` marketing website |
+| **Primary surface** | `nubit-erp-site` marketing website |
 
 ---
 
@@ -143,7 +143,7 @@ The eFact platform consists of three interconnected products:
 | Observability | OpenTelemetry OTLP exporter |
 | Min SDK | 25 (Android 7.1) |
 
-### Marketing Site (`efact-site`)
+### Marketing Site (`nubit-erp-site`)
 
 | Layer | Technology |
 |-------|-----------|
@@ -304,7 +304,7 @@ The eFact platform consists of three interconnected products:
 - **Subscription billing** — PayPal and MercadoPago gateways; webhook handlers at `/webhook/paypal` and `/webhook/mercadopago`; `SubscriptionManager` tracks billing cycle and plan limits.
 - **Control plane** — `/admin` EasyAdmin panel for operators: tenant list, domain management, provisioning status, subscription management, backup management, audit log.
 
-### 9. Marketing Site (`efact-site`)
+### 9. Marketing Site (`nubit-erp-site`)
 
 - CMS-managed landing page content: hero, CTA, plans, benefits, FAQs, how-it-works steps, stats, modules.
 - Plan catalog with monthly/annual pricing, feature lists, and CTA URLs.

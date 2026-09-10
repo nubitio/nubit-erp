@@ -1,6 +1,6 @@
 services:
   web:
-    container_name: efact-web
+    container_name: nubit-erp-web
     restart: unless-stopped
     security_opt:
       - label=disable

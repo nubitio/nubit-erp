@@ -16,7 +16,7 @@ set -e
 ROOT_DIR="$(git rev-parse --show-toplevel)"
 cd "$ROOT_DIR"
 
-WEB_CONTAINER=efact-web
+WEB_CONTAINER=nubit-erp-web
 
 if ! docker ps --format '{{.Names}}' | grep -qx "$WEB_CONTAINER"; then
   echo "error: $WEB_CONTAINER is not running. Start the stack with 'docker compose up -d' before pushing." >&2

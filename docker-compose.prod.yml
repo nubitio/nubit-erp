@@ -47,7 +47,7 @@ services:
   # web/worker entrypoints so scaling replicas or rolling restarts can never
   # race concurrent migration runs against the same database.
   migrate:
-    image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
+    image: ${IMAGE:-ghcr.io/nubitio/nubit-erp:latest}
     restart: 'no'
     depends_on:
       database:
@@ -114,8 +114,8 @@ services:
         max-file: '3'
 
   web:
-    image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
-    container_name: ${CONTAINER_NAME:-efact}
+    image: ${IMAGE:-ghcr.io/nubitio/nubit-erp:latest}
+    container_name: ${CONTAINER_NAME:-nubit-erp}
     restart: unless-stopped
     depends_on:
       migrate:
@@ -225,7 +225,7 @@ services:
         max-file: '3'
 
   worker_async:
-    image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
+    image: ${IMAGE:-ghcr.io/nubitio/nubit-erp:latest}
     restart: unless-stopped
     depends_on:
       migrate:
@@ -273,7 +273,7 @@ services:
       start_period: 20s
 
   worker_scheduler:
-    image: ${IMAGE:-ghcr.io/nubitio/efact:latest}
+    image: ${IMAGE:-ghcr.io/nubitio/nubit-erp:latest}
     restart: unless-stopped
     depends_on:
       migrate:

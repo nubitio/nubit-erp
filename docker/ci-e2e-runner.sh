@@ -11,7 +11,7 @@ set -e
 if [ -z "$E2E_BASE_URL" ] || [ "$E2E_BASE_URL" = "http://web" ]; then
   WEB_IP=""
   for _ in $(seq 1 10); do
-    WEB_IP=$(getent hosts efact-web | awk '{print $1}' | head -1)
+    WEB_IP=$(getent hosts nubit-erp-web | awk '{print $1}' | head -1)
     [ -n "$WEB_IP" ] && break
     sleep 1
   done
@@ -19,7 +19,7 @@ if [ -z "$E2E_BASE_URL" ] || [ "$E2E_BASE_URL" = "http://web" ]; then
   if [ -n "$WEB_IP" ]; then
     export E2E_BASE_URL="http://${WEB_IP}"
   else
-    export E2E_BASE_URL="http://efact-web"
+    export E2E_BASE_URL="http://nubit-erp-web"
   fi
 fi
 

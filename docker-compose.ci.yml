@@ -5,7 +5,7 @@
 # MinIO/OTEL, and tags the web image so CI can cache the `dev` target.
 services:
   web:
-    image: efact-ci-web:local
+    image: nubit-erp-ci-web:local
     ports: !reset []
     depends_on: !override
       database:

@@ -23,7 +23,7 @@ import { defineConfig, devices } from '@playwright/test';
  *         yarn playwright show-report --host 0.0.0.0 var/playwright-report
  *
  * ── Environment variables ──────────────────────────────────────────────────
- *   E2E_BASE_URL    default: http://efact-web  (Docker) | http://localhost:8080 (host)
+ *   E2E_BASE_URL    default: http://nubit-erp-web  (Docker) | http://localhost:8080 (host)
  *   E2E_USERNAME    optional; auto-seeded when omitted
  *   E2E_PASSWORD    optional; auto-seeded when omitted
  *   E2E_SALE_ID     optional; auto-seeded when omitted
