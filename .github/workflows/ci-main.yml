@@ -350,11 +350,11 @@ jobs:
 
   e2e:
     name: End-to-End Workflows
-    needs:
-      - changes
-      - backend
-      - frontend
-    if: always() && !cancelled() && needs.changes.result == 'success' && needs.backend.result == 'success' && needs.frontend.result == 'success'
+    # E2E provisions its own stack and can run alongside the quality jobs.
+    # Keep change detection as the sole prerequisite so a failed detector
+    # cannot accidentally allow an E2E run.
+    needs: changes
+    if: needs.changes.result == 'success'
     runs-on: ${{ needs.changes.outputs.e2e == 'true' && needs.changes.outputs.runner || needs.changes.outputs.runner_light }}
     timeout-minutes: 20
 
@@ -442,6 +442,12 @@ jobs:
             -e OTEL_LOGS_EXPORTER=none \
             -e OTEL_METRICS_EXPORTER=none \
             web php bin/console doctrine:migrations:migrate --no-interaction
+
+      - name: Provision local E2E tenant registry record
+        if: needs.changes.outputs.e2e == 'true'
+        run: |
+          docker compose exec -T database mariadb -uroot -pchangeme efact -e \
+            "INSERT INTO tenants (name, connection, status, created_at, updated_at, deleted_at) VALUES ('demo', 'demo', 'active', NOW(), NOW(), NULL) ON DUPLICATE KEY UPDATE connection = 'demo', status = 'active', updated_at = NOW(), deleted_at = NULL;"
 
       - name: Seed E2E data on-the-fly
         if: needs.changes.outputs.e2e == 'true'

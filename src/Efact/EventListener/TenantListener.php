@@ -8,6 +8,7 @@ use Nubit\Platform\Tenant\Context\TenantContext;
 use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +25,8 @@ readonly class TenantListener
         private TenantRegistryInterface $tenantRegistry,
         private TenantContext $tenantContext,
         private LoggerInterface $logger,
+        #[Autowire(param: 'kernel.environment')]
+        private string $kernelEnvironment = 'prod',
         private string $localTenantName = 'demo',
     ) {}
 
@@ -82,6 +85,16 @@ readonly class TenantListener
 
             if (!$isPublicIp) {
                 if (in_array($host, ['127.0.0.1', '::1'], true)) {
+                    $this->activateLocalTenant($event, $host, $requestId);
+
+                    return;
+                }
+
+                // Docker resolves the CI service hostname to a private
+                // container IP. Only the explicitly isolated e2e/test
+                // environments may use that address for the local tenant;
+                // production keeps private-IP tenant switching disabled.
+                if (in_array($this->kernelEnvironment, ['e2e', 'test'], true)) {
                     $this->activateLocalTenant($event, $host, $requestId);
 
                     return;
