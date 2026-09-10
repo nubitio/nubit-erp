@@ -50,7 +50,6 @@ final class TenantCertificateControllerAuthorizationTest extends TestCase
         );
 
         $method = new \ReflectionMethod(TenantCertificateController::class, 'serializeCertificate');
-        /** @var array<string, mixed> $payload */
         $payload = $method->invoke($controller, $certificate);
 
         static::assertIsArray($payload);
