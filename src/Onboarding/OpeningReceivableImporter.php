@@ -25,6 +25,9 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 final readonly class OpeningReceivableImporter
 {
+    public const int MAX_ROWS = 5_000;
+    public const int FLUSH_EVERY = 250;
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private CustomerRepository $customerRepository,
@@ -42,41 +45,52 @@ final readonly class OpeningReceivableImporter
      */
     public function import(array $rows): array
     {
-        $branch = $this->resolveBranch();
-        $warehouse = $this->resolveWarehouse($branch);
-        $paymentMethod =
-            $this->paymentMethodRepository->findOneBy(['name' => 'Credito']) ?? $this->paymentMethodRepository->findBy(
-                [],
-                ['id' => 'ASC'],
-                1,
-            )[0] ?? null;
-        $user = $this->security->getUser();
-        $userId = $user instanceof User ? (int) $user->getId() : 0;
-        $now = new DateTimeImmutable('now', new DateTimeZone('America/Lima'));
+        if (count($rows) > self::MAX_ROWS) {
+            throw new RuntimeException(sprintf(
+                'La importación admite como máximo %d filas por solicitud.',
+                self::MAX_ROWS,
+            ));
+        }
 
-        $created = 0;
-        $errors = [];
+        return $this->entityManager->wrapInTransaction(function () use ($rows): array {
+            $branch = $this->resolveBranch();
+            $warehouse = $this->resolveWarehouse($branch);
+            $paymentMethod = $this->resolvePaymentMethod();
+            $user = $this->security->getUser();
+            $userId = $user instanceof User ? (int) $user->getId() : 0;
+            $now = new DateTimeImmutable('now', new DateTimeZone('America/Lima'));
 
-        foreach ($rows as $index => $raw) {
-            $parsed = OpeningBalanceRow::tryFrom(is_array($raw) ? $raw : []);
-            if (is_string($parsed)) {
-                $errors[] = ['row' => $index + 1, 'message' => $parsed];
-                continue;
-            }
+            $created = 0;
+            $errors = [];
 
-            try {
+            foreach ($rows as $index => $raw) {
+                $parsed = OpeningBalanceRow::tryFrom(is_array($raw) ? $raw : []);
+                if (is_string($parsed)) {
+                    $errors[] = ['row' => $index + 1, 'message' => $parsed];
+                    continue;
+                }
+
                 $customer = $this->getOrCreateCustomer($parsed);
                 $sale = $this->buildSale($parsed, $customer, $branch, $warehouse, $paymentMethod, $userId, $now);
                 $this->entityManager->persist($sale);
                 ++$created;
-            } catch (RuntimeException $exception) {
-                $errors[] = ['row' => $index + 1, 'message' => $exception->getMessage()];
+                if (($created % self::FLUSH_EVERY) === 0) {
+                    $this->entityManager->flush();
+                    $this->entityManager->clear();
+
+                    // clear() also detaches the shared references. Reload them before
+                    // attaching the next batch so Doctrine never persists a detached
+                    // branch, warehouse, or payment method.
+                    $branch = $this->resolveBranch();
+                    $warehouse = $this->resolveWarehouse($branch);
+                    $paymentMethod = $this->resolvePaymentMethod();
+                }
             }
-        }
 
-        $this->entityManager->flush();
+            $this->entityManager->flush();
 
-        return ['created' => $created, 'errors' => $errors];
+            return ['created' => $created, 'errors' => $errors];
+        });
     }
 
     private function resolveBranch(): Branch
@@ -102,6 +116,17 @@ final readonly class OpeningReceivableImporter
         }
 
         return $warehouse;
+    }
+
+    private function resolvePaymentMethod(): ?PaymentMethod
+    {
+        return (
+            $this->paymentMethodRepository->findOneBy(['name' => 'Credito']) ?? $this->paymentMethodRepository->findBy(
+                [],
+                ['id' => 'ASC'],
+                1,
+            )[0] ?? null
+        );
     }
 
     private function getOrCreateCustomer(OpeningBalanceRow $row): Customer

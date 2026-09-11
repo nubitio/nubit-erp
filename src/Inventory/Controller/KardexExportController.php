@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Controller;
 
+use App\Inventory\Service\KardexExportLimitExceeded;
 use App\Inventory\Service\KardexExportService;
 use Nubit\Platform\Export\PdfExporter;
 use Nubit\Platform\Feature\Attribute\RequiresFeature;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -78,13 +80,17 @@ final class KardexExportController extends AbstractController
         $to = $request->query->getString('to');
         $valuation = $request->query->getString('valuation');
 
-        $report = $this->exportService->buildReportData([
-            'productId' => $productId,
-            'warehouseId' => $warehouseId !== '' ? $warehouseId : null,
-            'from' => $from !== '' ? $from : null,
-            'to' => $to !== '' ? $to : null,
-            'valuation' => $valuation !== '' ? $valuation : null,
-        ]);
+        try {
+            $report = $this->exportService->buildReportData([
+                'productId' => $productId,
+                'warehouseId' => $warehouseId !== '' ? $warehouseId : null,
+                'from' => $from !== '' ? $from : null,
+                'to' => $to !== '' ? $to : null,
+                'valuation' => $valuation !== '' ? $valuation : null,
+            ]);
+        } catch (KardexExportLimitExceeded $exception) {
+            throw new HttpException(Response::HTTP_REQUEST_ENTITY_TOO_LARGE, $exception->getMessage(), $exception);
+        }
 
         $filenameBase = sprintf('kardex-%s-%s', $report['summary']['product']['code'] ?? $productId, date('Y-m-d'));
 
