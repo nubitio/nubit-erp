@@ -12,28 +12,48 @@ final class ProductionReliabilityConfigTest extends TestCase
     public function testAlertContractCoversIssue405Objectives(): void
     {
         $config = Yaml::parseFile(__DIR__ . '/../../ops/monitoring/alerts.yml');
-        $rules = $config['groups'][0]['rules'] ?? [];
-        $byId = [];
+        if (!is_array($config) || !is_array($config['groups'] ?? null)) {
+            static::fail('alerts.yml must be a Prometheus rule file with groups');
+        }
+
+        $group = $config['groups'][0] ?? null;
+        if (!is_array($group) || !is_array($group['rules'] ?? null)) {
+            static::fail('alerts.yml must contain a rule group');
+        }
+
+        $rules = $group['rules'];
+        /** @var array<string, array<string, mixed>> $byAlert */
+        $byAlert = [];
         foreach ($rules as $rule) {
-            $byId[$rule['id']] = $rule;
+            if (!is_array($rule) || !is_string($rule['alert'] ?? null)) {
+                static::fail('Every rule must use Prometheus alert format');
+            }
+            $byAlert[$rule['alert']] = $rule;
         }
 
         foreach ([
-            'api-availability',
-            'api-latency-p95',
-            'api-server-errors',
-            'api-client-errors',
-            'fiscal-recovery-lag',
-            'async-queue-age',
-            'webhook-delivery-lag',
-            'backup-freshness',
-            'tenant-health',
-        ] as $id) {
-            self::assertArrayHasKey($id, $byId);
-            self::assertNotSame('', $byId[$id]['expr']);
-            self::assertContains($byId[$id]['severity'], ['page', 'ticket']);
-            self::assertNotSame('', $byId[$id]['owner']);
+            'NubitApiAvailabilityLow',
+            'NubitApiLatencyP95High',
+            'NubitApiServerErrorsHigh',
+            'NubitApiClientErrorsHigh',
+            'NubitFiscalRecoveryLag',
+            'NubitAsyncQueueAgeHigh',
+            'NubitWebhookDeliveryLag',
+            'NubitBackupFreshnessMissing',
+            'NubitTenantHealthDegraded',
+        ] as $alert) {
+            static::assertArrayHasKey($alert, $byAlert);
+            static::assertNotSame('', static::ruleString($byAlert[$alert], 'expr'));
+            static::assertContains(static::ruleString($byAlert[$alert], 'labels', 'severity'), ['page', 'ticket']);
+            static::assertNotSame('', static::ruleString($byAlert[$alert], 'labels', 'owner'));
+            static::assertNotSame('', static::ruleString($byAlert[$alert], 'annotations', 'objective'));
         }
+
+        static::assertStringContainsString('tenant_id', static::ruleString($byAlert['NubitFiscalRecoveryLag'], 'expr'));
+        static::assertStringContainsString('tenant_id', static::ruleString(
+            $byAlert['NubitBackupFreshnessMissing'],
+            'expr',
+        ));
     }
 
     public function testRunbooksAndSmokeGateAreVersioned(): void
@@ -46,7 +66,24 @@ final class ProductionReliabilityConfigTest extends TestCase
             __DIR__ . '/../../scripts/ops/restore-verify.sh',
             __DIR__ . '/../../.github/workflows/rollback-prod.yml',
         ] as $file) {
-            self::assertFileExists($file);
+            static::assertFileExists($file);
         }
+    }
+
+    /** @param array<array-key, mixed> $rule */
+    private static function ruleString(array $rule, string $key, ?string $nestedKey = null): string
+    {
+        $value = $rule[$key] ?? null;
+        if ($nestedKey !== null) {
+            if (!is_array($value)) {
+                static::fail(sprintf('Rule field %s must be an object', $key));
+            }
+            $value = $value[$nestedKey] ?? null;
+        }
+        if (!is_string($value)) {
+            static::fail(sprintf('Rule field %s must be a string', $key));
+        }
+
+        return $value;
     }
 }

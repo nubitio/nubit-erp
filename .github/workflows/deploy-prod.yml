@@ -32,6 +32,10 @@ jobs:
           INPUT_IMAGE_REF: ${{ inputs.image_ref }}
         run: |
           set -euo pipefail
+          if [[ ! "${INPUT_IMAGE_REF}" =~ ^[^@]+@sha256:[0-9a-fA-F]{64}$ ]]; then
+            echo "image_ref must be an image@sha256:<64 hex digest>" >&2
+            exit 1
+          fi
           echo "image_ref=${INPUT_IMAGE_REF}" >> "$GITHUB_OUTPUT"
 
   deploy-production:

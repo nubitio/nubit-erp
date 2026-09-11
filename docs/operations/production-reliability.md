@@ -25,11 +25,18 @@ to remove the event from the denominator.
 | Backup freshness | active tenants ≤24h old | page after 30m over 86400s | `tenant_backups.completed_at` |
 | Tenant health | all active tenants healthy | ticket after 10m degraded | `TenantHealthCheckCommand` |
 
-Alert expressions are intentionally versioned as a backend import contract;
-operators must validate metric/log field names in the live SigNoz workspace
-before paging. The application currently exposes queue and backup state partly
-through logs and database records, so a green rule set is not evidence until
-the corresponding telemetry pipeline is enabled.
+`ops/monitoring/alerts.yml` is a Prometheus alerting-rule file, not LogQL. It is
+validated by the operations contract test and can be loaded as a Prometheus
+rule group. The HTTP names are the OpenTelemetry Prometheus exposition names.
+The remaining gauges are DB-exporter/application-exporter contracts and MUST be
+published with `tenant_id`: `fiscal_recovery_oldest_pending_age_seconds`,
+`messenger_queue_oldest_message_age_seconds`,
+`integration_webhook_delivery_oldest_pending_age_seconds`,
+`tenant_backup_completed_timestamp_seconds`, `tenant_info`, and
+`tenant_health_check_status`. The backup expression compares each active
+tenant against its own 24-hour completion timestamp; a global MAX is unsafe.
+Do not enable paging until the named metrics and labels are present in the
+target Prometheus/SigNoz metrics signal.
 
 ## Ownership and escalation
 
