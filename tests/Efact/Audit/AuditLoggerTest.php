@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Efact\Audit;
 
 use App\Efact\Audit\AuditLogger;
-use App\Efact\Audit\AuditLogMessageHandler;
 use App\Efact\Audit\AuditLogMessage;
+use App\Efact\Audit\AuditLogMessageHandler;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
