@@ -768,7 +768,13 @@ readonly class SaleProcessor implements ProcessorInterface
             throw new ServiceException('El redondeo aplica únicamente a ventas al contado en soles.');
         }
 
-        $settlements = $this->saleSettlementPlanService->resolveForWrite($sale, 'PEN', Money::toString($total));
+        // The settlement is entered against the rounded total, not the
+        // pre-rounding item total that is used to calculate the adjustment.
+        $settlements = $this->saleSettlementPlanService->resolveForWrite(
+            $sale,
+            'PEN',
+            Money::toString($total->minus($requested)),
+        );
         if (
             count($settlements) !== 1
             || $settlements[0]['type'] !== SaleSettlementType::PAYMENT->value

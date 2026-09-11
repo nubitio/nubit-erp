@@ -32,6 +32,10 @@ readonly class TenantListener
 
     public function __invoke(RequestEvent $event): void
     {
+        // Symfony workers and long-lived runtimes may reuse the same service
+        // instance. Never let a failed tenant resolution inherit the previous
+        // request's tenant.
+        $this->tenantContext->clear();
         $this->tenantContext->setActor(null, 'http');
 
         $request = $event->getRequest();
@@ -112,7 +116,7 @@ readonly class TenantListener
         // Default/known infra hosts that should not trigger tenant switching.
         // 'host' covers host.docker.internal used in Docker Desktop environments.
         $excludedSubdomains = ['localhost', 'dev', 'stg', 'host'];
-        if ('' === $subdomain || in_array($subdomain, $excludedSubdomains, true)) {
+        if ('' === $subdomain || in_array($subdomain, $excludedSubdomains, strict: true)) {
             if ($subdomain === 'localhost' || $subdomain === 'host') {
                 $this->activateLocalTenant($event, $host, $requestId);
 
@@ -130,6 +134,9 @@ readonly class TenantListener
             $tenant = $this->tenantRegistry->getTenantByDomain($host);
             if ($tenant === null) {
                 $tenant = $this->tenantRegistry->getTenantByName($subdomain);
+            }
+            if ($tenant === null) {
+                throw new \RuntimeException('Tenant not found');
             }
 
             $tenantName = $tenant['name'] ?? $subdomain;

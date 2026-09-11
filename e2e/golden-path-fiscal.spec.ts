@@ -130,14 +130,7 @@ test.describe('Golden path fiscal — POS a SUNAT y PDF', () => {
 
     await test.step('Emitir comprobante desde la venta', async () => {
       const invoiceResponse = await createInvoiceForSale(request, BASE_URL, auth, saleId);
-      expect([200, 201, 400]).toContain(invoiceResponse.status());
-
-      if (!invoiceResponse.ok()) {
-        const body = await invoiceResponse.text();
-        expect(body, 'si la factura ya existe, debe ser por re-ejecución idempotente').toContain(
-          'comprobante',
-        );
-      }
+      expect(invoiceResponse.ok(), 'crear el comprobante fiscal debe responder 2xx').toBeTruthy();
     });
 
     let taxDocumentId = '';
