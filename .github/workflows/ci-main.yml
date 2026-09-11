@@ -331,7 +331,7 @@ jobs:
 
       - name: Regenerate public API types
         if: needs.changes.outputs.frontend == 'true'
-        run: yarn generate:api-types && git diff --exit-code -- assets/api/types.generated.ts
+         run: yarn generate:api-types && git diff --exit-code -- assets/api/public-v1.types.generated.ts
 
       - name: Lint JavaScript and TypeScript
         if: needs.changes.outputs.frontend == 'true'
