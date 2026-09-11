@@ -1,0 +1,51 @@
+# Prometheus rule file (https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/).
+# Import this file as a rule group. The application/DB exporter must publish the
+# documented gauges with tenant_id labels before enabling the corresponding rule.
+groups:
+  - name: nubit-production-slos
+    rules:
+      - alert: NubitApiAvailabilityLow
+        expr: '100 * (1 - sum(rate(http_server_request_duration_seconds_count{http_response_status_code=~"5..",http_route!~"/health.*"}[5m])) / clamp_min(sum(rate(http_server_request_duration_seconds_count{http_route!~"/health.*"}[5m])), 1)) < 99.9'
+        for: 10m
+        labels: {severity: page, owner: platform}
+        annotations: {summary: 'API availability below 99.9%', objective: 'availability >= 99.9% over 30 days'}
+      - alert: NubitApiLatencyP95High
+        expr: 'histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{http_route!~"/health.*"}[5m]))) > 0.5'
+        for: 10m
+        labels: {severity: ticket, owner: platform}
+        annotations: {summary: 'API p95 latency above 500ms', objective: 'p95 latency <= 500ms for non-health API requests'}
+      - alert: NubitApiServerErrorsHigh
+        expr: '100 * sum(rate(http_server_request_duration_seconds_count{http_response_status_code=~"5..",http_route!~"/health.*"}[5m])) / clamp_min(sum(rate(http_server_request_duration_seconds_count{http_route!~"/health.*"}[5m])), 1) > 0.5'
+        for: 5m
+        labels: {severity: page, owner: platform}
+        annotations: {summary: 'API 5xx ratio above 0.5%', objective: '5xx ratio < 0.5%'}
+      - alert: NubitApiClientErrorsHigh
+        expr: '100 * sum(rate(http_server_request_duration_seconds_count{http_response_status_code=~"4..",http_route!~"/health.*"}[15m])) / clamp_min(sum(rate(http_server_request_duration_seconds_count{http_route!~"/health.*"}[15m])), 1) > 5'
+        for: 15m
+        labels: {severity: ticket, owner: product}
+        annotations: {summary: 'API 4xx ratio above 5%', objective: '4xx ratio < 5%'}
+      - alert: NubitFiscalRecoveryLag
+        expr: 'max by (tenant_id) (fiscal_recovery_oldest_pending_age_seconds) > 900'
+        for: 5m
+        labels: {severity: page, owner: billing}
+        annotations: {summary: 'Fiscal recovery lag exceeds 15 minutes', objective: 'reconcile failed submissions within 15 minutes'}
+      - alert: NubitAsyncQueueAgeHigh
+        expr: 'max by (queue) (messenger_queue_oldest_message_age_seconds{queue="async"}) > 300'
+        for: 10m
+        labels: {severity: page, owner: platform}
+        annotations: {summary: 'Async queue age exceeds 5 minutes', objective: 'async queue age < 5 minutes'}
+      - alert: NubitWebhookDeliveryLag
+        expr: 'max by (tenant_id) (integration_webhook_delivery_oldest_pending_age_seconds) > 900'
+        for: 10m
+        labels: {severity: ticket, owner: integrations}
+        annotations: {summary: 'Pending webhook delivery exceeds 15 minutes', objective: 'pending webhook age < 15 minutes'}
+      - alert: NubitBackupFreshnessMissing
+        expr: 'count(tenant_info{status="active"} unless on (tenant_id) (tenant_backup_completed_timestamp_seconds{status="completed"} > time() - 86400)) > 0'
+        for: 30m
+        labels: {severity: page, owner: data}
+        annotations: {summary: 'At least one active tenant lacks a fresh backup', objective: 'every active tenant has a completed backup within 24 hours'}
+      - alert: NubitTenantHealthDegraded
+        expr: 'max by (tenant_id) (tenant_health_check_status{status!="ok"}) > 0'
+        for: 10m
+        labels: {severity: ticket, owner: support}
+        annotations: {summary: 'Tenant health check is degraded', objective: 'active tenant health checks remain green'}

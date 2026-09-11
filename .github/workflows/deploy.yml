@@ -11,12 +11,6 @@ on:
         description: Immutable image reference (ghcr.io/org/repo@sha256:...)
         required: true
         type: string
-      run_healthcheck:
-        description: Run post-deploy healthcheck
-        required: false
-        default: true
-        type: boolean
-
 permissions:
   contents: read
 
@@ -36,6 +30,17 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Validate immutable image reference
+        env:
+          IMAGE_REF: ${{ inputs.image_ref }}
+        run: |
+          set -euo pipefail
+          case "${IMAGE_REF}" in
+            *@sha256:[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]$)
+              ;;
+            *) echo "image_ref must be an image@sha256:<64 hex digest>" >&2; exit 1 ;;
+          esac
+
       - name: Deploy stack in Portainer
         env:
           PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
@@ -48,27 +53,18 @@ jobs:
           set -euo pipefail
           bash scripts/portainer-deploy.sh
 
-      - name: Healthcheck
-        if: ${{ inputs.run_healthcheck }}
+      - name: Required post-deploy smoke gate
         env:
           APP_URL: ${{ secrets.APP_URL }}
         run: |
           set -euo pipefail
-          if [ -z "${APP_URL:-}" ]; then
-            echo "APP_URL not set; skipping healthcheck."
-            exit 0
-          fi
-
-          echo "Waiting for application to become healthy..."
+          : "${APP_URL:?APP_URL is required for the post-deploy smoke gate; refusing to promote}"
           for i in {1..18}; do
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${APP_URL}/health/live" 2>/dev/null || true)
-            if [ "$HTTP_STATUS" = "200" ]; then
-              echo "Healthy (HTTP 200) after ${i} attempt(s)."
+            if bash scripts/ops/production-smoke.sh; then
               exit 0
             fi
-            echo "Attempt ${i}/18 failed (HTTP ${HTTP_STATUS:-000}). Retrying..."
+            echo "Attempt ${i}/18 failed. Retrying..."
             sleep 5
           done
-
-          echo "Healthcheck failed."
+          echo "Smoke verification failed; promotion halted." >&2
           exit 1
