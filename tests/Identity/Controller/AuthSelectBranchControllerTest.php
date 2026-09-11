@@ -187,6 +187,7 @@ final class AuthSelectBranchControllerTest extends TestCase
         $user->method('getRoles')->willReturn(['ROLE_ADMIN', 'ROLE_USER']);
         $user->method('getDeletedAt')->willReturn(null);
         $user->method('getId')->willReturn(8);
+        $user->method('hasBranchAccess')->willReturn(false);
 
         $currentCompany = new Company();
         $branch = new Branch()
@@ -231,6 +232,7 @@ final class AuthSelectBranchControllerTest extends TestCase
         $user->method('getRoles')->willReturn(['ROLE_CASHIER', 'ROLE_USER']);
         $user->method('getDeletedAt')->willReturn(null);
         $user->method('getUserIdentifier')->willReturn('cashier');
+        $user->method('hasBranchAccess')->willReturn(true);
         $company = new Company();
         $branch = new Branch()
             ->setName('Sucursal autorizada')
@@ -247,6 +249,7 @@ final class AuthSelectBranchControllerTest extends TestCase
         $claimsProvider->method('userData')->willReturn(['id' => 7]);
         $refreshTokenStore = $this->createMock(RefreshTokenStoreInterface::class);
         $refreshTokenStore->expects($this->once())->method('save');
+        $selectedBranch = new SelectedBranchContext();
 
         $controller = new AuthSelectBranchController(
             $this->securityFor($user),
@@ -254,7 +257,7 @@ final class AuthSelectBranchControllerTest extends TestCase
             $companyRepository,
             $this->tenantContext(),
             new TokenGenerator($jwtManager, $claimsProvider, $refreshTokenStore, 900, 86_400),
-            new SelectedBranchContext(),
+            $selectedBranch,
             new ResponseModeResolver(),
             $this->createMock(JWTAuthenticator::class),
             new NullLogger(),
@@ -272,6 +275,47 @@ final class AuthSelectBranchControllerTest extends TestCase
 
         static::assertSame(Response::HTTP_OK, $response->getStatusCode());
         static::assertSame('access-token', $this->responsePayload($response)['token']);
+        static::assertNull($selectedBranch->get(), 'Branch context must not leak after token issuance.');
+    }
+
+    public function testDeniesSecondBranchInSameCompanyWhenUserIsNotAssigned(): void
+    {
+        $company = new Company();
+        $branch = new Branch()->setName('Sucursal B')->setCompany($company);
+        $user = $this->createStub(User::class);
+        $user->method('getDeletedAt')->willReturn(null);
+        $user->method('getId')->willReturn(9);
+        $user->method('hasBranchAccess')->willReturn(false);
+
+        $companyRepository = $this->createStub(CompanyRepository::class);
+        $companyRepository->method('findOneBy')->willReturn($company);
+        $branchRepository = $this->createStub(BranchRepository::class);
+        $branchRepository->method('find')->willReturn($branch);
+
+        $controller = new AuthSelectBranchController(
+            $this->securityFor($user),
+            $branchRepository,
+            $companyRepository,
+            $this->tenantContext(),
+            new \ReflectionClass(TokenGenerator::class)->newInstanceWithoutConstructor(),
+            new SelectedBranchContext(),
+            new ResponseModeResolver(),
+            new \ReflectionClass(JWTAuthenticator::class)->newInstanceWithoutConstructor(),
+            new NullLogger(),
+        );
+
+        $response = $controller(Request::create(
+            '/api/auth/select-branch',
+            'POST',
+            [],
+            [],
+            [],
+            [],
+            (string) json_encode(['branchId' => 'branch-b']),
+        ));
+
+        static::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        static::assertArrayNotHasKey('token', $this->responsePayload($response));
     }
 
     private function securityFor(User $user): Security
@@ -288,6 +332,7 @@ final class AuthSelectBranchControllerTest extends TestCase
         $content = $response->getContent();
         static::assertIsString($content);
 
+        /** @var mixed $payload */
         $payload = json_decode($content, associative: true, flags: JSON_THROW_ON_ERROR);
         static::assertIsArray($payload);
 

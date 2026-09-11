@@ -129,9 +129,9 @@ class AuthSelectBranchController extends AbstractController
             return false;
         }
 
-        // Tenant databases isolate users and branches. The company relation is
-        // the remaining application-level boundary in this schema; do not use
-        // the user's role as a cross-branch override.
-        return $sameCompany;
+        // Tenant databases isolate users and branches, while this explicit
+        // membership is the user-to-branch authorization source. Roles do not
+        // grant implicit access to every branch.
+        return $user->hasBranchAccess($branch);
     }
 }

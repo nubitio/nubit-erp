@@ -146,6 +146,7 @@ readonly class InitialSetupService
             ->setRole($superAdminRole);
         $hashedPassword = $this->passwordHasher->hashPassword($user, $input->adminPassword);
         $user->setPassword($hashedPassword);
+        $user->addBranch($branch);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
