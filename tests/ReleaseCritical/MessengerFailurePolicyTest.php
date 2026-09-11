@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\ReleaseCritical;
 
-use Symfony\Component\Messenger\Retry\MultiplierRetryStrategy;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Retry\MultiplierRetryStrategy;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Yaml\Yaml;
-use PHPUnit\Framework\TestCase;
 
 final class MessengerFailurePolicyTest extends TestCase
 {
@@ -29,7 +29,13 @@ final class MessengerFailurePolicyTest extends TestCase
         static::assertFalse($strategy->isRetryable($message->with(new RedeliveryStamp(3))));
         static::assertThat($strategy->getWaitingTime($message), static::greaterThanOrEqual(1800));
         static::assertThat($strategy->getWaitingTime($message), static::lessThanOrEqual(2200));
-        static::assertThat($strategy->getWaitingTime($message->with(new RedeliveryStamp(1))), static::greaterThanOrEqual(3600));
-        static::assertThat($strategy->getWaitingTime($message->with(new RedeliveryStamp(1))), static::lessThanOrEqual(4400));
+        static::assertThat(
+            $strategy->getWaitingTime($message->with(new RedeliveryStamp(1))),
+            static::greaterThanOrEqual(3600),
+        );
+        static::assertThat(
+            $strategy->getWaitingTime($message->with(new RedeliveryStamp(1))),
+            static::lessThanOrEqual(4400),
+        );
     }
 }

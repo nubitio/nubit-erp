@@ -12,7 +12,7 @@ final class HardwareAuthorizationTest extends TestCase
 {
     public function testPrinterEndpointRequiresAnAuthenticatedTenantUser(): void
     {
-        $attributes = (new \ReflectionClass(PrintESCPOSController::class))->getAttributes(IsGranted::class);
+        $attributes = new \ReflectionClass(PrintESCPOSController::class)->getAttributes(IsGranted::class);
 
         static::assertCount(1, $attributes);
         static::assertSame('ROLE_USER', $attributes[0]->getArguments()[0]);

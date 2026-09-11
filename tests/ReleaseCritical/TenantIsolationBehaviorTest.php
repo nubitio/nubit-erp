@@ -28,7 +28,8 @@ final class TenantIsolationBehaviorTest extends TestCase
     public function testHttpSwitchesBetweenTenantsAndClearsFailedResolution(): void
     {
         $registry = $this->createMock(TenantRegistryInterface::class);
-        $registry->expects(static::exactly(2))
+        $registry
+            ->expects(static::exactly(2))
             ->method('getTenantByDomain')
             ->willReturnMap([
                 ['alpha.example.test', ['id' => 10, 'name' => 'alpha', 'status' => 'active']],
@@ -41,11 +42,13 @@ final class TenantIsolationBehaviorTest extends TestCase
         $context = new TenantContext();
         $listener = new TenantListener($switcher, $registry, $context, new NullLogger(), 'test');
 
-        $listener(new RequestEvent(
-            $this->createMock(HttpKernelInterface::class),
-            Request::create('https://alpha.example.test/api/products'),
-            HttpKernelInterface::MAIN_REQUEST,
-        ));
+        $listener(
+            new RequestEvent(
+                $this->createMock(HttpKernelInterface::class),
+                Request::create('https://alpha.example.test/api/products'),
+                HttpKernelInterface::MAIN_REQUEST,
+            ),
+        );
         static::assertSame('alpha', $context->getTenantName());
 
         $failed = new RequestEvent(
@@ -64,7 +67,11 @@ final class TenantIsolationBehaviorTest extends TestCase
         $context = new TenantContext();
         $listener = new ConsoleContextListener($context);
         $command = new Command('tenant:health-check');
-        $commandEvent = new ConsoleCommandEvent($command, new \Symfony\Component\Console\Input\ArrayInput([]), new \Symfony\Component\Console\Output\NullOutput());
+        $commandEvent = new ConsoleCommandEvent(
+            $command,
+            new \Symfony\Component\Console\Input\ArrayInput([]),
+            new \Symfony\Component\Console\Output\NullOutput(),
+        );
 
         $listener($commandEvent);
         static::assertSame('cli:tenant:health-check', $context->getActorIdentifier());
@@ -79,11 +86,12 @@ final class TenantIsolationBehaviorTest extends TestCase
         $context->setTenant(10, 'alpha', 'https://alpha.example.test', 'request-a');
         $switcher = $this->createMock(TenantConnectionSwitcherInterface::class);
         $switchCalls = [];
-        $switcher->expects(static::exactly(2))->method('switchConnection')->willReturnCallback(
-            static function (string $tenant) use (&$switchCalls): void {
+        $switcher
+            ->expects(static::exactly(2))
+            ->method('switchConnection')
+            ->willReturnCallback(static function (string $tenant) use (&$switchCalls): void {
                 $switchCalls[] = $tenant;
-            },
-        );
+            });
 
         $handler = new BankStatementImportMessageHandler(
             new BankStatementParserService($this->createMock(EntityManagerInterface::class)),
@@ -95,11 +103,29 @@ final class TenantIsolationBehaviorTest extends TestCase
         );
         $ensureContext = new \ReflectionMethod($handler, 'ensureTenantContext');
 
-        $beta = new BankStatementImportMessage('import-b', '/tmp/missing', 'csv', 'https://beta.example.test', 'beta', 20, 'https://beta.example.test', 'request-b');
+        $beta = new BankStatementImportMessage(
+            'import-b',
+            '/tmp/missing',
+            'csv',
+            'https://beta.example.test',
+            'beta',
+            20,
+            'https://beta.example.test',
+            'request-b',
+        );
         static::assertTrue($ensureContext->invoke($handler, $beta));
         static::assertSame('beta', $context->getTenantName());
 
-        $alpha = new BankStatementImportMessage('import-a', '/tmp/missing', 'csv', 'https://alpha.example.test', 'alpha', 10, 'https://alpha.example.test', 'request-a');
+        $alpha = new BankStatementImportMessage(
+            'import-a',
+            '/tmp/missing',
+            'csv',
+            'https://alpha.example.test',
+            'alpha',
+            10,
+            'https://alpha.example.test',
+            'request-a',
+        );
         static::assertTrue($ensureContext->invoke($handler, $alpha));
         static::assertSame('alpha', $context->getTenantName());
         static::assertSame(['beta', 'alpha'], $switchCalls);
