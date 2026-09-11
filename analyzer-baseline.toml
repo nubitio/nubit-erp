@@ -3067,18 +3067,6 @@ message = "Attempting to access a method on a non-object type (`mixed`)."
 count = 1
 
 [[issues]]
-file = "src/Efact/Audit/AuditLogMessageHandler.php"
-code = "mixed-return-statement"
-message = 'Could not infer a precise return type for function `App\Efact\Audit\AuditLogMessageHandler::isControlPlaneReady`. Saw type `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Efact/Audit/AuditLogMessageHandler.php"
-code = "mixed-return-statement"
-message = "Could not infer a precise return type for function `{closure:src/Efact/Audit/AuditLogMessageHandler.php:54:63}`. Saw type `mixed`."
-count = 1
-
-[[issues]]
 file = "src/Efact/Audit/AuditLogRepository.php"
 code = "less-specific-nested-return-statement"
 message = '''Returned type `list<mixed>` is less specific than the declared return type `list<string>` for function `App\Efact\Audit\AuditLogRepository::getDistinctActions` due to nested 'mixed'.'''

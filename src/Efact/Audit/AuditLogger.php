@@ -30,7 +30,11 @@ readonly class AuditLogger
         $this->bus->dispatch($this->message($action, $metadata, $tenantId, $actor));
     }
 
-    /** Persist immediately, for use inside the mutation transaction. */
+    /**
+     * Persist immediately, for use inside the mutation transaction.
+     *
+     * @param array<string, mixed> $metadata
+     */
     public function logDurably(string $action, array $metadata = [], ?int $tenantId = null, ?string $actor = null): void
     {
         $this->handler->persist($this->message($action, $metadata, $tenantId, $actor));
