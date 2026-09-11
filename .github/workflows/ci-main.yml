@@ -179,7 +179,10 @@ jobs:
             e2e=false
           fi
           echo "e2e=${e2e}" >> "$GITHUB_OUTPUT"
-          echo "coverage=false" >> "$GITHUB_OUTPUT"
+          # Coverage is part of the PR contract. Keeping it behind the same
+          # path filters avoids paying for docs-only changes while preventing
+          # a green backend/frontend PR from bypassing the threshold.
+          echo "coverage=true" >> "$GITHUB_OUTPUT"
 
   backend:
     name: Backend Quality & Coverage
