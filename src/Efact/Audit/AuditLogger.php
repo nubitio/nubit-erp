@@ -19,6 +19,7 @@ readonly class AuditLogger
         private TenantRegistryInterface $tenantRegistry,
         private LoggerInterface $logger,
         private MessageBusInterface $bus,
+        private AuditLogMessageHandler $handler,
     ) {}
 
     /**
@@ -26,19 +27,29 @@ readonly class AuditLogger
      */
     public function log(string $action, array $metadata = [], ?int $tenantId = null, ?string $actor = null): void
     {
+        $this->bus->dispatch($this->message($action, $metadata, $tenantId, $actor));
+    }
+
+    /** Persist immediately, for use inside the mutation transaction. */
+    public function logDurably(string $action, array $metadata = [], ?int $tenantId = null, ?string $actor = null): void
+    {
+        $this->handler->persist($this->message($action, $metadata, $tenantId, $actor));
+    }
+
+    /** @param array<string, mixed> $metadata */
+    private function message(string $action, array $metadata, ?int $tenantId, ?string $actor): AuditLogMessage
+    {
         $actor = $this->resolveActor($actor, $metadata);
         $tenantId = $tenantId ?? $this->tenantContext->getTenantId() ?? $this->resolveTenantId($metadata);
-        $requestId = $this->tenantContext->getRequestId();
-        $channel = $this->tenantContext->getChannel();
 
-        $this->bus->dispatch(new AuditLogMessage(
+        return new AuditLogMessage(
             action: $action,
             metadata: json_encode($metadata, JSON_THROW_ON_ERROR),
             tenantId: $tenantId,
             actor: $actor,
-            channel: $channel,
-            requestId: $requestId,
-        ));
+            channel: $this->tenantContext->getChannel(),
+            requestId: $this->tenantContext->getRequestId(),
+        );
     }
 
     /**

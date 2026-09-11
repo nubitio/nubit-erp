@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace App\Settings\Controller;
 
 use App\ControlPlane\Certificate\CertificateLifecycleServiceInterface;
+use App\ControlPlane\Certificate\CertificateMetadata;
 use App\Efact\Audit\AuditLogger;
+use App\Identity\Entity\User;
 use App\Organization\Repository\CompanyRepository;
 use Nubit\Platform\Tenant\Context\TenantContext;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
@@ -26,19 +30,18 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/api/tenant')]
 final class TenantCertificateController extends AbstractController
 {
-    /** Keep tenant-facing certificate events aligned with the control-plane audit action. */
-    private const string CERTIFICATE_UPSERT_AUDIT_ACTION = 'tenant.certificate.upsert';
-
     public function __construct(
         private readonly TenantContext $tenantContext,
         private readonly CompanyRepository $companyRepository,
         private readonly CertificateLifecycleServiceInterface $certificates,
         private readonly AuditLogger $auditLogger,
-        private readonly LoggerInterface $logger,
+        private readonly Security $security,
+        private readonly UserPasswordHasherInterface $passwordHasher,
     ) {}
 
     #[Route('/certificate', name: 'api_tenant_certificate_upsert', methods: ['POST'])]
     #[IsGranted('perm:settings.edit')]
+    #[IsGranted('ROLE_ADMIN')]
     public function __invoke(Request $request): JsonResponse
     {
         $tenantName = $this->tenantContext->getTenantName();
@@ -46,8 +49,17 @@ final class TenantCertificateController extends AbstractController
             return $this->json(['error' => 'No tenant context'], Response::HTTP_UNAUTHORIZED);
         }
 
+        // A permission/role in a long-lived JWT is not step-up authentication.
+        // Require the current user's password for this credential-bearing write.
+        $user = $this->security->getUser();
+        $payload = $this->readPayload($request);
+        $reauthPassword = $payload['reauthPassword'] ?? $payload['currentPassword'] ?? null;
+        if (!$user instanceof User || !is_string($reauthPassword) || $reauthPassword === ''
+            || !$this->passwordHasher->isPasswordValid($user, $reauthPassword)) {
+            return $this->json(['error' => 'Reautenticacion requerida.'], Response::HTTP_FORBIDDEN);
+        }
+
         try {
-            $payload = $this->readPayload($request);
             $ruc = $this->resolveRuc($payload['ruc'] ?? null);
             $solUser = $this->solUserWithRuc($this->requiredString($payload, 'solUser'), $ruc);
             $solPass = $this->requiredString($payload, 'solPass');
@@ -60,10 +72,19 @@ final class TenantCertificateController extends AbstractController
                 $solPass,
                 $certificatePem,
                 $this->getUser()?->getUserIdentifier() ?? 'tenant-api',
+                function (int $_id, CertificateMetadata $metadata, array $_tenant) use ($ruc, $tenantName): void {
+                    $this->auditLogger->logDurably('tenant.certificate.upsert', [
+                        'outcome' => 'success',
+                        'tenant_name' => $tenantName,
+                        'ruc' => $ruc,
+                        'fingerprint_sha256' => $metadata->fingerprintSha256,
+                    ]);
+                },
             );
-            $this->recordCertificateAudit($certificate);
         } catch (\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
+        } catch (AccessDeniedHttpException) {
+            return $this->json(['error' => 'El RUC no pertenece al tenant actual.'], Response::HTTP_FORBIDDEN);
         } catch (\Throwable $e) {
             return $this->json(['error' => 'No se pudo configurar el certificado SUNAT.'], Response::HTTP_BAD_GATEWAY);
         }
@@ -75,6 +96,7 @@ final class TenantCertificateController extends AbstractController
 
     #[Route('/certificate', name: 'api_tenant_certificate_get', methods: ['GET'])]
     #[IsGranted('perm:settings.view')]
+    #[IsGranted('ROLE_ADMIN')]
     public function get(): JsonResponse
     {
         $tenantName = $this->tenantContext->getTenantName();
@@ -111,13 +133,19 @@ final class TenantCertificateController extends AbstractController
 
     private function resolveRuc(mixed $requestedRuc): string
     {
-        if (is_string($requestedRuc) && preg_match('/^\d{11}$/', $requestedRuc) === 1) {
-            return $requestedRuc;
+        if ($requestedRuc !== null && (!is_string($requestedRuc) || preg_match('/^\d{11}$/', $requestedRuc) !== 1)) {
+            throw new \InvalidArgumentException('El RUC debe tener 11 digitos.');
         }
 
-        $company = $this->companyRepository->findOneBy([]);
+        $company = is_string($requestedRuc)
+            ? $this->companyRepository->findOneBy(['ruc' => $requestedRuc])
+            : $this->companyRepository->findOneBy([]);
         if ($company !== null) {
             return $company->getRuc();
+        }
+
+        if (is_string($requestedRuc)) {
+            throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException('El RUC no pertenece al tenant actual.');
         }
 
         throw new \InvalidArgumentException('Debe indicar el RUC de la empresa.');
@@ -244,26 +272,4 @@ final class TenantCertificateController extends AbstractController
         ];
     }
 
-    private function recordCertificateAudit(object $certificate): void
-    {
-        $metadata = get_object_vars($certificate);
-
-        try {
-            $this->auditLogger->log(self::CERTIFICATE_UPSERT_AUDIT_ACTION, [
-                'outcome' => 'success',
-                'tenant_name' => $metadata['tenantName'],
-                'ruc' => $metadata['ruc'],
-                'fingerprint_sha256' => $metadata['fingerprintSha256'],
-            ]);
-        } catch (\Throwable) {
-            // The certificate has already been persisted. Audit transport failure
-            // must not turn that successful mutation into a misleading 502.
-            $this->logger->warning('Certificate audit event could not be recorded after successful upsert.', [
-                'action' => self::CERTIFICATE_UPSERT_AUDIT_ACTION,
-                'tenant_name' => $metadata['tenantName'],
-                'ruc' => $metadata['ruc'],
-                'fingerprint_sha256' => $metadata['fingerprintSha256'],
-            ]);
-        }
-    }
 }
