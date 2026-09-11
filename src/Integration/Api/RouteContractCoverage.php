@@ -19,9 +19,9 @@ final class RouteContractCoverage
             return [];
         }
 
-        return ['Documented and implemented /api/v1 routes differ. '
-            .'Missing: '.implode(', ', array_diff($implemented, $documented)).'; '
-            .'Undocumented: '.implode(', ', array_diff($documented, $implemented))];
+        return ['Documented and implemented /api/v1 routes differ.'
+            .' Missing from contract: '.implode(', ', array_diff($implemented, $documented)).'.'
+            .' Implemented nowhere: '.implode(', ', array_diff($documented, $implemented)).'];
     }
 
     /** @return list<string> */
@@ -44,12 +44,13 @@ final class RouteContractCoverage
     {
         $operations = [];
         foreach ($routes->all() as $route) {
-            if (!str_starts_with($route->getPath(), '/api/v1')) {
+            $path = $route->getPath();
+            if ($path !== '/api/v1' && !str_starts_with($path, '/api/v1/')) {
                 continue;
             }
-            foreach ($route->getMethods() ?? ['ANY'] as $method) {
+            foreach ($route->getMethods() ?: ['ANY'] as $method) {
                 if (in_array($method, ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], true)) {
-                    $operations[] = $method.' '.$route->getPath();
+                    $operations[] = $method.' '.$path;
                 }
             }
         }

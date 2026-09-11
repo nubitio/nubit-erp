@@ -493,6 +493,22 @@ export interface components {
             /** @constant */
             api_version: "v1";
         };
+        /** @description Authentication context returned by authenticated endpoints. */
+        Auth: {
+            client: string;
+            tenant: string;
+            scopes: string[];
+        };
+        Status: {
+            status: string;
+            message?: string | null;
+        };
+        Pagination: {
+            page: number;
+            per_page: number;
+            total: number;
+            total_pages?: number;
+        };
         JsonObject: {
             [key: string]: unknown;
         };
