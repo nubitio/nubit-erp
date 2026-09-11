@@ -14,7 +14,9 @@ final class MessengerFailurePolicyTest extends TestCase
 {
     public function testAsyncTransportHasBoundedRetriesAndDeadLetterTransport(): void
     {
-        $config = Yaml::parseFile(__DIR__ . '/../../config/packages/messenger.yaml')['framework']['messenger'];
+        /** @var array{framework: array{messenger: array{failure_transport: string, transports: array{async: array{retry_strategy: array{max_retries: int}}, failed: string}}}} $parsed */
+        $parsed = Yaml::parseFile(__DIR__ . '/../../config/packages/messenger.yaml');
+        $config = $parsed['framework']['messenger'];
 
         static::assertSame('failed', $config['failure_transport']);
         static::assertSame(3, $config['transports']['async']['retry_strategy']['max_retries']);
