@@ -281,7 +281,9 @@ final class AuthSelectBranchControllerTest extends TestCase
     public function testDeniesSecondBranchInSameCompanyWhenUserIsNotAssigned(): void
     {
         $company = new Company();
-        $branch = new Branch()->setName('Sucursal B')->setCompany($company);
+        $branch = new Branch()
+            ->setName('Sucursal B')
+            ->setCompany($company);
         $user = $this->createStub(User::class);
         $user->method('getDeletedAt')->willReturn(null);
         $user->method('getId')->willReturn(9);

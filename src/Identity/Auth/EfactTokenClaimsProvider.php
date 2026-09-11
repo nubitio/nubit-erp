@@ -74,7 +74,12 @@ final readonly class EfactTokenClaimsProvider implements TokenClaimsProviderInte
             return;
         }
         $branch = $this->branchRepository->find($branchId);
-        if (!$user instanceof User || null === $this->tenantContext->getTenantId() || null === $branch || !$user->hasBranchAccess($branch)) {
+        if (
+            !$user instanceof User
+            || null === $this->tenantContext->getTenantId()
+            || null === $branch
+            || !$user->hasBranchAccess($branch)
+        ) {
             throw new \RuntimeException('The refresh token branch is no longer authorized.');
         }
 
