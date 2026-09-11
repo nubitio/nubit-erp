@@ -52,46 +52,45 @@ final readonly class OpeningReceivableImporter
             ));
         }
 
-        $branch = $this->resolveBranch();
-        $warehouse = $this->resolveWarehouse($branch);
-        $paymentMethod =
-            $this->paymentMethodRepository->findOneBy(['name' => 'Credito']) ?? $this->paymentMethodRepository->findBy(
-                [],
-                ['id' => 'ASC'],
-                1,
-            )[0] ?? null;
-        $user = $this->security->getUser();
-        $userId = $user instanceof User ? (int) $user->getId() : 0;
-        $now = new DateTimeImmutable('now', new DateTimeZone('America/Lima'));
+        return $this->entityManager->wrapInTransaction(function () use ($rows): array {
+            $branch = $this->resolveBranch();
+            $warehouse = $this->resolveWarehouse($branch);
+            $paymentMethod = $this->resolvePaymentMethod();
+            $user = $this->security->getUser();
+            $userId = $user instanceof User ? (int) $user->getId() : 0;
+            $now = new DateTimeImmutable('now', new DateTimeZone('America/Lima'));
 
-        $created = 0;
-        $errors = [];
+            $created = 0;
+            $errors = [];
 
-        foreach ($rows as $index => $raw) {
-            $parsed = OpeningBalanceRow::tryFrom(is_array($raw) ? $raw : []);
-            if (is_string($parsed)) {
-                $errors[] = ['row' => $index + 1, 'message' => $parsed];
-                continue;
-            }
+            foreach ($rows as $index => $raw) {
+                $parsed = OpeningBalanceRow::tryFrom(is_array($raw) ? $raw : []);
+                if (is_string($parsed)) {
+                    $errors[] = ['row' => $index + 1, 'message' => $parsed];
+                    continue;
+                }
 
-            try {
                 $customer = $this->getOrCreateCustomer($parsed);
                 $sale = $this->buildSale($parsed, $customer, $branch, $warehouse, $paymentMethod, $userId, $now);
                 $this->entityManager->persist($sale);
                 ++$created;
-                if ($created % self::FLUSH_EVERY === 0) {
-                    // Keep the unit of work bounded without clearing the branch,
-                    // warehouse and payment method references used by the batch.
+                if (($created % self::FLUSH_EVERY) === 0) {
                     $this->entityManager->flush();
+                    $this->entityManager->clear();
+
+                    // clear() also detaches the shared references. Reload them before
+                    // attaching the next batch so Doctrine never persists a detached
+                    // branch, warehouse, or payment method.
+                    $branch = $this->resolveBranch();
+                    $warehouse = $this->resolveWarehouse($branch);
+                    $paymentMethod = $this->resolvePaymentMethod();
                 }
-            } catch (RuntimeException $exception) {
-                $errors[] = ['row' => $index + 1, 'message' => $exception->getMessage()];
             }
-        }
 
-        $this->entityManager->flush();
+            $this->entityManager->flush();
 
-        return ['created' => $created, 'errors' => $errors];
+            return ['created' => $created, 'errors' => $errors];
+        });
     }
 
     private function resolveBranch(): Branch
@@ -117,6 +116,17 @@ final readonly class OpeningReceivableImporter
         }
 
         return $warehouse;
+    }
+
+    private function resolvePaymentMethod(): ?PaymentMethod
+    {
+        return (
+            $this->paymentMethodRepository->findOneBy(['name' => 'Credito']) ?? $this->paymentMethodRepository->findBy(
+                [],
+                ['id' => 'ASC'],
+                1,
+            )[0] ?? null
+        );
     }
 
     private function getOrCreateCustomer(OpeningBalanceRow $row): Customer

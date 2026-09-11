@@ -12,8 +12,8 @@ use App\Onboarding\OpeningReceivableImporter;
 use App\Organization\Repository\BranchRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
-use Symfony\Bundle\SecurityBundle\Security;
 use RuntimeException;
+use Symfony\Bundle\SecurityBundle\Security;
 
 final class OpeningReceivableImporterCapacityTest extends TestCase
 {

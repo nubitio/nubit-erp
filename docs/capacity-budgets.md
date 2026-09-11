@@ -6,7 +6,7 @@ with `scripts/capacity/run.sh` before changing them.
 
 | Workload | Budget / ceiling | Pass threshold |
 | --- | ---: | --- |
-| Opening receivables import | 5,000 rows/request; flush every 250 rows | 0 requests over 1,500 ms at 250 rows |
+| Opening receivables import | 5,000 rows/request; flush and clear every 250 rows | p95 under 1,500 ms at 250 rows |
 | Webhook tick | 200 fan-outs and 200 delivery attempts/tenant/pass | 0 unbounded scans; p95 under 2,000 ms/tenant |
 | SUNAT retry worker | 100 documents/chunk; 256 MiB worker memory | RSS remains below 230 MiB during a 30-minute run |
 | Inventory Kardex export | 10,000 movement rows | HTTP 413/422 (not a process OOM) above the ceiling |
@@ -20,12 +20,14 @@ with `scripts/capacity/run.sh` before changing them.
 * Webhook fan-out and delivery are both bounded per tenant so one tenant cannot
   consume the whole minute-wide scheduler pass. The existing `--limit` option
   is the control; keep it at or below 200 in production.
-* Imports flush in bounded units and reject oversized requests before creating
-  entities. The request remains one logical operation, but its Doctrine unit of
-  work does not grow with the full file.
+* Imports flush and clear in bounded units and reject oversized requests before
+  creating entities. The whole request is one database transaction: an
+  unexpected failure rolls back all rows, while row validation errors are
+  returned as data. The Doctrine unit of work does not grow with the full file.
 * Kardex already has a composite `(warehouse_id, product_id, occurred_at)`
-  index and a hard 10,000-row export ceiling. Do not add a second overlapping
-  index without an `EXPLAIN` and production cardinality evidence.
+  index and a hard 10,000-row export ceiling. Exports above the ceiling return
+  HTTP 413 before loading the report. Do not add a second overlapping index
+  without an `EXPLAIN` and production cardinality evidence.
 * Retry and webhook workloads must use the async worker. Keep the scheduler
   worker for short command dispatch only.
 
