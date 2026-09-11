@@ -1,0 +1,70 @@
+# Production reliability contract. Import these expressions into SigNoz (or the
+# Prometheus-compatible alert manager) and keep the rule IDs stable for paging.
+# Metric names are the OpenTelemetry semantic names emitted by the application;
+# verify availability in the selected backend before enabling a rule.
+groups:
+  - name: nubit-production-slos
+    rules:
+      - id: api-availability
+        signal: metrics
+        expr: '100 * (1 - sum(rate(http_server_request_duration_seconds_count{http_response_status_code=~"5.."}[5m])) / sum(rate(http_server_request_duration_seconds_count[5m]))) < 99.9'
+        for: 10m
+        severity: page
+        owner: platform
+        objective: 'availability >= 99.9% over 30 days'
+      - id: api-latency-p95
+        signal: metrics
+        expr: 'histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{http_route!~"/health.*"}[5m]))) > 0.5'
+        for: 10m
+        severity: ticket
+        owner: platform
+        objective: 'p95 latency <= 500ms for non-health API requests'
+      - id: api-server-errors
+        signal: metrics
+        expr: '100 * sum(rate(http_server_request_duration_seconds_count{http_response_status_code=~"5.."}[5m])) / sum(rate(http_server_request_duration_seconds_count[5m])) > 0.5'
+        for: 5m
+        severity: page
+        owner: platform
+        objective: '5xx ratio < 0.5%'
+      - id: api-client-errors
+        signal: metrics
+        expr: '100 * sum(rate(http_server_request_duration_seconds_count{http_response_status_code=~"4.."}[15m])) / sum(rate(http_server_request_duration_seconds_count[15m])) > 5'
+        for: 15m
+        severity: ticket
+        owner: product
+        objective: '4xx ratio < 5% (exclude known validation-heavy routes when tuning)'
+      - id: fiscal-recovery-lag
+        signal: logs
+        expr: 'count_over_time({service_name="nubit-erp", event_name="billing.sunat.retry"}[15m]) > 0 OR count_over_time({service_name="nubit-erp", event_name="billing.sunat.failed"}[5m]) > 0'
+        for: 5m
+        severity: page
+        owner: billing
+        objective: 'reconcile failed fiscal submissions within 15 minutes'
+      - id: async-queue-age
+        signal: logs
+        expr: 'max_over_time(messenger_queue_oldest_message_age_seconds{queue="async"}[5m]) > 300'
+        for: 10m
+        severity: page
+        owner: platform
+        objective: 'async queue age < 5 minutes'
+      - id: webhook-delivery-lag
+        signal: logs
+        expr: 'max_over_time(integration_webhook_delivery_oldest_pending_age_seconds[10m]) > 900'
+        for: 10m
+        severity: ticket
+        owner: integrations
+        objective: 'pending webhook age < 15 minutes'
+      - id: backup-freshness
+        signal: logs
+        expr: 'time() - max(tenant_backup_completed_timestamp_seconds{status="completed"}) > 86400'
+        for: 30m
+        severity: page
+        owner: data
+        objective: 'every active tenant has a completed backup within 24 hours'
+      - id: tenant-health
+        signal: metrics
+        expr: 'sum by (tenant) (tenant_health_check_status{status!="ok"}) > 0'
+        for: 10m
+        severity: ticket
+        owner: support
+        objective: 'active tenant health checks remain green'

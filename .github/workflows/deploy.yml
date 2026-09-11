@@ -55,20 +55,15 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${APP_URL:-}" ]; then
-            echo "APP_URL not set; skipping healthcheck."
-            exit 0
+            echo "APP_URL is required when run_healthcheck=true." >&2
+            exit 1
           fi
-
-          echo "Waiting for application to become healthy..."
           for i in {1..18}; do
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${APP_URL}/health/live" 2>/dev/null || true)
-            if [ "$HTTP_STATUS" = "200" ]; then
-              echo "Healthy (HTTP 200) after ${i} attempt(s)."
+            if bash scripts/ops/production-smoke.sh; then
               exit 0
             fi
-            echo "Attempt ${i}/18 failed (HTTP ${HTTP_STATUS:-000}). Retrying..."
+            echo "Attempt ${i}/18 failed. Retrying..."
             sleep 5
           done
-
-          echo "Healthcheck failed."
+          echo "Smoke verification failed; promotion halted." >&2
           exit 1

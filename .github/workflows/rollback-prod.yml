@@ -1,0 +1,21 @@
+name: Rollback production
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_ref:
+        description: Last known-good immutable image digest (ghcr.io/...@sha256:...)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  rollback:
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: prod
+      image_ref: ${{ inputs.image_ref }}
+      run_healthcheck: true
+    secrets: inherit
