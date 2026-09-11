@@ -9,6 +9,7 @@ final class OpenApiSecurityRequirementsValidator
     /** @return list<string> */
     public function validate(string $key, array $operation, array $schemes): array
     {
+        /** @var list<string> $errors */
         $errors = [];
         $requirements = is_array($operation['security'] ?? null) ? $operation['security'] : [];
         foreach ($requirements as $requirement) {
@@ -20,11 +21,10 @@ final class OpenApiSecurityRequirementsValidator
             }
         }
 
-        $errors = array_merge($errors, new OpenApiSecurityContractRequirementsValidator()->validate(
-            $key,
-            $operation,
-            $requirements,
-        ));
+        $contractErrors = new OpenApiSecurityContractRequirementsValidator()->validate($key, $operation, $requirements);
+        foreach ($contractErrors as $error) {
+            $errors[] = $error;
+        }
 
         return $errors;
     }
