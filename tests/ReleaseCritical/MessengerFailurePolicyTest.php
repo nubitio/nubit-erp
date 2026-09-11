@@ -4,25 +4,39 @@ declare(strict_types=1);
 
 namespace App\Tests\ReleaseCritical;
 
-use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\EventListener\SendFailedMessageToFailureTransportListener;
 use Symfony\Component\Messenger\Retry\MultiplierRetryStrategy;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
-use Symfony\Component\Yaml\Yaml;
+use Symfony\Component\Messenger\Transport\TransportInterface;
 
-final class MessengerFailurePolicyTest extends TestCase
+final class MessengerFailurePolicyTest extends KernelTestCase
 {
     public function testAsyncTransportHasBoundedRetriesAndDeadLetterTransport(): void
     {
-        /** @var array{framework: array{messenger: array{failure_transport: string, transports: array{async: array{retry_strategy: array{max_retries: int}}, failed: string}}}} $parsed */
-        $parsed = Yaml::parseFile(__DIR__ . '/../../config/packages/messenger.yaml');
-        $config = $parsed['framework']['messenger'];
+        static::bootKernel();
+        $container = static::getContainer();
 
-        static::assertSame('failed', $config['failure_transport']);
-        static::assertSame(3, $config['transports']['async']['retry_strategy']['max_retries']);
-        static::assertSame('doctrine://control_plane?queue_name=failed', $config['transports']['failed']);
+        static::assertInstanceOf(TransportInterface::class, $container->get('messenger.transport.async'));
+        $failedTransport = $container->get('messenger.transport.failed');
+        static::assertInstanceOf(TransportInterface::class, $failedTransport);
+        $failureListener = $container->get('messenger.failure.send_failed_message_to_failure_transport_listener');
+        static::assertInstanceOf(SendFailedMessageToFailureTransportListener::class, $failureListener);
+        /** @var mixed $failureTransportsByName */
+        $failureTransportsByName = new \ReflectionProperty($failureListener, 'failureTransportsByName')->getValue(
+            $failureListener,
+        );
+        static::assertIsArray($failureTransportsByName);
+        static::assertSame('failed', $failureTransportsByName['async'] ?? null);
 
-        $strategy = new MultiplierRetryStrategy(3, 2000, 2);
+        $retryStrategies = $container->get('messenger.retry_strategy_locator');
+        static::assertInstanceOf(ContainerInterface::class, $retryStrategies);
+        /** @var MultiplierRetryStrategy $strategy */
+        $strategy = $retryStrategies->get('async');
+        static::assertInstanceOf(MultiplierRetryStrategy::class, $strategy);
+
         $message = new Envelope(new \stdClass());
         static::assertTrue($strategy->isRetryable($message));
         static::assertTrue($strategy->isRetryable($message->with(new RedeliveryStamp(2))));

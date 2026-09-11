@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\ReleaseCritical;
 
+use App\BankReconciliation\Entity\BankAccount;
+use App\BankReconciliation\Entity\BankStatementImport;
 use App\BankReconciliation\Message\BankStatementImportMessage;
 use App\BankReconciliation\MessageHandler\BankStatementImportMessageHandler;
 use App\BankReconciliation\Service\BankStatementParserService;
@@ -80,7 +82,7 @@ final class TenantIsolationBehaviorTest extends TestCase
         static::assertNull($context->getTenantName());
     }
 
-    public function testAsyncMessageSwitchesToItsTenantInsteadOfReusingWorkerContext(): void
+    public function testAsyncMessageExecutesWithItsTenantInsteadOfReusingWorkerContext(): void
     {
         $context = new TenantContext();
         $context->setTenant(10, 'alpha', 'https://alpha.example.test', 'request-a');
@@ -93,41 +95,62 @@ final class TenantIsolationBehaviorTest extends TestCase
                 $switchCalls[] = $tenant;
             });
 
+        $account = new BankAccount()
+            ->setBank('Banco de prueba')
+            ->setAlias('Cuenta de prueba')
+            ->setAccountNumber('0000000001');
+        $import = new BankStatementImport()
+            ->setBankAccount($account)
+            ->setFileName('empty.csv')
+            ->setBankProfile('GENERIC');
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(static::exactly(2))->method('find')->willReturn($import);
+        $entityManager->expects(static::exactly(2))->method('flush');
+
         $handler = new BankStatementImportMessageHandler(
-            new BankStatementParserService($this->createMock(EntityManagerInterface::class)),
-            $this->createMock(EntityManagerInterface::class),
+            new BankStatementParserService($entityManager),
+            $entityManager,
             $this->createMock(HubInterface::class),
             new NullLogger(),
             $context,
             $switcher,
         );
-        $ensureContext = new \ReflectionMethod($handler, 'ensureTenantContext');
+
+        $betaFile = tempnam(sys_get_temp_dir(), 'bank-import-beta-');
+        $alphaFile = tempnam(sys_get_temp_dir(), 'bank-import-alpha-');
+        if ($betaFile === false || $alphaFile === false) {
+            static::fail('Could not create temporary bank import fixtures.');
+        }
+        file_put_contents($betaFile, "date,description,amount\n");
+        file_put_contents($alphaFile, "date,description,amount\n");
 
         $beta = new BankStatementImportMessage(
             'import-b',
-            '/tmp/missing',
-            'csv',
+            $betaFile,
+            'GENERIC',
             'https://beta.example.test',
             'beta',
             20,
             'https://beta.example.test',
             'request-b',
         );
-        static::assertTrue($ensureContext->invoke($handler, $beta));
-        static::assertSame('beta', $context->getTenantName());
+        $handler($beta);
+        static::assertSame(BankStatementImport::COMPLETED, $import->getStatus());
+        static::assertNull($context->getTenantName(), 'the worker context is cleared after each message');
 
         $alpha = new BankStatementImportMessage(
             'import-a',
-            '/tmp/missing',
-            'csv',
+            $alphaFile,
+            'GENERIC',
             'https://alpha.example.test',
             'alpha',
             10,
             'https://alpha.example.test',
             'request-a',
         );
-        static::assertTrue($ensureContext->invoke($handler, $alpha));
-        static::assertSame('alpha', $context->getTenantName());
+        $handler($alpha);
+        static::assertSame(BankStatementImport::COMPLETED, $import->getStatus());
+        static::assertNull($context->getTenantName(), 'the worker context is cleared after each message');
         static::assertSame(['beta', 'alpha'], $switchCalls);
     }
 }
