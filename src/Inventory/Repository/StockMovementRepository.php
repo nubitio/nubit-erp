@@ -75,7 +75,7 @@ final readonly class StockMovementRepository
     }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param array<string, string> $filters
      *
      * @return list<StockMovement>
      *
@@ -272,7 +272,7 @@ final readonly class StockMovementRepository
     /**
      * Count total rows for pagination (without window function overhead).
      *
-     * @param array<string, mixed> $filters
+     * @param array<string, string> $filters
      *
      * @throws Exception
      */

@@ -62,7 +62,7 @@ final readonly class KardexExportService
             ],
             static fn($value) => $value !== null && $value !== '',
         );
-        /** @var array<string, string> $filters */
+        /** @var array{product?: string, warehouse?: string, from?: string, to?: string, valuation?: string} $filters */
 
         $movementCount = $this->movementRepository->countKardex($filters);
         if ($movementCount > self::MAX_EXPORT_ROWS) {
