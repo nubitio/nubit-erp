@@ -4,6 +4,98 @@
  */
 
 export interface paths {
+    "/api/afp-rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of AfpRate resources.
+         * @description Retrieves the collection of AfpRate resources.
+         */
+        get: operations["api_afp-rates_get_collection"];
+        put?: never;
+        /**
+         * Creates a AfpRate resource.
+         * @description Creates a AfpRate resource.
+         */
+        post: operations["api_afp-rates_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/afp-rates/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a AfpRate resource.
+         * @description Retrieves a AfpRate resource.
+         */
+        get: operations["api_afp-rates_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the AfpRate resource.
+         * @description Removes the AfpRate resource.
+         */
+        delete: operations["api_afp-rates_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the AfpRate resource.
+         * @description Updates the AfpRate resource.
+         */
+        patch: operations["api_afp-rates_id_patch"];
+        trace?: never;
+    };
+    "/api/asset-depreciation-entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of AssetDepreciationEntry resources.
+         * @description Retrieves the collection of AssetDepreciationEntry resources.
+         */
+        get: operations["api_asset-depreciation-entries_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/asset-depreciation-entries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a AssetDepreciationEntry resource.
+         * @description Retrieves a AssetDepreciationEntry resource.
+         */
+        get: operations["api_asset-depreciation-entries_id_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/assistant": {
         parameters: {
             query?: never;
@@ -38,6 +130,238 @@ export interface paths {
          * @description Genera un nuevo par de tokens (access/refresh) con la sucursal seleccionada.
          */
         post: operations["api_authselect-branch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of BankAccount resources.
+         * @description Retrieves the collection of BankAccount resources.
+         */
+        get: operations["api_bank-accounts_get_collection"];
+        put?: never;
+        /**
+         * Creates a BankAccount resource.
+         * @description Creates a BankAccount resource.
+         */
+        post: operations["api_bank-accounts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-accounts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a BankAccount resource.
+         * @description Retrieves a BankAccount resource.
+         */
+        get: operations["api_bank-accounts_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the BankAccount resource.
+         * @description Removes the BankAccount resource.
+         */
+        delete: operations["api_bank-accounts_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the BankAccount resource.
+         * @description Updates the BankAccount resource.
+         */
+        patch: operations["api_bank-accounts_id_patch"];
+        trace?: never;
+    };
+    "/api/bank-statement-imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of BankStatementImport resources.
+         * @description Retrieves the collection of BankStatementImport resources.
+         */
+        get: operations["api_bank-statement-imports_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-statement-imports/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a BankStatementImport resource.
+         * @description Retrieves a BankStatementImport resource.
+         */
+        get: operations["api_bank-statement-imports_id_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-statement-imports/{id}/auto-match": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a BankStatementImport resource.
+         * @description Creates a BankStatementImport resource.
+         */
+        post: operations["api_bank-statement-imports_idauto-match_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-statement-lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of BankStatementLine resources.
+         * @description Retrieves the collection of BankStatementLine resources.
+         */
+        get: operations["api_bank-statement-lines_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-statement-lines/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a BankStatementLine resource.
+         * @description Retrieves a BankStatementLine resource.
+         */
+        get: operations["api_bank-statement-lines_id_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-statement-lines/{id}/ignore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a BankStatementLine resource.
+         * @description Creates a BankStatementLine resource.
+         */
+        post: operations["api_bank-statement-lines_idignore_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-statement-lines/{id}/match": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a BankStatementLine resource.
+         * @description Creates a BankStatementLine resource.
+         */
+        post: operations["api_bank-statement-lines_idmatch_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-statement-lines/{id}/suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a BankStatementLine resource.
+         * @description Retrieves a BankStatementLine resource.
+         */
+        get: operations["api_bank-statement-lines_idsuggestions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank-statement-lines/{id}/unmatch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a BankStatementLine resource.
+         * @description Creates a BankStatementLine resource.
+         */
+        post: operations["api_bank-statement-lines_idunmatch_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -134,18 +458,10 @@ export interface paths {
         get: operations["api_cash-movements_id_get"];
         put?: never;
         post?: never;
-        /**
-         * Removes the CashMovement resource.
-         * @description Removes the CashMovement resource.
-         */
-        delete: operations["api_cash-movements_id_delete"];
+        delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Updates the CashMovement resource.
-         * @description Updates the CashMovement resource.
-         */
-        patch: operations["api_cash-movements_id_patch"];
+        patch?: never;
         trace?: never;
     };
     "/api/cash-movement-categories": {
@@ -345,11 +661,7 @@ export interface paths {
          */
         get: operations["api_cash-sessions_get_collection"];
         put?: never;
-        /**
-         * Creates a CashSession resource.
-         * @description Creates a CashSession resource.
-         */
-        post: operations["api_cash-sessions_post"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -370,18 +682,10 @@ export interface paths {
         get: operations["api_cash-sessions_id_get"];
         put?: never;
         post?: never;
-        /**
-         * Removes the CashSession resource.
-         * @description Removes the CashSession resource.
-         */
-        delete: operations["api_cash-sessions_id_delete"];
+        delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Updates the CashSession resource.
-         * @description Updates the CashSession resource.
-         */
-        patch: operations["api_cash-sessions_id_patch"];
+        patch?: never;
         trace?: never;
     };
     "/api/cash-sessions/{id}/close": {
@@ -462,58 +766,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
-        trace?: never;
-    };
-    "/api/cash-shifts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Retrieves the collection of CashShift resources.
-         * @description Retrieves the collection of CashShift resources.
-         */
-        get: operations["api_cash-shifts_get_collection"];
-        put?: never;
-        /**
-         * Creates a CashShift resource.
-         * @description Creates a CashShift resource.
-         */
-        post: operations["api_cash-shifts_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/cash-shifts/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Retrieves a CashShift resource.
-         * @description Retrieves a CashShift resource.
-         */
-        get: operations["api_cash-shifts_id_get"];
-        put?: never;
-        post?: never;
-        /**
-         * Removes the CashShift resource.
-         * @description Removes the CashShift resource.
-         */
-        delete: operations["api_cash-shifts_id_delete"];
-        options?: never;
-        head?: never;
-        /**
-         * Updates the CashShift resource.
-         * @description Updates the CashShift resource.
-         */
-        patch: operations["api_cash-shifts_id_patch"];
         trace?: never;
     };
     "/api/cash-shifts/{id}/movements": {
@@ -626,6 +878,26 @@ export interface paths {
          * @description Updates the Category resource.
          */
         patch: operations["api_categories_id_patch"];
+        trace?: never;
+    };
+    "/api/sales/collect-on-account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a CollectOnAccount resource.
+         * @description Creates a CollectOnAccount resource.
+         */
+        post: operations["sales_collect_on_account"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/companies": {
@@ -824,6 +1096,250 @@ export interface paths {
         patch: operations["api_customers_id_patch"];
         trace?: never;
     };
+    "/api/sales/customer-advances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a CustomerAdvance resource.
+         * @description Creates a CustomerAdvance resource.
+         */
+        post: operations["sales_receive_customer_advance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sales/customer-advances/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a CustomerAdvance resource.
+         * @description Creates a CustomerAdvance resource.
+         */
+        post: operations["sales_apply_customer_advance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sales/reports/customer-statement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Customer account statement with aging
+         * @description Chronological charges and abonos with a running balance, period totals and an aging breakdown, for one customer. Built from credit sales and sale_payments.
+         */
+        get: operations["api_salesreportscustomer-statement_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of CustomerSubscription resources.
+         * @description Retrieves the collection of CustomerSubscription resources.
+         */
+        get: operations["api_customer-subscriptions_get_collection"];
+        put?: never;
+        /**
+         * Creates a CustomerSubscription resource.
+         * @description Creates a CustomerSubscription resource.
+         */
+        post: operations["api_customer-subscriptions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-subscriptions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a CustomerSubscription resource.
+         * @description Retrieves a CustomerSubscription resource.
+         */
+        get: operations["api_customer-subscriptions_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the CustomerSubscription resource.
+         * @description Removes the CustomerSubscription resource.
+         */
+        delete: operations["api_customer-subscriptions_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the CustomerSubscription resource.
+         * @description Updates the CustomerSubscription resource.
+         */
+        patch: operations["api_customer-subscriptions_id_patch"];
+        trace?: never;
+    };
+    "/api/customer-subscriptions/{id}/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a CustomerSubscription resource.
+         * @description Creates a CustomerSubscription resource.
+         */
+        post: operations["customer_subscription_generate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-subscription-lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of CustomerSubscriptionLine resources.
+         * @description Retrieves the collection of CustomerSubscriptionLine resources.
+         */
+        get: operations["api_customer-subscription-lines_get_collection"];
+        put?: never;
+        /**
+         * Creates a CustomerSubscriptionLine resource.
+         * @description Creates a CustomerSubscriptionLine resource.
+         */
+        post: operations["api_customer-subscription-lines_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-subscription-lines/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a CustomerSubscriptionLine resource.
+         * @description Retrieves a CustomerSubscriptionLine resource.
+         */
+        get: operations["api_customer-subscription-lines_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the CustomerSubscriptionLine resource.
+         * @description Removes the CustomerSubscriptionLine resource.
+         */
+        delete: operations["api_customer-subscription-lines_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the CustomerSubscriptionLine resource.
+         * @description Updates the CustomerSubscriptionLine resource.
+         */
+        patch: operations["api_customer-subscription-lines_id_patch"];
+        trace?: never;
+    };
+    "/api/customer-subscriptions/{id}/lines": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of CustomerSubscriptionLine resources.
+         * @description Retrieves the collection of CustomerSubscriptionLine resources.
+         */
+        get: operations["api_customer-subscriptions_idlines_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-subscription-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of CustomerSubscriptionRun resources.
+         * @description Retrieves the collection of CustomerSubscriptionRun resources.
+         */
+        get: operations["api_customer-subscription-runs_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/customer-subscription-runs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a CustomerSubscriptionRun resource.
+         * @description Retrieves a CustomerSubscriptionRun resource.
+         */
+        get: operations["api_customer-subscription-runs_id_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/bi/{type}": {
         parameters: {
             query?: never;
@@ -908,6 +1424,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/employees": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of Employee resources.
+         * @description Retrieves the collection of Employee resources.
+         */
+        get: operations["api_employees_get_collection"];
+        put?: never;
+        /**
+         * Creates a Employee resource.
+         * @description Creates a Employee resource.
+         */
+        post: operations["api_employees_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/employees/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a Employee resource.
+         * @description Retrieves a Employee resource.
+         */
+        get: operations["api_employees_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the Employee resource.
+         * @description Removes the Employee resource.
+         */
+        delete: operations["api_employees_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the Employee resource.
+         * @description Updates the Employee resource.
+         */
+        patch: operations["api_employees_id_patch"];
+        trace?: never;
+    };
     "/api/exchange-rate/{currency}": {
         parameters: {
             query?: never;
@@ -946,6 +1514,282 @@ export interface paths {
          * @description Creates a ExchangeRate resource.
          */
         post: operations["api_exchange-rate_currencysync_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/expense-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of ExpenseCategory resources.
+         * @description Retrieves the collection of ExpenseCategory resources.
+         */
+        get: operations["api_expense-categories_get_collection"];
+        put?: never;
+        /**
+         * Creates a ExpenseCategory resource.
+         * @description Creates a ExpenseCategory resource.
+         */
+        post: operations["api_expense-categories_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/expense-categories/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a ExpenseCategory resource.
+         * @description Retrieves a ExpenseCategory resource.
+         */
+        get: operations["api_expense-categories_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the ExpenseCategory resource.
+         * @description Removes the ExpenseCategory resource.
+         */
+        delete: operations["api_expense-categories_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the ExpenseCategory resource.
+         * @description Updates the ExpenseCategory resource.
+         */
+        patch: operations["api_expense-categories_id_patch"];
+        trace?: never;
+    };
+    "/api/expense-reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of ExpenseReport resources.
+         * @description Retrieves the collection of ExpenseReport resources.
+         */
+        get: operations["api_expense-reports_get_collection"];
+        put?: never;
+        /**
+         * Creates a ExpenseReport resource.
+         * @description Creates a ExpenseReport resource.
+         */
+        post: operations["api_expense-reports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/expense-reports/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a ExpenseReport resource.
+         * @description Retrieves a ExpenseReport resource.
+         */
+        get: operations["api_expense-reports_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the ExpenseReport resource.
+         * @description Removes the ExpenseReport resource.
+         */
+        delete: operations["api_expense-reports_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the ExpenseReport resource.
+         * @description Updates the ExpenseReport resource.
+         */
+        patch: operations["api_expense-reports_id_patch"];
+        trace?: never;
+    };
+    "/api/expense-reports/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a ExpenseReport resource.
+         * @description Creates a ExpenseReport resource.
+         */
+        post: operations["api_expense-reports_idapprove_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/expense-reports/{id}/reimburse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a ExpenseReport resource.
+         * @description Creates a ExpenseReport resource.
+         */
+        post: operations["api_expense-reports_idreimburse_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/expense-reports/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a ExpenseReport resource.
+         * @description Creates a ExpenseReport resource.
+         */
+        post: operations["api_expense-reports_idreject_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fixed-assets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of FixedAsset resources.
+         * @description Retrieves the collection of FixedAsset resources.
+         */
+        get: operations["api_fixed-assets_get_collection"];
+        put?: never;
+        /**
+         * Creates a FixedAsset resource.
+         * @description Creates a FixedAsset resource.
+         */
+        post: operations["api_fixed-assets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/fixed-assets/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a FixedAsset resource.
+         * @description Retrieves a FixedAsset resource.
+         */
+        get: operations["api_fixed-assets_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the FixedAsset resource.
+         * @description Removes the FixedAsset resource.
+         */
+        delete: operations["api_fixed-assets_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the FixedAsset resource.
+         * @description Updates the FixedAsset resource.
+         */
+        patch: operations["api_fixed-assets_id_patch"];
+        trace?: never;
+    };
+    "/api/fixed-assets/{id}/dispose": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a FixedAsset resource.
+         * @description Creates a FixedAsset resource.
+         */
+        post: operations["api_fixed-assets_iddispose_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gl-accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of GlAccount resources.
+         * @description Retrieves the collection of GlAccount resources.
+         */
+        get: operations["api_gl-accounts_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/gl-accounts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a GlAccount resource.
+         * @description Retrieves a GlAccount resource.
+         */
+        get: operations["api_gl-accounts_id_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1004,6 +1848,46 @@ export interface paths {
          * @description Retrieves a Invoice resource.
          */
         get: operations["api_tax-documents_tax_document_idvoucher_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/journal-entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of JournalEntry resources.
+         * @description Retrieves the collection of JournalEntry resources.
+         */
+        get: operations["api_journal-entries_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/journal-entries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a JournalEntry resource.
+         * @description Retrieves a JournalEntry resource.
+         */
+        get: operations["api_journal-entries_id_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1160,6 +2044,282 @@ export interface paths {
         patch: operations["api_payment-methods_id_patch"];
         trace?: never;
     };
+    "/api/payroll-runs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of PayrollRun resources.
+         * @description Retrieves the collection of PayrollRun resources.
+         */
+        get: operations["api_payroll-runs_get_collection"];
+        put?: never;
+        /**
+         * Creates a PayrollRun resource.
+         * @description Creates a PayrollRun resource.
+         */
+        post: operations["api_payroll-runs_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payroll-runs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a PayrollRun resource.
+         * @description Retrieves a PayrollRun resource.
+         */
+        get: operations["api_payroll-runs_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the PayrollRun resource.
+         * @description Removes the PayrollRun resource.
+         */
+        delete: operations["api_payroll-runs_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the PayrollRun resource.
+         * @description Updates the PayrollRun resource.
+         */
+        patch: operations["api_payroll-runs_id_patch"];
+        trace?: never;
+    };
+    "/api/payroll-runs/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a PayrollRun resource.
+         * @description Creates a PayrollRun resource.
+         */
+        post: operations["api_payroll-runs_idapprove_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payroll-runs/{id}/calculate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a PayrollRun resource.
+         * @description Creates a PayrollRun resource.
+         */
+        post: operations["api_payroll-runs_idcalculate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payroll-runs/{id}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a PayrollRun resource.
+         * @description Creates a PayrollRun resource.
+         */
+        post: operations["api_payroll-runs_idpay_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payslip-entries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of PayslipEntry resources.
+         * @description Retrieves the collection of PayslipEntry resources.
+         */
+        get: operations["api_payslip-entries_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/payslip-entries/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a PayslipEntry resource.
+         * @description Retrieves a PayslipEntry resource.
+         */
+        get: operations["api_payslip-entries_id_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pharmacy/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of PharmacyBatch resources.
+         * @description Retrieves the collection of PharmacyBatch resources.
+         */
+        get: operations["api_pharmacybatches_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pharmacy/batches/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a PharmacyBatch resource.
+         * @description Retrieves a PharmacyBatch resource.
+         */
+        get: operations["api_pharmacybatches_id_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pharmacy/prescriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of PharmacyPrescription resources.
+         * @description Retrieves the collection of PharmacyPrescription resources.
+         */
+        get: operations["api_pharmacyprescriptions_get_collection"];
+        put?: never;
+        /**
+         * Creates a PharmacyPrescription resource.
+         * @description Creates a PharmacyPrescription resource.
+         */
+        post: operations["api_pharmacyprescriptions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pharmacy/prescriptions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a PharmacyPrescription resource.
+         * @description Retrieves a PharmacyPrescription resource.
+         */
+        get: operations["api_pharmacyprescriptions_id_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pharmacy/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of PharmacyProduct resources.
+         * @description Retrieves the collection of PharmacyProduct resources.
+         */
+        get: operations["api_pharmacyproducts_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/pharmacy/products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a PharmacyProduct resource.
+         * @description Retrieves a PharmacyProduct resource.
+         */
+        get: operations["api_pharmacyproducts_id_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/price-lists": {
         parameters: {
             query?: never;
@@ -1230,6 +2390,26 @@ export interface paths {
          * @description Updates the PriceList resource.
          */
         patch: operations["api_price-lists_id_patch"];
+        trace?: never;
+    };
+    "/api/price-lists/{id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of PriceList resources.
+         * @description Retrieves the collection of PriceList resources.
+         */
+        get: operations["api_price-lists_idapply_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/price-lists/{id}/prices": {
@@ -1453,6 +2633,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/purchase-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of PurchaseOrder resources.
+         * @description Retrieves the collection of PurchaseOrder resources.
+         */
+        get: operations["api_purchase-orders_get_collection"];
+        put?: never;
+        /**
+         * Creates a PurchaseOrder resource.
+         * @description Creates a PurchaseOrder resource.
+         */
+        post: operations["api_purchase-orders_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/purchase-orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a PurchaseOrder resource.
+         * @description Retrieves a PurchaseOrder resource.
+         */
+        get: operations["api_purchase-orders_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the PurchaseOrder resource.
+         * @description Removes the PurchaseOrder resource.
+         */
+        delete: operations["api_purchase-orders_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the PurchaseOrder resource.
+         * @description Updates the PurchaseOrder resource.
+         */
+        patch: operations["api_purchase-orders_id_patch"];
+        trace?: never;
+    };
+    "/api/purchase-order-items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a PurchaseOrderItem resource.
+         * @description Retrieves a PurchaseOrderItem resource.
+         */
+        get: operations["api_purchase-order-items_id_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/roles": {
         parameters: {
             query?: never;
@@ -1545,6 +2797,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/role-permissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a RolePermission resource.
+         * @description Creates a RolePermission resource.
+         */
+        post: operations["api_role-permissions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/role-permissions/{role_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of RolePermission resources.
+         * @description Retrieves the collection of RolePermission resources.
+         */
+        get: operations["api_role-permissions_role_id_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sales": {
         parameters: {
             query?: never;
@@ -1586,11 +2878,27 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sales/{id}/collect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /**
-         * Updates the Sale resource.
-         * @description Updates the Sale resource.
+         * Creates a Sale resource.
+         * @description Creates a Sale resource.
          */
-        patch: operations["api_sales_id_patch"];
+        post: operations["sale_collect_payment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/sales/{id}/invoice": {
@@ -1607,6 +2915,26 @@ export interface paths {
          * @description Creates a Sale resource.
          */
         post: operations["sale_make_invoice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sales/{id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a Sale resource.
+         * @description Retrieves a Sale resource.
+         */
+        get: operations["sale_payment_history"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1687,6 +3015,98 @@ export interface paths {
         get: operations["api_sales_iditems.__format_get_collection"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sale-quotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of SaleQuote resources.
+         * @description Retrieves the collection of SaleQuote resources.
+         */
+        get: operations["api_sale-quotes_get_collection"];
+        put?: never;
+        /**
+         * Creates a SaleQuote resource.
+         * @description Creates a SaleQuote resource.
+         */
+        post: operations["api_sale-quotes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sale-quotes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a SaleQuote resource.
+         * @description Retrieves a SaleQuote resource.
+         */
+        get: operations["api_sale-quotes_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the SaleQuote resource.
+         * @description Removes the SaleQuote resource.
+         */
+        delete: operations["api_sale-quotes_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the SaleQuote resource.
+         * @description Updates the SaleQuote resource.
+         */
+        patch: operations["api_sale-quotes_id_patch"];
+        trace?: never;
+    };
+    "/api/sale-quotes/{id}/convert": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a SaleQuote resource.
+         * @description Creates a SaleQuote resource.
+         */
+        post: operations["sale_quote_convert"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sale-quotes/{id}/send": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a SaleQuote resource.
+         * @description Creates a SaleQuote resource.
+         */
+        post: operations["sale_quote_send"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1789,10 +3209,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Retrieves a StockEntry resource.
-         * @description Retrieves a StockEntry resource.
+         * Retrieves the collection of StockEntryItem resources.
+         * @description Retrieves the collection of StockEntryItem resources.
          */
-        get: operations["api_stock-entries_iditems_get"];
+        get: operations["api_stock-entries_iditems_get_collection"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1859,6 +3279,58 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/subscription-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of SubscriptionPlan resources.
+         * @description Retrieves the collection of SubscriptionPlan resources.
+         */
+        get: operations["api_subscription-plans_get_collection"];
+        put?: never;
+        /**
+         * Creates a SubscriptionPlan resource.
+         * @description Creates a SubscriptionPlan resource.
+         */
+        post: operations["api_subscription-plans_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/subscription-plans/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a SubscriptionPlan resource.
+         * @description Retrieves a SubscriptionPlan resource.
+         */
+        get: operations["api_subscription-plans_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the SubscriptionPlan resource.
+         * @description Removes the SubscriptionPlan resource.
+         */
+        delete: operations["api_subscription-plans_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the SubscriptionPlan resource.
+         * @description Updates the SubscriptionPlan resource.
+         */
+        patch: operations["api_subscription-plans_id_patch"];
         trace?: never;
     };
     "/api/sunat-catalogs": {
@@ -1989,6 +3461,78 @@ export interface paths {
         patch: operations["api_suppliers_id_patch"];
         trace?: never;
     };
+    "/api/supplier-bills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of SupplierBill resources.
+         * @description Retrieves the collection of SupplierBill resources.
+         */
+        get: operations["api_supplier-bills_get_collection"];
+        put?: never;
+        /**
+         * Creates a SupplierBill resource.
+         * @description Creates a SupplierBill resource.
+         */
+        post: operations["api_supplier-bills_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supplier-bills/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a SupplierBill resource.
+         * @description Retrieves a SupplierBill resource.
+         */
+        get: operations["api_supplier-bills_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the SupplierBill resource.
+         * @description Removes the SupplierBill resource.
+         */
+        delete: operations["api_supplier-bills_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the SupplierBill resource.
+         * @description Updates the SupplierBill resource.
+         */
+        patch: operations["api_supplier-bills_id_patch"];
+        trace?: never;
+    };
+    "/api/supplier-bills/{id}/pay": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a SupplierBill resource.
+         * @description Creates a SupplierBill resource.
+         */
+        post: operations["api_supplier-bills_idpay_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sales/{saleId}/tax-documents": {
         parameters: {
             query?: never;
@@ -2047,18 +3591,10 @@ export interface paths {
         get: operations["api_tax-documents_id_get"];
         put?: never;
         post?: never;
-        /**
-         * Removes the TaxDocument resource.
-         * @description Removes the TaxDocument resource.
-         */
-        delete: operations["api_tax-documents_id_delete"];
+        delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Updates the TaxDocument resource.
-         * @description Updates the TaxDocument resource.
-         */
-        patch: operations["api_tax-documents_id_patch"];
+        patch?: never;
         trace?: never;
     };
     "/api/tax-documents/{id}/consult": {
@@ -2585,9 +4121,130 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * @description Editable reference table for AFP rates — deliberately data, not code
+         *     constants, because commission rates change periodically per AFP and
+         *     must be correctable without a redeploy. Seeded with rates gathered
+         *     during this phase's research; MUST be reviewed against the current
+         *     official rates by an accountant/payroll specialist before this module
+         *     is used for real payroll (see the Fase 7 plan notes).
+         */
+        AfpRate: {
+            readonly id?: number;
+            /** @description afp_rate.afp_provider.label */
+            afpProvider: string;
+            /** @description afp_rate.mandatory_contribution_rate.label */
+            mandatoryContributionRate: string;
+            /** @description afp_rate.insurance_premium_rate.label */
+            insurancePremiumRate: string;
+            /** @description afp_rate.commission_rate.label */
+            commissionRate: string;
+            /**
+             * Format: date-time
+             * @description afp_rate.effective_from.label
+             */
+            effectiveFrom: string;
+            /** @description afp_rate.note.label */
+            note?: string | null;
+        };
+        /**
+         * @description Editable reference table for AFP rates — deliberately data, not code
+         *     constants, because commission rates change periodically per AFP and
+         *     must be correctable without a redeploy. Seeded with rates gathered
+         *     during this phase's research; MUST be reviewed against the current
+         *     official rates by an accountant/payroll specialist before this module
+         *     is used for real payroll (see the Fase 7 plan notes).
+         */
+        "AfpRate.jsonMergePatch": {
+            readonly id?: number;
+            /** @description afp_rate.afp_provider.label */
+            afpProvider?: string;
+            /** @description afp_rate.mandatory_contribution_rate.label */
+            mandatoryContributionRate?: string;
+            /** @description afp_rate.insurance_premium_rate.label */
+            insurancePremiumRate?: string;
+            /** @description afp_rate.commission_rate.label */
+            commissionRate?: string;
+            /**
+             * Format: date-time
+             * @description afp_rate.effective_from.label
+             */
+            effectiveFrom?: string;
+            /** @description afp_rate.note.label */
+            note?: string | null;
+        };
+        /**
+         * @description Editable reference table for AFP rates — deliberately data, not code
+         *     constants, because commission rates change periodically per AFP and
+         *     must be correctable without a redeploy. Seeded with rates gathered
+         *     during this phase's research; MUST be reviewed against the current
+         *     official rates by an accountant/payroll specialist before this module
+         *     is used for real payroll (see the Fase 7 plan notes).
+         */
+        "AfpRate.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            /** @description afp_rate.afp_provider.label */
+            afpProvider: string;
+            /** @description afp_rate.mandatory_contribution_rate.label */
+            mandatoryContributionRate: string;
+            /** @description afp_rate.insurance_premium_rate.label */
+            insurancePremiumRate: string;
+            /** @description afp_rate.commission_rate.label */
+            commissionRate: string;
+            /**
+             * Format: date-time
+             * @description afp_rate.effective_from.label
+             */
+            effectiveFrom: string;
+            /** @description afp_rate.note.label */
+            note?: string | null;
+        };
+        /**
+         * @description One month's depreciation posting for a FixedAsset — read-only via the
+         *     API, generated exclusively by FixedAssetService::generateDueEntries().
+         *     FixedAsset::$accumulatedDepreciation is the denormalized running total
+         *     shown in the UI; this table exists for audit trail.
+         */
+        "AssetDepreciationEntry-asset_depreciation_entry.read": {
+            readonly id?: string;
+            fixedAsset?: components["schemas"]["FixedAsset-asset_depreciation_entry.read"];
+            /**
+             * Format: date-time
+             * @description asset_depreciation_entry.period.label
+             */
+            period?: string;
+            /** @description asset_depreciation_entry.amount.label */
+            amount?: string;
+            /** @description asset_depreciation_entry.accumulated_after.label */
+            accumulatedAfter?: string;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        /**
+         * @description One month's depreciation posting for a FixedAsset — read-only via the
+         *     API, generated exclusively by FixedAssetService::generateDueEntries().
+         *     FixedAsset::$accumulatedDepreciation is the denormalized running total
+         *     shown in the UI; this table exists for audit trail.
+         */
+        "AssetDepreciationEntry.jsonld-asset_depreciation_entry.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            fixedAsset?: components["schemas"]["FixedAsset.jsonld-asset_depreciation_entry.read"];
+            /**
+             * Format: date-time
+             * @description asset_depreciation_entry.period.label
+             */
+            period?: string;
+            /** @description asset_depreciation_entry.amount.label */
+            amount?: string;
+            /** @description asset_depreciation_entry.accumulated_after.label */
+            accumulatedAfter?: string;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
         "Assistant.AssistantRequest": {
             messages: components["schemas"]["AssistantMessageInput"][];
             attachments?: components["schemas"]["AttachmentInput"][];
+            screenContext?: components["schemas"]["ScreenContextInput"] | null;
         };
         "Assistant.AssistantResponse": {
             message?: string;
@@ -2646,6 +4303,217 @@ export interface components {
             role?: number | null;
             roles?: string[] | null;
         };
+        "BankAccount-bank_account.read": {
+            readonly id?: string;
+            bank: string;
+            alias: string;
+            accountNumber: string;
+            cci?: string | null;
+            /** @default PEN */
+            currency: string;
+            /** @default true */
+            active: boolean;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        "BankAccount-bank_account.write": {
+            bank: string;
+            alias: string;
+            accountNumber: string;
+            cci?: string | null;
+            /** @default PEN */
+            currency: string;
+            /** @default true */
+            active: boolean;
+        };
+        "BankAccount-bank_account.write.jsonMergePatch": {
+            bank?: string;
+            alias?: string;
+            accountNumber?: string;
+            cci?: string | null;
+            /** @default PEN */
+            currency: string;
+            /** @default true */
+            active: boolean;
+        };
+        "BankAccount-bank_statement_import.read": Record<string, never>;
+        "BankAccount-bank_statement_line.read": Record<string, never>;
+        "BankAccount.jsonld-bank_account.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            bank: string;
+            alias: string;
+            accountNumber: string;
+            cci?: string | null;
+            /** @default PEN */
+            currency: string;
+            /** @default true */
+            active: boolean;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        "BankAccount.jsonld-bank_statement_import.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        "BankAccount.jsonld-bank_statement_line.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        /**
+         * @description One "import a bank statement" job. Created only by
+         *     BankStatementImportController::upload() (multipart file upload, not a
+         *     plain ApiResource Post — same reasoning as ProductImportController).
+         */
+        "BankStatementImport-bank_statement_import.read": {
+            readonly id?: string;
+            bankAccount?: components["schemas"]["BankAccount-bank_statement_import.read"];
+            fileName?: string;
+            bankProfile?: string;
+            /** @default PROCESSING */
+            status: string;
+            /** @default 0 */
+            totalRows: number;
+            /** @default 0 */
+            importedRows: number;
+            /** @default 0 */
+            errorRows: number;
+            errors?: {
+                [key: string]: number | string;
+            }[] | null;
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            createdBy?: string;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        "BankStatementImport-bank_statement_line.read": Record<string, never>;
+        /**
+         * @description One "import a bank statement" job. Created only by
+         *     BankStatementImportController::upload() (multipart file upload, not a
+         *     plain ApiResource Post — same reasoning as ProductImportController).
+         */
+        "BankStatementImport.BankStatementImportAutoMatchDto": {
+            id?: string;
+        };
+        /**
+         * @description One "import a bank statement" job. Created only by
+         *     BankStatementImportController::upload() (multipart file upload, not a
+         *     plain ApiResource Post — same reasoning as ProductImportController).
+         */
+        "BankStatementImport.jsonld-bank_statement_import.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            bankAccount?: components["schemas"]["BankAccount.jsonld-bank_statement_import.read"];
+            fileName?: string;
+            bankProfile?: string;
+            /** @default PROCESSING */
+            status: string;
+            /** @default 0 */
+            totalRows: number;
+            /** @default 0 */
+            importedRows: number;
+            /** @default 0 */
+            errorRows: number;
+            errors?: {
+                [key: string]: number | string;
+            }[] | null;
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            createdBy?: string;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        /**
+         * @description One "import a bank statement" job. Created only by
+         *     BankStatementImportController::upload() (multipart file upload, not a
+         *     plain ApiResource Post — same reasoning as ProductImportController).
+         */
+        "BankStatementImport.jsonld-bank_statement_line.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        /**
+         * @description One line from an imported bank statement. Lines are only ever created by
+         *     the import pipeline (never a plain Post) and mutated only through the
+         *     match/unmatch/ignore actions below.
+         */
+        "BankStatementLine-bank_reconciliation_suggestion.read": Record<string, never>;
+        /**
+         * @description One line from an imported bank statement. Lines are only ever created by
+         *     the import pipeline (never a plain Post) and mutated only through the
+         *     match/unmatch/ignore actions below.
+         */
+        "BankStatementLine-bank_statement_line.read": {
+            readonly id?: number | string;
+            bankAccount?: components["schemas"]["BankAccount-bank_statement_line.read"];
+            importBatch?: components["schemas"]["BankStatementImport-bank_statement_line.read"];
+            /** Format: date-time */
+            transactionDate?: string;
+            /**
+             * @description Signed: positive = credit/abono, negative = debit/cargo. This is how a
+             *     bank export naturally reads and lets the matching service check both
+             *     amount magnitude and expected direction against the source movement.
+             */
+            amount?: string;
+            glosa?: string;
+            reference?: string | null;
+            /** @default UNMATCHED */
+            status: string;
+            rowNumber?: number | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        /**
+         * @description One line from an imported bank statement. Lines are only ever created by
+         *     the import pipeline (never a plain Post) and mutated only through the
+         *     match/unmatch/ignore actions below.
+         */
+        "BankStatementLine.BankStatementLineIgnoreDto": {
+            id?: number | string;
+        };
+        /**
+         * @description One line from an imported bank statement. Lines are only ever created by
+         *     the import pipeline (never a plain Post) and mutated only through the
+         *     match/unmatch/ignore actions below.
+         */
+        "BankStatementLine.BankStatementLineMatchDto": {
+            id?: number | string;
+            sourceType?: string;
+            sourceId?: number | string;
+        };
+        /**
+         * @description One line from an imported bank statement. Lines are only ever created by
+         *     the import pipeline (never a plain Post) and mutated only through the
+         *     match/unmatch/ignore actions below.
+         */
+        "BankStatementLine.BankStatementLineUnmatchDto": {
+            id?: number | string;
+        };
+        /**
+         * @description One line from an imported bank statement. Lines are only ever created by
+         *     the import pipeline (never a plain Post) and mutated only through the
+         *     match/unmatch/ignore actions below.
+         */
+        "BankStatementLine.jsonld-bank_reconciliation_suggestion.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        /**
+         * @description One line from an imported bank statement. Lines are only ever created by
+         *     the import pipeline (never a plain Post) and mutated only through the
+         *     match/unmatch/ignore actions below.
+         */
+        "BankStatementLine.jsonld-bank_statement_line.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number | string;
+            bankAccount?: components["schemas"]["BankAccount.jsonld-bank_statement_line.read"];
+            importBatch?: components["schemas"]["BankStatementImport.jsonld-bank_statement_line.read"];
+            /** Format: date-time */
+            transactionDate?: string;
+            /**
+             * @description Signed: positive = credit/abono, negative = debit/cargo. This is how a
+             *     bank export naturally reads and lets the matching service check both
+             *     amount magnitude and expected direction against the source movement.
+             */
+            amount?: string;
+            glosa?: string;
+            reference?: string | null;
+            /** @default UNMATCHED */
+            status: string;
+            rowNumber?: number | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
         Branch: {
             readonly id?: string;
             /** @description branch.name.label */
@@ -2654,6 +4522,11 @@ export interface components {
             address?: string | null;
             /** @description branch.phone.label */
             phone?: string | null;
+            /**
+             * @description branch.is_active.label
+             * @default true
+             */
+            isActive: boolean;
             /**
              * Format: iri-reference
              * @description branch.company.label
@@ -2670,6 +4543,11 @@ export interface components {
             address?: string | null;
             /** @description branch.phone.label */
             phone?: string | null;
+            /**
+             * @description branch.is_active.label
+             * @default true
+             */
+            isActive: boolean;
             company?: components["schemas"]["Company-branch.read"];
         };
         "Branch-cash_register.read": {
@@ -2677,6 +4555,23 @@ export interface components {
             /** @description branch.name.label */
             name?: string;
         };
+        "Branch-expense_report.read": {
+            readonly id?: string;
+            /** @description branch.name.label */
+            name?: string;
+        };
+        "Branch-purchase_order.read": {
+            readonly id?: string;
+            /** @description branch.name.label */
+            name?: string;
+        };
+        "Branch-sale_quote.read": {
+            readonly id?: string;
+            /** @description branch.name.label */
+            name?: string;
+        };
+        "Branch-subscription_plan.read": Record<string, never>;
+        "Branch-supplier_bill.read": Record<string, never>;
         "Branch-voucher_series.read": {
             readonly id?: string;
             /** @description branch.name.label */
@@ -2696,6 +4591,11 @@ export interface components {
             /** @description branch.phone.label */
             phone?: string | null;
             /**
+             * @description branch.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+            /**
              * Format: iri-reference
              * @description branch.company.label
              * @example https://example.com/
@@ -2711,6 +4611,11 @@ export interface components {
             address?: string | null;
             /** @description branch.phone.label */
             phone?: string | null;
+            /**
+             * @description branch.is_active.label
+             * @default true
+             */
+            isActive: boolean;
             company?: components["schemas"]["Company.jsonld-branch.read"];
         };
         "Branch.jsonld-cash_register.read": components["schemas"]["HydraItemBaseSchema"] & {
@@ -2718,6 +4623,23 @@ export interface components {
             /** @description branch.name.label */
             name?: string;
         };
+        "Branch.jsonld-expense_report.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description branch.name.label */
+            name?: string;
+        };
+        "Branch.jsonld-purchase_order.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description branch.name.label */
+            name?: string;
+        };
+        "Branch.jsonld-sale_quote.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description branch.name.label */
+            name?: string;
+        };
+        "Branch.jsonld-subscription_plan.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        "Branch.jsonld-supplier_bill.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         "Branch.jsonld-voucher_series.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
             /** @description branch.name.label */
@@ -2728,14 +4650,19 @@ export interface components {
             /** @description branch.name.label */
             name?: string;
         };
+        /**
+         * @description Not a Doctrine entity — a read/write shape for the v2 `cash_movements`
+         *     table, always built by `CashMovementHydrator` from a raw DBAL row (reads)
+         *     or written by `CashMovementWriteProcessor` via a raw DBAL INSERT (the
+         *     table is append-only: no PATCH/DELETE operation exists below). It used to
+         *     be an ORM entity mapped to a legacy singular `cash_movement` table that
+         *     nothing wrote to after the CashRegister v2 cutover; that table (and
+         *     `cash_shift`) were dropped 2026-08-19 once every remaining reader was
+         *     confirmed to go through the v2-aware paths below — see ADR-004's
+         *     amendment (docs/adr/ADR-004-cashregister-strangler-fig-decisions.md).
+         */
         CashMovement: {
-            readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.cash_shift.label
-             * @example https://example.com/
-             */
-            cashShift?: string | null;
+            readonly id?: number | null;
             /**
              * Format: iri-reference
              * @description cash_movement.cash_session.label
@@ -2747,7 +4674,7 @@ export interface components {
              * @description cash_movement.category.label
              * @example https://example.com/
              */
-            category?: string | null;
+            category?: string;
             /**
              * @description cash_movement.type.label
              * @enum {string}
@@ -2769,21 +4696,26 @@ export interface components {
              */
             branch?: string | null;
         };
+        /**
+         * @description Not a Doctrine entity — a read/write shape for the v2 `cash_movements`
+         *     table, always built by `CashMovementHydrator` from a raw DBAL row (reads)
+         *     or written by `CashMovementWriteProcessor` via a raw DBAL INSERT (the
+         *     table is append-only: no PATCH/DELETE operation exists below). It used to
+         *     be an ORM entity mapped to a legacy singular `cash_movement` table that
+         *     nothing wrote to after the CashRegister v2 cutover; that table (and
+         *     `cash_shift`) were dropped 2026-08-19 once every remaining reader was
+         *     confirmed to go through the v2-aware paths below — see ADR-004's
+         *     amendment (docs/adr/ADR-004-cashregister-strangler-fig-decisions.md).
+         */
         "CashMovement-cash_movement.read": {
-            readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.cash_shift.label
-             * @example https://example.com/
-             */
-            cashShift?: string | null;
+            readonly id?: number | null;
             /**
              * Format: iri-reference
              * @description cash_movement.cash_session.label
              * @example https://example.com/
              */
             cashSession?: string | null;
-            category?: components["schemas"]["CashMovementCategory-cash_movement.read"] | null;
+            category?: components["schemas"]["CashMovementCategory-cash_movement.read"];
             /**
              * @description cash_movement.type.label
              * @enum {string}
@@ -2803,62 +4735,26 @@ export interface components {
              */
             branch?: string | null;
         };
-        "CashMovement.jsonMergePatch": {
-            readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.cash_shift.label
-             * @example https://example.com/
-             */
-            cashShift?: string | null;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.cash_session.label
-             * @example https://example.com/
-             */
-            cashSession?: string | null;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.category.label
-             * @example https://example.com/
-             */
-            category?: string | null;
-            /**
-             * @description cash_movement.type.label
-             * @enum {string}
-             */
-            type?: "income" | "expense";
-            /**
-             * @description cash_movement.amount.label
-             * @default 0.00
-             */
-            amount: string;
-            /** @description cash_movement.description.label */
-            description?: string;
-            /** Format: date-time */
-            createdAt?: string;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.branch.label
-             * @example https://example.com/
-             */
-            branch?: string | null;
-        };
+        /**
+         * @description Not a Doctrine entity — a read/write shape for the v2 `cash_movements`
+         *     table, always built by `CashMovementHydrator` from a raw DBAL row (reads)
+         *     or written by `CashMovementWriteProcessor` via a raw DBAL INSERT (the
+         *     table is append-only: no PATCH/DELETE operation exists below). It used to
+         *     be an ORM entity mapped to a legacy singular `cash_movement` table that
+         *     nothing wrote to after the CashRegister v2 cutover; that table (and
+         *     `cash_shift`) were dropped 2026-08-19 once every remaining reader was
+         *     confirmed to go through the v2-aware paths below — see ADR-004's
+         *     amendment (docs/adr/ADR-004-cashregister-strangler-fig-decisions.md).
+         */
         "CashMovement.jsonld-cash_movement.read": components["schemas"]["HydraItemBaseSchema"] & {
-            readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.cash_shift.label
-             * @example https://example.com/
-             */
-            cashShift?: string | null;
+            readonly id?: number | null;
             /**
              * Format: iri-reference
              * @description cash_movement.cash_session.label
              * @example https://example.com/
              */
             cashSession?: string | null;
-            category?: components["schemas"]["CashMovementCategory.jsonld-cash_movement.read"] | null;
+            category?: components["schemas"]["CashMovementCategory.jsonld-cash_movement.read"];
             /**
              * @description cash_movement.type.label
              * @enum {string}
@@ -2963,6 +4859,11 @@ export interface components {
             branch?: string;
             /** @description cash_register.name.label */
             name?: string;
+            /**
+             * @description cash_register.is_active.label
+             * @default true
+             */
+            isActive: boolean;
             /** @description All cash sessions (shifts) that belong to this register. */
             readonly cashSessions?: string[];
             /**
@@ -2982,6 +4883,11 @@ export interface components {
             branch?: components["schemas"]["Branch-cash_register.read"];
             /** @description cash_register.name.label */
             name?: string;
+            /**
+             * @description cash_register.is_active.label
+             * @default true
+             */
+            isActive: boolean;
             /** @description Whether this register currently has an open shift. */
             readonly open?: boolean;
             /** @description Returns the currently open CashSession, or null if the register is closed. */
@@ -3157,6 +5063,11 @@ export interface components {
             branch?: string;
             /** @description cash_register.name.label */
             name?: string;
+            /**
+             * @description cash_register.is_active.label
+             * @default true
+             */
+            isActive: boolean;
             /** @description All cash sessions (shifts) that belong to this register. */
             readonly cashSessions?: string[];
             /**
@@ -3176,6 +5087,11 @@ export interface components {
             branch?: components["schemas"]["Branch.jsonld-cash_register.read"];
             /** @description cash_register.name.label */
             name?: string;
+            /**
+             * @description cash_register.is_active.label
+             * @default true
+             */
+            isActive: boolean;
             /** @description Whether this register currently has an open shift. */
             readonly open?: boolean;
             /** @description Returns the currently open CashSession, or null if the register is closed. */
@@ -3184,73 +5100,6 @@ export interface components {
             } | null;
         };
         "CashRegister.jsonld-cash_register_dashboard.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
-        CashSession: {
-            readonly id?: number;
-            /** @description cash_session.legacy_cash_shift_id.label */
-            legacyCashShiftId?: number | null;
-            /**
-             * Format: iri-reference
-             * @description cash_session.cash_register.label
-             * @example https://example.com/
-             */
-            cashRegister?: string;
-            /**
-             * Format: iri-reference
-             * @description cash_session.branch.label
-             * @example https://example.com/
-             */
-            branch?: string;
-            /**
-             * Format: iri-reference
-             * @description cash_session.opened_by.label
-             * @example https://example.com/
-             */
-            openedBy?: string;
-            /**
-             * Format: iri-reference
-             * @description cash_session.closed_by.label
-             * @example https://example.com/
-             */
-            closedBy?: string | null;
-            /**
-             * @description cash_session.status.label
-             * @default OPEN
-             */
-            status: string;
-            /**
-             * @description cash_session.opening_amount.label
-             * @default 0.00
-             */
-            openingAmount: string;
-            /** @description cash_session.expected_amount.label */
-            expectedAmount?: string | null;
-            /** @description cash_session.counted_amount.label */
-            countedAmount?: string | null;
-            /** @description cash_session.difference_amount.label */
-            differenceAmount?: string | null;
-            /**
-             * Format: date-time
-             * @description cash_session.opened_at.label
-             */
-            openedAt?: string;
-            /**
-             * Format: date-time
-             * @description cash_session.closed_at.label
-             */
-            closedAt?: string | null;
-            /** @description cash_session.close_note.label */
-            closeNote?: string | null;
-            /**
-             * Format: date-time
-             * @description cash_session.created_at.label
-             */
-            createdAt?: string;
-            /**
-             * Format: date-time
-             * @description cash_session.updated_at.label
-             */
-            updatedAt?: string | null;
-        };
         "CashSession-cash_session.read": {
             readonly id?: number;
             /** @description cash_session.legacy_cash_shift_id.label */
@@ -3319,20 +5168,14 @@ export interface components {
             updatedAt?: string | null;
         };
         "CashSession.CashMovement-cash_movement.read": {
-            readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.cash_shift.label
-             * @example https://example.com/
-             */
-            cashShift?: string | null;
+            readonly id?: number | null;
             /**
              * Format: iri-reference
              * @description cash_movement.cash_session.label
              * @example https://example.com/
              */
             cashSession?: string | null;
-            category?: components["schemas"]["CashMovementCategory-cash_movement.read"] | null;
+            category?: components["schemas"]["CashMovementCategory-cash_movement.read"];
             /**
              * @description cash_movement.type.label
              * @enum {string}
@@ -3353,20 +5196,14 @@ export interface components {
             branch?: string | null;
         };
         "CashSession.CashMovement.jsonld-cash_movement.read": components["schemas"]["HydraItemBaseSchema"] & {
-            readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.cash_shift.label
-             * @example https://example.com/
-             */
-            cashShift?: string | null;
+            readonly id?: number | null;
             /**
              * Format: iri-reference
              * @description cash_movement.cash_session.label
              * @example https://example.com/
              */
             cashSession?: string | null;
-            category?: components["schemas"]["CashMovementCategory.jsonld-cash_movement.read"] | null;
+            category?: components["schemas"]["CashMovementCategory.jsonld-cash_movement.read"];
             /**
              * @description cash_movement.type.label
              * @enum {string}
@@ -3441,73 +5278,6 @@ export interface components {
                 amount: string;
             }[];
         };
-        "CashSession.jsonMergePatch": {
-            readonly id?: number;
-            /** @description cash_session.legacy_cash_shift_id.label */
-            legacyCashShiftId?: number | null;
-            /**
-             * Format: iri-reference
-             * @description cash_session.cash_register.label
-             * @example https://example.com/
-             */
-            cashRegister?: string;
-            /**
-             * Format: iri-reference
-             * @description cash_session.branch.label
-             * @example https://example.com/
-             */
-            branch?: string;
-            /**
-             * Format: iri-reference
-             * @description cash_session.opened_by.label
-             * @example https://example.com/
-             */
-            openedBy?: string;
-            /**
-             * Format: iri-reference
-             * @description cash_session.closed_by.label
-             * @example https://example.com/
-             */
-            closedBy?: string | null;
-            /**
-             * @description cash_session.status.label
-             * @default OPEN
-             */
-            status: string;
-            /**
-             * @description cash_session.opening_amount.label
-             * @default 0.00
-             */
-            openingAmount: string;
-            /** @description cash_session.expected_amount.label */
-            expectedAmount?: string | null;
-            /** @description cash_session.counted_amount.label */
-            countedAmount?: string | null;
-            /** @description cash_session.difference_amount.label */
-            differenceAmount?: string | null;
-            /**
-             * Format: date-time
-             * @description cash_session.opened_at.label
-             */
-            openedAt?: string;
-            /**
-             * Format: date-time
-             * @description cash_session.closed_at.label
-             */
-            closedAt?: string | null;
-            /** @description cash_session.close_note.label */
-            closeNote?: string | null;
-            /**
-             * Format: date-time
-             * @description cash_session.created_at.label
-             */
-            createdAt?: string;
-            /**
-             * Format: date-time
-             * @description cash_session.updated_at.label
-             */
-            updatedAt?: string | null;
-        };
         "CashSession.jsonld-cash_session.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
             /** @description cash_session.legacy_cash_shift_id.label */
@@ -3575,78 +5345,25 @@ export interface components {
              */
             updatedAt?: string | null;
         };
-        CashShift: {
-            readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description cash_shift.cash_register.label
-             * @example https://example.com/
-             */
-            cashRegister?: string;
-            /**
-             * @description cash_shift.status.label
-             * @enum {string}
-             */
-            status?: "open" | "closed";
-            /**
-             * @description cash_shift.opening_balance.label
-             * @default 0.00
-             */
-            openingBalance: string;
-            /** @description cash_shift.closing_balance.label */
-            closingBalance?: string | null;
-            /**
-             * Format: iri-reference
-             * @description cash_shift.opened_by.label
-             * @example https://example.com/
-             */
-            openedBy?: string;
-            /**
-             * Format: iri-reference
-             * @description cash_shift.closed_by.label
-             * @example https://example.com/
-             */
-            closedBy?: string | null;
-            /**
-             * Format: date-time
-             * @description cash_shift.opened_at.label
-             */
-            openedAt?: string;
-            /**
-             * Format: date-time
-             * @description cash_shift.closed_at.label
-             */
-            closedAt?: string | null;
-            /** @description cash_shift.expected_amount.label */
-            expectedAmount?: string | null;
-            /** @description cash_shift.counted_amount.label */
-            countedAmount?: string | null;
-            /** @description cash_shift.difference.label */
-            difference?: string | null;
-            /** @description cash_shift.note.label */
-            note?: string | null;
-            /**
-             * Format: iri-reference
-             * @description cash_shift.branch.label
-             * @example https://example.com/
-             */
-            branch?: string | null;
-        };
+        /**
+         * @description Not a Doctrine entity — kept only as the `fromClass` anchor for the three
+         *     `/cash-shifts/{id}/...` sub-resource routes below, which resolve a legacy
+         *     shift id to its v2 `cash_session` via `cash_sessions.legacy_cash_shift_id`
+         *     (a plain lookup column, never an FK) and therefore still work correctly.
+         *     The base CRUD operations this resource used to expose
+         *     (GetCollection/Post/Get/Patch/Delete via the default ORM provider) were
+         *     removed when the underlying `cash_shift` table was dropped 2026-08-19 —
+         *     see ADR-004's amendment.
+         */
         "CashShift.CashMovement-cash_movement.read": {
-            readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.cash_shift.label
-             * @example https://example.com/
-             */
-            cashShift?: string | null;
+            readonly id?: number | null;
             /**
              * Format: iri-reference
              * @description cash_movement.cash_session.label
              * @example https://example.com/
              */
             cashSession?: string | null;
-            category?: components["schemas"]["CashMovementCategory-cash_movement.read"] | null;
+            category?: components["schemas"]["CashMovementCategory-cash_movement.read"];
             /**
              * @description cash_movement.type.label
              * @enum {string}
@@ -3666,21 +5383,25 @@ export interface components {
              */
             branch?: string | null;
         };
+        /**
+         * @description Not a Doctrine entity — kept only as the `fromClass` anchor for the three
+         *     `/cash-shifts/{id}/...` sub-resource routes below, which resolve a legacy
+         *     shift id to its v2 `cash_session` via `cash_sessions.legacy_cash_shift_id`
+         *     (a plain lookup column, never an FK) and therefore still work correctly.
+         *     The base CRUD operations this resource used to expose
+         *     (GetCollection/Post/Get/Patch/Delete via the default ORM provider) were
+         *     removed when the underlying `cash_shift` table was dropped 2026-08-19 —
+         *     see ADR-004's amendment.
+         */
         "CashShift.CashMovement.jsonld-cash_movement.read": components["schemas"]["HydraItemBaseSchema"] & {
-            readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.cash_shift.label
-             * @example https://example.com/
-             */
-            cashShift?: string | null;
+            readonly id?: number | null;
             /**
              * Format: iri-reference
              * @description cash_movement.cash_session.label
              * @example https://example.com/
              */
             cashSession?: string | null;
-            category?: components["schemas"]["CashMovementCategory.jsonld-cash_movement.read"] | null;
+            category?: components["schemas"]["CashMovementCategory.jsonld-cash_movement.read"];
             /**
              * @description cash_movement.type.label
              * @enum {string}
@@ -3700,16 +5421,46 @@ export interface components {
              */
             branch?: string | null;
         };
+        /**
+         * @description Not a Doctrine entity — kept only as the `fromClass` anchor for the three
+         *     `/cash-shifts/{id}/...` sub-resource routes below, which resolve a legacy
+         *     shift id to its v2 `cash_session` via `cash_sessions.legacy_cash_shift_id`
+         *     (a plain lookup column, never an FK) and therefore still work correctly.
+         *     The base CRUD operations this resource used to expose
+         *     (GetCollection/Post/Get/Patch/Delete via the default ORM provider) were
+         *     removed when the underlying `cash_shift` table was dropped 2026-08-19 —
+         *     see ADR-004's amendment.
+         */
         "CashShift.CashSessionClosureSummaryDto-cash_closure_summary.read": {
             paymentMethodId?: number;
             paymentMethod?: string;
             expectedAmount?: string;
         };
+        /**
+         * @description Not a Doctrine entity — kept only as the `fromClass` anchor for the three
+         *     `/cash-shifts/{id}/...` sub-resource routes below, which resolve a legacy
+         *     shift id to its v2 `cash_session` via `cash_sessions.legacy_cash_shift_id`
+         *     (a plain lookup column, never an FK) and therefore still work correctly.
+         *     The base CRUD operations this resource used to expose
+         *     (GetCollection/Post/Get/Patch/Delete via the default ORM provider) were
+         *     removed when the underlying `cash_shift` table was dropped 2026-08-19 —
+         *     see ADR-004's amendment.
+         */
         "CashShift.CashSessionClosureSummaryDto.jsonld-cash_closure_summary.read": components["schemas"]["HydraItemBaseSchema"] & {
             paymentMethodId?: number;
             paymentMethod?: string;
             expectedAmount?: string;
         };
+        /**
+         * @description Not a Doctrine entity — kept only as the `fromClass` anchor for the three
+         *     `/cash-shifts/{id}/...` sub-resource routes below, which resolve a legacy
+         *     shift id to its v2 `cash_session` via `cash_sessions.legacy_cash_shift_id`
+         *     (a plain lookup column, never an FK) and therefore still work correctly.
+         *     The base CRUD operations this resource used to expose
+         *     (GetCollection/Post/Get/Patch/Delete via the default ORM provider) were
+         *     removed when the underlying `cash_shift` table was dropped 2026-08-19 —
+         *     see ADR-004's amendment.
+         */
         "CashShift.CashSessionXReportDto-cash_x_report.read": {
             openingBalance?: string;
             totalSales?: string;
@@ -3723,6 +5474,16 @@ export interface components {
                 amount: string;
             }[];
         };
+        /**
+         * @description Not a Doctrine entity — kept only as the `fromClass` anchor for the three
+         *     `/cash-shifts/{id}/...` sub-resource routes below, which resolve a legacy
+         *     shift id to its v2 `cash_session` via `cash_sessions.legacy_cash_shift_id`
+         *     (a plain lookup column, never an FK) and therefore still work correctly.
+         *     The base CRUD operations this resource used to expose
+         *     (GetCollection/Post/Get/Patch/Delete via the default ORM provider) were
+         *     removed when the underlying `cash_shift` table was dropped 2026-08-19 —
+         *     see ADR-004's amendment.
+         */
         "CashShift.CashSessionXReportDto.jsonld-cash_x_report.read": components["schemas"]["HydraItemBaseSchema"] & {
             openingBalance?: string;
             totalSales?: string;
@@ -3736,143 +5497,54 @@ export interface components {
                 amount: string;
             }[];
         };
-        "CashShift.jsonMergePatch": {
-            readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description cash_shift.cash_register.label
-             * @example https://example.com/
-             */
-            cashRegister?: string;
-            /**
-             * @description cash_shift.status.label
-             * @enum {string}
-             */
-            status?: "open" | "closed";
-            /**
-             * @description cash_shift.opening_balance.label
-             * @default 0.00
-             */
-            openingBalance: string;
-            /** @description cash_shift.closing_balance.label */
-            closingBalance?: string | null;
-            /**
-             * Format: iri-reference
-             * @description cash_shift.opened_by.label
-             * @example https://example.com/
-             */
-            openedBy?: string;
-            /**
-             * Format: iri-reference
-             * @description cash_shift.closed_by.label
-             * @example https://example.com/
-             */
-            closedBy?: string | null;
-            /**
-             * Format: date-time
-             * @description cash_shift.opened_at.label
-             */
-            openedAt?: string;
-            /**
-             * Format: date-time
-             * @description cash_shift.closed_at.label
-             */
-            closedAt?: string | null;
-            /** @description cash_shift.expected_amount.label */
-            expectedAmount?: string | null;
-            /** @description cash_shift.counted_amount.label */
-            countedAmount?: string | null;
-            /** @description cash_shift.difference.label */
-            difference?: string | null;
-            /** @description cash_shift.note.label */
-            note?: string | null;
-            /**
-             * Format: iri-reference
-             * @description cash_shift.branch.label
-             * @example https://example.com/
-             */
-            branch?: string | null;
-        };
-        "CashShift.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
-            readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description cash_shift.cash_register.label
-             * @example https://example.com/
-             */
-            cashRegister?: string;
-            /**
-             * @description cash_shift.status.label
-             * @enum {string}
-             */
-            status?: "open" | "closed";
-            /**
-             * @description cash_shift.opening_balance.label
-             * @default 0.00
-             */
-            openingBalance: string;
-            /** @description cash_shift.closing_balance.label */
-            closingBalance?: string | null;
-            /**
-             * Format: iri-reference
-             * @description cash_shift.opened_by.label
-             * @example https://example.com/
-             */
-            openedBy?: string;
-            /**
-             * Format: iri-reference
-             * @description cash_shift.closed_by.label
-             * @example https://example.com/
-             */
-            closedBy?: string | null;
-            /**
-             * Format: date-time
-             * @description cash_shift.opened_at.label
-             */
-            openedAt?: string;
-            /**
-             * Format: date-time
-             * @description cash_shift.closed_at.label
-             */
-            closedAt?: string | null;
-            /** @description cash_shift.expected_amount.label */
-            expectedAmount?: string | null;
-            /** @description cash_shift.counted_amount.label */
-            countedAmount?: string | null;
-            /** @description cash_shift.difference.label */
-            difference?: string | null;
-            /** @description cash_shift.note.label */
-            note?: string | null;
-            /**
-             * Format: iri-reference
-             * @description cash_shift.branch.label
-             * @example https://example.com/
-             */
-            branch?: string | null;
-        };
         "Category-category.read": {
             readonly id?: string;
             /** @description category.name.label */
             name: string;
             parent?: components["schemas"]["Category-category.read"] | null;
+            /**
+             * @description category.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "Category-category.write": {
             /** @description category.name.label */
             name: string;
             parent?: components["schemas"]["Category-category.write"] | null;
+            /**
+             * @description category.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "Category-category.write.jsonMergePatch": {
             /** @description category.name.label */
             name?: string;
             parent?: components["schemas"]["Category-category.write"] | null;
+            /**
+             * @description category.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "Category-product.read": {
             readonly id?: string;
             /** @description category.name.label */
             name: string;
         };
+        "Category-stock_item.read": {
+            readonly id?: string;
+            /** @description category.name.label */
+            name: string;
+        };
         "Category.jsonld-category.read": {
             parent?: components["schemas"]["Category.jsonld-category.read"] | null;
+            /**
+             * @description category.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         } & (components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
             /** @description category.name.label */
@@ -3883,6 +5555,64 @@ export interface components {
             /** @description category.name.label */
             name: string;
         };
+        "Category.jsonld-stock_item.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description category.name.label */
+            name: string;
+        };
+        /**
+         * @description "Cobro a cuenta" (#381): one payment from a customer, applied FIFO across
+         *     their open sales or over an explicit list. Books the money once; appends one
+         *     `sale_payments` row per sale settled.
+         */
+        "CollectOnAccount.CollectOnAccountResult-collect_on_account.read": {
+            collectionId?: string;
+            customerId?: number;
+            amount?: string;
+            currency?: string;
+            applications?: components["schemas"]["CollectOnAccountApplication-collect_on_account.read"][];
+        };
+        /**
+         * @description "Cobro a cuenta" (#381): one payment from a customer, applied FIFO across
+         *     their open sales or over an explicit list. Books the money once; appends one
+         *     `sale_payments` row per sale settled.
+         */
+        "CollectOnAccount.CollectOnAccountResult.jsonld-collect_on_account.read": components["schemas"]["HydraItemBaseSchema"] & {
+            collectionId?: string;
+            customerId?: number;
+            amount?: string;
+            currency?: string;
+            applications?: components["schemas"]["CollectOnAccountApplication.jsonld-collect_on_account.read"][];
+        };
+        /**
+         * @description "Cobro a cuenta" (#381): one payment from a customer, applied FIFO across
+         *     their open sales or over an explicit list. Books the money once; appends one
+         *     `sale_payments` row per sale settled.
+         */
+        "CollectOnAccount.SaleCollectOnAccountDto": {
+            customerId?: number;
+            amount?: number | string;
+            paymentMethodId?: number;
+            paidAt?: string | null;
+            reference?: string | null;
+            applications?: {
+                [key: string]: number | string;
+            }[];
+        };
+        "CollectOnAccountApplication-collect_on_account.read": {
+            saleId?: string;
+            document?: string;
+            applied?: string;
+            balanceDueAfter?: string;
+        };
+        "CollectOnAccountApplication-customer_advance.read": Record<string, never>;
+        "CollectOnAccountApplication.jsonld-collect_on_account.read": {
+            saleId?: string;
+            document?: string;
+            applied?: string;
+            balanceDueAfter?: string;
+        };
+        "CollectOnAccountApplication.jsonld-customer_advance.read": Record<string, never>;
         Company: {
             readonly id?: string;
             /** @description company.ruc.label */
@@ -3953,6 +5683,8 @@ export interface components {
             /** @description company.detraccion_account.label */
             detraccionAccount?: string | null;
         };
+        "Company-employee.read": Record<string, never>;
+        "Company-payroll_run.read": Record<string, never>;
         "Company.jsonMergePatch": {
             readonly id?: string;
             /** @description company.ruc.label */
@@ -4023,6 +5755,8 @@ export interface components {
             /** @description company.detraccion_account.label */
             detraccionAccount?: string | null;
         };
+        "Company.jsonld-employee.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        "Company.jsonld-payroll_run.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         Config: {
             readonly id?: number;
             /** @description config.name.label */
@@ -4141,24 +5875,43 @@ export interface components {
              * @example https://example.com/
              */
             priceList?: string | null;
+            /**
+             * @description customer.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+        };
+        "Customer-customer_subscription.read": {
+            /** @description customer.business_name.label */
+            businessName: string;
         };
         "Customer-invoice.read": {
+            readonly id?: number;
             /** @description customer.ruc.label */
             ruc: string;
             /** @description customer.business_name.label */
             businessName: string;
         };
         "Customer-invoice.read_creditnote.read": {
+            readonly id?: number;
             /** @description customer.ruc.label */
             ruc: string;
             /** @description customer.business_name.label */
             businessName: string;
         };
+        "Customer-sale_quote.read": {
+            readonly id?: number;
+            /** @description customer.business_name.label */
+            businessName: string;
+        };
         "Customer-sale_record.read": {
+            readonly id?: number;
             /** @description customer.ruc.label */
             ruc: string;
             /** @description customer.business_name.label */
             businessName: string;
+            /** @description customer.phone.label */
+            phone?: string | null;
         };
         "Customer.jsonMergePatch": {
             readonly id?: number;
@@ -4181,6 +5934,11 @@ export interface components {
              * @example https://example.com/
              */
             priceList?: string | null;
+            /**
+             * @description customer.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "Customer.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
@@ -4203,24 +5961,752 @@ export interface components {
              * @example https://example.com/
              */
             priceList?: string | null;
+            /**
+             * @description customer.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+        };
+        "Customer.jsonld-customer_subscription.read": components["schemas"]["HydraItemBaseSchema"] & {
+            /** @description customer.business_name.label */
+            businessName: string;
         };
         "Customer.jsonld-invoice.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
             /** @description customer.ruc.label */
             ruc: string;
             /** @description customer.business_name.label */
             businessName: string;
         };
         "Customer.jsonld-invoice.read_creditnote.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
             /** @description customer.ruc.label */
             ruc: string;
             /** @description customer.business_name.label */
             businessName: string;
         };
+        "Customer.jsonld-sale_quote.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            /** @description customer.business_name.label */
+            businessName: string;
+        };
         "Customer.jsonld-sale_record.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
             /** @description customer.ruc.label */
             ruc: string;
             /** @description customer.business_name.label */
             businessName: string;
+            /** @description customer.phone.label */
+            phone?: string | null;
+        };
+        "Customer.xlsx": {
+            readonly id?: number;
+            /** @description customer.ruc.label */
+            ruc: string;
+            /** @description customer.business_name.label */
+            businessName: string;
+            /** @description customer.fiscal_address.label */
+            fiscalAddress?: string | null;
+            /** @description customer.phone.label */
+            phone?: string | null;
+            /**
+             * Format: email
+             * @description customer.email.label
+             */
+            email?: string | null;
+            /**
+             * Format: iri-reference
+             * @description customer.price_list.label
+             * @example https://example.com/
+             */
+            priceList?: string | null;
+            /**
+             * @description customer.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+        };
+        /**
+         * @description Customer advances (#382): receiving money with no target sale, and applying a
+         *     held advance to open sales.
+         */
+        "CustomerAdvance.AdvanceApplicationResult-customer_advance.read": {
+            applicationId?: string;
+            customerId?: number;
+            applied?: string;
+            currency?: string;
+            availableAdvance?: string;
+            applications?: components["schemas"]["CollectOnAccountApplication-customer_advance.read"][];
+        };
+        /**
+         * @description Customer advances (#382): receiving money with no target sale, and applying a
+         *     held advance to open sales.
+         */
+        "CustomerAdvance.AdvanceApplicationResult.jsonld-customer_advance.read": components["schemas"]["HydraItemBaseSchema"] & {
+            applicationId?: string;
+            customerId?: number;
+            applied?: string;
+            currency?: string;
+            availableAdvance?: string;
+            applications?: components["schemas"]["CollectOnAccountApplication.jsonld-customer_advance.read"][];
+        };
+        /**
+         * @description Customer advances (#382): receiving money with no target sale, and applying a
+         *     held advance to open sales.
+         */
+        "CustomerAdvance.CustomerAdvanceReceipt-customer_advance.read": {
+            advanceId?: string;
+            customerId?: number;
+            amount?: string;
+            currency?: string;
+            availableAdvance?: string;
+        };
+        /**
+         * @description Customer advances (#382): receiving money with no target sale, and applying a
+         *     held advance to open sales.
+         */
+        "CustomerAdvance.CustomerAdvanceReceipt.jsonld-customer_advance.read": components["schemas"]["HydraItemBaseSchema"] & {
+            advanceId?: string;
+            customerId?: number;
+            amount?: string;
+            currency?: string;
+            availableAdvance?: string;
+        };
+        /**
+         * @description Customer advances (#382): receiving money with no target sale, and applying a
+         *     held advance to open sales.
+         */
+        "CustomerAdvance.SaleApplyAdvanceDto": {
+            customerId?: number;
+            amount?: number | string;
+            paidAt?: string | null;
+            applications?: {
+                [key: string]: number | string;
+            }[];
+        };
+        /**
+         * @description Customer advances (#382): receiving money with no target sale, and applying a
+         *     held advance to open sales.
+         */
+        "CustomerAdvance.SaleReceiveAdvanceDto": {
+            customerId?: number;
+            amount?: number | string;
+            paymentMethodId?: number;
+            paidAt?: string | null;
+            reference?: string | null;
+        };
+        "CustomerStatement.StreamedResponse": {
+            /** @description Sets the PHP callback associated with this Response. */
+            callback?: string;
+            headers?: (string | null)[];
+            content?: string | null;
+            /** @description Retrieves the status code for the current web response. */
+            statusCode?: number;
+            /** @description Retrieves the response charset. */
+            charset?: string;
+            /**
+             * @description Status codes translation table.
+             * @default {
+             *       "100": "Continue",
+             *       "101": "Switching Protocols",
+             *       "102": "Processing",
+             *       "103": "Early Hints",
+             *       "200": "OK",
+             *       "201": "Created",
+             *       "202": "Accepted",
+             *       "203": "Non-Authoritative Information",
+             *       "204": "No Content",
+             *       "205": "Reset Content",
+             *       "206": "Partial Content",
+             *       "207": "Multi-Status",
+             *       "208": "Already Reported",
+             *       "226": "IM Used",
+             *       "300": "Multiple Choices",
+             *       "301": "Moved Permanently",
+             *       "302": "Found",
+             *       "303": "See Other",
+             *       "304": "Not Modified",
+             *       "305": "Use Proxy",
+             *       "307": "Temporary Redirect",
+             *       "308": "Permanent Redirect",
+             *       "400": "Bad Request",
+             *       "401": "Unauthorized",
+             *       "402": "Payment Required",
+             *       "403": "Forbidden",
+             *       "404": "Not Found",
+             *       "405": "Method Not Allowed",
+             *       "406": "Not Acceptable",
+             *       "407": "Proxy Authentication Required",
+             *       "408": "Request Timeout",
+             *       "409": "Conflict",
+             *       "410": "Gone",
+             *       "411": "Length Required",
+             *       "412": "Precondition Failed",
+             *       "413": "Content Too Large",
+             *       "414": "URI Too Long",
+             *       "415": "Unsupported Media Type",
+             *       "416": "Range Not Satisfiable",
+             *       "417": "Expectation Failed",
+             *       "418": "I'm a teapot",
+             *       "421": "Misdirected Request",
+             *       "422": "Unprocessable Content",
+             *       "423": "Locked",
+             *       "424": "Failed Dependency",
+             *       "425": "Too Early",
+             *       "426": "Upgrade Required",
+             *       "428": "Precondition Required",
+             *       "429": "Too Many Requests",
+             *       "431": "Request Header Fields Too Large",
+             *       "451": "Unavailable For Legal Reasons",
+             *       "500": "Internal Server Error",
+             *       "501": "Not Implemented",
+             *       "502": "Bad Gateway",
+             *       "503": "Service Unavailable",
+             *       "504": "Gateway Timeout",
+             *       "505": "HTTP Version Not Supported",
+             *       "506": "Variant Also Negotiates",
+             *       "507": "Insufficient Storage",
+             *       "508": "Loop Detected",
+             *       "510": "Not Extended",
+             *       "511": "Network Authentication Required"
+             *     }
+             */
+            statusTexts: string[];
+            chunks?: string[];
+            /** @description Gets the HTTP protocol version. */
+            protocolVersion?: string;
+            /** @description Returns true if the response may safely be kept in a shared (surrogate) cache. */
+            readonly cacheable?: boolean;
+            /** @description Returns true if the response is "fresh". */
+            readonly fresh?: boolean;
+            /**
+             * @description Returns true if the response includes headers that can be used to validate
+             *     the response with the origin server using a conditional GET request.
+             */
+            readonly validateable?: boolean;
+            /** @description Returns true if the response is marked as "immutable". */
+            immutable?: boolean;
+            /**
+             * Format: date-time
+             * @description Returns the Date header as a DateTime instance.
+             */
+            date?: string;
+            /** @description Returns the age of the response in seconds. */
+            readonly age?: number;
+            /**
+             * Format: date-time
+             * @description Returns the value of the Expires header as a DateTime instance.
+             */
+            expires?: string | null;
+            /**
+             * @description Returns the number of seconds after the time specified in the response's Date
+             *     header when the response should no longer be considered fresh.
+             */
+            maxAge?: number;
+            /** @description Sets the number of seconds after which the response should no longer be returned by shared caches when backend is down. */
+            staleIfError?: number;
+            /** @description Sets the number of seconds after which the response should no longer return stale content by shared caches. */
+            staleWhileRevalidate?: number;
+            /** @description Sets the number of seconds after which the response should no longer be considered fresh by shared caches. */
+            sharedMaxAge?: number;
+            /** @description Returns the response's time-to-live in seconds. */
+            ttl?: number;
+            /** @description Sets the response's time-to-live for private/client caches in seconds. */
+            clientTtl?: number;
+            /**
+             * Format: date-time
+             * @description Returns the Last-Modified HTTP header as a DateTime instance.
+             */
+            lastModified?: string | null;
+            /** @description Returns the literal value of the ETag HTTP header. */
+            etag?: string | null;
+            /** @description Sets the response's cache headers (validation and/or expiration). */
+            cache?: (string | null)[];
+            /** @description Returns an array of header names given in the Vary header. */
+            vary?: (string | null)[] | string;
+            /** @description Is response invalid? */
+            readonly invalid?: boolean;
+            /** @description Is response informative? */
+            readonly informational?: boolean;
+            /** @description Is response successful? */
+            readonly successful?: boolean;
+            /** @description Is the response a redirect? */
+            readonly redirection?: boolean;
+            /** @description Is there a client error? */
+            readonly clientError?: boolean;
+            /** @description Was there a server side error? */
+            readonly serverError?: boolean;
+            /** @description Is the response OK? */
+            readonly ok?: boolean;
+            /** @description Is the response forbidden? */
+            readonly forbidden?: boolean;
+            /** @description Is the response a not found error? */
+            readonly notFound?: boolean;
+            /** @description Is the response a redirect of some form? */
+            readonly redirect?: boolean;
+            /** @description Is the response empty? */
+            readonly empty?: boolean;
+            /** @description Marks a response as safe according to RFC8674. */
+            contentSafe?: boolean;
+        };
+        "CustomerStatement.StreamedResponse.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
+            /** @description Sets the PHP callback associated with this Response. */
+            callback?: string;
+            headers?: (string | null)[];
+            content?: string | null;
+            /** @description Retrieves the status code for the current web response. */
+            statusCode?: number;
+            /** @description Retrieves the response charset. */
+            charset?: string;
+            /**
+             * @description Status codes translation table.
+             * @default {
+             *       "100": "Continue",
+             *       "101": "Switching Protocols",
+             *       "102": "Processing",
+             *       "103": "Early Hints",
+             *       "200": "OK",
+             *       "201": "Created",
+             *       "202": "Accepted",
+             *       "203": "Non-Authoritative Information",
+             *       "204": "No Content",
+             *       "205": "Reset Content",
+             *       "206": "Partial Content",
+             *       "207": "Multi-Status",
+             *       "208": "Already Reported",
+             *       "226": "IM Used",
+             *       "300": "Multiple Choices",
+             *       "301": "Moved Permanently",
+             *       "302": "Found",
+             *       "303": "See Other",
+             *       "304": "Not Modified",
+             *       "305": "Use Proxy",
+             *       "307": "Temporary Redirect",
+             *       "308": "Permanent Redirect",
+             *       "400": "Bad Request",
+             *       "401": "Unauthorized",
+             *       "402": "Payment Required",
+             *       "403": "Forbidden",
+             *       "404": "Not Found",
+             *       "405": "Method Not Allowed",
+             *       "406": "Not Acceptable",
+             *       "407": "Proxy Authentication Required",
+             *       "408": "Request Timeout",
+             *       "409": "Conflict",
+             *       "410": "Gone",
+             *       "411": "Length Required",
+             *       "412": "Precondition Failed",
+             *       "413": "Content Too Large",
+             *       "414": "URI Too Long",
+             *       "415": "Unsupported Media Type",
+             *       "416": "Range Not Satisfiable",
+             *       "417": "Expectation Failed",
+             *       "418": "I'm a teapot",
+             *       "421": "Misdirected Request",
+             *       "422": "Unprocessable Content",
+             *       "423": "Locked",
+             *       "424": "Failed Dependency",
+             *       "425": "Too Early",
+             *       "426": "Upgrade Required",
+             *       "428": "Precondition Required",
+             *       "429": "Too Many Requests",
+             *       "431": "Request Header Fields Too Large",
+             *       "451": "Unavailable For Legal Reasons",
+             *       "500": "Internal Server Error",
+             *       "501": "Not Implemented",
+             *       "502": "Bad Gateway",
+             *       "503": "Service Unavailable",
+             *       "504": "Gateway Timeout",
+             *       "505": "HTTP Version Not Supported",
+             *       "506": "Variant Also Negotiates",
+             *       "507": "Insufficient Storage",
+             *       "508": "Loop Detected",
+             *       "510": "Not Extended",
+             *       "511": "Network Authentication Required"
+             *     }
+             */
+            statusTexts: string[];
+            chunks?: string[];
+            /** @description Gets the HTTP protocol version. */
+            protocolVersion?: string;
+            /** @description Returns true if the response may safely be kept in a shared (surrogate) cache. */
+            readonly cacheable?: boolean;
+            /** @description Returns true if the response is "fresh". */
+            readonly fresh?: boolean;
+            /**
+             * @description Returns true if the response includes headers that can be used to validate
+             *     the response with the origin server using a conditional GET request.
+             */
+            readonly validateable?: boolean;
+            /** @description Returns true if the response is marked as "immutable". */
+            immutable?: boolean;
+            /**
+             * Format: date-time
+             * @description Returns the Date header as a DateTime instance.
+             */
+            date?: string;
+            /** @description Returns the age of the response in seconds. */
+            readonly age?: number;
+            /**
+             * Format: date-time
+             * @description Returns the value of the Expires header as a DateTime instance.
+             */
+            expires?: string | null;
+            /**
+             * @description Returns the number of seconds after the time specified in the response's Date
+             *     header when the response should no longer be considered fresh.
+             */
+            maxAge?: number;
+            /** @description Sets the number of seconds after which the response should no longer be returned by shared caches when backend is down. */
+            staleIfError?: number;
+            /** @description Sets the number of seconds after which the response should no longer return stale content by shared caches. */
+            staleWhileRevalidate?: number;
+            /** @description Sets the number of seconds after which the response should no longer be considered fresh by shared caches. */
+            sharedMaxAge?: number;
+            /** @description Returns the response's time-to-live in seconds. */
+            ttl?: number;
+            /** @description Sets the response's time-to-live for private/client caches in seconds. */
+            clientTtl?: number;
+            /**
+             * Format: date-time
+             * @description Returns the Last-Modified HTTP header as a DateTime instance.
+             */
+            lastModified?: string | null;
+            /** @description Returns the literal value of the ETag HTTP header. */
+            etag?: string | null;
+            /** @description Sets the response's cache headers (validation and/or expiration). */
+            cache?: (string | null)[];
+            /** @description Returns an array of header names given in the Vary header. */
+            vary?: (string | null)[] | string;
+            /** @description Is response invalid? */
+            readonly invalid?: boolean;
+            /** @description Is response informative? */
+            readonly informational?: boolean;
+            /** @description Is response successful? */
+            readonly successful?: boolean;
+            /** @description Is the response a redirect? */
+            readonly redirection?: boolean;
+            /** @description Is there a client error? */
+            readonly clientError?: boolean;
+            /** @description Was there a server side error? */
+            readonly serverError?: boolean;
+            /** @description Is the response OK? */
+            readonly ok?: boolean;
+            /** @description Is the response forbidden? */
+            readonly forbidden?: boolean;
+            /** @description Is the response a not found error? */
+            readonly notFound?: boolean;
+            /** @description Is the response a redirect of some form? */
+            readonly redirect?: boolean;
+            /** @description Is the response empty? */
+            readonly empty?: boolean;
+            /** @description Marks a response as safe according to RFC8674. */
+            contentSafe?: boolean;
+        };
+        "CustomerSubscription-customer_subscription.patch.jsonMergePatch": {
+            /**
+             * @description customer_subscription.status.label
+             * @default active
+             */
+            status: string;
+            /**
+             * Format: date-time
+             * @description customer_subscription.start_date.label
+             */
+            startDate?: string;
+            /**
+             * Format: date-time
+             * @description customer_subscription.next_billing_date.label
+             */
+            nextBillingDate?: string;
+            /**
+             * @description customer_subscription.auto_renew.label
+             * @default true
+             */
+            autoRenew: boolean;
+            /** @description customer_subscription.service_reference.label */
+            serviceReference?: string | null;
+            /** @description customer_subscription.custom_description.label */
+            customDescription?: string | null;
+            /** @description customer_subscription.agreed_amount.label */
+            agreedAmount?: string | null;
+            /**
+             * Format: date-time
+             * @description customer_subscription.end_date.label
+             */
+            endDate?: string | null;
+        };
+        "CustomerSubscription-customer_subscription.read": {
+            readonly id?: string;
+            customer: components["schemas"]["Customer-customer_subscription.read"];
+            plan: components["schemas"]["SubscriptionPlan-customer_subscription.read"];
+            /**
+             * @description customer_subscription.status.label
+             * @default active
+             */
+            status: string;
+            /**
+             * Format: date-time
+             * @description customer_subscription.start_date.label
+             */
+            startDate: string;
+            /**
+             * Format: date-time
+             * @description customer_subscription.current_period_start.label
+             */
+            currentPeriodStart?: string | null;
+            /**
+             * Format: date-time
+             * @description customer_subscription.current_period_end.label
+             */
+            currentPeriodEnd?: string | null;
+            /**
+             * Format: date-time
+             * @description customer_subscription.next_billing_date.label
+             */
+            nextBillingDate: string;
+            /**
+             * @description customer_subscription.auto_renew.label
+             * @default true
+             */
+            autoRenew: boolean;
+            /** @description customer_subscription.service_reference.label */
+            serviceReference?: string | null;
+            /** @description customer_subscription.custom_description.label */
+            customDescription?: string | null;
+            /** @description customer_subscription.agreed_amount.label */
+            agreedAmount?: string | null;
+            /**
+             * Format: date-time
+             * @description customer_subscription.end_date.label
+             */
+            endDate?: string | null;
+            lines?: string[];
+        };
+        "CustomerSubscription-customer_subscription.write": {
+            /**
+             * Format: iri-reference
+             * @description customer_subscription.customer.label
+             * @example https://example.com/
+             */
+            customer: string;
+            /**
+             * Format: iri-reference
+             * @description customer_subscription.plan.label
+             * @example https://example.com/
+             */
+            plan: string;
+            /**
+             * @description customer_subscription.status.label
+             * @default active
+             */
+            status: string;
+            /**
+             * Format: date-time
+             * @description customer_subscription.start_date.label
+             */
+            startDate: string;
+            /**
+             * Format: date-time
+             * @description customer_subscription.next_billing_date.label
+             */
+            nextBillingDate: string;
+            /**
+             * @description customer_subscription.auto_renew.label
+             * @default true
+             */
+            autoRenew: boolean;
+            /** @description customer_subscription.service_reference.label */
+            serviceReference?: string | null;
+            /** @description customer_subscription.custom_description.label */
+            customDescription?: string | null;
+            /** @description customer_subscription.agreed_amount.label */
+            agreedAmount?: string | null;
+            /**
+             * Format: date-time
+             * @description customer_subscription.end_date.label
+             */
+            endDate?: string | null;
+        };
+        "CustomerSubscription-customer_subscription_line.read": Record<string, never>;
+        "CustomerSubscription-customer_subscription_run.read": {
+            readonly id?: string;
+            /** @description customer_subscription.service_reference.label */
+            serviceReference?: string | null;
+        };
+        "CustomerSubscription.CustomerSubscriptionRun-customer_subscription_run.read": {
+            readonly id?: string;
+            subscription?: components["schemas"]["CustomerSubscription-customer_subscription_run.read"];
+            /** Format: date-time */
+            periodStart?: string;
+            /** Format: date-time */
+            periodEnd?: string;
+            source?: string;
+            /** @default generated */
+            status: string;
+            saleId?: string;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        "CustomerSubscription.CustomerSubscriptionRun.jsonld-customer_subscription_run.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            subscription?: components["schemas"]["CustomerSubscription.jsonld-customer_subscription_run.read"];
+            /** Format: date-time */
+            periodStart?: string;
+            /** Format: date-time */
+            periodEnd?: string;
+            source?: string;
+            /** @default generated */
+            status: string;
+            saleId?: string;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        "CustomerSubscription.GenerateSubscriptionChargeDto": {
+            id?: string;
+        };
+        "CustomerSubscription.jsonld-customer_subscription.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            customer: components["schemas"]["Customer.jsonld-customer_subscription.read"];
+            plan: components["schemas"]["SubscriptionPlan.jsonld-customer_subscription.read"];
+            /**
+             * @description customer_subscription.status.label
+             * @default active
+             */
+            status: string;
+            /**
+             * Format: date-time
+             * @description customer_subscription.start_date.label
+             */
+            startDate: string;
+            /**
+             * Format: date-time
+             * @description customer_subscription.current_period_start.label
+             */
+            currentPeriodStart?: string | null;
+            /**
+             * Format: date-time
+             * @description customer_subscription.current_period_end.label
+             */
+            currentPeriodEnd?: string | null;
+            /**
+             * Format: date-time
+             * @description customer_subscription.next_billing_date.label
+             */
+            nextBillingDate: string;
+            /**
+             * @description customer_subscription.auto_renew.label
+             * @default true
+             */
+            autoRenew: boolean;
+            /** @description customer_subscription.service_reference.label */
+            serviceReference?: string | null;
+            /** @description customer_subscription.custom_description.label */
+            customDescription?: string | null;
+            /** @description customer_subscription.agreed_amount.label */
+            agreedAmount?: string | null;
+            /**
+             * Format: date-time
+             * @description customer_subscription.end_date.label
+             */
+            endDate?: string | null;
+            lines?: string[];
+        };
+        "CustomerSubscription.jsonld-customer_subscription_line.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        "CustomerSubscription.jsonld-customer_subscription_run.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description customer_subscription.service_reference.label */
+            serviceReference?: string | null;
+        };
+        "CustomerSubscriptionLine-customer_subscription_line.read": {
+            readonly id?: string;
+            subscription?: components["schemas"]["CustomerSubscription-customer_subscription_line.read"];
+            product?: components["schemas"]["Product-customer_subscription_line.read"];
+            description?: string | null;
+            /** @default 1.000 */
+            quantity: string;
+            /** @default 0.0000 */
+            unitPrice: string;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        "CustomerSubscriptionLine-customer_subscription_line.write": {
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            subscription?: string;
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            product?: string;
+            description?: string | null;
+            /** @default 1.000 */
+            quantity: string;
+            /** @default 0.0000 */
+            unitPrice: string;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        "CustomerSubscriptionLine-customer_subscription_line.write.jsonMergePatch": {
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            subscription?: string;
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            product?: string;
+            description?: string | null;
+            /** @default 1.000 */
+            quantity: string;
+            /** @default 0.0000 */
+            unitPrice: string;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        "CustomerSubscriptionLine.jsonld-customer_subscription_line.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            subscription?: components["schemas"]["CustomerSubscription.jsonld-customer_subscription_line.read"];
+            product?: components["schemas"]["Product.jsonld-customer_subscription_line.read"];
+            description?: string | null;
+            /** @default 1.000 */
+            quantity: string;
+            /** @default 0.0000 */
+            unitPrice: string;
+            /** @default 0 */
+            sortOrder: number;
+        };
+        "CustomerSubscriptionRun-customer_subscription_run.read": {
+            readonly id?: string;
+            subscription?: components["schemas"]["CustomerSubscription-customer_subscription_run.read"];
+            /** Format: date-time */
+            periodStart?: string;
+            /** Format: date-time */
+            periodEnd?: string;
+            source?: string;
+            /** @default generated */
+            status: string;
+            saleId?: string;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        "CustomerSubscriptionRun.jsonld-customer_subscription_run.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            subscription?: components["schemas"]["CustomerSubscription.jsonld-customer_subscription_run.read"];
+            /** Format: date-time */
+            periodStart?: string;
+            /** Format: date-time */
+            periodEnd?: string;
+            source?: string;
+            /** @default generated */
+            status: string;
+            saleId?: string;
+            /** Format: date-time */
+            readonly createdAt?: string;
         };
         Dashboard: Record<string, never>;
         "Dashboard.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
@@ -4470,6 +6956,270 @@ export interface components {
             /** @default 0.000 */
             quantity: string;
         };
+        /**
+         * @description A worker on the payroll — distinct from User, which is only a system
+         *     login/access account. Decoupled (nullable ManyToOne, not an extension of
+         *     User) because not every employee needs system access and not every User
+         *     is an employee. No `branch` relation on purpose, same reasoning as
+         *     FixedAsset (Fase 6): scoping here is by Company (RUC, where AFP/ONP/
+         *     EsSalud contributions are actually computed), not by branch.
+         */
+        "Employee-employee.read": {
+            readonly id?: string;
+            company: components["schemas"]["Company-employee.read"];
+            user?: components["schemas"]["User-employee.read"] | null;
+            /** @description employee.dni.label */
+            dni?: string;
+            /** @description employee.first_name.label */
+            firstName: string;
+            /** @description employee.last_name.label */
+            lastName: string;
+            /**
+             * Format: date-time
+             * @description employee.hire_date.label
+             */
+            hireDate: string;
+            /**
+             * Format: date-time
+             * @description employee.termination_date.label
+             */
+            terminationDate?: string | null;
+            /**
+             * @description employee.contract_type.label
+             * @default INDEFINIDO
+             */
+            contractType: string;
+            /** @description employee.base_salary.label */
+            baseSalary: string;
+            /**
+             * @description employee.pension_scheme.label
+             * @default ONP
+             */
+            pensionScheme: string;
+            /** @description employee.afp_provider.label */
+            afpProvider?: string | null;
+            /**
+             * @description employee.eps_affiliated.label
+             * @default false
+             */
+            epsAffiliated: boolean;
+            /**
+             * @description employee.status.label
+             * @default ACTIVE
+             */
+            status: string;
+            /**
+             * Format: date-time
+             * @description employee.last_vacation_taken_at.label
+             */
+            lastVacationTakenAt?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        /**
+         * @description A worker on the payroll — distinct from User, which is only a system
+         *     login/access account. Decoupled (nullable ManyToOne, not an extension of
+         *     User) because not every employee needs system access and not every User
+         *     is an employee. No `branch` relation on purpose, same reasoning as
+         *     FixedAsset (Fase 6): scoping here is by Company (RUC, where AFP/ONP/
+         *     EsSalud contributions are actually computed), not by branch.
+         */
+        "Employee-employee.write": {
+            /**
+             * Format: iri-reference
+             * @description employee.company.label
+             * @example https://example.com/
+             */
+            company: string;
+            /**
+             * Format: iri-reference
+             * @description employee.user.label
+             * @example https://example.com/
+             */
+            user?: string | null;
+            /** @description employee.dni.label */
+            dni?: string;
+            /** @description employee.first_name.label */
+            firstName: string;
+            /** @description employee.last_name.label */
+            lastName: string;
+            /**
+             * Format: date-time
+             * @description employee.hire_date.label
+             */
+            hireDate: string;
+            /**
+             * Format: date-time
+             * @description employee.termination_date.label
+             */
+            terminationDate?: string | null;
+            /**
+             * @description employee.contract_type.label
+             * @default INDEFINIDO
+             */
+            contractType: string;
+            /** @description employee.base_salary.label */
+            baseSalary: string;
+            /**
+             * @description employee.pension_scheme.label
+             * @default ONP
+             */
+            pensionScheme: string;
+            /** @description employee.afp_provider.label */
+            afpProvider?: string | null;
+            /**
+             * @description employee.eps_affiliated.label
+             * @default false
+             */
+            epsAffiliated: boolean;
+            /**
+             * @description employee.status.label
+             * @default ACTIVE
+             */
+            status: string;
+            /**
+             * Format: date-time
+             * @description employee.last_vacation_taken_at.label
+             */
+            lastVacationTakenAt?: string | null;
+        };
+        /**
+         * @description A worker on the payroll — distinct from User, which is only a system
+         *     login/access account. Decoupled (nullable ManyToOne, not an extension of
+         *     User) because not every employee needs system access and not every User
+         *     is an employee. No `branch` relation on purpose, same reasoning as
+         *     FixedAsset (Fase 6): scoping here is by Company (RUC, where AFP/ONP/
+         *     EsSalud contributions are actually computed), not by branch.
+         */
+        "Employee-employee.write.jsonMergePatch": {
+            /**
+             * Format: iri-reference
+             * @description employee.company.label
+             * @example https://example.com/
+             */
+            company?: string;
+            /**
+             * Format: iri-reference
+             * @description employee.user.label
+             * @example https://example.com/
+             */
+            user?: string | null;
+            /** @description employee.dni.label */
+            dni?: string;
+            /** @description employee.first_name.label */
+            firstName?: string;
+            /** @description employee.last_name.label */
+            lastName?: string;
+            /**
+             * Format: date-time
+             * @description employee.hire_date.label
+             */
+            hireDate?: string;
+            /**
+             * Format: date-time
+             * @description employee.termination_date.label
+             */
+            terminationDate?: string | null;
+            /**
+             * @description employee.contract_type.label
+             * @default INDEFINIDO
+             */
+            contractType: string;
+            /** @description employee.base_salary.label */
+            baseSalary?: string;
+            /**
+             * @description employee.pension_scheme.label
+             * @default ONP
+             */
+            pensionScheme: string;
+            /** @description employee.afp_provider.label */
+            afpProvider?: string | null;
+            /**
+             * @description employee.eps_affiliated.label
+             * @default false
+             */
+            epsAffiliated: boolean;
+            /**
+             * @description employee.status.label
+             * @default ACTIVE
+             */
+            status: string;
+            /**
+             * Format: date-time
+             * @description employee.last_vacation_taken_at.label
+             */
+            lastVacationTakenAt?: string | null;
+        };
+        "Employee-payslip_entry.read": Record<string, never>;
+        /**
+         * @description A worker on the payroll — distinct from User, which is only a system
+         *     login/access account. Decoupled (nullable ManyToOne, not an extension of
+         *     User) because not every employee needs system access and not every User
+         *     is an employee. No `branch` relation on purpose, same reasoning as
+         *     FixedAsset (Fase 6): scoping here is by Company (RUC, where AFP/ONP/
+         *     EsSalud contributions are actually computed), not by branch.
+         */
+        "Employee.jsonld-employee.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            company: components["schemas"]["Company.jsonld-employee.read"];
+            user?: components["schemas"]["User.jsonld-employee.read"] | null;
+            /** @description employee.dni.label */
+            dni?: string;
+            /** @description employee.first_name.label */
+            firstName: string;
+            /** @description employee.last_name.label */
+            lastName: string;
+            /**
+             * Format: date-time
+             * @description employee.hire_date.label
+             */
+            hireDate: string;
+            /**
+             * Format: date-time
+             * @description employee.termination_date.label
+             */
+            terminationDate?: string | null;
+            /**
+             * @description employee.contract_type.label
+             * @default INDEFINIDO
+             */
+            contractType: string;
+            /** @description employee.base_salary.label */
+            baseSalary: string;
+            /**
+             * @description employee.pension_scheme.label
+             * @default ONP
+             */
+            pensionScheme: string;
+            /** @description employee.afp_provider.label */
+            afpProvider?: string | null;
+            /**
+             * @description employee.eps_affiliated.label
+             * @default false
+             */
+            epsAffiliated: boolean;
+            /**
+             * @description employee.status.label
+             * @default ACTIVE
+             */
+            status: string;
+            /**
+             * Format: date-time
+             * @description employee.last_vacation_taken_at.label
+             */
+            lastVacationTakenAt?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        /**
+         * @description A worker on the payroll — distinct from User, which is only a system
+         *     login/access account. Decoupled (nullable ManyToOne, not an extension of
+         *     User) because not every employee needs system access and not every User
+         *     is an employee. No `branch` relation on purpose, same reasoning as
+         *     FixedAsset (Fase 6): scoping here is by Company (RUC, where AFP/ONP/
+         *     EsSalud contributions are actually computed), not by branch.
+         */
+        "Employee.jsonld-payslip_entry.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         /** @description A representation of common errors. */
         Error: {
             /** @description A short, human-readable summary of the problem. */
@@ -4524,6 +7274,485 @@ export interface components {
          *     by ExchangeRateSyncService (BCRP sync).
          */
         "ExchangeRate.jsonld-exchange_rate.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        ExpenseCategory: {
+            readonly id?: number;
+            /** @description expense_category.code.label */
+            code?: string;
+            /** @description expense_category.name.label */
+            name?: string;
+            /** @default true */
+            isSystem: boolean;
+            /** @default true */
+            active: boolean;
+            readonly system?: boolean;
+        };
+        "ExpenseCategory-expense_report.read": {
+            readonly id?: number;
+            /** @description expense_category.code.label */
+            code?: string;
+            /** @description expense_category.name.label */
+            name?: string;
+        };
+        "ExpenseCategory-supplier_bill.read": {
+            readonly id?: number;
+            /** @description expense_category.code.label */
+            code?: string;
+            /** @description expense_category.name.label */
+            name?: string;
+        };
+        "ExpenseCategory.jsonMergePatch": {
+            readonly id?: number;
+            /** @description expense_category.code.label */
+            code?: string;
+            /** @description expense_category.name.label */
+            name?: string;
+            /** @default true */
+            isSystem: boolean;
+            /** @default true */
+            active: boolean;
+            readonly system?: boolean;
+        };
+        "ExpenseCategory.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            /** @description expense_category.code.label */
+            code?: string;
+            /** @description expense_category.name.label */
+            name?: string;
+            /** @default true */
+            isSystem: boolean;
+            /** @default true */
+            active: boolean;
+            readonly system?: boolean;
+        };
+        "ExpenseCategory.jsonld-expense_report.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            /** @description expense_category.code.label */
+            code?: string;
+            /** @description expense_category.name.label */
+            name?: string;
+        };
+        "ExpenseCategory.jsonld-supplier_bill.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            /** @description expense_category.code.label */
+            code?: string;
+            /** @description expense_category.name.label */
+            name?: string;
+        };
+        /**
+         * @description An employee's out-of-pocket expense claim (viáticos) — distinct from
+         *     SupplierBill, which is a supplier's formal invoice with a RUC. The
+         *     "employee" is the existing User entity; there's no dedicated Employee
+         *     entity yet (see Fase 7 / Planilla in the roadmap).
+         */
+        "ExpenseReport-expense_report.read": {
+            readonly id?: string;
+            employee: components["schemas"]["User-expense_report.read"];
+            category: components["schemas"]["ExpenseCategory-expense_report.read"];
+            branch: components["schemas"]["Branch-expense_report.read"];
+            /** @description expense_report.description.label */
+            description: string;
+            /** @description expense_report.amount.label */
+            amount: string;
+            /**
+             * @description expense_report.currency.label
+             * @default PEN
+             */
+            currency: string;
+            /**
+             * Format: date-time
+             * @description expense_report.expense_date.label
+             */
+            expenseDate: string;
+            receiptMedia?: components["schemas"]["Media-expense_report.read"] | null;
+            /**
+             * @description expense_report.status.label
+             * @default PENDING
+             */
+            status: string;
+            reviewedBy?: components["schemas"]["User-expense_report.read"] | null;
+            /**
+             * Format: date-time
+             * @description expense_report.reviewed_at.label
+             */
+            reviewedAt?: string | null;
+            /** @description expense_report.review_note.label */
+            reviewNote?: string | null;
+            /**
+             * Format: date-time
+             * @description expense_report.reimbursed_at.label
+             */
+            reimbursedAt?: string | null;
+            /** @description expense_report.note.label */
+            note?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        /**
+         * @description An employee's out-of-pocket expense claim (viáticos) — distinct from
+         *     SupplierBill, which is a supplier's formal invoice with a RUC. The
+         *     "employee" is the existing User entity; there's no dedicated Employee
+         *     entity yet (see Fase 7 / Planilla in the roadmap).
+         */
+        "ExpenseReport-expense_report.write": {
+            /**
+             * Format: iri-reference
+             * @description expense_report.employee.label
+             * @example https://example.com/
+             */
+            employee: string;
+            /**
+             * Format: iri-reference
+             * @description expense_report.category.label
+             * @example https://example.com/
+             */
+            category: string;
+            /**
+             * Format: iri-reference
+             * @description expense_report.branch.label
+             * @example https://example.com/
+             */
+            branch: string;
+            /** @description expense_report.description.label */
+            description: string;
+            /** @description expense_report.amount.label */
+            amount: string;
+            /**
+             * @description expense_report.currency.label
+             * @default PEN
+             */
+            currency: string;
+            /**
+             * Format: date-time
+             * @description expense_report.expense_date.label
+             */
+            expenseDate: string;
+            /**
+             * Format: iri-reference
+             * @description expense_report.receipt_media.label
+             * @example https://example.com/
+             */
+            receiptMedia?: string | null;
+            /** @description expense_report.note.label */
+            note?: string | null;
+        };
+        /**
+         * @description An employee's out-of-pocket expense claim (viáticos) — distinct from
+         *     SupplierBill, which is a supplier's formal invoice with a RUC. The
+         *     "employee" is the existing User entity; there's no dedicated Employee
+         *     entity yet (see Fase 7 / Planilla in the roadmap).
+         */
+        "ExpenseReport-expense_report.write.jsonMergePatch": {
+            /**
+             * Format: iri-reference
+             * @description expense_report.employee.label
+             * @example https://example.com/
+             */
+            employee?: string;
+            /**
+             * Format: iri-reference
+             * @description expense_report.category.label
+             * @example https://example.com/
+             */
+            category?: string;
+            /**
+             * Format: iri-reference
+             * @description expense_report.branch.label
+             * @example https://example.com/
+             */
+            branch?: string;
+            /** @description expense_report.description.label */
+            description?: string;
+            /** @description expense_report.amount.label */
+            amount?: string;
+            /**
+             * @description expense_report.currency.label
+             * @default PEN
+             */
+            currency: string;
+            /**
+             * Format: date-time
+             * @description expense_report.expense_date.label
+             */
+            expenseDate?: string;
+            /**
+             * Format: iri-reference
+             * @description expense_report.receipt_media.label
+             * @example https://example.com/
+             */
+            receiptMedia?: string | null;
+            /** @description expense_report.note.label */
+            note?: string | null;
+        };
+        /**
+         * @description An employee's out-of-pocket expense claim (viáticos) — distinct from
+         *     SupplierBill, which is a supplier's formal invoice with a RUC. The
+         *     "employee" is the existing User entity; there's no dedicated Employee
+         *     entity yet (see Fase 7 / Planilla in the roadmap).
+         */
+        "ExpenseReport.ExpenseReportReimburseDto": {
+            id?: string;
+        };
+        /**
+         * @description An employee's out-of-pocket expense claim (viáticos) — distinct from
+         *     SupplierBill, which is a supplier's formal invoice with a RUC. The
+         *     "employee" is the existing User entity; there's no dedicated Employee
+         *     entity yet (see Fase 7 / Planilla in the roadmap).
+         */
+        "ExpenseReport.ExpenseReportReviewDto": {
+            id?: string;
+            note?: string | null;
+        };
+        /**
+         * @description An employee's out-of-pocket expense claim (viáticos) — distinct from
+         *     SupplierBill, which is a supplier's formal invoice with a RUC. The
+         *     "employee" is the existing User entity; there's no dedicated Employee
+         *     entity yet (see Fase 7 / Planilla in the roadmap).
+         */
+        "ExpenseReport.jsonld-expense_report.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            employee: components["schemas"]["User.jsonld-expense_report.read"];
+            category: components["schemas"]["ExpenseCategory.jsonld-expense_report.read"];
+            branch: components["schemas"]["Branch.jsonld-expense_report.read"];
+            /** @description expense_report.description.label */
+            description: string;
+            /** @description expense_report.amount.label */
+            amount: string;
+            /**
+             * @description expense_report.currency.label
+             * @default PEN
+             */
+            currency: string;
+            /**
+             * Format: date-time
+             * @description expense_report.expense_date.label
+             */
+            expenseDate: string;
+            receiptMedia?: components["schemas"]["Media.jsonld-expense_report.read"] | null;
+            /**
+             * @description expense_report.status.label
+             * @default PENDING
+             */
+            status: string;
+            reviewedBy?: components["schemas"]["User.jsonld-expense_report.read"] | null;
+            /**
+             * Format: date-time
+             * @description expense_report.reviewed_at.label
+             */
+            reviewedAt?: string | null;
+            /** @description expense_report.review_note.label */
+            reviewNote?: string | null;
+            /**
+             * Format: date-time
+             * @description expense_report.reimbursed_at.label
+             */
+            reimbursedAt?: string | null;
+            /** @description expense_report.note.label */
+            note?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        "FixedAsset-asset_depreciation_entry.read": Record<string, never>;
+        /**
+         * @description An owned asset (equipment, furniture) depreciated on a straight-line
+         *     basis. No `branch` relation on purpose — see the Fase 6 plan notes: the
+         *     global BranchFilter auto-scopes any entity with a `branch` association,
+         *     and a fixed asset doesn't need per-branch list scoping in this phase.
+         */
+        "FixedAsset-fixed_asset.read": {
+            readonly id?: string;
+            /** @description fixed_asset.description.label */
+            description: string;
+            /**
+             * Format: date-time
+             * @description fixed_asset.purchase_date.label
+             */
+            purchaseDate: string;
+            /** @description fixed_asset.cost.label */
+            cost: string;
+            /** @description fixed_asset.useful_life_months.label */
+            usefulLifeMonths: number;
+            sourceBill?: components["schemas"]["SupplierBill-fixed_asset.read"] | null;
+            /**
+             * @description fixed_asset.accumulated_depreciation.label
+             * @default 0.00
+             */
+            accumulatedDepreciation: string;
+            /**
+             * @description fixed_asset.status.label
+             * @default ACTIVE
+             */
+            status: string;
+            /**
+             * Format: date-time
+             * @description fixed_asset.disposed_at.label
+             */
+            disposedAt?: string | null;
+            /** @description fixed_asset.disposal_note.label */
+            disposalNote?: string | null;
+            /** @description fixed_asset.note.label */
+            note?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        /**
+         * @description An owned asset (equipment, furniture) depreciated on a straight-line
+         *     basis. No `branch` relation on purpose — see the Fase 6 plan notes: the
+         *     global BranchFilter auto-scopes any entity with a `branch` association,
+         *     and a fixed asset doesn't need per-branch list scoping in this phase.
+         */
+        "FixedAsset-fixed_asset.write": {
+            /** @description fixed_asset.description.label */
+            description: string;
+            /**
+             * Format: date-time
+             * @description fixed_asset.purchase_date.label
+             */
+            purchaseDate: string;
+            /** @description fixed_asset.cost.label */
+            cost: string;
+            /** @description fixed_asset.useful_life_months.label */
+            usefulLifeMonths: number;
+            /**
+             * Format: iri-reference
+             * @description fixed_asset.source_bill.label
+             * @example https://example.com/
+             */
+            sourceBill?: string | null;
+            /** @description fixed_asset.note.label */
+            note?: string | null;
+        };
+        /**
+         * @description An owned asset (equipment, furniture) depreciated on a straight-line
+         *     basis. No `branch` relation on purpose — see the Fase 6 plan notes: the
+         *     global BranchFilter auto-scopes any entity with a `branch` association,
+         *     and a fixed asset doesn't need per-branch list scoping in this phase.
+         */
+        "FixedAsset-fixed_asset.write.jsonMergePatch": {
+            /** @description fixed_asset.description.label */
+            description?: string;
+            /**
+             * Format: date-time
+             * @description fixed_asset.purchase_date.label
+             */
+            purchaseDate?: string;
+            /** @description fixed_asset.cost.label */
+            cost?: string;
+            /** @description fixed_asset.useful_life_months.label */
+            usefulLifeMonths?: number;
+            /**
+             * Format: iri-reference
+             * @description fixed_asset.source_bill.label
+             * @example https://example.com/
+             */
+            sourceBill?: string | null;
+            /** @description fixed_asset.note.label */
+            note?: string | null;
+        };
+        /**
+         * @description An owned asset (equipment, furniture) depreciated on a straight-line
+         *     basis. No `branch` relation on purpose — see the Fase 6 plan notes: the
+         *     global BranchFilter auto-scopes any entity with a `branch` association,
+         *     and a fixed asset doesn't need per-branch list scoping in this phase.
+         */
+        "FixedAsset.FixedAssetDisposeDto": {
+            id?: string;
+            disposalNote?: string | null;
+        };
+        /**
+         * @description An owned asset (equipment, furniture) depreciated on a straight-line
+         *     basis. No `branch` relation on purpose — see the Fase 6 plan notes: the
+         *     global BranchFilter auto-scopes any entity with a `branch` association,
+         *     and a fixed asset doesn't need per-branch list scoping in this phase.
+         */
+        "FixedAsset.jsonld-asset_depreciation_entry.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        /**
+         * @description An owned asset (equipment, furniture) depreciated on a straight-line
+         *     basis. No `branch` relation on purpose — see the Fase 6 plan notes: the
+         *     global BranchFilter auto-scopes any entity with a `branch` association,
+         *     and a fixed asset doesn't need per-branch list scoping in this phase.
+         */
+        "FixedAsset.jsonld-fixed_asset.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description fixed_asset.description.label */
+            description: string;
+            /**
+             * Format: date-time
+             * @description fixed_asset.purchase_date.label
+             */
+            purchaseDate: string;
+            /** @description fixed_asset.cost.label */
+            cost: string;
+            /** @description fixed_asset.useful_life_months.label */
+            usefulLifeMonths: number;
+            sourceBill?: components["schemas"]["SupplierBill.jsonld-fixed_asset.read"] | null;
+            /**
+             * @description fixed_asset.accumulated_depreciation.label
+             * @default 0.00
+             */
+            accumulatedDepreciation: string;
+            /**
+             * @description fixed_asset.status.label
+             * @default ACTIVE
+             */
+            status: string;
+            /**
+             * Format: date-time
+             * @description fixed_asset.disposed_at.label
+             */
+            disposedAt?: string | null;
+            /** @description fixed_asset.disposal_note.label */
+            disposalNote?: string | null;
+            /** @description fixed_asset.note.label */
+            note?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        "GlAccount-account.read": {
+            readonly id?: string;
+            /**
+             * @description account.code.label
+             * @default
+             */
+            code: string;
+            /**
+             * @description account.name.label
+             * @default
+             */
+            name: string;
+            /**
+             * @description account.type.label
+             * @default ASSET
+             */
+            type: string;
+            /** @default false */
+            header: boolean;
+            parentCode?: string | null;
+            /** @default true */
+            active: boolean;
+        };
+        "GlAccount.jsonld-account.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /**
+             * @description account.code.label
+             * @default
+             */
+            code: string;
+            /**
+             * @description account.name.label
+             * @default
+             */
+            name: string;
+            /**
+             * @description account.type.label
+             * @default ASSET
+             */
+            type: string;
+            /** @default false */
+            header: boolean;
+            parentCode?: string | null;
+            /** @default true */
+            active: boolean;
+        };
         HydraCollectionBaseSchema: components["schemas"]["HydraCollectionBaseSchemaNoPagination"] & {
             /**
              * @example {
@@ -4600,6 +7829,7 @@ export interface components {
             voucher_currency?: string | null;
             voucher_exchange_rate?: string | null;
             voucher_discount_amount?: string | null;
+            voucher_cash_rounding_adjustment?: string | null;
             voucher_discount_percentage?: string | null;
             voucher_consumption_surcharge_amount?: string | null;
             voucher_consumption_surcharge_percentage?: string | null;
@@ -4651,6 +7881,7 @@ export interface components {
             voucher_currency?: string | null;
             voucher_exchange_rate?: string | null;
             voucher_discount_amount?: string | null;
+            voucher_cash_rounding_adjustment?: string | null;
             voucher_discount_percentage?: string | null;
             voucher_consumption_surcharge_amount?: string | null;
             voucher_consumption_surcharge_percentage?: string | null;
@@ -4678,6 +7909,90 @@ export interface components {
             voucher_status?: number | null;
             voucher_items?: components["schemas"]["VoucherItem.jsonld"][];
             readonly voucher_sale_amount_text?: string;
+        };
+        "JournalEntry-journal_entry.read": {
+            readonly id?: string;
+            /**
+             * @description journal_entry.entry_no.label
+             * @default
+             */
+            entryNo: string;
+            /** @default  */
+            source: string;
+            /** @default  */
+            sourceId: string;
+            /**
+             * Format: date-time
+             * @description journal_entry.entry_date.label
+             */
+            entryDate?: string;
+            /**
+             * @description journal_entry.description.label
+             * @default
+             */
+            description: string;
+            /** @default PEN */
+            currency: string;
+            /** Format: date-time */
+            readonly createdAt?: string;
+            lines?: components["schemas"]["JournalEntryLine-journal_entry.read"][];
+        };
+        "JournalEntry.jsonld-journal_entry.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /**
+             * @description journal_entry.entry_no.label
+             * @default
+             */
+            entryNo: string;
+            /** @default  */
+            source: string;
+            /** @default  */
+            sourceId: string;
+            /**
+             * Format: date-time
+             * @description journal_entry.entry_date.label
+             */
+            entryDate?: string;
+            /**
+             * @description journal_entry.description.label
+             * @default
+             */
+            description: string;
+            /** @default PEN */
+            currency: string;
+            /** Format: date-time */
+            readonly createdAt?: string;
+            lines?: components["schemas"]["JournalEntryLine.jsonld-journal_entry.read"][];
+        };
+        "JournalEntryLine-journal_entry.read": {
+            readonly id?: string;
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            account?: string;
+            /** @default 1 */
+            lineNo: number;
+            /** @default 0.00 */
+            debit: string;
+            /** @default 0.00 */
+            credit: string;
+            memo?: string | null;
+        };
+        "JournalEntryLine.jsonld-journal_entry.read": {
+            readonly id?: string;
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            account?: string;
+            /** @default 1 */
+            lineNo: number;
+            /** @default 0.00 */
+            debit: string;
+            /** @default 0.00 */
+            credit: string;
+            memo?: string | null;
         };
         LogisticOperation: {
             readonly id?: string;
@@ -4720,6 +8035,7 @@ export interface components {
             deletedAt?: string | null;
         };
         "Media-company.read": Record<string, never>;
+        "Media-expense_report.read": Record<string, never>;
         "Media-product.read": Record<string, never>;
         /**
          * @description A stored upload. Created through `POST /api/media` (multipart/form-data,
@@ -4749,6 +8065,11 @@ export interface components {
          * @description A stored upload. Created through `POST /api/media` (multipart/form-data,
          *     field `file`) and referenced from other resources by IRI — the pattern
          */
+        "Media.jsonld-expense_report.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        /**
+         * @description A stored upload. Created through `POST /api/media` (multipart/form-data,
+         *     field `file`) and referenced from other resources by IRI — the pattern
+         */
         "Media.jsonld-product.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         Menu: Record<string, never>;
         "Menu.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
@@ -4756,35 +8077,541 @@ export interface components {
             readonly id?: number;
             /** @description payment_method.name.label */
             name?: string;
+            /**
+             * @description payment_method.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+            /**
+             * @default COLLECTED
+             * @enum {string}
+             */
+            settlementBehavior: "COLLECTED" | "RECEIVABLE" | "ADVANCE";
+        };
+        "PaymentMethod-payment_method.read": {
+            readonly id?: number;
+            /** @description payment_method.name.label */
+            name?: string;
+            /**
+             * @description payment_method.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+            /**
+             * @default COLLECTED
+             * @enum {string}
+             */
+            settlementBehavior: "COLLECTED" | "RECEIVABLE" | "ADVANCE";
         };
         "PaymentMethod-sale_record.read": {
             readonly id?: number;
             /** @description payment_method.name.label */
             name?: string;
+            /**
+             * @description payment_method.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+            /**
+             * @default COLLECTED
+             * @enum {string}
+             */
+            settlementBehavior: "COLLECTED" | "RECEIVABLE" | "ADVANCE";
         };
         "PaymentMethod.jsonMergePatch": {
             readonly id?: number;
             /** @description payment_method.name.label */
             name?: string;
+            /**
+             * @description payment_method.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+            /**
+             * @default COLLECTED
+             * @enum {string}
+             */
+            settlementBehavior: "COLLECTED" | "RECEIVABLE" | "ADVANCE";
         };
-        "PaymentMethod.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
+        "PaymentMethod.jsonld-payment_method.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
             /** @description payment_method.name.label */
             name?: string;
+            /**
+             * @description payment_method.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+            /**
+             * @default COLLECTED
+             * @enum {string}
+             */
+            settlementBehavior: "COLLECTED" | "RECEIVABLE" | "ADVANCE";
         };
         "PaymentMethod.jsonld-sale_record.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
             /** @description payment_method.name.label */
             name?: string;
+            /**
+             * @description payment_method.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+            /**
+             * @default COLLECTED
+             * @enum {string}
+             */
+            settlementBehavior: "COLLECTED" | "RECEIVABLE" | "ADVANCE";
+        };
+        /**
+         * @description A payroll processing batch for one Company and period. `type` decides
+         *     which formula PayrollCalculationService applies — regular monthly
+         *     salary, one of the two seasonal benefits (gratificación, CTS) that
+         *     Peruvian labor law requires on fixed semesters, or a termination
+         *     liquidación. No `branch` relation, same reasoning as FixedAsset/Employee.
+         */
+        "PayrollRun-payroll_run.read": {
+            readonly id?: string;
+            company: components["schemas"]["Company-payroll_run.read"];
+            /**
+             * Format: date-time
+             * @description payroll_run.period.label
+             */
+            period: string;
+            /**
+             * @description payroll_run.type.label
+             * @default REGULAR
+             */
+            type: string;
+            /**
+             * @description payroll_run.status.label
+             * @default DRAFT
+             */
+            status: string;
+            /**
+             * Format: date-time
+             * @description payroll_run.calculated_at.label
+             */
+            calculatedAt?: string | null;
+            /**
+             * Format: date-time
+             * @description payroll_run.approved_at.label
+             */
+            approvedAt?: string | null;
+            /**
+             * Format: date-time
+             * @description payroll_run.paid_at.label
+             */
+            paidAt?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        /**
+         * @description A payroll processing batch for one Company and period. `type` decides
+         *     which formula PayrollCalculationService applies — regular monthly
+         *     salary, one of the two seasonal benefits (gratificación, CTS) that
+         *     Peruvian labor law requires on fixed semesters, or a termination
+         *     liquidación. No `branch` relation, same reasoning as FixedAsset/Employee.
+         */
+        "PayrollRun-payroll_run.write": {
+            /**
+             * Format: iri-reference
+             * @description payroll_run.company.label
+             * @example https://example.com/
+             */
+            company: string;
+            /**
+             * Format: date-time
+             * @description payroll_run.period.label
+             */
+            period: string;
+            /**
+             * @description payroll_run.type.label
+             * @default REGULAR
+             */
+            type: string;
+        };
+        /**
+         * @description A payroll processing batch for one Company and period. `type` decides
+         *     which formula PayrollCalculationService applies — regular monthly
+         *     salary, one of the two seasonal benefits (gratificación, CTS) that
+         *     Peruvian labor law requires on fixed semesters, or a termination
+         *     liquidación. No `branch` relation, same reasoning as FixedAsset/Employee.
+         */
+        "PayrollRun-payroll_run.write.jsonMergePatch": {
+            /**
+             * Format: iri-reference
+             * @description payroll_run.company.label
+             * @example https://example.com/
+             */
+            company?: string;
+            /**
+             * Format: date-time
+             * @description payroll_run.period.label
+             */
+            period?: string;
+            /**
+             * @description payroll_run.type.label
+             * @default REGULAR
+             */
+            type: string;
+        };
+        "PayrollRun-payslip_entry.read": Record<string, never>;
+        /**
+         * @description A payroll processing batch for one Company and period. `type` decides
+         *     which formula PayrollCalculationService applies — regular monthly
+         *     salary, one of the two seasonal benefits (gratificación, CTS) that
+         *     Peruvian labor law requires on fixed semesters, or a termination
+         *     liquidación. No `branch` relation, same reasoning as FixedAsset/Employee.
+         */
+        "PayrollRun.PayrollRunApproveDto": {
+            id?: string;
+        };
+        /**
+         * @description A payroll processing batch for one Company and period. `type` decides
+         *     which formula PayrollCalculationService applies — regular monthly
+         *     salary, one of the two seasonal benefits (gratificación, CTS) that
+         *     Peruvian labor law requires on fixed semesters, or a termination
+         *     liquidación. No `branch` relation, same reasoning as FixedAsset/Employee.
+         */
+        "PayrollRun.PayrollRunCalculateDto": {
+            id?: string;
+        };
+        /**
+         * @description A payroll processing batch for one Company and period. `type` decides
+         *     which formula PayrollCalculationService applies — regular monthly
+         *     salary, one of the two seasonal benefits (gratificación, CTS) that
+         *     Peruvian labor law requires on fixed semesters, or a termination
+         *     liquidación. No `branch` relation, same reasoning as FixedAsset/Employee.
+         */
+        "PayrollRun.PayrollRunPayDto": {
+            id?: string;
+        };
+        /**
+         * @description A payroll processing batch for one Company and period. `type` decides
+         *     which formula PayrollCalculationService applies — regular monthly
+         *     salary, one of the two seasonal benefits (gratificación, CTS) that
+         *     Peruvian labor law requires on fixed semesters, or a termination
+         *     liquidación. No `branch` relation, same reasoning as FixedAsset/Employee.
+         */
+        "PayrollRun.jsonld-payroll_run.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            company: components["schemas"]["Company.jsonld-payroll_run.read"];
+            /**
+             * Format: date-time
+             * @description payroll_run.period.label
+             */
+            period: string;
+            /**
+             * @description payroll_run.type.label
+             * @default REGULAR
+             */
+            type: string;
+            /**
+             * @description payroll_run.status.label
+             * @default DRAFT
+             */
+            status: string;
+            /**
+             * Format: date-time
+             * @description payroll_run.calculated_at.label
+             */
+            calculatedAt?: string | null;
+            /**
+             * Format: date-time
+             * @description payroll_run.approved_at.label
+             */
+            approvedAt?: string | null;
+            /**
+             * Format: date-time
+             * @description payroll_run.paid_at.label
+             */
+            paidAt?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        /**
+         * @description A payroll processing batch for one Company and period. `type` decides
+         *     which formula PayrollCalculationService applies — regular monthly
+         *     salary, one of the two seasonal benefits (gratificación, CTS) that
+         *     Peruvian labor law requires on fixed semesters, or a termination
+         *     liquidación. No `branch` relation, same reasoning as FixedAsset/Employee.
+         */
+        "PayrollRun.jsonld-payslip_entry.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        /**
+         * @description One employee's line within a PayrollRun — read-only via the API,
+         *     generated exclusively by PayrollCalculationService and regenerated
+         *     (deleted + recreated) each time the run is recalculated while still
+         *     DRAFT. Never hand-edited, same as AssetDepreciationEntry (Fase 6).
+         */
+        "PayslipEntry-payslip_entry.read": {
+            readonly id?: string;
+            payrollRun?: components["schemas"]["PayrollRun-payslip_entry.read"];
+            employee?: components["schemas"]["Employee-payslip_entry.read"];
+            /** @description payslip_entry.gross_salary.label */
+            grossSalary?: string;
+            /**
+             * @description payslip_entry.afp_mandatory_contribution.label
+             * @default 0.00
+             */
+            afpMandatoryContribution: string;
+            /**
+             * @description payslip_entry.afp_insurance_premium.label
+             * @default 0.00
+             */
+            afpInsurancePremium: string;
+            /**
+             * @description payslip_entry.afp_commission.label
+             * @default 0.00
+             */
+            afpCommission: string;
+            /**
+             * @description payslip_entry.onp_amount.label
+             * @default 0.00
+             */
+            onpAmount: string;
+            /**
+             * @description payslip_entry.essalud_employer_contribution.label
+             * @default 0.00
+             */
+            essaludEmployerContribution: string;
+            /**
+             * @description payslip_entry.bonificacion_extraordinaria.label
+             * @default 0.00
+             */
+            bonificacionExtraordinaria: string;
+            /**
+             * @description payslip_entry.quinta_categoria_retention.label
+             * @default 0.00
+             */
+            quintaCategoriaRetention: string;
+            /**
+             * @description payslip_entry.vacation_trunca_amount.label
+             * @default 0.00
+             */
+            vacationTruncaAmount: string;
+            /**
+             * @description payslip_entry.gratificacion_trunca_amount.label
+             * @default 0.00
+             */
+            gratificacionTruncaAmount: string;
+            /**
+             * @description payslip_entry.cts_trunca_amount.label
+             * @default 0.00
+             */
+            ctsTruncaAmount: string;
+            /** @description payslip_entry.net_pay.label */
+            netPay?: string;
+            /** @description payslip_entry.note.label */
+            note?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        /**
+         * @description One employee's line within a PayrollRun — read-only via the API,
+         *     generated exclusively by PayrollCalculationService and regenerated
+         *     (deleted + recreated) each time the run is recalculated while still
+         *     DRAFT. Never hand-edited, same as AssetDepreciationEntry (Fase 6).
+         */
+        "PayslipEntry.jsonld-payslip_entry.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            payrollRun?: components["schemas"]["PayrollRun.jsonld-payslip_entry.read"];
+            employee?: components["schemas"]["Employee.jsonld-payslip_entry.read"];
+            /** @description payslip_entry.gross_salary.label */
+            grossSalary?: string;
+            /**
+             * @description payslip_entry.afp_mandatory_contribution.label
+             * @default 0.00
+             */
+            afpMandatoryContribution: string;
+            /**
+             * @description payslip_entry.afp_insurance_premium.label
+             * @default 0.00
+             */
+            afpInsurancePremium: string;
+            /**
+             * @description payslip_entry.afp_commission.label
+             * @default 0.00
+             */
+            afpCommission: string;
+            /**
+             * @description payslip_entry.onp_amount.label
+             * @default 0.00
+             */
+            onpAmount: string;
+            /**
+             * @description payslip_entry.essalud_employer_contribution.label
+             * @default 0.00
+             */
+            essaludEmployerContribution: string;
+            /**
+             * @description payslip_entry.bonificacion_extraordinaria.label
+             * @default 0.00
+             */
+            bonificacionExtraordinaria: string;
+            /**
+             * @description payslip_entry.quinta_categoria_retention.label
+             * @default 0.00
+             */
+            quintaCategoriaRetention: string;
+            /**
+             * @description payslip_entry.vacation_trunca_amount.label
+             * @default 0.00
+             */
+            vacationTruncaAmount: string;
+            /**
+             * @description payslip_entry.gratificacion_trunca_amount.label
+             * @default 0.00
+             */
+            gratificacionTruncaAmount: string;
+            /**
+             * @description payslip_entry.cts_trunca_amount.label
+             * @default 0.00
+             */
+            ctsTruncaAmount: string;
+            /** @description payslip_entry.net_pay.label */
+            netPay?: string;
+            /** @description payslip_entry.note.label */
+            note?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        /**
+         * @description Batch/lot metadata for a pharmacy product (NB-10): batch number, expiry,
+         *     manufacturer. Quantity-on-hand is NOT here — that stays in Inventory's
+         *     `stock_lots`; this row carries only the facts FEFO and expiry blocking need.
+         */
+        "PharmacyBatch-pharmacy_batch.read": {
+            readonly id?: number;
+            productId?: number;
+            batchNumber?: string;
+            /** Format: date-time */
+            expirationDate?: string;
+            manufacturer?: string | null;
+        };
+        /**
+         * @description Batch/lot metadata for a pharmacy product (NB-10): batch number, expiry,
+         *     manufacturer. Quantity-on-hand is NOT here — that stays in Inventory's
+         *     `stock_lots`; this row carries only the facts FEFO and expiry blocking need.
+         */
+        "PharmacyBatch.jsonld-pharmacy_batch.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            productId?: number;
+            batchNumber?: string;
+            /** Format: date-time */
+            expirationDate?: string;
+            manufacturer?: string | null;
+        };
+        /**
+         * @description A prescription on file for a dispensing (NB-10 follow-up). Recorded by the
+         *     pharmacist for products whose {@see PharmacyProduct::requiresPrescription()}
+         *     is true; optionally linked to the sale that dispensed it.
+         */
+        "PharmacyPrescription-pharmacy_prescription.read": {
+            readonly id?: number;
+            readonly saleId?: string | null;
+            patientName?: string;
+            patientDocument?: string | null;
+            prescriberName?: string;
+            prescriberRegistration?: string | null;
+            /** Format: date-time */
+            issuedOn?: string;
+            productIds?: number[];
+            notes?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        /**
+         * @description A prescription on file for a dispensing (NB-10 follow-up). Recorded by the
+         *     pharmacist for products whose {@see PharmacyProduct::requiresPrescription()}
+         *     is true; optionally linked to the sale that dispensed it.
+         */
+        "PharmacyPrescription.PrescriptionInput": {
+            /** @default  */
+            patientName: string;
+            patientDocument?: string | null;
+            /** @default  */
+            prescriberName: string;
+            prescriberRegistration?: string | null;
+            /** @default  */
+            issuedOn: string;
+            productIds?: number[];
+            saleId?: string | null;
+            notes?: string | null;
+        };
+        /**
+         * @description A prescription on file for a dispensing (NB-10 follow-up). Recorded by the
+         *     pharmacist for products whose {@see PharmacyProduct::requiresPrescription()}
+         *     is true; optionally linked to the sale that dispensed it.
+         */
+        "PharmacyPrescription.jsonld-pharmacy_prescription.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            readonly saleId?: string | null;
+            patientName?: string;
+            patientDocument?: string | null;
+            prescriberName?: string;
+            prescriberRegistration?: string | null;
+            /** Format: date-time */
+            issuedOn?: string;
+            productIds?: number[];
+            notes?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        /**
+         * @description Pharmacy-specific facts about a catalogue product (NB-10). Composition, not
+         *     inheritance: `Catalog\Product` (the `producto` table) is never touched — this
+         *     row is linked by `productId` only. One profile per product.
+         */
+        "PharmacyProduct-pharmacy_product.read": {
+            readonly id?: number;
+            productId?: number;
+            activeIngredient?: string | null;
+            sanitaryRegistration?: string | null;
+            /** @default false */
+            requiresPrescription: boolean;
+            /** @default false */
+            controlled: boolean;
+            /** @description DIGEMID controlled-substance list code, when {@see $controlled} is true. */
+            controlledSubstanceCode?: string | null;
+            /**
+             * @default NONE
+             * @enum {string}
+             */
+            expiryControl: "NONE" | "WARN" | "BLOCK";
+        };
+        /**
+         * @description Pharmacy-specific facts about a catalogue product (NB-10). Composition, not
+         *     inheritance: `Catalog\Product` (the `producto` table) is never touched — this
+         *     row is linked by `productId` only. One profile per product.
+         */
+        "PharmacyProduct.jsonld-pharmacy_product.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            productId?: number;
+            activeIngredient?: string | null;
+            sanitaryRegistration?: string | null;
+            /** @default false */
+            requiresPrescription: boolean;
+            /** @default false */
+            controlled: boolean;
+            /** @description DIGEMID controlled-substance list code, when {@see $controlled} is true. */
+            controlledSubstanceCode?: string | null;
+            /**
+             * @default NONE
+             * @enum {string}
+             */
+            expiryControl: "NONE" | "WARN" | "BLOCK";
         };
         PriceItemDto: {
             productId?: string | null;
-            price?: number | null;
+            price?: string | null;
         };
         PriceList: {
             readonly id?: number;
             /** @description price_list.name.label */
             name?: string;
+            /** @description price_list.multiplier.label */
+            multiplier?: string | null;
         };
         "PriceList.ApiResponse": {
             success?: boolean;
@@ -5116,15 +8943,29 @@ export interface components {
             /** @description Marks a response as safe according to RFC8674. */
             contentSafe?: boolean;
         };
+        "PriceList.PriceListApplyDto": {
+            id?: string;
+            price?: string;
+        };
+        "PriceList.PriceListApplyDto.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
+            id?: string;
+            price?: string;
+        };
         "PriceList.PriceListDto": {
-            id?: number | null;
+            id?: string | null;
             name?: string | null;
-            price?: number | null;
+            sku?: string | null;
+            code?: string | null;
+            price?: string | null;
+            priceSource?: string;
         };
         "PriceList.PriceListDto.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
-            id?: number | null;
+            id?: string | null;
             name?: string | null;
-            price?: number | null;
+            sku?: string | null;
+            code?: string | null;
+            price?: string | null;
+            priceSource?: string;
         };
         "PriceList.PricesDto": {
             priceListId?: number;
@@ -5134,12 +8975,18 @@ export interface components {
             readonly id?: number;
             /** @description price_list.name.label */
             name?: string;
+            /** @description price_list.multiplier.label */
+            multiplier?: string | null;
         };
         "PriceList.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
             /** @description price_list.name.label */
             name?: string;
+            /** @description price_list.multiplier.label */
+            multiplier?: string | null;
         };
+        "Product-customer_subscription.read": Record<string, never>;
+        "Product-customer_subscription_line.read": Record<string, never>;
         "Product-product.read": {
             readonly id?: string;
             /** @description product.code.label */
@@ -5334,18 +9181,35 @@ export interface components {
             /** @description product.name.label */
             name: string;
         };
+        "Product-purchase_order.read": {
+            readonly id?: string;
+            /** @description product.name.label */
+            name: string;
+        };
         "Product-sale_item_record.read": {
             readonly id?: string;
             /** @description product.name.label */
             name: string;
         };
+        "Product-sale_quote.read": {
+            readonly id?: string;
+            /** @description product.name.label */
+            name: string;
+        };
+        "Product-stock_entry.read": Record<string, never>;
+        "Product-stock_entry_items.read": Record<string, never>;
         "Product-stock_item.read": {
             readonly id?: string;
             /** @description product.code.label */
             code?: string | null;
             /** @description product.name.label */
             name: string;
+            category: components["schemas"]["Category-stock_item.read"];
+            unitOfMeasure: components["schemas"]["UnitOfMeasure-stock_item.read"];
         };
+        "Product-subscription_plan.read": Record<string, never>;
+        "Product.jsonld-customer_subscription.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        "Product.jsonld-customer_subscription_line.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         "Product.jsonld-product.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
             /** @description product.code.label */
@@ -5412,18 +9276,33 @@ export interface components {
             /** @description product.name.label */
             name: string;
         };
+        "Product.jsonld-purchase_order.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description product.name.label */
+            name: string;
+        };
         "Product.jsonld-sale_item_record.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
             /** @description product.name.label */
             name: string;
         };
+        "Product.jsonld-sale_quote.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description product.name.label */
+            name: string;
+        };
+        "Product.jsonld-stock_entry.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        "Product.jsonld-stock_entry_items.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         "Product.jsonld-stock_item.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
             /** @description product.code.label */
             code?: string | null;
             /** @description product.name.label */
             name: string;
+            category: components["schemas"]["Category.jsonld-stock_item.read"];
+            unitOfMeasure: components["schemas"]["UnitOfMeasure.jsonld-stock_item.read"];
         };
+        "Product.jsonld-subscription_plan.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         /** @deprecated */
         ProductStock: {
             readonly id?: number;
@@ -5592,6 +9471,8 @@ export interface components {
         "Purchase-purchase.read": {
             /** @description purchase.id.label */
             readonly id?: string;
+            /** @description purchase.receipt_no.label */
+            receiptNo?: number | null;
             /** @description purchase.legacy_movimiento_id.label */
             legacyMovimientoId?: string | null;
             /**
@@ -5602,6 +9483,12 @@ export interface components {
             branch?: string | null;
             warehouse?: components["schemas"]["Warehouse-purchase.read"] | null;
             supplier?: components["schemas"]["Supplier-purchase.read"] | null;
+            /**
+             * Format: iri-reference
+             * @description purchase.purchase_order.label
+             * @example https://example.com/
+             */
+            purchaseOrder?: string | null;
             /**
              * Format: iri-reference
              * @description purchase.buyer_user.label
@@ -5710,6 +9597,12 @@ export interface components {
             supplier?: string | null;
             /**
              * Format: iri-reference
+             * @description purchase.purchase_order.label
+             * @example https://example.com/
+             */
+            purchaseOrder?: string | null;
+            /**
+             * Format: iri-reference
              * @description purchase.buyer_user.label
              * @example https://example.com/
              */
@@ -5785,9 +9678,12 @@ export interface components {
             lastModifiedAt?: string | null;
             items?: components["schemas"]["PurchaseItem-purchase.write"][];
         };
+        "Purchase-supplier_bill.read": Record<string, never>;
         "Purchase.jsonld-purchase.read": components["schemas"]["HydraItemBaseSchema"] & {
             /** @description purchase.id.label */
             readonly id?: string;
+            /** @description purchase.receipt_no.label */
+            receiptNo?: number | null;
             /** @description purchase.legacy_movimiento_id.label */
             legacyMovimientoId?: string | null;
             /**
@@ -5798,6 +9694,12 @@ export interface components {
             branch?: string | null;
             warehouse?: components["schemas"]["Warehouse.jsonld-purchase.read"] | null;
             supplier?: components["schemas"]["Supplier.jsonld-purchase.read"] | null;
+            /**
+             * Format: iri-reference
+             * @description purchase.purchase_order.label
+             * @example https://example.com/
+             */
+            purchaseOrder?: string | null;
             /**
              * Format: iri-reference
              * @description purchase.buyer_user.label
@@ -5885,7 +9787,18 @@ export interface components {
             lastModifiedAt?: string | null;
             items?: string[];
         };
+        "Purchase.jsonld-supplier_bill.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         "PurchaseItem-purchase.write": {
+            /**
+             * Format: iri-reference
+             * @description Links this receipt line back to the PurchaseOrder line it fulfills,
+             *     so App\Purchasing\Service\PurchaseOrderReceiptService knows which
+             *     PurchaseOrderItem.receivedQty to update. Left null for direct-intake
+             *     items with no PO (the default, unchanged flow) and for extra items
+             *     added during receiving that weren't on the original order.
+             * @example https://example.com/
+             */
+            purchaseOrderItem?: string | null;
             /**
              * @description purchase_item.line_no.label
              * @default 0
@@ -5926,6 +9839,16 @@ export interface components {
         "PurchaseItem-purchase_item.read": {
             /** @description purchase_item.id.label */
             readonly id?: number | string;
+            /**
+             * Format: iri-reference
+             * @description Links this receipt line back to the PurchaseOrder line it fulfills,
+             *     so App\Purchasing\Service\PurchaseOrderReceiptService knows which
+             *     PurchaseOrderItem.receivedQty to update. Left null for direct-intake
+             *     items with no PO (the default, unchanged flow) and for extra items
+             *     added during receiving that weren't on the original order.
+             * @example https://example.com/
+             */
+            purchaseOrderItem?: string | null;
             /** @description purchase_item.legacy_movimiento_detalle_id.label */
             legacyMovimientoDetalleId?: number | null;
             /**
@@ -6010,6 +9933,16 @@ export interface components {
         "PurchaseItem.jsonld-purchase_item.read": components["schemas"]["HydraItemBaseSchema"] & {
             /** @description purchase_item.id.label */
             readonly id?: number | string;
+            /**
+             * Format: iri-reference
+             * @description Links this receipt line back to the PurchaseOrder line it fulfills,
+             *     so App\Purchasing\Service\PurchaseOrderReceiptService knows which
+             *     PurchaseOrderItem.receivedQty to update. Left null for direct-intake
+             *     items with no PO (the default, unchanged flow) and for extra items
+             *     added during receiving that weren't on the original order.
+             * @example https://example.com/
+             */
+            purchaseOrderItem?: string | null;
             /** @description purchase_item.legacy_movimiento_detalle_id.label */
             legacyMovimientoDetalleId?: number | null;
             /**
@@ -6091,6 +10024,224 @@ export interface components {
              */
             lastModifiedAt?: string | null;
         };
+        /**
+         * @description A supplier purchase order requesting goods before they're received.
+         *     Receiving against it creates a Purchase (src/Purchasing/Entity/Purchase.php)
+         *     the same way direct-intake purchases are created today — this entity
+         *     never touches inventory itself, only tracks ordered/received quantities.
+         */
+        "PurchaseOrder-purchase_order.read": {
+            readonly id?: string;
+            orderNo?: number | null;
+            branch?: components["schemas"]["Branch-purchase_order.read"] | null;
+            warehouse?: components["schemas"]["Warehouse-purchase_order.read"] | null;
+            supplier?: components["schemas"]["Supplier-purchase_order.read"];
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            buyerUser?: string | null;
+            /** @default draft */
+            status: string;
+            /** @default PEN */
+            currency: string;
+            /** @default 0.00 */
+            subtotal: string;
+            /** @default 0.00 */
+            taxTotal: string;
+            /** @default 0.00 */
+            grandTotal: string;
+            note?: string | null;
+            /** Format: date-time */
+            expectedDate?: string | null;
+            /** Format: date-time */
+            readonly issuedAt?: string;
+            /** Format: date-time */
+            sentAt?: string | null;
+            /** Format: date-time */
+            cancelledAt?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+            /** Format: date-time */
+            readonly updatedAt?: string | null;
+            items?: components["schemas"]["PurchaseOrderItem-purchase_order.read"][];
+        };
+        /**
+         * @description A supplier purchase order requesting goods before they're received.
+         *     Receiving against it creates a Purchase (src/Purchasing/Entity/Purchase.php)
+         *     the same way direct-intake purchases are created today — this entity
+         *     never touches inventory itself, only tracks ordered/received quantities.
+         */
+        "PurchaseOrder-purchase_order.write": {
+            /**
+             * Format: iri-reference
+             * @description purchase_order.branch.label
+             * @example https://example.com/
+             */
+            branch?: string | null;
+            /**
+             * Format: iri-reference
+             * @description purchase_order.warehouse.label
+             * @example https://example.com/
+             */
+            warehouse?: string | null;
+            /**
+             * Format: iri-reference
+             * @description purchase_order.supplier.label
+             * @example https://example.com/
+             */
+            supplier?: string;
+            /** @default draft */
+            status: string;
+            /** @default PEN */
+            currency: string;
+            note?: string | null;
+            /** Format: date-time */
+            expectedDate?: string | null;
+            /** @description Write-only transient payload, mirrors SaleQuote::$writeItems. */
+            writeItems?: {
+                [key: string]: string | null;
+            }[];
+        };
+        /**
+         * @description A supplier purchase order requesting goods before they're received.
+         *     Receiving against it creates a Purchase (src/Purchasing/Entity/Purchase.php)
+         *     the same way direct-intake purchases are created today — this entity
+         *     never touches inventory itself, only tracks ordered/received quantities.
+         */
+        "PurchaseOrder-purchase_order.write.jsonMergePatch": {
+            /**
+             * Format: iri-reference
+             * @description purchase_order.branch.label
+             * @example https://example.com/
+             */
+            branch?: string | null;
+            /**
+             * Format: iri-reference
+             * @description purchase_order.warehouse.label
+             * @example https://example.com/
+             */
+            warehouse?: string | null;
+            /**
+             * Format: iri-reference
+             * @description purchase_order.supplier.label
+             * @example https://example.com/
+             */
+            supplier?: string;
+            /** @default draft */
+            status: string;
+            /** @default PEN */
+            currency: string;
+            note?: string | null;
+            /** Format: date-time */
+            expectedDate?: string | null;
+            /** @description Write-only transient payload, mirrors SaleQuote::$writeItems. */
+            writeItems?: {
+                [key: string]: string | null;
+            }[];
+        };
+        /**
+         * @description A supplier purchase order requesting goods before they're received.
+         *     Receiving against it creates a Purchase (src/Purchasing/Entity/Purchase.php)
+         *     the same way direct-intake purchases are created today — this entity
+         *     never touches inventory itself, only tracks ordered/received quantities.
+         */
+        "PurchaseOrder.jsonld-purchase_order.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            orderNo?: number | null;
+            branch?: components["schemas"]["Branch.jsonld-purchase_order.read"] | null;
+            warehouse?: components["schemas"]["Warehouse.jsonld-purchase_order.read"] | null;
+            supplier?: components["schemas"]["Supplier.jsonld-purchase_order.read"];
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            buyerUser?: string | null;
+            /** @default draft */
+            status: string;
+            /** @default PEN */
+            currency: string;
+            /** @default 0.00 */
+            subtotal: string;
+            /** @default 0.00 */
+            taxTotal: string;
+            /** @default 0.00 */
+            grandTotal: string;
+            note?: string | null;
+            /** Format: date-time */
+            expectedDate?: string | null;
+            /** Format: date-time */
+            readonly issuedAt?: string;
+            /** Format: date-time */
+            sentAt?: string | null;
+            /** Format: date-time */
+            cancelledAt?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+            /** Format: date-time */
+            readonly updatedAt?: string | null;
+            items?: components["schemas"]["PurchaseOrderItem.jsonld-purchase_order.read"][];
+        };
+        "PurchaseOrderItem-purchase_order.read": {
+            readonly id?: number;
+            /** @default 0 */
+            lineNo: number;
+            product?: components["schemas"]["Product-purchase_order.read"] | null;
+            /** @default  */
+            nameSnapshot: string;
+            skuSnapshot?: string | null;
+            uomSnapshot?: string | null;
+            /** @default 0.000 */
+            orderedQty: string;
+            /** @default 0.000 */
+            receivedQty: string;
+            /** @default 0.0000 */
+            expectedUnitCost: string;
+            /** @default 0.00 */
+            grossAmount: string;
+            /** @default 0.00 */
+            taxAmount: string;
+            /** @default 0.00 */
+            totalAmount: string;
+            /** @description purchase_order_item.pending_qty.label */
+            readonly pendingQty?: string;
+        };
+        /**
+         * @description One requested line of a PurchaseOrder. receivedQty is the only field
+         *     mutated after creation — a running total kept in sync by
+         *     App\Purchasing\Service\PurchaseOrderReceiptService whenever a Purchase
+         *     linked to this line is posted or voided. pendingQty is derived, never
+         *     stored, to avoid a second source of truth.
+         *
+         *     Get-only ApiResource: not meant to be listed/created/edited directly
+         *     (items are always written through the parent PurchaseOrder's writeItems
+         *     payload) — exists so its IRI resolves when PurchaseItem::purchaseOrderItem
+         *     is denormalized from the "receive against PO" frontend flow.
+         */
+        "PurchaseOrderItem.jsonld-purchase_order.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            /** @default 0 */
+            lineNo: number;
+            product?: components["schemas"]["Product.jsonld-purchase_order.read"] | null;
+            /** @default  */
+            nameSnapshot: string;
+            skuSnapshot?: string | null;
+            uomSnapshot?: string | null;
+            /** @default 0.000 */
+            orderedQty: string;
+            /** @default 0.000 */
+            receivedQty: string;
+            /** @default 0.0000 */
+            expectedUnitCost: string;
+            /** @default 0.00 */
+            grossAmount: string;
+            /** @default 0.00 */
+            taxAmount: string;
+            /** @default 0.00 */
+            totalAmount: string;
+            /** @description purchase_order_item.pending_qty.label */
+            readonly pendingQty?: string;
+        };
         Role: {
             readonly id?: number;
             /** @description role.name.label */
@@ -6124,11 +10275,13 @@ export interface components {
             id?: number;
             text?: string;
             items?: components["schemas"]["RoleMenuItemDto"][];
+            selected?: boolean;
         };
         "RoleMenu.RoleMenuDto.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
             id?: number;
             text?: string;
             items?: components["schemas"]["RoleMenuItemDto.jsonld"][];
+            selected?: boolean;
         };
         "RoleMenu.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
             roleId?: number;
@@ -6143,6 +10296,34 @@ export interface components {
             id?: number;
             text?: string;
             selected?: boolean;
+        };
+        RolePermission: {
+            roleId?: number;
+            permissions?: string[];
+        };
+        "RolePermission.RolePermissionModuleDto": {
+            key?: string;
+            label?: string;
+            permissions?: components["schemas"]["RolePermissionItemDto"][];
+        };
+        "RolePermission.RolePermissionModuleDto.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
+            key?: string;
+            label?: string;
+            permissions?: components["schemas"]["RolePermissionItemDto.jsonld"][];
+        };
+        "RolePermission.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
+            roleId?: number;
+            permissions?: string[];
+        };
+        RolePermissionItemDto: {
+            key?: string;
+            label?: string;
+            granted?: boolean;
+        };
+        "RolePermissionItemDto.jsonld": {
+            key?: string;
+            label?: string;
+            granted?: boolean;
         };
         "Sale-sale_record.read": {
             readonly id?: string;
@@ -6197,6 +10378,11 @@ export interface components {
              */
             grandTotal: string;
             /**
+             * @description sale_record.cash_rounding_adjustment.label
+             * @default 0.00
+             */
+            cashRoundingAdjustment: string;
+            /**
              * @description sale_record.paid_total.label
              * @default 0.00
              */
@@ -6212,6 +10398,11 @@ export interface components {
              */
             balanceDue: string;
             /**
+             * @description Remains true after the debt is fully collected.
+             * @default false
+             */
+            readonly receivableAccount: boolean;
+            /**
              * Format: date-time
              * @description sale_record.issued_at.label
              */
@@ -6221,6 +10412,13 @@ export interface components {
              * @description sale_record.issued_date.label
              */
             issuedDate?: string | null;
+            /**
+             * Format: date-time
+             * @description sale_record.due_date.label
+             */
+            dueDate?: string | null;
+            /** @description sale_record.customer_subscription.label */
+            customerSubscriptionId?: string | null;
             /**
              * Format: date-time
              * @description sale_record.created_at.label
@@ -6259,6 +10457,12 @@ export interface components {
             paymentMethod?: components["schemas"]["PaymentMethod-sale_record.read"] | null;
             /** @description sale_record.discount_percent.label */
             discountPercent?: string | null;
+            /** @description sale_record.note.label */
+            note?: string | null;
+            /** @description sale_record.payments.label */
+            payments?: {
+                [key: string]: string | null;
+            }[];
         };
         "Sale-sale_record.write": {
             /**
@@ -6297,67 +10501,10 @@ export interface components {
              */
             grandTotal: string;
             /**
-             * Format: date-time
-             * @description sale_record.issued_at.label
-             */
-            issuedAt?: string | null;
-            /**
-             * Format: date-time
-             * @description sale_record.issued_date.label
-             */
-            issuedDate?: string | null;
-            /**
-             * Format: iri-reference
-             * @description sale_record.payment_method.label
-             * @example https://example.com/
-             */
-            paymentMethod?: string | null;
-            /** @description sale_record.discount_percent.label */
-            discountPercent?: string | null;
-            emitInvoice?: boolean | null;
-            note?: string | null;
-            payments?: {
-                [key: string]: string | null;
-            }[];
-            /** @description Items for write path (mapped to SaleItemRecord entities by processor). */
-            writeItems?: (string | null)[];
-        };
-        "Sale-sale_record.write.jsonMergePatch": {
-            /**
-             * Format: iri-reference
-             * @description sale_record.branch.label
-             * @example https://example.com/
-             */
-            branch?: string | null;
-            /**
-             * Format: iri-reference
-             * @description sale_record.warehouse.label
-             * @example https://example.com/
-             */
-            warehouse?: string | null;
-            /**
-             * Format: iri-reference
-             * @description sale_record.customer.label
-             * @example https://example.com/
-             */
-            customer?: string | null;
-            /** @description sale_record.seller_user_id.label */
-            sellerUserId?: number | null;
-            /**
-             * @description sale_record.currency.label
-             * @default PEN
-             */
-            currency: string;
-            /**
-             * @description sale_record.exchange_rate.label
-             * @default 1.000000
-             */
-            exchangeRate: string;
-            /**
-             * @description sale_record.grand_total.label
+             * @description sale_record.cash_rounding_adjustment.label
              * @default 0.00
              */
-            grandTotal: string;
+            cashRoundingAdjustment: string;
             /**
              * Format: date-time
              * @description sale_record.issued_at.label
@@ -6369,6 +10516,11 @@ export interface components {
              */
             issuedDate?: string | null;
             /**
+             * Format: date-time
+             * @description sale_record.due_date.label
+             */
+            dueDate?: string | null;
+            /**
              * Format: iri-reference
              * @description sale_record.payment_method.label
              * @example https://example.com/
@@ -6377,15 +10529,37 @@ export interface components {
             /** @description sale_record.discount_percent.label */
             discountPercent?: string | null;
             emitInvoice?: boolean | null;
+            /** @description sale_record.note.label */
             note?: string | null;
+            /** @description sale_record.payments.label */
             payments?: {
+                [key: string]: string | null;
+            }[];
+            /**
+             * @description Write-only settlement contract. PAYMENT entries represent collected
+             *     money and RECEIVABLE entries represent customer financing.
+             */
+            settlements?: {
                 [key: string]: string | null;
             }[];
             /** @description Items for write path (mapped to SaleItemRecord entities by processor). */
             writeItems?: (string | null)[];
+            /**
+             * @description Compatibility flag for API/legacy clients that submit collected payment
+             *     lines below the total. The POS derives it from its Crédito allocation.
+             * @default false
+             */
+            creditSale: boolean;
         };
         "Sale.ApiResponse-sale_record.read": Record<string, never>;
         "Sale.ApiResponse.jsonld-sale_record.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        "Sale.SaleCollectPaymentDto": {
+            id?: string;
+            amount?: number | string;
+            paymentMethodId?: number;
+            paidAt?: string | null;
+            reference?: string | null;
+        };
         "Sale.VoidSaleDto-sale_record.write": Record<string, never>;
         "Sale.jsonld-sale_record.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
@@ -6440,6 +10614,11 @@ export interface components {
              */
             grandTotal: string;
             /**
+             * @description sale_record.cash_rounding_adjustment.label
+             * @default 0.00
+             */
+            cashRoundingAdjustment: string;
+            /**
              * @description sale_record.paid_total.label
              * @default 0.00
              */
@@ -6455,6 +10634,11 @@ export interface components {
              */
             balanceDue: string;
             /**
+             * @description Remains true after the debt is fully collected.
+             * @default false
+             */
+            readonly receivableAccount: boolean;
+            /**
              * Format: date-time
              * @description sale_record.issued_at.label
              */
@@ -6464,6 +10648,13 @@ export interface components {
              * @description sale_record.issued_date.label
              */
             issuedDate?: string | null;
+            /**
+             * Format: date-time
+             * @description sale_record.due_date.label
+             */
+            dueDate?: string | null;
+            /** @description sale_record.customer_subscription.label */
+            customerSubscriptionId?: string | null;
             /**
              * Format: date-time
              * @description sale_record.created_at.label
@@ -6502,6 +10693,12 @@ export interface components {
             paymentMethod?: components["schemas"]["PaymentMethod.jsonld-sale_record.read"] | null;
             /** @description sale_record.discount_percent.label */
             discountPercent?: string | null;
+            /** @description sale_record.note.label */
+            note?: string | null;
+            /** @description sale_record.payments.label */
+            payments?: {
+                [key: string]: string | null;
+            }[];
         };
         "SaleItemRecord-sale_item_record.read": {
             readonly id?: number;
@@ -6610,6 +10807,541 @@ export interface components {
             versionNo: number;
             /** Format: date-time */
             lastModifiedAt?: string | null;
+        };
+        /**
+         * @description Pre-sale quote: same shape as SaleRecord but with no SUNAT emission and
+         *     no payments. Converts into a real SaleRecord via SaleQuoteConvertProcessor
+         *     — never through SalesWriteGateway::write(), which always tries to
+         *     clean-up-and-reconstruct payments/taxes/discounts a quote doesn't have.
+         */
+        "SaleQuote-sale_quote.read": {
+            readonly id?: string;
+            branch?: components["schemas"]["Branch-sale_quote.read"] | null;
+            warehouse?: components["schemas"]["Warehouse-sale_quote.read"] | null;
+            customer?: components["schemas"]["Customer-sale_quote.read"] | null;
+            sellerUserId?: number | null;
+            /** @default draft */
+            status: string;
+            /** @default PEN */
+            currency: string;
+            /** @default 0.00 */
+            subtotal: string;
+            /** @default 0.00 */
+            discountTotal: string;
+            /** @default 0.00 */
+            taxTotal: string;
+            /** @default 0.00 */
+            grandTotal: string;
+            /** Format: date-time */
+            issuedAt?: string;
+            /** Format: date-time */
+            validUntil?: string | null;
+            note?: string | null;
+            /**
+             * @description Not exposed as a relation (avoids a bidirectional SaleRecord<->SaleQuote
+             *     coupling for a link that only ever gets set once, on convert) — plain
+             *     nullable string FK, same reasoning SaleRecord itself uses for
+             *     customerSubscriptionId.
+             */
+            convertedSaleId?: string | null;
+            /** Format: date-time */
+            convertedAt?: string | null;
+            createdBy?: number | null;
+            updatedBy?: number | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string | null;
+            items?: components["schemas"]["SaleQuoteItem-sale_quote.read"][];
+        };
+        /**
+         * @description Pre-sale quote: same shape as SaleRecord but with no SUNAT emission and
+         *     no payments. Converts into a real SaleRecord via SaleQuoteConvertProcessor
+         *     — never through SalesWriteGateway::write(), which always tries to
+         *     clean-up-and-reconstruct payments/taxes/discounts a quote doesn't have.
+         */
+        "SaleQuote-sale_quote.write": {
+            /**
+             * Format: iri-reference
+             * @description sale_quote.branch.label
+             * @example https://example.com/
+             */
+            branch?: string | null;
+            /**
+             * Format: iri-reference
+             * @description sale_quote.warehouse.label
+             * @example https://example.com/
+             */
+            warehouse?: string | null;
+            /**
+             * Format: iri-reference
+             * @description sale_quote.customer.label
+             * @example https://example.com/
+             */
+            customer?: string | null;
+            /** @default draft */
+            status: string;
+            /** @default PEN */
+            currency: string;
+            /** Format: date-time */
+            issuedAt?: string;
+            /** Format: date-time */
+            validUntil?: string | null;
+            note?: string | null;
+            /**
+             * @description Write-only transient payload — mirrors SaleRecord's own `writeItems`
+             *     property. SaleQuoteProcessor consumes this array and builds real
+             *     SaleQuoteItem entities from it (see SaleQuoteService::buildItemsFromPayload).
+             */
+            writeItems?: {
+                [key: string]: string | null;
+            }[];
+        };
+        /**
+         * @description Pre-sale quote: same shape as SaleRecord but with no SUNAT emission and
+         *     no payments. Converts into a real SaleRecord via SaleQuoteConvertProcessor
+         *     — never through SalesWriteGateway::write(), which always tries to
+         *     clean-up-and-reconstruct payments/taxes/discounts a quote doesn't have.
+         */
+        "SaleQuote-sale_quote.write.jsonMergePatch": {
+            /**
+             * Format: iri-reference
+             * @description sale_quote.branch.label
+             * @example https://example.com/
+             */
+            branch?: string | null;
+            /**
+             * Format: iri-reference
+             * @description sale_quote.warehouse.label
+             * @example https://example.com/
+             */
+            warehouse?: string | null;
+            /**
+             * Format: iri-reference
+             * @description sale_quote.customer.label
+             * @example https://example.com/
+             */
+            customer?: string | null;
+            /** @default draft */
+            status: string;
+            /** @default PEN */
+            currency: string;
+            /** Format: date-time */
+            issuedAt?: string;
+            /** Format: date-time */
+            validUntil?: string | null;
+            note?: string | null;
+            /**
+             * @description Write-only transient payload — mirrors SaleRecord's own `writeItems`
+             *     property. SaleQuoteProcessor consumes this array and builds real
+             *     SaleQuoteItem entities from it (see SaleQuoteService::buildItemsFromPayload).
+             */
+            writeItems?: {
+                [key: string]: string | null;
+            }[];
+        };
+        /**
+         * @description Pre-sale quote: same shape as SaleRecord but with no SUNAT emission and
+         *     no payments. Converts into a real SaleRecord via SaleQuoteConvertProcessor
+         *     — never through SalesWriteGateway::write(), which always tries to
+         *     clean-up-and-reconstruct payments/taxes/discounts a quote doesn't have.
+         */
+        "SaleQuote.SaleQuoteConvertDto": {
+            id?: string;
+            paymentMethodId?: number | null;
+            warehouseId?: string | null;
+            branchId?: string | null;
+        };
+        /**
+         * @description Pre-sale quote: same shape as SaleRecord but with no SUNAT emission and
+         *     no payments. Converts into a real SaleRecord via SaleQuoteConvertProcessor
+         *     — never through SalesWriteGateway::write(), which always tries to
+         *     clean-up-and-reconstruct payments/taxes/discounts a quote doesn't have.
+         */
+        "SaleQuote.SaleQuoteSendDto": {
+            id?: string;
+        };
+        /**
+         * @description Pre-sale quote: same shape as SaleRecord but with no SUNAT emission and
+         *     no payments. Converts into a real SaleRecord via SaleQuoteConvertProcessor
+         *     — never through SalesWriteGateway::write(), which always tries to
+         *     clean-up-and-reconstruct payments/taxes/discounts a quote doesn't have.
+         */
+        "SaleQuote.SaleRecord-sale_record.read": {
+            readonly id?: string;
+            /**
+             * Format: iri-reference
+             * @description sale_record.branch.label
+             * @example https://example.com/
+             */
+            branch?: string | null;
+            /**
+             * Format: iri-reference
+             * @description sale_record.warehouse.label
+             * @example https://example.com/
+             */
+            warehouse?: string | null;
+            customer?: components["schemas"]["Customer-sale_record.read"] | null;
+            /** @description sale_record.seller_user_id.label */
+            sellerUserId?: number | null;
+            /**
+             * @description sale_record.status.label
+             * @default COMPLETED
+             */
+            status: string;
+            /**
+             * @description sale_record.currency.label
+             * @default PEN
+             */
+            currency: string;
+            /**
+             * @description sale_record.exchange_rate.label
+             * @default 1.000000
+             */
+            exchangeRate: string;
+            /**
+             * @description sale_record.subtotal.label
+             * @default 0.00
+             */
+            subtotal: string;
+            /**
+             * @description sale_record.discount_total.label
+             * @default 0.00
+             */
+            discountTotal: string;
+            /**
+             * @description sale_record.tax_total.label
+             * @default 0.00
+             */
+            taxTotal: string;
+            /**
+             * @description sale_record.grand_total.label
+             * @default 0.00
+             */
+            grandTotal: string;
+            /**
+             * @description sale_record.cash_rounding_adjustment.label
+             * @default 0.00
+             */
+            cashRoundingAdjustment: string;
+            /**
+             * @description sale_record.paid_total.label
+             * @default 0.00
+             */
+            paidTotal: string;
+            /**
+             * @description sale_record.change_total.label
+             * @default 0.00
+             */
+            changeTotal: string;
+            /**
+             * @description sale_record.balance_due.label
+             * @default 0.00
+             */
+            balanceDue: string;
+            /**
+             * @description Remains true after the debt is fully collected.
+             * @default false
+             */
+            readonly receivableAccount: boolean;
+            /**
+             * Format: date-time
+             * @description sale_record.issued_at.label
+             */
+            issuedAt?: string | null;
+            /**
+             * Format: date-time
+             * @description sale_record.issued_date.label
+             */
+            issuedDate?: string | null;
+            /**
+             * Format: date-time
+             * @description sale_record.due_date.label
+             */
+            dueDate?: string | null;
+            /** @description sale_record.customer_subscription.label */
+            customerSubscriptionId?: string | null;
+            /**
+             * Format: date-time
+             * @description sale_record.created_at.label
+             */
+            createdAt?: string | null;
+            /**
+             * Format: date-time
+             * @description sale_record.updated_at.label
+             */
+            updatedAt?: string | null;
+            /** @default SYNCED */
+            syncStatus: string;
+            localUuid?: string | null;
+            idempotencyKey?: string | null;
+            /** Format: date-time */
+            syncedAt?: string | null;
+            /** @default 1 */
+            versionNo: number;
+            /** Format: date-time */
+            lastModifiedAt?: string | null;
+            /** @description sale_record.tax_document_id.label */
+            taxDocumentId?: string | null;
+            /**
+             * @description sale_record.has_invoice.label
+             * @default false
+             */
+            hasInvoice: boolean;
+            /** @description sale_record.invoice_full_number.label */
+            invoiceFullNumber?: string | null;
+            /** @description sale_record.sunat_status.label */
+            sunatStatus?: string | null;
+            /** @description sale_record.public_receipt_url.label */
+            publicReceiptUrl?: string | null;
+            /** @description sale_record.document_type.label */
+            documentType?: string | null;
+            paymentMethod?: components["schemas"]["PaymentMethod-sale_record.read"] | null;
+            /** @description sale_record.discount_percent.label */
+            discountPercent?: string | null;
+            /** @description sale_record.note.label */
+            note?: string | null;
+            /** @description sale_record.payments.label */
+            payments?: {
+                [key: string]: string | null;
+            }[];
+        };
+        /**
+         * @description Pre-sale quote: same shape as SaleRecord but with no SUNAT emission and
+         *     no payments. Converts into a real SaleRecord via SaleQuoteConvertProcessor
+         *     — never through SalesWriteGateway::write(), which always tries to
+         *     clean-up-and-reconstruct payments/taxes/discounts a quote doesn't have.
+         */
+        "SaleQuote.SaleRecord.jsonld-sale_record.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /**
+             * Format: iri-reference
+             * @description sale_record.branch.label
+             * @example https://example.com/
+             */
+            branch?: string | null;
+            /**
+             * Format: iri-reference
+             * @description sale_record.warehouse.label
+             * @example https://example.com/
+             */
+            warehouse?: string | null;
+            customer?: components["schemas"]["Customer.jsonld-sale_record.read"] | null;
+            /** @description sale_record.seller_user_id.label */
+            sellerUserId?: number | null;
+            /**
+             * @description sale_record.status.label
+             * @default COMPLETED
+             */
+            status: string;
+            /**
+             * @description sale_record.currency.label
+             * @default PEN
+             */
+            currency: string;
+            /**
+             * @description sale_record.exchange_rate.label
+             * @default 1.000000
+             */
+            exchangeRate: string;
+            /**
+             * @description sale_record.subtotal.label
+             * @default 0.00
+             */
+            subtotal: string;
+            /**
+             * @description sale_record.discount_total.label
+             * @default 0.00
+             */
+            discountTotal: string;
+            /**
+             * @description sale_record.tax_total.label
+             * @default 0.00
+             */
+            taxTotal: string;
+            /**
+             * @description sale_record.grand_total.label
+             * @default 0.00
+             */
+            grandTotal: string;
+            /**
+             * @description sale_record.cash_rounding_adjustment.label
+             * @default 0.00
+             */
+            cashRoundingAdjustment: string;
+            /**
+             * @description sale_record.paid_total.label
+             * @default 0.00
+             */
+            paidTotal: string;
+            /**
+             * @description sale_record.change_total.label
+             * @default 0.00
+             */
+            changeTotal: string;
+            /**
+             * @description sale_record.balance_due.label
+             * @default 0.00
+             */
+            balanceDue: string;
+            /**
+             * @description Remains true after the debt is fully collected.
+             * @default false
+             */
+            readonly receivableAccount: boolean;
+            /**
+             * Format: date-time
+             * @description sale_record.issued_at.label
+             */
+            issuedAt?: string | null;
+            /**
+             * Format: date-time
+             * @description sale_record.issued_date.label
+             */
+            issuedDate?: string | null;
+            /**
+             * Format: date-time
+             * @description sale_record.due_date.label
+             */
+            dueDate?: string | null;
+            /** @description sale_record.customer_subscription.label */
+            customerSubscriptionId?: string | null;
+            /**
+             * Format: date-time
+             * @description sale_record.created_at.label
+             */
+            createdAt?: string | null;
+            /**
+             * Format: date-time
+             * @description sale_record.updated_at.label
+             */
+            updatedAt?: string | null;
+            /** @default SYNCED */
+            syncStatus: string;
+            localUuid?: string | null;
+            idempotencyKey?: string | null;
+            /** Format: date-time */
+            syncedAt?: string | null;
+            /** @default 1 */
+            versionNo: number;
+            /** Format: date-time */
+            lastModifiedAt?: string | null;
+            /** @description sale_record.tax_document_id.label */
+            taxDocumentId?: string | null;
+            /**
+             * @description sale_record.has_invoice.label
+             * @default false
+             */
+            hasInvoice: boolean;
+            /** @description sale_record.invoice_full_number.label */
+            invoiceFullNumber?: string | null;
+            /** @description sale_record.sunat_status.label */
+            sunatStatus?: string | null;
+            /** @description sale_record.public_receipt_url.label */
+            publicReceiptUrl?: string | null;
+            /** @description sale_record.document_type.label */
+            documentType?: string | null;
+            paymentMethod?: components["schemas"]["PaymentMethod.jsonld-sale_record.read"] | null;
+            /** @description sale_record.discount_percent.label */
+            discountPercent?: string | null;
+            /** @description sale_record.note.label */
+            note?: string | null;
+            /** @description sale_record.payments.label */
+            payments?: {
+                [key: string]: string | null;
+            }[];
+        };
+        /**
+         * @description Pre-sale quote: same shape as SaleRecord but with no SUNAT emission and
+         *     no payments. Converts into a real SaleRecord via SaleQuoteConvertProcessor
+         *     — never through SalesWriteGateway::write(), which always tries to
+         *     clean-up-and-reconstruct payments/taxes/discounts a quote doesn't have.
+         */
+        "SaleQuote.jsonld-sale_quote.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            branch?: components["schemas"]["Branch.jsonld-sale_quote.read"] | null;
+            warehouse?: components["schemas"]["Warehouse.jsonld-sale_quote.read"] | null;
+            customer?: components["schemas"]["Customer.jsonld-sale_quote.read"] | null;
+            sellerUserId?: number | null;
+            /** @default draft */
+            status: string;
+            /** @default PEN */
+            currency: string;
+            /** @default 0.00 */
+            subtotal: string;
+            /** @default 0.00 */
+            discountTotal: string;
+            /** @default 0.00 */
+            taxTotal: string;
+            /** @default 0.00 */
+            grandTotal: string;
+            /** Format: date-time */
+            issuedAt?: string;
+            /** Format: date-time */
+            validUntil?: string | null;
+            note?: string | null;
+            /**
+             * @description Not exposed as a relation (avoids a bidirectional SaleRecord<->SaleQuote
+             *     coupling for a link that only ever gets set once, on convert) — plain
+             *     nullable string FK, same reasoning SaleRecord itself uses for
+             *     customerSubscriptionId.
+             */
+            convertedSaleId?: string | null;
+            /** Format: date-time */
+            convertedAt?: string | null;
+            createdBy?: number | null;
+            updatedBy?: number | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string | null;
+            items?: components["schemas"]["SaleQuoteItem.jsonld-sale_quote.read"][];
+        };
+        "SaleQuoteItem-sale_quote.read": {
+            readonly id?: number;
+            /** @default 0 */
+            lineNo: number;
+            product?: components["schemas"]["Product-sale_quote.read"] | null;
+            /** @default 0.000 */
+            qty: string;
+            /** @default 0.0000 */
+            unitPrice: string;
+            discountPercent?: string | null;
+            /** @default 0.00 */
+            grossAmount: string;
+            /** @default 0.00 */
+            discountAmount: string;
+            /** @default 0.00 */
+            taxAmount: string;
+            /** @default 0.00 */
+            netAmount: string;
+            /** @default  */
+            nameSnapshot: string;
+            skuSnapshot?: string | null;
+            uomSnapshot?: string | null;
+        };
+        "SaleQuoteItem.jsonld-sale_quote.read": {
+            readonly id?: number;
+            /** @default 0 */
+            lineNo: number;
+            product?: components["schemas"]["Product.jsonld-sale_quote.read"] | null;
+            /** @default 0.000 */
+            qty: string;
+            /** @default 0.0000 */
+            unitPrice: string;
+            discountPercent?: string | null;
+            /** @default 0.00 */
+            grossAmount: string;
+            /** @default 0.00 */
+            discountAmount: string;
+            /** @default 0.00 */
+            taxAmount: string;
+            /** @default 0.00 */
+            netAmount: string;
+            /** @default  */
+            nameSnapshot: string;
+            skuSnapshot?: string | null;
+            uomSnapshot?: string | null;
         };
         "SaleReport.StreamedResponse": {
             /** @description Sets the PHP callback associated with this Response. */
@@ -6919,6 +11651,18 @@ export interface components {
             /** @description Marks a response as safe according to RFC8674. */
             contentSafe?: boolean;
         };
+        ScreenContextInput: {
+            /** @description Identifies which screen the user is currently viewing. */
+            screen?: string | null;
+            /** @description The entity type being viewed or edited (e.g. "sale", "product", "customer"). */
+            entityType?: string | null;
+            /** @description The UUID or numeric ID of the entity currently active on screen. */
+            entityId?: string | null;
+            /** @description Optional structured extras from the active screen (POS cart, form snapshot). */
+            extra?: {
+                [key: string]: string | null;
+            } | null;
+        };
         "Setup.InitialSetupInput": {
             adminUsername: string;
             adminPassword: string;
@@ -7126,12 +11870,7 @@ export interface components {
         };
         "StockEntryItem-stock_entry.read": {
             readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description stock_entry_item.product.label
-             * @example https://example.com/
-             */
-            product: string;
+            product: components["schemas"]["Product-stock_entry.read"];
             /**
              * @description stock_entry_item.qty.label
              * @default 0.000000
@@ -7147,6 +11886,7 @@ export interface components {
              * @example https://example.com/
              */
             unit?: string | null;
+            /** @description stock_entry_item.note.label */
             note?: string | null;
         };
         "StockEntryItem-stock_entry.write": {
@@ -7167,16 +11907,12 @@ export interface components {
              * @example https://example.com/
              */
             unit?: string | null;
+            /** @description stock_entry_item.note.label */
             note?: string | null;
         };
         "StockEntryItem-stock_entry_items.read": {
             readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description stock_entry_item.product.label
-             * @example https://example.com/
-             */
-            product: string;
+            product: components["schemas"]["Product-stock_entry_items.read"];
             /**
              * @description stock_entry_item.qty.label
              * @default 0.000000
@@ -7192,16 +11928,12 @@ export interface components {
              * @example https://example.com/
              */
             unit?: string | null;
+            /** @description stock_entry_item.note.label */
             note?: string | null;
         };
-        "StockEntryItem.jsonld-stock_entry.read": {
+        "StockEntryItem.jsonld-stock_entry.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description stock_entry_item.product.label
-             * @example https://example.com/
-             */
-            product: string;
+            product: components["schemas"]["Product.jsonld-stock_entry.read"];
             /**
              * @description stock_entry_item.qty.label
              * @default 0.000000
@@ -7217,16 +11949,12 @@ export interface components {
              * @example https://example.com/
              */
             unit?: string | null;
+            /** @description stock_entry_item.note.label */
             note?: string | null;
         };
-        "StockEntryItem.jsonld-stock_entry_items.read": {
+        "StockEntryItem.jsonld-stock_entry_items.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
-            /**
-             * Format: iri-reference
-             * @description stock_entry_item.product.label
-             * @example https://example.com/
-             */
-            product: string;
+            product: components["schemas"]["Product.jsonld-stock_entry_items.read"];
             /**
              * @description stock_entry_item.qty.label
              * @default 0.000000
@@ -7242,6 +11970,7 @@ export interface components {
              * @example https://example.com/
              */
             unit?: string | null;
+            /** @description stock_entry_item.note.label */
             note?: string | null;
         };
         "StockItem-stock_item.read": {
@@ -7268,6 +11997,10 @@ export interface components {
             readonly qtyAvailable?: string;
             /** @description stock_item.min_stock.label */
             readonly minStock?: string | null;
+            /** @description stock_item.unit_name.label */
+            readonly unitName?: string;
+            /** @description stock_item.unit_code.label */
+            readonly unitCode?: string;
         };
         "StockItem.jsonld-stock_item.read": components["schemas"]["HydraItemBaseSchema"] & {
             warehouse?: components["schemas"]["Warehouse.jsonld-stock_item.read"];
@@ -7293,6 +12026,10 @@ export interface components {
             readonly qtyAvailable?: string;
             /** @description stock_item.min_stock.label */
             readonly minStock?: string | null;
+            /** @description stock_item.unit_name.label */
+            readonly unitName?: string;
+            /** @description stock_item.unit_code.label */
+            readonly unitCode?: string;
         };
         /**
          * @description Read-only Kardex resource.
@@ -7326,9 +12063,17 @@ export interface components {
             } | null;
             sourceType?: string | null;
             sourceId?: string | null;
+            /** @description Human-readable document reference (serie-número) resolved from sourceType/sourceId. */
+            sourceReference?: string | null;
             note?: string | null;
             /** @description Cumulative balance after this movement (running sum over time). */
             runningBalance?: string | null;
+            /** @description Unit cost from product purchase price (weighted-average proxy). */
+            unitCost?: string | null;
+            /** @description Absolute movement value at unit cost. */
+            lineValue?: string | null;
+            /** @description Running balance value at unit cost. */
+            runningValue?: string | null;
             createdAt?: string | null;
         };
         /**
@@ -7363,10 +12108,158 @@ export interface components {
             } | null;
             sourceType?: string | null;
             sourceId?: string | null;
+            /** @description Human-readable document reference (serie-número) resolved from sourceType/sourceId. */
+            sourceReference?: string | null;
             note?: string | null;
             /** @description Cumulative balance after this movement (running sum over time). */
             runningBalance?: string | null;
+            /** @description Unit cost from product purchase price (weighted-average proxy). */
+            unitCost?: string | null;
+            /** @description Absolute movement value at unit cost. */
+            lineValue?: string | null;
+            /** @description Running balance value at unit cost. */
+            runningValue?: string | null;
             createdAt?: string | null;
+        };
+        "SubscriptionPlan-customer_subscription.read": {
+            readonly id?: string;
+            /** @description subscription_plan.name.label */
+            name: string;
+            product: components["schemas"]["Product-customer_subscription.read"];
+        };
+        "SubscriptionPlan-subscription_plan.read": {
+            readonly id?: string;
+            /** @description subscription_plan.name.label */
+            name: string;
+            product: components["schemas"]["Product-subscription_plan.read"];
+            /**
+             * @description subscription_plan.billing_cycle.label
+             * @default MONTHLY
+             */
+            billingCycle: string;
+            /**
+             * @description subscription_plan.amount.label
+             * @default 0.00
+             */
+            amount: string;
+            /** @description subscription_plan.payment_term_days.label */
+            paymentTermDays?: number | null;
+            /**
+             * @description subscription_plan.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+            branch: components["schemas"]["Branch-subscription_plan.read"];
+            warehouse: components["schemas"]["Warehouse-subscription_plan.read"];
+        };
+        "SubscriptionPlan-subscription_plan.write": {
+            /** @description subscription_plan.name.label */
+            name: string;
+            /**
+             * Format: iri-reference
+             * @description subscription_plan.product.label
+             * @example https://example.com/
+             */
+            product: string;
+            /**
+             * @description subscription_plan.billing_cycle.label
+             * @default MONTHLY
+             */
+            billingCycle: string;
+            /**
+             * @description subscription_plan.amount.label
+             * @default 0.00
+             */
+            amount: string;
+            /** @description subscription_plan.payment_term_days.label */
+            paymentTermDays?: number | null;
+            /**
+             * @description subscription_plan.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+            /**
+             * Format: iri-reference
+             * @description subscription_plan.branch.label
+             * @example https://example.com/
+             */
+            branch: string;
+            /**
+             * Format: iri-reference
+             * @description subscription_plan.warehouse.label
+             * @example https://example.com/
+             */
+            warehouse: string;
+        };
+        "SubscriptionPlan-subscription_plan.write.jsonMergePatch": {
+            /** @description subscription_plan.name.label */
+            name?: string;
+            /**
+             * Format: iri-reference
+             * @description subscription_plan.product.label
+             * @example https://example.com/
+             */
+            product?: string;
+            /**
+             * @description subscription_plan.billing_cycle.label
+             * @default MONTHLY
+             */
+            billingCycle: string;
+            /**
+             * @description subscription_plan.amount.label
+             * @default 0.00
+             */
+            amount: string;
+            /** @description subscription_plan.payment_term_days.label */
+            paymentTermDays?: number | null;
+            /**
+             * @description subscription_plan.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+            /**
+             * Format: iri-reference
+             * @description subscription_plan.branch.label
+             * @example https://example.com/
+             */
+            branch?: string;
+            /**
+             * Format: iri-reference
+             * @description subscription_plan.warehouse.label
+             * @example https://example.com/
+             */
+            warehouse?: string;
+        };
+        "SubscriptionPlan.jsonld-customer_subscription.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description subscription_plan.name.label */
+            name: string;
+            product: components["schemas"]["Product.jsonld-customer_subscription.read"];
+        };
+        "SubscriptionPlan.jsonld-subscription_plan.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description subscription_plan.name.label */
+            name: string;
+            product: components["schemas"]["Product.jsonld-subscription_plan.read"];
+            /**
+             * @description subscription_plan.billing_cycle.label
+             * @default MONTHLY
+             */
+            billingCycle: string;
+            /**
+             * @description subscription_plan.amount.label
+             * @default 0.00
+             */
+            amount: string;
+            /** @description subscription_plan.payment_term_days.label */
+            paymentTermDays?: number | null;
+            /**
+             * @description subscription_plan.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+            branch: components["schemas"]["Branch.jsonld-subscription_plan.read"];
+            warehouse: components["schemas"]["Warehouse.jsonld-subscription_plan.read"];
         };
         SunatCatalog: {
             readonly id?: number;
@@ -7549,8 +12442,23 @@ export interface components {
             fiscalAddress?: string | null;
             /** @description supplier.phone.label */
             phone?: string | null;
+            /**
+             * @description supplier.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "Supplier-purchase.read": {
+            readonly id?: string;
+            /** @description supplier.business_name.label */
+            businessName: string;
+        };
+        "Supplier-purchase_order.read": {
+            readonly id?: string;
+            /** @description supplier.business_name.label */
+            businessName: string;
+        };
+        "Supplier-supplier_bill.read": {
             readonly id?: string;
             /** @description supplier.business_name.label */
             businessName: string;
@@ -7565,6 +12473,11 @@ export interface components {
             fiscalAddress?: string | null;
             /** @description supplier.phone.label */
             phone?: string | null;
+            /**
+             * @description supplier.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "Supplier.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
@@ -7576,11 +12489,255 @@ export interface components {
             fiscalAddress?: string | null;
             /** @description supplier.phone.label */
             phone?: string | null;
+            /**
+             * @description supplier.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "Supplier.jsonld-purchase.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
             /** @description supplier.business_name.label */
             businessName: string;
+        };
+        "Supplier.jsonld-purchase_order.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description supplier.business_name.label */
+            businessName: string;
+        };
+        "Supplier.jsonld-supplier_bill.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description supplier.business_name.label */
+            businessName: string;
+        };
+        "Supplier.xlsx": {
+            readonly id?: string;
+            /** @description supplier.ruc.label */
+            ruc: string;
+            /** @description supplier.business_name.label */
+            businessName: string;
+            /** @description supplier.fiscal_address.label */
+            fiscalAddress?: string | null;
+            /** @description supplier.phone.label */
+            phone?: string | null;
+            /**
+             * @description supplier.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+        };
+        "SupplierBill-fixed_asset.read": Record<string, never>;
+        "SupplierBill-supplier_bill.read": {
+            readonly id?: string;
+            supplier: components["schemas"]["Supplier-supplier_bill.read"];
+            branch: components["schemas"]["Branch-supplier_bill.read"];
+            purchase?: components["schemas"]["Purchase-supplier_bill.read"] | null;
+            category: components["schemas"]["ExpenseCategory-supplier_bill.read"];
+            /** @description supplier_bill.document_type.label */
+            documentType?: string | null;
+            /** @description supplier_bill.series.label */
+            series?: string | null;
+            /** @description supplier_bill.number.label */
+            number?: string | null;
+            /**
+             * Format: date-time
+             * @description supplier_bill.issue_date.label
+             */
+            issueDate: string;
+            /**
+             * Format: date-time
+             * @description supplier_bill.due_date.label
+             */
+            dueDate: string;
+            /**
+             * @description supplier_bill.currency.label
+             * @default PEN
+             */
+            currency: string;
+            /** @description supplier_bill.amount.label */
+            amount: string;
+            /**
+             * @description supplier_bill.paid_total.label
+             * @default 0.00
+             */
+            paidTotal: string;
+            /** @description supplier_bill.balance_due.label */
+            balanceDue?: string;
+            /**
+             * @description supplier_bill.status.label
+             * @default PENDING
+             */
+            status: string;
+            /** @description supplier_bill.note.label */
+            note?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
+        };
+        "SupplierBill-supplier_bill.write": {
+            /**
+             * Format: iri-reference
+             * @description supplier_bill.supplier.label
+             * @example https://example.com/
+             */
+            supplier: string;
+            /**
+             * Format: iri-reference
+             * @description supplier_bill.branch.label
+             * @example https://example.com/
+             */
+            branch: string;
+            /**
+             * Format: iri-reference
+             * @description supplier_bill.purchase.label
+             * @example https://example.com/
+             */
+            purchase?: string | null;
+            /**
+             * Format: iri-reference
+             * @description supplier_bill.category.label
+             * @example https://example.com/
+             */
+            category: string;
+            /** @description supplier_bill.document_type.label */
+            documentType?: string | null;
+            /** @description supplier_bill.series.label */
+            series?: string | null;
+            /** @description supplier_bill.number.label */
+            number?: string | null;
+            /**
+             * Format: date-time
+             * @description supplier_bill.issue_date.label
+             */
+            issueDate: string;
+            /**
+             * Format: date-time
+             * @description supplier_bill.due_date.label
+             */
+            dueDate: string;
+            /**
+             * @description supplier_bill.currency.label
+             * @default PEN
+             */
+            currency: string;
+            /** @description supplier_bill.amount.label */
+            amount: string;
+            /**
+             * @description supplier_bill.status.label
+             * @default PENDING
+             */
+            status: string;
+            /** @description supplier_bill.note.label */
+            note?: string | null;
+        };
+        "SupplierBill-supplier_bill.write.jsonMergePatch": {
+            /**
+             * Format: iri-reference
+             * @description supplier_bill.supplier.label
+             * @example https://example.com/
+             */
+            supplier?: string;
+            /**
+             * Format: iri-reference
+             * @description supplier_bill.branch.label
+             * @example https://example.com/
+             */
+            branch?: string;
+            /**
+             * Format: iri-reference
+             * @description supplier_bill.purchase.label
+             * @example https://example.com/
+             */
+            purchase?: string | null;
+            /**
+             * Format: iri-reference
+             * @description supplier_bill.category.label
+             * @example https://example.com/
+             */
+            category?: string;
+            /** @description supplier_bill.document_type.label */
+            documentType?: string | null;
+            /** @description supplier_bill.series.label */
+            series?: string | null;
+            /** @description supplier_bill.number.label */
+            number?: string | null;
+            /**
+             * Format: date-time
+             * @description supplier_bill.issue_date.label
+             */
+            issueDate?: string;
+            /**
+             * Format: date-time
+             * @description supplier_bill.due_date.label
+             */
+            dueDate?: string;
+            /**
+             * @description supplier_bill.currency.label
+             * @default PEN
+             */
+            currency: string;
+            /** @description supplier_bill.amount.label */
+            amount?: string;
+            /**
+             * @description supplier_bill.status.label
+             * @default PENDING
+             */
+            status: string;
+            /** @description supplier_bill.note.label */
+            note?: string | null;
+        };
+        "SupplierBill.SupplierBillPayDto": {
+            id?: string;
+            amount?: number | string;
+            paymentMethodId?: number;
+            paidAt?: string | null;
+            reference?: string | null;
+        };
+        "SupplierBill.jsonld-fixed_asset.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        "SupplierBill.jsonld-supplier_bill.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            supplier: components["schemas"]["Supplier.jsonld-supplier_bill.read"];
+            branch: components["schemas"]["Branch.jsonld-supplier_bill.read"];
+            purchase?: components["schemas"]["Purchase.jsonld-supplier_bill.read"] | null;
+            category: components["schemas"]["ExpenseCategory.jsonld-supplier_bill.read"];
+            /** @description supplier_bill.document_type.label */
+            documentType?: string | null;
+            /** @description supplier_bill.series.label */
+            series?: string | null;
+            /** @description supplier_bill.number.label */
+            number?: string | null;
+            /**
+             * Format: date-time
+             * @description supplier_bill.issue_date.label
+             */
+            issueDate: string;
+            /**
+             * Format: date-time
+             * @description supplier_bill.due_date.label
+             */
+            dueDate: string;
+            /**
+             * @description supplier_bill.currency.label
+             * @default PEN
+             */
+            currency: string;
+            /** @description supplier_bill.amount.label */
+            amount: string;
+            /**
+             * @description supplier_bill.paid_total.label
+             * @default 0.00
+             */
+            paidTotal: string;
+            /** @description supplier_bill.balance_due.label */
+            balanceDue?: string;
+            /**
+             * @description supplier_bill.status.label
+             * @default PENDING
+             */
+            status: string;
+            /** @description supplier_bill.note.label */
+            note?: string | null;
+            /** Format: date-time */
+            readonly createdAt?: string;
         };
         "TaxDocument-invoice.read": {
             readonly id?: string;
@@ -7656,19 +12813,6 @@ export interface components {
             readonly voided?: boolean;
         };
         "TaxDocument-invoice.write_creditnote.write": {
-            relatedTaxDocument?: components["schemas"]["TaxDocument-invoice.write_creditnote.write"] | null;
-            /**
-             * Format: date-time
-             * @description tax_document.issue_date.label
-             */
-            issueDate?: string;
-            /** @description tax_document.reason_code.label */
-            reasonCode?: string | null;
-            /** @description tax_document.reason_description.label */
-            reasonDescription?: string | null;
-            lines?: components["schemas"]["TaxDocumentLine-invoice.write_creditnote.write"][];
-        };
-        "TaxDocument-invoice.write_creditnote.write.jsonMergePatch": {
             relatedTaxDocument?: components["schemas"]["TaxDocument-invoice.write_creditnote.write"] | null;
             /**
              * Format: date-time
@@ -7891,15 +13035,46 @@ export interface components {
             /** @default true */
             autoInvoice: boolean;
             /**
+             * @description When true, the POS sends the sale ticket to the printer automatically
+             *     after every checkout. When false, the operator prints on demand from the
+             *     "última venta" panel.
+             * @default true
+             */
+            autoPrint: boolean;
+            /**
+             * @description Apply Peru's customer-favourable S/ 0.10 rounding to cash-only POS sales.
+             * @default false
+             */
+            cashRoundingEnabled: boolean;
+            /**
              * @default PEN
              * @enum {string}
              */
             defaultCurrency: "PEN" | "USD";
             /**
+             * @description Default number of days between a recurring charge being generated and
+             *     its due date, used when a SubscriptionPlan does not override it.
+             * @default 15
+             */
+            defaultPaymentTermDays: number;
+            /**
              * @default STRICT
              * @enum {string}
              */
             negativeStockPolicy: "STRICT" | "WARNING_ONLY" | "ALLOW_NEGATIVE";
+            /**
+             * @description Vertical (business type) key selected during onboarding, e.g. "retail" or
+             *     "pharmacy". Written by the VerticalPreset applier, not by tenant PATCH.
+             * @default retail
+             */
+            vertical: string;
+            /**
+             * @description Marks that the post-provisioning tenant onboarding wizard has been
+             *     completed. Used by the React OnboardingGate to decide whether to show
+             *     setup or the normal shell.
+             * @default false
+             */
+            onboardingCompleted: boolean;
         };
         /**
          * @description Single-row tenant configuration editable by the tenant administrator.
@@ -7925,10 +13100,28 @@ export interface components {
             /** @default true */
             autoInvoice: boolean;
             /**
+             * @description When true, the POS sends the sale ticket to the printer automatically
+             *     after every checkout. When false, the operator prints on demand from the
+             *     "última venta" panel.
+             * @default true
+             */
+            autoPrint: boolean;
+            /**
+             * @description Apply Peru's customer-favourable S/ 0.10 rounding to cash-only POS sales.
+             * @default false
+             */
+            cashRoundingEnabled: boolean;
+            /**
              * @default PEN
              * @enum {string}
              */
             defaultCurrency: "PEN" | "USD";
+            /**
+             * @description Default number of days between a recurring charge being generated and
+             *     its due date, used when a SubscriptionPlan does not override it.
+             * @default 15
+             */
+            defaultPaymentTermDays: number;
             /**
              * @default STRICT
              * @enum {string}
@@ -7959,15 +13152,46 @@ export interface components {
             /** @default true */
             autoInvoice: boolean;
             /**
+             * @description When true, the POS sends the sale ticket to the printer automatically
+             *     after every checkout. When false, the operator prints on demand from the
+             *     "última venta" panel.
+             * @default true
+             */
+            autoPrint: boolean;
+            /**
+             * @description Apply Peru's customer-favourable S/ 0.10 rounding to cash-only POS sales.
+             * @default false
+             */
+            cashRoundingEnabled: boolean;
+            /**
              * @default PEN
              * @enum {string}
              */
             defaultCurrency: "PEN" | "USD";
             /**
+             * @description Default number of days between a recurring charge being generated and
+             *     its due date, used when a SubscriptionPlan does not override it.
+             * @default 15
+             */
+            defaultPaymentTermDays: number;
+            /**
              * @default STRICT
              * @enum {string}
              */
             negativeStockPolicy: "STRICT" | "WARNING_ONLY" | "ALLOW_NEGATIVE";
+            /**
+             * @description Vertical (business type) key selected during onboarding, e.g. "retail" or
+             *     "pharmacy". Written by the VerticalPreset applier, not by tenant PATCH.
+             * @default retail
+             */
+            vertical: string;
+            /**
+             * @description Marks that the post-provisioning tenant onboarding wizard has been
+             *     completed. Used by the React OnboardingGate to decide whether to show
+             *     setup or the normal shell.
+             * @default false
+             */
+            onboardingCompleted: boolean;
         };
         Ubigeo: {
             code?: string;
@@ -8014,6 +13238,13 @@ export interface components {
             /** @description unit_of_measure.name.label */
             name: string;
         };
+        "UnitOfMeasure-stock_item.read": {
+            readonly id?: number;
+            /** @description unit_of_measure.name.label */
+            name: string;
+            /** @description unit_of_measure.code.label */
+            code?: string;
+        };
         "UnitOfMeasure-unit-of-measure.read": {
             readonly id?: number;
             /** @description unit_of_measure.name.label */
@@ -8032,6 +13263,11 @@ export interface components {
              * @default false
              */
             reference: boolean;
+            /**
+             * @description unit_of_measure.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "UnitOfMeasure-unit-of-measure.write": {
             /** @description unit_of_measure.name.label */
@@ -8050,6 +13286,11 @@ export interface components {
              * @default false
              */
             reference: boolean;
+            /**
+             * @description unit_of_measure.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "UnitOfMeasure-unit-of-measure.write.jsonMergePatch": {
             /** @description unit_of_measure.name.label */
@@ -8068,11 +13309,23 @@ export interface components {
              * @default false
              */
             reference: boolean;
+            /**
+             * @description unit_of_measure.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "UnitOfMeasure.jsonld-product.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
             /** @description unit_of_measure.name.label */
             name: string;
+        };
+        "UnitOfMeasure.jsonld-stock_item.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            /** @description unit_of_measure.name.label */
+            name: string;
+            /** @description unit_of_measure.code.label */
+            code?: string;
         };
         "UnitOfMeasure.jsonld-unit-of-measure.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
@@ -8092,6 +13345,17 @@ export interface components {
              * @default false
              */
             reference: boolean;
+            /**
+             * @description unit_of_measure.is_active.label
+             * @default true
+             */
+            isActive: boolean;
+        };
+        "User-employee.read": Record<string, never>;
+        "User-expense_report.read": {
+            readonly id?: number;
+            /** @description user.username.label */
+            username: string;
         };
         "User-user.create_user.update": {
             /** @description user.username.label */
@@ -8122,6 +13386,12 @@ export interface components {
             /** @description user.username.label */
             username: string;
             role?: components["schemas"]["Role-user.read"];
+        };
+        "User.jsonld-employee.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        "User.jsonld-expense_report.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            /** @description user.username.label */
+            username: string;
         };
         "User.jsonld-user.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
@@ -8224,6 +13494,7 @@ export interface components {
             voucher_currency?: string | null;
             voucher_exchange_rate?: string | null;
             voucher_discount_amount?: string | null;
+            voucher_cash_rounding_adjustment?: string | null;
             voucher_discount_percentage?: string | null;
             voucher_consumption_surcharge_amount?: string | null;
             voucher_consumption_surcharge_percentage?: string | null;
@@ -8275,6 +13546,7 @@ export interface components {
             voucher_currency?: string | null;
             voucher_exchange_rate?: string | null;
             voucher_discount_amount?: string | null;
+            voucher_cash_rounding_adjustment?: string | null;
             voucher_discount_percentage?: string | null;
             voucher_consumption_surcharge_amount?: string | null;
             voucher_consumption_surcharge_percentage?: string | null;
@@ -8353,6 +13625,11 @@ export interface components {
             series?: string;
             /** @description voucher_series.associated_series.label */
             associatedSeries?: string | null;
+            /**
+             * @description voucher_series.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "VoucherSerie-voucher_series.read": {
             readonly id?: number;
@@ -8362,6 +13639,11 @@ export interface components {
             series?: string;
             /** @description voucher_series.associated_series.label */
             associatedSeries?: string | null;
+            /**
+             * @description voucher_series.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "VoucherSerie.jsonMergePatch": {
             readonly id?: number;
@@ -8381,6 +13663,11 @@ export interface components {
             series?: string;
             /** @description voucher_series.associated_series.label */
             associatedSeries?: string | null;
+            /**
+             * @description voucher_series.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "VoucherSerie.jsonld-voucher_series.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
@@ -8390,31 +13677,61 @@ export interface components {
             series?: string;
             /** @description voucher_series.associated_series.label */
             associatedSeries?: string | null;
+            /**
+             * @description voucher_series.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         VoucherType: {
             code?: string;
             /** @description voucher_type.name.label */
             name?: string;
+            /**
+             * @description voucher_type.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "VoucherType-voucher_series.read": {
             code?: string;
             /** @description voucher_type.name.label */
             name?: string;
+            /**
+             * @description voucher_type.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "VoucherType.jsonMergePatch": {
             code?: string;
             /** @description voucher_type.name.label */
             name?: string;
+            /**
+             * @description voucher_type.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "VoucherType.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
             code?: string;
             /** @description voucher_type.name.label */
             name?: string;
+            /**
+             * @description voucher_type.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         "VoucherType.jsonld-voucher_series.read": components["schemas"]["HydraItemBaseSchema"] & {
             code?: string;
             /** @description voucher_type.name.label */
             name?: string;
+            /**
+             * @description voucher_type.is_active.label
+             * @default true
+             */
+            isActive: boolean;
         };
         Warehouse: {
             readonly id?: string;
@@ -8426,9 +13743,24 @@ export interface components {
              * @example https://example.com/
              */
             branch?: string | null;
+            /**
+             * @description warehouse.is_active.label
+             * @default true
+             */
+            isActive: boolean;
             productStocks?: string[];
         };
         "Warehouse-purchase.read": {
+            readonly id?: string;
+            /** @description warehouse.name.label */
+            name?: string;
+        };
+        "Warehouse-purchase_order.read": {
+            readonly id?: string;
+            /** @description warehouse.name.label */
+            name?: string;
+        };
+        "Warehouse-sale_quote.read": {
             readonly id?: string;
             /** @description warehouse.name.label */
             name?: string;
@@ -8438,11 +13770,17 @@ export interface components {
             /** @description warehouse.name.label */
             name?: string;
         };
+        "Warehouse-subscription_plan.read": Record<string, never>;
         "Warehouse-warehouse.read": {
             readonly id?: string;
             /** @description warehouse.name.label */
             name?: string;
             branch?: components["schemas"]["Branch-warehouse.read"] | null;
+            /**
+             * @description warehouse.is_active.label
+             * @default true
+             */
+            isActive: boolean;
             productStocks?: string[];
         };
         "Warehouse.jsonMergePatch": {
@@ -8455,9 +13793,24 @@ export interface components {
              * @example https://example.com/
              */
             branch?: string | null;
+            /**
+             * @description warehouse.is_active.label
+             * @default true
+             */
+            isActive: boolean;
             productStocks?: string[];
         };
         "Warehouse.jsonld-purchase.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description warehouse.name.label */
+            name?: string;
+        };
+        "Warehouse.jsonld-purchase_order.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: string;
+            /** @description warehouse.name.label */
+            name?: string;
+        };
+        "Warehouse.jsonld-sale_quote.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
             /** @description warehouse.name.label */
             name?: string;
@@ -8467,11 +13820,17 @@ export interface components {
             /** @description warehouse.name.label */
             name?: string;
         };
+        "Warehouse.jsonld-subscription_plan.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         "Warehouse.jsonld-warehouse.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
             /** @description warehouse.name.label */
             name?: string;
             branch?: components["schemas"]["Branch.jsonld-warehouse.read"] | null;
+            /**
+             * @description warehouse.is_active.label
+             * @default true
+             */
+            isActive: boolean;
             productStocks?: string[];
         };
     };
@@ -8483,6 +13842,286 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    "api_afp-rates_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description AfpRate collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AfpRate"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["AfpRate.jsonld"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_afp-rates_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new AfpRate resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AfpRate"];
+                "application/ld+json": components["schemas"]["AfpRate"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["AfpRate"];
+            };
+        };
+        responses: {
+            /** @description AfpRate resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AfpRate"];
+                    "application/ld+json": components["schemas"]["AfpRate.jsonld"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_afp-rates_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description AfpRate identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description AfpRate resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AfpRate"];
+                    "application/ld+json": components["schemas"]["AfpRate.jsonld"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_afp-rates_id_delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description AfpRate identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description AfpRate resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_afp-rates_id_patch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description AfpRate identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated AfpRate resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["AfpRate.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description AfpRate resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AfpRate"];
+                    "application/ld+json": components["schemas"]["AfpRate.jsonld"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_asset-depreciation-entries_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description AssetDepreciationEntry collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetDepreciationEntry-asset_depreciation_entry.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["AssetDepreciationEntry.jsonld-asset_depreciation_entry.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_asset-depreciation-entries_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description AssetDepreciationEntry identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description AssetDepreciationEntry resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AssetDepreciationEntry-asset_depreciation_entry.read"];
+                    "application/ld+json": components["schemas"]["AssetDepreciationEntry.jsonld-asset_depreciation_entry.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     api_assistant_post: {
         parameters: {
             query?: never;
@@ -8495,6 +14134,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Assistant.AssistantRequest"];
                 "application/ld+json": components["schemas"]["Assistant.AssistantRequest"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Assistant.AssistantRequest"];
             };
         };
         responses: {
@@ -8510,6 +14150,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8544,6 +14195,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Auth"];
                 "application/ld+json": components["schemas"]["Auth"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Auth"];
             };
         };
         responses: {
@@ -8570,6 +14222,610 @@ export interface operations {
             };
             /** @description Forbidden */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_bank-accounts_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description BankAccount collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankAccount-bank_account.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["BankAccount.jsonld-bank_account.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_bank-accounts_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new BankAccount resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankAccount-bank_account.write"];
+                "application/ld+json": components["schemas"]["BankAccount-bank_account.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["BankAccount-bank_account.write"];
+            };
+        };
+        responses: {
+            /** @description BankAccount resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankAccount-bank_account.read"];
+                    "application/ld+json": components["schemas"]["BankAccount.jsonld-bank_account.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_bank-accounts_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description BankAccount identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description BankAccount resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankAccount-bank_account.read"];
+                    "application/ld+json": components["schemas"]["BankAccount.jsonld-bank_account.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_bank-accounts_id_delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description BankAccount identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description BankAccount resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_bank-accounts_id_patch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description BankAccount identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated BankAccount resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["BankAccount-bank_account.write.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description BankAccount resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankAccount-bank_account.read"];
+                    "application/ld+json": components["schemas"]["BankAccount.jsonld-bank_account.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_bank-statement-imports_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description BankStatementImport collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatementImport-bank_statement_import.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["BankStatementImport.jsonld-bank_statement_import.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_bank-statement-imports_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description BankStatementImport identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description BankStatementImport resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatementImport-bank_statement_import.read"];
+                    "application/ld+json": components["schemas"]["BankStatementImport.jsonld-bank_statement_import.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_bank-statement-imports_idauto-match_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description BankStatementImport identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new BankStatementImport resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankStatementImport.BankStatementImportAutoMatchDto"];
+                "application/ld+json": components["schemas"]["BankStatementImport.BankStatementImportAutoMatchDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["BankStatementImport.BankStatementImportAutoMatchDto"];
+            };
+        };
+        responses: {
+            /** @description BankStatementImport resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatementImport-bank_statement_import.read"];
+                    "application/ld+json": components["schemas"]["BankStatementImport.jsonld-bank_statement_import.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_bank-statement-lines_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description BankStatementLine collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatementLine-bank_statement_line.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["BankStatementLine.jsonld-bank_statement_line.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_bank-statement-lines_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description BankStatementLine identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description BankStatementLine resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatementLine-bank_statement_line.read"];
+                    "application/ld+json": components["schemas"]["BankStatementLine.jsonld-bank_statement_line.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_bank-statement-lines_idignore_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description BankStatementLine identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new BankStatementLine resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankStatementLine.BankStatementLineIgnoreDto"];
+                "application/ld+json": components["schemas"]["BankStatementLine.BankStatementLineIgnoreDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["BankStatementLine.BankStatementLineIgnoreDto"];
+            };
+        };
+        responses: {
+            /** @description BankStatementLine resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatementLine-bank_statement_line.read"];
+                    "application/ld+json": components["schemas"]["BankStatementLine.jsonld-bank_statement_line.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_bank-statement-lines_idmatch_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description BankStatementLine identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new BankStatementLine resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankStatementLine.BankStatementLineMatchDto"];
+                "application/ld+json": components["schemas"]["BankStatementLine.BankStatementLineMatchDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["BankStatementLine.BankStatementLineMatchDto"];
+            };
+        };
+        responses: {
+            /** @description BankStatementLine resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatementLine-bank_statement_line.read"];
+                    "application/ld+json": components["schemas"]["BankStatementLine.jsonld-bank_statement_line.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_bank-statement-lines_idsuggestions_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description BankStatementLine identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description BankStatementLine resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatementLine-bank_reconciliation_suggestion.read"];
+                    "application/ld+json": components["schemas"]["BankStatementLine.jsonld-bank_reconciliation_suggestion.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_bank-statement-lines_idunmatch_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description BankStatementLine identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new BankStatementLine resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankStatementLine.BankStatementLineUnmatchDto"];
+                "application/ld+json": components["schemas"]["BankStatementLine.BankStatementLineUnmatchDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["BankStatementLine.BankStatementLineUnmatchDto"];
+            };
+        };
+        responses: {
+            /** @description BankStatementLine resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankStatementLine-bank_statement_line.read"];
+                    "application/ld+json": components["schemas"]["BankStatementLine.jsonld-bank_statement_line.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8640,6 +14896,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Branch"];
                 "application/ld+json": components["schemas"]["Branch"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Branch"];
             };
         };
         responses: {
@@ -8815,12 +15072,6 @@ export interface operations {
                 itemsPerPage?: number;
                 /** @description Enable or disable pagination */
                 pagination?: boolean;
-                /** @description Sorting parameter. */
-                sort?: string;
-                /** @description Filtering parameter. */
-                filter?: string;
-                /** @description Search parameter. */
-                searchValue?: string;
             };
             header?: never;
             path?: never;
@@ -8840,6 +15091,17 @@ export interface operations {
                     };
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     "api_cash-movements_post": {
@@ -8854,6 +15116,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["CashMovement"];
                 "application/ld+json": components["schemas"]["CashMovement"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["CashMovement"];
             };
         };
         responses: {
@@ -8869,6 +15132,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -8913,80 +15187,8 @@ export interface operations {
                     "application/ld+json": components["schemas"]["CashMovement.jsonld-cash_movement.read"];
                 };
             };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    "api_cash-movements_id_delete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description CashMovement identifier */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description CashMovement resource deleted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    "api_cash-movements_id_patch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description CashMovement identifier */
-                id: string;
-            };
-            cookie?: never;
-        };
-        /** @description The updated CashMovement resource */
-        requestBody: {
-            content: {
-                "application/merge-patch+json": components["schemas"]["CashMovement.jsonMergePatch"];
-            };
-        };
-        responses: {
-            /** @description CashMovement resource updated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CashMovement-cash_movement.read"];
-                    "application/ld+json": components["schemas"]["CashMovement.jsonld-cash_movement.read"];
-                };
-            };
-            /** @description Invalid input */
-            400: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9005,17 +15207,6 @@ export interface operations {
                     "application/ld+json": components["schemas"]["Error.jsonld"];
                     "application/problem+json": components["schemas"]["Error"];
                     "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description An error occurred */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
-                    "application/problem+json": components["schemas"]["ConstraintViolation"];
-                    "application/json": components["schemas"]["ConstraintViolation"];
                 };
             };
         };
@@ -9062,6 +15253,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["CashMovementCategory"];
                 "application/ld+json": components["schemas"]["CashMovementCategory"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["CashMovementCategory"];
             };
         };
         responses: {
@@ -9262,6 +15454,17 @@ export interface operations {
                     };
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     "api_cash-registers_post": {
@@ -9276,6 +15479,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["CashRegister"];
                 "application/ld+json": components["schemas"]["CashRegister"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["CashRegister"];
             };
         };
         responses: {
@@ -9291,6 +15495,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9343,6 +15558,17 @@ export interface operations {
                     };
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     "api_cash-registers_id_get": {
@@ -9365,6 +15591,17 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CashRegister-cash_register.read"];
                     "application/ld+json": components["schemas"]["CashRegister.jsonld-cash_register.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Not found */
@@ -9398,6 +15635,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
             };
             /** @description Not found */
             404: {
@@ -9450,6 +15698,17 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Not found */
             404: {
                 headers: {
@@ -9489,6 +15748,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["CashRegister.CashRegisterCloseDto"];
                 "application/ld+json": components["schemas"]["CashRegister.CashRegisterCloseDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["CashRegister.CashRegisterCloseDto"];
             };
         };
         responses: {
@@ -9504,6 +15764,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9541,6 +15812,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["CashRegister.CashRegisterOpenDto"];
                 "application/ld+json": components["schemas"]["CashRegister.CashRegisterOpenDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["CashRegister.CashRegisterOpenDto"];
             };
         };
         responses: {
@@ -9556,6 +15828,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9615,6 +15898,17 @@ export interface operations {
                     };
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     "api_cash-sessions_get_collection": {
@@ -9651,35 +15945,8 @@ export interface operations {
                     };
                 };
             };
-        };
-    };
-    "api_cash-sessions_post": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description The new CashSession resource */
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CashSession"];
-                "application/ld+json": components["schemas"]["CashSession"];
-            };
-        };
-        responses: {
-            /** @description CashSession resource created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CashSession-cash_session.read"];
-                    "application/ld+json": components["schemas"]["CashSession.jsonld-cash_session.read"];
-                };
-            };
-            /** @description Invalid input */
-            400: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9687,17 +15954,6 @@ export interface operations {
                     "application/ld+json": components["schemas"]["Error.jsonld"];
                     "application/problem+json": components["schemas"]["Error"];
                     "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description An error occurred */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
-                    "application/problem+json": components["schemas"]["ConstraintViolation"];
-                    "application/json": components["schemas"]["ConstraintViolation"];
                 };
             };
         };
@@ -9724,80 +15980,8 @@ export interface operations {
                     "application/ld+json": components["schemas"]["CashSession.jsonld-cash_session.read"];
                 };
             };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    "api_cash-sessions_id_delete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description CashSession identifier */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description CashSession resource deleted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    "api_cash-sessions_id_patch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description CashSession identifier */
-                id: string;
-            };
-            cookie?: never;
-        };
-        /** @description The updated CashSession resource */
-        requestBody: {
-            content: {
-                "application/merge-patch+json": components["schemas"]["CashSession.jsonMergePatch"];
-            };
-        };
-        responses: {
-            /** @description CashSession resource updated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CashSession-cash_session.read"];
-                    "application/ld+json": components["schemas"]["CashSession.jsonld-cash_session.read"];
-                };
-            };
-            /** @description Invalid input */
-            400: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9816,17 +16000,6 @@ export interface operations {
                     "application/ld+json": components["schemas"]["Error.jsonld"];
                     "application/problem+json": components["schemas"]["Error"];
                     "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description An error occurred */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
-                    "application/problem+json": components["schemas"]["ConstraintViolation"];
-                    "application/json": components["schemas"]["ConstraintViolation"];
                 };
             };
         };
@@ -9846,6 +16019,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["CashSession.CashRegisterCloseDto"];
                 "application/ld+json": components["schemas"]["CashSession.CashRegisterCloseDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["CashSession.CashRegisterCloseDto"];
             };
         };
         responses: {
@@ -9861,6 +16035,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -9916,6 +16101,17 @@ export interface operations {
                     };
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     "api_cash-sessions_idsummary_get_collection": {
@@ -9951,6 +16147,17 @@ export interface operations {
                     };
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     "api_cash-sessions_idx-report_get": {
@@ -9975,200 +16182,8 @@ export interface operations {
                     "application/ld+json": components["schemas"]["CashSession.CashSessionXReportDto.jsonld-cash_x_report.read"];
                 };
             };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    "api_cash-shifts_get_collection": {
-        parameters: {
-            query?: {
-                /** @description The collection page number */
-                page?: number;
-                /** @description The number of items per page */
-                itemsPerPage?: number;
-                /** @description Enable or disable pagination */
-                pagination?: boolean;
-                /** @description Sorting parameter. */
-                sort?: string;
-                /** @description Filtering parameter. */
-                filter?: string;
-                /** @description Search parameter. */
-                searchValue?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description CashShift collection */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CashShift"][];
-                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
-                        member: components["schemas"]["CashShift.jsonld"][];
-                    };
-                };
-            };
-        };
-    };
-    "api_cash-shifts_post": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** @description The new CashShift resource */
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CashShift"];
-                "application/ld+json": components["schemas"]["CashShift"];
-            };
-        };
-        responses: {
-            /** @description CashShift resource created */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CashShift"];
-                    "application/ld+json": components["schemas"]["CashShift.jsonld"];
-                };
-            };
-            /** @description Invalid input */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description An error occurred */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
-                    "application/problem+json": components["schemas"]["ConstraintViolation"];
-                    "application/json": components["schemas"]["ConstraintViolation"];
-                };
-            };
-        };
-    };
-    "api_cash-shifts_id_get": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description CashShift identifier */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description CashShift resource */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CashShift"];
-                    "application/ld+json": components["schemas"]["CashShift.jsonld"];
-                };
-            };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    "api_cash-shifts_id_delete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description CashShift identifier */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description CashShift resource deleted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    "api_cash-shifts_id_patch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description CashShift identifier */
-                id: string;
-            };
-            cookie?: never;
-        };
-        /** @description The updated CashShift resource */
-        requestBody: {
-            content: {
-                "application/merge-patch+json": components["schemas"]["CashShift.jsonMergePatch"];
-            };
-        };
-        responses: {
-            /** @description CashShift resource updated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CashShift"];
-                    "application/ld+json": components["schemas"]["CashShift.jsonld"];
-                };
-            };
-            /** @description Invalid input */
-            400: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -10187,17 +16202,6 @@ export interface operations {
                     "application/ld+json": components["schemas"]["Error.jsonld"];
                     "application/problem+json": components["schemas"]["Error"];
                     "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description An error occurred */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
-                    "application/problem+json": components["schemas"]["ConstraintViolation"];
-                    "application/json": components["schemas"]["ConstraintViolation"];
                 };
             };
         };
@@ -10207,12 +16211,6 @@ export interface operations {
             query?: {
                 /** @description Enable or disable pagination */
                 pagination?: boolean;
-                /** @description Sorting parameter. */
-                sort?: string;
-                /** @description Filtering parameter. */
-                filter?: string;
-                /** @description Search parameter. */
-                searchValue?: string;
             };
             header?: never;
             path: {
@@ -10242,12 +16240,6 @@ export interface operations {
             query?: {
                 /** @description Enable or disable pagination */
                 pagination?: boolean;
-                /** @description Sorting parameter. */
-                sort?: string;
-                /** @description Filtering parameter. */
-                filter?: string;
-                /** @description Search parameter. */
-                searchValue?: string;
             };
             header?: never;
             path: {
@@ -10355,6 +16347,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Category-category.write"];
                 "application/ld+json": components["schemas"]["Category-category.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Category-category.write"];
             };
         };
         responses: {
@@ -10521,6 +16514,67 @@ export interface operations {
             };
         };
     };
+    sales_collect_on_account: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new CollectOnAccount resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CollectOnAccount.SaleCollectOnAccountDto"];
+                "application/ld+json": components["schemas"]["CollectOnAccount.SaleCollectOnAccountDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["CollectOnAccount.SaleCollectOnAccountDto"];
+            };
+        };
+        responses: {
+            /** @description CollectOnAccount resource created */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CollectOnAccount.CollectOnAccountResult-collect_on_account.read"];
+                    "application/ld+json": components["schemas"]["CollectOnAccount.CollectOnAccountResult.jsonld-collect_on_account.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
     api_companies_get_collection: {
         parameters: {
             query?: {
@@ -10569,6 +16623,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Company"];
                 "application/ld+json": components["schemas"]["Company"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Company"];
             };
         };
         responses: {
@@ -10783,6 +16838,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Config"];
                 "application/ld+json": components["schemas"]["Config"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Config"];
             };
         };
         responses: {
@@ -11051,6 +17107,7 @@ export interface operations {
                     "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
                         member: components["schemas"]["Customer.jsonld"][];
                     };
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Customer.xlsx"][];
                 };
             };
         };
@@ -11067,6 +17124,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Customer"];
                 "application/ld+json": components["schemas"]["Customer"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Customer"];
             };
         };
         responses: {
@@ -11124,6 +17182,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Customer"];
                     "application/ld+json": components["schemas"]["Customer.jsonld"];
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Customer.xlsx"];
                 };
             };
             /** @description Not found */
@@ -11233,6 +17292,915 @@ export interface operations {
             };
         };
     };
+    sales_receive_customer_advance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new CustomerAdvance resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerAdvance.SaleReceiveAdvanceDto"];
+                "application/ld+json": components["schemas"]["CustomerAdvance.SaleReceiveAdvanceDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["CustomerAdvance.SaleReceiveAdvanceDto"];
+            };
+        };
+        responses: {
+            /** @description CustomerAdvance resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerAdvance.CustomerAdvanceReceipt-customer_advance.read"];
+                    "application/ld+json": components["schemas"]["CustomerAdvance.CustomerAdvanceReceipt.jsonld-customer_advance.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    sales_apply_customer_advance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new CustomerAdvance resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerAdvance.SaleApplyAdvanceDto"];
+                "application/ld+json": components["schemas"]["CustomerAdvance.SaleApplyAdvanceDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["CustomerAdvance.SaleApplyAdvanceDto"];
+            };
+        };
+        responses: {
+            /** @description CustomerAdvance resource created */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerAdvance.AdvanceApplicationResult-customer_advance.read"];
+                    "application/ld+json": components["schemas"]["CustomerAdvance.AdvanceApplicationResult.jsonld-customer_advance.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_salesreportscustomer-statement_get": {
+        parameters: {
+            query: {
+                /** @description Customer id */
+                customer: number;
+                /** @description Range start (YYYY-MM-DD); defaults to 90 days before date-to */
+                "date-from"?: string;
+                /** @description Range end / cut-off (YYYY-MM-DD); defaults to today */
+                "date-to"?: string;
+                /** @description pdf to send to the customer, xlsx to work with */
+                format?: "pdf" | "xlsx";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Statement generated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Customer not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    "api_customer-subscriptions_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CustomerSubscription collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscription-customer_subscription.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["CustomerSubscription.jsonld-customer_subscription.read"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_customer-subscriptions_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new CustomerSubscription resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerSubscription-customer_subscription.write"];
+                "application/ld+json": components["schemas"]["CustomerSubscription-customer_subscription.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["CustomerSubscription-customer_subscription.write"];
+            };
+        };
+        responses: {
+            /** @description CustomerSubscription resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscription-customer_subscription.read"];
+                    "application/ld+json": components["schemas"]["CustomerSubscription.jsonld-customer_subscription.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_customer-subscriptions_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description CustomerSubscription identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CustomerSubscription resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscription-customer_subscription.read"];
+                    "application/ld+json": components["schemas"]["CustomerSubscription.jsonld-customer_subscription.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_customer-subscriptions_id_delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description CustomerSubscription identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CustomerSubscription resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_customer-subscriptions_id_patch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description CustomerSubscription identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated CustomerSubscription resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["CustomerSubscription-customer_subscription.patch.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description CustomerSubscription resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscription-customer_subscription.read"];
+                    "application/ld+json": components["schemas"]["CustomerSubscription.jsonld-customer_subscription.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    customer_subscription_generate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description CustomerSubscription identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new CustomerSubscription resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerSubscription.GenerateSubscriptionChargeDto"];
+                "application/ld+json": components["schemas"]["CustomerSubscription.GenerateSubscriptionChargeDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["CustomerSubscription.GenerateSubscriptionChargeDto"];
+            };
+        };
+        responses: {
+            /** @description CustomerSubscription resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscription.CustomerSubscriptionRun-customer_subscription_run.read"];
+                    "application/ld+json": components["schemas"]["CustomerSubscription.CustomerSubscriptionRun.jsonld-customer_subscription_run.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_customer-subscription-lines_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CustomerSubscriptionLine collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscriptionLine-customer_subscription_line.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["CustomerSubscriptionLine.jsonld-customer_subscription_line.read"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_customer-subscription-lines_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new CustomerSubscriptionLine resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CustomerSubscriptionLine-customer_subscription_line.write"];
+                "application/ld+json": components["schemas"]["CustomerSubscriptionLine-customer_subscription_line.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["CustomerSubscriptionLine-customer_subscription_line.write"];
+            };
+        };
+        responses: {
+            /** @description CustomerSubscriptionLine resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscriptionLine-customer_subscription_line.read"];
+                    "application/ld+json": components["schemas"]["CustomerSubscriptionLine.jsonld-customer_subscription_line.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_customer-subscription-lines_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description CustomerSubscriptionLine identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CustomerSubscriptionLine resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscriptionLine-customer_subscription_line.read"];
+                    "application/ld+json": components["schemas"]["CustomerSubscriptionLine.jsonld-customer_subscription_line.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_customer-subscription-lines_id_delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description CustomerSubscriptionLine identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CustomerSubscriptionLine resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_customer-subscription-lines_id_patch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description CustomerSubscriptionLine identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated CustomerSubscriptionLine resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["CustomerSubscriptionLine-customer_subscription_line.write.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description CustomerSubscriptionLine resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscriptionLine-customer_subscription_line.read"];
+                    "application/ld+json": components["schemas"]["CustomerSubscriptionLine.jsonld-customer_subscription_line.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_customer-subscriptions_idlines_get_collection": {
+        parameters: {
+            query?: {
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path: {
+                /** @description CustomerSubscription identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CustomerSubscriptionLine collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscriptionLine-customer_subscription_line.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchemaNoPagination"] & {
+                        member: components["schemas"]["CustomerSubscriptionLine.jsonld-customer_subscription_line.read"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_customer-subscription-runs_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CustomerSubscriptionRun collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscriptionRun-customer_subscription_run.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["CustomerSubscriptionRun.jsonld-customer_subscription_run.read"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_customer-subscription-runs_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description CustomerSubscriptionRun identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CustomerSubscriptionRun resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerSubscriptionRun-customer_subscription_run.read"];
+                    "application/ld+json": components["schemas"]["CustomerSubscriptionRun.jsonld-customer_subscription_run.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     api_bi_type_get: {
         parameters: {
             query?: never;
@@ -11316,6 +18284,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["DespatchGuide-despatch.write"];
                 "application/ld+json": components["schemas"]["DespatchGuide-despatch.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["DespatchGuide-despatch.write"];
             };
         };
         responses: {
@@ -11414,6 +18383,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["DespatchGuide-despatch.write"];
                 "application/ld+json": components["schemas"]["DespatchGuide-despatch.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["DespatchGuide-despatch.write"];
             };
         };
         responses: {
@@ -11440,6 +18410,221 @@ export interface operations {
             };
             /** @description Forbidden */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    api_employees_get_collection: {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Employee collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Employee-employee.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["Employee.jsonld-employee.read"][];
+                    };
+                };
+            };
+        };
+    };
+    api_employees_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new Employee resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Employee-employee.write"];
+                "application/ld+json": components["schemas"]["Employee-employee.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Employee-employee.write"];
+            };
+        };
+        responses: {
+            /** @description Employee resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Employee-employee.read"];
+                    "application/ld+json": components["schemas"]["Employee.jsonld-employee.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    api_employees_id_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Employee identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Employee resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Employee-employee.read"];
+                    "application/ld+json": components["schemas"]["Employee.jsonld-employee.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_employees_id_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Employee identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Employee resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_employees_id_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Employee identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated Employee resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["Employee-employee.write.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description Employee resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Employee-employee.read"];
+                    "application/ld+json": components["schemas"]["Employee.jsonld-employee.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -11512,6 +18697,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["ExchangeRate-exchange_rate.write"];
                 "application/ld+json": components["schemas"]["ExchangeRate-exchange_rate.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["ExchangeRate-exchange_rate.write"];
             };
         };
         responses: {
@@ -11575,6 +18761,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["ExchangeRate-exchange_rate.write"];
                 "application/ld+json": components["schemas"]["ExchangeRate-exchange_rate.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["ExchangeRate-exchange_rate.write"];
             };
         };
         responses: {
@@ -11612,6 +18799,950 @@ export interface operations {
             };
         };
     };
+    "api_expense-categories_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description ExpenseCategory collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseCategory"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["ExpenseCategory.jsonld"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_expense-categories_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new ExpenseCategory resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseCategory"];
+                "application/ld+json": components["schemas"]["ExpenseCategory"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["ExpenseCategory"];
+            };
+        };
+        responses: {
+            /** @description ExpenseCategory resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseCategory"];
+                    "application/ld+json": components["schemas"]["ExpenseCategory.jsonld"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_expense-categories_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ExpenseCategory identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description ExpenseCategory resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseCategory"];
+                    "application/ld+json": components["schemas"]["ExpenseCategory.jsonld"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_expense-categories_id_delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ExpenseCategory identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description ExpenseCategory resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_expense-categories_id_patch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ExpenseCategory identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated ExpenseCategory resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["ExpenseCategory.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description ExpenseCategory resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseCategory"];
+                    "application/ld+json": components["schemas"]["ExpenseCategory.jsonld"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_expense-reports_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description ExpenseReport collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseReport-expense_report.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["ExpenseReport.jsonld-expense_report.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_expense-reports_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new ExpenseReport resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseReport-expense_report.write"];
+                "application/ld+json": components["schemas"]["ExpenseReport-expense_report.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["ExpenseReport-expense_report.write"];
+            };
+        };
+        responses: {
+            /** @description ExpenseReport resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseReport-expense_report.read"];
+                    "application/ld+json": components["schemas"]["ExpenseReport.jsonld-expense_report.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_expense-reports_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ExpenseReport identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description ExpenseReport resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseReport-expense_report.read"];
+                    "application/ld+json": components["schemas"]["ExpenseReport.jsonld-expense_report.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_expense-reports_id_delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ExpenseReport identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description ExpenseReport resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_expense-reports_id_patch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ExpenseReport identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated ExpenseReport resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["ExpenseReport-expense_report.write.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description ExpenseReport resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseReport-expense_report.read"];
+                    "application/ld+json": components["schemas"]["ExpenseReport.jsonld-expense_report.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_expense-reports_idapprove_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ExpenseReport identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new ExpenseReport resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseReport.ExpenseReportReviewDto"];
+                "application/ld+json": components["schemas"]["ExpenseReport.ExpenseReportReviewDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["ExpenseReport.ExpenseReportReviewDto"];
+            };
+        };
+        responses: {
+            /** @description ExpenseReport resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseReport-expense_report.read"];
+                    "application/ld+json": components["schemas"]["ExpenseReport.jsonld-expense_report.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_expense-reports_idreimburse_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ExpenseReport identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new ExpenseReport resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseReport.ExpenseReportReimburseDto"];
+                "application/ld+json": components["schemas"]["ExpenseReport.ExpenseReportReimburseDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["ExpenseReport.ExpenseReportReimburseDto"];
+            };
+        };
+        responses: {
+            /** @description ExpenseReport resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseReport-expense_report.read"];
+                    "application/ld+json": components["schemas"]["ExpenseReport.jsonld-expense_report.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_expense-reports_idreject_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ExpenseReport identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new ExpenseReport resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExpenseReport.ExpenseReportReviewDto"];
+                "application/ld+json": components["schemas"]["ExpenseReport.ExpenseReportReviewDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["ExpenseReport.ExpenseReportReviewDto"];
+            };
+        };
+        responses: {
+            /** @description ExpenseReport resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExpenseReport-expense_report.read"];
+                    "application/ld+json": components["schemas"]["ExpenseReport.jsonld-expense_report.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_fixed-assets_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description FixedAsset collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedAsset-fixed_asset.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["FixedAsset.jsonld-fixed_asset.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_fixed-assets_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new FixedAsset resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FixedAsset-fixed_asset.write"];
+                "application/ld+json": components["schemas"]["FixedAsset-fixed_asset.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["FixedAsset-fixed_asset.write"];
+            };
+        };
+        responses: {
+            /** @description FixedAsset resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedAsset-fixed_asset.read"];
+                    "application/ld+json": components["schemas"]["FixedAsset.jsonld-fixed_asset.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_fixed-assets_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description FixedAsset identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description FixedAsset resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedAsset-fixed_asset.read"];
+                    "application/ld+json": components["schemas"]["FixedAsset.jsonld-fixed_asset.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_fixed-assets_id_delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description FixedAsset identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description FixedAsset resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_fixed-assets_id_patch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description FixedAsset identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated FixedAsset resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["FixedAsset-fixed_asset.write.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description FixedAsset resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedAsset-fixed_asset.read"];
+                    "application/ld+json": components["schemas"]["FixedAsset.jsonld-fixed_asset.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_fixed-assets_iddispose_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description FixedAsset identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new FixedAsset resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FixedAsset.FixedAssetDisposeDto"];
+                "application/ld+json": components["schemas"]["FixedAsset.FixedAssetDisposeDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["FixedAsset.FixedAssetDisposeDto"];
+            };
+        };
+        responses: {
+            /** @description FixedAsset resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FixedAsset-fixed_asset.read"];
+                    "application/ld+json": components["schemas"]["FixedAsset.jsonld-fixed_asset.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_gl-accounts_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description GlAccount collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GlAccount-account.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["GlAccount.jsonld-account.read"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_gl-accounts_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description GlAccount identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description GlAccount resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GlAccount-account.read"];
+                    "application/ld+json": components["schemas"]["GlAccount.jsonld-account.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     api_invoices_post: {
         parameters: {
             query?: never;
@@ -11624,6 +19755,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Invoice"];
                 "application/ld+json": components["schemas"]["Invoice"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Invoice"];
             };
         };
         responses: {
@@ -11731,6 +19863,99 @@ export interface operations {
             };
         };
     };
+    "api_journal-entries_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description JournalEntry collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JournalEntry-journal_entry.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["JournalEntry.jsonld-journal_entry.read"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_journal-entries_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description JournalEntry identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description JournalEntry resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JournalEntry-journal_entry.read"];
+                    "application/ld+json": components["schemas"]["JournalEntry.jsonld-journal_entry.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     "api_logistic-operations_get_collection": {
         parameters: {
             query?: {
@@ -11779,6 +20004,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["LogisticOperation"];
                 "application/ld+json": components["schemas"]["LogisticOperation"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["LogisticOperation"];
             };
         };
         responses: {
@@ -12050,6 +20276,12 @@ export interface operations {
                 itemsPerPage?: number;
                 /** @description Enable or disable pagination */
                 pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
             };
             header?: never;
             path?: never;
@@ -12063,9 +20295,9 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaymentMethod"][];
+                    "application/json": components["schemas"]["PaymentMethod-payment_method.read"][];
                     "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
-                        member: components["schemas"]["PaymentMethod.jsonld"][];
+                        member: components["schemas"]["PaymentMethod.jsonld-payment_method.read"][];
                     };
                 };
             };
@@ -12083,6 +20315,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["PaymentMethod"];
                 "application/ld+json": components["schemas"]["PaymentMethod"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["PaymentMethod"];
             };
         };
         responses: {
@@ -12092,8 +20325,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaymentMethod"];
-                    "application/ld+json": components["schemas"]["PaymentMethod.jsonld"];
+                    "application/json": components["schemas"]["PaymentMethod-payment_method.read"];
+                    "application/ld+json": components["schemas"]["PaymentMethod.jsonld-payment_method.read"];
                 };
             };
             /** @description Invalid input */
@@ -12138,8 +20371,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaymentMethod"];
-                    "application/ld+json": components["schemas"]["PaymentMethod.jsonld"];
+                    "application/json": components["schemas"]["PaymentMethod-payment_method.read"];
+                    "application/ld+json": components["schemas"]["PaymentMethod.jsonld-payment_method.read"];
                 };
             };
             /** @description Not found */
@@ -12210,8 +20443,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PaymentMethod"];
-                    "application/ld+json": components["schemas"]["PaymentMethod.jsonld"];
+                    "application/json": components["schemas"]["PaymentMethod-payment_method.read"];
+                    "application/ld+json": components["schemas"]["PaymentMethod.jsonld-payment_method.read"];
                 };
             };
             /** @description Invalid input */
@@ -12245,6 +20478,714 @@ export interface operations {
                     "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
                     "application/problem+json": components["schemas"]["ConstraintViolation"];
                     "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_payroll-runs_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PayrollRun collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRun-payroll_run.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["PayrollRun.jsonld-payroll_run.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_payroll-runs_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new PayrollRun resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayrollRun-payroll_run.write"];
+                "application/ld+json": components["schemas"]["PayrollRun-payroll_run.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["PayrollRun-payroll_run.write"];
+            };
+        };
+        responses: {
+            /** @description PayrollRun resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRun-payroll_run.read"];
+                    "application/ld+json": components["schemas"]["PayrollRun.jsonld-payroll_run.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_payroll-runs_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PayrollRun identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PayrollRun resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRun-payroll_run.read"];
+                    "application/ld+json": components["schemas"]["PayrollRun.jsonld-payroll_run.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_payroll-runs_id_delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PayrollRun identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PayrollRun resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_payroll-runs_id_patch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PayrollRun identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated PayrollRun resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["PayrollRun-payroll_run.write.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description PayrollRun resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRun-payroll_run.read"];
+                    "application/ld+json": components["schemas"]["PayrollRun.jsonld-payroll_run.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_payroll-runs_idapprove_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PayrollRun identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new PayrollRun resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayrollRun.PayrollRunApproveDto"];
+                "application/ld+json": components["schemas"]["PayrollRun.PayrollRunApproveDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["PayrollRun.PayrollRunApproveDto"];
+            };
+        };
+        responses: {
+            /** @description PayrollRun resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRun-payroll_run.read"];
+                    "application/ld+json": components["schemas"]["PayrollRun.jsonld-payroll_run.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_payroll-runs_idcalculate_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PayrollRun identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new PayrollRun resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayrollRun.PayrollRunCalculateDto"];
+                "application/ld+json": components["schemas"]["PayrollRun.PayrollRunCalculateDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["PayrollRun.PayrollRunCalculateDto"];
+            };
+        };
+        responses: {
+            /** @description PayrollRun resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRun-payroll_run.read"];
+                    "application/ld+json": components["schemas"]["PayrollRun.jsonld-payroll_run.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_payroll-runs_idpay_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PayrollRun identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new PayrollRun resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PayrollRun.PayrollRunPayDto"];
+                "application/ld+json": components["schemas"]["PayrollRun.PayrollRunPayDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["PayrollRun.PayrollRunPayDto"];
+            };
+        };
+        responses: {
+            /** @description PayrollRun resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayrollRun-payroll_run.read"];
+                    "application/ld+json": components["schemas"]["PayrollRun.jsonld-payroll_run.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_payslip-entries_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PayslipEntry collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayslipEntry-payslip_entry.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["PayslipEntry.jsonld-payslip_entry.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_payslip-entries_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PayslipEntry identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PayslipEntry resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayslipEntry-payslip_entry.read"];
+                    "application/ld+json": components["schemas"]["PayslipEntry.jsonld-payslip_entry.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_pharmacybatches_get_collection: {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PharmacyBatch collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmacyBatch-pharmacy_batch.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["PharmacyBatch.jsonld-pharmacy_batch.read"][];
+                    };
+                };
+            };
+        };
+    };
+    api_pharmacybatches_id_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PharmacyBatch identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PharmacyBatch resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmacyBatch-pharmacy_batch.read"];
+                    "application/ld+json": components["schemas"]["PharmacyBatch.jsonld-pharmacy_batch.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_pharmacyprescriptions_get_collection: {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PharmacyPrescription collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmacyPrescription-pharmacy_prescription.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["PharmacyPrescription.jsonld-pharmacy_prescription.read"][];
+                    };
+                };
+            };
+        };
+    };
+    api_pharmacyprescriptions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new PharmacyPrescription resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PharmacyPrescription.PrescriptionInput"];
+                "application/ld+json": components["schemas"]["PharmacyPrescription.PrescriptionInput"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["PharmacyPrescription.PrescriptionInput"];
+            };
+        };
+        responses: {
+            /** @description PharmacyPrescription resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmacyPrescription-pharmacy_prescription.read"];
+                    "application/ld+json": components["schemas"]["PharmacyPrescription.jsonld-pharmacy_prescription.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    api_pharmacyprescriptions_id_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PharmacyPrescription identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PharmacyPrescription resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmacyPrescription-pharmacy_prescription.read"];
+                    "application/ld+json": components["schemas"]["PharmacyPrescription.jsonld-pharmacy_prescription.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_pharmacyproducts_get_collection: {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PharmacyProduct collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmacyProduct-pharmacy_product.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["PharmacyProduct.jsonld-pharmacy_product.read"][];
+                    };
+                };
+            };
+        };
+    };
+    api_pharmacyproducts_id_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PharmacyProduct identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PharmacyProduct resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PharmacyProduct-pharmacy_product.read"];
+                    "application/ld+json": components["schemas"]["PharmacyProduct.jsonld-pharmacy_product.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -12297,6 +21238,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["PriceList"];
                 "application/ld+json": components["schemas"]["PriceList"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["PriceList"];
             };
         };
         responses: {
@@ -12346,6 +21288,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["PriceList.PricesDto"];
                 "application/ld+json": components["schemas"]["PriceList.PricesDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["PriceList.PricesDto"];
             };
         };
         responses: {
@@ -12512,6 +21455,41 @@ export interface operations {
             };
         };
     };
+    "api_price-lists_idapply_get_collection": {
+        parameters: {
+            query?: {
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path: {
+                /** @description PriceList identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PriceList collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PriceList.PriceListApplyDto"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchemaNoPagination"] & {
+                        member: components["schemas"]["PriceList.PriceListApplyDto.jsonld"][];
+                    };
+                };
+            };
+        };
+    };
     "api_price-lists_idprices_get_collection": {
         parameters: {
             query?: {
@@ -12581,6 +21559,17 @@ export interface operations {
                     };
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     api_products_post: {
@@ -12595,6 +21584,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Product-product.write"];
                 "application/ld+json": components["schemas"]["Product-product.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Product-product.write"];
             };
         };
         responses: {
@@ -12610,6 +21600,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -12654,6 +21655,17 @@ export interface operations {
                     "application/ld+json": components["schemas"]["Product.jsonld-product.read"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Not found */
             404: {
                 headers: {
@@ -12685,6 +21697,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
             };
             /** @description Not found */
             404: {
@@ -12728,6 +21751,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -12785,6 +21819,17 @@ export interface operations {
                     "application/ld+json": components["schemas"]["Product.jsonld-product.read"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Not found */
             404: {
                 headers: {
@@ -12840,6 +21885,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["ProductStock"];
                 "application/ld+json": components["schemas"]["ProductStock"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["ProductStock"];
             };
         };
         responses: {
@@ -13040,6 +22086,17 @@ export interface operations {
                     };
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     api_purchases_post: {
@@ -13054,6 +22111,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Purchase-purchase.write"];
                 "application/ld+json": components["schemas"]["Purchase-purchase.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Purchase-purchase.write"];
             };
         };
         responses: {
@@ -13069,6 +22127,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -13113,6 +22182,17 @@ export interface operations {
                     "application/ld+json": components["schemas"]["Purchase.jsonld-purchase.read"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Not found */
             404: {
                 headers: {
@@ -13144,6 +22224,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
             };
             /** @description Not found */
             404: {
@@ -13187,6 +22278,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -13249,6 +22351,256 @@ export interface operations {
             };
         };
     };
+    "api_purchase-orders_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PurchaseOrder collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrder-purchase_order.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["PurchaseOrder.jsonld-purchase_order.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_purchase-orders_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new PurchaseOrder resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PurchaseOrder-purchase_order.write"];
+                "application/ld+json": components["schemas"]["PurchaseOrder-purchase_order.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["PurchaseOrder-purchase_order.write"];
+            };
+        };
+        responses: {
+            /** @description PurchaseOrder resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrder-purchase_order.read"];
+                    "application/ld+json": components["schemas"]["PurchaseOrder.jsonld-purchase_order.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_purchase-orders_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PurchaseOrder identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PurchaseOrder resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrder-purchase_order.read"];
+                    "application/ld+json": components["schemas"]["PurchaseOrder.jsonld-purchase_order.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_purchase-orders_id_delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PurchaseOrder identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PurchaseOrder resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_purchase-orders_id_patch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PurchaseOrder identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated PurchaseOrder resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["PurchaseOrder-purchase_order.write.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description PurchaseOrder resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrder-purchase_order.read"];
+                    "application/ld+json": components["schemas"]["PurchaseOrder.jsonld-purchase_order.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_purchase-order-items_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description PurchaseOrderItem identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PurchaseOrderItem resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PurchaseOrderItem-purchase_order.read"];
+                    "application/ld+json": components["schemas"]["PurchaseOrderItem.jsonld-purchase_order.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     api_roles_get_collection: {
         parameters: {
             query?: {
@@ -13283,6 +22635,17 @@ export interface operations {
                     };
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     api_roles_post: {
@@ -13297,6 +22660,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Role"];
                 "application/ld+json": components["schemas"]["Role"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Role"];
             };
         };
         responses: {
@@ -13312,6 +22676,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -13356,6 +22731,17 @@ export interface operations {
                     "application/ld+json": components["schemas"]["Role.jsonld"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Not found */
             404: {
                 headers: {
@@ -13387,6 +22773,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
             };
             /** @description Not found */
             404: {
@@ -13439,6 +22836,17 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Not found */
             404: {
                 headers: {
@@ -13475,6 +22883,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["RoleMenu"];
                 "application/ld+json": components["schemas"]["RoleMenu"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["RoleMenu"];
             };
         };
         responses: {
@@ -13541,6 +22950,107 @@ export interface operations {
             };
         };
     };
+    "api_role-permissions_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new RolePermission resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RolePermission"];
+                "application/ld+json": components["schemas"]["RolePermission"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["RolePermission"];
+            };
+        };
+        responses: {
+            /** @description RolePermission resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RolePermission"];
+                    "application/ld+json": components["schemas"]["RolePermission.jsonld"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_role-permissions_role_id_get_collection": {
+        parameters: {
+            query?: {
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+            };
+            header?: never;
+            path: {
+                /** @description RolePermission identifier */
+                role_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description RolePermission collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RolePermission.RolePermissionModuleDto"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchemaNoPagination"] & {
+                        member: components["schemas"]["RolePermission.RolePermissionModuleDto.jsonld"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     api_sales_get_collection: {
         parameters: {
             query?: {
@@ -13575,6 +23085,17 @@ export interface operations {
                     };
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     api_sales_post: {
@@ -13589,6 +23110,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Sale-sale_record.write"];
                 "application/ld+json": components["schemas"]["Sale-sale_record.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Sale-sale_record.write"];
             };
         };
         responses: {
@@ -13604,6 +23126,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -13648,6 +23181,17 @@ export interface operations {
                     "application/ld+json": components["schemas"]["Sale.jsonld-sale_record.read"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Not found */
             404: {
                 headers: {
@@ -13661,7 +23205,7 @@ export interface operations {
             };
         };
     };
-    api_sales_id_patch: {
+    sale_collect_payment: {
         parameters: {
             query?: never;
             header?: never;
@@ -13671,15 +23215,17 @@ export interface operations {
             };
             cookie?: never;
         };
-        /** @description The updated Sale resource */
+        /** @description The new Sale resource */
         requestBody: {
             content: {
-                "application/merge-patch+json": components["schemas"]["Sale-sale_record.write.jsonMergePatch"];
+                "application/json": components["schemas"]["Sale.SaleCollectPaymentDto"];
+                "application/ld+json": components["schemas"]["Sale.SaleCollectPaymentDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Sale.SaleCollectPaymentDto"];
             };
         };
         responses: {
-            /** @description Sale resource updated */
-            200: {
+            /** @description Sale resource created */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -13699,8 +23245,8 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Not found */
-            404: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -13738,6 +23284,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Sale-sale_record.write"];
                 "application/ld+json": components["schemas"]["Sale-sale_record.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Sale-sale_record.write"];
             };
         };
         responses: {
@@ -13762,6 +23309,17 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description An error occurred */
             422: {
                 headers: {
@@ -13771,6 +23329,52 @@ export interface operations {
                     "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
                     "application/problem+json": components["schemas"]["ConstraintViolation"];
                     "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    sale_payment_history: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Sale identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sale resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Sale-sale_record.read"];
+                    "application/ld+json": components["schemas"]["Sale.jsonld-sale_record.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -13795,6 +23399,17 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Sale-sale_record.read"];
                     "application/ld+json": components["schemas"]["Sale.jsonld-sale_record.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Not found */
@@ -13825,6 +23440,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Sale-sale_record.write"];
                 "application/ld+json": components["schemas"]["Sale-sale_record.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Sale-sale_record.write"];
             };
         };
         responses: {
@@ -13840,6 +23456,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -13877,6 +23504,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Sale.VoidSaleDto-sale_record.write"];
                 "application/ld+json": components["schemas"]["Sale.VoidSaleDto-sale_record.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Sale.VoidSaleDto-sale_record.write"];
             };
         };
         responses: {
@@ -13892,6 +23520,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -13943,11 +23582,332 @@ export interface operations {
             };
         };
     };
+    "api_sale-quotes_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SaleQuote collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleQuote-sale_quote.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["SaleQuote.jsonld-sale_quote.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_sale-quotes_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new SaleQuote resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaleQuote-sale_quote.write"];
+                "application/ld+json": components["schemas"]["SaleQuote-sale_quote.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["SaleQuote-sale_quote.write"];
+            };
+        };
+        responses: {
+            /** @description SaleQuote resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleQuote-sale_quote.read"];
+                    "application/ld+json": components["schemas"]["SaleQuote.jsonld-sale_quote.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_sale-quotes_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description SaleQuote identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SaleQuote resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleQuote-sale_quote.read"];
+                    "application/ld+json": components["schemas"]["SaleQuote.jsonld-sale_quote.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_sale-quotes_id_delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description SaleQuote identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SaleQuote resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_sale-quotes_id_patch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description SaleQuote identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated SaleQuote resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["SaleQuote-sale_quote.write.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description SaleQuote resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleQuote-sale_quote.read"];
+                    "application/ld+json": components["schemas"]["SaleQuote.jsonld-sale_quote.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    sale_quote_convert: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description SaleQuote identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new SaleQuote resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaleQuote.SaleQuoteConvertDto"];
+                "application/ld+json": components["schemas"]["SaleQuote.SaleQuoteConvertDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["SaleQuote.SaleQuoteConvertDto"];
+            };
+        };
+        responses: {
+            /** @description SaleQuote resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleQuote.SaleRecord-sale_record.read"];
+                    "application/ld+json": components["schemas"]["SaleQuote.SaleRecord.jsonld-sale_record.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    sale_quote_send: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description SaleQuote identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new SaleQuote resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaleQuote.SaleQuoteSendDto"];
+                "application/ld+json": components["schemas"]["SaleQuote.SaleQuoteSendDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["SaleQuote.SaleQuoteSendDto"];
+            };
+        };
+        responses: {
+            /** @description SaleQuote resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SaleQuote-sale_quote.read"];
+                    "application/ld+json": components["schemas"]["SaleQuote.jsonld-sale_quote.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
     api_salesreport_get: {
         parameters: {
             query: {
                 /** @description Type of report to generate */
-                report: "sale-by-product" | "sales-by-line" | "detailed-sales" | "accounting-report" | "voided-sales" | "credit-notes" | "payment-method-daily" | "daily-summary";
+                report: "sale-by-product" | "sales-by-line" | "detailed-sales" | "accounting-report" | "voided-sales" | "credit-notes" | "payment-method-daily" | "payment-method-breakdown" | "daily-summary";
                 /** @description Start date for the report (YYYY-MM-DD) */
                 "date-from": string;
                 /** @description End date for the report (YYYY-MM-DD) */
@@ -14028,6 +23988,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Setup.InitialSetupInput"];
                 "application/ld+json": components["schemas"]["Setup.InitialSetupInput"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Setup.InitialSetupInput"];
             };
         };
         responses: {
@@ -14124,6 +24085,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["StockEntry-stock_entry.write"];
                 "application/ld+json": components["schemas"]["StockEntry-stock_entry.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["StockEntry-stock_entry.write"];
             };
         };
         responses: {
@@ -14139,17 +24101,6 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -14218,9 +24169,12 @@ export interface operations {
             };
         };
     };
-    "api_stock-entries_iditems_get": {
+    "api_stock-entries_iditems_get_collection": {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+            };
             header?: never;
             path: {
                 /** @description StockEntry identifier */
@@ -14230,36 +24184,16 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description StockEntry resource */
+            /** @description StockEntryItem collection */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StockEntry-stock_entry_items.read"];
-                    "application/ld+json": components["schemas"]["StockEntry.jsonld-stock_entry_items.read"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["StockEntryItem-stock_entry_items.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchemaNoPagination"] & {
+                        member: components["schemas"]["StockEntryItem.jsonld-stock_entry_items.read"][];
+                    };
                 };
             };
         };
@@ -14382,6 +24316,276 @@ export interface operations {
             };
         };
     };
+    "api_subscription-plans_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SubscriptionPlan collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionPlan-subscription_plan.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["SubscriptionPlan.jsonld-subscription_plan.read"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_subscription-plans_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new SubscriptionPlan resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscriptionPlan-subscription_plan.write"];
+                "application/ld+json": components["schemas"]["SubscriptionPlan-subscription_plan.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["SubscriptionPlan-subscription_plan.write"];
+            };
+        };
+        responses: {
+            /** @description SubscriptionPlan resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionPlan-subscription_plan.read"];
+                    "application/ld+json": components["schemas"]["SubscriptionPlan.jsonld-subscription_plan.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_subscription-plans_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description SubscriptionPlan identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SubscriptionPlan resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionPlan-subscription_plan.read"];
+                    "application/ld+json": components["schemas"]["SubscriptionPlan.jsonld-subscription_plan.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_subscription-plans_id_delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description SubscriptionPlan identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SubscriptionPlan resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_subscription-plans_id_patch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description SubscriptionPlan identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated SubscriptionPlan resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["SubscriptionPlan-subscription_plan.write.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description SubscriptionPlan resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SubscriptionPlan-subscription_plan.read"];
+                    "application/ld+json": components["schemas"]["SubscriptionPlan.jsonld-subscription_plan.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
     "api_sunat-catalogs_get_collection": {
         parameters: {
             query?: {
@@ -14430,6 +24634,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["SunatCatalog"];
                 "application/ld+json": components["schemas"]["SunatCatalog"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["SunatCatalog"];
             };
         };
         responses: {
@@ -14742,6 +24947,7 @@ export interface operations {
                     "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
                         member: components["schemas"]["Supplier.jsonld"][];
                     };
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Supplier.xlsx"][];
                 };
             };
         };
@@ -14758,6 +24964,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Supplier"];
                 "application/ld+json": components["schemas"]["Supplier"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Supplier"];
             };
         };
         responses: {
@@ -14815,6 +25022,7 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["Supplier"];
                     "application/ld+json": components["schemas"]["Supplier.jsonld"];
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Supplier.xlsx"];
                 };
             };
             /** @description Not found */
@@ -14924,6 +25132,274 @@ export interface operations {
             };
         };
     };
+    "api_supplier-bills_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SupplierBill collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierBill-supplier_bill.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["SupplierBill.jsonld-supplier_bill.read"][];
+                    };
+                };
+            };
+        };
+    };
+    "api_supplier-bills_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new SupplierBill resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupplierBill-supplier_bill.write"];
+                "application/ld+json": components["schemas"]["SupplierBill-supplier_bill.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["SupplierBill-supplier_bill.write"];
+            };
+        };
+        responses: {
+            /** @description SupplierBill resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierBill-supplier_bill.read"];
+                    "application/ld+json": components["schemas"]["SupplierBill.jsonld-supplier_bill.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_supplier-bills_id_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description SupplierBill identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SupplierBill resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierBill-supplier_bill.read"];
+                    "application/ld+json": components["schemas"]["SupplierBill.jsonld-supplier_bill.read"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_supplier-bills_id_delete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description SupplierBill identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SupplierBill resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_supplier-bills_id_patch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description SupplierBill identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated SupplierBill resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["SupplierBill-supplier_bill.write.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description SupplierBill resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierBill-supplier_bill.read"];
+                    "application/ld+json": components["schemas"]["SupplierBill.jsonld-supplier_bill.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_supplier-bills_idpay_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description SupplierBill identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new SupplierBill resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupplierBill.SupplierBillPayDto"];
+                "application/ld+json": components["schemas"]["SupplierBill.SupplierBillPayDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["SupplierBill.SupplierBillPayDto"];
+            };
+        };
+        responses: {
+            /** @description SupplierBill resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierBill-supplier_bill.read"];
+                    "application/ld+json": components["schemas"]["SupplierBill.jsonld-supplier_bill.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
     "api_sales_saleIdtax-documents_get_collection": {
         parameters: {
             query?: {
@@ -14959,6 +25435,17 @@ export interface operations {
                     "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
                         member: components["schemas"]["TaxDocument.jsonld-invoice.read"][];
                     };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -14997,6 +25484,17 @@ export interface operations {
                     };
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     "api_tax-documents_post": {
@@ -15011,6 +25509,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["TaxDocument-invoice.write_creditnote.write"];
                 "application/ld+json": components["schemas"]["TaxDocument-invoice.write_creditnote.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["TaxDocument-invoice.write_creditnote.write"];
             };
         };
         responses: {
@@ -15026,6 +25525,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -15070,80 +25580,8 @@ export interface operations {
                     "application/ld+json": components["schemas"]["TaxDocument.jsonld-invoice.read_creditnote.read"];
                 };
             };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    "api_tax-documents_id_delete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description TaxDocument identifier */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description TaxDocument resource deleted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    "api_tax-documents_id_patch": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description TaxDocument identifier */
-                id: string;
-            };
-            cookie?: never;
-        };
-        /** @description The updated TaxDocument resource */
-        requestBody: {
-            content: {
-                "application/merge-patch+json": components["schemas"]["TaxDocument-invoice.write_creditnote.write.jsonMergePatch"];
-            };
-        };
-        responses: {
-            /** @description TaxDocument resource updated */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["TaxDocument-invoice.read_creditnote.read"];
-                    "application/ld+json": components["schemas"]["TaxDocument.jsonld-invoice.read_creditnote.read"];
-                };
-            };
-            /** @description Invalid input */
-            400: {
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -15162,17 +25600,6 @@ export interface operations {
                     "application/ld+json": components["schemas"]["Error.jsonld"];
                     "application/problem+json": components["schemas"]["Error"];
                     "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description An error occurred */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
-                    "application/problem+json": components["schemas"]["ConstraintViolation"];
-                    "application/json": components["schemas"]["ConstraintViolation"];
                 };
             };
         };
@@ -15197,6 +25624,17 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["TaxDocument-invoice.read_creditnote.read"];
                     "application/ld+json": components["schemas"]["TaxDocument.jsonld-invoice.read_creditnote.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Not found */
@@ -15227,6 +25665,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["TaxDocument-invoice.write_creditnote.write"];
                 "application/ld+json": components["schemas"]["TaxDocument-invoice.write_creditnote.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["TaxDocument-invoice.write_creditnote.write"];
             };
         };
         responses: {
@@ -15242,6 +25681,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -15279,6 +25729,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["TaxDocument-invoice.write_creditnote.write"];
                 "application/ld+json": components["schemas"]["TaxDocument-invoice.write_creditnote.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["TaxDocument-invoice.write_creditnote.write"];
             };
         };
         responses: {
@@ -15294,6 +25745,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -15331,6 +25793,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["TaxDocument-invoice.write_creditnote.write"];
                 "application/ld+json": components["schemas"]["TaxDocument-invoice.write_creditnote.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["TaxDocument-invoice.write_creditnote.write"];
             };
         };
         responses: {
@@ -15346,6 +25809,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -15537,6 +26011,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Ubigeo"];
                 "application/ld+json": components["schemas"]["Ubigeo"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Ubigeo"];
             };
         };
         responses: {
@@ -15751,6 +26226,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["UnitOfMeasure-unit-of-measure.write"];
                 "application/ld+json": components["schemas"]["UnitOfMeasure-unit-of-measure.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["UnitOfMeasure-unit-of-measure.write"];
             };
         };
         responses: {
@@ -15951,6 +26427,17 @@ export interface operations {
                     };
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     api_users_post: {
@@ -15965,6 +26452,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["User-user.create_user.update"];
                 "application/ld+json": components["schemas"]["User-user.create_user.update"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["User-user.create_user.update"];
             };
         };
         responses: {
@@ -15980,6 +26468,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -16024,6 +26523,17 @@ export interface operations {
                     "application/ld+json": components["schemas"]["User.jsonld-user.read"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Not found */
             404: {
                 headers: {
@@ -16052,6 +26562,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["User-user.create_user.update"];
                 "application/ld+json": components["schemas"]["User-user.create_user.update"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["User-user.create_user.update"];
             };
         };
         responses: {
@@ -16067,6 +26578,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -16119,6 +26641,17 @@ export interface operations {
                 };
                 content?: never;
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Not found */
             404: {
                 headers: {
@@ -16161,6 +26694,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -16370,6 +26914,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["VoucherSerie"];
                 "application/ld+json": components["schemas"]["VoucherSerie"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["VoucherSerie"];
             };
         };
         responses: {
@@ -16584,6 +27129,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["VoucherType"];
                 "application/ld+json": components["schemas"]["VoucherType"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["VoucherType"];
             };
         };
         responses: {
@@ -16837,6 +27383,7 @@ export interface operations {
             content: {
                 "application/json": components["schemas"]["Warehouse"];
                 "application/ld+json": components["schemas"]["Warehouse"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Warehouse"];
             };
         };
         responses: {
