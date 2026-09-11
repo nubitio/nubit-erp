@@ -9,8 +9,8 @@ use App\Integration\Entity\DocumentInputSummary;
 use App\Integration\Entity\IntegrationDocument;
 use App\Integration\Message\SendIntegrationDocumentMessage;
 use App\Integration\Repository\IntegrationDocumentRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
+use Doctrine\ORM\EntityManagerInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DispatchAfterCurrentBusStamp;
@@ -52,7 +52,10 @@ final readonly class DocumentIntake
 
         try {
             $document = $this->persistAtomically($input, $rawBody, $hash);
-        } catch (UniqueConstraintViolationException) {
+        } catch (UniqueConstraintViolationException $e) {
+            if (!self::isExternalIdViolation($e)) {
+                throw $e;
+            }
             // The external_id constraint is the serialization point. The
             // losing transaction is rolled back, including its tax document.
             $document = $this->documents->findOneByExternalId($input->externalId);
@@ -67,6 +70,11 @@ final readonly class DocumentIntake
         $this->dispatch($document);
 
         return $document;
+    }
+
+    private static function isExternalIdViolation(UniqueConstraintViolationException $exception): bool
+    {
+        return str_contains(strtolower($exception->getMessage()), 'uq_integration_document_external_id');
     }
 
     /**

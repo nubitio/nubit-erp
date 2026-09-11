@@ -16,15 +16,19 @@ final class Version20260910090000_concurrency_safe_integration extends AbstractM
 
     public function up(Schema $schema): void
     {
+        $this->abortIf(
+            (int) $this->connection->fetchOne(<<<'SQL'
+                SELECT COUNT(*) FROM (
+                    SELECT event_id, endpoint_id
+                    FROM integration_webhook_delivery
+                    GROUP BY event_id, endpoint_id
+                    HAVING COUNT(*) > 1
+                ) duplicates
+            SQL) > 0,
+            'Cannot enforce webhook delivery uniqueness: duplicate rows exist. Resolve them manually; this migration never deletes delivery history.',
+        );
         $this->addSql('ALTER TABLE integration_event ADD claim_until DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', ADD claim_token VARCHAR(64) DEFAULT NULL');
         $this->addSql('ALTER TABLE integration_webhook_delivery ADD claim_until DATETIME DEFAULT NULL COMMENT \'(DC2Type:datetime_immutable)\', ADD claim_token VARCHAR(64) DEFAULT NULL');
-        $this->addSql(<<<'SQL'
-            DELETE d1 FROM integration_webhook_delivery d1
-            INNER JOIN integration_webhook_delivery d2
-                ON d1.event_id = d2.event_id
-               AND d1.endpoint_id = d2.endpoint_id
-               AND (d1.created_at > d2.created_at OR (d1.created_at = d2.created_at AND d1.id > d2.id))
-        SQL);
         $this->addSql('ALTER TABLE integration_webhook_delivery ADD UNIQUE INDEX uq_webhook_delivery_event_endpoint (event_id, endpoint_id)');
     }
 

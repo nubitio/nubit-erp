@@ -149,6 +149,16 @@ class WebhookDelivery
         return $this->deliveredAt;
     }
 
+    public function getClaimToken(): ?string
+    {
+        return $this->claimToken;
+    }
+
+    public function hasActiveClaim(\DateTimeImmutable $now): bool
+    {
+        return null !== $this->claimToken && null !== $this->claimUntil && $this->claimUntil >= $now;
+    }
+
     public function succeed(int $responseStatus, ?string $body): void
     {
         ++$this->attempt;
@@ -188,6 +198,7 @@ class WebhookDelivery
     {
         $this->status = self::STATUS_PENDING;
         $this->nextRetryAt = new \DateTimeImmutable();
+        $this->clearClaim();
     }
 
     private function clearClaim(): void

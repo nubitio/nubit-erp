@@ -110,6 +110,16 @@ class IntegrationEvent
         return $this->dispatchedAt;
     }
 
+    public function getClaimToken(): ?string
+    {
+        return $this->claimToken;
+    }
+
+    public function hasActiveClaim(\DateTimeImmutable $now): bool
+    {
+        return null !== $this->claimToken && null !== $this->claimUntil && $this->claimUntil >= $now;
+    }
+
     public function markDispatched(): void
     {
         $this->status = self::STATUS_DISPATCHED;
@@ -121,5 +131,7 @@ class IntegrationEvent
     public function markFailed(): void
     {
         $this->status = self::STATUS_FAILED;
+        $this->claimUntil = null;
+        $this->claimToken = null;
     }
 }

@@ -7,6 +7,7 @@ namespace App\Integration\Repository;
 use App\Integration\Event\IntegrationEvent;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use SensitiveParameter;
 
 /**
  * @extends ServiceEntityRepository<IntegrationEvent>
@@ -43,11 +44,15 @@ class IntegrationEventRepository extends ServiceEntityRepository
     {
         $connection = $this->getEntityManager()->getConnection();
         $connection->executeStatement(
-            'UPDATE integration_event SET status = :pending, claim_token = NULL, claim_until = NULL WHERE status = :processing AND claim_until < :now',
-            ['pending' => IntegrationEvent::STATUS_PENDING, 'processing' => IntegrationEvent::STATUS_PROCESSING, 'now' => $now],
+            'UPDATE integration_event SET status = :pending, claim_token = NULL, claim_until = NULL WHERE status = :processing AND (claim_until IS NULL OR claim_until < :now)',
+            [
+                'pending' => IntegrationEvent::STATUS_PENDING,
+                'processing' => IntegrationEvent::STATUS_PROCESSING,
+                'now' => $now,
+            ],
         );
         $ids = $connection->fetchFirstColumn(
-            'SELECT id FROM integration_event WHERE status = :pending ORDER BY occurred_at ASC LIMIT '.max(1, $limit),
+            'SELECT id FROM integration_event WHERE status = :pending ORDER BY occurred_at ASC LIMIT ' . max(1, $limit),
             ['pending' => IntegrationEvent::STATUS_PENDING],
         );
         if ([] === $ids) {
@@ -57,14 +62,36 @@ class IntegrationEventRepository extends ServiceEntityRepository
         $until = $now->modify(sprintf('+%d seconds', $leaseSeconds));
         $claimed = [];
         foreach ($ids as $id) {
-            if (1 !== $connection->executeStatement(
-                'UPDATE integration_event SET status = :processing, claim_token = :token, claim_until = :until WHERE id = :id AND status = :pending',
-                ['processing' => IntegrationEvent::STATUS_PROCESSING, 'token' => $token, 'until' => $until, 'id' => $id, 'pending' => IntegrationEvent::STATUS_PENDING],
-            )) {
+            if (
+                1 !== $connection->executeStatement(
+                    'UPDATE integration_event SET status = :processing, claim_token = :token, claim_until = :until WHERE id = :id AND status = :pending',
+                    [
+                        'processing' => IntegrationEvent::STATUS_PROCESSING,
+                        'token' => $token,
+                        'until' => $until,
+                        'id' => $id,
+                        'pending' => IntegrationEvent::STATUS_PENDING,
+                    ],
+                )
+            ) {
                 continue;
             }
             $claimed[] = $id;
         }
         return $this->findBy(['id' => $claimed], ['occurredAt' => 'ASC']);
+    }
+
+    public function ownsClaim(string $id, #[SensitiveParameter] string $token, \DateTimeImmutable $now): bool
+    {
+        return 1
+        === (int) $this
+            ->getEntityManager()
+            ->getConnection()
+            ->fetchOne('SELECT 1 FROM integration_event WHERE id = :id AND status = :status AND claim_token = :token AND claim_until >= :now', [
+                'id' => $id,
+                'status' => IntegrationEvent::STATUS_PROCESSING,
+                'token' => $token,
+                'now' => $now,
+            ]);
     }
 }

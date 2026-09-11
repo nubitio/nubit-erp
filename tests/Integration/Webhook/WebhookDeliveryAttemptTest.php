@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Webhook;
 
+use App\Integration\Repository\WebhookDeliveryRepository;
 use App\Integration\Webhook\RetrySchedule;
 use App\Integration\Webhook\WebhookDelivery;
 use App\Integration\Webhook\WebhookDeliveryAttempt;
@@ -28,6 +29,7 @@ final class WebhookDeliveryAttemptTest extends TestCase
             new RetrySchedule(),
             $this->createStub(EntityManagerInterface::class),
             new NullLogger(),
+            $this->createStub(WebhookDeliveryRepository::class),
         );
     }
 
