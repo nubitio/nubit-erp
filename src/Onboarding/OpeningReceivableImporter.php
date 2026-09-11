@@ -25,6 +25,9 @@ use Symfony\Bundle\SecurityBundle\Security;
 
 final readonly class OpeningReceivableImporter
 {
+    public const int MAX_ROWS = 5_000;
+    public const int FLUSH_EVERY = 250;
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private CustomerRepository $customerRepository,
@@ -42,6 +45,13 @@ final readonly class OpeningReceivableImporter
      */
     public function import(array $rows): array
     {
+        if (count($rows) > self::MAX_ROWS) {
+            throw new RuntimeException(sprintf(
+                'La importación admite como máximo %d filas por solicitud.',
+                self::MAX_ROWS,
+            ));
+        }
+
         $branch = $this->resolveBranch();
         $warehouse = $this->resolveWarehouse($branch);
         $paymentMethod =
@@ -69,6 +79,11 @@ final readonly class OpeningReceivableImporter
                 $sale = $this->buildSale($parsed, $customer, $branch, $warehouse, $paymentMethod, $userId, $now);
                 $this->entityManager->persist($sale);
                 ++$created;
+                if ($created % self::FLUSH_EVERY === 0) {
+                    // Keep the unit of work bounded without clearing the branch,
+                    // warehouse and payment method references used by the batch.
+                    $this->entityManager->flush();
+                }
             } catch (RuntimeException $exception) {
                 $errors[] = ['row' => $index + 1, 'message' => $exception->getMessage()];
             }
