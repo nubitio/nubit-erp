@@ -25,7 +25,7 @@ final readonly class WebhookFanout
 
     public function run(int $limit = 200): int
     {
-        $pending = $this->events->findPending($limit);
+        $pending = $this->events->claimPending($limit, new \DateTimeImmutable());
         if ([] === $pending) {
             return 0;
         }

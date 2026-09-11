@@ -22,7 +22,7 @@ final class WebhookFanoutTest extends TestCase
         $rejected = new IntegrationEvent(EventType::DocumentRejected, 'document', 'ext-2', ['reference' => 'efact-2']);
 
         $events = $this->createStub(IntegrationEventRepository::class);
-        $events->method('findPending')->willReturn([$accepted, $rejected]);
+        $events->method('claimPending')->willReturn([$accepted, $rejected]);
 
         $endpoints = $this->createStub(WebhookEndpointRepository::class);
         $endpoints
@@ -51,7 +51,7 @@ final class WebhookFanoutTest extends TestCase
     public function testNoPendingEventsIsANoOp(): void
     {
         $events = $this->createStub(IntegrationEventRepository::class);
-        $events->method('findPending')->willReturn([]);
+        $events->method('claimPending')->willReturn([]);
         $endpoints = $this->createStub(WebhookEndpointRepository::class);
 
         self::assertSame(

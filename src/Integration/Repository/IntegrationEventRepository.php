@@ -37,4 +37,34 @@ class IntegrationEventRepository extends ServiceEntityRepository
 
         return array_values(array_filter($rows, static fn(mixed $event): bool => $event instanceof IntegrationEvent));
     }
+
+    /** @return list<IntegrationEvent> */
+    public function claimPending(int $limit, \DateTimeImmutable $now, int $leaseSeconds = 300): array
+    {
+        $connection = $this->getEntityManager()->getConnection();
+        $connection->executeStatement(
+            'UPDATE integration_event SET status = :pending, claim_token = NULL, claim_until = NULL WHERE status = :processing AND claim_until < :now',
+            ['pending' => IntegrationEvent::STATUS_PENDING, 'processing' => IntegrationEvent::STATUS_PROCESSING, 'now' => $now],
+        );
+        $ids = $connection->fetchFirstColumn(
+            'SELECT id FROM integration_event WHERE status = :pending ORDER BY occurred_at ASC LIMIT '.max(1, $limit),
+            ['pending' => IntegrationEvent::STATUS_PENDING],
+        );
+        if ([] === $ids) {
+            return [];
+        }
+        $token = bin2hex(random_bytes(32));
+        $until = $now->modify(sprintf('+%d seconds', $leaseSeconds));
+        $claimed = [];
+        foreach ($ids as $id) {
+            if (1 !== $connection->executeStatement(
+                'UPDATE integration_event SET status = :processing, claim_token = :token, claim_until = :until WHERE id = :id AND status = :pending',
+                ['processing' => IntegrationEvent::STATUS_PROCESSING, 'token' => $token, 'until' => $until, 'id' => $id, 'pending' => IntegrationEvent::STATUS_PENDING],
+            )) {
+                continue;
+            }
+            $claimed[] = $id;
+        }
+        return $this->findBy(['id' => $claimed], ['occurredAt' => 'ASC']);
+    }
 }
