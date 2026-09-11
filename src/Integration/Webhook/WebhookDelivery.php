@@ -17,6 +17,7 @@ use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 #[ORM\Table(name: 'integration_webhook_delivery')]
 #[ORM\Index(name: 'idx_webhook_delivery_due', columns: ['status', 'next_retry_at'])]
 #[ORM\Index(name: 'idx_webhook_delivery_event', columns: ['event_id'])]
+#[ORM\UniqueConstraint(name: 'uq_webhook_delivery_event_endpoint', columns: ['event_id', 'endpoint_id'])]
 class WebhookDelivery
 {
     public const string STATUS_PENDING = 'pending';
@@ -67,6 +68,12 @@ class WebhookDelivery
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $deliveredAt = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $claimUntil = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $claimToken = null;
 
     /**
      * @param array<string, mixed> $payload
@@ -142,6 +149,16 @@ class WebhookDelivery
         return $this->deliveredAt;
     }
 
+    public function getClaimToken(): ?string
+    {
+        return $this->claimToken;
+    }
+
+    public function hasActiveClaim(\DateTimeImmutable $now): bool
+    {
+        return null !== $this->claimToken && null !== $this->claimUntil && $this->claimUntil >= $now;
+    }
+
     public function succeed(int $responseStatus, ?string $body): void
     {
         ++$this->attempt;
@@ -151,6 +168,7 @@ class WebhookDelivery
         $this->lastError = null;
         $this->nextRetryAt = null;
         $this->deliveredAt = new \DateTimeImmutable();
+        $this->clearClaim();
     }
 
     public function failAndRetryAt(\DateTimeImmutable $next, ?int $responseStatus, ?string $bodyOrError): void
@@ -163,6 +181,7 @@ class WebhookDelivery
         }
         $this->lastError = self::truncate($bodyOrError);
         $this->nextRetryAt = $next;
+        $this->clearClaim();
     }
 
     public function deadLetter(?int $responseStatus, ?string $bodyOrError): void
@@ -172,12 +191,20 @@ class WebhookDelivery
         $this->responseStatus = $responseStatus;
         $this->lastError = self::truncate($bodyOrError);
         $this->nextRetryAt = null;
+        $this->clearClaim();
     }
 
     public function requeue(): void
     {
         $this->status = self::STATUS_PENDING;
         $this->nextRetryAt = new \DateTimeImmutable();
+        $this->clearClaim();
+    }
+
+    private function clearClaim(): void
+    {
+        $this->claimToken = null;
+        $this->claimUntil = null;
     }
 
     private static function truncate(?string $value): ?string

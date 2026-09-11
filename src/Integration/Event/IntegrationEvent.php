@@ -21,6 +21,7 @@ class IntegrationEvent
     public const string STATUS_PENDING = 'pending';
     public const string STATUS_DISPATCHED = 'dispatched';
     public const string STATUS_FAILED = 'failed';
+    public const string STATUS_PROCESSING = 'processing';
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
@@ -49,6 +50,12 @@ class IntegrationEvent
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $dispatchedAt = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $claimUntil = null;
+
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $claimToken = null;
 
     /**
      * @param array<string, mixed> $payload
@@ -103,14 +110,28 @@ class IntegrationEvent
         return $this->dispatchedAt;
     }
 
+    public function getClaimToken(): ?string
+    {
+        return $this->claimToken;
+    }
+
+    public function hasActiveClaim(\DateTimeImmutable $now): bool
+    {
+        return null !== $this->claimToken && null !== $this->claimUntil && $this->claimUntil >= $now;
+    }
+
     public function markDispatched(): void
     {
         $this->status = self::STATUS_DISPATCHED;
         $this->dispatchedAt = new \DateTimeImmutable();
+        $this->claimUntil = null;
+        $this->claimToken = null;
     }
 
     public function markFailed(): void
     {
         $this->status = self::STATUS_FAILED;
+        $this->claimUntil = null;
+        $this->claimToken = null;
     }
 }

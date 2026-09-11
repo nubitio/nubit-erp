@@ -65,7 +65,7 @@ final class WebhooksTickCommand extends Command
             try {
                 $this->tenantSwitcher->switchConnection($name);
                 $fannedOut += $this->fanout->run($limit);
-                foreach ($this->deliveries->findDue(new \DateTimeImmutable(), $limit) as $delivery) {
+                foreach ($this->deliveries->claimDue(new \DateTimeImmutable(), $limit) as $delivery) {
                     $this->deliveryAttempt->attempt($delivery);
                     ++$attempted;
                 }
