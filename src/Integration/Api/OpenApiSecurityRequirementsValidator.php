@@ -17,10 +17,11 @@ final class OpenApiSecurityRequirementsValidator
                 if (($schemes[$scheme] ?? null) !== null) {
                     continue;
                 }
-                $errors[] = sprintf('%s references unknown security scheme %s.', $key, $scheme);
+                $errors[] = sprintf('%s references unknown security scheme %s.', $key, (string) $scheme);
             }
         }
 
+        /** @var list<string> $contractErrors */
         $contractErrors = new OpenApiSecurityContractRequirementsValidator()->validate($key, $operation, $requirements);
         foreach ($contractErrors as $error) {
             $errors[] = $error;
