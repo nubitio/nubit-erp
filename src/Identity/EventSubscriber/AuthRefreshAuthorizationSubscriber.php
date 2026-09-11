@@ -7,8 +7,8 @@ namespace App\Identity\EventSubscriber;
 use App\Identity\Entity\User;
 use App\Organization\Repository\BranchRepository;
 use App\Organization\Repository\CompanyRepository;
-use Nubit\AdminBundle\Auth\JWTManagerInterface;
 use Nubit\AdminBundle\Auth\JWTAuthenticator;
+use Nubit\AdminBundle\Auth\JWTManagerInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -50,6 +50,7 @@ final readonly class AuthRefreshAuthorizationSubscriber
                 return;
             }
             $branch = is_string($branchId) ? $this->branchRepository->find($branchId) : null;
+            $branchCompany = $branch?->getCompany();
             $company = $this->companyRepository->findOneBy([]);
 
             if (
@@ -57,9 +58,8 @@ final readonly class AuthRefreshAuthorizationSubscriber
                 || !is_string($branchId)
                 || null === $branch
                 || !$user->hasBranchAccess($branch)
-                || null === $company
-                || null === $branch->getCompany()
-                || $company->getId() !== $branch->getCompany()->getId()
+                || null === $branchCompany
+                || $company?->getId() !== $branchCompany->getId()
             ) {
                 $event->setResponse(new JsonResponse(['message' => 'Invalid refresh token'], 401));
             }
@@ -71,8 +71,11 @@ final readonly class AuthRefreshAuthorizationSubscriber
     private function refreshToken(Request $request): ?string
     {
         $body = json_decode($request->getContent(), associative: true);
-        $token = is_array($body) ? ($body['refreshToken'] ?? null) : null;
-        $token ??= $request->cookies->get(JWTAuthenticator::REFRESH_COOKIE);
+        $token = is_array($body) && is_string($body['refreshToken'] ?? null) ? $body['refreshToken'] : null;
+        if (null === $token) {
+            $cookieToken = $request->cookies->get(JWTAuthenticator::REFRESH_COOKIE);
+            $token = is_string($cookieToken) ? $cookieToken : null;
+        }
 
         return is_string($token) && '' !== $token ? $token : null;
     }
