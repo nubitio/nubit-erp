@@ -9,13 +9,13 @@ final class OpenApiOperationValidator
     /** @return list<string> */
     public function validate(array $contract, array $schemes, string $path, string $method, array $operation): array
     {
-        $key = strtoupper($method).' '.$path;
+        $key = strtoupper($method) . ' ' . $path;
 
         return array_merge(
-            (new OpenApiBasicValidator())->validate($key, $operation),
-            (new OpenApiParametersValidator())->validate($key, $path, $operation),
-            (new OpenApiSecurityValidator())->validate($key, $operation, $schemes),
-            (new OpenApiReferenceValidator())->validate($key, $contract, $operation),
+            new OpenApiBasicValidator()->validate($key, $operation),
+            new OpenApiParametersValidator()->validate($key, $path, $operation),
+            new OpenApiSecurityValidator()->validate($key, $operation, $schemes),
+            new OpenApiReferenceValidator()->validate($key, $contract, $operation),
         );
     }
 }

@@ -223,7 +223,7 @@ jobs:
 
       - name: Check versioned public API contract
         if: needs.changes.outputs.backend == 'true'
-        run: docker compose exec -T web composer check:api-contract
+        run: docker compose exec -T web php scripts/api/check-public-contract.php
 
       - name: Run architecture rules (AR-001…AR-010)
         if: needs.changes.outputs.backend == 'true'
@@ -331,7 +331,7 @@ jobs:
 
       - name: Regenerate public API types
         if: needs.changes.outputs.frontend == 'true'
-         run: yarn generate:api-types && git diff --exit-code -- assets/api/public-v1.types.generated.ts
+        run: yarn generate:api-types && git diff --exit-code -- assets/api/public-v1.types.generated.ts
 
       - name: Lint JavaScript and TypeScript
         if: needs.changes.outputs.frontend == 'true'

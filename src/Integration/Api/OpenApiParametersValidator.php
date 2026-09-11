@@ -25,7 +25,11 @@ final class OpenApiParametersValidator
     private function hasRequiredParameter(array $parameters, string $name): bool
     {
         foreach ($parameters as $parameter) {
-            if (is_array($parameter) && ($parameter['name'] ?? null) === $name && ($parameter['required'] ?? false) === true) {
+            if (
+                is_array($parameter)
+                && ($parameter['name'] ?? null) === $name
+                && ($parameter['required'] ?? false) === true
+            ) {
                 return true;
             }
         }

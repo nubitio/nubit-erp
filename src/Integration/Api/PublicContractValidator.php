@@ -12,8 +12,8 @@ final class PublicContractValidator
     public function validate(array $contract, RouteCollection $routes): array
     {
         return array_merge(
-            (new OpenApiContractSemantics())->validate($contract),
-            (new RouteContractCoverage())->validate($contract, $routes),
+            new OpenApiContractSemantics()->validate($contract),
+            new RouteContractCoverage()->validate($contract, $routes),
         );
     }
 }

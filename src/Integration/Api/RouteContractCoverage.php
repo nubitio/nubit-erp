@@ -19,20 +19,31 @@ final class RouteContractCoverage
             return [];
         }
 
-        return ['Documented and implemented /api/v1 routes differ.'
-            .' Missing from contract: '.implode(', ', array_diff($implemented, $documented)).'.'
-            .' Implemented nowhere: '.implode(', ', array_diff($documented, $implemented)).'];
+        return [
+            'Documented and implemented /api/v1 routes differ.'
+                . ' Missing from contract: '
+                . implode(', ', array_diff($implemented, $documented))
+                . '.'
+                . ' Implemented nowhere: '
+                . implode(', ', array_diff($documented, $implemented))
+                . '.',
+        ];
     }
 
     /** @return list<string> */
     private function operationsFromContract(array $contract): array
     {
         $operations = [];
-        foreach (($contract['paths'] ?? []) as $path => $item) {
+        $paths = is_array($contract['paths'] ?? null) ? $contract['paths'] : [];
+        foreach ($paths as $path => $item) {
+            if (!is_string($path) || !is_array($item)) {
+                continue;
+            }
             foreach (['get', 'post', 'put', 'patch', 'delete'] as $method) {
-                if (is_array($item[$method] ?? null)) {
-                    $operations[] = strtoupper($method).' '.$path;
+                if (!is_array($item[$method] ?? null)) {
+                    continue;
                 }
+                $operations[] = strtoupper($method) . ' ' . $path;
             }
         }
 
@@ -48,10 +59,11 @@ final class RouteContractCoverage
             if ($path !== '/api/v1' && !str_starts_with($path, '/api/v1/')) {
                 continue;
             }
-            foreach ($route->getMethods() ?: ['ANY'] as $method) {
-                if (in_array($method, ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], true)) {
-                    $operations[] = $method.' '.$path;
+            foreach ($route->getMethods() as $method) {
+                if (!in_array($method, ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], strict: true)) {
+                    continue;
                 }
+                $operations[] = $method . ' ' . $path;
             }
         }
 
