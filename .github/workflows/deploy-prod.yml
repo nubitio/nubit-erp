@@ -46,5 +46,6 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       environment: prod
+      # APP_URL is the required smoke target configured in the prod environment.
       image_ref: ${{ needs.resolve-input-image.outputs.image_ref || needs.build-image.outputs.image_ref }}
     secrets: inherit

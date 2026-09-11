@@ -11,12 +11,6 @@ on:
         description: Immutable image reference (ghcr.io/org/repo@sha256:...)
         required: true
         type: string
-      run_healthcheck:
-        description: Run post-deploy healthcheck
-        required: false
-        default: true
-        type: boolean
-
 permissions:
   contents: read
 
@@ -59,16 +53,12 @@ jobs:
           set -euo pipefail
           bash scripts/portainer-deploy.sh
 
-      - name: Healthcheck
-        if: ${{ inputs.run_healthcheck }}
+      - name: Required post-deploy smoke gate
         env:
           APP_URL: ${{ secrets.APP_URL }}
         run: |
           set -euo pipefail
-          if [ -z "${APP_URL:-}" ]; then
-            echo "APP_URL not set; skipping healthcheck."
-            exit 0
-          fi
+          : "${APP_URL:?APP_URL is required for the post-deploy smoke gate; refusing to promote}"
           for i in {1..18}; do
             if bash scripts/ops/production-smoke.sh; then
               exit 0

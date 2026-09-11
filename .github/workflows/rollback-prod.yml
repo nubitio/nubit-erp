@@ -17,5 +17,4 @@ jobs:
     with:
       environment: prod
       image_ref: ${{ inputs.image_ref }}
-      run_healthcheck: true
     secrets: inherit

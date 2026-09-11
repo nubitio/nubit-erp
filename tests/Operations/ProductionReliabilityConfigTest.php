@@ -70,6 +70,24 @@ final class ProductionReliabilityConfigTest extends TestCase
         }
     }
 
+    public function testDeployWorkflowCannotPromoteWithoutItsExplicitSmokeTarget(): void
+    {
+        $workflow = file_get_contents(__DIR__ . '/../../.github/workflows/deploy.yml');
+        self::assertIsString($workflow);
+        self::assertStringContainsString('APP_URL: ${{ secrets.APP_URL }}', $workflow);
+        self::assertStringContainsString(': "${APP_URL:?APP_URL is required', $workflow);
+        self::assertStringNotContainsString('skipping healthcheck', $workflow);
+        self::assertStringNotContainsString('run_healthcheck', $workflow);
+
+        foreach (['deploy-dev.yml', 'deploy-staging.yml', 'deploy-prod.yml'] as $caller) {
+            $callerWorkflow = file_get_contents(__DIR__ . '/../../.github/workflows/' . $caller);
+            self::assertIsString($callerWorkflow);
+            self::assertStringContainsString('secrets: inherit', $callerWorkflow);
+            self::assertStringContainsString('APP_URL is the required smoke target', $callerWorkflow);
+            self::assertMatchesRegularExpression('/environment:\s+(dev|stg|prod)/', $callerWorkflow);
+        }
+    }
+
     /** @param array<array-key, mixed> $rule */
     private static function ruleString(array $rule, string $key, ?string $nestedKey = null): string
     {

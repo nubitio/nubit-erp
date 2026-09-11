@@ -56,8 +56,11 @@ credentials or backup contents in the ticket.
 ## Release gate
 
 Production promotion uses an immutable image digest. `.github/workflows/deploy.yml`
-runs `scripts/ops/production-smoke.sh` after Portainer reports deployment.
-Any failed smoke check halts promotion. To roll back, run the manual
+runs `scripts/ops/production-smoke.sh` after Portainer reports deployment. The
+`APP_URL` secret is the explicit smoke target and MUST be configured, even for
+`dev` and `stg`, in their respective GitHub Environments. A missing target or
+any failed smoke check fails closed and halts promotion; the gate cannot be
+silently skipped. To roll back, run the manual
 `Rollback production` workflow with the last known-good image digest; it uses
 the same health gate. Do not roll back by rebuilding an image or by changing a
 tag in place.
