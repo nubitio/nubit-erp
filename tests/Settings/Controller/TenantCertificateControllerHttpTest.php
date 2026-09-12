@@ -85,7 +85,15 @@ final class TenantCertificateControllerHttpTest extends TestCase
         $this->certificates
             ->expects(self::once())
             ->method('upsert')
-            ->with('tenant-a', '20123456789', '20123456789user', $solPassword, $certificatePem, 'admin')
+            ->with(
+                'tenant-a',
+                '20123456789',
+                '20123456789user',
+                $solPassword,
+                $certificatePem,
+                'admin',
+                self::isType('callable'),
+            )
             ->willReturn(new TenantCertificate(
                 id: 1,
                 tenantId: 1,

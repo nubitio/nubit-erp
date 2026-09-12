@@ -63,7 +63,7 @@ final readonly class CertificateLifecycleService implements CertificateLifecycle
                 $this->repository->markSuperseded($previous->id, $id);
             }
         } catch (\Throwable $e) {
-            $this->repository->markLycetSyncFailed($id, 'upsert_failed', 'Lycet synchronization failed.');
+            $this->repository->markLycetSyncFailed($id, 'upsert_failed', $e->getMessage());
             throw $e;
         }
 

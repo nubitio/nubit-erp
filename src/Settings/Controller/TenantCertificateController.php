@@ -67,8 +67,16 @@ final class TenantCertificateController extends AbstractController
                 $solPass,
                 $certificatePem,
                 $this->getUser()?->getUserIdentifier() ?? 'tenant-api',
+                function (int $_id, object $metadata, array $_tenant) use ($ruc, $tenantName): void {
+                    $certificateMetadata = get_object_vars($metadata);
+                    $this->auditLogger->logDurably(self::CERTIFICATE_UPSERT_AUDIT_ACTION, [
+                        'outcome' => 'success',
+                        'tenant_name' => $tenantName,
+                        'ruc' => $ruc,
+                        'fingerprint_sha256' => $certificateMetadata['fingerprintSha256'],
+                    ]);
+                },
             );
-            $this->recordCertificateAudit($certificate);
         } catch (\InvalidArgumentException $e) {
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         } catch (\Throwable $e) {
@@ -145,28 +153,5 @@ final class TenantCertificateController extends AbstractController
             'uploadedAt' => $metadata['uploadedAt']->format(DATE_ATOM),
             'lycetSyncStatus' => $metadata['lycetSyncStatus'],
         ];
-    }
-
-    private function recordCertificateAudit(object $certificate): void
-    {
-        $metadata = get_object_vars($certificate);
-
-        try {
-            $this->auditLogger->log(self::CERTIFICATE_UPSERT_AUDIT_ACTION, [
-                'outcome' => 'success',
-                'tenant_name' => $metadata['tenantName'],
-                'ruc' => $metadata['ruc'],
-                'fingerprint_sha256' => $metadata['fingerprintSha256'],
-            ]);
-        } catch (\Throwable) {
-            // The certificate has already been persisted. Audit transport failure
-            // must not turn that successful mutation into a misleading 502.
-            $this->logger->warning('Certificate audit event could not be recorded after successful upsert.', [
-                'action' => self::CERTIFICATE_UPSERT_AUDIT_ACTION,
-                'tenant_name' => $metadata['tenantName'],
-                'ruc' => $metadata['ruc'],
-                'fingerprint_sha256' => $metadata['fingerprintSha256'],
-            ]);
-        }
     }
 }

@@ -21,7 +21,7 @@
         "retryRevocation(string $tenantName, string $ruc): void",
         "retryUpsertSync(string $tenantName, string $ruc, string $solUser, string $solPass, string $certPem): App\\ControlPlane\\Certificate\\TenantCertificate",
         "revoke(string $tenantName, string $ruc, string $revokedBy, string $reason): void",
-        "upsert(string $tenantName, string $ruc, string $solUser, string $solPass, string $certPem, ?string $uploadedBy?): App\\ControlPlane\\Certificate\\TenantCertificate"
+        "upsert(string $tenantName, string $ruc, string $solUser, string $solPass, string $certPem, ?string $uploadedBy?, ?callable $beforeCommit?): App\\ControlPlane\\Certificate\\TenantCertificate"
     ],
     "App\\Efact\\Domain\\ActivatableInterface": [
         "getIsActive(): bool"
