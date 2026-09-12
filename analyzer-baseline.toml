@@ -3067,18 +3067,6 @@ message = "Attempting to access a method on a non-object type (`mixed`)."
 count = 1
 
 [[issues]]
-file = "src/Efact/Audit/AuditLogMessageHandler.php"
-code = "mixed-return-statement"
-message = 'Could not infer a precise return type for function `App\Efact\Audit\AuditLogMessageHandler::isControlPlaneReady`. Saw type `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Efact/Audit/AuditLogMessageHandler.php"
-code = "mixed-return-statement"
-message = "Could not infer a precise return type for function `{closure:src/Efact/Audit/AuditLogMessageHandler.php:54:63}`. Saw type `mixed`."
-count = 1
-
-[[issues]]
 file = "src/Efact/Audit/AuditLogRepository.php"
 code = "less-specific-nested-return-statement"
 message = '''Returned type `list<mixed>` is less specific than the declared return type `list<string>` for function `App\Efact\Audit\AuditLogRepository::getDistinctActions` due to nested 'mixed'.'''
@@ -5300,20 +5288,8 @@ count = 1
 
 [[issues]]
 file = "src/Settings/Controller/TenantCertificateController.php"
-code = "less-specific-return-statement"
-message = 'Returned type `array<array-key, mixed>` is less specific than the declared return type `array<string, mixed>` for function `App\Settings\Controller\TenantCertificateController::readPayload`.'
-count = 1
-
-[[issues]]
-file = "src/Settings/Controller/TenantCertificateController.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 4
-
-[[issues]]
-file = "src/Settings/Controller/TenantCertificateController.php"
-code = "mixed-assignment"
-message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
 count = 1
 
 [[issues]]

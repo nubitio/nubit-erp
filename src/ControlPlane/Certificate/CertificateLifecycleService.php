@@ -26,6 +26,7 @@ final readonly class CertificateLifecycleService implements CertificateLifecycle
         string $solPass,
         string $certPem,
         ?string $uploadedBy = null,
+        ?callable $beforeCommit = null,
     ): TenantCertificate {
         $tenant = $this->requireTenant($tenantName);
         $metadata = $this->metadataExtractor->extract($certPem);
@@ -43,6 +44,9 @@ final readonly class CertificateLifecycleService implements CertificateLifecycle
                 $metadata,
                 $uploadedBy,
             );
+            if ($beforeCommit !== null) {
+                $beforeCommit($id, $metadata, $tenant);
+            }
             $connection->commit();
         } catch (\Throwable $e) {
             $connection->rollBack();

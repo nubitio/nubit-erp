@@ -21,6 +21,11 @@ final readonly class AuditLogMessageHandler
 
     public function __invoke(AuditLogMessage $message): void
     {
+        $this->persist($message);
+    }
+
+    public function persist(AuditLogMessage $message): void
+    {
         if (!$this->isControlPlaneReady()) {
             $this->logger->warning('Control plane not ready, audit log will be retried', [
                 'action' => $message->action,
@@ -51,13 +56,16 @@ final readonly class AuditLogMessageHandler
 
     private function isControlPlaneReady(): bool
     {
-        return $this->cache->get('audit_control_plane_ready', function (ItemInterface $item): bool {
+        /** @var bool $ready */
+        $ready = $this->cache->get('audit_control_plane_ready', function (ItemInterface $item): bool {
             $item->expiresAfter(5);
 
-            return $this->connectionRegistry
+            return (bool) $this->connectionRegistry
                 ->getConnection('control_plane')
                 ->createSchemaManager()
                 ->tablesExist(['audit_logs']);
         });
+
+        return $ready;
     }
 }

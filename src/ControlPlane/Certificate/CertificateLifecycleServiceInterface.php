@@ -13,6 +13,7 @@ interface CertificateLifecycleServiceInterface
         string $solPass,
         string $certPem,
         ?string $uploadedBy = null,
+        ?callable $beforeCommit = null,
     ): TenantCertificate;
 
     public function revoke(string $tenantName, string $ruc, string $revokedBy, string $reason): void;
