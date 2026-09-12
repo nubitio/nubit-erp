@@ -16,7 +16,7 @@ final class OpenApiParametersValidator
         preg_match_all('/\{([^}]+)}/', $path, $matches);
         $parameters = is_array($operation['parameters'] ?? null) ? $operation['parameters'] : [];
         $errors = [];
-        foreach ($matches[1] ?? [] as $name) {
+        foreach ($matches[1] as $name) {
             if ($this->hasRequiredParameter($parameters, $name)) {
                 continue;
             }

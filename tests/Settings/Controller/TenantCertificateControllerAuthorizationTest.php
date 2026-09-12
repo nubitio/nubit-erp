@@ -69,7 +69,7 @@ final class TenantCertificateControllerAuthorizationTest extends TestCase
         return array_map(
             static function (\ReflectionAttribute $attribute): string {
                 $instance = $attribute->newInstance();
-                if (!$instance instanceof IsGranted || !is_string($instance->attribute)) {
+                if (!is_string($instance->attribute)) {
                     throw new \UnexpectedValueException('Expected a string authorization attribute.');
                 }
 
