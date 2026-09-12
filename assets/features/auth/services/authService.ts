@@ -27,9 +27,18 @@ class AuthService {
   }
 
   selectBranch(branchId: string) {
-    return httpClient.post<AuthResponse>(API + 'auth/select-branch', {
-      branchId,
-    });
+    return httpClient
+      .post<AuthResponse>(API + 'auth/select-branch', {
+        branchId,
+        response_mode: 'json',
+      })
+      .then((response) => {
+        if (response.data.token) {
+          StorageUtils.setItem('auth_token', response.data.token);
+        }
+
+        return response;
+      });
   }
 
   logout() {
