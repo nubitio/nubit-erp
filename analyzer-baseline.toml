@@ -3020,9 +3020,21 @@ count = 1
 
 [[issues]]
 file = "src/ControlPlane/Tenant/Service/TenantNotificationService.php"
+code = "mixed-argument"
+message = "Invalid argument type for argument #3 of `sprintf`: expected `Stringable|null|scalar`, but found `mixed`."
+count = 1
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Service/TenantNotificationService.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `mixed`."
+count = 3
+
+[[issues]]
+file = "src/ControlPlane/Tenant/Service/TenantNotificationService.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 4
+count = 5
 
 [[issues]]
 file = "src/ControlPlane/Tenant/Service/TenantNotificationService.php"
@@ -3580,13 +3592,13 @@ count = 3
 file = "src/Integration/Repository/IntegrationEventRepository.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
+count = 1
 
 [[issues]]
 file = "src/Integration/Repository/WebhookDeliveryRepository.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 3
+count = 2
 
 [[issues]]
 file = "src/Integration/Webhook/WebhookDelivery.php"
@@ -6845,12 +6857,6 @@ file = "tests/Inventory/State/StockEntryProcessorTest.php"
 code = "possibly-invalid-argument"
 message = "Possible argument type mismatch for argument #2 of `bccomp`: expected `numeric-string`, but possibly received `string`."
 count = 1
-
-[[issues]]
-file = "tests/Operations/ProductionReliabilityConfigTest.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 5
 
 [[issues]]
 file = "tests/Purchasing/Entity/PurchaseItemEntityTest.php"

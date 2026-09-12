@@ -62,6 +62,7 @@ final readonly class KardexExportService
             static fn($value) => $value !== null && $value !== '',
         );
 
+        /** @var array{product?: string, warehouse?: string, from?: string, to?: string, valuation?: string} $filters */
         $movements = $this->movementRepository->findKardexForExport($filters);
         $this->referenceResolver->applyToMovements($movements);
         $rows = array_map($this->mapMovementRow(...), $movements);
