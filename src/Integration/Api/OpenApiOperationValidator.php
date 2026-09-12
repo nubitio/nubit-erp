@@ -6,7 +6,12 @@ namespace App\Integration\Api;
 
 final class OpenApiOperationValidator
 {
-    /** @return list<string> */
+    /**
+     * @param array<array-key, mixed> $contract
+     * @param array<array-key, mixed> $schemes
+     * @param array<array-key, mixed> $operation
+     * @return list<string>
+     */
     public function validate(array $contract, array $schemes, string $path, string $method, array $operation): array
     {
         $key = strtoupper($method) . ' ' . $path;

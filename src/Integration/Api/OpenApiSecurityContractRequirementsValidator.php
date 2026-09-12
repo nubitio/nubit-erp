@@ -6,7 +6,11 @@ namespace App\Integration\Api;
 
 final class OpenApiSecurityContractRequirementsValidator
 {
-    /** @param array<array-key, mixed> $requirements @return list<string> */
+    /**
+     * @param array<array-key, mixed> $operation
+     * @param array<array-key, mixed> $requirements
+     * @return list<string>
+     */
     public function validate(string $key, array $operation, array $requirements): array
     {
         $requiredScopes = is_array($operation['x-required-scopes'] ?? null) ? $operation['x-required-scopes'] : [];

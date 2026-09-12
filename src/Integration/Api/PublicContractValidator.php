@@ -8,7 +8,10 @@ use Symfony\Component\Routing\RouteCollection;
 
 final class PublicContractValidator
 {
-    /** @return list<string> */
+    /**
+     * @param array<array-key, mixed> $contract
+     * @return list<string>
+     */
     public function validate(array $contract, RouteCollection $routes): array
     {
         return array_merge(

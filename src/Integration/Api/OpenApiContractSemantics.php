@@ -6,7 +6,10 @@ namespace App\Integration\Api;
 
 final class OpenApiContractSemantics
 {
-    /** @return list<string> */
+    /**
+     * @param array<array-key, mixed> $contract
+     * @return list<string>
+     */
     public function validate(array $contract): array
     {
         $errors = $this->validateMetadata($contract);
@@ -36,7 +39,10 @@ final class OpenApiContractSemantics
         return $errors;
     }
 
-    /** @return list<string> */
+    /**
+     * @param array<array-key, mixed> $contract
+     * @return list<string>
+     */
     private function validateMetadata(array $contract): array
     {
         $errors = [];

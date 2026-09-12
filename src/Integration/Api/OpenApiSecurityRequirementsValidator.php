@@ -6,7 +6,11 @@ namespace App\Integration\Api;
 
 final class OpenApiSecurityRequirementsValidator
 {
-    /** @return list<string> */
+    /**
+     * @param array<array-key, mixed> $operation
+     * @param array<array-key, mixed> $schemes
+     * @return list<string>
+     */
     public function validate(string $key, array $operation, array $schemes): array
     {
         /** @var list<string> $errors */
