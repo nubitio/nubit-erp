@@ -63,7 +63,18 @@ final readonly class StockMovementRepository
     }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param array{
+     *   warehouse?: string,
+     *   product?: string,
+     *   type?: string,
+     *   from?: string,
+     *   to?: string,
+     *   sourceId?: string,
+     *   sourceIdOperator?: string,
+     *   note?: string,
+     *   noteOperator?: string,
+     *   valuation?: string,
+     * } $filters
      *
      * @return list<StockMovement>
      *
