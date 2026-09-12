@@ -6,7 +6,11 @@ namespace App\Integration\Api;
 
 final class OpenApiReferenceValidator
 {
-    /** @return list<string> */
+    /**
+     * @param array<string, mixed> $contract
+     * @param array<string, mixed> $operation
+     * @return list<string>
+     */
     public function validate(string $key, array $contract, array $operation): array
     {
         $errors = [];
@@ -15,7 +19,10 @@ final class OpenApiReferenceValidator
         return $errors;
     }
 
-    /** @param list<string> $errors */
+    /**
+     * @param array<string, mixed> $contract
+     * @param list<string> $errors
+     */
     private function walk(string $key, array $contract, mixed $value, array &$errors): void
     {
         if (!is_array($value)) {
@@ -29,6 +36,7 @@ final class OpenApiReferenceValidator
         }
     }
 
+    /** @param array<string, mixed> $document */
     private function exists(array $document, string $reference): bool
     {
         if (!str_starts_with($reference, '#/')) {

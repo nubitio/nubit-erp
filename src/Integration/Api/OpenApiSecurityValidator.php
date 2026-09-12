@@ -6,7 +6,11 @@ namespace App\Integration\Api;
 
 final class OpenApiSecurityValidator
 {
-    /** @return list<string> */
+    /**
+     * @param array<string, mixed> $operation
+     * @param array<string, mixed> $schemes
+     * @return list<string>
+     */
     public function validate(string $key, array $operation, array $schemes): array
     {
         return array_merge(

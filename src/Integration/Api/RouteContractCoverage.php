@@ -8,7 +8,10 @@ use Symfony\Component\Routing\RouteCollection;
 
 final class RouteContractCoverage
 {
-    /** @return list<string> */
+    /**
+     * @param array<string, mixed> $contract
+     * @return list<string>
+     */
     public function validate(array $contract, RouteCollection $routes): array
     {
         $documented = $this->operationsFromContract($contract);
@@ -30,7 +33,10 @@ final class RouteContractCoverage
         ];
     }
 
-    /** @return list<string> */
+    /**
+     * @param array<string, mixed> $contract
+     * @return list<string>
+     */
     private function operationsFromContract(array $contract): array
     {
         $operations = [];

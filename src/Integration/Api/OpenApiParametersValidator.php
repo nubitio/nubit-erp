@@ -6,13 +6,18 @@ namespace App\Integration\Api;
 
 final class OpenApiParametersValidator
 {
-    /** @return list<string> */
+    /**
+     * @param array<string, mixed> $operation
+     * @return list<string>
+     */
     public function validate(string $key, string $path, array $operation): array
     {
+        /** @var array{1: list<string>} $matches */
+        $matches = [];
         preg_match_all('/\{([^}]+)}/', $path, $matches);
         $parameters = is_array($operation['parameters'] ?? null) ? $operation['parameters'] : [];
         $errors = [];
-        foreach ($matches[1] ?? [] as $name) {
+        foreach ($matches[1] as $name) {
             if ($this->hasRequiredParameter($parameters, $name)) {
                 continue;
             }
@@ -22,6 +27,7 @@ final class OpenApiParametersValidator
         return $errors;
     }
 
+    /** @param array<array-key, mixed> $parameters */
     private function hasRequiredParameter(array $parameters, string $name): bool
     {
         foreach ($parameters as $parameter) {

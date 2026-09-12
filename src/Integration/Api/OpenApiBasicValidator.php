@@ -6,7 +6,10 @@ namespace App\Integration\Api;
 
 final class OpenApiBasicValidator
 {
-    /** @return list<string> */
+    /**
+     * @param array<string, mixed> $operation
+     * @return list<string>
+     */
     public function validate(string $key, array $operation): array
     {
         $errors = [];
