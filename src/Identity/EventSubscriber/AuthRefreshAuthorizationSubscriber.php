@@ -45,18 +45,16 @@ final readonly class AuthRefreshAuthorizationSubscriber
         try {
             $payload = $this->jwtManager->decode($refreshToken);
             $user = $this->userProvider->loadUserByIdentifier((string) ($payload['username'] ?? ''));
-            /** @var string|int|null $branchId */
-            $branchId = $payload['branchId'] ?? null;
+            $branchId = is_string($payload['branchId'] ?? null) ? $payload['branchId'] : null;
             if (null === $branchId) {
                 return;
             }
-            $branch = is_string($branchId) ? $this->branchRepository->find($branchId) : null;
+            $branch = $this->branchRepository->find($branchId);
             $branchCompany = $branch?->getCompany();
             $company = $this->companyRepository->findOneBy([]);
 
             if (
                 null === $this->tenantContext->getTenantId()
-                || !is_string($branchId)
                 || null === $branch
                 || !$user->hasBranchAccess($branch)
                 || null === $branchCompany
@@ -71,9 +69,9 @@ final readonly class AuthRefreshAuthorizationSubscriber
 
     private function refreshToken(Request $request): ?string
     {
-        /** @var mixed $body */
+        /** @var array<string, mixed> $body */
         $body = json_decode($request->getContent(), associative: true);
-        $token = is_array($body) && is_string($body['refreshToken'] ?? null) ? $body['refreshToken'] : null;
+        $token = is_string($body['refreshToken'] ?? null) ? $body['refreshToken'] : null;
         if (null === $token) {
             $cookieToken = $request->cookies->get(JWTAuthenticator::REFRESH_COOKIE);
             $token = is_string($cookieToken) ? $cookieToken : null;

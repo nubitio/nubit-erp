@@ -57,21 +57,29 @@ final readonly class EfactTokenClaimsProvider implements TokenClaimsProviderInte
 
     public function userData(UserInterface $user): array
     {
+        $userId = null;
+        $role = null;
+        $permissions = [];
+        if ($user instanceof User) {
+            $userId = $user->getId();
+            $role = $user->getRole()?->getId();
+            $permissions = $this->permissionChecker->permissionsFor($user);
+        }
+
         return [
             'username' => $user->getUserIdentifier(),
-            'userId' => $user instanceof User ? $user->getId() : null,
-            'role' => $user instanceof User ? $user->getRole()?->getId() : null,
+            'userId' => $userId,
+            'role' => $role,
             'roles' => $user->getRoles(),
-            'permissions' => $user instanceof User ? $this->permissionChecker->permissionsFor($user) : [],
+            'permissions' => $permissions,
         ];
     }
 
     /** @param array<string, mixed> $previousClaims */
     private function assertPreviousBranchStillAuthorized(UserInterface $user, array $previousClaims): void
     {
-        /** @var string|int|null $branchId */
-        $branchId = $previousClaims['branchId'] ?? null;
-        if (!is_string($branchId) || '' === $branchId) {
+        $branchId = is_string($previousClaims['branchId'] ?? null) ? $previousClaims['branchId'] : null;
+        if (null === $branchId || '' === $branchId) {
             return;
         }
         $branch = $this->branchRepository->find($branchId);

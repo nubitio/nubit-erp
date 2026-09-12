@@ -27,6 +27,8 @@ final readonly class CustomerAccountBackfillGateway
     public function chargeRows(): array
     {
         /** @var list<array{customer_id: int, sale_id: string, occurred_on: string, amount: string, document: string}> $rows */
+        /** @var list<array{customer_id: int, sale_id: string, occurred_on: string, amount: string, document: string}> $rows */
+        // @mago-expect lint:inline-variable-return
         $rows = $this->connection->fetchAllAssociative(<<<'SQL'
             SELECT
                 s.customer_id AS customer_id,
@@ -55,6 +57,8 @@ final readonly class CustomerAccountBackfillGateway
     public function paymentRows(): array
     {
         /** @var list<array{customer_id: int, sale_id: string, sale_payment_id: int, occurred_on: string, amount: string, document: string}> $rows */
+        /** @var list<array{customer_id: int, sale_id: string, sale_payment_id: int, occurred_on: string, amount: string, document: string}> $rows */
+        // @mago-expect lint:inline-variable-return
         $rows = $this->connection->fetchAllAssociative(<<<'SQL'
             SELECT
                 s.customer_id AS customer_id,

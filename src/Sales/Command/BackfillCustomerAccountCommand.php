@@ -43,7 +43,7 @@ final class BackfillCustomerAccountCommand extends PerTenantCommand
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $dryRun = $input->getOption('dry-run') === true;
+        $dryRun = true === $input->getOption('dry-run');
 
         try {
             $summary = $dryRun ? $this->backfiller->dryRun() : $this->backfiller->run();

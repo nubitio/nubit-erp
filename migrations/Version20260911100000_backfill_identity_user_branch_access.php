@@ -23,9 +23,8 @@ final class Version20260911100000_backfill_identity_user_branch_access extends A
             INSERT INTO identity_user_branch_access (user_id, branch_id)
             SELECT u.usuario_id, b.local_id
             FROM usuario u
-            INNER JOIN local b ON b.empresa_id = (
-                SELECT c.empresa_id FROM empresa c ORDER BY c.empresa_id LIMIT 1
-            )
+            CROSS JOIN empresa c
+            INNER JOIN local b ON b.empresa_id = c.empresa_id
             WHERE u.deleted_at IS NULL
               AND NOT EXISTS (
                   SELECT 1

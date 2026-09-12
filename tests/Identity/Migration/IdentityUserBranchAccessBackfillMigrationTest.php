@@ -17,7 +17,7 @@ final class IdentityUserBranchAccessBackfillMigrationTest extends TestCase
         static::assertIsString($sql);
         static::assertStringContainsString('u.deleted_at IS NULL', $sql);
         static::assertStringContainsString('b.empresa_id', $sql);
-        static::assertStringContainsString('FROM empresa c', $sql);
+        static::assertStringContainsString('CROSS JOIN empresa c', $sql);
         static::assertStringContainsString('existing.user_id = u.usuario_id', $sql);
         static::assertStringContainsString('existing.branch_id = b.local_id', $sql);
     }

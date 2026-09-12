@@ -79,6 +79,7 @@ class CustomerAccountEntryRepository extends ServiceEntityRepository
     public function timeline(int $customerId, \DateTimeImmutable $dateTo): array
     {
         /** @var list<CustomerAccountEntry> $rows */
+        // @mago-expect lint:inline-variable-return
         $rows = $this
             ->createQueryBuilder('e')
             ->where('e.customerId = :customer')

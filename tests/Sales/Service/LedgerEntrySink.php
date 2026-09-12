@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Sales\Service;
 
 use App\Sales\Entity\CustomerAccountEntry;
+use LogicException;
 
-/**
- * Captures the rows the ledger would persist, so a unit test can assert running
- * balances without a database.
- */
+/** Captures ledger rows in unit tests. */
 final class LedgerEntrySink
 {
     /** @var list<CustomerAccountEntry> */
@@ -17,9 +15,11 @@ final class LedgerEntrySink
 
     public function last(): CustomerAccountEntry
     {
-        $index = array_key_last($this->entries);
-        assert($index !== null, description: 'A ledger entry is required.');
+        $key = array_key_last($this->entries);
+        if ($key === null) {
+            throw new LogicException('Cannot read the last entry from an empty sink.');
+        }
 
-        return $this->entries[$index];
+        return $this->entries[$key];
     }
 }

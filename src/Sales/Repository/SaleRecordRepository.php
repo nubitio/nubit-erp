@@ -47,6 +47,8 @@ class SaleRecordRepository extends ServiceEntityRepository
     public function findOpenReceivablesForCustomer(int $customerId): array
     {
         /** @var list<SaleRecord> $rows */
+        /** @var list<SaleRecord> $rows */
+        // @mago-expect lint:inline-variable-return
         $rows = $this
             ->createQueryBuilder('s')
             ->where('s.customer = :customer')
