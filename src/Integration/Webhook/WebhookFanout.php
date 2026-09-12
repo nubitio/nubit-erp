@@ -25,7 +25,7 @@ final readonly class WebhookFanout
 
     public function run(int $limit = 200): int
     {
-        $pending = $this->events->findPending($limit);
+        $pending = $this->events->claimPending($limit, new \DateTimeImmutable());
         if ([] === $pending) {
             return 0;
         }
@@ -34,6 +34,13 @@ final readonly class WebhookFanout
         $deliveries = 0;
 
         foreach ($pending as $event) {
+            $claimToken = $event->getClaimToken();
+            if (
+                null !== $claimToken
+                && !$this->events->ownsClaim((string) $event->getId(), $claimToken, new \DateTimeImmutable())
+            ) {
+                continue;
+            }
             $type = EventType::tryFrom($event->getType());
             if (null !== $type) {
                 foreach ($endpoints as $endpoint) {
@@ -52,6 +59,12 @@ final readonly class WebhookFanout
                 }
             }
 
+            if (
+                null !== $claimToken
+                && !$this->events->ownsClaim((string) $event->getId(), $claimToken, new \DateTimeImmutable())
+            ) {
+                continue;
+            }
             $event->markDispatched();
         }
 

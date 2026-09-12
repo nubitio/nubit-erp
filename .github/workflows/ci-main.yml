@@ -179,7 +179,10 @@ jobs:
             e2e=false
           fi
           echo "e2e=${e2e}" >> "$GITHUB_OUTPUT"
-          echo "coverage=false" >> "$GITHUB_OUTPUT"
+          # Coverage is part of the PR contract. Keeping it behind the same
+          # path filters avoids paying for docs-only changes while preventing
+          # a green backend/frontend PR from bypassing the threshold.
+          echo "coverage=true" >> "$GITHUB_OUTPUT"
 
   backend:
     name: Backend Quality & Coverage
@@ -220,6 +223,10 @@ jobs:
       - name: Run Platform boundary guard
         if: needs.changes.outputs.backend == 'true'
         run: docker compose exec -T web php scripts/architecture/check-platform-boundary.php
+
+      - name: Check versioned public API contract
+        if: needs.changes.outputs.backend == 'true'
+        run: docker compose exec -T web php scripts/api/check-public-contract.php
 
       - name: Run architecture rules (AR-001…AR-010)
         if: needs.changes.outputs.backend == 'true'
@@ -324,6 +331,10 @@ jobs:
       - name: Install frontend dependencies
         if: needs.changes.outputs.frontend == 'true'
         run: yarn install --immutable
+
+      - name: Regenerate public API types
+        if: needs.changes.outputs.frontend == 'true'
+        run: yarn generate:api-types && git diff --exit-code -- assets/api/public-v1.types.generated.ts
 
       - name: Lint JavaScript and TypeScript
         if: needs.changes.outputs.frontend == 'true'

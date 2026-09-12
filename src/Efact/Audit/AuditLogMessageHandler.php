@@ -21,6 +21,11 @@ final readonly class AuditLogMessageHandler
 
     public function __invoke(AuditLogMessage $message): void
     {
+        $this->persist($message);
+    }
+
+    public function persist(AuditLogMessage $message): void
+    {
         if (!$this->isControlPlaneReady()) {
             $this->logger->warning('Control plane not ready, audit log will be retried', [
                 'action' => $message->action,
@@ -57,7 +62,7 @@ final readonly class AuditLogMessageHandler
             return $this->connectionRegistry
                 ->getConnection('control_plane')
                 ->createSchemaManager()
-                ->tablesExist(['audit_logs']);
-        });
+                ->tablesExist(['audit_logs']) === true;
+        }) === true;
     }
 }

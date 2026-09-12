@@ -58,6 +58,12 @@ E2E stays on an isolated compose stack (not `dev.efact.app`). Setup is cached:
 
 ## Required secrets (deploy)
 
+The reusable deploy workflow always runs the post-deploy smoke gate. Configure
+`APP_URL` as a non-empty secret in **each** GitHub Environment (`dev`, `stg`,
+and `prod`); it is the explicit smoke target for that environment. A missing
+secret fails the deployment after Portainer deploys and cannot promote an
+unverified release. There is no flag to disable this gate.
+
 ```
 PORTAINER_URL
 PORTAINER_API_TOKEN

@@ -1,0 +1,396 @@
+openapi: 3.1.0
+info:
+  title: Nubit ERP Public Integration API
+  version: 1.0.0
+  description: |
+    Stable, tenant-scoped machine-to-machine API. The `/api/v1` prefix is the
+    version boundary: additions are backward compatible; removals or changes
+    to required fields require a new version and migration decision.
+servers:
+  - url: /
+security:
+  - ApiKey: []
+tags:
+  - name: Health
+  - name: Documents
+  - name: Webhooks
+  - name: Onboarding
+  - name: Banking
+  - name: Reporting
+  - name: Payroll
+  - name: Catalog
+paths:
+  /api/v1/ping:
+    get:
+      operationId: pingIntegrationApi
+      tags: [Health]
+      summary: Validate credentials and report client scopes
+      security: [{ ApiKey: [] }]
+      x-required-scopes: []
+      responses:
+        '200':
+          description: Authenticated integration client
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PingResponse' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /api/v1/documents:
+    post:
+      operationId: submitDocument
+      tags: [Documents]
+      summary: Queue a fiscal document for emission
+      security: [{ ApiKey: [] }]
+      x-required-scopes: [documents:write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DocumentRequest' }
+      responses:
+        '200': { description: Existing or immediately accepted document, content: { application/json: { schema: { $ref: '#/components/schemas/DocumentAccepted' } } } }
+        '202': { description: Document queued, content: { application/json: { schema: { $ref: '#/components/schemas/DocumentAccepted' } } } }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/IdempotencyConflict' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+  /api/v1/documents/{reference}:
+    get:
+      operationId: getDocument
+      tags: [Documents]
+      summary: Poll a submitted document
+      security: [{ ApiKey: [] }]
+      x-required-scopes: [documents:read]
+      parameters:
+        - name: reference
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Document status, content: { application/json: { schema: { $ref: '#/components/schemas/DocumentStatus' } } } }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/webhook-endpoints:
+    get:
+      operationId: listWebhookEndpoints
+      tags: [Webhooks]
+      security: [{ ApiKey: [] }]
+      x-required-scopes: [webhooks:manage]
+      responses:
+        '200': { description: Configured endpoints, content: { application/json: { schema: { type: object, required: [data], properties: { data: { type: array, items: { $ref: '#/components/schemas/WebhookEndpoint' } } } } } } }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      operationId: createWebhookEndpoint
+      tags: [Webhooks]
+      security: [{ ApiKey: [] }]
+      x-required-scopes: [webhooks:manage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/WebhookEndpointRequest' }
+      responses:
+        '201': { description: Endpoint and one-time signing secret, content: { application/json: { schema: { $ref: '#/components/schemas/WebhookEndpointCreated' } } } }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
+  /api/v1/webhook-endpoints/{id}:
+    delete:
+      operationId: deleteWebhookEndpoint
+      tags: [Webhooks]
+      security: [{ ApiKey: [] }]
+      x-required-scopes: [webhooks:manage]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '204': { description: Endpoint deleted }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/webhook-endpoints/{id}/rotate-secret:
+    post:
+      operationId: rotateWebhookSecret
+      tags: [Webhooks]
+      security: [{ ApiKey: [] }]
+      x-required-scopes: [webhooks:manage]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses:
+        '200': { description: Endpoint and new one-time signing secret, content: { application/json: { schema: { $ref: '#/components/schemas/WebhookEndpointCreated' } } } }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/onboarding/spreadsheets/template/{type}:
+    get:
+      operationId: downloadOnboardingSpreadsheetTemplate
+      tags: [Onboarding]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_USER
+      parameters: [{ name: type, in: path, required: true, schema: { type: string, enum: [customers, receivables, payables] } }]
+      responses: { '200': { $ref: '#/components/responses/Spreadsheet' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '400': { $ref: '#/components/responses/BadRequest' } }
+  /api/v1/onboarding/spreadsheets/rows:
+    post:
+      operationId: parseOnboardingSpreadsheet
+      tags: [Onboarding]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_USER
+      requestBody: { required: true, content: { multipart/form-data: { schema: { $ref: '#/components/schemas/UploadRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Json' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '400': { $ref: '#/components/responses/BadRequest' } }
+  /api/v1/onboarding/receivables:
+    post:
+      operationId: importOpeningReceivables
+      tags: [Onboarding]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_USER
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/JsonObject' } } } }
+      responses: { '200': { $ref: '#/components/responses/Json' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '400': { $ref: '#/components/responses/BadRequest' }, '422': { $ref: '#/components/responses/ValidationFailed' } }
+  /api/v1/bank-statement-imports:
+    post:
+      operationId: uploadBankStatement
+      tags: [Banking]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_USER
+      requestBody: { required: true, content: { multipart/form-data: { schema: { $ref: '#/components/schemas/UploadRequest' } } } }
+      responses: { '202': { $ref: '#/components/responses/Json' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '400': { $ref: '#/components/responses/BadRequest' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /api/v1/bank-reconciliation/unreconciled-movements:
+    get:
+      operationId: listUnreconciledMovements
+      tags: [Banking]
+      security: [{ TenantJwt: [] }]
+      x-required-role: perm:bank_reconciliation.view
+      responses: { '200': { $ref: '#/components/responses/Json' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /api/v1/ple/preview:
+    get:
+      operationId: previewPle
+      tags: [Reporting]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_ADMIN
+      responses: { '200': { $ref: '#/components/responses/Json' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /api/v1/ple/validate:
+    get:
+      operationId: validatePle
+      tags: [Reporting]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_ADMIN
+      responses: { '200': { $ref: '#/components/responses/Json' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /api/v1/ple/zip:
+    get:
+      operationId: downloadPleZip
+      tags: [Reporting]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_ADMIN
+      responses: { '200': { $ref: '#/components/responses/Zip' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /api/v1/ple/sales:
+    get:
+      operationId: downloadPleSales
+      tags: [Reporting]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_ADMIN
+      responses: { '200': { $ref: '#/components/responses/TextFile' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /api/v1/ple/purchases:
+    get:
+      operationId: downloadPlePurchases
+      tags: [Reporting]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_ADMIN
+      responses: { '200': { $ref: '#/components/responses/TextFile' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /api/v1/ple/diary:
+    get:
+      operationId: downloadPleDiary
+      tags: [Reporting]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_ADMIN
+      responses: { '200': { $ref: '#/components/responses/TextFile' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /api/v1/ple/ledger:
+    get:
+      operationId: downloadPleLedger
+      tags: [Reporting]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_ADMIN
+      responses: { '200': { $ref: '#/components/responses/TextFile' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /api/v1/payroll/{payrollRunId}/plame:
+    get:
+      operationId: downloadPayrollPlame
+      tags: [Payroll]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_ADMIN
+      parameters: [{ name: payrollRunId, in: path, required: true, schema: { type: string } }]
+      responses: { '200': { $ref: '#/components/responses/TextFile' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /api/v1/exchange-rate:
+    get:
+      operationId: getLegacyExchangeRate
+      tags: [Catalog]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_USER
+      responses: { '200': { $ref: '#/components/responses/Json' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' } }
+    put:
+      operationId: updateLegacyExchangeRate
+      tags: [Catalog]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_USER
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/JsonObject' } } } }
+      responses: { '200': { $ref: '#/components/responses/Json' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '400': { $ref: '#/components/responses/BadRequest' } }
+  /api/v1/exchange-rate/sync:
+    post:
+      operationId: syncLegacyExchangeRate
+      tags: [Catalog]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_USER
+      responses: { '200': { $ref: '#/components/responses/Json' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /api/v1/products/export:
+    get:
+      operationId: exportProducts
+      tags: [Catalog]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_USER
+      responses: { '200': { $ref: '#/components/responses/Spreadsheet' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /api/v1/products/import/template:
+    get:
+      operationId: downloadProductImportTemplate
+      tags: [Catalog]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_USER
+      responses: { '200': { $ref: '#/components/responses/Spreadsheet' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /api/v1/products/import:
+    post:
+      operationId: importProducts
+      tags: [Catalog]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_USER
+      requestBody: { required: true, content: { multipart/form-data: { schema: { $ref: '#/components/schemas/UploadRequest' } } } }
+      responses: { '202': { $ref: '#/components/responses/Json' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' }, '400': { $ref: '#/components/responses/BadRequest' } }
+  /api/v1/credit-notes/reasons:
+    get:
+      operationId: listCreditNoteReasons
+      tags: [Documents]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_USER
+      responses: { '200': { $ref: '#/components/responses/Json' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' } }
+components:
+  securitySchemes:
+    ApiKey:
+      type: http
+      scheme: bearer
+      bearerFormat: nb_<environment>_<tenant>_<secret>
+      description: Tenant-scoped API key. Required operation scopes are listed in x-required-scopes; HTTP bearer security itself has no OAuth scope semantics.
+      x-scopes: [documents:read, documents:write, webhooks:manage]
+    TenantJwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Tenant user JWT used by the ERP web API.
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string, examples: [validation_failed] }
+            message: { type: string }
+            details: { type: array, items: { type: object, additionalProperties: true } }
+    Customer:
+      type: object
+      required: [name]
+      properties:
+        document_type: { type: [string, 'null'] }
+        document_number: { type: [string, 'null'] }
+        name: { type: string }
+        email: { type: [string, 'null'], format: email }
+        address: { type: [string, 'null'] }
+    DocumentRequest:
+      type: object
+      required: [external_id, document_type, series, number, subtotal_minor, tax_minor, total_minor, customer, line_description]
+      properties:
+        external_id: { type: string, minLength: 16, maxLength: 64, description: Caller-owned idempotency key. Reuse with a different payload returns 409. }
+        document_type: { type: string, enum: [invoice, receipt] }
+        series: { type: string }
+        number: { type: integer, minimum: 1 }
+        currency: { type: string, default: PEN }
+        subtotal_minor: { type: integer, minimum: 0, description: Integer minor currency units (céntimos). }
+        tax_minor: { type: integer, minimum: 0 }
+        total_minor: { type: integer, minimum: 0 }
+        customer: { $ref: '#/components/schemas/Customer' }
+        line_description: { type: string }
+        order_reference: { type: [string, 'null'] }
+    DocumentAccepted:
+      type: object
+      required: [reference, status, external_id]
+      properties:
+        reference: { type: string }
+        status: { type: string }
+        external_id: { type: string }
+    DocumentStatus:
+      allOf: [{ $ref: '#/components/schemas/DocumentAccepted' }, { type: object, properties: { sunat_status: { type: [string, 'null'] }, document_type: { type: string }, series: { type: string }, number: { type: integer }, cdr_reference: { type: [string, 'null'] }, error: { type: [string, 'null'] }, created_at: { type: string, format: date-time }, updated_at: { type: string, format: date-time } } }]
+    WebhookEndpointRequest:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string, format: uri, pattern: '^https://' }
+        types: { type: array, items: { type: string } }
+    WebhookEndpoint:
+      type: object
+      required: [id, url, types, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        url: { type: string, format: uri }
+        types: { type: array, items: { type: string } }
+        status: { type: string, enum: [enabled, disabled] }
+        disabled_reason: { type: [string, 'null'] }
+        consecutive_failures: { type: integer }
+        created_at: { type: string, format: date-time }
+    WebhookEndpointCreated:
+      allOf: [{ $ref: '#/components/schemas/WebhookEndpoint' }, { type: object, required: [secret], properties: { secret: { type: string, description: Returned only on create and rotate. } } }]
+    PingResponse:
+      type: object
+      required: [ok, client, tenant, scopes, api_version]
+      properties:
+        ok: { type: boolean }
+        client: { type: string }
+        tenant: { type: string }
+        scopes: { type: array, items: { type: string } }
+        api_version: { type: string, const: v1 }
+    Auth:
+      type: object
+      description: Authentication context returned by authenticated endpoints.
+      required: [client, tenant, scopes]
+      properties:
+        client: { type: string }
+        tenant: { type: string }
+        scopes: { type: array, items: { type: string } }
+    Status:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string }
+        message: { type: [string, 'null'] }
+    Pagination:
+      type: object
+      required: [page, per_page, total]
+      properties:
+        page: { type: integer, minimum: 1 }
+        per_page: { type: integer, minimum: 1 }
+        total: { type: integer, minimum: 0 }
+        total_pages: { type: integer, minimum: 0 }
+    JsonObject:
+      type: object
+      additionalProperties: true
+    UploadRequest:
+      type: object
+      required: [file]
+      properties:
+        file: { type: string, format: binary }
+  responses:
+    Unauthenticated: { description: Missing or invalid credentials, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Forbidden: { description: Authenticated but missing the required role or scope, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    BadRequest: { description: Malformed JSON, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    ValidationFailed: { description: Request validation failed, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    IdempotencyConflict: { description: Idempotency key was reused with a different payload, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    NotFound: { description: Resource not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    Json: { description: JSON response, content: { application/json: { schema: { $ref: '#/components/schemas/JsonObject' } } } }
+    Spreadsheet: { description: XLSX download, content: { application/vnd.openxmlformats-officedocument.spreadsheetml.sheet: { schema: { type: string, format: binary } } } }
+    Zip: { description: ZIP download, content: { application/zip: { schema: { type: string, format: binary } } } }
+    TextFile: { description: Text file download, content: { text/plain: { schema: { type: string } } } }

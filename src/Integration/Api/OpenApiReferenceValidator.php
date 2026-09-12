@@ -1,0 +1,61 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Integration\Api;
+
+final class OpenApiReferenceValidator
+{
+    /**
+     * @param array<array-key, mixed> $contract
+     * @param array<array-key, mixed> $operation
+     * @return list<string>
+     */
+    public function validate(string $key, array $contract, array $operation): array
+    {
+        $errors = [];
+        $this->walk($key, $contract, $operation, $errors);
+
+        return $errors;
+    }
+
+    /**
+     * @param array<array-key, mixed> $contract
+     * @param list<string> $errors
+     */
+    private function walk(string $key, array $contract, mixed $value, array &$errors): void
+    {
+        if (!is_array($value)) {
+            return;
+        }
+        if (is_string($value['$ref'] ?? null) && !$this->exists($contract, $value['$ref'])) {
+            $errors[] = sprintf('%s references missing component %s.', $key, $value['$ref']);
+        }
+        array_walk($value, function (mixed $child) use ($key, $contract, &$errors): void {
+            $this->walk($key, $contract, $child, $errors);
+        });
+    }
+
+    /** @param array<array-key, mixed> $document */
+    private function exists(array $document, string $reference): bool
+    {
+        if (!str_starts_with($reference, '#/')) {
+            return false;
+        }
+        $value = $document;
+        foreach (explode('/', substr(string: $reference, offset: 2)) as $part) {
+            $part = str_replace(['~1', '~0'], ['/', '~'], $part);
+            if (!array_key_exists($part, $value)) {
+                return false;
+            }
+            /** @var mixed $nextValue */
+            $nextValue = $value[$part] ?? null;
+            if (!is_array($nextValue)) {
+                return false;
+            }
+            $value = $nextValue;
+        }
+
+        return true;
+    }
+}

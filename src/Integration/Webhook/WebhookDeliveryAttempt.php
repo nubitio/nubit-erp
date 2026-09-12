@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Integration\Webhook;
 
+use App\Integration\Repository\WebhookDeliveryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface as HttpException;
@@ -25,10 +26,18 @@ final readonly class WebhookDeliveryAttempt
         private RetrySchedule $retrySchedule,
         private EntityManagerInterface $entityManager,
         private LoggerInterface $logger,
+        private WebhookDeliveryRepository $deliveries,
     ) {}
 
     public function attempt(WebhookDelivery $delivery): void
     {
+        $claimToken = $delivery->getClaimToken();
+        if (
+            null !== $claimToken
+            && !$this->deliveries->ownsClaim((string) $delivery->getId(), $claimToken, new \DateTimeImmutable())
+        ) {
+            return;
+        }
         $endpoint = $delivery->getEndpoint();
         $body = json_encode($delivery->getPayload(), JSON_THROW_ON_ERROR);
         $now = new \DateTimeImmutable();
@@ -47,6 +56,13 @@ final readonly class WebhookDeliveryAttempt
 
             $status = $response->getStatusCode();
             $snippet = mb_substr($response->getContent(false), 0, 500);
+
+            if (
+                null !== $claimToken
+                && !$this->deliveries->ownsClaim((string) $delivery->getId(), $claimToken, new \DateTimeImmutable())
+            ) {
+                return;
+            }
 
             if ($status >= 200 && $status < 300) {
                 $delivery->succeed($status, $snippet);

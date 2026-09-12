@@ -381,11 +381,16 @@ export const SalePage = () => {
     const saleId = row.id != null ? String(row.id) : undefined;
     if (!saleId) return [];
 
+    const taxDocumentId =
+      typeof row.taxDocumentId === 'string' && row.taxDocumentId !== ''
+        ? row.taxDocumentId
+        : saleId;
+
     return [
       {
         text: 'Vista previa',
         icon: 'ph-eye',
-        onClick: () => salePrintPreview.openPreview(saleId),
+        onClick: () => salePrintPreview.openPreview(taxDocumentId),
       },
       {
         text: 'Imprimir',

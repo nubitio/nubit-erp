@@ -4,12 +4,54 @@ declare(strict_types=1);
 
 namespace App\Tests\Inventory\Service;
 
+use App\Inventory\Repository\StockMovementRepository;
+use App\Inventory\Service\FifoKardexValuator;
+use App\Inventory\Service\KardexCostSqlHelper;
+use App\Inventory\Service\KardexExportLimitExceeded;
 use App\Inventory\Service\KardexExportService;
+use App\Inventory\Service\KardexReferenceResolver;
+use App\Inventory\Service\KardexSummaryService;
+use App\Inventory\Service\WeightedAverageKardexValuator;
+use Doctrine\DBAL\Connection;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PHPUnit\Framework\TestCase;
+use Twig\Environment;
 
 final class KardexExportServiceSpreadsheetTest extends TestCase
 {
+    public function testExportRejectsMoreThanTheDocumentedMovementCeiling(): void
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection
+            ->expects(self::once())
+            ->method('fetchOne')
+            ->willReturn(KardexExportService::MAX_EXPORT_ROWS + 1);
+        $costSql = new KardexCostSqlHelper($connection);
+        $movements = new StockMovementRepository(
+            $connection,
+            new FifoKardexValuator(),
+            new WeightedAverageKardexValuator(),
+            $costSql,
+        );
+
+        $service = new KardexExportService(
+            $movements,
+            new KardexSummaryService(
+                $connection,
+                new FifoKardexValuator(),
+                new WeightedAverageKardexValuator(),
+                $costSql,
+            ),
+            new KardexReferenceResolver($connection),
+            new \ReflectionClass(Environment::class)->newInstanceWithoutConstructor(),
+        );
+
+        $this->expectException(KardexExportLimitExceeded::class);
+        $this->expectExceptionMessage((string) KardexExportService::MAX_EXPORT_ROWS);
+
+        $service->buildReportData(['productId' => 'product-id']);
+    }
+
     public function testSpreadsheetUsesNumericCellsAndMovementTotals(): void
     {
         $service = new \ReflectionClass(KardexExportService::class)->newInstanceWithoutConstructor();

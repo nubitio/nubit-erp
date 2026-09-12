@@ -86,7 +86,7 @@ final readonly class StockMovementRepository
     }
 
     /**
-     * @param array<string, mixed> $filters
+     * @param array<string, string> $filters
      *
      * @return list<StockMovement>
      *

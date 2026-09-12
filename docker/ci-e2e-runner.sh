@@ -55,6 +55,17 @@ until wget -qO- "$BASE/" 2>/dev/null | grep -q 'id="root"' \
 done
 echo "SPA shell is ready."
 
+# The e2e image may still expose the system Yarn 1 binary. Enable Corepack
+# before the first Yarn invocation so packageManager in package.json selects
+# the repository's pinned Yarn 4 version.
+corepack enable
+corepack prepare yarn@4.9.1 --activate
+
+echo "Checking OpenAPI compatibility ..."
+yarn openapi-typescript "$BASE/api/docs.json" -o /tmp/types.generated.ts
+diff -u /home/node/app/assets/api/types.generated.ts /tmp/types.generated.ts
+echo "OpenAPI contract is compatible."
+
 # Local runs without CI env vars: seed idempotently (same as e2e-entrypoint).
 if [ -z "${E2E_USERNAME:-}" ] || [ -z "${E2E_PASSWORD:-}" ] || [ -z "${E2E_SALE_ID:-}" ]; then
   echo "Seeding E2E credentials from ${BASE}/api/test/e2e/seed ..."
@@ -68,10 +79,12 @@ if [ -z "${E2E_USERNAME:-}" ] || [ -z "${E2E_PASSWORD:-}" ] || [ -z "${E2E_SALE_
   echo "E2E seed ready: username=${E2E_USERNAME} saleId=${E2E_SALE_ID}"
 fi
 
-corepack enable
-
-# Critical business flows only — no visual/debug/smoke specs.
+# Release-critical business flows only — no visual/debug/smoke specs.
 yarn test:e2e \
   e2e/happy-path.spec.ts \
   e2e/golden-path-fiscal.spec.ts \
-  e2e/purchases-stock.spec.ts
+  e2e/purchases-stock.spec.ts \
+  e2e/auth-refresh-regression.spec.ts \
+  e2e/cash-rounding.spec.ts \
+  e2e/pos-credit-sale.spec.ts \
+  e2e/accounts-receivable.spec.ts

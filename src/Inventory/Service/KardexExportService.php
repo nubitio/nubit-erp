@@ -17,6 +17,8 @@ use Twig\Environment;
 
 final readonly class KardexExportService
 {
+    public const int MAX_EXPORT_ROWS = 10_000;
+
     public function __construct(
         private StockMovementRepository $movementRepository,
         private KardexSummaryService $summaryService,
@@ -40,6 +42,7 @@ final readonly class KardexExportService
      * }
      *
      * @throws Exception
+     * @throws KardexExportLimitExceeded
      */
     public function buildReportData(array $params): array
     {
@@ -48,8 +51,6 @@ final readonly class KardexExportService
         $from = $params['from'] ?? null;
         $to = $params['to'] ?? null;
         $valuation = $params['valuation'] ?? null;
-
-        $summary = $this->summaryService->getSummary($productId, $warehouseId, $from, $to, $valuation);
 
         $filters = array_filter(
             [
@@ -61,6 +62,16 @@ final readonly class KardexExportService
             ],
             static fn($value) => $value !== null && $value !== '',
         );
+
+        $movementCount = $this->movementRepository->countKardex(array_filter(
+            $filters,
+            static fn(?string $value): bool => $value !== null,
+        ));
+        if ($movementCount > self::MAX_EXPORT_ROWS) {
+            throw new KardexExportLimitExceeded(self::MAX_EXPORT_ROWS);
+        }
+
+        $summary = $this->summaryService->getSummary($productId, $warehouseId, $from, $to, $valuation);
 
         /** @var array{product?: string, warehouse?: string, from?: string, to?: string, valuation?: string} $filters */
         $movements = $this->movementRepository->findKardexForExport($filters);

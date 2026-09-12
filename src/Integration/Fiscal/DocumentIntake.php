@@ -9,6 +9,7 @@ use App\Integration\Entity\DocumentInputSummary;
 use App\Integration\Entity\IntegrationDocument;
 use App\Integration\Message\SendIntegrationDocumentMessage;
 use App\Integration\Repository\IntegrationDocumentRepository;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -45,25 +46,73 @@ final readonly class DocumentIntake
                 throw new IdempotencyConflict($input->externalId);
             }
 
+            $this->dispatch($existing);
             return $existing;
         }
 
-        $taxDocument = $this->buildTaxDocument($input);
-        $this->entityManager->persist($taxDocument);
-        $this->entityManager->flush();
+        try {
+            $document = $this->persistAtomically($input, $rawBody, $hash);
+        } catch (UniqueConstraintViolationException $e) {
+            if (!self::isExternalIdViolation($e)) {
+                throw $e;
+            }
+            // The external_id constraint is the serialization point. The
+            // losing transaction is rolled back, including its tax document.
+            $document = $this->documents->findOneByExternalId($input->externalId);
+            if (null === $document) {
+                throw new \RuntimeException('The idempotency winner could not be read after a conflict.');
+            }
+            if (!hash_equals($document->getRequestHash(), $hash)) {
+                throw new IdempotencyConflict($input->externalId);
+            }
+        }
 
-        $document = new IntegrationDocument(
-            $input->externalId,
-            self::newReference(),
-            $hash,
-            $rawBody,
-            new DocumentInputSummary($input->documentType, $input->series, $input->number),
-        );
-        $document->linkTaxDocument((string) $taxDocument->getId());
+        $this->dispatch($document);
 
-        $this->entityManager->persist($document);
-        $this->entityManager->flush();
+        return $document;
+    }
 
+    private static function isExternalIdViolation(UniqueConstraintViolationException $exception): bool
+    {
+        return str_contains(strtolower($exception->getMessage()), 'uq_integration_document_external_id');
+    }
+
+    /**
+     * @param array<string, mixed> $rawBody
+     */
+    private function persistAtomically(DocumentInput $input, array $rawBody, string $hash): IntegrationDocument
+    {
+        $connection = $this->entityManager->getConnection();
+        $connection->beginTransaction();
+        try {
+            $taxDocument = $this->buildTaxDocument($input);
+            $this->entityManager->persist($taxDocument);
+
+            $document = new IntegrationDocument(
+                $input->externalId,
+                self::newReference(),
+                $hash,
+                $rawBody,
+                new DocumentInputSummary($input->documentType, $input->series, $input->number),
+            );
+            $this->entityManager->persist($document);
+            $this->entityManager->flush();
+            $document->linkTaxDocument((string) $taxDocument->getId());
+            $this->entityManager->flush();
+            $connection->commit();
+
+            return $document;
+        } catch (\Throwable $e) {
+            if ($connection->isTransactionActive()) {
+                $connection->rollBack();
+            }
+            $this->entityManager->clear();
+            throw $e;
+        }
+    }
+
+    private function dispatch(IntegrationDocument $document): void
+    {
         $this->messageBus->dispatch(
             new SendIntegrationDocumentMessage(
                 (string) $document->getId(),
@@ -71,8 +120,6 @@ final readonly class DocumentIntake
             ),
             [new DispatchAfterCurrentBusStamp()],
         );
-
-        return $document;
     }
 
     private function buildTaxDocument(DocumentInput $input): TaxDocument
