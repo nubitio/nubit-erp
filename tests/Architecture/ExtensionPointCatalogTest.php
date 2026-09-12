@@ -71,9 +71,11 @@ final class ExtensionPointCatalogTest extends TestCase
         $doc = (string) file_get_contents(self::DOC);
         $missing = [];
         foreach (new ExtensionPointCatalog()->all() as $point) {
-            if (!str_contains($doc, $point['id'])) {
-                $missing[] = $point['id'];
+            if (str_contains($doc, $point['id'])) {
+                continue;
             }
+
+            $missing[] = $point['id'];
         }
 
         static::assertSame(

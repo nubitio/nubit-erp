@@ -42,7 +42,7 @@ final readonly class CustomerAccountBackfillGateway
             ORDER BY occurred_on, s.issued_at, s.id
             SQL);
 
-        return $rows;
+        return [...$rows];
     }
 
     /**
@@ -72,7 +72,7 @@ final readonly class CustomerAccountBackfillGateway
             ORDER BY occurred_on, sp.id
             SQL);
 
-        return $rows;
+        return [...$rows];
     }
 
     /**

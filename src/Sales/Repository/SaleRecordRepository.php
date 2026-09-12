@@ -61,7 +61,7 @@ class SaleRecordRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
-        return $rows;
+        return [...$rows];
     }
 
     /**

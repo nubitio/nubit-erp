@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Service;
 
+use Closure;
 use Doctrine\DBAL\Exception;
 
 /**
@@ -29,7 +30,30 @@ final readonly class CustomerAccountBackfiller
      *
      * @throws Exception
      */
-    public function run(bool $dryRun): array
+    public function run(): array
+    {
+        return $this->process(function (int $customerId, array $entry): void {
+            $this->gateway->insertEntry($customerId, $entry);
+        });
+    }
+
+    /**
+     * @return array{customers: int, charges: int, payments: int, skipped: list<int>}
+     *
+     * @throws Exception
+     */
+    public function dryRun(): array
+    {
+        return $this->process(null);
+    }
+
+    /**
+     * @param Closure(int, array{entry_type: string, sale_id: string, sale_payment_id: int|null, occurred_on: string, debit: string, credit: string, running_balance: string, description: string}): void|null $insertEntry
+     * @return array{customers: int, charges: int, payments: int, skipped: list<int>}
+     *
+     * @throws Exception
+     */
+    private function process(?Closure $insertEntry): array
     {
         $alreadyLedgered = $this->gateway->customersWithEntries();
 
@@ -62,8 +86,8 @@ final readonly class CustomerAccountBackfiller
 
             foreach ($timeline as $entry) {
                 $entry['entry_type'] === 'charge' ? $charges++ : $payments++;
-                if (!$dryRun) {
-                    $this->gateway->insertEntry($customerId, $entry);
+                if ($insertEntry !== null) {
+                    $insertEntry($customerId, $entry);
                 }
             }
         }

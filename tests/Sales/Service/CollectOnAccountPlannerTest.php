@@ -27,11 +27,11 @@ final class CollectOnAccountPlannerTest extends TestCase
             $this->sale('s3', '100.00'),
         ], BigDecimal::of('150.00'));
 
-        self::assertCount(2, $plan);
-        self::assertSame('s1', (string) $plan[0]['sale']->getId());
-        self::assertSame('100.00', (string) $plan[0]['amount']);
-        self::assertSame('s2', (string) $plan[1]['sale']->getId());
-        self::assertSame('50.00', (string) $plan[1]['amount']);
+        static::assertCount(2, $plan);
+        static::assertSame('s1', (string) $plan[0]['sale']->getId());
+        static::assertSame('100.00', (string) $plan[0]['amount']);
+        static::assertSame('s2', (string) $plan[1]['sale']->getId());
+        static::assertSame('50.00', (string) $plan[1]['amount']);
     }
 
     public function testFifoLeavesAShortfallWhenTheAmountExceedsTotalDebt(): void
@@ -44,9 +44,9 @@ final class CollectOnAccountPlannerTest extends TestCase
         $applied = array_reduce(
             $plan,
             static fn(string $c, array $r): string => (string) BigDecimal::of($c)->plus($r['amount']),
-            '0',
+            initial: '0',
         );
-        self::assertSame('70.00', $applied);
+        static::assertSame('70.00', $applied);
     }
 
     public function testExplicitSplitIsHonouredInOrder(): void
@@ -56,8 +56,8 @@ final class CollectOnAccountPlannerTest extends TestCase
             ['saleId' => 's1', 'amount' => '100.00'],
         ]);
 
-        self::assertSame(['s2', 's1'], array_map(static fn(array $r): string => (string) $r['sale']->getId(), $plan));
-        self::assertSame(['30.00', '100.00'], array_map(static fn(array $r): string => (string) $r['amount'], $plan));
+        static::assertSame(['s2', 's1'], array_map(static fn(array $r): string => (string) $r['sale']->getId(), $plan));
+        static::assertSame(['30.00', '100.00'], array_map(static fn(array $r): string => (string) $r['amount'], $plan));
     }
 
     public function testExplicitRejectsASaleThatIsNotOpenForTheCustomer(): void

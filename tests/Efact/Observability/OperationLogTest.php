@@ -6,8 +6,6 @@ namespace App\Tests\Efact\Observability;
 
 use App\Efact\Observability\OperationLog;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\AbstractLogger;
-use Stringable;
 
 final class OperationLogTest extends TestCase
 {
@@ -34,22 +32,5 @@ final class OperationLogTest extends TestCase
 
         static::assertNull($logger->calls[0]['context']['entity_id']);
         static::assertSame('inventory', $logger->calls[0]['context']['module']);
-    }
-}
-
-/**
- * @internal test double
- */
-final class RecordingLogger extends AbstractLogger
-{
-    /** @var list<array{level: mixed, message: string, context: array<array-key, mixed>}> */
-    public array $calls = [];
-
-    /**
-     * @param array<array-key, mixed> $context
-     */
-    public function log(mixed $level, string|Stringable $message, array $context = []): void
-    {
-        $this->calls[] = ['level' => $level, 'message' => (string) $message, 'context' => $context];
     }
 }

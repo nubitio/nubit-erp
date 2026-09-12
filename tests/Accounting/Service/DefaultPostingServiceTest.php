@@ -68,11 +68,11 @@ final class DefaultPostingServiceTest extends TestCase
             total: '90.00',
         ));
 
-        self::assertSame('101', $lines[0]['code']);
-        self::assertSame('90.00', $lines[0]['debit'] ?? null);
-        self::assertSame('121', $lines[1]['code']);
-        self::assertSame('90.00', $lines[1]['credit'] ?? null);
-        self::assertCount(2, $lines);
+        static::assertSame('101', $lines[0]['code']);
+        static::assertSame('90.00', $lines[0]['debit'] ?? null);
+        static::assertSame('121', $lines[1]['code']);
+        static::assertSame('90.00', $lines[1]['credit'] ?? null);
+        static::assertCount(2, $lines);
         $this->assertBalanced($lines);
     }
 
@@ -87,10 +87,10 @@ final class DefaultPostingServiceTest extends TestCase
             total: '150.00',
         ));
 
-        self::assertSame('1041', $lines[0]['code']);
-        self::assertSame('150.00', $lines[0]['debit'] ?? null);
-        self::assertSame('121', $lines[1]['code']);
-        self::assertSame('150.00', $lines[1]['credit'] ?? null);
+        static::assertSame('1041', $lines[0]['code']);
+        static::assertSame('150.00', $lines[0]['debit'] ?? null);
+        static::assertSame('121', $lines[1]['code']);
+        static::assertSame('150.00', $lines[1]['credit'] ?? null);
         $this->assertBalanced($lines);
     }
 
@@ -105,10 +105,10 @@ final class DefaultPostingServiceTest extends TestCase
             total: '500.00',
         ));
 
-        self::assertSame('101', $lines[0]['code']);
-        self::assertSame('500.00', $lines[0]['debit'] ?? null);
-        self::assertSame('122', $lines[1]['code']);
-        self::assertSame('500.00', $lines[1]['credit'] ?? null);
+        static::assertSame('101', $lines[0]['code']);
+        static::assertSame('500.00', $lines[0]['debit'] ?? null);
+        static::assertSame('122', $lines[1]['code']);
+        static::assertSame('500.00', $lines[1]['credit'] ?? null);
         $this->assertBalanced($lines);
     }
 
@@ -123,10 +123,10 @@ final class DefaultPostingServiceTest extends TestCase
             total: '500.00',
         ));
 
-        self::assertSame('1041', $lines[0]['code']);
-        self::assertSame('500.00', $lines[0]['debit'] ?? null);
-        self::assertSame('122', $lines[1]['code']);
-        self::assertSame('500.00', $lines[1]['credit'] ?? null);
+        static::assertSame('1041', $lines[0]['code']);
+        static::assertSame('500.00', $lines[0]['debit'] ?? null);
+        static::assertSame('122', $lines[1]['code']);
+        static::assertSame('500.00', $lines[1]['credit'] ?? null);
         $this->assertBalanced($lines);
     }
 
@@ -141,10 +141,10 @@ final class DefaultPostingServiceTest extends TestCase
             total: '300.00',
         ));
 
-        self::assertSame('122', $lines[0]['code']);
-        self::assertSame('300.00', $lines[0]['debit'] ?? null);
-        self::assertSame('121', $lines[1]['code']);
-        self::assertSame('300.00', $lines[1]['credit'] ?? null);
+        static::assertSame('122', $lines[0]['code']);
+        static::assertSame('300.00', $lines[0]['debit'] ?? null);
+        static::assertSame('121', $lines[1]['code']);
+        static::assertSame('300.00', $lines[1]['credit'] ?? null);
         $this->assertBalanced($lines);
     }
 

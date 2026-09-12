@@ -261,7 +261,7 @@ final class TenantListenerTest extends TestCase
 
         ($this->listener)($this->createEvent('acme.example.com'));
 
-        $this->assertNotNull($this->tenantContext->getRequestId());
-        $this->assertNotEmpty($this->tenantContext->getRequestId());
+        static::assertNotNull($this->tenantContext->getRequestId());
+        static::assertNotEmpty($this->tenantContext->getRequestId());
     }
 }

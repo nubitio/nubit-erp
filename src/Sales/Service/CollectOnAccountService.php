@@ -95,7 +95,7 @@ readonly class CollectOnAccountService
             $collectionId,
             $amountMoney,
             $currency,
-            $isCash,
+            $paymentMethod,
             $cashSessionId,
             $paidAt,
             $description,
@@ -244,7 +244,7 @@ readonly class CollectOnAccountService
         string $collectionId,
         BigDecimal $amount,
         string $currency,
-        bool $isCash,
+        PaymentMethod $paymentMethod,
         ?int $cashSessionId,
         DateTimeImmutable $paidAt,
         string $description,
@@ -265,7 +265,9 @@ readonly class CollectOnAccountService
         $this->messageBus->dispatch(new EconomicEvent(
             source: EconomicEvent::SOURCE_RECEIVABLE_COLLECT,
             sourceId: $collectionId,
-            kind: $isCash ? EconomicEvent::RECEIVABLE_COLLECT_CASH : EconomicEvent::RECEIVABLE_COLLECT_BANK,
+            kind: $paymentMethod->getId() === PaymentMethod::CASH
+                ? EconomicEvent::RECEIVABLE_COLLECT_CASH
+                : EconomicEvent::RECEIVABLE_COLLECT_BANK,
             occurredOn: $paidAt->format('Y-m-d'),
             description: $description,
             total: Money::toString($amount),

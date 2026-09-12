@@ -112,7 +112,7 @@ readonly class TenantListener
         // Default/known infra hosts that should not trigger tenant switching.
         // 'host' covers host.docker.internal used in Docker Desktop environments.
         $excludedSubdomains = ['localhost', 'dev', 'stg', 'host'];
-        if ('' === $subdomain || in_array($subdomain, $excludedSubdomains, true)) {
+        if ('' === $subdomain || in_array($subdomain, $excludedSubdomains, strict: true)) {
             if ($subdomain === 'localhost' || $subdomain === 'host') {
                 $this->activateLocalTenant($event, $host, $requestId);
 

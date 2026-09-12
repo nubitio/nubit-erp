@@ -49,7 +49,7 @@ final class ReceiveAdvanceServiceTest extends TestCase
         $this->ledger
             ->expects(self::once())
             ->method('recordAdvanceReceived')
-            ->with(7, self::anything(), '500.00', 'PEN', 'advance_receipt', self::anything(), self::anything())
+            ->with(7, static::anything(), '500.00', 'PEN', 'advance_receipt', static::anything(), static::anything())
             ->willReturn($this->createStub(CustomerAccountEntry::class));
         $this->entries->method('availableAdvance')->with(7)->willReturn('500.00');
 
@@ -62,14 +62,14 @@ final class ReceiveAdvanceServiceTest extends TestCase
             new User(),
         );
 
-        self::assertSame(7, $result->customerId);
-        self::assertSame('500.00', $result->amount);
-        self::assertSame('500.00', $result->availableAdvance);
-        self::assertNotSame('', $result->advanceId);
-        self::assertCount(1, $this->dispatched);
-        self::assertSame(EconomicEvent::CUSTOMER_ADVANCE_RECEIVED_CASH, $this->dispatched[0]->kind);
-        self::assertSame(EconomicEvent::SOURCE_CUSTOMER_ADVANCE, $this->dispatched[0]->source);
-        self::assertSame('500.00', $this->dispatched[0]->total);
+        static::assertSame(7, $result->customerId);
+        static::assertSame('500.00', $result->amount);
+        static::assertSame('500.00', $result->availableAdvance);
+        static::assertNotSame('', $result->advanceId);
+        static::assertCount(1, $this->dispatched);
+        static::assertSame(EconomicEvent::CUSTOMER_ADVANCE_RECEIVED_CASH, $this->dispatched[0]->kind);
+        static::assertSame(EconomicEvent::SOURCE_CUSTOMER_ADVANCE, $this->dispatched[0]->source);
+        static::assertSame('500.00', $this->dispatched[0]->total);
     }
 
     public function testBankAdvanceSkipsTheDrawerAndBooksABankEvent(): void
@@ -87,8 +87,8 @@ final class ReceiveAdvanceServiceTest extends TestCase
             new User(),
         );
 
-        self::assertCount(1, $this->dispatched);
-        self::assertSame(EconomicEvent::CUSTOMER_ADVANCE_RECEIVED_BANK, $this->dispatched[0]->kind);
+        static::assertCount(1, $this->dispatched);
+        static::assertSame(EconomicEvent::CUSTOMER_ADVANCE_RECEIVED_BANK, $this->dispatched[0]->kind);
     }
 
     public function testCashAdvanceWithoutAnOpenSessionIsRejected(): void

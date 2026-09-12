@@ -34,6 +34,6 @@ class CustomerPaymentApplicationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
-        return $rows;
+        return [...$rows];
     }
 }
