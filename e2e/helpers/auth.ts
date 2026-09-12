@@ -81,10 +81,42 @@ export async function login(page: Page, username: string, password: string) {
 
   await waitForPostLoginLanding(page);
 
+  await ensureBranchContext(page, baseUrl);
+
   const onAppRoute =
     page.url().includes('/#/dashboard') ||
     page.url().includes('/#/pos') ||
     !(page.url().includes('/#/login') || (await page.locator('form.login-form').isVisible().catch(() => false)));
 
   expect(onAppRoute, 'debe salir de /login tras autenticarse').toBeTruthy();
+}
+
+/** Ensure the browser holds the branch-bound JWT required by branch-scoped APIs. */
+export async function ensureBranchContext(page: Page, baseUrl = getE2EBaseUrl()): Promise<void> {
+  const result = await page.evaluate(async (base) => {
+    const token = window.localStorage.getItem('auth_token');
+    if (!token) return { ok: false, message: 'auth token missing' };
+    const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+    const response = await fetch(`${base}/api/branches?itemsPerPage=100`, { headers });
+    if (!response.ok) return { ok: false, message: `branches returned ${response.status}` };
+    const payload = await response.json();
+    const branches = Array.isArray(payload)
+      ? payload
+      : (payload.member ?? payload['hydra:member'] ?? []);
+    const branch = branches.find((candidate: { name?: string; isActive?: boolean }) =>
+      candidate.isActive !== false && candidate.name === 'CI E2E Branch',
+    ) ?? branches.find((candidate: { isActive?: boolean }) => candidate.isActive !== false);
+    if (!branch?.id) return { ok: false, message: 'no active branch available' };
+    const selection = await fetch(`${base}/api/auth/select-branch`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ branchId: String(branch.id), response_mode: 'json' }),
+    });
+    if (!selection.ok) return { ok: false, message: `branch selection returned ${selection.status}` };
+    const selected = await selection.json();
+    if (!selected.token) return { ok: false, message: 'branch selection returned no token' };
+    window.localStorage.setItem('auth_token', selected.token);
+    return { ok: true, message: '' };
+  }, baseUrl);
+  expect(result.ok, `debe seleccionar una sucursal E2E: ${result.message}`).toBeTruthy();
 }
