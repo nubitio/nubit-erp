@@ -224,6 +224,10 @@ jobs:
         if: needs.changes.outputs.backend == 'true'
         run: docker compose exec -T web php scripts/architecture/check-platform-boundary.php
 
+      - name: Check versioned public API contract
+        if: needs.changes.outputs.backend == 'true'
+        run: docker compose exec -T web php scripts/api/check-public-contract.php
+
       - name: Run architecture rules (AR-001…AR-010)
         if: needs.changes.outputs.backend == 'true'
         run: docker compose exec -T web composer check:architecture
@@ -327,6 +331,10 @@ jobs:
       - name: Install frontend dependencies
         if: needs.changes.outputs.frontend == 'true'
         run: yarn install --immutable
+
+      - name: Regenerate public API types
+        if: needs.changes.outputs.frontend == 'true'
+        run: yarn generate:api-types && git diff --exit-code -- assets/api/public-v1.types.generated.ts
 
       - name: Lint JavaScript and TypeScript
         if: needs.changes.outputs.frontend == 'true'
