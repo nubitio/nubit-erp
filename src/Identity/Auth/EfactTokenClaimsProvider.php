@@ -69,6 +69,7 @@ final readonly class EfactTokenClaimsProvider implements TokenClaimsProviderInte
     /** @param array<string, mixed> $previousClaims */
     private function assertPreviousBranchStillAuthorized(UserInterface $user, array $previousClaims): void
     {
+        /** @var string|int|null $branchId */
         $branchId = $previousClaims['branchId'] ?? null;
         if (!is_string($branchId) || '' === $branchId) {
             return;

@@ -45,6 +45,7 @@ final readonly class AuthRefreshAuthorizationSubscriber
         try {
             $payload = $this->jwtManager->decode($refreshToken);
             $user = $this->userProvider->loadUserByIdentifier((string) ($payload['username'] ?? ''));
+            /** @var string|int|null $branchId */
             $branchId = $payload['branchId'] ?? null;
             if (null === $branchId) {
                 return;
@@ -70,6 +71,7 @@ final readonly class AuthRefreshAuthorizationSubscriber
 
     private function refreshToken(Request $request): ?string
     {
+        /** @var mixed $body */
         $body = json_decode($request->getContent(), associative: true);
         $token = is_array($body) && is_string($body['refreshToken'] ?? null) ? $body['refreshToken'] : null;
         if (null === $token) {
