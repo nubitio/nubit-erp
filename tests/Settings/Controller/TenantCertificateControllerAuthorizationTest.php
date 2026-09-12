@@ -67,7 +67,8 @@ final class TenantCertificateControllerAuthorizationTest extends TestCase
     private function grantsFor(\ReflectionMethod $method): array
     {
         return array_map(
-            static function (\ReflectionAttribute $attribute): string {
+            static function (mixed $attribute): string {
+                /** @var \ReflectionAttribute<object> $attribute */
                 $instance = $attribute->newInstance();
                 if (!$instance instanceof IsGranted || !is_string($instance->attribute)) {
                     throw new \UnexpectedValueException('Expected a string authorization attribute.');
@@ -75,7 +76,7 @@ final class TenantCertificateControllerAuthorizationTest extends TestCase
 
                 return $instance->attribute;
             },
-            $method->getAttributes(),
+            $method->getAttributes(IsGranted::class),
         );
     }
 }
