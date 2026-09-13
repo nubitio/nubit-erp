@@ -18,6 +18,7 @@ use App\Sales\Controller\Api\MakeSaleInvoice;
 use App\Sales\Controller\Api\PrintSaleInvoice;
 use App\Sales\Controller\Api\ReplaceRejectedSaleDocument;
 use App\Sales\Controller\Api\VoidSale;
+use App\Sales\Domain\RequestedVoucherType;
 use App\Sales\Dto\SaleCollectPaymentDto;
 use App\Sales\Dto\VoidSaleDto;
 use App\Sales\Repository\SaleRecordRepository;
@@ -411,6 +412,15 @@ class SaleRecord
 
     #[Groups(['sale_record:write'])]
     private ?bool $emitInvoice = null;
+
+    /**
+     * Voucher type explicitly requested by the cashier (AUTO/FACTURA/BOLETA).
+     * Needs a real column (unlike emitInvoice) because InvoiceCreationService
+     * reads it off a SaleRecord rebuilt by SaleV2Loader, not this instance.
+     */
+    #[ORM\Column(name: 'requested_voucher_type', length: 20, nullable: true, enumType: RequestedVoucherType::class)]
+    #[Groups(['sale_record:read', 'sale_record:write'])]
+    private ?RequestedVoucherType $requestedVoucherType = null;
 
     #[Groups(['sale_record:read', 'sale_record:write'])]
     #[ApiProperty(description: 'sale_record.note.label')]
@@ -1184,6 +1194,18 @@ class SaleRecord
     public function setEmitInvoice(?bool $emitInvoice): static
     {
         $this->emitInvoice = $emitInvoice;
+
+        return $this;
+    }
+
+    public function getRequestedVoucherType(): ?RequestedVoucherType
+    {
+        return $this->requestedVoucherType;
+    }
+
+    public function setRequestedVoucherType(?RequestedVoucherType $requestedVoucherType): static
+    {
+        $this->requestedVoucherType = $requestedVoucherType;
 
         return $this;
     }

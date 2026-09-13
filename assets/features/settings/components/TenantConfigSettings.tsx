@@ -447,6 +447,22 @@ export const PosBehaviorSettings = () => {
     }
   };
 
+  const patchTaxRegime = async (value: 'GENERAL' | 'NRUS') => {
+    if (!state) return;
+    setSavingField('taxRegime');
+    try {
+      const updated = await tenantSettingsService.patchSettings({ taxRegime: value });
+      setState(updated);
+      settings.invalidate();
+      void queryClient.invalidateQueries({ queryKey: [...TENANT_RUNTIME_CONFIG_QUERY_KEY] });
+      toast('Configuración guardada', 'success');
+    } catch {
+      toast('No se pudo guardar la configuración', 'error');
+    } finally {
+      setSavingField(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="settings-loading">
@@ -460,6 +476,30 @@ export const PosBehaviorSettings = () => {
   return (
     <section className="config-group">
       <h3 className="config-group-title">Punto de venta</h3>
+
+      <div className="config-setting-row">
+        <div className="config-setting-info">
+          <span className="config-setting-label">Régimen tributario</span>
+          <span className="config-setting-description">
+            {state.taxRegime === 'NRUS'
+              ? 'Nuevo RUS: el negocio solo puede emitir boletas, nunca facturas.'
+              : 'Régimen General: el negocio puede emitir boletas y facturas.'}
+          </span>
+        </div>
+        <div className="config-setting-value">
+          <AppDropdown
+            value={state.taxRegime}
+            options={[
+              { value: 'GENERAL', label: 'Régimen General' },
+              { value: 'NRUS', label: 'Nuevo RUS' },
+            ]}
+            onChange={(value) => void patchTaxRegime(value as 'GENERAL' | 'NRUS')}
+            variant="form"
+            showFieldLabel={false}
+            className="config-setting-input"
+          />
+        </div>
+      </div>
 
       <div className="config-toggle-row">
         <div className="config-toggle-info">

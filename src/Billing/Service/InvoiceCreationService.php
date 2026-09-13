@@ -7,8 +7,11 @@ namespace App\Billing\Service;
 use App\Billing\Shared\ErrorMessages;
 use App\Catalog\Entity\UnitOfMeasure;
 use App\Sales\Domain\DocType;
+use App\Sales\Domain\RequestedVoucherType;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Service\SaleCurrencyResolver;
+use App\Settings\Enum\TaxRegime;
+use App\Settings\Service\TenantSettingsService;
 use Brick\Math\Exception\MathException;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -21,6 +24,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
     public function __construct(
         private Connection $connection,
         private SaleCurrencyResolver $saleCurrencyResolver,
+        private TenantSettingsService $tenantSettingsService,
     ) {}
 
     /**
@@ -110,11 +114,35 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
         ]);
         $resolvedV2SaleId = is_string($v2SaleId) && $v2SaleId !== '' ? $v2SaleId : null;
 
+        $taxRegime = $this->tenantSettingsService->getTaxRegime();
+        $requestedType = $sale->getRequestedVoucherType();
+        $ruc = $sale->getCliente()?->getRuc() ?? '';
+
+        if ($taxRegime === TaxRegime::NRUS && $requestedType === RequestedVoucherType::FACTURA) {
+            return [
+                'success' => false,
+                'message' => ErrorMessages::NRUS_CANNOT_ISSUE_FACTURA,
+            ];
+        }
+
+        if ($requestedType === RequestedVoucherType::FACTURA && strlen($ruc) !== 11) {
+            return [
+                'success' => false,
+                'message' => ErrorMessages::VOUCHER_TYPE_REQUIRES_RUC,
+            ];
+        }
+
         $connection->beginTransaction();
         try {
-            $voucherType = strlen($sale->getCliente()?->getRuc() ?? '') === 11
-                ? DocType::FACTURA->value
-                : DocType::BOLETA->value;
+            if ($taxRegime === TaxRegime::NRUS) {
+                $voucherType = DocType::BOLETA->value;
+            } elseif ($requestedType === RequestedVoucherType::FACTURA) {
+                $voucherType = DocType::FACTURA->value;
+            } elseif ($requestedType === RequestedVoucherType::BOLETA) {
+                $voucherType = DocType::BOLETA->value;
+            } else {
+                $voucherType = strlen($ruc) === 11 ? DocType::FACTURA->value : DocType::BOLETA->value;
+            }
 
             $existingInvoice = $connection->fetchOne('SELECT tax_document_id
                  FROM tax_document
@@ -215,8 +243,8 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
                     'discount_amount' => $line->discountAmount,
                     'taxed_amount' => $line->taxableAmount,
                     'tax_amount' => $line->taxAmount,
-                    'tax_percentage' => $sale->getIgv() ?? 0,
-                    'tax_type' => '10',
+                    'tax_percentage' => $taxRegime === TaxRegime::NRUS ? 0 : $sale->getIgv() ?? 0,
+                    'tax_type' => $taxRegime === TaxRegime::NRUS ? '20' : '10',
                     'total' => $line->totalAmount,
                 ]);
             }

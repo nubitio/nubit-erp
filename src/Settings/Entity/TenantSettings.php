@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Patch;
 use App\Inventory\Core\Enum\StockPolicy;
 use App\Settings\Enum\DefaultCurrency;
 use App\Settings\Enum\PrintMethod;
+use App\Settings\Enum\TaxRegime;
 use App\Settings\Repository\TenantSettingsRepository;
 use App\Settings\State\TenantSettingsPatchProcessor;
 use App\Settings\State\TenantSettingsProvider;
@@ -47,6 +48,15 @@ class TenantSettings
     private ?int $id = null;
 
     // ── General ──────────────────────────────────────────────────────────────
+
+    /**
+     * SUNAT tax regime the tenant is registered under. A tenant on NRUS can
+     * only issue boletas (never facturas) and does not break out IGV as
+     * "Gravado" on its vouchers — enforced in InvoiceCreationService.
+     */
+    #[ORM\Column(enumType: TaxRegime::class)]
+    #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
+    private TaxRegime $taxRegime = TaxRegime::GENERAL;
 
     #[ORM\Column(type: 'float')]
     #[Assert\Range(min: 0, max: 100)]
@@ -134,6 +144,17 @@ class TenantSettings
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getTaxRegime(): TaxRegime
+    {
+        return $this->taxRegime;
+    }
+
+    public function setTaxRegime(TaxRegime $taxRegime): static
+    {
+        $this->taxRegime = $taxRegime;
+        return $this;
     }
 
     public function getIgv(): float

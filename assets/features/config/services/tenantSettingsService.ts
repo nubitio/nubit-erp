@@ -6,6 +6,7 @@ import { httpClient } from '@shared/api/HttpClient';
 // the TenantSettings entity changes in PHP.
 
 export interface TenantSettingsDto {
+  taxRegime: 'GENERAL' | 'NRUS';
   igv: number;
   rc: number;
   printLogo: boolean;

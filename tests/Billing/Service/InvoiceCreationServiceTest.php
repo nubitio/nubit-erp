@@ -7,6 +7,8 @@ namespace App\Tests\Billing\Service;
 use App\Billing\Service\InvoiceCreationService;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Service\SaleCurrencyResolver;
+use App\Settings\Enum\TaxRegime;
+use App\Settings\Service\TenantSettingsService;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -128,17 +130,9 @@ final class InvoiceCreationServiceTest extends TestCase
     {
         $connection ??= $this->createMock(Connection::class);
         $resolver = $this->createStub(SaleCurrencyResolver::class);
-        $reflection = new \ReflectionClass(InvoiceCreationService::class);
-        $constructor = $reflection->getConstructor();
-        $required = $constructor?->getNumberOfRequiredParameters() ?? 0;
-        $args = [$connection];
-        if ($required > 1) {
-            $args[] = $resolver;
-        }
+        $tenantSettingsService = $this->createStub(TenantSettingsService::class);
+        $tenantSettingsService->method('getTaxRegime')->willReturn(TaxRegime::GENERAL);
 
-        /** @var InvoiceCreationService $service */
-        $service = $reflection->newInstanceArgs($args);
-
-        return $service;
+        return new InvoiceCreationService($connection, $resolver, $tenantSettingsService);
     }
 }
