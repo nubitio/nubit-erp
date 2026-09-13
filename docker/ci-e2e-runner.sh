@@ -81,7 +81,16 @@ done
 # API-doc request, which can reset the socket even after health/live and / are
 # ready. Local refs remain resolved by openapi-typescript, so validation is not
 # weakened or skipped.
-yarn openapi-typescript "$OPENAPI_DOC" -o /tmp/types.generated.ts
+openapi_types_attempt=0
+until yarn openapi-typescript "$OPENAPI_DOC" -o /tmp/types.generated.ts; do
+  openapi_types_attempt=$((openapi_types_attempt + 1))
+  if [ "$openapi_types_attempt" -ge 8 ]; then
+    echo "ERROR: OpenAPI compatibility check failed after 8 attempts"
+    exit 1
+  fi
+  echo "  attempt $openapi_types_attempt/8 — OpenAPI resolver not ready, retrying in 3s..."
+  sleep 3
+done
 diff -u /home/node/app/assets/api/types.generated.ts /tmp/types.generated.ts
 echo "OpenAPI contract is compatible."
 
