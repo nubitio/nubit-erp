@@ -10457,6 +10457,11 @@ export interface components {
             paymentMethod?: components["schemas"]["PaymentMethod-sale_record.read"] | null;
             /** @description sale_record.discount_percent.label */
             discountPercent?: string | null;
+            /**
+             * @description Voucher type explicitly requested by the cashier (AUTO/FACTURA/BOLETA).
+             * @enum {string|null}
+             */
+            requestedVoucherType?: "AUTO" | "FACTURA" | "BOLETA" | null;
             /** @description sale_record.note.label */
             note?: string | null;
             /** @description sale_record.payments.label */
@@ -10529,6 +10534,11 @@ export interface components {
             /** @description sale_record.discount_percent.label */
             discountPercent?: string | null;
             emitInvoice?: boolean | null;
+            /**
+             * @description Voucher type explicitly requested by the cashier (AUTO/FACTURA/BOLETA).
+             * @enum {string|null}
+             */
+            requestedVoucherType?: "AUTO" | "FACTURA" | "BOLETA" | null;
             /** @description sale_record.note.label */
             note?: string | null;
             /** @description sale_record.payments.label */
@@ -10693,6 +10703,11 @@ export interface components {
             paymentMethod?: components["schemas"]["PaymentMethod.jsonld-sale_record.read"] | null;
             /** @description sale_record.discount_percent.label */
             discountPercent?: string | null;
+            /**
+             * @description Voucher type explicitly requested by the cashier (AUTO/FACTURA/BOLETA).
+             * @enum {string|null}
+             */
+            requestedVoucherType?: "AUTO" | "FACTURA" | "BOLETA" | null;
             /** @description sale_record.note.label */
             note?: string | null;
             /** @description sale_record.payments.label */
@@ -11099,6 +11114,11 @@ export interface components {
             paymentMethod?: components["schemas"]["PaymentMethod-sale_record.read"] | null;
             /** @description sale_record.discount_percent.label */
             discountPercent?: string | null;
+            /**
+             * @description Voucher type explicitly requested by the cashier (AUTO/FACTURA/BOLETA).
+             * @enum {string|null}
+             */
+            requestedVoucherType?: "AUTO" | "FACTURA" | "BOLETA" | null;
             /** @description sale_record.note.label */
             note?: string | null;
             /** @description sale_record.payments.label */
@@ -11244,6 +11264,11 @@ export interface components {
             paymentMethod?: components["schemas"]["PaymentMethod.jsonld-sale_record.read"] | null;
             /** @description sale_record.discount_percent.label */
             discountPercent?: string | null;
+            /**
+             * @description Voucher type explicitly requested by the cashier (AUTO/FACTURA/BOLETA).
+             * @enum {string|null}
+             */
+            requestedVoucherType?: "AUTO" | "FACTURA" | "BOLETA" | null;
             /** @description sale_record.note.label */
             note?: string | null;
             /** @description sale_record.payments.label */
@@ -13019,6 +13044,14 @@ export interface components {
          *     — there is no collection endpoint and no row ID in the URL.
          */
         "TenantSettings-tenant_settings.read": {
+            /**
+             * @description SUNAT tax regime the tenant is registered under. A tenant on NRUS can
+             *     only issue boletas (never facturas) and does not break out IGV as
+             *     "Gravado" on its vouchers — enforced in InvoiceCreationService.
+             * @default GENERAL
+             * @enum {string}
+             */
+            taxRegime: "GENERAL" | "NRUS";
             /** @default 18 */
             igv: number;
             /** @default 0 */
@@ -13084,6 +13117,14 @@ export interface components {
          *     — there is no collection endpoint and no row ID in the URL.
          */
         "TenantSettings-tenant_settings.write.jsonMergePatch": {
+            /**
+             * @description SUNAT tax regime the tenant is registered under. A tenant on NRUS can
+             *     only issue boletas (never facturas) and does not break out IGV as
+             *     "Gravado" on its vouchers — enforced in InvoiceCreationService.
+             * @default GENERAL
+             * @enum {string}
+             */
+            taxRegime: "GENERAL" | "NRUS";
             /** @default 18 */
             igv: number;
             /** @default 0 */
@@ -13136,6 +13177,14 @@ export interface components {
          *     — there is no collection endpoint and no row ID in the URL.
          */
         "TenantSettings.jsonld-tenant_settings.read": components["schemas"]["HydraItemBaseSchema"] & {
+            /**
+             * @description SUNAT tax regime the tenant is registered under. A tenant on NRUS can
+             *     only issue boletas (never facturas) and does not break out IGV as
+             *     "Gravado" on its vouchers — enforced in InvoiceCreationService.
+             * @default GENERAL
+             * @enum {string}
+             */
+            taxRegime: "GENERAL" | "NRUS";
             /** @default 18 */
             igv: number;
             /** @default 0 */

@@ -6,6 +6,7 @@ namespace App\Billing\Service;
 
 use App\Contacts\Entity\Customer;
 use App\Inventory\Entity\Warehouse;
+use App\Sales\Domain\RequestedVoucherType;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use App\Settings\Service\TenantSettingsService;
@@ -56,6 +57,7 @@ readonly class SaleV2Loader
                     s.created_at,
                     s.series,
                     s.number,
+                    s.requested_voucher_type,
                     (
                         SELECT pm.id
                         FROM sale_payments sp
@@ -113,6 +115,10 @@ readonly class SaleV2Loader
             $sale->setNumero((string) $row['number']);
         }
 
+        if (!empty($row['requested_voucher_type'])) {
+            $sale->setRequestedVoucherType(RequestedVoucherType::tryFrom((string) $row['requested_voucher_type']));
+        }
+
         $taxRate = $this->resolveIgvRate();
         $sale->setIgv($taxRate);
 
@@ -135,7 +141,7 @@ readonly class SaleV2Loader
             $sale->setCreatedBy((int) $row['seller_user_id']);
         }
 
-        if (!empty($row['payment_method_id'])) {
+        if ($row['payment_method_id'] !== null && $row['payment_method_id'] !== '') {
             $paymentMethod = $this->entityManager->getReference(
                 \App\Catalog\Entity\PaymentMethod::class,
                 (int) $row['payment_method_id'],

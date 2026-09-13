@@ -10,6 +10,8 @@ use App\Billing\Service\InvoiceLineInput;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Service\SaleCurrencyResolver;
+use App\Settings\Enum\TaxRegime;
+use App\Settings\Service\TenantSettingsService;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
 
@@ -182,7 +184,10 @@ final class InvoiceCreationServiceGrandTotalTest extends TestCase
         $resolver = $this->createStub(SaleCurrencyResolver::class);
         $resolver->method('resolveForSaleId')->willReturn(['currency' => 'PEN', 'exchange_rate' => '1.00']);
 
-        $service = new InvoiceCreationService($connection, $resolver);
+        $tenantSettingsService = $this->createStub(TenantSettingsService::class);
+        $tenantSettingsService->method('getTaxRegime')->willReturn(TaxRegime::GENERAL);
+
+        $service = new InvoiceCreationService($connection, $resolver, $tenantSettingsService);
         $result = $service->createForSale($sale);
 
         self::assertTrue($result['success'], 'Invoice creation must succeed: ' . $result['message']);

@@ -9,6 +9,7 @@ use App\Settings\Capability\SettingsCapabilitySync;
 use App\Settings\Entity\TenantSettings;
 use App\Settings\Enum\DefaultCurrency;
 use App\Settings\Enum\PrintMethod;
+use App\Settings\Enum\TaxRegime;
 use App\Settings\Repository\TenantSettingsRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -33,6 +34,11 @@ readonly class TenantSettingsService
     }
 
     // ── Typed convenience accessors ───────────────────────────────────────────
+
+    public function getTaxRegime(): TaxRegime
+    {
+        return $this->get()->getTaxRegime();
+    }
 
     public function getIgv(): float
     {
