@@ -94,7 +94,19 @@ export async function login(page: Page, username: string, password: string) {
 /** Ensure the browser holds the branch-bound JWT required by branch-scoped APIs. */
 export async function ensureBranchContext(page: Page, baseUrl = getE2EBaseUrl()): Promise<void> {
   const result = await page.evaluate(async (base) => {
-    const token = window.localStorage.getItem('auth_token');
+    const rawToken = window.localStorage.getItem('auth_token');
+    // StorageUtils JSON-serializes values, including string JWTs.  The
+    // browser API helper must send the JWT itself, not the JSON string
+    // literal (including its surrounding quotes).
+    let token: string | null = rawToken;
+    if (rawToken) {
+      try {
+        const parsed = JSON.parse(rawToken) as unknown;
+        token = typeof parsed === 'string' ? parsed : rawToken;
+      } catch {
+        // Accept tokens written directly by older sessions/tests.
+      }
+    }
     if (!token) return { ok: false, message: 'auth token missing' };
     const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
     const response = await fetch(`${base}/api/branches?itemsPerPage=100`, { headers });
@@ -115,7 +127,9 @@ export async function ensureBranchContext(page: Page, baseUrl = getE2EBaseUrl())
     if (!selection.ok) return { ok: false, message: `branch selection returned ${selection.status}` };
     const selected = await selection.json();
     if (!selected.token) return { ok: false, message: 'branch selection returned no token' };
-    window.localStorage.setItem('auth_token', selected.token);
+    // Keep the same JSON-serialized representation used by StorageUtils;
+    // subsequent HttpClient requests parse this value before sending it.
+    window.localStorage.setItem('auth_token', JSON.stringify(selected.token));
     return { ok: true, message: '' };
   }, baseUrl);
   expect(result.ok, `debe seleccionar una sucursal E2E: ${result.message}`).toBeTruthy();
