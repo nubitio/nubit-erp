@@ -192,14 +192,14 @@ async function gotoProtectedRoute(page: Page, hashPath: string) {
   await page.waitForLoadState('domcontentloaded', { timeout: 10000 }).catch(() => {});
   await ensureLoggedIn(page);
   await waitForPostLoginLanding(page);
-  await ensureBranchContext(page, BASE_URL);
+  await ensureBranchContext(page, BASE_URL, USERNAME, PASSWORD);
 
   if (!page.url().includes(`/#/${hashPath}`)) {
     await page.goto(`${BASE_URL}/#/${hashPath}`);
     await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
     await ensureLoggedIn(page);
     await waitForPostLoginLanding(page);
-    await ensureBranchContext(page, BASE_URL);
+    await ensureBranchContext(page, BASE_URL, USERNAME, PASSWORD);
   }
 }
 
@@ -223,6 +223,7 @@ async function ensureLoggedIn(page: Page) {
   const loginForm = page.locator('form.login-form');
   const isLoginPage = isLoginUrl || (await loginForm.isVisible({ timeout: 8000 }).catch(() => false));
   if (!isLoginPage) {
+    await ensureBranchContext(page, BASE_URL, USERNAME, PASSWORD);
     return;
   }
 
@@ -252,6 +253,7 @@ async function ensureLoggedIn(page: Page) {
   }
 
   await waitForPostLoginLanding(page);
+  await ensureBranchContext(page, BASE_URL, USERNAME, PASSWORD);
 }
 
 /**
@@ -448,7 +450,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         // No apareció el picker — probablemente sólo hay 1 local (auto-seleccionado)
         // o la rama fue seleccionada automáticamente
       }
-      await ensureBranchContext(page, BASE_URL);
+      await ensureBranchContext(page, BASE_URL, USERNAME, PASSWORD);
     });
 
     await test.step('Verificar redirección a dashboard o POS', async () => {

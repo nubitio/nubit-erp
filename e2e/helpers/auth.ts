@@ -81,7 +81,7 @@ export async function login(page: Page, username: string, password: string) {
 
   await waitForPostLoginLanding(page);
 
-  await ensureBranchContext(page, baseUrl);
+  await ensureBranchContext(page, baseUrl, username, password);
 
   const onAppRoute =
     page.url().includes('/#/dashboard') ||
@@ -92,7 +92,30 @@ export async function login(page: Page, username: string, password: string) {
 }
 
 /** Ensure the browser holds the branch-bound JWT required by branch-scoped APIs. */
-export async function ensureBranchContext(page: Page, baseUrl = getE2EBaseUrl()): Promise<void> {
+export async function ensureBranchContext(
+  page: Page,
+  baseUrl = getE2EBaseUrl(),
+  username?: string,
+  password?: string,
+): Promise<void> {
+  // UI login stores the token in a React effect. On a redirect/retry that
+  // effect can race this check, leaving the page without credentials even
+  // though the login request succeeded. Restore it through the API before
+  // attempting branch selection; the token is never exposed outside storage.
+  const hasToken = await page.evaluate(() => Boolean(window.localStorage.getItem('auth_token')));
+  if (!hasToken && username && password) {
+    const response = await page.request.post(`${baseUrl}/api/auth/login`, {
+      headers: { 'Content-Type': 'application/json', 'X-Client-Type': 'android' },
+      data: { username, password },
+    });
+    expect(response.ok(), `login API debe responder 2xx (status ${response.status()})`).toBeTruthy();
+    const payload = (await response.json()) as { token?: string };
+    expect(payload.token, 'login debe devolver token').toBeTruthy();
+    await page.evaluate((token) => {
+      window.localStorage.setItem('auth_token', JSON.stringify(token));
+    }, payload.token);
+  }
+
   const result = await page.evaluate(async (base) => {
     const rawToken = window.localStorage.getItem('auth_token');
     // StorageUtils JSON-serializes values, including string JWTs.  The
