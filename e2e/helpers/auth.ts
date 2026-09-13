@@ -98,6 +98,13 @@ export async function ensureBranchContext(
   username?: string,
   password?: string,
 ): Promise<void> {
+  // A failed navigation/recovery can leave the shared page on about:blank.
+  // That origin throws SecurityError when localStorage is accessed; restore a
+  // same-origin document before reading or writing the bearer token.
+  if (page.url() === 'about:blank') {
+    await page.goto(`${baseUrl}/#/login`);
+  }
+
   // UI login stores the token in a React effect. On a redirect/retry that
   // effect can race this check, leaving the page without credentials even
   // though the login request succeeded. Restore it through the API before
