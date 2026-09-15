@@ -29,6 +29,7 @@ final readonly class TenantSettingsPatchProcessor implements ProcessorInterface
 
         foreach ($this->patchedFields() as $field) {
             match ($field) {
+                'taxRegime' => $settings->setTaxRegime($data->getTaxRegime()),
                 'igv' => $settings->setIgv($data->getIgv()),
                 'rc' => $settings->setRc($data->getRc()),
                 'printLogo' => $settings->setPrintLogo($data->isPrintLogo()),
