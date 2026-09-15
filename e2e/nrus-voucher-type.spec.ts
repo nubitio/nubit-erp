@@ -81,18 +81,20 @@ async function sellToSeedCustomer(page: import('@playwright/test').Page): Promis
   });
 
   // "Emitir boleta/factura SUNAT" defaults to the tenant's `autoInvoice`
-  // setting, which the E2E seed tenant has OFF — turn it on explicitly so the
-  // sale is created with makeInvoice=true (otherwise /invoice returns 400).
+  // setting (true), and checking out with it ON auto-invoices the sale
+  // synchronously — which would make our later explicit POST /invoice call
+  // fail with "ya tiene un comprobante emitido". Turn it OFF so we control
+  // invoice creation explicitly below, exactly like golden-path-fiscal does.
   await page.locator('.pos-footer-options__toggle').click();
   const emitInvoiceToggle = page.getByLabel('Emitir boleta o factura SUNAT');
-  if (!(await emitInvoiceToggle.isChecked())) {
+  if (await emitInvoiceToggle.isChecked()) {
     await page
       .locator('.pos-footer-option-row')
       .filter({ hasText: 'Emitir boleta/factura SUNAT' })
       .locator('label')
       .click();
   }
-  await expect(emitInvoiceToggle).toBeChecked();
+  await expect(emitInvoiceToggle).not.toBeChecked();
 
   await completePosCashPayment(page);
   await waitForPosCheckoutReady(page);
@@ -136,10 +138,6 @@ test.describe('NRUS — régimen tributario fuerza tipo de comprobante', () => {
 
         const saleId = await sellToSeedCustomer(page);
         const invoiceResponse = await createInvoiceForSale(request, BASE_URL, auth, saleId);
-        if (!invoiceResponse.ok()) {
-          // eslint-disable-next-line no-console
-          console.log('[nrus-voucher-type] invoice error body:', await invoiceResponse.text());
-        }
         expect(invoiceResponse.ok(), 'crear el comprobante fiscal debe responder 2xx').toBeTruthy();
 
         const documents = await listTaxDocumentsForSale(request, BASE_URL, auth, saleId);
@@ -157,10 +155,6 @@ test.describe('NRUS — régimen tributario fuerza tipo de comprobante', () => {
 
         const saleId = await sellToSeedCustomer(page);
         const invoiceResponse = await createInvoiceForSale(request, BASE_URL, auth, saleId);
-        if (!invoiceResponse.ok()) {
-          // eslint-disable-next-line no-console
-          console.log('[nrus-voucher-type] invoice error body:', await invoiceResponse.text());
-        }
         expect(invoiceResponse.ok(), 'crear el comprobante fiscal debe responder 2xx').toBeTruthy();
 
         const documents = await listTaxDocumentsForSale(request, BASE_URL, auth, saleId);
