@@ -166,4 +166,10 @@ export async function ensureBranchContext(
     return { ok: true, message: '' };
   }, baseUrl);
   expect(result.ok, `debe seleccionar una sucursal E2E: ${result.message}`).toBeTruthy();
+
+  // The login/branch-picker React tree can still hold the pre-selection token
+  // in memory. Reload so the next route's API client is initialized from the
+  // branch-bound token we just persisted instead of allowing that stale state
+  // to overwrite localStorage during navigation.
+  await page.reload({ waitUntil: 'domcontentloaded' });
 }
