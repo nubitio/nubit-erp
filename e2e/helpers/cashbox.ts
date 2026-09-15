@@ -32,11 +32,16 @@ function cashMovementsButton(page: Page) {
 /**
  * Ensures an open cash session exists and returns its ID.
  */
-export async function ensureOpenCashSession(page: Page, baseUrl: string): Promise<string> {
+export async function ensureOpenCashSession(
+  page: Page,
+  baseUrl: string,
+  username: string,
+  password: string,
+): Promise<string> {
   // Cash-register providers are branch-scoped from the JWT, not from a UI
   // filter. Re-assert the branch-bound token at this setup boundary so a
   // login/redirect race cannot make a valid seeded register appear absent.
-  await ensureBranchContext(page, baseUrl);
+  await ensureBranchContext(page, baseUrl, username, password);
   await page.goto(`${baseUrl}/#/cashbox`);
   await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
   await waitForCashboxGrid(page);

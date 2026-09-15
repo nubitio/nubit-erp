@@ -32,7 +32,7 @@ test('POS redondea efectivo S/10.63 a S/10.60 y persiste el ajuste', async ({ pa
     })).ok()).toBeTruthy();
 
     await login(page, seed.username, seed.password);
-    await ensureOpenCashSession(page, BASE_URL);
+    await ensureOpenCashSession(page, BASE_URL, seed.username, seed.password);
     await page.goto(`${BASE_URL}/#/pos`);
     const search = page.getByTestId('pos-product-search');
     await search.waitFor({ state: 'visible', timeout: 25000 });

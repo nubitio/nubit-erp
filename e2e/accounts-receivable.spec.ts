@@ -11,7 +11,7 @@ const BASE_URL = getE2EBaseUrl();
 test('filtra la deuda por cliente, registra un abono y muestra el historial', async ({ page, request }) => {
   const seed = await getE2ESeed();
   await login(page, seed.username, seed.password);
-  await ensureOpenCashSession(page, BASE_URL);
+  await ensureOpenCashSession(page, BASE_URL, seed.username, seed.password);
   const auth = await loginViaApi(request, BASE_URL, seed.username, seed.password);
 
   const [customersResponse, productsResponse, warehousesResponse, methodsResponse] = await Promise.all([

@@ -30,7 +30,7 @@ test.describe('Golden path fiscal — POS a SUNAT y PDF', () => {
 
     await test.step('Login y abrir caja', async () => {
       await login(page, seed.username, seed.password);
-      await ensureOpenCashSession(page, BASE_URL);
+      await ensureOpenCashSession(page, BASE_URL, seed.username, seed.password);
     });
 
     let saleId = '';

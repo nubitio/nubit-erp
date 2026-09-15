@@ -101,7 +101,7 @@ export async function ensureBranchContext(
   // A failed navigation/recovery can leave the shared page on about:blank.
   // That origin throws SecurityError when localStorage is accessed; restore a
   // same-origin document before reading or writing the bearer token.
-  if (page.url() === 'about:blank') {
+  if (page.url().startsWith('about:blank')) {
     await page.goto(`${baseUrl}/#/login`);
   }
 
@@ -109,8 +109,11 @@ export async function ensureBranchContext(
   // effect can race this check, leaving the page without credentials even
   // though the login request succeeded. Restore it through the API before
   // attempting branch selection; the token is never exposed outside storage.
-  const hasToken = await page.evaluate(() => Boolean(window.localStorage.getItem('auth_token')));
-  if (!hasToken && username && password) {
+  // When credentials are supplied this is an explicit setup boundary.  Do not
+  // reuse a token from a previous test: login tokens intentionally have no
+  // branch claim, and a stale token can make the branch-scoped dashboard
+  // correctly return an empty collection.
+  if (username && password) {
     const response = await page.request.post(`${baseUrl}/api/auth/login`, {
       headers: { 'Content-Type': 'application/json', 'X-Client-Type': 'android' },
       data: { username, password },
