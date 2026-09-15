@@ -3,7 +3,7 @@ SHELL := /bin/bash
 DC := docker compose
 # mercure must be here: resources with mercure:true publish post-flush, so a
 # missing hub turns every create into a 500 (row persisted, response failed).
-SERVICES := database redis otel-collector web vite mercure minio minio-init
+SERVICES := database redis otel-collector web vite mercure object-storage object-storage-init
 EXEC_WEB := $(DC) exec -T web sh -lc
 EXEC_VITE := $(DC) exec -T --user root vite sh -lc
 # docker-compose.yml bakes DATABASE_URL=...demo into the web container, which

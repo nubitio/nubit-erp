@@ -2,7 +2,7 @@
 #   COMPOSE_FILE=docker-compose.yml:docker-compose.ci.yml
 #
 # Drops bind mounts that only exist on a developer machine, stops waiting on
-# MinIO/OTEL, and tags the web image so CI can cache the `dev` target.
+# object storage/OTEL, and tags the web image so CI can cache the `dev` target.
 services:
   web:
     image: nubit-erp-ci-web:local
@@ -39,10 +39,10 @@ services:
   otel-collector:
     profiles: ['observability']
 
-  minio:
+  object-storage:
     profiles: ['object-storage']
 
-  minio-init:
+  object-storage-init:
     profiles: ['object-storage']
 
   messenger_worker:

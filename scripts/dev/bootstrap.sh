@@ -6,7 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=scripts/dev/common.sh
 source "$SCRIPT_DIR/common.sh"
 
-dc up -d database redis otel-collector web vite minio minio-init
+dc up -d database redis otel-collector web vite object-storage object-storage-init
 exec_web "composer install --no-interaction --prefer-dist --no-scripts"
 exec_web_php "bin/console cache:clear"
 exec_web_php "bin/console assets:install public"
