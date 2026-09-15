@@ -6,6 +6,7 @@ namespace App\Tests\Settings\State;
 
 use ApiPlatform\Metadata\Patch;
 use App\Settings\Entity\TenantSettings;
+use App\Settings\Enum\TaxRegime;
 use App\Settings\Service\TenantSettingsService;
 use App\Settings\State\TenantSettingsPatchProcessor;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -36,5 +37,24 @@ final class TenantSettingsPatchProcessorTest extends TestCase
 
         self::assertSame($existing, $result);
         self::assertSame(10.5, $existing->getIgv());
+    }
+
+    public function testProcessAppliesTaxRegime(): void
+    {
+        $existing = new TenantSettings()->setTaxRegime(TaxRegime::GENERAL);
+        $incoming = new TenantSettings()->setTaxRegime(TaxRegime::NRUS);
+
+        /** @var TenantSettingsService&MockObject $service */
+        $service = $this->createMock(TenantSettingsService::class);
+        $service->method('get')->willReturn($existing);
+        $service->expects(self::once())->method('save')->with(self::identicalTo($existing));
+
+        $requestStack = new RequestStack();
+        $requestStack->push(new Request(content: '{"taxRegime":"NRUS"}'));
+
+        $processor = new TenantSettingsPatchProcessor($service, $requestStack);
+        $processor->process($incoming, new Patch());
+
+        self::assertSame(TaxRegime::NRUS, $existing->getTaxRegime());
     }
 }
