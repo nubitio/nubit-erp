@@ -136,6 +136,10 @@ test.describe('NRUS — régimen tributario fuerza tipo de comprobante', () => {
 
         const saleId = await sellToSeedCustomer(page);
         const invoiceResponse = await createInvoiceForSale(request, BASE_URL, auth, saleId);
+        if (!invoiceResponse.ok()) {
+          // eslint-disable-next-line no-console
+          console.log('[nrus-voucher-type] invoice error body:', await invoiceResponse.text());
+        }
         expect(invoiceResponse.ok(), 'crear el comprobante fiscal debe responder 2xx').toBeTruthy();
 
         const documents = await listTaxDocumentsForSale(request, BASE_URL, auth, saleId);
@@ -153,6 +157,10 @@ test.describe('NRUS — régimen tributario fuerza tipo de comprobante', () => {
 
         const saleId = await sellToSeedCustomer(page);
         const invoiceResponse = await createInvoiceForSale(request, BASE_URL, auth, saleId);
+        if (!invoiceResponse.ok()) {
+          // eslint-disable-next-line no-console
+          console.log('[nrus-voucher-type] invoice error body:', await invoiceResponse.text());
+        }
         expect(invoiceResponse.ok(), 'crear el comprobante fiscal debe responder 2xx').toBeTruthy();
 
         const documents = await listTaxDocumentsForSale(request, BASE_URL, auth, saleId);
