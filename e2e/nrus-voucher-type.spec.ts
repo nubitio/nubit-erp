@@ -80,6 +80,20 @@ async function sellToSeedCustomer(page: import('@playwright/test').Page): Promis
     search: E2E_SEED.customerName,
   });
 
+  // "Emitir boleta/factura SUNAT" defaults to the tenant's `autoInvoice`
+  // setting, which the E2E seed tenant has OFF — turn it on explicitly so the
+  // sale is created with makeInvoice=true (otherwise /invoice returns 400).
+  await page.locator('.pos-footer-options__toggle').click();
+  const emitInvoiceToggle = page.getByLabel('Emitir boleta o factura SUNAT');
+  if (!(await emitInvoiceToggle.isChecked())) {
+    await page
+      .locator('.pos-footer-option-row')
+      .filter({ hasText: 'Emitir boleta/factura SUNAT' })
+      .locator('label')
+      .click();
+  }
+  await expect(emitInvoiceToggle).toBeChecked();
+
   await completePosCashPayment(page);
   await waitForPosCheckoutReady(page);
 
