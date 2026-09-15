@@ -7,7 +7,7 @@ import { defineConfig, devices } from '@playwright/test';
  *
  *  1. Headless inside Docker (CI / docker compose --profile e2e run --rm e2e):
  *       docker compose --profile e2e run --rm e2e
- *       # CI runs four critical specs via docker/ci-e2e-runner.sh
+ *       # CI runs the critical specs listed in docker/ci-e2e-runner.sh
  *       docker compose --profile e2e run --rm e2e yarn test:e2e e2e/golden-path-fiscal.spec.ts
  *
  *  2. Headed on host machine (see the app run in a real browser):
