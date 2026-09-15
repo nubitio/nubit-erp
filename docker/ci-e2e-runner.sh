@@ -83,6 +83,7 @@ fi
 yarn test:e2e \
   e2e/happy-path.spec.ts \
   e2e/golden-path-fiscal.spec.ts \
+  e2e/nrus-voucher-type.spec.ts \
   e2e/purchases-stock.spec.ts \
   e2e/auth-refresh-regression.spec.ts \
   e2e/cash-rounding.spec.ts \
