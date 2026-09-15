@@ -13,11 +13,14 @@ final class OpenApiSecurityRequirementsValidator
      */
     public function validate(string $key, array $operation, array $schemes): array
     {
-        /** @var list<string> $errors */
         $errors = [];
         $requirements = is_array($operation['security'] ?? null) ? $operation['security'] : [];
+        /** @var list<array<array-key, mixed>> $requirements */
+        $requirements = array_values(array_filter($requirements, static fn(mixed $requirement): bool => is_array(
+            $requirement,
+        )));
         foreach ($requirements as $requirement) {
-            foreach (array_keys(is_array($requirement) ? $requirement : []) as $scheme) {
+            foreach (array_keys($requirement) as $scheme) {
                 if (($schemes[$scheme] ?? null) !== null) {
                     continue;
                 }
@@ -25,7 +28,6 @@ final class OpenApiSecurityRequirementsValidator
             }
         }
 
-        /** @var list<string> $contractErrors */
         $contractErrors = new OpenApiSecurityContractRequirementsValidator()->validate($key, $operation, $requirements);
         foreach ($contractErrors as $error) {
             $errors[] = $error;

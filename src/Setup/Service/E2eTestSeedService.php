@@ -123,6 +123,8 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $user = $this->upsertE2eUser(self::E2E_PASSWORD);
 
         $branch = $this->upsertBranch();
+        $user->addBranch($branch);
+        $this->entityManager->flush();
         $warehouse = $this->upsertWarehouse($branch);
         $cashRegister = $this->upsertCashRegister($branch);
         $this->purgeE2eSales();

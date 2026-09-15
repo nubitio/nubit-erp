@@ -62,7 +62,35 @@ corepack enable
 corepack prepare yarn@4.9.1 --activate
 
 echo "Checking OpenAPI compatibility ..."
-yarn openapi-typescript "$BASE/api/docs.json" -o /tmp/types.generated.ts
+OPENAPI_DOC=/tmp/e2e-openapi.json
+openapi_attempt=0
+until curl -fsS --max-time 30 "$BASE/api/docs.json" -o "$OPENAPI_DOC" \
+  && [ -s "$OPENAPI_DOC" ] \
+  && node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' "$OPENAPI_DOC"; do
+  openapi_attempt=$((openapi_attempt + 1))
+  if [ "$openapi_attempt" -ge 8 ]; then
+    echo "ERROR: OpenAPI document was not readable after 8 attempts"
+    exit 1
+  fi
+  echo "  attempt $openapi_attempt/8 — OpenAPI document not ready, retrying in 3s..."
+  sleep 3
+done
+
+# Fetch the root document before invoking openapi-typescript. Its resolver will
+# otherwise fetch the web URL while PHP/FrankenPHP is still completing the cold
+# API-doc request, which can reset the socket even after health/live and / are
+# ready. Local refs remain resolved by openapi-typescript, so validation is not
+# weakened or skipped.
+openapi_types_attempt=0
+until yarn openapi-typescript "$OPENAPI_DOC" -o /tmp/types.generated.ts; do
+  openapi_types_attempt=$((openapi_types_attempt + 1))
+  if [ "$openapi_types_attempt" -ge 8 ]; then
+    echo "ERROR: OpenAPI compatibility check failed after 8 attempts"
+    exit 1
+  fi
+  echo "  attempt $openapi_types_attempt/8 — OpenAPI resolver not ready, retrying in 3s..."
+  sleep 3
+done
 diff -u /home/node/app/assets/api/types.generated.ts /tmp/types.generated.ts
 echo "OpenAPI contract is compatible."
 

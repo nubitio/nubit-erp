@@ -16,7 +16,10 @@ use App\Identity\Entity\Role;
 use App\Identity\Repository\UserRepository;
 use App\Identity\State\UserPasswordHasher;
 use App\Identity\State\UserSoftDeleteProcessor;
+use App\Organization\Entity\Branch;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Attribute\SoftDeletable;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
@@ -110,6 +113,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true, options: ['default' => null])]
     private ?DateTimeImmutable $deletedAt = null;
+
+    /** @var Collection<int, Branch> */
+    #[ORM\ManyToMany(targetEntity: Branch::class)]
+    #[ORM\JoinTable(name: 'identity_user_branch_access')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'usuario_id', onDelete: 'CASCADE')]
+    #[ORM\InverseJoinColumn(name: 'branch_id', referencedColumnName: 'local_id', onDelete: 'CASCADE')]
+    private Collection $branches;
+
+    public function __construct()
+    {
+        $this->branches = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -210,5 +225,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         $this->deletedAt = $deletedAt;
 
         return $this;
+    }
+
+    /** @return Collection<int, Branch> */
+    public function getBranches(): Collection
+    {
+        return $this->branches;
+    }
+
+    public function addBranch(Branch $branch): static
+    {
+        if (!$this->branches->contains($branch)) {
+            $this->branches->add($branch);
+        }
+
+        return $this;
+    }
+
+    public function hasBranchAccess(Branch $branch): bool
+    {
+        return $this->branches->contains($branch);
     }
 }

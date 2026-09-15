@@ -44,7 +44,7 @@ final class CollectOnAccountServiceTest extends TestCase
         $this->salePaymentService = $this->createMock(SalePaymentService::class);
         $this->salePaymentService
             ->method('appendPayment')
-            ->willReturnCallback(fn(): SalePayment => $this->salePayment(random_int(1, 99999)));
+            ->willReturnCallback(fn(): SalePayment => $this->salePayment(random_int(min: 1, max: 99_999)));
     }
 
     public function testFifoAppliesAcrossSalesAndBooksTheMoneyOnce(): void
@@ -76,16 +76,16 @@ final class CollectOnAccountServiceTest extends TestCase
             createdBy: new User(),
         );
 
-        self::assertCount(2, $result->applications);
-        self::assertSame('120.00', $result->amount);
-        self::assertSame('s1', $result->applications[0]->saleId);
-        self::assertCount(2, array_filter(
+        static::assertCount(2, $result->applications);
+        static::assertSame('120.00', $result->amount);
+        static::assertSame('s1', $result->applications[0]->saleId);
+        static::assertCount(2, array_filter(
             $persisted,
             static fn(object $o): bool => $o instanceof CustomerPaymentApplication,
         ));
-        self::assertCount(1, $this->dispatched);
-        self::assertSame(EconomicEvent::RECEIVABLE_COLLECT_CASH, $this->dispatched[0]->kind);
-        self::assertSame('120.00', $this->dispatched[0]->total);
+        static::assertCount(1, $this->dispatched);
+        static::assertSame(EconomicEvent::RECEIVABLE_COLLECT_CASH, $this->dispatched[0]->kind);
+        static::assertSame('120.00', $this->dispatched[0]->total);
     }
 
     public function testAmountAboveTotalDebtIsRejectedAndNothingIsBooked(): void
@@ -106,7 +106,7 @@ final class CollectOnAccountServiceTest extends TestCase
             new User(),
         );
 
-        self::assertSame([], $this->dispatched);
+        static::assertSame([], $this->dispatched);
     }
 
     public function testRejectsWhenTheCustomerHasNoOpenSales(): void
@@ -144,8 +144,8 @@ final class CollectOnAccountServiceTest extends TestCase
             new User(),
         );
 
-        self::assertCount(1, $this->dispatched);
-        self::assertSame(EconomicEvent::RECEIVABLE_COLLECT_BANK, $this->dispatched[0]->kind);
+        static::assertCount(1, $this->dispatched);
+        static::assertSame(EconomicEvent::RECEIVABLE_COLLECT_BANK, $this->dispatched[0]->kind);
     }
 
     public function testCashCollectionWithoutAnOpenSessionIsRejected(): void
@@ -219,7 +219,7 @@ final class CollectOnAccountServiceTest extends TestCase
             ->setBalanceDue($balanceDue)
             ->setCurrency('PEN')
             ->setSerie('F001')
-            ->setNumero(ltrim($id, 's'));
+            ->setNumero(ltrim($id, characters: 's'));
         new \ReflectionProperty(SaleRecord::class, 'id')->setValue($sale, $id);
 
         return $sale;

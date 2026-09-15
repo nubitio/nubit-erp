@@ -24,9 +24,11 @@ final class OpenApiBasicValidator
             $errors[] = sprintf('%s must declare a success response.', $key);
         }
         foreach (['401', '403'] as $status) {
-            if (!array_key_exists($status, $responses) && !array_key_exists((int) $status, $responses)) {
-                $errors[] = sprintf('%s must declare %s.', $key, $status);
+            if (!(!array_key_exists($status, $responses) && !array_key_exists((int) $status, $responses))) {
+                continue;
             }
+
+            $errors[] = sprintf('%s must declare %s.', $key, $status);
         }
 
         return $errors;

@@ -31,9 +31,9 @@ final class OpenApiReferenceValidator
         if (is_string($value['$ref'] ?? null) && !$this->exists($contract, $value['$ref'])) {
             $errors[] = sprintf('%s references missing component %s.', $key, $value['$ref']);
         }
-        foreach ($value as $child) {
+        array_walk($value, function (mixed $child) use ($key, $contract, &$errors): void {
             $this->walk($key, $contract, $child, $errors);
-        }
+        });
     }
 
     /** @param array<array-key, mixed> $document */
@@ -43,12 +43,17 @@ final class OpenApiReferenceValidator
             return false;
         }
         $value = $document;
-        foreach (explode('/', substr($reference, 2)) as $part) {
+        foreach (explode('/', substr(string: $reference, offset: 2)) as $part) {
             $part = str_replace(['~1', '~0'], ['/', '~'], $part);
-            if (!is_array($value) || !array_key_exists($part, $value)) {
+            if (!array_key_exists($part, $value)) {
                 return false;
             }
-            $value = $value[$part];
+            /** @var mixed $nextValue */
+            $nextValue = $value[$part] ?? null;
+            if (!is_array($nextValue)) {
+                return false;
+            }
+            $value = $nextValue;
         }
 
         return true;

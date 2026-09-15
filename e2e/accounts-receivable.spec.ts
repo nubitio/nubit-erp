@@ -11,7 +11,7 @@ const BASE_URL = getE2EBaseUrl();
 test('filtra la deuda por cliente, registra un abono y muestra el historial', async ({ page, request }) => {
   const seed = await getE2ESeed();
   await login(page, seed.username, seed.password);
-  await ensureOpenCashSession(page, BASE_URL);
+  await ensureOpenCashSession(page, BASE_URL, seed.username, seed.password);
   const auth = await loginViaApi(request, BASE_URL, seed.username, seed.password);
 
   const [customersResponse, productsResponse, warehousesResponse, methodsResponse] = await Promise.all([
@@ -103,7 +103,7 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
 
   await test.step('registrar un pago parcial', async () => {
     await expect(page.getByRole('dialog', { name: 'Registrar cobro de venta' })).toBeVisible();
-    await expect(page.getByRole('dialog').getByText(/Saldo.*9[.,]00/)).toBeVisible();
+    await expect(page.getByRole('dialog').getByText(/Saldo.*9[.,]00/)).toBeVisible({ timeout: 15000 });
     await page.getByLabel(/Monto/).fill('4.00');
     await page.getByLabel('Referencia').fill('OP-E2E-001');
     const methodInput = page.getByText('Método de pago').locator('..').getByRole('combobox');

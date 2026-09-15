@@ -107,7 +107,7 @@ readonly class TenantNotificationService
                     $severity = trim((string) $data['severity']);
                     $severity = in_array($severity, ['critical', 'warning', 'info'], true)
                         ? $severity
-                        : self::EVENT_DEFINITIONS[$eventKey]['severity'];
+                        : $this->getEventDefinitions()[$eventKey]['severity'];
                     $recipients = $this->normalizeRecipients($data['recipients']);
                     $config = $data['config'];
 
@@ -313,8 +313,8 @@ readonly class TenantNotificationService
             return false;
         }
 
-        $severity = (string) ($target['severity'] ?? self::EVENT_DEFINITIONS[$eventKey]['severity']);
-        $subject = sprintf('[TEST][%s] %s', strtoupper($channel), self::EVENT_DEFINITIONS[$eventKey]['label']);
+        $severity = (string) ($target['severity'] ?? $this->getEventDefinitions()[$eventKey]['severity']);
+        $subject = sprintf('[TEST][%s] %s', strtoupper($channel), $this->getEventDefinitions()[$eventKey]['label']);
         $message = implode("\n", [
             'This is a test notification.',
             'Tenant: ' . $tenantName,
@@ -638,6 +638,9 @@ readonly class TenantNotificationService
     {
         $normalized = [];
         foreach ($rawRecipients as $item) {
+            if (!is_scalar($item) && $item !== null) {
+                continue;
+            }
             $value = trim((string) $item);
             if ($value === '') {
                 continue;

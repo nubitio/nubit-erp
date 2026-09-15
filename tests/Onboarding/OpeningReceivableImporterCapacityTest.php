@@ -37,7 +37,7 @@ final class OpeningReceivableImporterCapacityTest extends TestCase
 
     public function testBudgetsArePositiveAndDocumentedInCode(): void
     {
-        self::assertSame(5_000, OpeningReceivableImporter::MAX_ROWS);
-        self::assertSame(250, OpeningReceivableImporter::FLUSH_EVERY);
+        static::assertSame(5_000, OpeningReceivableImporter::MAX_ROWS);
+        static::assertSame(250, OpeningReceivableImporter::FLUSH_EVERY);
     }
 }

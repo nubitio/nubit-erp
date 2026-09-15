@@ -4609,12 +4609,6 @@ message = "Redundant docblock type for variable `$rows`."
 count = 1
 
 [[issues]]
-file = "src/Sales/Command/BackfillCustomerAccountCommand.php"
-code = "mixed-operand"
-message = "Casting `mixed` to `bool`."
-count = 1
-
-[[issues]]
 file = "src/Sales/Command/SalesV2BackfillPaymentsCommand.php"
 code = "mixed-operand"
 message = "Casting `mixed` to `bool`."
@@ -4669,12 +4663,6 @@ message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
 
 [[issues]]
-file = "src/Sales/Controller/CustomerStatementController.php"
-code = "redundant-cast"
-message = "Redundant cast to `(string)`: the expression already has this type."
-count = 3
-
-[[issues]]
 file = "src/Sales/Controller/DashboardController.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
@@ -4700,12 +4688,6 @@ count = 2
 
 [[issues]]
 file = "src/Sales/Report/PaymentMethodBreakdownReport.php"
-code = "redundant-cast"
-message = "Redundant cast to `(string)`: the expression already has this type."
-count = 1
-
-[[issues]]
-file = "src/Sales/Repository/CustomerAccountEntryRepository.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
@@ -5774,12 +5756,6 @@ count = 1
 
 [[issues]]
 file = "tests/Architecture/ContextManifest.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
-file = "tests/Architecture/PublicContractSnapshot.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 1
@@ -6995,12 +6971,6 @@ file = "tests/Sales/Repository/DashboardRepositoryTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 4
-
-[[issues]]
-file = "tests/Sales/Service/CustomerAccountLedgerTest.php"
-code = "possibly-null-array-index"
-message = "Possibly using `null` as an array index to access elementof variable $this->entries."
-count = 1
 
 [[issues]]
 file = "tests/Sales/Service/ReportGridFilterApplierTest.php"

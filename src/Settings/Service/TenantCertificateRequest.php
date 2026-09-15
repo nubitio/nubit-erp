@@ -22,9 +22,9 @@ final readonly class TenantCertificateRequest
         }
 
         try {
-            /** @var array<string, mixed> $payload */
-            $payload = $request->toArray();
-            return $payload;
+            $decoded = $request->toArray();
+            $keys = array_map(static fn(string|int $key): string => (string) $key, array_keys($decoded));
+            return array_combine($keys, array_values($decoded));
         } catch (\Throwable) {
             return [];
         }
@@ -33,8 +33,9 @@ final readonly class TenantCertificateRequest
     /** @param array<string, mixed> $payload */
     public function certificatePem(Request $request, array $payload): string
     {
-        $uploaded = $request->files->get('certificate');
-        if ($uploaded instanceof UploadedFile) {
+        if ($request->files->get('certificate') instanceof UploadedFile) {
+            /** @var UploadedFile $uploaded */
+            $uploaded = $request->files->get('certificate');
             $contents = file_get_contents($uploaded->getPathname());
             if (!is_string($contents) || $contents === '') {
                 throw new \InvalidArgumentException('El archivo de certificado esta vacio.');
@@ -44,11 +45,12 @@ final readonly class TenantCertificateRequest
         }
 
         foreach (['certificatePem', 'certificateBase64'] as $key) {
+            /** @var mixed $value */
             $value = $payload[$key] ?? null;
             if (!is_string($value) || trim($value) === '') {
                 continue;
             }
-            $contents = $key === 'certificateBase64' ? base64_decode($value, true) : trim($value);
+            $contents = $key === 'certificateBase64' ? base64_decode($value, strict: true) : trim($value);
             if (!is_string($contents) || $contents === '') {
                 throw new \InvalidArgumentException('El certificado base64 no es valido.');
             }
@@ -62,6 +64,7 @@ final readonly class TenantCertificateRequest
     /** @param array<string, mixed> $payload */
     private function optionalPassword(array $payload): string
     {
+        /** @var mixed $password */
         $password = $payload['certificatePassword'] ?? $payload['pfxPassword'] ?? '';
         return is_string($password) ? $password : '';
     }

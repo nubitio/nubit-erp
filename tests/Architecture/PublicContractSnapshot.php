@@ -38,11 +38,11 @@ final class PublicContractSnapshot
         /** @var mixed $decoded */
         $decoded = json_decode((string) file_get_contents(self::FILE), associative: true);
 
+        /** @var array<string, array<int, string>> $entries */
+        $entries = is_array($decoded) ? $decoded : [];
         $snapshot = [];
-        foreach (is_array($decoded) ? $decoded : [] as $fqcn => $signatures) {
-            if (is_string($fqcn) && is_array($signatures)) {
-                $snapshot[$fqcn] = array_values(array_map(strval(...), $signatures));
-            }
+        foreach ($entries as $fqcn => $signatures) {
+            $snapshot[$fqcn] = array_values(array_map(strval(...), $signatures));
         }
 
         return $snapshot;

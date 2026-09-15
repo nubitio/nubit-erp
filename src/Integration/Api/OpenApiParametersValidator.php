@@ -12,6 +12,7 @@ final class OpenApiParametersValidator
      */
     public function validate(string $key, string $path, array $operation): array
     {
+        $matches = [];
         preg_match_all('/\{([^}]+)}/', $path, $matches);
         $parameters = is_array($operation['parameters'] ?? null) ? $operation['parameters'] : [];
         $errors = [];
@@ -28,12 +29,12 @@ final class OpenApiParametersValidator
     /** @param array<array-key, mixed> $parameters */
     private function hasRequiredParameter(array $parameters, string $name): bool
     {
-        foreach ($parameters as $parameter) {
-            if (
-                is_array($parameter)
-                && ($parameter['name'] ?? null) === $name
-                && ($parameter['required'] ?? false) === true
-            ) {
+        /** @var list<array<array-key, mixed>> $typedParameters */
+        $typedParameters = array_values(array_filter($parameters, static fn(mixed $parameter): bool => is_array(
+            $parameter,
+        )));
+        foreach ($typedParameters as $parameter) {
+            if (($parameter['name'] ?? null) === $name && ($parameter['required'] ?? false) === true) {
                 return true;
             }
         }

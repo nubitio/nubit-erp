@@ -29,7 +29,19 @@ final readonly class CustomerAccountBackfiller
      *
      * @throws Exception
      */
-    public function run(bool $dryRun): array
+    public function run(): array
+    {
+        return $this->runInternal(mode: 'persist');
+    }
+
+    /** @return array{customers: int, charges: int, payments: int, skipped: list<int>} */
+    public function dryRun(): array
+    {
+        return $this->runInternal(mode: 'dry-run');
+    }
+
+    /** @return array{customers: int, charges: int, payments: int, skipped: list<int>} */
+    private function runInternal(string $mode): array
     {
         $alreadyLedgered = $this->gateway->customersWithEntries();
 
@@ -62,7 +74,7 @@ final readonly class CustomerAccountBackfiller
 
             foreach ($timeline as $entry) {
                 $entry['entry_type'] === 'charge' ? $charges++ : $payments++;
-                if (!$dryRun) {
+                if ($mode !== 'dry-run') {
                     $this->gateway->insertEntry($customerId, $entry);
                 }
             }

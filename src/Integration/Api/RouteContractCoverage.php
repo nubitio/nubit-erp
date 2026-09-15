@@ -41,10 +41,9 @@ final class RouteContractCoverage
     {
         $operations = [];
         $paths = is_array($contract['paths'] ?? null) ? $contract['paths'] : [];
+        /** @var array<string, array<string, mixed>> $paths */
+        $paths = array_filter($paths, static fn(mixed $item): bool => is_array($item));
         foreach ($paths as $path => $item) {
-            if (!is_string($path) || !is_array($item)) {
-                continue;
-            }
             foreach (['get', 'post', 'put', 'patch', 'delete'] as $method) {
                 if (!is_array($item[$method] ?? null)) {
                     continue;

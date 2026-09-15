@@ -91,16 +91,7 @@ readonly class CollectOnAccountService
 
         $lines = $this->applyPlan($plan, $paymentMethod, $paidAt, $reference, $customerId, $currency, $collectionId);
 
-        $this->bookMoney(
-            $collectionId,
-            $amountMoney,
-            $currency,
-            $isCash,
-            $cashSessionId,
-            $paidAt,
-            $description,
-            $createdBy,
-        );
+        $this->bookMoney($collectionId, $amountMoney, $currency, $cashSessionId, $paidAt, $description, $createdBy);
 
         $this->operationLog->record('sales', 'receivable.collected_on_account', $collectionId, [
             'customer_id' => $customerId,
@@ -244,7 +235,6 @@ readonly class CollectOnAccountService
         string $collectionId,
         BigDecimal $amount,
         string $currency,
-        bool $isCash,
         ?int $cashSessionId,
         DateTimeImmutable $paidAt,
         string $description,
@@ -265,7 +255,9 @@ readonly class CollectOnAccountService
         $this->messageBus->dispatch(new EconomicEvent(
             source: EconomicEvent::SOURCE_RECEIVABLE_COLLECT,
             sourceId: $collectionId,
-            kind: $isCash ? EconomicEvent::RECEIVABLE_COLLECT_CASH : EconomicEvent::RECEIVABLE_COLLECT_BANK,
+            kind: $cashSessionId !== null
+                ? EconomicEvent::RECEIVABLE_COLLECT_CASH
+                : EconomicEvent::RECEIVABLE_COLLECT_BANK,
             occurredOn: $paidAt->format('Y-m-d'),
             description: $description,
             total: Money::toString($amount),

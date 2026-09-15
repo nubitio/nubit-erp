@@ -19,13 +19,13 @@ final class CustomerAccountTimelineTest extends TestCase
             $this->payment('s2', 12, '2026-02-01', '300.00', 'F001-2'),
         ]);
 
-        self::assertSame(['charge', 'payment', 'charge', 'payment'], array_column($timeline, 'entry_type'));
+        static::assertSame(['charge', 'payment', 'charge', 'payment'], array_column($timeline, 'entry_type'));
         // 0 +500 => 500 ; -200 => 300 ; +300 => 600 (charge before same-day payment) ; -300 => 300
-        self::assertSame(['500.00', '300.00', '600.00', '300.00'], array_column($timeline, 'running_balance'));
-        self::assertSame('500.00', $timeline[0]['debit']);
-        self::assertNull($timeline[0]['sale_payment_id']);
-        self::assertSame('200.00', $timeline[1]['credit']);
-        self::assertSame(11, $timeline[1]['sale_payment_id']);
+        static::assertSame(['500.00', '300.00', '600.00', '300.00'], array_column($timeline, 'running_balance'));
+        static::assertSame('500.00', $timeline[0]['debit']);
+        static::assertNull($timeline[0]['sale_payment_id']);
+        static::assertSame('200.00', $timeline[1]['credit']);
+        static::assertSame(11, $timeline[1]['sale_payment_id']);
     }
 
     public function testMergeCanGoNegativeWhenPaymentsLeadCharges(): void
@@ -37,12 +37,12 @@ final class CustomerAccountTimelineTest extends TestCase
             'F001-9',
         )], payments: [$this->payment('s1', 1, '2026-03-01', '150.00', 'F001-9')]);
 
-        self::assertSame(['-150.00', '-50.00'], array_column($timeline, 'running_balance'));
+        static::assertSame(['-150.00', '-50.00'], array_column($timeline, 'running_balance'));
     }
 
     public function testMergeIsEmptyWithoutEvents(): void
     {
-        self::assertSame([], CustomerAccountTimeline::merge([], []));
+        static::assertSame([], CustomerAccountTimeline::merge([], []));
     }
 
     /**

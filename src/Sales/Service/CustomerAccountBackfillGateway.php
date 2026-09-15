@@ -27,6 +27,7 @@ final readonly class CustomerAccountBackfillGateway
     public function chargeRows(): array
     {
         /** @var list<array{customer_id: int, sale_id: string, occurred_on: string, amount: string, document: string}> $rows */
+        /** @var list<array{customer_id: int, sale_id: string, occurred_on: string, amount: string, document: string}> $rows */
         $rows = $this->connection->fetchAllAssociative(<<<'SQL'
             SELECT
                 s.customer_id AS customer_id,
@@ -42,7 +43,7 @@ final readonly class CustomerAccountBackfillGateway
             ORDER BY occurred_on, s.issued_at, s.id
             SQL);
 
-        return $rows;
+        return [...$rows];
     }
 
     /**
@@ -54,6 +55,7 @@ final readonly class CustomerAccountBackfillGateway
      */
     public function paymentRows(): array
     {
+        /** @var list<array{customer_id: int, sale_id: string, sale_payment_id: int, occurred_on: string, amount: string, document: string}> $rows */
         /** @var list<array{customer_id: int, sale_id: string, sale_payment_id: int, occurred_on: string, amount: string, document: string}> $rows */
         $rows = $this->connection->fetchAllAssociative(<<<'SQL'
             SELECT
@@ -72,7 +74,7 @@ final readonly class CustomerAccountBackfillGateway
             ORDER BY occurred_on, sp.id
             SQL);
 
-        return $rows;
+        return [...$rows];
     }
 
     /**

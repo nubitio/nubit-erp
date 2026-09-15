@@ -59,8 +59,8 @@ final class TenantCertificateControllerHttpTest extends TestCase
             'currentPassword' => $currentPassword,
         ]));
 
-        self::assertSame(400, $response->getStatusCode());
-        self::assertStringNotContainsString($currentPassword, (string) $response->getContent());
+        static::assertSame(400, $response->getStatusCode());
+        static::assertStringNotContainsString($currentPassword, (string) $response->getContent());
     }
 
     public function testMissingOrInvalidStepUpDoesNotMutate(): void
@@ -72,7 +72,7 @@ final class TenantCertificateControllerHttpTest extends TestCase
             'ruc' => '20123456789',
         ]));
 
-        self::assertSame(400, $response->getStatusCode());
+        static::assertSame(400, $response->getStatusCode());
     }
 
     public function testMutationResponseContainsMetadataOnly(): void
@@ -92,7 +92,7 @@ final class TenantCertificateControllerHttpTest extends TestCase
                 $solPassword,
                 $certificatePem,
                 'admin',
-                self::isType('callable'),
+                static::callback(static fn(mixed $callback): bool => is_callable($callback)),
             )
             ->willReturn(new TenantCertificate(
                 id: 1,
@@ -124,11 +124,11 @@ final class TenantCertificateControllerHttpTest extends TestCase
             'certificatePassword' => $certificatePassword,
         ]));
 
-        self::assertSame(200, $response->getStatusCode());
+        static::assertSame(200, $response->getStatusCode());
         $body = (string) $response->getContent();
-        self::assertStringNotContainsString($solPassword, $body);
-        self::assertStringNotContainsString($certificatePassword, $body);
-        self::assertStringNotContainsString('PRIVATE KEY', $body);
+        static::assertStringNotContainsString($solPassword, $body);
+        static::assertStringNotContainsString($certificatePassword, $body);
+        static::assertStringNotContainsString('PRIVATE KEY', $body);
     }
 
     /** @param array<string, string> $payload */

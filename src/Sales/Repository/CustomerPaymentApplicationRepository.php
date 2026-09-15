@@ -26,6 +26,7 @@ class CustomerPaymentApplicationRepository extends ServiceEntityRepository
     public function forSale(string $saleId): array
     {
         /** @var list<CustomerPaymentApplication> $rows */
+        /** @var list<CustomerPaymentApplication> $rows */
         $rows = $this
             ->createQueryBuilder('a')
             ->where('a.saleId = :sale')
@@ -34,6 +35,6 @@ class CustomerPaymentApplicationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
-        return $rows;
+        return [...$rows];
     }
 }

@@ -27,6 +27,7 @@ class WebhookDeliveryRepository extends ServiceEntityRepository
      */
     public function findDue(\DateTimeImmutable $now, int $limit = 100): array
     {
+        /** @var list<mixed> $rows */
         $rows = $this
             ->createQueryBuilder('d')
             ->where('d.status IN (:open)')
@@ -38,8 +39,6 @@ class WebhookDeliveryRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
-        assert(is_array($rows), description: 'Doctrine query result must be an array.');
-
         return array_values(array_filter(
             $rows,
             static fn(mixed $delivery): bool => $delivery instanceof WebhookDelivery,

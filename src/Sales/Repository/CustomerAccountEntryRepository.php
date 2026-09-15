@@ -89,7 +89,7 @@ class CustomerAccountEntryRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
-        return $rows;
+        return [...$rows];
     }
 
     /**
@@ -140,7 +140,7 @@ class CustomerAccountEntryRepository extends ServiceEntityRepository
 
         $out = [];
         foreach ($rows as $row) {
-            $remaining = Money::money((string) $row['credit'])->minus(Money::money((string) $row['applied']));
+            $remaining = Money::money($row['credit'])->minus(Money::money((string) $row['applied']));
             if ($remaining->isGreaterThan(0)) {
                 $out[] = ['entryId' => (int) $row['entryId'], 'remaining' => Money::toString($remaining)];
             }

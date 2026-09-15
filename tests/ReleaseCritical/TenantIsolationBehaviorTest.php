@@ -116,13 +116,13 @@ final class TenantIsolationBehaviorTest extends TestCase
             $switcher,
         );
 
-        $betaFile = tempnam(sys_get_temp_dir(), 'bank-import-beta-');
-        $alphaFile = tempnam(sys_get_temp_dir(), 'bank-import-alpha-');
+        $betaFile = tempnam(directory: sys_get_temp_dir(), prefix: 'bank-import-beta-');
+        $alphaFile = tempnam(directory: sys_get_temp_dir(), prefix: 'bank-import-alpha-');
         if ($betaFile === false || $alphaFile === false) {
             static::fail('Could not create temporary bank import fixtures.');
         }
-        file_put_contents($betaFile, "date,description,amount\n");
-        file_put_contents($alphaFile, "date,description,amount\n");
+        file_put_contents(filename: $betaFile, data: "date,description,amount\n");
+        file_put_contents(filename: $alphaFile, data: "date,description,amount\n");
 
         $beta = new BankStatementImportMessage(
             'import-b',

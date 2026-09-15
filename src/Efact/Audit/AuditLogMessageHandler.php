@@ -56,16 +56,13 @@ final readonly class AuditLogMessageHandler
 
     private function isControlPlaneReady(): bool
     {
-        /** @var bool $ready */
-        $ready = $this->cache->get('audit_control_plane_ready', function (ItemInterface $item): bool {
+        return $this->cache->get('audit_control_plane_ready', function (ItemInterface $item): bool {
             $item->expiresAfter(5);
 
-            return (bool) $this->connectionRegistry
+            return $this->connectionRegistry
                 ->getConnection('control_plane')
                 ->createSchemaManager()
-                ->tablesExist(['audit_logs']);
-        });
-
-        return $ready;
+                ->tablesExist(['audit_logs']) === true;
+        }) === true;
     }
 }

@@ -6,16 +6,20 @@ namespace App\Tests\Identity\Controller;
 
 use App\Identity\Auth\SelectedBranchContext;
 use App\Identity\Controller\AuthSelectBranchController;
-use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use App\Organization\Entity\Branch;
+use App\Organization\Entity\Company;
 use App\Organization\Repository\BranchRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Organization\Repository\CompanyRepository;
 use Nubit\AdminBundle\Auth\JWTAuthenticator;
-use Nubit\AdminBundle\Auth\JWTManager;
+use Nubit\AdminBundle\Auth\JWTManagerInterface;
+use Nubit\AdminBundle\Auth\RefreshTokenStoreInterface;
 use Nubit\AdminBundle\Auth\ResponseModeResolver;
+use Nubit\AdminBundle\Auth\TokenClaimsProviderInterface;
 use Nubit\AdminBundle\Auth\TokenGenerator;
+use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -37,6 +41,8 @@ final class AuthSelectBranchControllerTest extends TestCase
         $controller = new AuthSelectBranchController(
             $security,
             $this->createMock(BranchRepository::class),
+            $this->createMock(CompanyRepository::class),
+            $this->tenantContext(),
             $tokenGenerator,
             $clientDetector,
             $cookieFactory,
@@ -67,6 +73,8 @@ final class AuthSelectBranchControllerTest extends TestCase
         $controller = new AuthSelectBranchController(
             $security,
             $this->createMock(BranchRepository::class),
+            $this->createMock(CompanyRepository::class),
+            $this->tenantContext(),
             $tokenGenerator,
             $clientDetector,
             $cookieFactory,
@@ -105,6 +113,8 @@ final class AuthSelectBranchControllerTest extends TestCase
         $controller = new AuthSelectBranchController(
             $security,
             $branchRepository,
+            $this->createStub(CompanyRepository::class),
+            $this->tenantContext(),
             $tokenGenerator,
             $clientDetector,
             $cookieFactory,
@@ -123,6 +133,219 @@ final class AuthSelectBranchControllerTest extends TestCase
         );
         $response = $controller($request);
 
-        self::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        static::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        static::assertArrayNotHasKey('token', $this->responsePayload($response));
+    }
+
+    public function testReturnsForbiddenWhenUserSelectsBranchFromAnotherCompany(): void
+    {
+        $user = $this->createStub(User::class);
+        $user->method('getRoles')->willReturn(['ROLE_USER']);
+        $user->method('getDeletedAt')->willReturn(null);
+        $user->method('getId')->willReturn(7);
+
+        $branch = new Branch()
+            ->setName('Otra sucursal')
+            ->setCompany(new Company());
+
+        $security = $this->createStub(Security::class);
+        $security->method('getUser')->willReturn($user);
+        $branchRepository = $this->createStub(BranchRepository::class);
+        $branchRepository->method('find')->willReturn($branch);
+        $companyRepository = $this->createStub(CompanyRepository::class);
+        $companyRepository->method('findOneBy')->willReturn(new Company());
+
+        $controller = new AuthSelectBranchController(
+            $security,
+            $branchRepository,
+            $companyRepository,
+            $this->tenantContext(),
+            new \ReflectionClass(TokenGenerator::class)->newInstanceWithoutConstructor(),
+            new SelectedBranchContext(),
+            new ResponseModeResolver(),
+            new \ReflectionClass(JWTAuthenticator::class)->newInstanceWithoutConstructor(),
+            new NullLogger(),
+        );
+
+        $response = $controller(Request::create(
+            '/api/auth/select-branch',
+            'POST',
+            [],
+            [],
+            [],
+            [],
+            (string) json_encode(['branchId' => 'b-2']),
+        ));
+
+        static::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        static::assertArrayNotHasKey('token', $this->responsePayload($response));
+    }
+
+    public function testReturnsForbiddenWhenBranchBelongsToAnotherCompany(): void
+    {
+        $user = $this->createStub(User::class);
+        $user->method('getRoles')->willReturn(['ROLE_ADMIN', 'ROLE_USER']);
+        $user->method('getDeletedAt')->willReturn(null);
+        $user->method('getId')->willReturn(8);
+        $user->method('hasBranchAccess')->willReturn(false);
+
+        $currentCompany = new Company();
+        $branch = new Branch()
+            ->setName('Empresa ajena')
+            ->setCompany(new Company());
+        $security = $this->createStub(Security::class);
+        $security->method('getUser')->willReturn($user);
+        $branchRepository = $this->createStub(BranchRepository::class);
+        $branchRepository->method('find')->willReturn($branch);
+        $companyRepository = $this->createStub(CompanyRepository::class);
+        $companyRepository->method('findOneBy')->willReturn($currentCompany);
+
+        $controller = new AuthSelectBranchController(
+            $security,
+            $branchRepository,
+            $companyRepository,
+            $this->tenantContext(),
+            new \ReflectionClass(TokenGenerator::class)->newInstanceWithoutConstructor(),
+            new SelectedBranchContext(),
+            new ResponseModeResolver(),
+            new \ReflectionClass(JWTAuthenticator::class)->newInstanceWithoutConstructor(),
+            new NullLogger(),
+        );
+
+        $response = $controller(Request::create(
+            '/api/auth/select-branch',
+            'POST',
+            [],
+            [],
+            [],
+            [],
+            (string) json_encode(['branchId' => 'b-cross-company']),
+        ));
+
+        static::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        static::assertArrayNotHasKey('token', $this->responsePayload($response));
+    }
+
+    public function testIssuesTokensForCashierInCurrentTenantCompany(): void
+    {
+        $user = $this->createStub(User::class);
+        $user->method('getRoles')->willReturn(['ROLE_CASHIER', 'ROLE_USER']);
+        $user->method('getDeletedAt')->willReturn(null);
+        $user->method('getUserIdentifier')->willReturn('cashier');
+        $user->method('hasBranchAccess')->willReturn(true);
+        $company = new Company();
+        $branch = new Branch()
+            ->setName('Sucursal autorizada')
+            ->setCompany($company);
+        $branchRepository = $this->createStub(BranchRepository::class);
+        $branchRepository->method('find')->willReturn($branch);
+        $companyRepository = $this->createStub(CompanyRepository::class);
+        $companyRepository->method('findOneBy')->willReturn($company);
+
+        $jwtManager = $this->createMock(JWTManagerInterface::class);
+        $jwtManager->method('encode')->willReturnOnConsecutiveCalls('access-token', 'refresh-token');
+        $claimsProvider = $this->createStub(TokenClaimsProviderInterface::class);
+        $claimsProvider->method('claims')->willReturn(['userId' => 7, 'branchId' => 'branch-1']);
+        $claimsProvider->method('userData')->willReturn(['id' => 7]);
+        $refreshTokenStore = $this->createMock(RefreshTokenStoreInterface::class);
+        $refreshTokenStore->expects($this->once())->method('save');
+        $selectedBranch = new SelectedBranchContext();
+
+        $controller = new AuthSelectBranchController(
+            $this->securityFor($user),
+            $branchRepository,
+            $companyRepository,
+            $this->tenantContext(),
+            new TokenGenerator($jwtManager, $claimsProvider, $refreshTokenStore, 900, 86_400),
+            $selectedBranch,
+            new ResponseModeResolver(),
+            $this->createMock(JWTAuthenticator::class),
+            new NullLogger(),
+        );
+
+        $response = $controller(Request::create(
+            '/api/auth/select-branch',
+            'POST',
+            [],
+            [],
+            [],
+            [],
+            (string) json_encode(['branchId' => 'branch-1', 'response_mode' => 'json']),
+        ));
+
+        static::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        static::assertSame('access-token', $this->responsePayload($response)['token']);
+        static::assertNull($selectedBranch->get(), 'Branch context must not leak after token issuance.');
+    }
+
+    public function testDeniesSecondBranchInSameCompanyWhenUserIsNotAssigned(): void
+    {
+        $company = new Company();
+        $branch = new Branch()
+            ->setName('Sucursal B')
+            ->setCompany($company);
+        $user = $this->createStub(User::class);
+        $user->method('getDeletedAt')->willReturn(null);
+        $user->method('getId')->willReturn(9);
+        $user->method('hasBranchAccess')->willReturn(false);
+
+        $companyRepository = $this->createStub(CompanyRepository::class);
+        $companyRepository->method('findOneBy')->willReturn($company);
+        $branchRepository = $this->createStub(BranchRepository::class);
+        $branchRepository->method('find')->willReturn($branch);
+
+        $controller = new AuthSelectBranchController(
+            $this->securityFor($user),
+            $branchRepository,
+            $companyRepository,
+            $this->tenantContext(),
+            new \ReflectionClass(TokenGenerator::class)->newInstanceWithoutConstructor(),
+            new SelectedBranchContext(),
+            new ResponseModeResolver(),
+            new \ReflectionClass(JWTAuthenticator::class)->newInstanceWithoutConstructor(),
+            new NullLogger(),
+        );
+
+        $response = $controller(Request::create(
+            '/api/auth/select-branch',
+            'POST',
+            [],
+            [],
+            [],
+            [],
+            (string) json_encode(['branchId' => 'branch-b']),
+        ));
+
+        static::assertSame(Response::HTTP_FORBIDDEN, $response->getStatusCode());
+        static::assertArrayNotHasKey('token', $this->responsePayload($response));
+    }
+
+    private function securityFor(User $user): Security
+    {
+        $security = $this->createStub(Security::class);
+        $security->method('getUser')->willReturn($user);
+
+        return $security;
+    }
+
+    /** @return array<array-key, mixed> */
+    private function responsePayload(Response $response): array
+    {
+        $content = $response->getContent();
+        static::assertIsString($content);
+
+        /** @var mixed $payload */
+        $payload = json_decode($content, associative: true, flags: JSON_THROW_ON_ERROR);
+        static::assertIsArray($payload);
+
+        return $payload;
+    }
+
+    private function tenantContext(): TenantContext&Stub
+    {
+        $context = $this->createStub(TenantContext::class);
+        $context->method('getTenantId')->willReturn(1);
+
+        return $context;
     }
 }

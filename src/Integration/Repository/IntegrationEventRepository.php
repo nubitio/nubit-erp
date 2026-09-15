@@ -51,6 +51,7 @@ class IntegrationEventRepository extends ServiceEntityRepository
                 'now' => $now,
             ],
         );
+        /** @var list<int|string> $ids */
         $ids = $connection->fetchFirstColumn(
             'SELECT id FROM integration_event WHERE status = :pending ORDER BY occurred_at ASC LIMIT ' . max(1, $limit),
             ['pending' => IntegrationEvent::STATUS_PENDING],

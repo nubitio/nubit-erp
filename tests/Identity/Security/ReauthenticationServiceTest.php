@@ -18,8 +18,8 @@ final class ReauthenticationServiceTest extends TestCase
 
         $service = new ReauthenticationService($hasher);
 
-        self::assertFalse($service->isValid(null, 'secret'));
-        self::assertFalse($service->isValid($this->user(), ''));
+        static::assertFalse($service->isValid(null, 'secret'));
+        static::assertFalse($service->isValid($this->user(), ''));
     }
 
     public function testItDelegatesToThePasswordHasherForTheCurrentUser(): void
@@ -28,7 +28,7 @@ final class ReauthenticationServiceTest extends TestCase
         $hasher = $this->createMock(UserPasswordHasherInterface::class);
         $hasher->expects(self::once())->method('isPasswordValid')->with($user, 'secret')->willReturn(true);
 
-        self::assertTrue(new ReauthenticationService($hasher)->isValid($user, 'secret'));
+        static::assertTrue(new ReauthenticationService($hasher)->isValid($user, 'secret'));
     }
 
     private function user(): User

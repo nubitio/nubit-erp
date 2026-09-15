@@ -47,6 +47,7 @@ class SaleRecordRepository extends ServiceEntityRepository
     public function findOpenReceivablesForCustomer(int $customerId): array
     {
         /** @var list<SaleRecord> $rows */
+        /** @var list<SaleRecord> $rows */
         $rows = $this
             ->createQueryBuilder('s')
             ->where('s.customer = :customer')
@@ -61,7 +62,7 @@ class SaleRecordRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
 
-        return $rows;
+        return [...$rows];
     }
 
     /**

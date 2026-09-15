@@ -10,7 +10,7 @@ const BASE_URL = getE2EBaseUrl();
 test('Crédito en el POS crea automáticamente una cuenta por cobrar', async ({ page }) => {
   const seed = await getE2ESeed();
   await login(page, seed.username, seed.password);
-  await ensureOpenCashSession(page, BASE_URL);
+  await ensureOpenCashSession(page, BASE_URL, seed.username, seed.password);
 
   await page.goto(`${BASE_URL}/#/pos`);
   await expect(page.getByTestId('pos-product-search')).toBeVisible({ timeout: 25_000 });

@@ -11,21 +11,26 @@ final class ProductionReliabilityConfigTest extends TestCase
 {
     public function testAlertContractCoversIssue405Objectives(): void
     {
+        /** @var mixed $config */
         $config = Yaml::parseFile(__DIR__ . '/../../ops/monitoring/alerts.yml');
         if (!is_array($config) || !is_array($config['groups'] ?? null)) {
             static::fail('alerts.yml must be a Prometheus rule file with groups');
         }
+        /** @var array<string, mixed> $config */
 
+        /** @var mixed $group */
         $group = $config['groups'][0] ?? null;
         if (!is_array($group) || !is_array($group['rules'] ?? null)) {
             static::fail('alerts.yml must contain a rule group');
         }
-
+        /** @var array<string, mixed> $group */
+        /** @var list<array<string, mixed>> $rules */
         $rules = $group['rules'];
+
         /** @var array<string, array<string, mixed>> $byAlert */
         $byAlert = [];
         foreach ($rules as $rule) {
-            if (!is_array($rule) || !is_string($rule['alert'] ?? null)) {
+            if (!is_string($rule['alert'] ?? null)) {
                 static::fail('Every rule must use Prometheus alert format');
             }
             $byAlert[$rule['alert']] = $rule;
@@ -73,30 +78,36 @@ final class ProductionReliabilityConfigTest extends TestCase
     public function testDeployWorkflowCannotPromoteWithoutItsExplicitSmokeTarget(): void
     {
         $workflow = file_get_contents(__DIR__ . '/../../.github/workflows/deploy.yml');
-        self::assertIsString($workflow);
-        self::assertStringContainsString('APP_URL: ${{ secrets.APP_URL }}', $workflow);
-        self::assertStringContainsString(': "${APP_URL:?APP_URL is required', $workflow);
-        self::assertStringNotContainsString('skipping healthcheck', $workflow);
-        self::assertStringNotContainsString('run_healthcheck', $workflow);
+        static::assertIsString($workflow);
+        static::assertStringContainsString('APP_URL: ${{ secrets.APP_URL }}', $workflow);
+        static::assertStringContainsString(': "${APP_URL:?APP_URL is required', $workflow);
+        static::assertStringNotContainsString('skipping healthcheck', $workflow);
+        static::assertStringNotContainsString('run_healthcheck', $workflow);
 
         foreach (['deploy-dev.yml', 'deploy-staging.yml', 'deploy-prod.yml'] as $caller) {
             $callerWorkflow = file_get_contents(__DIR__ . '/../../.github/workflows/' . $caller);
-            self::assertIsString($callerWorkflow);
-            self::assertStringContainsString('secrets: inherit', $callerWorkflow);
-            self::assertStringContainsString('APP_URL is the required smoke target', $callerWorkflow);
-            self::assertMatchesRegularExpression('/environment:\s+(dev|stg|prod)/', $callerWorkflow);
+            static::assertIsString($callerWorkflow);
+            static::assertStringContainsString('secrets: inherit', $callerWorkflow);
+            static::assertStringContainsString('APP_URL is the required smoke target', $callerWorkflow);
+            static::assertMatchesRegularExpression('/environment:\s+(dev|stg|prod)/', $callerWorkflow);
         }
     }
 
     /** @param array<array-key, mixed> $rule */
     private static function ruleString(array $rule, string $key, ?string $nestedKey = null): string
     {
+        /** @var mixed $value */
         $value = $rule[$key] ?? null;
         if ($nestedKey !== null) {
             if (!is_array($value)) {
                 static::fail(sprintf('Rule field %s must be an object', $key));
             }
-            $value = $value[$nestedKey] ?? null;
+            /** @var mixed $nestedValue */
+            $nestedValue = $value[$nestedKey] ?? null;
+            if (!is_string($nestedValue)) {
+                static::fail(sprintf('Rule field %s must be a string', $key));
+            }
+            return $nestedValue;
         }
         if (!is_string($value)) {
             static::fail(sprintf('Rule field %s must be a string', $key));

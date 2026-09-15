@@ -81,10 +81,95 @@ export async function login(page: Page, username: string, password: string) {
 
   await waitForPostLoginLanding(page);
 
+  await ensureBranchContext(page, baseUrl, username, password);
+
   const onAppRoute =
     page.url().includes('/#/dashboard') ||
     page.url().includes('/#/pos') ||
     !(page.url().includes('/#/login') || (await page.locator('form.login-form').isVisible().catch(() => false)));
 
   expect(onAppRoute, 'debe salir de /login tras autenticarse').toBeTruthy();
+}
+
+/** Ensure the browser holds the branch-bound JWT required by branch-scoped APIs. */
+export async function ensureBranchContext(
+  page: Page,
+  baseUrl = getE2EBaseUrl(),
+  username?: string,
+  password?: string,
+): Promise<void> {
+  // A failed navigation/recovery can leave the shared page on about:blank.
+  // That origin throws SecurityError when localStorage is accessed; restore a
+  // same-origin document before reading or writing the bearer token.
+  if (page.url().startsWith('about:blank')) {
+    await page.goto(`${baseUrl}/#/login`);
+  }
+
+  // UI login stores the token in a React effect. On a redirect/retry that
+  // effect can race this check, leaving the page without credentials even
+  // though the login request succeeded. Restore it through the API before
+  // attempting branch selection; the token is never exposed outside storage.
+  // When credentials are supplied this is an explicit setup boundary.  Do not
+  // reuse a token from a previous test: login tokens intentionally have no
+  // branch claim, and a stale token can make the branch-scoped dashboard
+  // correctly return an empty collection.
+  if (username && password) {
+    const response = await page.request.post(`${baseUrl}/api/auth/login`, {
+      headers: { 'Content-Type': 'application/json', 'X-Client-Type': 'android' },
+      data: { username, password },
+    });
+    expect(response.ok(), `login API debe responder 2xx (status ${response.status()})`).toBeTruthy();
+    const payload = (await response.json()) as { token?: string };
+    expect(payload.token, 'login debe devolver token').toBeTruthy();
+    await page.evaluate((token) => {
+      window.localStorage.setItem('auth_token', JSON.stringify(token));
+    }, payload.token);
+  }
+
+  const result = await page.evaluate(async (base) => {
+    const rawToken = window.localStorage.getItem('auth_token');
+    // StorageUtils JSON-serializes values, including string JWTs.  The
+    // browser API helper must send the JWT itself, not the JSON string
+    // literal (including its surrounding quotes).
+    let token: string | null = rawToken;
+    if (rawToken) {
+      try {
+        const parsed = JSON.parse(rawToken) as unknown;
+        token = typeof parsed === 'string' ? parsed : rawToken;
+      } catch {
+        // Accept tokens written directly by older sessions/tests.
+      }
+    }
+    if (!token) return { ok: false, message: 'auth token missing' };
+    const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+    const response = await fetch(`${base}/api/branches?itemsPerPage=100`, { headers });
+    if (!response.ok) return { ok: false, message: `branches returned ${response.status}` };
+    const payload = await response.json();
+    const branches = Array.isArray(payload)
+      ? payload
+      : (payload.member ?? payload['hydra:member'] ?? []);
+    const branch = branches.find((candidate: { name?: string; isActive?: boolean }) =>
+      candidate.isActive !== false && candidate.name === 'CI E2E Branch',
+    ) ?? branches.find((candidate: { isActive?: boolean }) => candidate.isActive !== false);
+    if (!branch?.id) return { ok: false, message: 'no active branch available' };
+    const selection = await fetch(`${base}/api/auth/select-branch`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ branchId: String(branch.id), response_mode: 'json' }),
+    });
+    if (!selection.ok) return { ok: false, message: `branch selection returned ${selection.status}` };
+    const selected = await selection.json();
+    if (!selected.token) return { ok: false, message: 'branch selection returned no token' };
+    // Keep the same JSON-serialized representation used by StorageUtils;
+    // subsequent HttpClient requests parse this value before sending it.
+    window.localStorage.setItem('auth_token', JSON.stringify(selected.token));
+    return { ok: true, message: '' };
+  }, baseUrl);
+  expect(result.ok, `debe seleccionar una sucursal E2E: ${result.message}`).toBeTruthy();
+
+  // The login/branch-picker React tree can still hold the pre-selection token
+  // in memory. Reload so the next route's API client is initialized from the
+  // branch-bound token we just persisted instead of allowing that stale state
+  // to overwrite localStorage during navigation.
+  await page.reload({ waitUntil: 'domcontentloaded' });
 }

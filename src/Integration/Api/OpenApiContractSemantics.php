@@ -18,21 +18,16 @@ final class OpenApiContractSemantics
             ? $contract['components']['securitySchemes']
             : [];
         $paths = is_array($contract['paths'] ?? null) ? $contract['paths'] : [];
+        /** @var array<string, array<string, mixed>> $paths */
+        $paths = array_filter($paths, static fn(mixed $item): bool => is_array($item));
         foreach ($paths as $path => $item) {
-            if (!is_string($path) || !is_array($item)) {
-                continue;
-            }
             foreach (['get', 'post', 'put', 'patch', 'delete'] as $method) {
-                $operation = $item[$method] ?? null;
-                if (is_array($operation)) {
-                    $errors = array_merge($errors, $validator->validate(
-                        $contract,
-                        $schemes,
-                        $path,
-                        $method,
-                        $operation,
-                    ));
+                if (!is_array($item[$method] ?? null)) {
+                    continue;
                 }
+
+                $operation = $item[$method];
+                $errors = array_merge($errors, $validator->validate($contract, $schemes, $path, $method, $operation));
             }
         }
 

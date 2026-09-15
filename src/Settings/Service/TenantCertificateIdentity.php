@@ -31,6 +31,7 @@ final readonly class TenantCertificateIdentity
     /** @param array<string, mixed> $payload */
     public function requiredString(array $payload, string $key): string
     {
+        /** @var mixed $value */
         $value = $payload[$key] ?? null;
         if (!is_string($value) || trim($value) === '') {
             throw new \InvalidArgumentException(sprintf('Debe indicar "%s".', $key));
@@ -40,6 +41,12 @@ final readonly class TenantCertificateIdentity
 
     public function solUserWithRuc(string $solUser, string $ruc): string
     {
-        return $ruc . (preg_replace('/^' . preg_quote($ruc, '/') . '/', '', $solUser) ?? $solUser);
+        return (
+            $ruc
+            . (
+                preg_replace('/^' . preg_quote($ruc, delimiter: '/') . '/', replacement: '', subject: $solUser)
+                ?? $solUser
+            )
+        );
     }
 }

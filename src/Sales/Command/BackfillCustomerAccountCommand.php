@@ -43,10 +43,10 @@ final class BackfillCustomerAccountCommand extends PerTenantCommand
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $dryRun = (bool) $input->getOption('dry-run');
+        $dryRun = true === $input->getOption('dry-run');
 
         try {
-            $summary = $this->backfiller->run($dryRun);
+            $summary = $dryRun ? $this->backfiller->dryRun() : $this->backfiller->run();
         } catch (TableNotFoundException) {
             $io->warning('Skipping tenant: customer-account or Sales tables are not migrated yet.');
 

@@ -50,7 +50,7 @@ final class ApplyAdvanceServiceTest extends TestCase
         $this->salePaymentService = $this->createMock(SalePaymentService::class);
         $this->salePaymentService
             ->method('appendAdvancePayment')
-            ->willReturnCallback(fn(): SalePayment => $this->salePayment(random_int(1, 99999)));
+            ->willReturnCallback(fn(): SalePayment => $this->salePayment(random_int(min: 1, max: 99_999)));
     }
 
     public function testFifoAppliesAcrossSalesDrawingFromAdvanceEntries(): void
@@ -73,18 +73,18 @@ final class ApplyAdvanceServiceTest extends TestCase
 
         $result = $this->service()->apply(9, '300.00', new DateTimeImmutable('2026-09-10'), []);
 
-        self::assertSame('300.00', $result->applied);
-        self::assertSame('200.00', $result->availableAdvance);
-        self::assertCount(2, $result->applications);
+        static::assertSame('300.00', $result->applied);
+        static::assertSame('200.00', $result->availableAdvance);
+        static::assertCount(2, $result->applications);
         $applications = array_filter(
             $this->persisted,
             static fn(object $o): bool => $o instanceof CustomerPaymentApplication,
         );
         // s1 (200) fits in entry 11; s2 (100) still fits in entry 11 -> 2 rows.
-        self::assertGreaterThanOrEqual(2, count($applications));
-        self::assertCount(1, $this->dispatched);
-        self::assertSame(EconomicEvent::CUSTOMER_ADVANCE_APPLIED, $this->dispatched[0]->kind);
-        self::assertSame('300.00', $this->dispatched[0]->total);
+        static::assertGreaterThanOrEqual(2, count($applications));
+        static::assertCount(1, $this->dispatched);
+        static::assertSame(EconomicEvent::CUSTOMER_ADVANCE_APPLIED, $this->dispatched[0]->kind);
+        static::assertSame('300.00', $this->dispatched[0]->total);
     }
 
     public function testAmountAboveAvailableAdvanceIsRejected(): void
@@ -115,7 +115,7 @@ final class ApplyAdvanceServiceTest extends TestCase
                 && $o->getIsActive() === false
             ),
         );
-        self::assertCount(1, $created);
+        static::assertCount(1, $created);
     }
 
     public function testNoOpenSalesIsRejected(): void
@@ -180,7 +180,7 @@ final class ApplyAdvanceServiceTest extends TestCase
             ->setBalanceDue($balanceDue)
             ->setCurrency('PEN')
             ->setSerie('F001')
-            ->setNumero(ltrim($id, 's'));
+            ->setNumero(ltrim($id, characters: 's'));
         new \ReflectionProperty(SaleRecord::class, 'id')->setValue($sale, $id);
 
         return $sale;

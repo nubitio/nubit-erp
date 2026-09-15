@@ -15,8 +15,10 @@ final class OpenApiSecurityContractRequirementsValidator
     {
         $requiredScopes = is_array($operation['x-required-scopes'] ?? null) ? $operation['x-required-scopes'] : [];
         $firstRequirement = is_array($requirements[0] ?? null) ? $requirements[0] : [];
-        $apiKeyRequirement = $firstRequirement['ApiKey'] ?? null;
-        $tenantJwtRequirement = $firstRequirement['TenantJwt'] ?? null;
+        $apiKeyRequirement = is_array($firstRequirement['ApiKey'] ?? null) ? $firstRequirement['ApiKey'] : null;
+        $tenantJwtRequirement = is_array($firstRequirement['TenantJwt'] ?? null)
+            ? $firstRequirement['TenantJwt']
+            : null;
         $errors = [];
         if ($requiredScopes !== [] && $apiKeyRequirement !== []) {
             $errors[] = sprintf(

@@ -62,15 +62,18 @@ final readonly class KardexExportService
             ],
             static fn($value) => $value !== null && $value !== '',
         );
-        /** @var array{product?: string, warehouse?: string, from?: string, to?: string, valuation?: string} $filters */
 
-        $movementCount = $this->movementRepository->countKardex($filters);
+        $movementCount = $this->movementRepository->countKardex(array_filter(
+            $filters,
+            static fn(?string $value): bool => $value !== null,
+        ));
         if ($movementCount > self::MAX_EXPORT_ROWS) {
             throw new KardexExportLimitExceeded(self::MAX_EXPORT_ROWS);
         }
 
         $summary = $this->summaryService->getSummary($productId, $warehouseId, $from, $to, $valuation);
 
+        /** @var array{product?: string, warehouse?: string, from?: string, to?: string, valuation?: string} $filters */
         $movements = $this->movementRepository->findKardexForExport($filters);
         $this->referenceResolver->applyToMovements($movements);
         $rows = array_map($this->mapMovementRow(...), $movements);

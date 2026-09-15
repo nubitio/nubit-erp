@@ -6,6 +6,8 @@ namespace App\Identity\Auth;
 
 use App\Identity\Entity\User;
 use App\Identity\Security\PermissionCheckerInterface;
+use App\Organization\Repository\BranchRepository;
+use App\Organization\Repository\CompanyRepository;
 use Nubit\AdminBundle\Auth\TokenClaimsProviderInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -21,10 +23,13 @@ final readonly class EfactTokenClaimsProvider implements TokenClaimsProviderInte
         private SelectedBranchContext $selectedBranch,
         private TenantContext $tenantContext,
         private PermissionCheckerInterface $permissionChecker,
+        private BranchRepository $branchRepository,
+        private CompanyRepository $companyRepository,
     ) {}
 
     public function claims(UserInterface $user, array $previousClaims = []): array
     {
+        $this->assertPreviousBranchStillAuthorized($user, $previousClaims);
         $branch = $this->selectedBranch->get();
 
         // On refresh, carry the branch claims of the rotated token forward —
@@ -52,12 +57,45 @@ final readonly class EfactTokenClaimsProvider implements TokenClaimsProviderInte
 
     public function userData(UserInterface $user): array
     {
+        $userId = null;
+        $role = null;
+        $permissions = [];
+        if ($user instanceof User) {
+            $userId = $user->getId();
+            $role = $user->getRole()?->getId();
+            $permissions = $this->permissionChecker->permissionsFor($user);
+        }
+
         return [
             'username' => $user->getUserIdentifier(),
-            'userId' => $user instanceof User ? $user->getId() : null,
-            'role' => $user instanceof User ? $user->getRole()?->getId() : null,
+            'userId' => $userId,
+            'role' => $role,
             'roles' => $user->getRoles(),
-            'permissions' => $user instanceof User ? $this->permissionChecker->permissionsFor($user) : [],
+            'permissions' => $permissions,
         ];
+    }
+
+    /** @param array<string, mixed> $previousClaims */
+    private function assertPreviousBranchStillAuthorized(UserInterface $user, array $previousClaims): void
+    {
+        $branchId = is_string($previousClaims['branchId'] ?? null) ? $previousClaims['branchId'] : null;
+        if (null === $branchId || '' === $branchId) {
+            return;
+        }
+        $branch = $this->branchRepository->find($branchId);
+        if (
+            !$user instanceof User
+            || null === $this->tenantContext->getTenantId()
+            || null === $branch
+            || !$user->hasBranchAccess($branch)
+        ) {
+            throw new \RuntimeException('The refresh token branch is no longer authorized.');
+        }
+
+        $company = $this->companyRepository->findOneBy([]);
+        $branchCompany = $branch->getCompany();
+        if (null === $company || null === $branchCompany || $company->getId() !== $branchCompany->getId()) {
+            throw new \RuntimeException('The refresh token tenant is no longer authorized.');
+        }
     }
 }

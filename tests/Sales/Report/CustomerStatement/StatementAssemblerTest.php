@@ -35,10 +35,10 @@ final class StatementAssemblerTest extends TestCase
         );
 
         // 500 charged - 300 paid, both before 2026-02-01
-        self::assertSame('200.00', $statement->openingBalance);
-        self::assertSame('200.00', $statement->totalCharges);
-        self::assertSame('0.00', $statement->totalPayments);
-        self::assertSame('400.00', $statement->closingBalance);
+        static::assertSame('200.00', $statement->openingBalance);
+        static::assertSame('200.00', $statement->totalCharges);
+        static::assertSame('0.00', $statement->totalPayments);
+        static::assertSame('400.00', $statement->closingBalance);
     }
 
     public function testRunningBalanceWalksEventsChronologicallyChargeBeforePaymentSameDay(): void
@@ -60,7 +60,7 @@ final class StatementAssemblerTest extends TestCase
         );
 
         $balances = array_map(static fn($l) => [$l->type, $l->balance], $statement->lines);
-        self::assertSame(
+        static::assertSame(
             [
                 ['Cargo', '100.00'], // +100
                 ['Cargo', '180.00'], // +80  (charge before payments on 03-10)
@@ -69,7 +69,7 @@ final class StatementAssemblerTest extends TestCase
             ],
             $balances,
         );
-        self::assertSame('30.00', $statement->closingBalance);
+        static::assertSame('30.00', $statement->closingBalance);
     }
 
     public function testAgingBucketsOutstandingBalanceByDaysOpenAtCutoff(): void
@@ -90,10 +90,10 @@ final class StatementAssemblerTest extends TestCase
             payments: [],
         );
 
-        self::assertSame('100.00', $statement->aging[AgingCalculator::BUCKET_CURRENT]);
-        self::assertSame('200.00', $statement->aging[AgingCalculator::BUCKET_31_60]);
-        self::assertSame('150.00', $statement->aging[AgingCalculator::BUCKET_61_90]);
-        self::assertSame('400.00', $statement->aging[AgingCalculator::BUCKET_90_PLUS]);
+        static::assertSame('100.00', $statement->aging[AgingCalculator::BUCKET_CURRENT]);
+        static::assertSame('200.00', $statement->aging[AgingCalculator::BUCKET_31_60]);
+        static::assertSame('150.00', $statement->aging[AgingCalculator::BUCKET_61_90]);
+        static::assertSame('400.00', $statement->aging[AgingCalculator::BUCKET_90_PLUS]);
     }
 
     public function testEmptyPeriodStillReportsOpeningAndZeroTotals(): void
@@ -108,10 +108,10 @@ final class StatementAssemblerTest extends TestCase
             payments: [],
         );
 
-        self::assertSame([], $statement->lines);
-        self::assertSame('120.00', $statement->openingBalance);
-        self::assertSame('120.00', $statement->closingBalance);
-        self::assertSame('0.00', $statement->totalCharges);
+        static::assertSame([], $statement->lines);
+        static::assertSame('120.00', $statement->openingBalance);
+        static::assertSame('120.00', $statement->closingBalance);
+        static::assertSame('0.00', $statement->totalCharges);
     }
 
     /**

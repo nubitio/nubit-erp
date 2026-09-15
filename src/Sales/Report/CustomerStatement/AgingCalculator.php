@@ -46,7 +46,7 @@ final readonly class AgingCalculator
             $buckets[$label] = $buckets[$label]->plus($due);
         }
 
-        return array_map(static fn(BigDecimal $v): string => Money::toString($v), $buckets);
+        return array_map(Money::toString(...), $buckets);
     }
 
     private function label(int $days): string

@@ -40,7 +40,7 @@ final class CustomerAccountLedgerTest extends TestCase
         );
 
         // 0 +500 -> 500; +300 -> 800; -450 -> 350; +120 -> 470; -470 -> 0
-        self::assertSame(['500.00', '800.00', '350.00', '470.00', '0.00'], $balances);
+        static::assertSame(['500.00', '800.00', '350.00', '470.00', '0.00'], $balances);
     }
 
     public function testRunningBalanceCanGoNegativeWhenPaymentsRunAhead(): void
@@ -51,7 +51,7 @@ final class CustomerAccountLedgerTest extends TestCase
         $ledger->recordCharge(7, 's1', $day, '100.00');
         $ledger->recordPayment(7, $day, '250.00');
 
-        self::assertSame('-150.00', $persisted->last()->getRunningBalance());
+        static::assertSame('-150.00', $persisted->last()->getRunningBalance());
     }
 
     public function testChargeIsADebitAndTagsTheSale(): void
@@ -60,13 +60,13 @@ final class CustomerAccountLedgerTest extends TestCase
 
         $entry = $ledger->recordCharge(1, 'sale-abc', new DateTimeImmutable('2026-03-02'), '200.00', 'USD', 'F001-9');
 
-        self::assertSame(CustomerAccountEntryType::CHARGE, $entry->getEntryType());
-        self::assertSame('200.00', $entry->getDebit());
-        self::assertSame('0.00', $entry->getCredit());
-        self::assertSame('sale-abc', $entry->getSaleId());
-        self::assertSame('USD', $entry->getCurrency());
-        self::assertSame('F001-9', $entry->getDescription());
-        self::assertSame($entry, $persisted->last());
+        static::assertSame(CustomerAccountEntryType::CHARGE, $entry->getEntryType());
+        static::assertSame('200.00', $entry->getDebit());
+        static::assertSame('0.00', $entry->getCredit());
+        static::assertSame('sale-abc', $entry->getSaleId());
+        static::assertSame('USD', $entry->getCurrency());
+        static::assertSame('F001-9', $entry->getDescription());
+        static::assertSame($entry, $persisted->last());
     }
 
     public function testAdvanceReceivedIsACreditWithNoSale(): void
@@ -75,11 +75,11 @@ final class CustomerAccountLedgerTest extends TestCase
 
         $entry = $ledger->recordAdvanceReceived(3, new DateTimeImmutable('2026-03-02'), '900.00');
 
-        self::assertSame(CustomerAccountEntryType::ADVANCE, $entry->getEntryType());
-        self::assertSame('0.00', $entry->getDebit());
-        self::assertSame('900.00', $entry->getCredit());
-        self::assertNull($entry->getSaleId());
-        self::assertSame('-900.00', $entry->getRunningBalance());
+        static::assertSame(CustomerAccountEntryType::ADVANCE, $entry->getEntryType());
+        static::assertSame('0.00', $entry->getDebit());
+        static::assertSame('900.00', $entry->getCredit());
+        static::assertNull($entry->getSaleId());
+        static::assertSame('-900.00', $entry->getRunningBalance());
     }
 
     #[DataProvider('invalidAmounts')]
@@ -134,7 +134,7 @@ final class CustomerAccountLedgerTest extends TestCase
         string $credit,
         string $expected,
     ): void {
-        self::assertSame($expected, CustomerAccountLedger::nextRunningBalance($previous, $debit, $credit));
+        static::assertSame($expected, CustomerAccountLedger::nextRunningBalance($previous, $debit, $credit));
     }
 
     /**
@@ -167,20 +167,5 @@ final class CustomerAccountLedgerTest extends TestCase
             });
 
         return [new CustomerAccountLedger($entityManager, $repository), $sink];
-    }
-}
-
-/**
- * Captures the {@see CustomerAccountEntry} rows the ledger would persist, so a
- * unit test can assert running balances without a database.
- */
-final class LedgerEntrySink
-{
-    /** @var list<CustomerAccountEntry> */
-    public array $entries = [];
-
-    public function last(): CustomerAccountEntry
-    {
-        return $this->entries[array_key_last($this->entries)];
     }
 }

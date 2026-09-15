@@ -116,7 +116,7 @@ final class SalePaymentServiceTest extends TestCase
             self::assertSame('10.00', $sale->getPaidTotal());
             self::assertSame('90.00', $sale->getBalanceDue());
             self::assertCount(0, $sale->getSalePayments());
-            self::assertSame([], $this->dispatched);
+            static::assertSame([], $this->dispatched);
         }
     }
 
@@ -149,7 +149,7 @@ final class SalePaymentServiceTest extends TestCase
         $this->writeGateway
             ->expects(self::once())
             ->method('writeReceivableCollectionMovement')
-            ->with(self::anything(), self::anything(), 42, self::anything(), '40.00', PaymentMethod::CASH);
+            ->with(static::anything(), static::anything(), 42, static::anything(), '40.00', PaymentMethod::CASH);
 
         $sale = $this->creditSale();
         $payment = $this->service($em)->registerPayment(
@@ -161,13 +161,13 @@ final class SalePaymentServiceTest extends TestCase
             new User(),
         );
 
-        self::assertSame('50.00', $sale->getPaidTotal());
-        self::assertSame('50.00', $sale->getBalanceDue());
-        self::assertSame('40.00', $payment->getAmount());
-        self::assertCount(1, $this->dispatched);
-        self::assertSame(EconomicEvent::RECEIVABLE_COLLECT_CASH, $this->dispatched[0]->kind);
-        self::assertSame(EconomicEvent::SOURCE_RECEIVABLE_COLLECT, $this->dispatched[0]->source);
-        self::assertSame('40.00', $this->dispatched[0]->total);
+        static::assertSame('50.00', $sale->getPaidTotal());
+        static::assertSame('50.00', $sale->getBalanceDue());
+        static::assertSame('40.00', $payment->getAmount());
+        static::assertCount(1, $this->dispatched);
+        static::assertSame(EconomicEvent::RECEIVABLE_COLLECT_CASH, $this->dispatched[0]->kind);
+        static::assertSame(EconomicEvent::SOURCE_RECEIVABLE_COLLECT, $this->dispatched[0]->source);
+        static::assertSame('40.00', $this->dispatched[0]->total);
     }
 
     public function testNonCashCollectionSkipsDrawerAndBooksBankEvent(): void
@@ -186,9 +186,9 @@ final class SalePaymentServiceTest extends TestCase
             new User(),
         );
 
-        self::assertSame('0.00', $sale->getBalanceDue());
-        self::assertCount(1, $this->dispatched);
-        self::assertSame(EconomicEvent::RECEIVABLE_COLLECT_BANK, $this->dispatched[0]->kind);
+        static::assertSame('0.00', $sale->getBalanceDue());
+        static::assertCount(1, $this->dispatched);
+        static::assertSame(EconomicEvent::RECEIVABLE_COLLECT_BANK, $this->dispatched[0]->kind);
     }
 
     public function testRegisterPaymentMirrorsTheCollectionOntoTheCustomerLedger(): void
@@ -209,13 +209,13 @@ final class SalePaymentServiceTest extends TestCase
             ->method('recordPayment')
             ->with(
                 77,
-                self::anything(),
+                static::anything(),
                 '40.00',
                 'PEN',
-                self::anything(),
+                static::anything(),
                 'sale_payment',
-                self::anything(),
-                self::anything(),
+                static::anything(),
+                static::anything(),
             )
             ->willReturn($this->createStub(CustomerAccountEntry::class));
 
@@ -228,7 +228,7 @@ final class SalePaymentServiceTest extends TestCase
             new User(),
         );
 
-        self::assertCount(1, array_filter(
+        static::assertCount(1, array_filter(
             $persisted,
             static fn(object $o): bool => $o instanceof \App\Sales\Entity\CustomerPaymentApplication,
         ));
@@ -290,11 +290,11 @@ final class SalePaymentServiceTest extends TestCase
             'partial',
         );
 
-        self::assertSame('40.00', $sale->getPaidTotal());
-        self::assertSame('60.00', $sale->getBalanceDue());
-        self::assertSame('30.00', $payment->getAmount());
-        self::assertCount(1, $sale->getSalePayments());
-        self::assertSame([], $this->dispatched, 'appendPayment must not dispatch a ledger event');
+        static::assertSame('40.00', $sale->getPaidTotal());
+        static::assertSame('60.00', $sale->getBalanceDue());
+        static::assertSame('30.00', $payment->getAmount());
+        static::assertCount(1, $sale->getSalePayments());
+        static::assertSame([], $this->dispatched, 'appendPayment must not dispatch a ledger event');
     }
 
     public function testAppendAdvancePaymentMovesDebtWithAnAdvanceMethodAndNoSideEffects(): void
@@ -317,10 +317,10 @@ final class SalePaymentServiceTest extends TestCase
             'F001-9',
         );
 
-        self::assertSame('35.00', $sale->getPaidTotal());
-        self::assertSame('65.00', $sale->getBalanceDue());
-        self::assertSame('25.00', $payment->getAmount());
-        self::assertSame([], $this->dispatched);
+        static::assertSame('35.00', $sale->getPaidTotal());
+        static::assertSame('65.00', $sale->getBalanceDue());
+        static::assertSame('25.00', $payment->getAmount());
+        static::assertSame([], $this->dispatched);
     }
 
     public function testAppendAdvancePaymentRejectsANonAdvanceMethod(): void
