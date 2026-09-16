@@ -17,11 +17,12 @@ class SaleService {
     });
   }
 
-  makeInvoice(saleId: string) {
+  makeInvoice(saleId: string, requestedVoucherType?: 'AUTO' | 'BOLETA' | 'FACTURA') {
     return httpClient.post<AppResponse>(
       `${API}sales/${saleId}/invoice`,
       {
         saleId,
+        requestedVoucherType,
       },
     );
   }

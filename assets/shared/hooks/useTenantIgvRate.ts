@@ -30,13 +30,22 @@ import { useQuery } from '@tanstack/react-query';
 import { httpClient } from '@shared/api/HttpClient';
 import { IGV_RATE } from '@shared/lib/saleCalculations';
 
+type TaxRegime = 'GENERAL' | 'NRUS';
+
 type TenantSettingsResponse = {
   igv: number;
+  taxRegime: TaxRegime;
+};
+
+type FetchedTenantRates = {
+  igvRate: number;
+  taxRegime: TaxRegime;
 };
 
 // ── localStorage persistence ──────────────────────────────────────────────────
 
 const STORAGE_KEY = 'efact_tenant_igv_rate';
+const TAX_REGIME_STORAGE_KEY = 'efact_tenant_tax_regime';
 
 /** Maximum sensible tax rate: 50%. Guards against corrupted storage values. */
 const MAX_RATE = 0.5;
@@ -61,6 +70,23 @@ function persistRate(rate: number): void {
   }
 }
 
+function readPersistedTaxRegime(): TaxRegime | undefined {
+  try {
+    const raw = localStorage.getItem(TAX_REGIME_STORAGE_KEY);
+    return raw === 'GENERAL' || raw === 'NRUS' ? raw : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function persistTaxRegime(taxRegime: TaxRegime): void {
+  try {
+    localStorage.setItem(TAX_REGIME_STORAGE_KEY, taxRegime);
+  } catch {
+    // Storage quota exceeded — silently ignore; the in-memory cache still works.
+  }
+}
+
 // ── Query key ─────────────────────────────────────────────────────────────────
 
 export const TENANT_IGV_RATE_QUERY_KEY = ['tenant', 'settings', 'igv-rate'] as const;
@@ -73,6 +99,11 @@ export interface UseTenantIgvRateResult {
    * Resolved from localStorage → React Query cache → fresh fetch → IGV_RATE fallback.
    */
   igvRate: number;
+  /**
+   * The tenant's tax regime. NRUS taxpayers can only issue Boleta and never
+   * charge/break out IGV. Defaults to 'GENERAL' until the first fetch resolves.
+   */
+  taxRegime: TaxRegime;
   /** True only during the very first network fetch (localStorage value not yet available). */
   isLoading: boolean;
   /** True after the rate has been confirmed from the server at least once. */
@@ -81,22 +112,29 @@ export interface UseTenantIgvRateResult {
 
 export function useTenantIgvRate(): UseTenantIgvRateResult {
   const persistedRate = readPersistedRate();
+  const persistedTaxRegime = readPersistedTaxRegime();
+  const persistedData: FetchedTenantRates | undefined =
+    persistedRate !== undefined && persistedTaxRegime !== undefined
+      ? { igvRate: persistedRate, taxRegime: persistedTaxRegime }
+      : undefined;
 
   const { data, isLoading, isFetched } = useQuery({
     queryKey: TENANT_IGV_RATE_QUERY_KEY,
-    queryFn: async () => {
+    queryFn: async (): Promise<FetchedTenantRates> => {
       const response = await httpClient.get<TenantSettingsResponse>('/api/tenant/settings');
       // Backend stores as a whole-number percentage (e.g. 18 or 10.5).
       // Convert to decimal fraction for all calculation functions.
-      const rate = response.data.igv / 100;
-      persistRate(rate);
-      return rate;
+      const igvRate = response.data.igv / 100;
+      const taxRegime = response.data.taxRegime;
+      persistRate(igvRate);
+      persistTaxRegime(taxRegime);
+      return { igvRate, taxRegime };
     },
     // Use the persisted value as immediately-available initial data.
     // Setting initialDataUpdatedAt to 0 (epoch) marks it as stale so React Query
     // schedules a background re-fetch on mount — ensuring the value stays fresh.
-    initialData: persistedRate,
-    initialDataUpdatedAt: persistedRate !== undefined ? 0 : undefined,
+    initialData: persistedData,
+    initialDataUpdatedAt: persistedData !== undefined ? 0 : undefined,
     staleTime: 10 * 60 * 1000, // 10 minutes — rate changes only via admin configuration
     gcTime: 30 * 60 * 1000,    // 30 minutes — keep in memory for the full session
     retry: 2,
@@ -104,8 +142,9 @@ export function useTenantIgvRate(): UseTenantIgvRateResult {
   });
 
   return {
-    igvRate: data ?? IGV_RATE,
-    isLoading: isLoading && persistedRate === undefined,
+    igvRate: data?.igvRate ?? IGV_RATE,
+    taxRegime: data?.taxRegime ?? 'GENERAL',
+    isLoading: isLoading && persistedData === undefined,
     isFetched,
   };
 }

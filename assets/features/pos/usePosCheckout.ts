@@ -121,14 +121,24 @@ export const usePosCheckout = ({
   const [lastSaleId, setLastSaleId] = useState<string | null>(null);
   const [lastSaleReceiptUrl, setLastSaleReceiptUrl] = useState<string | null>(null);
   const [emitInvoice, setEmitInvoice] = useState(autoInvoice);
+  const [requestedVoucherType, setRequestedVoucherType] = useState<'AUTO' | 'FACTURA' | 'BOLETA'>('AUTO');
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   useEffect(() => {
     setEmitInvoice(autoInvoice);
   }, [autoInvoice]);
   const { currency, exchangeRate, setCurrency, setExchangeRate } = useCurrencySettings();
-  const { igvRate } = useTenantIgvRate();
+  const { igvRate, taxRegime } = useTenantIgvRate();
   const scaleReady = useScaleReady();
+
+  /** Factura is only legal when the customer has an 11-digit RUC and the tenant isn't NRUS. */
+  const canRequestFactura = taxRegime !== 'NRUS' && (selectedCustomer?.doc?.length ?? 0) === 11;
+
+  useEffect(() => {
+    if (!canRequestFactura) {
+      setRequestedVoucherType((current) => (current === 'FACTURA' ? 'AUTO' : current));
+    }
+  }, [canRequestFactura]);
 
   // Persist cart draft on every change (strip photo to keep storage lean)
   useEffect(() => {
@@ -404,6 +414,7 @@ export const usePosCheckout = ({
     clearCart();
     resetPaymentToCash();
     setEmitInvoice(autoInvoice);
+    setRequestedVoucherType('AUTO');
 
     const configuredCurrency = settings.getCached(Setting.DEFAULT_CURRENCY)?.value;
     setCurrency(configuredCurrency === 'USD' ? 'USD' : 'PEN');
@@ -524,6 +535,7 @@ export const usePosCheckout = ({
         discountPercent: discountPercent.toFixed(2),
         cashRoundingAdjustment: cashRoundingAdjustmentAmount.toFixed(2),
         emitInvoice,
+        requestedVoucherType,
         currency,
         exchangeRate: currency === 'USD' ? exchangeRate : '1.000000',
         grandTotal: payableTotal.toFixed(2),
@@ -668,6 +680,9 @@ export const usePosCheckout = ({
     lastSaleReceiptUrl,
     emitInvoice,
     setEmitInvoice,
+    requestedVoucherType,
+    setRequestedVoucherType,
+    canRequestFactura,
     creditSale,
     creditAmount,
     currency,

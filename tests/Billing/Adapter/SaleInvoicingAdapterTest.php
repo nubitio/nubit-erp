@@ -11,6 +11,7 @@ use App\Billing\Sale\SaleVoidUseCase;
 use App\Billing\Service\InvoiceCreationServiceInterface;
 use App\Billing\Service\ReplaceRejectedDocumentService;
 use App\Billing\Service\SaleV2Loader;
+use App\Sales\Domain\RequestedVoucherType;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\State\DetractionCalculatorInterface;
 use Nubit\Platform\Http\ApiResponse;
@@ -72,6 +73,32 @@ final class SaleInvoicingAdapterTest extends TestCase
         self::assertSame('123', $capturedMessage->getTenantId());
         self::assertIsArray($capturedStamps);
         self::assertContainsOnlyInstancesOf(DispatchAfterCurrentBusStamp::class, $capturedStamps);
+    }
+
+    public function testCreateInvoiceForSaleIdPassesRequestedVoucherTypeOverrideThrough(): void
+    {
+        $capturedOverride = 'not-called';
+        $invoiceCreation = $this->createMock(InvoiceCreationServiceInterface::class);
+        $invoiceCreation
+            ->expects(self::once())
+            ->method('createForSale')
+            ->willReturnCallback(static function (SaleRecord $sale, ?RequestedVoucherType $override) use (
+                &$capturedOverride,
+            ): array {
+                $capturedOverride = $override;
+
+                return ['success' => true, 'message' => 'ok', 'invoiceId' => 'tax-1'];
+            });
+
+        $messageBus = $this->createStub(MessageBusInterface::class);
+
+        $result = $this->adapter($invoiceCreation, $messageBus)->createInvoiceForSaleId(
+            'sale-1',
+            RequestedVoucherType::BOLETA,
+        );
+
+        static::assertTrue($result->success);
+        static::assertSame(RequestedVoucherType::BOLETA, $capturedOverride);
     }
 
     public function testVoidSaleDelegatesToUseCase(): void

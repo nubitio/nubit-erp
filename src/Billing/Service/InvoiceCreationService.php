@@ -28,13 +28,18 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
     ) {}
 
     /**
+     * @param RequestedVoucherType|null $requestedVoucherTypeOverride when given, takes
+     *        precedence over the sale's persisted requested voucher type — used by the
+     *        Ventas module's "Generar comprobante" action, which lets the user pick
+     *        Boleta/Factura at invoice time rather than at sale creation.
+     *
      * @return array{success: bool, message: string, invoiceId?: string}
      *
      * @throws Exception
      * @throws MathException
      * @throws \DateMalformedStringException
      */
-    public function createForSale(SaleRecord $sale): array
+    public function createForSale(SaleRecord $sale, ?RequestedVoucherType $requestedVoucherTypeOverride = null): array
     {
         $saleId = $sale->getId();
         if ($saleId === null || $saleId === '') {
@@ -115,7 +120,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
         $resolvedV2SaleId = is_string($v2SaleId) && $v2SaleId !== '' ? $v2SaleId : null;
 
         $taxRegime = $this->tenantSettingsService->getTaxRegime();
-        $requestedType = $sale->getRequestedVoucherType();
+        $requestedType = $requestedVoucherTypeOverride ?? $sale->getRequestedVoucherType();
         $ruc = $sale->getCliente()?->getRuc() ?? '';
 
         if ($taxRegime === TaxRegime::NRUS && $requestedType === RequestedVoucherType::FACTURA) {
@@ -267,8 +272,11 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
         $sale->setHasInvoice(true);
         $sale->setInvoice($series . '-' . $nextNumber);
         $sale->setTotal($invoiceAmounts->getTotal());
+        if ($requestedVoucherTypeOverride !== null) {
+            $sale->setRequestedVoucherType($requestedVoucherTypeOverride);
+        }
 
-        $this->syncInvoicedSaleState($saleId, $originalTotal);
+        $this->syncInvoicedSaleState($saleId, $originalTotal, $requestedVoucherTypeOverride);
 
         return [
             'success' => true,
@@ -277,21 +285,34 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
         ];
     }
 
-    private function syncInvoicedSaleState(string $saleId, string $total): void
-    {
+    private function syncInvoicedSaleState(
+        string $saleId,
+        string $total,
+        ?RequestedVoucherType $requestedVoucherTypeOverride = null,
+    ): void {
         // V2 first: keep new sales table in sync when available.
         if ($this->tableExists('sales')) {
+            $setRequestedVoucherType = $requestedVoucherTypeOverride !== null
+                ? ', requested_voucher_type = :requested_voucher_type'
+                : '';
+
             $this->connection->executeStatement(
-                <<<'SQL'
+                <<<SQL
                     UPDATE sales
                     SET grand_total = :total,
                         updated_at = UTC_TIMESTAMP(),
                         sync_status = 'SYNCED'
+                        {$setRequestedVoucherType}
                     WHERE id = :sale_id OR legacy_movimiento_id = :sale_id
                     SQL,
                 [
                     'total' => $total,
                     'sale_id' => $saleId,
+                    ...(
+                        $requestedVoucherTypeOverride !== null
+                            ? ['requested_voucher_type' => $requestedVoucherTypeOverride->value]
+                            : []
+                    ),
                 ],
             );
         }
