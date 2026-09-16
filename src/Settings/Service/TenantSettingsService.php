@@ -40,9 +40,21 @@ readonly class TenantSettingsService
         return $this->get()->getTaxRegime();
     }
 
+    /**
+     * Effective IGV rate used for sale/document calculations. NRUS taxpayers
+     * never charge IGV, so this always returns 0 for an NRUS tenant regardless
+     * of the configured rate — the raw configured value is still readable via
+     * the TenantSettings entity/API so the admin's input isn't lost if they
+     * switch back to GENERAL.
+     */
     public function getIgv(): float
     {
-        return $this->get()->getIgv();
+        $settings = $this->get();
+        if ($settings->getTaxRegime() === TaxRegime::NRUS) {
+            return 0.0;
+        }
+
+        return $settings->getIgv();
     }
 
     public function getRc(): float
