@@ -45,6 +45,9 @@ interface POSCheckoutPanelProps {
   setPaymentLines: (lines: SalePaymentLineDraft[]) => void;
   emitInvoice: boolean;
   setEmitInvoice: (checked: boolean) => void;
+  requestedVoucherType: 'AUTO' | 'FACTURA' | 'BOLETA';
+  setRequestedVoucherType: (value: 'AUTO' | 'FACTURA' | 'BOLETA') => void;
+  canRequestFactura: boolean;
   creditSale: boolean;
   creditAmount: number;
   currency: 'PEN' | 'USD';
@@ -103,6 +106,9 @@ export function POSCheckoutPanel({
   setPaymentLines,
   emitInvoice,
   setEmitInvoice,
+  requestedVoucherType,
+  setRequestedVoucherType,
+  canRequestFactura,
   creditSale,
   creditAmount,
   currency,
@@ -585,6 +591,34 @@ export function POSCheckoutPanel({
                   aria-label="Emitir boleta o factura SUNAT"
                 />
               </div>
+
+              {emitInvoice && (
+                <div className="pos-footer-option-row">
+                  <span className="pos-discount-label">Tipo de comprobante</span>
+                  <div className="pos-discount-presets" role="group" aria-label="Tipo de comprobante">
+                    <Chip
+                      label="Automático"
+                      active={requestedVoucherType === 'AUTO'}
+                      size="sm"
+                      onClick={() => setRequestedVoucherType('AUTO')}
+                    />
+                    <Chip
+                      label="Boleta"
+                      active={requestedVoucherType === 'BOLETA'}
+                      size="sm"
+                      onClick={() => setRequestedVoucherType('BOLETA')}
+                    />
+                    {canRequestFactura && (
+                      <Chip
+                        label="Factura"
+                        active={requestedVoucherType === 'FACTURA'}
+                        size="sm"
+                        onClick={() => setRequestedVoucherType('FACTURA')}
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
 
               {allowDiscount && (
                 <div className="pos-footer-option-row">

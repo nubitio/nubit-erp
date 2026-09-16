@@ -10,6 +10,7 @@ use App\Billing\Sale\SaleVoidUseCase;
 use App\Billing\Service\InvoiceCreationServiceInterface;
 use App\Billing\Service\ReplaceRejectedDocumentService;
 use App\Billing\Service\SaleV2Loader;
+use App\Sales\Domain\RequestedVoucherType;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Port\InvoiceCreatorInterface;
 use App\Sales\Port\RejectedDocumentReplacerInterface;
@@ -67,8 +68,10 @@ final readonly class SaleInvoicingAdapter implements
         return $result;
     }
 
-    public function createInvoiceForSaleId(string $saleId): InvoiceCreationResult
-    {
+    public function createInvoiceForSaleId(
+        string $saleId,
+        ?RequestedVoucherType $requestedVoucherType = null,
+    ): InvoiceCreationResult {
         $sale = $this->loadSale($saleId);
 
         if (!$sale instanceof SaleRecord) {
@@ -81,7 +84,7 @@ final readonly class SaleInvoicingAdapter implements
 
         $this->detractionCalculator->applyFromItems($sale);
 
-        $result = $this->invoiceCreationService->createForSale($sale);
+        $result = $this->invoiceCreationService->createForSale($sale, $requestedVoucherType);
 
         return $result['success']
             ? InvoiceCreationResult::success(

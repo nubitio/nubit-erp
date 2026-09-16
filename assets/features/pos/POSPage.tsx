@@ -161,6 +161,9 @@ const POSPage = () => {
     lastSaleReceiptUrl,
     emitInvoice,
     setEmitInvoice,
+    requestedVoucherType,
+    setRequestedVoucherType,
+    canRequestFactura,
     creditSale,
     creditAmount,
     currency,
@@ -537,6 +540,9 @@ const POSPage = () => {
         setPaymentLines={setPaymentLines}
         emitInvoice={emitInvoice}
         setEmitInvoice={setEmitInvoice}
+        requestedVoucherType={requestedVoucherType}
+        setRequestedVoucherType={setRequestedVoucherType}
+        canRequestFactura={canRequestFactura}
         creditSale={creditSale}
         creditAmount={creditAmount}
         currency={currency}

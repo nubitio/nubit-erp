@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Port;
 
+use App\Sales\Domain\RequestedVoucherType;
 use App\Sales\Port\Result\InvoiceCreationResult;
 
 /**
@@ -22,6 +23,13 @@ interface InvoiceCreatorInterface
 
     /**
      * Creates an invoice for an existing sale from an explicit request.
+     *
+     * @param RequestedVoucherType|null $requestedVoucherType when given, overrides and persists
+     *        the sale's requested voucher type before invoicing (e.g. the Ventas module letting a
+     *        user pick Boleta/Factura at invoice time instead of at sale creation).
      */
-    public function createInvoiceForSaleId(string $saleId): InvoiceCreationResult;
+    public function createInvoiceForSaleId(
+        string $saleId,
+        ?RequestedVoucherType $requestedVoucherType = null,
+    ): InvoiceCreationResult;
 }

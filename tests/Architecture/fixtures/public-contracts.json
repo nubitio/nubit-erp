@@ -45,7 +45,7 @@
     ],
     "App\\Sales\\Port\\InvoiceCreatorInterface": [
         "createAndDispatchInvoiceForSaleId(string $saleId): array",
-        "createInvoiceForSaleId(string $saleId): App\\Sales\\Port\\Result\\InvoiceCreationResult"
+        "createInvoiceForSaleId(string $saleId, ?App\\Sales\\Domain\\RequestedVoucherType $requestedVoucherType?): App\\Sales\\Port\\Result\\InvoiceCreationResult"
     ],
     "App\\Sales\\Port\\RejectedDocumentReplacerInterface": [
         "replaceRejectedDocument(string $saleId): App\\Sales\\Port\\Result\\RejectedDocumentReplacementResult"

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Controller\Api;
 
+use App\Sales\Domain\RequestedVoucherType;
 use App\Sales\Port\InvoiceCreatorInterface;
 use Nubit\Platform\Http\ApiResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,7 +19,13 @@ final class MakeSaleInvoice extends AbstractController
 
     public function __invoke(Request $request): JsonResponse
     {
-        $result = $this->invoiceCreator->createInvoiceForSaleId((string) $request->get('id'));
+        /** @var array<string, mixed> $payload */
+        $payload = json_decode($request->getContent(), associative: true) ?? [];
+        $requestedVoucherType = is_string($payload['requestedVoucherType'] ?? null)
+            ? RequestedVoucherType::tryFrom($payload['requestedVoucherType'])
+            : null;
+
+        $result = $this->invoiceCreator->createInvoiceForSaleId((string) $request->get('id'), $requestedVoucherType);
 
         if (!$result->success) {
             return ApiResponse::error($result->message);

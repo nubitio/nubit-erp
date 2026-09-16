@@ -1,4 +1,5 @@
 import { voidPrompt } from '../components/VoidDialog';
+import { voucherTypePrompt } from '../components/VoucherTypeDialog';
 import { saleService } from '../services/saleService';
 
 import type { BaseActionDeps } from './actionDeps';
@@ -43,10 +44,13 @@ export const runReplaceRejectedAction = (saleId: string, deps: BaseActionDeps) =
     });
 };
 
-export const runMakeInvoiceAction = (saleId: string, deps: MakeInvoiceDeps) => {
+export const runMakeInvoiceAction = async (saleId: string, deps: MakeInvoiceDeps) => {
+  const requestedVoucherType = await voucherTypePrompt();
+  if (!requestedVoucherType) return;
+
   deps.showLoading('Generando comprobante...');
   saleService
-    .makeInvoice(saleId)
+    .makeInvoice(saleId, requestedVoucherType)
     .then((response) => {
       deps.notify(response.data.message, response.data.success ? 'success' : 'error');
       const invoiceData = (response.data.data ?? null) as MakeInvoiceResponseData | null;

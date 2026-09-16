@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Billing\Service;
 
 use App\Billing\Service\InvoiceCreationService;
+use App\Sales\Domain\RequestedVoucherType;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Service\SaleCurrencyResolver;
 use App\Settings\Enum\TaxRegime;
@@ -113,6 +114,39 @@ final class InvoiceCreationServiceTest extends TestCase
         $service = $this->newService($connection);
 
         $this->invokePrivate($service, 'syncInvoicedSaleState', ['sale-1', '100.00']);
+    }
+
+    public function testSyncInvoicedSaleStatePersistsRequestedVoucherTypeOverrideWhenGiven(): void
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchOne')->willReturnCallback(static fn(string $sql, array $params): int => (
+            $params['table_name'] ?? ''
+        )
+            !== ''
+                ? 1
+                : 0);
+
+        $capturedSql = null;
+        $capturedParams = null;
+        $connection
+            ->expects(self::once())
+            ->method('executeStatement')
+            ->willReturnCallback(static function (string $sql, array $params = []) use (
+                &$capturedSql,
+                &$capturedParams,
+            ): int {
+                $capturedSql = $sql;
+                $capturedParams = $params;
+
+                return 1;
+            });
+
+        $service = $this->newService($connection);
+
+        $this->invokePrivate($service, 'syncInvoicedSaleState', ['sale-1', '100.00', RequestedVoucherType::BOLETA]);
+
+        static::assertStringContainsString('requested_voucher_type', (string) $capturedSql);
+        static::assertSame('BOLETA', $capturedParams['requested_voucher_type'] ?? null);
     }
 
     /**
