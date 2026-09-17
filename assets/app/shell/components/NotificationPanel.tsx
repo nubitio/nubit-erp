@@ -32,12 +32,15 @@ const CATEGORY_LABEL: Record<Category, string> = {
 };
 
 const TYPE_CATEGORY: Record<NotificationType, Category> = {
-  sunat_error:     'sunat',
-  sunat_blocked:   'sunat',
-  stock_low:       'stock',
-  cash_not_opened: 'system',
-  quota_warning:   'system',
-  daily_briefing:  'system',
+  sunat_error:          'sunat',
+  sunat_blocked:        'sunat',
+  certificate_expiring: 'sunat',
+  stock_low:            'stock',
+  cash_not_opened:      'system',
+  quota_warning:        'system',
+  daily_briefing:       'system',
+  sale_due_soon:        'system',
+  sale_overdue:         'system',
 };
 
 // ── Icon config per type ────────────────────────────────────────────────────
@@ -48,13 +51,22 @@ interface IconConfig {
   color: string; // CSS color for the icon itself
 }
 
+const DEFAULT_ICON: IconConfig = {
+  icon: 'ph ph-bell',
+  bg: 'var(--status-info-bg)',
+  color: 'var(--info-color)',
+};
+
 const TYPE_ICON: Record<NotificationType, IconConfig> = {
-  sunat_error:     { icon: 'ph ph-warning',       bg: 'var(--status-danger-bg)',   color: 'var(--error-color)' },
-  sunat_blocked:   { icon: 'ph ph-seal-warning',   bg: 'var(--status-danger-bg)',   color: 'var(--error-color)' },
-  stock_low:       { icon: 'ph ph-cube',           bg: 'var(--status-warning-bg)',  color: 'var(--warning-color)' },
-  cash_not_opened: { icon: 'ph ph-cash-register',  bg: 'var(--status-info-bg)',     color: 'var(--info-color)' },
-  quota_warning:   { icon: 'ph ph-chart-bar',      bg: 'var(--status-warning-bg)',  color: 'var(--warning-color)' },
-  daily_briefing:  { icon: 'ph ph-seal-check',     bg: 'var(--status-success-bg)',  color: 'var(--success-color)' },
+  sunat_error:          { icon: 'ph ph-warning',       bg: 'var(--status-danger-bg)',   color: 'var(--error-color)' },
+  sunat_blocked:        { icon: 'ph ph-seal-warning',   bg: 'var(--status-danger-bg)',   color: 'var(--error-color)' },
+  certificate_expiring: { icon: 'ph ph-certificate',    bg: 'var(--status-danger-bg)',   color: 'var(--error-color)' },
+  stock_low:            { icon: 'ph ph-cube',           bg: 'var(--status-warning-bg)',  color: 'var(--warning-color)' },
+  cash_not_opened:      { icon: 'ph ph-cash-register',  bg: 'var(--status-info-bg)',     color: 'var(--info-color)' },
+  quota_warning:        { icon: 'ph ph-chart-bar',      bg: 'var(--status-warning-bg)',  color: 'var(--warning-color)' },
+  daily_briefing:       { icon: 'ph ph-seal-check',     bg: 'var(--status-success-bg)',  color: 'var(--success-color)' },
+  sale_due_soon:        { icon: 'ph ph-calendar-check', bg: 'var(--status-info-bg)',     color: 'var(--info-color)' },
+  sale_overdue:         { icon: 'ph ph-calendar-x',     bg: 'var(--status-warning-bg)',  color: 'var(--warning-color)' },
 };
 
 const SEVERITY_DOT_COLOR: Record<NotificationSeverity, string> = {
@@ -66,11 +78,14 @@ const SEVERITY_DOT_COLOR: Record<NotificationSeverity, string> = {
 // ── Action link label per type ───────────────────────────────────────────────
 
 const TYPE_ACTION_LABEL: Partial<Record<NotificationType, string>> = {
-  sunat_error:     'Ver comprobante',
-  sunat_blocked:   'Ver comprobante',
-  stock_low:       'Ver inventario',
-  cash_not_opened: 'Abrir caja',
-  quota_warning:   'Ver configuración',
+  sunat_error:          'Ver comprobante',
+  sunat_blocked:        'Ver comprobante',
+  certificate_expiring: 'Ver certificado',
+  stock_low:            'Ver inventario',
+  cash_not_opened:      'Abrir caja',
+  quota_warning:        'Ver configuración',
+  sale_due_soon:        'Ver cuentas por cobrar',
+  sale_overdue:         'Ver cuentas por cobrar',
 };
 
 // ── Time formatting ──────────────────────────────────────────────────────────
@@ -200,7 +215,7 @@ const NotificationPanel = (props: NotificationPanelProps) => {
         ) : (
           filtered.map((item) => {
             const isRead = item.readAt !== null;
-            const iconCfg = TYPE_ICON[item.type];
+            const iconCfg = TYPE_ICON[item.type] ?? DEFAULT_ICON;
             const actionLabel = TYPE_ACTION_LABEL[item.type];
             const dotColor = SEVERITY_DOT_COLOR[item.severity];
 

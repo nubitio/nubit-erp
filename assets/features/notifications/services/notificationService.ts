@@ -9,7 +9,10 @@ export type NotificationType =
   | 'stock_low'
   | 'cash_not_opened'
   | 'quota_warning'
-  | 'daily_briefing';
+  | 'daily_briefing'
+  | 'certificate_expiring'
+  | 'sale_due_soon'
+  | 'sale_overdue';
 
 export type NotificationSeverity = 'critical' | 'warning' | 'info';
 
