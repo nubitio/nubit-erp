@@ -320,7 +320,12 @@ services:
       start_period: 20s
 
   mercure:
-    image: dunglas/mercure
+    # Pinned: v1.0.0 dropped the /healthz route that older 0.x images
+    # shipped. `latest` silently jumped 0.24 -> 1.0.0, so this healthcheck
+    # started 404'ing on every probe, marking the container permanently
+    # unhealthy and blocking `web` (depends_on: mercure: service_healthy)
+    # from ever starting. Bump deliberately, not via `latest`.
+    image: dunglas/mercure:v1.0.0
     restart: unless-stopped
     environment:
       SERVER_NAME: ':80'
@@ -332,7 +337,8 @@ services:
     mem_limit: 256m
     cpus: 0.5
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost/healthz']
+      # v1.0.0 has no /healthz route; `/` responds 200 from the stock Caddyfile.
+      test: ['CMD', 'curl', '-f', 'http://localhost/']
       interval: 10s
       timeout: 5s
       retries: 5

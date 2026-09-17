@@ -251,7 +251,11 @@ services:
 
   ###> symfony/mercure-bundle ###
   mercure:
-    image: dunglas/mercure
+    # Pinned: v1.0.0 dropped dev.Caddyfile and the /healthz route that older
+    # 0.x images shipped. `latest` silently jumped 0.24 -> 1.0.0 and broke
+    # both local dev (missing dev.Caddyfile) and prod (healthcheck 404 loop,
+    # see docker-compose.prod.yml). Bump deliberately, not via `latest`.
+    image: dunglas/mercure:v1.0.0
     restart: unless-stopped
     environment:
       # Uncomment the following line to disable HTTPS,
@@ -261,10 +265,9 @@ services:
       # Set the URL of your Symfony project (without trailing slash!) as value of the cors_origins directive
       MERCURE_EXTRA_DIRECTIVES: |
         cors_origins http://127.0.0.1:8000 http://demo.localhost:8080 http://localhost:5173 http://localhost:5174 http://localhost:8080
-    # Comment the following line to disable the development mode
-    command: /usr/bin/caddy run --config /etc/caddy/dev.Caddyfile
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost/healthz']
+      # v1.0.0 has no /healthz route; `/` responds 200 from the stock Caddyfile.
+      test: ['CMD', 'curl', '-f', 'http://localhost/']
       timeout: 5s
       retries: 5
       start_period: 60s
