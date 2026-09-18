@@ -17,6 +17,9 @@ import { MercureManager } from '@nubitio/core';
 import { AppProviders } from '../AppProviders';
 import { useTenantRuntimeConfig } from '@shared/hooks';
 import { TenantOnboardingGate } from '@features/onboarding/TenantOnboardingGate';
+import { installCsrfFetch } from '@shared/api/installCsrfFetch';
+
+installCsrfFetch();
 
 const AppLoading = () => (
   <div className="app-loading" role="status" aria-label="Cargando">

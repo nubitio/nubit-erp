@@ -15,9 +15,10 @@ export async function loginViaApi(
     headers: { 'Content-Type': 'application/json', 'X-Client-Type': 'android' },
     data: { username, password },
   });
-  expect(login.ok(), 'login API debe responder 2xx').toBeTruthy();
+  const loginBody = await login.text();
+  expect(login.ok(), `login API debe responder 2xx (status ${login.status()} ${loginBody})`).toBeTruthy();
 
-  const payload = (await login.json()) as { token?: string };
+  const payload = JSON.parse(loginBody) as { token?: string };
   const accessToken = payload.token;
   expect(accessToken, 'login debe devolver token').toBeTruthy();
 

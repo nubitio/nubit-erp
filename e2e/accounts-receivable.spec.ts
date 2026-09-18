@@ -89,7 +89,8 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
   await test.step('filtrar por cliente y abrir la deuda', async () => {
     await page.goto(`${BASE_URL}/#/accounts-receivable`);
     const customerFilter = page.getByRole('table', { name: 'Cuentas por cobrar' })
-      .getByRole('row').nth(1).getByRole('combobox');
+      .locator('.nb-datagrid__filter-select')
+      .first();
     await customerFilter.fill(E2E_SEED.customerName);
     await page.locator('.nb-form__lookup-menu button[role="option"]')
       .filter({ hasText: E2E_SEED.customerName }).first().click();
