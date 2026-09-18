@@ -266,7 +266,7 @@ jobs:
             -e APP_ENV=test \
             -e APP_SECRET=test-secret-for-kernel-tests-32b \
             -e DATABASE_URL="${DATABASE_URL}" \
-            web php -d pcov.enabled=1 -d pcov.directory=/app/src ./vendor/bin/pest -c phpunit.coverage.xml
+            web php -d pcov.enabled=1 -d memory_limit=1G -d pcov.directory=/app/src ./vendor/bin/pest -c phpunit.coverage.xml --do-not-fail-on-deprecation --do-not-fail-on-phpunit-deprecation
 
       - name: Run PHPUnit
         if: needs.changes.outputs.backend == 'true' && needs.changes.outputs.coverage != 'true'

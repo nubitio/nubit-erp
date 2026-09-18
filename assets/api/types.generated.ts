@@ -768,66 +768,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/cash-shifts/{id}/movements": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Retrieves the collection of CashShift resources.
-         * @description Retrieves the collection of CashShift resources.
-         */
-        get: operations["api_cash-shifts_idmovements_get_collection"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/cash-shifts/{id}/summary": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Retrieves the collection of CashShift resources.
-         * @description Retrieves the collection of CashShift resources.
-         */
-        get: operations["api_cash-shifts_idsummary_get_collection"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/cash-shifts/{id}/x-report": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Retrieves a CashShift resource.
-         * @description Retrieves a CashShift resource.
-         */
-        get: operations["api_cash-shifts_idx-report_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/categories": {
         parameters: {
             query?: never;
@@ -4921,8 +4861,6 @@ export interface components {
         };
         "CashRegister.CashSession-cash_session.read": {
             readonly id?: number;
-            /** @description cash_session.legacy_cash_shift_id.label */
-            legacyCashShiftId?: number | null;
             /**
              * Format: iri-reference
              * @description cash_session.cash_register.label
@@ -4988,8 +4926,6 @@ export interface components {
         };
         "CashRegister.CashSession.jsonld-cash_session.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
-            /** @description cash_session.legacy_cash_shift_id.label */
-            legacyCashShiftId?: number | null;
             /**
              * Format: iri-reference
              * @description cash_session.cash_register.label
@@ -5102,8 +5038,6 @@ export interface components {
         "CashRegister.jsonld-cash_register_dashboard.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         "CashSession-cash_session.read": {
             readonly id?: number;
-            /** @description cash_session.legacy_cash_shift_id.label */
-            legacyCashShiftId?: number | null;
             /**
              * Format: iri-reference
              * @description cash_session.cash_register.label
@@ -5280,8 +5214,6 @@ export interface components {
         };
         "CashSession.jsonld-cash_session.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
-            /** @description cash_session.legacy_cash_shift_id.label */
-            legacyCashShiftId?: number | null;
             /**
              * Format: iri-reference
              * @description cash_session.cash_register.label
@@ -5344,158 +5276,6 @@ export interface components {
              * @description cash_session.updated_at.label
              */
             updatedAt?: string | null;
-        };
-        /**
-         * @description Not a Doctrine entity — kept only as the `fromClass` anchor for the three
-         *     `/cash-shifts/{id}/...` sub-resource routes below, which resolve a legacy
-         *     shift id to its v2 `cash_session` via `cash_sessions.legacy_cash_shift_id`
-         *     (a plain lookup column, never an FK) and therefore still work correctly.
-         *     The base CRUD operations this resource used to expose
-         *     (GetCollection/Post/Get/Patch/Delete via the default ORM provider) were
-         *     removed when the underlying `cash_shift` table was dropped 2026-08-19 —
-         *     see ADR-004's amendment.
-         */
-        "CashShift.CashMovement-cash_movement.read": {
-            readonly id?: number | null;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.cash_session.label
-             * @example https://example.com/
-             */
-            cashSession?: string | null;
-            category?: components["schemas"]["CashMovementCategory-cash_movement.read"];
-            /**
-             * @description cash_movement.type.label
-             * @enum {string}
-             */
-            type?: "income" | "expense";
-            /**
-             * @description cash_movement.amount.label
-             * @default 0.00
-             */
-            amount: string;
-            /** @description cash_movement.description.label */
-            description?: string;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.branch.label
-             * @example https://example.com/
-             */
-            branch?: string | null;
-        };
-        /**
-         * @description Not a Doctrine entity — kept only as the `fromClass` anchor for the three
-         *     `/cash-shifts/{id}/...` sub-resource routes below, which resolve a legacy
-         *     shift id to its v2 `cash_session` via `cash_sessions.legacy_cash_shift_id`
-         *     (a plain lookup column, never an FK) and therefore still work correctly.
-         *     The base CRUD operations this resource used to expose
-         *     (GetCollection/Post/Get/Patch/Delete via the default ORM provider) were
-         *     removed when the underlying `cash_shift` table was dropped 2026-08-19 —
-         *     see ADR-004's amendment.
-         */
-        "CashShift.CashMovement.jsonld-cash_movement.read": components["schemas"]["HydraItemBaseSchema"] & {
-            readonly id?: number | null;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.cash_session.label
-             * @example https://example.com/
-             */
-            cashSession?: string | null;
-            category?: components["schemas"]["CashMovementCategory.jsonld-cash_movement.read"];
-            /**
-             * @description cash_movement.type.label
-             * @enum {string}
-             */
-            type?: "income" | "expense";
-            /**
-             * @description cash_movement.amount.label
-             * @default 0.00
-             */
-            amount: string;
-            /** @description cash_movement.description.label */
-            description?: string;
-            /**
-             * Format: iri-reference
-             * @description cash_movement.branch.label
-             * @example https://example.com/
-             */
-            branch?: string | null;
-        };
-        /**
-         * @description Not a Doctrine entity — kept only as the `fromClass` anchor for the three
-         *     `/cash-shifts/{id}/...` sub-resource routes below, which resolve a legacy
-         *     shift id to its v2 `cash_session` via `cash_sessions.legacy_cash_shift_id`
-         *     (a plain lookup column, never an FK) and therefore still work correctly.
-         *     The base CRUD operations this resource used to expose
-         *     (GetCollection/Post/Get/Patch/Delete via the default ORM provider) were
-         *     removed when the underlying `cash_shift` table was dropped 2026-08-19 —
-         *     see ADR-004's amendment.
-         */
-        "CashShift.CashSessionClosureSummaryDto-cash_closure_summary.read": {
-            paymentMethodId?: number;
-            paymentMethod?: string;
-            expectedAmount?: string;
-        };
-        /**
-         * @description Not a Doctrine entity — kept only as the `fromClass` anchor for the three
-         *     `/cash-shifts/{id}/...` sub-resource routes below, which resolve a legacy
-         *     shift id to its v2 `cash_session` via `cash_sessions.legacy_cash_shift_id`
-         *     (a plain lookup column, never an FK) and therefore still work correctly.
-         *     The base CRUD operations this resource used to expose
-         *     (GetCollection/Post/Get/Patch/Delete via the default ORM provider) were
-         *     removed when the underlying `cash_shift` table was dropped 2026-08-19 —
-         *     see ADR-004's amendment.
-         */
-        "CashShift.CashSessionClosureSummaryDto.jsonld-cash_closure_summary.read": components["schemas"]["HydraItemBaseSchema"] & {
-            paymentMethodId?: number;
-            paymentMethod?: string;
-            expectedAmount?: string;
-        };
-        /**
-         * @description Not a Doctrine entity — kept only as the `fromClass` anchor for the three
-         *     `/cash-shifts/{id}/...` sub-resource routes below, which resolve a legacy
-         *     shift id to its v2 `cash_session` via `cash_sessions.legacy_cash_shift_id`
-         *     (a plain lookup column, never an FK) and therefore still work correctly.
-         *     The base CRUD operations this resource used to expose
-         *     (GetCollection/Post/Get/Patch/Delete via the default ORM provider) were
-         *     removed when the underlying `cash_shift` table was dropped 2026-08-19 —
-         *     see ADR-004's amendment.
-         */
-        "CashShift.CashSessionXReportDto-cash_x_report.read": {
-            openingBalance?: string;
-            totalSales?: string;
-            cashIn?: string;
-            cashOut?: string;
-            currentBalance?: string;
-            shiftDurationMinutes?: number;
-            salesByPaymentMethod?: {
-                paymentMethodId: number;
-                paymentMethod: string;
-                amount: string;
-            }[];
-        };
-        /**
-         * @description Not a Doctrine entity — kept only as the `fromClass` anchor for the three
-         *     `/cash-shifts/{id}/...` sub-resource routes below, which resolve a legacy
-         *     shift id to its v2 `cash_session` via `cash_sessions.legacy_cash_shift_id`
-         *     (a plain lookup column, never an FK) and therefore still work correctly.
-         *     The base CRUD operations this resource used to expose
-         *     (GetCollection/Post/Get/Patch/Delete via the default ORM provider) were
-         *     removed when the underlying `cash_shift` table was dropped 2026-08-19 —
-         *     see ADR-004's amendment.
-         */
-        "CashShift.CashSessionXReportDto.jsonld-cash_x_report.read": components["schemas"]["HydraItemBaseSchema"] & {
-            openingBalance?: string;
-            totalSales?: string;
-            cashIn?: string;
-            cashOut?: string;
-            currentBalance?: string;
-            shiftDurationMinutes?: number;
-            salesByPaymentMethod?: {
-                paymentMethodId: number;
-                paymentMethod: string;
-                amount: string;
-            }[];
         };
         "Category-category.read": {
             readonly id?: string;
@@ -9473,8 +9253,6 @@ export interface components {
             readonly id?: string;
             /** @description purchase.receipt_no.label */
             receiptNo?: number | null;
-            /** @description purchase.legacy_movimiento_id.label */
-            legacyMovimientoId?: string | null;
             /**
              * Format: iri-reference
              * @description purchase.branch.label
@@ -9684,8 +9462,6 @@ export interface components {
             readonly id?: string;
             /** @description purchase.receipt_no.label */
             receiptNo?: number | null;
-            /** @description purchase.legacy_movimiento_id.label */
-            legacyMovimientoId?: string | null;
             /**
              * Format: iri-reference
              * @description purchase.branch.label
@@ -9849,8 +9625,6 @@ export interface components {
              * @example https://example.com/
              */
             purchaseOrderItem?: string | null;
-            /** @description purchase_item.legacy_movimiento_detalle_id.label */
-            legacyMovimientoDetalleId?: number | null;
             /**
              * @description purchase_item.line_no.label
              * @default 0
@@ -9943,8 +9717,6 @@ export interface components {
              * @example https://example.com/
              */
             purchaseOrderItem?: string | null;
-            /** @description purchase_item.legacy_movimiento_detalle_id.label */
-            legacyMovimientoDetalleId?: number | null;
             /**
              * @description purchase_item.line_no.label
              * @default 0
@@ -10717,8 +10489,6 @@ export interface components {
         };
         "SaleItemRecord-sale_item_record.read": {
             readonly id?: number;
-            /** @description sale_item_record.legacy_movimiento_detalle_id.label */
-            legacyMovimientoDetalleId?: number | null;
             /**
              * @description sale_item_record.line_no.label
              * @default 0
@@ -10771,8 +10541,6 @@ export interface components {
         };
         "SaleItemRecord.jsonld-sale_item_record.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
-            /** @description sale_item_record.legacy_movimiento_detalle_id.label */
-            legacyMovimientoDetalleId?: number | null;
             /**
              * @description sale_item_record.line_no.label
              * @default 0
@@ -13045,9 +12813,7 @@ export interface components {
          */
         "TenantSettings-tenant_settings.read": {
             /**
-             * @description SUNAT tax regime the tenant is registered under. A tenant on NRUS can
-             *     only issue boletas (never facturas) and does not break out IGV as
-             *     "Gravado" on its vouchers — enforced in InvoiceCreationService.
+             * @description SUNAT tax regime. NRUS tenants can issue exonerated boletas, but not facturas.
              * @default GENERAL
              * @enum {string}
              */
@@ -13118,9 +12884,7 @@ export interface components {
          */
         "TenantSettings-tenant_settings.write.jsonMergePatch": {
             /**
-             * @description SUNAT tax regime the tenant is registered under. A tenant on NRUS can
-             *     only issue boletas (never facturas) and does not break out IGV as
-             *     "Gravado" on its vouchers — enforced in InvoiceCreationService.
+             * @description SUNAT tax regime. NRUS tenants can issue exonerated boletas, but not facturas.
              * @default GENERAL
              * @enum {string}
              */
@@ -13178,9 +12942,7 @@ export interface components {
          */
         "TenantSettings.jsonld-tenant_settings.read": components["schemas"]["HydraItemBaseSchema"] & {
             /**
-             * @description SUNAT tax regime the tenant is registered under. A tenant on NRUS can
-             *     only issue boletas (never facturas) and does not break out IGV as
-             *     "Gravado" on its vouchers — enforced in InvoiceCreationService.
+             * @description SUNAT tax regime. NRUS tenants can issue exonerated boletas, but not facturas.
              * @default GENERAL
              * @enum {string}
              */
@@ -16240,99 +16002,6 @@ export interface operations {
                     "application/ld+json": components["schemas"]["Error.jsonld"];
                     "application/problem+json": components["schemas"]["Error"];
                     "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/ld+json": components["schemas"]["Error.jsonld"];
-                    "application/problem+json": components["schemas"]["Error"];
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-        };
-    };
-    "api_cash-shifts_idmovements_get_collection": {
-        parameters: {
-            query?: {
-                /** @description Enable or disable pagination */
-                pagination?: boolean;
-            };
-            header?: never;
-            path: {
-                /** @description CashShift identifier */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description CashShift collection */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CashShift.CashMovement-cash_movement.read"][];
-                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchemaNoPagination"] & {
-                        member: components["schemas"]["CashShift.CashMovement.jsonld-cash_movement.read"][];
-                    };
-                };
-            };
-        };
-    };
-    "api_cash-shifts_idsummary_get_collection": {
-        parameters: {
-            query?: {
-                /** @description Enable or disable pagination */
-                pagination?: boolean;
-            };
-            header?: never;
-            path: {
-                /** @description CashShift identifier */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description CashShift collection */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CashShift.CashSessionClosureSummaryDto-cash_closure_summary.read"][];
-                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchemaNoPagination"] & {
-                        member: components["schemas"]["CashShift.CashSessionClosureSummaryDto.jsonld-cash_closure_summary.read"][];
-                    };
-                };
-            };
-        };
-    };
-    "api_cash-shifts_idx-report_get": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description CashShift identifier */
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description CashShift resource */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CashShift.CashSessionXReportDto-cash_x_report.read"];
-                    "application/ld+json": components["schemas"]["CashShift.CashSessionXReportDto.jsonld-cash_x_report.read"];
                 };
             };
             /** @description Not found */
