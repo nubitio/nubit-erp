@@ -82,14 +82,6 @@ class CashSession
     #[ORM\Column]
     private ?int $id = null;
 
-    /**
-     * Plain int FK to cash_shift.id — no Doctrine relation (legacy reference only).
-     */
-    #[Groups(['cash_session:read'])]
-    #[ORM\Column(nullable: true)]
-    #[ApiProperty(description: 'cash_session.legacy_cash_shift_id.label')]
-    private ?int $legacyCashShiftId = null;
-
     #[Groups(['cash_session:read'])]
     #[ORM\ManyToOne(targetEntity: CashRegister::class, inversedBy: 'cashSessions')]
     #[ORM\JoinColumn(name: 'cash_register_id', referencedColumnName: 'id', nullable: false)]
@@ -170,18 +162,6 @@ class CashSession
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getLegacyCashShiftId(): ?int
-    {
-        return $this->legacyCashShiftId;
-    }
-
-    public function setLegacyCashShiftId(?int $legacyCashShiftId): static
-    {
-        $this->legacyCashShiftId = $legacyCashShiftId;
-
-        return $this;
     }
 
     public function getCashRegister(): CashRegister

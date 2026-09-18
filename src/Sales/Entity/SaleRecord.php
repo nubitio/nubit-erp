@@ -33,7 +33,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Nubit\Platform\Exception\ServiceException;
 use Nubit\Platform\Http\ApiResponse;
-use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
+use App\Efact\Doctrine\AssignedUuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -120,12 +120,9 @@ class SaleRecord
     #[Groups(['sale_record:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
+    #[ORM\CustomIdGenerator(class: AssignedUuidGenerator::class)]
     #[ORM\Column(name: 'id', type: 'string', length: 36)]
     private ?string $id = null;
-
-    #[ORM\Column(name: 'legacy_movimiento_id', type: 'string', length: 255, nullable: true, unique: true)]
-    private ?string $legacyMovimientoId = null;
 
     /**
      * Client-supplied `Idempotency-Key` header for offline-sale retries (see
@@ -548,18 +545,6 @@ class SaleRecord
     public function setId(?string $id): static
     {
         $this->id = $id;
-
-        return $this;
-    }
-
-    public function getLegacyMovimientoId(): ?string
-    {
-        return $this->legacyMovimientoId;
-    }
-
-    public function setLegacyMovimientoId(?string $legacyMovimientoId): static
-    {
-        $this->legacyMovimientoId = $legacyMovimientoId;
 
         return $this;
     }

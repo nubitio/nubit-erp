@@ -74,7 +74,7 @@ final class PaymentMethodBreakdownReport extends AbstractSaleReport
                 coalesce(sum(sp.amount), 0) as total_paid,
                 s.grand_total as sale_total
             from sales s
-                left join tax_document i on (i.movimiento_id = s.legacy_movimiento_id OR i.sale_id = s.id) and i.document_type in ('01', '03')
+                left join tax_document i on (i.sale_id = s.id OR i.movimiento_id = s.id) and i.document_type in ('01', '03')
                 left join cliente c on c.id = s.customer_id
                 left join sale_payments sp on sp.sale_id = s.id
             where

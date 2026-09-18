@@ -7,7 +7,6 @@ namespace App\Tests\CashRegister\State;
 use ApiPlatform\Metadata\Put;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Entity\CashSession;
-use App\CashRegister\Repository\CashSessionRepository;
 use App\CashRegister\State\CashRegisterCloseProcessor;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Entity\User;
@@ -27,14 +26,10 @@ final class CashRegisterCloseProcessorTest extends TestCase
     /** @var Security&MockObject */
     private Security $security;
 
-    /** @var CashSessionRepository&MockObject */
-    private CashSessionRepository $cashSessionRepository;
-
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->security = $this->createMock(Security::class);
-        $this->cashSessionRepository = $this->createMock(CashSessionRepository::class);
 
         $authUser = new AuthUserDto(userId: 1, username: 'cajero');
         $this->security->method('connectedUser')->willReturn($authUser);
@@ -127,7 +122,6 @@ final class CashRegisterCloseProcessorTest extends TestCase
         return new CashRegisterCloseProcessor(
             entityManager: $this->entityManager,
             security: $this->security,
-            cashSessionRepository: $this->cashSessionRepository,
         );
     }
 }

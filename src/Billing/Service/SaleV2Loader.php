@@ -18,7 +18,7 @@ use Doctrine\ORM\EntityManagerInterface;
  * a synthetic Sale entity so that existing services (MakeInvoice, SaleVoidUseCase)
  * can operate without a movimiento row.
  *
- * This is transitional infrastructure for the v2_authoritative migration path.
+ * Loads a sale from the `sales` table for billing services that still accept a sale UUID.
  */
 readonly class SaleV2Loader
 {
@@ -40,7 +40,6 @@ readonly class SaleV2Loader
             <<<'SQL'
                 SELECT
                     s.id,
-                    s.legacy_movimiento_id,
                     s.customer_id,
                     s.warehouse_id,
                     s.branch_id,
@@ -76,8 +75,6 @@ readonly class SaleV2Loader
                     ) AS payment_method_name
                 FROM sales s
                 WHERE s.id = :id
-                   OR s.legacy_movimiento_id = :id
-                ORDER BY CASE WHEN s.id = :id THEN 0 ELSE 1 END
                 LIMIT 1
                 SQL,
             ['id' => $saleId],

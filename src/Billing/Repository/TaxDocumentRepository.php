@@ -126,7 +126,6 @@ class TaxDocumentRepository extends ServiceEntityRepository
      */
     public function hasCreditNoteForSale(string $saleId): bool
     {
-        $resolvedId = $this->resolveLegacySaleIdForVoucher($saleId);
         $count = $this
             ->getEntityManager()
             ->getConnection()
@@ -138,33 +137,10 @@ class TaxDocumentRepository extends ServiceEntityRepository
                       AND td.document_type = :doc_type
                     SQL,
                 [
-                    'sale_id' => $resolvedId,
+                    'sale_id' => $saleId,
                     'doc_type' => '07',
                 ],
             );
-
-        if ((int) ($count !== false ? $count : 0) > 0) {
-            return true;
-        }
-
-        // Fallback: also check the original V2 id if resolveLegacySaleIdForVoucher returned a legacy id.
-        if ($resolvedId !== $saleId) {
-            $count = $this
-                ->getEntityManager()
-                ->getConnection()
-                ->fetchOne(
-                    <<<'SQL'
-                        SELECT COUNT(*)
-                        FROM tax_document td
-                        WHERE (td.movimiento_id = :sale_id OR td.sale_id = :sale_id)
-                          AND td.document_type = :doc_type
-                        SQL,
-                    [
-                        'sale_id' => $saleId,
-                        'doc_type' => '07',
-                    ],
-                );
-        }
 
         return (int) ($count !== false ? $count : 0) > 0;
     }
@@ -203,17 +179,13 @@ class TaxDocumentRepository extends ServiceEntityRepository
      */
     public function getVoucher(string $saleId): Voucher
     {
-        $resolvedSaleId = $this->resolveLegacySaleIdForVoucher($saleId);
-        $sale = $this->loadSaleGraph($resolvedSaleId);
+        $sale = $this->loadSaleGraph($saleId);
 
         if (!$sale) {
             throw NotFoundException::forResource('Sale', $saleId);
         }
 
-        // Load the active tax document for this sale explicitly by sale id.
-        $taxDocument = $this->findActiveTaxDocumentBySaleId($resolvedSaleId) ?? $this->findActiveTaxDocumentBySaleId(
-            $saleId,
-        );
+        $taxDocument = $this->findActiveTaxDocumentBySaleId($saleId);
         $header = $this->buildHeaderFromSale($sale, $taxDocument, null);
         $lines = $this->buildLinesForVoucher($sale, $taxDocument);
 
@@ -275,7 +247,6 @@ class TaxDocumentRepository extends ServiceEntityRepository
      */
     public function findDocumentTypeBySaleId(string $saleId): ?string
     {
-        $resolvedId = $this->resolveLegacySaleIdForVoucher($saleId);
         $type = $this
             ->getEntityManager()
             ->getConnection()
@@ -288,29 +259,8 @@ class TaxDocumentRepository extends ServiceEntityRepository
                     ORDER BY created_at DESC
                     LIMIT 1
                     SQL,
-                ['sale_id' => $resolvedId],
+                ['sale_id' => $saleId],
             );
-
-        if (!is_string($type) || $type === '') {
-            // Also try the original (V2) id in case resolveLegacySaleIdForVoucher
-            // returned the legacy id and the tax_document only has the V2 id.
-            if ($resolvedId !== $saleId) {
-                $type = $this
-                    ->getEntityManager()
-                    ->getConnection()
-                    ->fetchOne(
-                        <<<'SQL'
-                            SELECT document_type
-                            FROM tax_document
-                            WHERE (movimiento_id = :sale_id OR sale_id = :sale_id)
-                              AND document_type NOT IN ('07', '08')
-                            ORDER BY created_at DESC
-                            LIMIT 1
-                            SQL,
-                        ['sale_id' => $saleId],
-                    );
-            }
-        }
 
         return is_string($type) && $type !== '' ? $type : null;
     }
@@ -323,8 +273,6 @@ class TaxDocumentRepository extends ServiceEntityRepository
      */
     public function findLatestAcceptedBySaleAndType(string $saleId, string $documentType): ?TaxDocument
     {
-        $resolvedId = $this->resolveLegacySaleIdForVoucher($saleId);
-
         $taxDocId = $this
             ->getEntityManager()
             ->getConnection()
@@ -338,27 +286,8 @@ class TaxDocumentRepository extends ServiceEntityRepository
                     ORDER BY created_at DESC
                     LIMIT 1
                     SQL,
-                ['id' => $resolvedId, 'doc_type' => $documentType],
+                ['id' => $saleId, 'doc_type' => $documentType],
             );
-
-        // Fallback: try the original V2 id if the resolved (legacy) id found nothing.
-        if ((!is_string($taxDocId) || $taxDocId === '') && $resolvedId !== $saleId) {
-            $taxDocId = $this
-                ->getEntityManager()
-                ->getConnection()
-                ->fetchOne(
-                    <<<'SQL'
-                        SELECT tax_document_id
-                        FROM tax_document
-                        WHERE (movimiento_id = :id OR sale_id = :id)
-                          AND document_type = :doc_type
-                          AND sunat_status = '0'
-                        ORDER BY created_at DESC
-                        LIMIT 1
-                        SQL,
-                    ['id' => $saleId, 'doc_type' => $documentType],
-                );
-        }
 
         if (!is_string($taxDocId) || $taxDocId === '') {
             return null;
@@ -398,27 +327,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-    private function resolveLegacySaleIdForVoucher(string $saleId): string
-    {
-        $connection = $this->getEntityManager()->getConnection();
-        $legacyId = $connection->fetchOne(
-            <<<'SQL'
-                SELECT s.legacy_movimiento_id
-                FROM sales s
-                WHERE s.id = :sale_id
-                   OR s.legacy_movimiento_id = :sale_id
-                ORDER BY CASE WHEN s.legacy_movimiento_id = :sale_id THEN 0 ELSE 1 END
-                LIMIT 1
-                SQL,
-            ['sale_id' => $saleId],
-        );
 
-        if (is_string($legacyId) && $legacyId !== '') {
-            return $legacyId;
-        }
-
-        return $saleId;
-    }
 
     /**
      * @throws MathException
@@ -446,8 +355,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
             throw new ServiceException('La nota no tiene una venta asociada');
         }
 
-        $resolvedSaleId = $this->resolveLegacySaleIdForVoucher($rawSaleId);
-        $sale = $this->loadSaleGraph($resolvedSaleId);
+        $sale = $this->loadSaleGraph($rawSaleId);
         if (!$sale) {
             throw new ServiceException('La venta asociada no existe');
         }
@@ -632,8 +540,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
                 <<<'SQL'
                     SELECT s.currency, s.exchange_rate
                     FROM sales s
-                    WHERE s.id = :id OR s.legacy_movimiento_id = :id
-                    ORDER BY CASE WHEN s.id = :id THEN 0 ELSE 1 END
+                    WHERE s.id = :id
                     LIMIT 1
                     SQL,
                 ['id' => $saleId],
@@ -821,7 +728,7 @@ class TaxDocumentRepository extends ServiceEntityRepository
                 $saleRow = $this
                     ->getEntityManager()
                     ->getConnection()
-                    ->fetchAssociative('SELECT status FROM sales WHERE legacy_movimiento_id = :id OR id = :id LIMIT 1', [
+                    ->fetchAssociative('SELECT status FROM sales WHERE id = :id LIMIT 1', [
                         'id' => $legacySaleId,
                     ]);
                 if (is_array($saleRow)) {

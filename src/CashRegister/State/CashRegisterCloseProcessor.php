@@ -9,7 +9,6 @@ use ApiPlatform\State\ProcessorInterface;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Dto\CashRegisterCloseResponseDto;
 use App\CashRegister\Entity\CashSession;
-use App\CashRegister\Repository\CashSessionRepository;
 use App\Identity\Entity\User;
 use App\Identity\Security\Security;
 use Brick\Math\BigDecimal;
@@ -32,7 +31,6 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private Security $security,
-        private CashSessionRepository $cashSessionRepository,
     ) {}
 
     /**
@@ -74,13 +72,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         }
 
         try {
-            // Attempt 1: direct lookup by cash_sessions.id
             $cashSession = $this->entityManager->find(CashSession::class, $uriVariables['id']);
-
-            // Attempt 2: backward compat — session was opened by legacy code, look up via legacy_cash_shift_id
-            if (!$cashSession instanceof CashSession) {
-                $cashSession = $this->cashSessionRepository->findByLegacyCashShiftId((int) $uriVariables['id']);
-            }
 
             if (!$cashSession instanceof CashSession) {
                 throw new NotFoundHttpException('Sesión de caja no encontrada.');

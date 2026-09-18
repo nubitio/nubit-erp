@@ -29,10 +29,8 @@ class CashRegisterReportController extends AbstractController
      */
     #[RequiresFeature('pdf_bulk_download')]
     #[Route('/api/cash-sessions/{id}/closure-report', name: 'cash_session_closure_report', methods: ['GET'])]
-    #[Route('/api/cash-shifts/{id}/closure-report', name: 'cash_shift_closure_report', methods: ['GET'])]
     public function __invoke(int $id): Response
     {
-        // --- 1. Resolve the v2 session: by id first, then by legacy_cash_shift_id ---
         $sessionRow = $this->connection->fetchAssociative(<<<SQL
             SELECT
                 cs.id            AS sessionId,
@@ -51,28 +49,6 @@ class CashRegisterReportController extends AbstractController
             JOIN usuario u        ON u.usuario_id = cs.opened_by
             WHERE cs.id = ?
             SQL, [$id]);
-
-        if ($sessionRow === false) {
-            // Fallback: treat $id as a legacy cash_shift id
-            $sessionRow = $this->connection->fetchAssociative(<<<SQL
-                SELECT
-                    cs.id            AS sessionId,
-                    cs.opening_amount,
-                    cs.expected_amount,
-                    cs.counted_amount,
-                    cs.difference_amount,
-                    cs.close_note    AS note,
-                    cs.opened_at,
-                    cs.closed_at,
-                    u.username       AS openedBy,
-                    cr.id            AS cashRegisterId,
-                    cr.name          AS cashRegisterName
-                FROM cash_sessions cs
-                JOIN cash_register cr ON cr.id = cs.cash_register_id
-                JOIN usuario u        ON u.usuario_id = cs.opened_by
-                WHERE cs.legacy_cash_shift_id = ?
-                SQL, [$id]);
-        }
 
         if ($sessionRow === false) {
             return $this->json(['message' => 'Turno no encontrado'], Response::HTTP_NOT_FOUND);

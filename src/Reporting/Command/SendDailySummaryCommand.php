@@ -100,11 +100,7 @@ class SendDailySummaryCommand extends PerTenantCommand
                        AND CAST(sunat_status AS UNSIGNED) BETWEEN 2000 AND 3999
                    )", [$today]);
             $cancellationsCount = (int) $this->connection->fetchOne("SELECT COUNT(*) FROM tax_document t
-                 INNER JOIN sales s ON (
-                     (s.legacy_movimiento_id IS NOT NULL AND s.legacy_movimiento_id = t.movimiento_id)
-                     OR
-                     (t.sale_id IS NOT NULL AND t.sale_id = s.id)
-                 )
+                 INNER JOIN sales s ON (t.sale_id = s.id OR t.movimiento_id = s.id)
                  WHERE t.document_type IN ('01', '03')
                    AND s.status = 'VOIDED'
                    AND t.issue_date = ?", [$today]);

@@ -64,7 +64,9 @@ readonly class PurchaseProcessor implements ProcessorInterface
         if ($data instanceof Purchase) {
             if ($isNewPurchase) {
                 $this->purchaseSupplierDocumentValidator->assertRequiredForCreate($data);
-                $data->setReceiptNo($this->purchaseReceiptSequenceService->next());
+                if ($data->getReceiptNo() === null) {
+                    $data->setReceiptNo($this->purchaseReceiptSequenceService->next());
+                }
                 $this->activeReferenceGuard->assertActiveOnCreate($data->getSupplier(), 'supplier', 'El proveedor');
                 $this->activeReferenceGuard->assertActiveOnCreate($data->getWarehouse(), 'warehouse', 'El almacén');
             }

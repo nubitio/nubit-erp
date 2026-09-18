@@ -61,7 +61,7 @@ final readonly class InventoryServiceSalesInventoryPort implements SalesInventor
             qtyDeltaBase: $qtyDeltaBase,
             unitId: 0,
             qtyOriginal: $qtyOriginal,
-            sourceType: 'LEGACY_MOVIMIENTO_ITEM',
+            sourceType: 'SALE',
             sourceId: sprintf('%s:%s:%d', $saleId, $movementType->value, $lineNo),
             note: 'Applied by InventoryServiceSalesInventoryPort',
             happenedAt: $sale->getFecha()?->format('Y-m-d H:i:s'),

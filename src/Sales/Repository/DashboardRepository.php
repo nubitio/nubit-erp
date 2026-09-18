@@ -352,11 +352,7 @@ readonly class DashboardRepository
                 COUNT(*) AS count,
                 SUM(i.total) AS total
             FROM tax_document i
-                INNER JOIN sales s ON (
-                    (s.legacy_movimiento_id IS NOT NULL AND i.movimiento_id = s.legacy_movimiento_id)
-                    OR
-                    (i.sale_id IS NOT NULL AND i.sale_id = s.id)
-                )
+                INNER JOIN sales s ON (i.sale_id = s.id OR i.movimiento_id = s.id)
                     AND s.status IN ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
                     AND s.branch_id = :branchId
                 LEFT JOIN tipo_comprobante vt ON i.document_type = vt.codigo
@@ -914,9 +910,7 @@ readonly class DashboardRepository
             return (
                 'AND EXISTS (SELECT 1 FROM tax_document td2 '
                 . 'WHERE ('
-                . "({$salesAlias}.legacy_movimiento_id IS NOT NULL AND td2.movimiento_id = {$salesAlias}.legacy_movimiento_id)"
-                . ' OR '
-                . "(td2.sale_id IS NOT NULL AND td2.sale_id = {$salesAlias}.id)"
+                . "(td2.sale_id = {$salesAlias}.id OR td2.movimiento_id = {$salesAlias}.id)"
                 . ") AND td2.document_type IN ('01','03'))"
             );
         }

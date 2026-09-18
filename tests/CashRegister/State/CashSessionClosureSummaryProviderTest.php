@@ -103,7 +103,7 @@ final class CashSessionClosureSummaryProviderTest extends TestCase
     {
         $cashShiftId = 99;
 
-        $this->connection->method('fetchAssociative')->willReturn(false); // no session found for either id or legacy_cash_shift_id
+        $this->connection->method('fetchAssociative')->willReturn(false);
 
         $this->expectException(NotFoundHttpException::class);
         $this->expectExceptionMessage('CashSession not found for id 99.');

@@ -52,7 +52,7 @@ final class AccountingReport implements ExportableReportInterface
                     else 'Observado'
                 end as status
             from tax_document i
-                inner join sales s on (s.legacy_movimiento_id = i.movimiento_id OR s.id = i.sale_id)
+                inner join sales s on (s.id = i.sale_id OR s.id = i.movimiento_id)
                 left join cliente c on c.id = i.customer_id
                 left join tipo_comprobante vt on vt.codigo = i.document_type
             where

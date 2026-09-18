@@ -45,16 +45,12 @@ final class CashSessionMovementsProviderTest extends TestCase
 
     private function makeProvider(
         bool $sessionFound = true,
-        bool $sessionByLegacy = false,
         ?CashSession $sessionEntity = null,
     ): CashSessionMovementsProvider {
         $conn = $this->createStub(Connection::class);
 
         if (!$sessionFound) {
             $conn->method('fetchAssociative')->willReturn(false);
-        } elseif ($sessionByLegacy) {
-            // first call (direct) → false, second (legacy) → found
-            $conn->method('fetchAssociative')->willReturnOnConsecutiveCalls(false, ['id' => 7]);
         } else {
             $conn->method('fetchAssociative')->willReturn(['id' => 7]);
         }
@@ -117,14 +113,6 @@ final class CashSessionMovementsProviderTest extends TestCase
 
         self::assertSame(10, $movements[0]->getId());
         self::assertSame(11, $movements[1]->getId());
-    }
-
-    public function testProvideFallsBackToLegacyCashShiftId(): void
-    {
-        $provider = $this->makeProvider(sessionByLegacy: true);
-        $result = $provider->provide(new GetCollection(), ['id' => 'legacy-99']);
-
-        self::assertCount(2, $result);
     }
 
     public function testProvideSetsSessionEntityOnMovement(): void

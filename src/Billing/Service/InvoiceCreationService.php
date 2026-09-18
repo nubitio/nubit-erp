@@ -95,10 +95,15 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
             );
         }
 
+        $taxRegime = $this->tenantSettingsService->getTaxRegime();
+        $taxPercentage = $taxRegime === TaxRegime::NRUS
+            ? 0.0
+            : (float) ($sale->getIgv() ?? 0);
+
         $invoiceCalculator = new InvoiceCalculator(
             $lines,
             $sale->getDescuento() ?? '0',
-            (string) ($sale->getIgv() ?? '0'),
+            (string) $taxPercentage,
             (string) ($sale->getRecargoConsumo() ?? '0'),
             $sale->getTotal() !== null ? (string) $sale->getTotal() : null,
         );
@@ -114,12 +119,11 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
 
         // Resolve the V2 sale_id (sales.id) for the FK to the sales table.
         // Must happen before the dedup check so it can be used in the WHERE clause.
-        $v2SaleId = $connection->fetchOne('SELECT id FROM sales WHERE id = :id OR legacy_movimiento_id = :id LIMIT 1', [
+        $v2SaleId = $connection->fetchOne('SELECT id FROM sales WHERE id = :id LIMIT 1', [
             'id' => $saleId,
         ]);
         $resolvedV2SaleId = is_string($v2SaleId) && $v2SaleId !== '' ? $v2SaleId : null;
 
-        $taxRegime = $this->tenantSettingsService->getTaxRegime();
         $requestedType = $requestedVoucherTypeOverride ?? $sale->getRequestedVoucherType();
         $ruc = $sale->getCliente()?->getRuc() ?? '';
 
@@ -248,7 +252,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
                     'discount_amount' => $line->discountAmount,
                     'taxed_amount' => $line->taxableAmount,
                     'tax_amount' => $line->taxAmount,
-                    'tax_percentage' => $taxRegime === TaxRegime::NRUS ? 0 : $sale->getIgv() ?? 0,
+                    'tax_percentage' => $taxPercentage,
                     'tax_type' => $taxRegime === TaxRegime::NRUS ? '20' : '10',
                     'total' => $line->totalAmount,
                 ]);
@@ -303,7 +307,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
                         updated_at = UTC_TIMESTAMP(),
                         sync_status = 'SYNCED'
                         {$setRequestedVoucherType}
-                    WHERE id = :sale_id OR legacy_movimiento_id = :sale_id
+                    WHERE id = :sale_id
                     SQL,
                 [
                     'total' => $total,

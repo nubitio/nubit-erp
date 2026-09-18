@@ -62,14 +62,6 @@ class PurchaseItem
     #[ORM\JoinColumn(name: 'purchase_order_item_id', nullable: true)]
     private ?PurchaseOrderItem $purchaseOrderItem = null;
 
-    #[Groups(['purchase_item:read'])]
-    #[ORM\Column(name: 'legacy_movimiento_detalle_id', type: 'integer', nullable: true)]
-    #[ApiProperty(description: 'purchase_item.legacy_movimiento_detalle_id.label', openapiContext: ['x-crud' => [
-        'showInForm' => false,
-        'hideInGrid' => true,
-    ]])]
-    private ?int $legacyMovimientoDetalleId = null;
-
     #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'line_no', type: 'integer')]
     #[ApiProperty(description: 'purchase_item.line_no.label', openapiContext: ['x-crud' => [
@@ -277,18 +269,6 @@ class PurchaseItem
     public function setPurchaseOrderItem(?PurchaseOrderItem $purchaseOrderItem): static
     {
         $this->purchaseOrderItem = $purchaseOrderItem;
-
-        return $this;
-    }
-
-    public function getLegacyMovimientoDetalleId(): ?int
-    {
-        return $this->legacyMovimientoDetalleId;
-    }
-
-    public function setLegacyMovimientoDetalleId(?int $legacyMovimientoDetalleId): static
-    {
-        $this->legacyMovimientoDetalleId = $legacyMovimientoDetalleId;
 
         return $this;
     }

@@ -67,8 +67,7 @@ final class SalesV2BackfillPaymentsCommand extends PerTenantCommand
             $missingPayments = (int) $this->connection->fetchOne(<<<'SQL'
                 SELECT COUNT(*)
                 FROM sales s
-                WHERE s.legacy_movimiento_id IS NOT NULL
-                  AND NOT EXISTS (
+                WHERE NOT EXISTS (
                       SELECT 1
                       FROM sale_payments sp
                       WHERE sp.sale_id = s.id
@@ -139,8 +138,7 @@ final class SalesV2BackfillPaymentsCommand extends PerTenantCommand
                         1 AS version_no,
                         NOW() AS last_modified_at
                     FROM sales s
-                    WHERE s.legacy_movimiento_id IS NOT NULL
-                      AND NOT EXISTS (
+                    WHERE NOT EXISTS (
                           SELECT 1
                           FROM sale_payments sp
                           WHERE sp.sale_id = s.id

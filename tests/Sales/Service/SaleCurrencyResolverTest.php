@@ -35,14 +35,14 @@ final class SaleCurrencyResolverTest extends TestCase
         return new SaleCurrencyResolver($connection, $tenantSettings, $exchangeRateRepo);
     }
 
-    public function testResolveForSaleIdFallsBackToLegacyMovimientoId(): void
+    public function testResolveForSaleIdLooksUpSalesById(): void
     {
         $connection = $this->createMock(Connection::class);
         $connection
             ->expects($this->once())
             ->method('fetchAssociative')
-            ->with($this->callback(static fn(string $sql): bool => str_contains($sql, 'legacy_movimiento_id')), [
-                'id' => 'legacy-123',
+            ->with($this->callback(static fn(string $sql): bool => str_contains($sql, 'WHERE s.id = :id')), [
+                'id' => 'sale-123',
             ])
             ->willReturn([
                 'currency' => 'USD',
@@ -50,7 +50,7 @@ final class SaleCurrencyResolverTest extends TestCase
             ]);
 
         $resolver = $this->makeResolver($connection);
-        $result = $resolver->resolveForSaleId('legacy-123');
+        $result = $resolver->resolveForSaleId('sale-123');
 
         self::assertSame('USD', $result['currency']);
         self::assertSame('3.900000', $result['exchange_rate']);

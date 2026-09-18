@@ -72,7 +72,7 @@ final class KardexReferenceResolverTest extends TestCase
         self::assertSame('RC-000042', $reference);
     }
 
-    public function testResolvesSaleByLegacyMovimientoId(): void
+    public function testResolvesSaleById(): void
     {
         $connection = $this->createMock(Connection::class);
         $connection
@@ -80,7 +80,6 @@ final class KardexReferenceResolverTest extends TestCase
             ->willReturn([
                 [
                     'id' => 'sale-v2-id',
-                    'legacy_movimiento_id' => 'sale-legacy-id',
                     'sale_series' => '001',
                     'sale_number' => '1007',
                     'tax_series' => null,
@@ -89,7 +88,7 @@ final class KardexReferenceResolverTest extends TestCase
             ]);
 
         $resolver = new KardexReferenceResolver($connection);
-        $reference = $resolver->resolve('LEGACY_MOVIMIENTO_ITEM', 'sale-legacy-id:SALE_OUT:1');
+        $reference = $resolver->resolve('LEGACY_MOVIMIENTO_ITEM', 'sale-v2-id:SALE_OUT:1');
 
         self::assertSame('001-1007', $reference);
     }
@@ -102,7 +101,6 @@ final class KardexReferenceResolverTest extends TestCase
             ->willReturn([
                 [
                     'id' => 'sale-nota',
-                    'legacy_movimiento_id' => 'sale-nota-legacy',
                     'sale_series' => '001',
                     'sale_number' => '1006',
                     'tax_series' => null,
@@ -111,7 +109,7 @@ final class KardexReferenceResolverTest extends TestCase
             ]);
 
         $resolver = new KardexReferenceResolver($connection);
-        $reference = $resolver->resolve('LEGACY_MOVIMIENTO_ITEM', 'sale-nota-legacy:SALE_OUT:1');
+        $reference = $resolver->resolve('LEGACY_MOVIMIENTO_ITEM', 'sale-nota:SALE_OUT:1');
 
         self::assertSame('001-1006', $reference);
     }

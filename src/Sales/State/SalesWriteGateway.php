@@ -164,7 +164,6 @@ readonly class SalesWriteGateway
         $sale->setSellerUserId($sellerUserId);
         $sale->setCashSessionId($cashSessionId);
         $sale->setStatus($sale->getEstado() === 0 ? 'VOIDED' : 'COMPLETED');
-        $sale->setLegacyMovimientoId($saleId);
 
         // ── Rebuild sale_items with offline meta ──────────────────────────────
         $lineNo = 1;
@@ -396,7 +395,6 @@ readonly class SalesWriteGateway
                     version_no = version_no + 1,
                     last_modified_at = :updated_at
                 WHERE id = :id
-                   OR legacy_movimiento_id = :id
                 SQL,
             [
                 'id' => $saleId,
@@ -428,7 +426,7 @@ readonly class SalesWriteGateway
                     :reason_text,
                     :created_at
                 FROM sales s
-                WHERE (s.id = :id OR s.legacy_movimiento_id = :id)
+                WHERE s.id = :id
                   AND NOT EXISTS (
                     SELECT 1
                     FROM sale_discounts d

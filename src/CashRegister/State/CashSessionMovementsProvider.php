@@ -36,12 +36,6 @@ readonly class CashSessionMovementsProvider implements ProviderInterface
         $session = $this->connection->fetchAssociative('SELECT id FROM cash_sessions WHERE id = ?', [$cashSessionId]);
 
         if ($session === false) {
-            $session = $this->connection->fetchAssociative('SELECT id FROM cash_sessions WHERE legacy_cash_shift_id = ?', [
-                $cashSessionId,
-            ]);
-        }
-
-        if ($session === false) {
             throw new NotFoundHttpException(sprintf('CashSession not found for id %s.', $cashSessionId));
         }
 

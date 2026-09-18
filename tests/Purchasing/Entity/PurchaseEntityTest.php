@@ -97,17 +97,15 @@ final class PurchaseEntityTest extends TestCase
         self::assertSame($warehouse, $p->getWarehouse());
     }
 
-    public function testNoteAndLegacyFields(): void
+    public function testNoteAndSyncKeys(): void
     {
         $p = new Purchase();
         $p->setNote('Compra urgente');
-        $p->setLegacyMovimientoId('M-99');
         $p->setLocalUuid('local-uuid-1');
         $p->setIdempotencyKey('idem-key');
         $p->setDeviceId('device-1');
 
         self::assertSame('Compra urgente', $p->getNote());
-        self::assertSame('M-99', $p->getLegacyMovimientoId());
         self::assertSame('local-uuid-1', $p->getLocalUuid());
         self::assertSame('idem-key', $p->getIdempotencyKey());
         self::assertSame('device-1', $p->getDeviceId());

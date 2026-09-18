@@ -65,10 +65,7 @@ final class VoidedRepositoryTest extends TestCase
 
     public function testGetLastCorrelativeByDateCountsV2NativeSalesWithSaleId(): void
     {
-        // Simulates a tenant where sales are created natively in V2 (sale_id populated,
-        // legacy_movimiento_id = NULL). The JOIN must cover td.sale_id = s.id path.
-        // The repository query uses a single COUNT that already covers both join arms,
-        // so the test verifies the SQL contains the sale_id join condition.
+        // Native V2 sales join tax documents by sale_id (or movimiento_id = sales.id).
         $this->connection
             ->method('fetchOne')
             ->willReturnCallback(function (string $sql, array $params): mixed {
@@ -78,7 +75,7 @@ final class VoidedRepositoryTest extends TestCase
                 if (str_contains($sql, 'COUNT(*)')) {
                     // Verify both join arms are present in the query
                     self::assertStringContainsString('td.sale_id = s.id', $sql);
-                    self::assertStringContainsString('s.legacy_movimiento_id = td.movimiento_id', $sql);
+                    self::assertStringNotContainsString('legacy_movimiento_id', $sql);
 
                     return '5'; // 5 voided records (mix of legacy + V2 native)
                 }

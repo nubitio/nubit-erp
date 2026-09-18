@@ -70,7 +70,7 @@ final class InvoiceCreationServiceRequestedVoucherTypeOverrideTest extends TestC
                 if (str_contains($sql, 'UUID')) {
                     return 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee';
                 }
-                if (str_contains($sql, 'legacy_movimiento_id')) {
+                if (str_contains($sql, 'FROM sales') && str_contains($sql, 'WHERE id')) {
                     return 'v2-sale-id-1';
                 }
                 if (str_contains($sql, 'information_schema')) {

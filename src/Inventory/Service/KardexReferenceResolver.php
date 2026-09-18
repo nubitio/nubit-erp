@@ -27,7 +27,7 @@ final readonly class KardexReferenceResolver
         $documentId = $this->extractDocumentId($sourceId);
 
         return match ($sourceType) {
-            'LEGACY_MOVIMIENTO_ITEM' => $this->resolveSaleReference($documentId),
+            'SALE', 'LEGACY_MOVIMIENTO_ITEM' => $this->resolveSaleReference($documentId),
             'PURCHASE_ITEM', 'PURCHASE_VOID' => $this->resolvePurchaseReference($documentId),
             'CREDIT_NOTE' => $this->resolveTaxDocumentReference($documentId),
             'STOCK_ENTRY' => $this->resolveStockEntryReference($documentId),
@@ -64,7 +64,7 @@ final readonly class KardexReferenceResolver
             $documentId = $this->extractDocumentId($sourceId);
 
             match ($sourceType) {
-                'LEGACY_MOVIMIENTO_ITEM' => $saleIds[$documentId] = true,
+                'SALE', 'LEGACY_MOVIMIENTO_ITEM' => $saleIds[$documentId] = true,
                 'PURCHASE_ITEM', 'PURCHASE_VOID' => $purchaseIds[$documentId] = true,
                 'CREDIT_NOTE' => $taxDocumentIds[$documentId] = true,
                 'STOCK_ENTRY' => $stockEntryIds[$documentId] = true,
@@ -86,7 +86,7 @@ final readonly class KardexReferenceResolver
 
             $documentId = $this->extractDocumentId($sourceId);
             $movement->sourceReference = match ($sourceType) {
-                'LEGACY_MOVIMIENTO_ITEM' => $saleRefs[$documentId] ?? $this->resolveSaleReference($documentId),
+                'SALE', 'LEGACY_MOVIMIENTO_ITEM' => $saleRefs[$documentId] ?? $this->resolveSaleReference($documentId),
                 'PURCHASE_ITEM', 'PURCHASE_VOID' => $purchaseRefs[$documentId] ?? $this->resolvePurchaseReference(
                     $documentId,
                 ),
@@ -177,19 +177,17 @@ final readonly class KardexReferenceResolver
         $rows = $this->connection->fetchAllAssociative(<<<SQL
             SELECT
                 s.id,
-                s.legacy_movimiento_id,
                 s.series AS sale_series,
                 s.number AS sale_number,
                 td.series AS tax_series,
                 td.number AS tax_number
             FROM sales s
             LEFT JOIN tax_document td
-                ON (td.sale_id = s.id OR td.movimiento_id = s.legacy_movimiento_id)
+                ON (td.sale_id = s.id OR td.movimiento_id = s.id)
                AND td.reason_code IS NULL
             WHERE s.id IN ($placeholders)
-               OR s.legacy_movimiento_id IN ($placeholders)
             ORDER BY td.created_at DESC
-            SQL, array_merge($saleIds, $saleIds));
+            SQL, $saleIds);
 
         $refs = [];
         foreach ($rows as $row) {
@@ -204,14 +202,6 @@ final readonly class KardexReferenceResolver
             $saleId = (string) $row['id'];
             if (!isset($refs[$saleId])) {
                 $refs[$saleId] = $reference;
-            }
-
-            $legacyId = $row['legacy_movimiento_id'] ?? null;
-            if ($legacyId !== null && $legacyId !== '') {
-                $legacyKey = (string) $legacyId;
-                if (!isset($refs[$legacyKey])) {
-                    $refs[$legacyKey] = $reference;
-                }
             }
         }
 

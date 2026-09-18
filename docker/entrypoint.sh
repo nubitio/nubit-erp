@@ -38,7 +38,12 @@ if [ "${RUN_MIGRATIONS}" = "true" ]; then
     php /app/bin/console app:control-plane:migrate --no-interaction
 
     echo "Running tenant migrations..."
-    php /app/bin/console app:tenants:migrate --no-interaction
+    # Each tenant is its own MariaDB database, so DDL can run concurrently.
+    # Workers are `app:tenants:migrate --tenant=…` and must not take the
+    # coordinator lock (see TenantMigrateCommand). Override with
+    # TENANT_MIGRATE_CONCURRENCY=1 to force sequential.
+    php /app/bin/console app:tenants:migrate --no-interaction \
+        --parallel="${TENANT_MIGRATE_CONCURRENCY:-8}"
 
     echo "Migrations completed"
 fi

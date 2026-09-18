@@ -41,12 +41,6 @@ readonly class CashSessionClosureSummaryProvider implements ProviderInterface
         ]);
 
         if ($session === false) {
-            $session = $this->connection->fetchAssociative('SELECT id, opening_amount FROM cash_sessions WHERE legacy_cash_shift_id = ?', [
-                $cashSessionId,
-            ]);
-        }
-
-        if ($session === false) {
             throw new NotFoundHttpException(sprintf('CashSession not found for id %s.', $cashSessionId));
         }
 

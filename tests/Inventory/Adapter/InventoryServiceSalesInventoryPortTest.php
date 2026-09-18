@@ -86,7 +86,7 @@ final class InventoryServiceSalesInventoryPortTest extends TestCase
         self::assertSame('SALE_OUT', $movement['movement_type']);
         self::assertEqualsWithDelta(-3.0, (float) $movement['qty_delta_base'], 0.001);
         self::assertEqualsWithDelta(3.0, (float) $movement['qty_original'], 0.001);
-        self::assertSame('LEGACY_MOVIMIENTO_ITEM', $movement['source_type']);
+        self::assertSame('SALE', $movement['source_type']);
         self::assertSame('sale-1:SALE_OUT:2', $movement['source_id']);
     }
 

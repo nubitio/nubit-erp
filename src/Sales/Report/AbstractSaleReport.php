@@ -29,7 +29,7 @@ abstract class AbstractSaleReport implements ExportableReportInterface
         if ($this->sunatState->isReceiptRequired()) {
             return (
                 'AND EXISTS (SELECT 1 FROM tax_document td '
-                . "WHERE (td.movimiento_id = {$salesAlias}.legacy_movimiento_id OR td.sale_id = {$salesAlias}.id) "
+                . "WHERE (td.sale_id = {$salesAlias}.id OR td.movimiento_id = {$salesAlias}.id) "
                 . "AND td.document_type IN ('01','03'))"
             );
         }

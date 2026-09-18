@@ -79,6 +79,41 @@ final class PurchaseInventoryServiceTest extends TestCase
         self::assertSame('2026-04-26 10:30:00', $movement['occurred_at']);
     }
 
+    public function testRecordPurchaseReceiptAddsToExistingOnHand(): void
+    {
+        $this->connection->insert('stock_items', [
+            'warehouse_id' => 'wh-1',
+            'product_id' => 'prod-1',
+            'qty_on_hand' => '2.000000',
+            'qty_reserved' => '0.000000',
+            'updated_at' => date('Y-m-d H:i:s'),
+            'last_movement_id' => null,
+            'version' => 0,
+        ]);
+
+        $service = new PurchaseInventoryService($this->newInventoryService());
+        $purchase = new Purchase()
+            ->setId('purchase-2')
+            ->setWarehouse($this->newWarehouse('wh-1'));
+        $purchase->addItem(
+            new PurchaseItem()
+                ->setLineNo(1)
+                ->setProduct($this->newProduct('prod-1'))
+                ->setQty('5.000'),
+        );
+
+        $service->recordPurchaseReceipt($purchase);
+
+        self::assertEqualsWithDelta(
+            7.0,
+            (float) $this->connection->fetchOne(
+                'SELECT qty_on_hand FROM stock_items WHERE warehouse_id = :w AND product_id = :p',
+                ['w' => 'wh-1', 'p' => 'prod-1'],
+            ),
+            0.001,
+        );
+    }
+
     public function testRecordPurchaseReceiptSkipsUntrackedProducts(): void
     {
         $service = new PurchaseInventoryService($this->newInventoryService());

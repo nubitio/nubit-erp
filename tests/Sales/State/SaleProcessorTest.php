@@ -9,7 +9,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use App\CashRegister\Entity\CashMovementCategory;
-use App\CashRegister\Entity\CashShift;
+
 use App\Catalog\Entity\Product;
 use App\Catalog\Repository\SunatCatalogRepository;
 use App\Contacts\Entity\Customer;
@@ -296,7 +296,7 @@ final class SaleProcessorTest extends TestCase
     {
         $sale = $this->buildNewSaleWithPaymentMethod(tipoId: 2);
 
-        $this->mockCashShiftRepository(null);
+        $this->mockCashMovementCategoryRepository();
 
         $this->expectException(ServiceException::class);
         $this->expectExceptionMessageMatches('/caja abierta/');
@@ -567,8 +567,7 @@ final class SaleProcessorTest extends TestCase
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
 
         $defaultCustomer = $this->createStub(Customer::class);
-        $cashShift = $this->buildCashShift();
-        $this->mockCashShiftRepository($cashShift);
+        $this->mockCashMovementCategoryRepository();
 
         $this->customerRepository->method('findDefaultAnonymous')->willReturn($defaultCustomer);
 
@@ -587,8 +586,7 @@ final class SaleProcessorTest extends TestCase
     {
         $sale = $this->buildNewSaleWithPaymentMethod(tipoId: 2);
 
-        $cashShift = $this->buildCashShift();
-        $this->mockCashShiftRepository($cashShift);
+        $this->mockCashMovementCategoryRepository();
 
         $this->customerRepository->method('findDefaultAnonymous')->willReturn(null);
 
@@ -616,8 +614,7 @@ final class SaleProcessorTest extends TestCase
         $sale->setBranch($branch);
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
 
-        $cashShift = $this->buildCashShift();
-        $this->mockCashShiftRepository($cashShift);
+        $this->mockCashMovementCategoryRepository();
 
         // entityManager::find must NOT be called for Customer
         $this->entityManager->expects($this->never())->method('find');
@@ -652,8 +649,7 @@ final class SaleProcessorTest extends TestCase
         $sale = $this->buildNewSaleWithPaymentMethod(tipoId: 1);
         // No customer set but tipoId=1
 
-        $cashShift = $this->buildCashShift();
-        $this->mockCashShiftRepository($cashShift);
+        $this->mockCashMovementCategoryRepository();
 
         // entityManager::find must NOT be called for Customer
         $this->entityManager->expects($this->never())->method('find');
@@ -747,30 +743,10 @@ final class SaleProcessorTest extends TestCase
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
         $sale->setCliente($this->buildActiveCustomerMock());
 
-        $cashShift = $this->buildCashShift();
-
         $this->saleUtils->method('fillSaleValues')->willReturnArgument(0);
 
         $this->saleSettlementPlanService = $this->buildSaleSettlementPlanServiceStub();
-
-        /** @var EntityRepository<CashMovementCategory>&MockObject $categoryRepo */
-        $categoryRepo = $this->createMock(EntityRepository::class);
-        $categoryRepo->method('findOneBy')->willReturn(null);
-
-        // Route all getRepository() calls via a single callback to avoid stub conflicts
-        $this->entityManager
-            ->method('getRepository')
-            ->willReturnCallback(function (string $class) use ($cashShift, $categoryRepo): mixed {
-                if ($class === CashMovementCategory::class) {
-                    return $categoryRepo;
-                }
-
-                /** @var EntityRepository<CashShift>&MockObject $cashShiftRepo */
-                $cashShiftRepo = $this->createMock(EntityRepository::class);
-                $cashShiftRepo->method('findOneBy')->willReturn($cashShift);
-
-                return $cashShiftRepo;
-            });
+        $this->mockCashMovementCategoryRepository();
 
         $this->entityManager->expects($this->never())->method('persist');
 
@@ -909,8 +885,7 @@ final class SaleProcessorTest extends TestCase
         $sale->setFecha(new \DateTimeImmutable('2026-01-01 10:00:00'));
         $sale->setCliente($this->buildActiveCustomerMock());
 
-        $cashShift = $this->buildCashShift();
-        $this->mockCashShiftRepository($cashShift);
+        $this->mockCashMovementCategoryRepository();
 
         $this->saleUtils->method('fillSaleValues')->willReturnArgument(0);
 
@@ -1289,30 +1264,12 @@ final class SaleProcessorTest extends TestCase
         return $pm;
     }
 
-    private function buildCashShift(): CashShift
+    private function mockCashMovementCategoryRepository(): void
     {
-        return new ReflectionClass(CashShift::class)->newInstanceWithoutConstructor();
-    }
-
-    private function mockCashShiftRepository(?CashShift $cashShift): void
-    {
-        /** @var EntityRepository<CashShift>&MockObject $cashShiftRepo */
-        $cashShiftRepo = $this->createMock(EntityRepository::class);
-        $cashShiftRepo->method('findOneBy')->willReturn($cashShift);
-
         /** @var EntityRepository<CashMovementCategory>&MockObject $categoryRepo */
         $categoryRepo = $this->createMock(EntityRepository::class);
         $categoryRepo->method('findOneBy')->willReturn(null);
-
-        $this->entityManager
-            ->method('getRepository')
-            ->willReturnCallback(static function (string $class) use ($cashShiftRepo, $categoryRepo): mixed {
-                if ($class === CashMovementCategory::class) {
-                    return $categoryRepo;
-                }
-
-                return $cashShiftRepo;
-            });
+        $this->entityManager->method('getRepository')->willReturn($categoryRepo);
     }
 
     // =========================================================================

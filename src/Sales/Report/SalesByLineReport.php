@@ -56,7 +56,7 @@ final class SalesByLineReport extends AbstractSaleReport
                 end as status
             from sales s
                 inner join sale_items si on si.sale_id = s.id
-                left join tax_document i on (i.movimiento_id = s.legacy_movimiento_id OR i.sale_id = s.id) and i.document_type in ('01', '03')
+                left join tax_document i on (i.sale_id = s.id OR i.movimiento_id = s.id) and i.document_type in ('01', '03')
                 left join tipo_comprobante vt on vt.codigo = coalesce(i.document_type, '00')
                 left join cliente c on c.id = s.customer_id
                 left join producto p on p.producto_id = si.product_id

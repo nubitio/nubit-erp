@@ -59,6 +59,7 @@ services:
       # environment rather than a DB-only subset, to avoid compile-time
       # EnvNotFoundException failures.
       RUN_MIGRATIONS: 'true'
+      TENANT_MIGRATE_CONCURRENCY: ${TENANT_MIGRATE_CONCURRENCY:-8}
       APP_ENV: ${APP_ENV:?set APP_ENV in .env.prod}
       APP_SECRET: ${APP_SECRET:?set APP_SECRET in .env.prod}
       TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1, ::1}
@@ -105,8 +106,8 @@ services:
     networks:
       - default
     command: ['php', '-r', 'exit(0);']
-    mem_limit: 512m
-    cpus: 1
+    mem_limit: 2g
+    cpus: 4
     logging:
       driver: 'json-file'
       options:

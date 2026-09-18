@@ -285,37 +285,7 @@ product:
   detraction_catalog:
     label: Detraction catalog
 
-cash_shift:
-  cash_register:
-    label: Cash register
-  status:
-    label: Status
-  opening_balance:
-    label: Opening balance
-  closing_balance:
-    label: Closing balance
-  opened_by:
-    label: Opened by
-  closed_by:
-    label: Closed by
-  opened_at:
-    label: Opened at
-  closed_at:
-    label: Closed at
-  expected_amount:
-    label: Expected amount
-  counted_amount:
-    label: Counted amount
-  difference:
-    label: Difference
-  note:
-    label: Note
-  branch:
-    label: Branch
-
 cash_movement:
-  cash_shift:
-    label: Cash shift
   cash_session:
     label: Cash session
   category:
@@ -336,8 +306,6 @@ cash_register:
     label: Name
 
 cash_session:
-  legacy_cash_shift_id:
-    label: Legacy shift ID
   cash_register:
     label: Cash register
   branch:
@@ -384,8 +352,6 @@ user_notification:
     label: Created at
 
 sale_item_record:
-  legacy_movimiento_detalle_id:
-    label: Legacy detail ID
   line_no:
     label: Line no.
   product:

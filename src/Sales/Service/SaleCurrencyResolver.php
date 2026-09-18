@@ -73,8 +73,7 @@ readonly class SaleCurrencyResolver
             <<<'SQL'
                 SELECT s.currency, s.exchange_rate
                 FROM sales s
-                WHERE s.id = :id OR s.legacy_movimiento_id = :id
-                ORDER BY CASE WHEN s.id = :id THEN 0 ELSE 1 END
+                WHERE s.id = :id
                 LIMIT 1
                 SQL,
             ['id' => $saleId],

@@ -19,20 +19,6 @@ class CashSessionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find a CashSession by its legacy cash_shift foreign-key value.
-     */
-    public function findByLegacyCashShiftId(int $legacyCashShiftId): ?CashSession
-    {
-        return $this
-            ->createQueryBuilder('cs')
-            ->andWhere('cs.legacyCashShiftId = :id')
-            ->setParameter('id', $legacyCashShiftId)
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
-
-    /**
      * Most recently opened session for a cash register, regardless of status
      * (open, closed, or reconciling) — used to answer "what's the current/
      * latest status of this register" rather than only "is it open now".

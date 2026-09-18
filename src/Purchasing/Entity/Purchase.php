@@ -28,7 +28,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Attribute\Auditable;
 use Nubit\ApiPlatform\Attribute\SoftDeletable;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
-use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
+use App\Efact\Doctrine\AssignedUuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[SoftDeletable]
@@ -72,7 +72,7 @@ class Purchase
     #[Groups(['purchase:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
+    #[ORM\CustomIdGenerator(class: AssignedUuidGenerator::class)]
     #[ORM\Column(name: 'id', type: 'string', length: 36)]
     #[ApiProperty(description: 'purchase.id.label')]
     private ?string $id = null;
@@ -81,11 +81,6 @@ class Purchase
     #[ORM\Column(name: 'receipt_no', type: 'integer', nullable: true)]
     #[ApiProperty(description: 'purchase.receipt_no.label')]
     private ?int $receiptNo = null;
-
-    #[Groups(['purchase:read'])]
-    #[ORM\Column(name: 'legacy_movimiento_id', type: 'string', length: 255, nullable: true)]
-    #[ApiProperty(description: 'purchase.legacy_movimiento_id.label')]
-    private ?string $legacyMovimientoId = null;
 
     #[Groups(['purchase:read', 'purchase:write'])]
     #[ORM\ManyToOne(targetEntity: Branch::class)]
@@ -295,18 +290,6 @@ class Purchase
     public function setReceiptNo(?int $receiptNo): static
     {
         $this->receiptNo = $receiptNo;
-
-        return $this;
-    }
-
-    public function getLegacyMovimientoId(): ?string
-    {
-        return $this->legacyMovimientoId;
-    }
-
-    public function setLegacyMovimientoId(?string $legacyMovimientoId): static
-    {
-        $this->legacyMovimientoId = $legacyMovimientoId;
 
         return $this;
     }

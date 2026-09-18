@@ -22,17 +22,11 @@ class SaleRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * Find a SaleRecord by sale UUID, checking both `sales.id` and `sales.legacy_movimiento_id`.
+     * Find a SaleRecord by sale UUID.
      */
     public function findByAnyId(string $id): ?SaleRecord
     {
-        $result = $this
-            ->createQueryBuilder('s')
-            ->where('s.id = :id OR s.legacyMovimientoId = :id')
-            ->setParameter('id', $id)
-            ->setMaxResults(1)
-            ->getQuery()
-            ->getOneOrNullResult();
+        $result = $this->find($id);
 
         return $result instanceof SaleRecord ? $result : null;
     }
@@ -88,14 +82,10 @@ class SaleRecordRepository extends ServiceEntityRepository
 
         $ids = [];
         $indexById = [];
-        $indexByLegacyId = [];
         foreach ($records as $record) {
             if ($record->getId() !== null) {
                 $ids[] = $record->getId();
                 $indexById[$record->getId()] = $record;
-            }
-            if ($record->getLegacyMovimientoId() !== null) {
-                $indexByLegacyId[$record->getLegacyMovimientoId()] = $record;
             }
         }
 
@@ -143,9 +133,7 @@ class SaleRecordRepository extends ServiceEntityRepository
 
         foreach ($records as $record) {
             $saleId = $record->getId();
-            $legacyId = $record->getLegacyMovimientoId();
-
-            $taxRow = $byMovimientoId[$saleId] ?? ($legacyId ? $byMovimientoId[$legacyId] ?? null : null);
+            $taxRow = $saleId !== null ? ($byMovimientoId[$saleId] ?? null) : null;
 
             if ($taxRow === null) {
                 continue;

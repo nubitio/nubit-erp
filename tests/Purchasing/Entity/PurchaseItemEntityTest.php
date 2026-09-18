@@ -133,14 +133,6 @@ final class PurchaseItemEntityTest extends TestCase
         self::assertSame('dev-1', $item->getDeviceId());
     }
 
-    public function testLegacyIdField(): void
-    {
-        $item = new PurchaseItem();
-        $item->setLegacyMovimientoDetalleId(999);
-
-        self::assertSame(999, $item->getLegacyMovimientoDetalleId());
-    }
-
     public function testDateFields(): void
     {
         $item = new PurchaseItem();

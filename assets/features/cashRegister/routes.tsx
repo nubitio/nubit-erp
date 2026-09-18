@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router-dom';
 import { lazyNamed } from '@app/router/lazy';
 import type { AppRouteDefinition } from '@app/router/types';
 import { CashRegisterHubLayout } from './CashRegisterHubLayout';
@@ -23,6 +23,10 @@ const CashRegisterShiftsPage = lazyNamed(
 // Legacy standalone paths: kept as redirects so old bookmarks/links still resolve.
 const RegistersRedirect = () => <Navigate to="/cashbox/registers" replace />;
 const CategoriesRedirect = () => <Navigate to="/cashbox/categories" replace />;
+const ShiftMovementsRedirect = () => {
+  const { id } = useParams();
+  return <Navigate to={`/cash-session/${id}/movements`} replace />;
+};
 
 export const cashRegisterRoutes: AppRouteDefinition[] = [
   { path: '/cash-register', element: RegistersRedirect },
@@ -31,7 +35,7 @@ export const cashRegisterRoutes: AppRouteDefinition[] = [
   { path: '/cash-session/:id/close', element: CashRegisterClose },
   { path: '/cash-register/:id/close', element: CashRegisterClose },
   { path: '/cash-session/:id/movements', element: CashMovements },
-  { path: '/cash-shift/:id/movements', element: CashMovements },
+  { path: '/cash-shift/:id/movements', element: ShiftMovementsRedirect },
   { path: '/cash-register/:id/shifts', element: CashRegisterShiftsPage },
   {
     path: '/cashbox',

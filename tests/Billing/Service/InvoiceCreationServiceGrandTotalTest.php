@@ -152,7 +152,7 @@ final class InvoiceCreationServiceGrandTotalTest extends TestCase
                 }
 
                 // V2 sale_id lookup in sales table
-                if (str_contains($sql, 'legacy_movimiento_id')) {
+                if (str_contains($sql, 'FROM sales') && str_contains($sql, 'WHERE id')) {
                     return 'v2-sale-id-1';
                 }
 

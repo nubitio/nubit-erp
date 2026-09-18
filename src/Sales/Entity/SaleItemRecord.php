@@ -41,11 +41,6 @@ class SaleItemRecord
     private ?SaleRecord $saleRecord = null;
 
     #[Groups(['sale_item_record:read'])]
-    #[ORM\Column(name: 'legacy_movimiento_detalle_id', type: 'integer', nullable: true, unique: true)]
-    #[ApiProperty(description: 'sale_item_record.legacy_movimiento_detalle_id.label')]
-    private ?int $legacyMovimientoDetalleId = null;
-
-    #[Groups(['sale_item_record:read'])]
     #[ORM\Column(name: 'line_no', type: 'integer')]
     #[ApiProperty(description: 'sale_item_record.line_no.label')]
     private int $lineNo = 0;
@@ -172,18 +167,6 @@ class SaleItemRecord
     public function setSaleRecord(?SaleRecord $saleRecord): static
     {
         $this->saleRecord = $saleRecord;
-
-        return $this;
-    }
-
-    public function getLegacyMovimientoDetalleId(): ?int
-    {
-        return $this->legacyMovimientoDetalleId;
-    }
-
-    public function setLegacyMovimientoDetalleId(?int $legacyMovimientoDetalleId): static
-    {
-        $this->legacyMovimientoDetalleId = $legacyMovimientoDetalleId;
 
         return $this;
     }
