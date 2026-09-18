@@ -8,6 +8,17 @@ const API_BASE_URL = getCoreApiBaseUrl(); // local alias for this legacy client 
 import { handleSessionExpired } from '../lib/sessionExpiredEvent';
 import { StorageUtils } from '../lib/StorageUtils';
 
+const CSRF_COOKIE_NAME = 'CSRF_TOKEN';
+const CSRF_HEADER_NAME = 'X-CSRF-Token';
+
+function getCookie(name: string): string | undefined {
+  if (typeof document === 'undefined') return undefined;
+
+  const prefix = `${encodeURIComponent(name)}=`;
+  const cookie = document.cookie.split('; ').find((entry) => entry.startsWith(prefix));
+  return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : undefined;
+}
+
 /**
  * Serializes request params to bracket-notation query strings.
  *
@@ -125,12 +136,16 @@ class HttpClient {
     return `${url}${separator}${qs}`;
   }
 
-  private buildHeaders(extraHeaders?: Record<string, string>): Record<string, string> {
+  private buildHeaders(method: string, extraHeaders?: Record<string, string>): Record<string, string> {
     const token = StorageUtils.getItem('auth_token');
+    const csrfToken = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)
+      ? getCookie(CSRF_COOKIE_NAME)
+      : undefined;
 
     return {
       'Accept-Language': this.locale,
       ...(typeof token === 'string' && token !== '' ? { Authorization: `Bearer ${token}` } : {}),
+      ...(csrfToken ? { [CSRF_HEADER_NAME]: csrfToken } : {}),
       ...extraHeaders,
     };
   }
@@ -143,7 +158,7 @@ class HttpClient {
   ): Promise<ApiResponse<T>> {
     const fullUrl = this.buildUrl(url, config?.params);
 
-    const headers = this.buildHeaders(config?.headers);
+    const headers = this.buildHeaders(method, config?.headers);
 
     // Set Content-Type for JSON bodies (but not for FormData — browser sets it automatically)
     if (body !== undefined && body !== null && !(body instanceof FormData)) {
@@ -242,6 +257,7 @@ class HttpClient {
       this.isRefreshing = true;
       this.refreshPromise = globalThis.fetch(`${API_BASE_URL}auth/refresh`, {
         method: 'POST',
+        headers: this.buildHeaders('POST'),
         credentials: 'include',
       })
         .then((res) => {
