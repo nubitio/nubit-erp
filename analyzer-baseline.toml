@@ -7144,12 +7144,6 @@ count = 9
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "mixed-method-access"
 message = "Attempting to access a method on a non-object type (`mixed`)."
-count = 2
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "non-existent-method"
-message = 'Method `method` does not exist on type `ApiPlatform\State\ProcessorInterface`.'
 count = 1
 
 [[issues]]
@@ -7252,6 +7246,18 @@ count = 1
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "property-type-coercion"
 message = 'A value of a less specific type `null|object` is being assigned to property `$$entityManager` (Doctrine\ORM\EntityManagerInterface).'
+count = 1
+
+[[issues]]
+file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$persist`."
+count = 1
+
+[[issues]]
+file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
+code = "redundant-docblock-type"
+message = "Redundant docblock type for variable `$remove`."
 count = 1
 
 [[issues]]
