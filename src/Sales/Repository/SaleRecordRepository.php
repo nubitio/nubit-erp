@@ -9,6 +9,7 @@ use App\Catalog\Repository\PaymentMethodRepository;
 use App\Sales\Entity\SaleRecord;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\ParameterType;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -56,6 +57,153 @@ class SaleRecordRepository extends ServiceEntityRepository
             ->getResult();
 
         return $rows;
+    }
+
+    /**
+     * Outstanding balance grouped by customer, oldest-due first — the "Deudores"
+     * summary. Mirrors the population {@see findOpenReceivablesForCustomer}
+     * reads per customer, aggregated across all customers with an open balance.
+     *
+     * @return list<array{customerId: int, customerName: string, customerPhone: ?string, totalBalance: string, currency: string, earliestDueDate: ?string, pendingCount: int}>
+     */
+    public function aggregateReceivablesByCustomer(?string $search, int $page, int $perPage): array
+    {
+        $qb = $this
+            ->createQueryBuilder('s')
+            ->select('IDENTITY(s.customer) AS customerId')
+            ->addSelect('c.businessName AS customerName')
+            ->addSelect('c.phone AS customerPhone')
+            ->addSelect('SUM(s.balanceDue) AS totalBalance')
+            ->addSelect('MAX(s.currency) AS currency')
+            ->addSelect('MIN(s.dueDate) AS earliestDueDate')
+            ->addSelect('COUNT(s.id) AS pendingCount')
+            ->join('s.customer', 'c')
+            ->where('s.receivableAccount = true')
+            ->andWhere('s.balanceDue > 0')
+            ->andWhere("s.status <> 'VOIDED'")
+            ->andWhere('s.deletedAt IS NULL')
+            ->groupBy('s.customer, c.businessName, c.phone')
+            ->orderBy('totalBalance', 'DESC')
+            ->setFirstResult(($page - 1) * $perPage)
+            ->setMaxResults($perPage);
+
+        $this->applyCustomerSearch($qb, $search);
+
+        /** @var list<array{customerId: int, customerName: string, customerPhone: ?string, totalBalance: string, currency: string, earliestDueDate: ?string, pendingCount: int}> $rows */
+        $rows = $qb->getQuery()->getResult();
+
+        return $rows;
+    }
+
+    /**
+     * Count of distinct customers with an open balance — paired with
+     * {@see aggregateReceivablesByCustomer} for pagination.
+     */
+    public function countReceivableCustomers(?string $search): int
+    {
+        $qb = $this
+            ->createQueryBuilder('s')
+            ->select('COUNT(DISTINCT s.customer)')
+            ->join('s.customer', 'c')
+            ->where('s.receivableAccount = true')
+            ->andWhere('s.balanceDue > 0')
+            ->andWhere("s.status <> 'VOIDED'")
+            ->andWhere('s.deletedAt IS NULL');
+
+        $this->applyCustomerSearch($qb, $search);
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
+     * Branch-wide totals for the "Deudores" KPI header: overall balance,
+     * currency, and how many distinct customers carry it.
+     *
+     * @return array{total: string, currency: string, debtorCount: int}
+     */
+    public function sumReceivables(): array
+    {
+        /** @var array{total: string, currency: string, debtorCount: int} $row */
+        $row = $this
+            ->createQueryBuilder('s')
+            ->select('COALESCE(SUM(s.balanceDue), 0) AS total')
+            ->addSelect('COALESCE(MAX(s.currency), \'PEN\') AS currency')
+            ->addSelect('COUNT(DISTINCT s.customer) AS debtorCount')
+            ->where('s.receivableAccount = true')
+            ->andWhere('s.balanceDue > 0')
+            ->andWhere("s.status <> 'VOIDED'")
+            ->andWhere('s.deletedAt IS NULL')
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'total' => $row['total'],
+            'currency' => $row['currency'],
+            'debtorCount' => (int) $row['debtorCount'],
+        ];
+    }
+
+    /**
+     * Branch-wide balance grouped by how overdue it is, relative to the due
+     * date rather than the sale date — this is what a collections screen
+     * needs to answer "what should I chase first" (#409). `current` covers
+     * both "no due date recorded" and "not yet due"; the rest count full days
+     * past the due date, matching {@see AgingCalculator}'s bucket names.
+     *
+     * Raw SQL (DATEDIFF has no portable DQL equivalent that also survives
+     * GROUP BY), so — unlike the QueryBuilder methods above — this bypasses
+     * Doctrine's automatic branch filter and scopes by `$branchId` itself.
+     *
+     * @return array{current: string, '1-30': string, '31-60': string, '61-90': string, '90+': string}
+     */
+    public function aggregateReceivablesAging(string $branchId): array
+    {
+        $rows = $this
+            ->getEntityManager()
+            ->getConnection()
+            ->fetchAllAssociative(<<<'SQL'
+                SELECT
+                    CASE
+                        WHEN due_date IS NULL OR due_date >= CURDATE() THEN 'current'
+                        WHEN DATEDIFF(CURDATE(), due_date) <= 30 THEN '1-30'
+                        WHEN DATEDIFF(CURDATE(), due_date) <= 60 THEN '31-60'
+                        WHEN DATEDIFF(CURDATE(), due_date) <= 90 THEN '61-90'
+                        ELSE '90+'
+                    END AS bucket,
+                    SUM(balance_due) AS total
+                FROM sales
+                WHERE receivable_account = 1
+                  AND balance_due > 0
+                  AND status <> 'VOIDED'
+                  AND deleted_at IS NULL
+                  AND branch_id = ?
+                GROUP BY bucket
+                SQL, [$branchId]);
+
+        $buckets = ['current' => '0.00', '1-30' => '0.00', '31-60' => '0.00', '61-90' => '0.00', '90+' => '0.00'];
+        foreach ($rows as $row) {
+            match ($row['bucket']) {
+                'current' => $buckets['current'] = (string) $row['total'],
+                '1-30' => $buckets['1-30'] = (string) $row['total'],
+                '31-60' => $buckets['31-60'] = (string) $row['total'],
+                '61-90' => $buckets['61-90'] = (string) $row['total'],
+                default => $buckets['90+'] = (string) $row['total'],
+            };
+        }
+
+        return $buckets;
+    }
+
+    private function applyCustomerSearch(QueryBuilder $qb, ?string $search): void
+    {
+        if ($search === null || trim($search) === '') {
+            return;
+        }
+
+        $qb->andWhere('LOWER(c.businessName) LIKE :search')->setParameter(
+            'search',
+            '%' . mb_strtolower(trim($search)) . '%',
+        );
     }
 
     /**
