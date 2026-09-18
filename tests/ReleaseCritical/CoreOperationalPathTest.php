@@ -250,10 +250,10 @@ final class CoreOperationalPathTest extends KernelTestCase
     {
         $container = static::getContainer();
 
-        /** @var ProcessorInterface<mixed, mixed> $persist */
+        /** @var ProcessorInterface<mixed, mixed>&\PHPUnit\Framework\MockObject\Stub $persist */
         $persist = $this->createStub(ProcessorInterface::class);
         $persist->method('process')->willReturnArgument(0);
-        /** @var ProcessorInterface<mixed, mixed> $remove */
+        /** @var ProcessorInterface<mixed, mixed>&\PHPUnit\Framework\MockObject\Stub $remove */
         $remove = $this->createStub(ProcessorInterface::class);
 
         $jwt = $container->get(JWTManagerInterface::class);
@@ -309,7 +309,7 @@ final class CoreOperationalPathTest extends KernelTestCase
                 return true;
             }
 
-            public function connectedUser(): ?AuthUserDto
+            public function connectedUser(): AuthUserDto
             {
                 return new AuthUserDto($this->userId, 'kernel-core', 1, ['ROLE_ADMIN']);
             }
