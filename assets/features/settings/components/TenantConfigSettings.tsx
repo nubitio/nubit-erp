@@ -68,12 +68,12 @@ const CONFIG_META: Record<string, ConfigMeta> = {
   },
   inventory_negative_stock_policy: {
     label: 'Política de stock negativo',
-    description: 'Define qué ocurre cuando el stock llega a cero.',
+    description: 'Define qué ocurre cuando una venta dejaría el stock por debajo de cero.',
     group: 'inventory',
     options: [
-      { value: 'BLOCK', label: 'Bloquear venta (no permite stock negativo)' },
-      { value: 'ALLOW_WITH_ROLE', label: 'Permitir solo a administradores' },
-      { value: 'ALLOW_ALL', label: 'Permitir a todos los usuarios' },
+      { value: 'STRICT', label: 'Bloquear la venta' },
+      { value: 'WARNING_ONLY', label: 'Permitir mostrando una advertencia' },
+      { value: 'ALLOW_NEGATIVE', label: 'Permitir sin advertencia' },
     ],
   },
 };
@@ -194,6 +194,7 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
             ) : (
               <TextField
                 ref={inputRef as RefObject<HTMLInputElement>}
+                aria-label={meta.label}
                 type={config.type === 'int' || config.type === 'float' ? 'number' : 'text'}
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
@@ -206,6 +207,7 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
               className="config-btn config-btn--primary"
               onClick={() => void handleSave()}
               loading={saving}
+              aria-label={`Guardar ${meta.label}`}
             >
               Guardar
             </Button>
@@ -214,6 +216,7 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
               className="config-btn config-btn--ghost"
               onClick={handleCancel}
               disabled={saving}
+              aria-label={`Cancelar edición de ${meta.label}`}
             >
               Cancelar
             </Button>
@@ -221,7 +224,12 @@ const SettingRow = ({ config, onSave }: SettingRowProps) => {
         ) : (
           <div className="config-setting-display">
             <span className="config-setting-current">{displayValue}</span>
-            <Button variant="ghost" className="config-btn config-btn--ghost" onClick={handleEdit}>
+            <Button
+              variant="ghost"
+              className="config-btn config-btn--ghost"
+              onClick={handleEdit}
+              aria-label={`Editar ${meta.label}`}
+            >
               Editar
             </Button>
           </div>
@@ -252,7 +260,9 @@ const SettingGroup = ({ title, configs, onSave }: SettingGroupProps) => {
 };
 
 export const SunatSettingsSection = () => {
-  const [state, setState] = useState<Awaited<ReturnType<typeof tenantSettingsService.getSunatState>> | null>(null);
+  const [state, setState] = useState<Awaited<
+    ReturnType<typeof tenantSettingsService.getSunatState>
+  > | null>(null);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
   const [editingThreshold, setEditingThreshold] = useState(false);
@@ -261,7 +271,8 @@ export const SunatSettingsSection = () => {
   const thresholdRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    tenantSettingsService.getSunatState()
+    tenantSettingsService
+      .getSunatState()
       .then(setState)
       .catch(() => toast('Error al cargar el estado SUNAT', 'error'))
       .finally(() => setLoading(false));
@@ -271,7 +282,9 @@ export const SunatSettingsSection = () => {
     if (!state) return;
     setToggling(true);
     try {
-      const updated = await tenantSettingsService.patchSunatState({ sendEnabled: !state.sendEnabled });
+      const updated = await tenantSettingsService.patchSunatState({
+        sendEnabled: !state.sendEnabled,
+      });
       setState(updated);
       toast(updated.sendEnabled ? 'Envío a SUNAT activado' : 'Envío a SUNAT pausado', 'success');
     } catch {
@@ -309,7 +322,7 @@ export const SunatSettingsSection = () => {
 
   if (loading) {
     return (
-      <div className="settings-loading">
+      <div className="settings-loading" role="status" aria-live="polite">
         <i className="ph ph-circle-notch settings-loading__icon" aria-hidden="true" />
         Cargando configuración SUNAT…
       </div>
@@ -317,11 +330,12 @@ export const SunatSettingsSection = () => {
   }
   if (!state) return null;
 
-  const streakColor = state.rejectionStreak === 0
-    ? 'var(--color-text-muted)'
-    : state.rejectionStreak >= state.rejectionThreshold
-      ? 'var(--color-danger, #e53e3e)'
-      : 'var(--color-warning, #d97706)';
+  const streakColor =
+    state.rejectionStreak === 0
+      ? 'var(--color-text-muted)'
+      : state.rejectionStreak >= state.rejectionThreshold
+        ? 'var(--color-danger, #e53e3e)'
+        : 'var(--color-warning, #d97706)';
 
   return (
     <section className="config-group">
@@ -370,6 +384,7 @@ export const SunatSettingsSection = () => {
             <div className="config-setting-edit">
               <TextField
                 ref={thresholdRef}
+                aria-label="Umbral de pausa automática"
                 type="number"
                 min={1}
                 value={thresholdDraft}
@@ -401,7 +416,11 @@ export const SunatSettingsSection = () => {
           ) : (
             <div className="config-setting-display">
               <span className="config-setting-current">{state.rejectionThreshold}</span>
-              <Button variant="ghost" className="config-btn config-btn--ghost" onClick={handleEditThreshold}>
+              <Button
+                variant="ghost"
+                className="config-btn config-btn--ghost"
+                onClick={handleEditThreshold}
+              >
                 Editar
               </Button>
             </div>
@@ -431,7 +450,10 @@ export const PosBehaviorSettings = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  const patch = async (field: 'autoInvoice' | 'autoPrint' | 'cashRoundingEnabled', value: boolean) => {
+  const patch = async (
+    field: 'autoInvoice' | 'autoPrint' | 'cashRoundingEnabled',
+    value: boolean,
+  ) => {
     if (!state) return;
     setSavingField(field);
     try {
@@ -465,7 +487,7 @@ export const PosBehaviorSettings = () => {
 
   if (loading) {
     return (
-      <div className="settings-loading">
+      <div className="settings-loading" role="status" aria-live="polite">
         <i className="ph ph-circle-notch settings-loading__icon" aria-hidden="true" />
         Cargando configuración del punto de venta…
       </div>
@@ -592,7 +614,7 @@ export const ReceiptSettings = () => {
 
   if (loading) {
     return (
-      <div className="settings-loading">
+      <div className="settings-loading" role="status" aria-live="polite">
         <i className="ph ph-circle-notch settings-loading__icon" aria-hidden="true" />
         Cargando configuración de comprobantes…
       </div>
@@ -677,7 +699,7 @@ export const TenantBehaviorSettings = () => {
 
   if (loading) {
     return (
-      <div className="settings-loading">
+      <div className="settings-loading" role="status" aria-live="polite">
         <i className="ph ph-circle-notch settings-loading__icon" aria-hidden="true" />
         Cargando configuraciones…
       </div>

@@ -10,6 +10,7 @@ import {
 } from '@features/onboarding/tenantOnboardingService';
 import { tenantSettingsService } from '@features/config';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
+import { SettingsPageHeader } from './components/SettingsPageHeader';
 import './settingsHub.scss';
 
 const CURRENCY_LABELS: Record<string, string> = {
@@ -35,14 +36,18 @@ const EMPTY_FORM: CompanyFormState = {
 
 function SettingsFieldRow({
   label,
+  htmlFor,
   children,
 }: {
   label: string;
+  htmlFor: string;
   children: ReactNode;
 }) {
   return (
     <div className="settings-field-row">
-      <span className="settings-field-row__label">{label}</span>
+      <label className="settings-field-row__label" htmlFor={htmlFor}>
+        {label}
+      </label>
       <div className="settings-field-row__control">{children}</div>
     </div>
   );
@@ -141,7 +146,7 @@ export const SettingsCompanyTab = () => {
   if (companyQuery.isLoading) {
     return (
       <div className="settings-panel">
-        <div className="settings-loading">
+        <div className="settings-loading" role="status" aria-live="polite">
           <i className="ph ph-circle-notch settings-loading__icon" aria-hidden="true" />
           Cargando datos de empresa…
         </div>
@@ -154,26 +159,34 @@ export const SettingsCompanyTab = () => {
 
   return (
     <div className="settings-panel" data-testid="settings-company-tab">
+      <SettingsPageHeader
+        title="Datos de tu empresa"
+        description="Identidad fiscal que aparece en tus comprobantes."
+      />
       <div className="settings-card">
         <section className="settings-section" aria-labelledby="settings-identity-heading">
-          <h3 id="settings-identity-heading" className="settings-section__heading">
-            Identidad fiscal
-          </h3>
+          <div className="settings-section__intro">
+            <h3 id="settings-identity-heading" className="settings-section__heading">
+              Identidad fiscal
+            </h3>
+            <p>Datos legales registrados ante SUNAT.</p>
+          </div>
           <div className="settings-fields">
-            <SettingsFieldRow label="Razón social">
+            <SettingsFieldRow label="Razón social" htmlFor="company-business-name">
               <TextField
+                id="company-business-name"
                 value={form.businessName}
                 onChange={(e) => update({ businessName: e.target.value })}
               />
             </SettingsFieldRow>
-            <SettingsFieldRow label="RUC">
+            <SettingsFieldRow label="RUC" htmlFor="company-ruc">
               <div className="settings-field-row__control settings-field-row__control--with-action">
                 <TextField
+                  id="company-ruc"
                   value={form.ruc}
-                  onChange={(e) =>
-                    update({ ruc: e.target.value.replace(/\D/g, '').slice(0, 11) })
-                  }
+                  onChange={(e) => update({ ruc: e.target.value.replace(/\D/g, '').slice(0, 11) })}
                   inputMode="numeric"
+                  aria-describedby="company-ruc-hint"
                 />
                 <Button
                   type="button"
@@ -184,15 +197,20 @@ export const SettingsCompanyTab = () => {
                   Consultar SUNAT
                 </Button>
               </div>
+              <span id="company-ruc-hint" className="settings-field-hint">
+                11 dígitos, sin espacios ni guiones.
+              </span>
             </SettingsFieldRow>
-            <SettingsFieldRow label="Nombre comercial">
+            <SettingsFieldRow label="Nombre comercial" htmlFor="company-trade-name">
               <TextField
+                id="company-trade-name"
                 value={form.tradeName}
                 onChange={(e) => update({ tradeName: e.target.value })}
               />
             </SettingsFieldRow>
-            <SettingsFieldRow label="Domicilio fiscal">
+            <SettingsFieldRow label="Domicilio fiscal" htmlFor="company-fiscal-address">
               <TextField
+                id="company-fiscal-address"
                 value={form.fiscalAddress}
                 onChange={(e) => update({ fiscalAddress: e.target.value })}
               />
@@ -201,12 +219,16 @@ export const SettingsCompanyTab = () => {
         </section>
 
         <section className="settings-section" aria-labelledby="settings-contact-heading">
-          <h3 id="settings-contact-heading" className="settings-section__heading">
-            Contacto
-          </h3>
+          <div className="settings-section__intro">
+            <h3 id="settings-contact-heading" className="settings-section__heading">
+              Contacto
+            </h3>
+            <p>Información visible para clientes y soporte.</p>
+          </div>
           <div className="settings-fields">
-            <SettingsFieldRow label="Teléfono">
+            <SettingsFieldRow label="Teléfono" htmlFor="company-phone">
               <TextField
+                id="company-phone"
                 value={form.phone}
                 onChange={(e) => update({ phone: e.target.value })}
               />
@@ -215,24 +237,28 @@ export const SettingsCompanyTab = () => {
         </section>
 
         <section className="settings-section" aria-labelledby="settings-locale-heading">
-          <h3 id="settings-locale-heading" className="settings-section__heading">
-            Localización
-          </h3>
+          <div className="settings-section__intro">
+            <h3 id="settings-locale-heading" className="settings-section__heading">
+              Localización
+            </h3>
+            <p>Valores usados para fechas, importes e impuestos.</p>
+          </div>
           <div className="settings-fields">
-            <SettingsFieldRow label="País">
-              <TextField value="Perú" disabled />
+            <SettingsFieldRow label="País" htmlFor="company-country">
+              <TextField id="company-country" value="Perú" disabled />
             </SettingsFieldRow>
-            <SettingsFieldRow label="Moneda">
-              <TextField value={currencyLabel} disabled />
+            <SettingsFieldRow label="Moneda" htmlFor="company-currency">
+              <TextField id="company-currency" value={currencyLabel} disabled />
             </SettingsFieldRow>
-            <SettingsFieldRow label="Zona horaria">
-              <TextField value="America/Lima (UTC-5)" disabled />
+            <SettingsFieldRow label="Zona horaria" htmlFor="company-timezone">
+              <TextField id="company-timezone" value="America/Lima (UTC-5)" disabled />
             </SettingsFieldRow>
           </div>
         </section>
 
         <div className="settings-card__footer">
           <Link to="/company" className="settings-advanced-link">
+            <i className="ph ph-arrow-square-out" aria-hidden="true" />
             Logo, ubigeo y datos bancarios
           </Link>
           <Button variant="primary" onClick={() => void handleSave()} loading={saving}>

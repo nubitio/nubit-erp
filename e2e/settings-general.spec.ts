@@ -15,3 +15,22 @@ test('Configuración general muestra el redondeo de efectivo del POS', async ({ 
   await expect(page.getByLabel('Redondeo de efectivo a diez céntimos')).toBeAttached();
   await expect(page.getByText('Redondeo de efectivo a S/ 0.10')).toBeVisible();
 });
+
+test('Ajustes se adapta a móvil sin overflow horizontal', async ({ page }) => {
+  const seed = await getE2ESeed();
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await login(page, seed.username, seed.password);
+
+  for (const route of ['company', 'sunat', 'general', 'integrations']) {
+    await page.goto(`${BASE_URL}/#/config/${route}`);
+    await expect(page.getByRole('navigation', { name: 'Secciones de ajustes' })).toBeVisible();
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+        ),
+      )
+      .toBe(true);
+  }
+});
