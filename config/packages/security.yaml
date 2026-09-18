@@ -138,3 +138,17 @@ when@test:
                 cost: 4 # Lowest possible value for bcrypt
                 time_cost: 3 # Lowest possible value for argon
                 memory_cost: 10 # Lowest possible value for argon
+
+when@e2e:
+    security:
+        firewalls:
+            # The Playwright suite logs in via the real UI (not just the API
+            # helper) across many spec files with the same seeded user in a
+            # tight window, plus retries — that alone blows past the
+            # production 5-attempts/minute budget and self-locks the suite
+            # with "Too many failed login attempts", unrelated to any actual
+            # credential problem. Loosen it only for e2e; prod keeps 5/minute.
+            main:
+                login_throttling:
+                    max_attempts: 1000
+                    interval: '1 minute'
