@@ -13,6 +13,7 @@ const EFACT_BUSINESS_LOCALE = 'es-PE';
 const EFACT_BUSINESS_TIMEZONE = 'America/Lima';
 const EFACT_BUSINESS_CURRENCY = 'PEN';
 import toast from '@shared/lib/SharedUtils';
+import { httpTransport } from '@shared/api/httpTransport';
 import { SmartCrudAuthBridge } from './SmartCrudAuthBridge';
 import { handleSessionExpired } from '@shared/lib/sessionExpiredEvent';
 
@@ -47,8 +48,11 @@ export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => 
     // baseUrl is now optional — it falls back to the one configured in CoreConfigProvider.
     // We still pass it here for explicitness / backward compat with advanced use cases.
     baseUrl: EFECT_API_BASE_URL,
-    refreshPath: 'auth/refresh',
-    loginPath: 'auth/login',
+    // Bearer token, CSRF, correlation id and refresh/login paths are shared with
+    // the module-level `httpClient` — see httpTransport.ts. Only the failure UX
+    // differs here: crud surfaces errors through its own grid/form UI, so this
+    // client keeps the narrower "server error" toast.
+    ...httpTransport,
     onUnauthorized: handleSessionExpired,
     onError: notifyServerError,
   }), []);

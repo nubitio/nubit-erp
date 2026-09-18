@@ -18,8 +18,12 @@ function methodOf(init?: RequestInit): string {
 }
 
 /**
- * Cookie-authenticated mutations need X-CSRF-Token. @nubitio/core's HttpClient
- * does not attach it; patch fetch once so hydra/core/legacy clients all comply.
+ * Cookie-authenticated mutations need X-CSRF-Token. The `CoreHttpClient`-based
+ * clients (`httpClient`, and the provider client used by crud/hydra) attach it
+ * themselves from the shared `httpTransport` config; this patch remains the
+ * safety net for the few raw `exceptionalFetch` callers that bypass both — the
+ * assistant stream and the offline outbox. It is a no-op when a caller already
+ * set the header.
  */
 export function installCsrfFetch(): void {
   if (typeof globalThis.fetch !== 'function') {
