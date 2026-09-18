@@ -84,9 +84,11 @@ WORKDIR /app
 # Expose ports
 EXPOSE 80 443
 
-# Add healthcheck
-HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-    CMD sh -lc 'status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/health || true); [ "$status" = "200" ] || [ "$status" = "503" ]'
+# Add healthcheck. See docker/healthcheck.sh for why it also warms
+# /api/docs.json once — timeout is generous because that warm-up request is
+# the slow path it exists to absorb.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD sh /app/docker/healthcheck.sh
 
 # Common entrypoint (used by all stages)
 ENTRYPOINT ["/entrypoint.sh"]

@@ -215,7 +215,8 @@ services:
       - shared
 
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost/']
+      # See docker/healthcheck.sh: also warms /api/docs.json once.
+      test: ['CMD', 'sh', '/app/docker/healthcheck.sh']
       interval: 30s
       timeout: 10s
       retries: 3
