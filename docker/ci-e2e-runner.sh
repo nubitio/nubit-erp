@@ -62,7 +62,21 @@ corepack enable
 corepack prepare yarn@4.9.1 --activate
 
 echo "Checking OpenAPI compatibility ..."
-yarn openapi-typescript "$BASE/api/docs.json" -o /tmp/types.generated.ts
+# Fetch docs.json with curl (openapi-typescript's fetch dies on a reset socket).
+i=1
+while [ "$i" -le 8 ]; do
+  if wget -qO /tmp/docs.json --timeout=90 "$BASE/api/docs.json" && [ -s /tmp/docs.json ]; then
+    break
+  fi
+  echo "  docs.json fetch failed ($i/8), retrying in 2s..."
+  i=$((i + 1))
+  sleep 2
+done
+if [ ! -s /tmp/docs.json ]; then
+  echo "ERROR: could not download $BASE/api/docs.json"
+  exit 1
+fi
+yarn openapi-typescript /tmp/docs.json -o /tmp/types.generated.ts
 # APP_ENV=e2e vs committed types often differ only in OpenAPI description
 # JSDoc copied from ApiProperty keys. Ignore those comments so a real path/schema
 # drift still fails.
