@@ -64,9 +64,17 @@ readonly class TenantListener
             '/webhook/mercadopago',
             // Docker/K8s probes hit localhost before any tenant exists.
             '/health',
-            // The integration API resolves its tenant from the API key, not the
-            // host — ApiKeyAuthenticator switches the connection itself.
-            '/api/v1',
+            // Only the machine-to-machine integration routes resolve their
+            // tenant from the API key, not the host — ApiKeyAuthenticator
+            // switches the connection itself (see the `integration_api`
+            // firewall pattern in config/packages/security.yaml). Web-facing
+            // /api/v1 routes (PLE, bank reconciliation, ...) fall through to
+            // `main` and need the ordinary host-based tenant switch below —
+            // excluding the whole `/api/v1` prefix here left them without a
+            // tenant connection and broke JWT/cookie auth for them.
+            '/api/v1/documents',
+            '/api/v1/ping',
+            '/api/v1/webhook-endpoints',
         ];
 
         foreach ($excludedPaths as $excludedPath) {
