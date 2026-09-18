@@ -100,8 +100,8 @@ export interface UseTenantIgvRateResult {
    */
   igvRate: number;
   /**
-   * The tenant's tax regime. NRUS taxpayers can only issue Boleta and never
-   * charge/break out IGV. Defaults to 'GENERAL' until the first fetch resolves.
+   * The tenant's tax regime. NRUS taxpayers can only issue exonerated Boletas
+   * with zero IGV. Defaults to 'GENERAL' until the first fetch resolves.
    */
   taxRegime: TaxRegime;
   /** True only during the very first network fetch (localStorage value not yet available). */
@@ -124,8 +124,8 @@ export function useTenantIgvRate(): UseTenantIgvRateResult {
       const response = await httpClient.get<TenantSettingsResponse>('/api/tenant/settings');
       // Backend stores as a whole-number percentage (e.g. 18 or 10.5).
       // Convert to decimal fraction for all calculation functions.
-      const igvRate = response.data.igv / 100;
       const taxRegime = response.data.taxRegime;
+      const igvRate = taxRegime === 'NRUS' ? 0 : response.data.igv / 100;
       persistRate(igvRate);
       persistTaxRegime(taxRegime);
       return { igvRate, taxRegime };

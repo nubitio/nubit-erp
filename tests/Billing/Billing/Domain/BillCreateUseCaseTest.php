@@ -210,6 +210,35 @@ final class BillCreateUseCaseTest extends TestCase
         self::assertSame(10.5, $invoice->getDetails()[0]->getPorcentajeIgv());
     }
 
+    public function testExoneratedItemsPopulateExoneratedTotalInsteadOfTaxedTotal(): void
+    {
+        $this->setupTaxDocument();
+        $item = new HydratedVoucherItem(
+            productCode: 'PROD-001',
+            productUom: 'NIU',
+            quantity: 1.0,
+            productName: 'Producto exonerado',
+            unitValue: 72.0,
+            taxedAmount: 72.0,
+            taxPercentage: 0.0,
+            taxAmount: 0.0,
+            taxType: '20',
+            unitPrice: 72.0,
+        );
+        $voucher = $this->makeBaseVoucher(item: $item, voucherTaxPercentage: 0.0);
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
+        $this->voucherHydrator->method('hydrate')->willReturn($voucher);
+
+        $invoice = $this->useCase->__invoke('td-1');
+
+        self::assertNull($invoice->getMtoOperGravadas());
+        self::assertSame(72.0, $invoice->getMtoOperExoneradas());
+        self::assertSame('20', $invoice->getDetails()[0]->getTipAfeIgv());
+        self::assertSame(0.0, $invoice->getDetails()[0]->getIgv());
+    }
+
     public function testInvokeUsesFormaPagoContadoWhenPaymentMethodIsOne(): void
     {
         $this->setupTaxDocument();

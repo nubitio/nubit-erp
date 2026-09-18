@@ -49,11 +49,7 @@ class TenantSettings
 
     // ── General ──────────────────────────────────────────────────────────────
 
-    /**
-     * SUNAT tax regime the tenant is registered under. A tenant on NRUS can
-     * only issue boletas (never facturas) and does not break out IGV as
-     * "Gravado" on its vouchers — enforced in InvoiceCreationService.
-     */
+    /** SUNAT tax regime. NRUS tenants can issue exonerated boletas, but not facturas. */
     #[ORM\Column(enumType: TaxRegime::class)]
     #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
     private TaxRegime $taxRegime = TaxRegime::GENERAL;

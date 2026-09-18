@@ -111,6 +111,17 @@ readonly class BillCreateUseCase
             ->setRznSocial($hydratedVoucher->customerName)
             ->setAddress($customerAddress);
 
+        $taxedAmount = 0.0;
+        $exoneratedAmount = 0.0;
+        $unaffectedAmount = 0.0;
+        foreach ($hydratedVoucher->voucherItems as $item) {
+            match ($item->taxType) {
+                '20' => $exoneratedAmount += $item->taxedAmount,
+                '30' => $unaffectedAmount += $item->taxedAmount,
+                default => $taxedAmount += $item->taxedAmount,
+            };
+        }
+
         $bill = new Invoice()
             ->setUblVersion('2.1')
             ->setTipoOperacion($operationType)
@@ -125,7 +136,6 @@ readonly class BillCreateUseCase
             )
             ->setTipoMoneda($hydratedVoucher->voucherCurrency)
             ->setClient($customer)
-            ->setMtoOperGravadas($hydratedVoucher->voucherTaxedAmount)
             ->setMtoIGV($hydratedVoucher->voucherTaxAmount)
             ->setTotalImpuestos($hydratedVoucher->voucherTotalTaxes)
             ->setSumOtrosCargos($hydratedVoucher->voucherConsumptionSurchargeAmount)
@@ -137,6 +147,16 @@ readonly class BillCreateUseCase
             )
             ->setMtoImpVenta($hydratedVoucher->voucherSaleAmount)
             ->setCompany($this->billUtils->getCompany());
+
+        if ($taxedAmount > 0.0) {
+            $bill->setMtoOperGravadas($taxedAmount);
+        }
+        if ($exoneratedAmount > 0.0) {
+            $bill->setMtoOperExoneradas($exoneratedAmount);
+        }
+        if ($unaffectedAmount > 0.0) {
+            $bill->setMtoOperInafectas($unaffectedAmount);
+        }
 
         if ($hasDetraction) {
             $detractionAccount = $company->getDetraccionAccount() ?: $hydratedVoucher->voucherDetractionAccount;
