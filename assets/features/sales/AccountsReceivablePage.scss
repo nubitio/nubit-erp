@@ -1,15 +1,28 @@
 .accounts-receivable-page {
-  // Collection actions stay at the right edge while the table scrolls.
-  .nb-datagrid__table > thead > tr > :last-child,
-  .nb-datagrid__table > tbody > .nb-datagrid__row > :last-child {
-    position: sticky;
-    right: 0;
-    z-index: 2;
-    background: var(--surface-1);
-    box-shadow: -1px 0 0 var(--border-color);
+  // Align the header and KPI row with the grid's own 24px gutter: DataGridView
+  // auto-wraps itself in .view-wrapper (padding: 0 var(--page-padding)).
+  > .nb-page-header {
+    padding-left: var(--page-padding);
+    padding-right: var(--page-padding);
   }
 
-  .nb-datagrid__table > thead > tr > :last-child {
-    z-index: 4;
+  &__summary {
+    margin-bottom: var(--space-4);
+    padding: 0 var(--page-padding);
+  }
+
+  &__customer-link {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-weight: 600;
+    color: var(--accent-color);
+    cursor: pointer;
+    text-align: left;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }

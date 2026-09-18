@@ -86,33 +86,30 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
     expect(Number(body.paidTotal)).toBe(1);
   });
 
-  await test.step('filtrar por cliente y abrir la deuda', async () => {
+  await test.step('filtrar por cliente y registrar un pago parcial', async () => {
     await page.goto(`${BASE_URL}/#/accounts-receivable`);
-    const customerFilter = page.getByRole('table', { name: 'Cuentas por cobrar' })
-      .locator('.nb-datagrid__filter-select')
-      .first();
-    await customerFilter.fill(E2E_SEED.customerName);
-    await page.locator('.nb-form__lookup-menu button[role="option"]')
-      .filter({ hasText: E2E_SEED.customerName }).first().click();
 
-    const row = page.getByRole('row').filter({ has: page.locator(`[data-sale-id="${createdSale.id}"]`) });
+    const table = page.getByRole('table', { name: 'Deudores' });
+    await table.locator('.nb-datagrid__filter-input').first().fill(E2E_SEED.customerName);
+
+    const row = page.getByRole('row').filter({ hasText: E2E_SEED.customerName }).first();
     await expect(row).toContainText(/9[.,]00/, { timeout: 15000 });
-    await row.locator('.nb-datagrid__expand-button').click();
-    await expect(row.locator('xpath=following-sibling::tr[1]')).toContainText(paymentMethod.name ?? 'Efectivo');
     await row.getByRole('button', { name: 'Cobrar' }).click();
-  });
 
-  await test.step('registrar un pago parcial', async () => {
-    await expect(page.getByRole('dialog', { name: 'Registrar cobro de venta' })).toBeVisible();
-    await expect(page.getByRole('dialog').getByText(/Saldo.*9[.,]00/)).toBeVisible();
-    await page.getByLabel(/Monto/).fill('4.00');
-    await page.getByLabel('Referencia').fill('OP-E2E-001');
-    const methodInput = page.getByText('Método de pago').locator('..').getByRole('combobox');
+    const dialog = page.getByRole('dialog', { name: 'Registrar pago' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/Saldo pendiente.*9[.,]00/)).toBeVisible();
+    await dialog.getByLabel(/Monto/).fill('4.00');
+    await dialog.getByLabel('Referencia').fill('OP-E2E-001');
+    const methodInput = dialog.getByText('Método de pago').locator('..').getByRole('combobox');
     await methodInput.fill(paymentMethod.name ?? 'Efectivo');
     await page.locator('.nb-form__lookup-menu button[role="option"]')
       .filter({ hasText: paymentMethod.name ?? 'Efectivo' }).first().click();
-    await page.getByTestId('sale-collect-submit-btn').click();
-    await expect(page.getByRole('dialog', { name: 'Registrar cobro de venta' })).toBeHidden({ timeout: 15000 });
+    await dialog.getByTestId('receivable-payment-submit-btn').click();
+
+    await expect(dialog.getByText('Aplicación')).toBeVisible({ timeout: 15000 });
+    await dialog.getByRole('button', { name: 'Listo' }).click();
+    await expect(dialog).toBeHidden();
   });
 
   const detailResponse = await request.get(`${BASE_URL}/api/sales/${createdSale.id}`, { headers: auth.headers });
@@ -128,31 +125,39 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
     (payment) => Number(payment.amount) === 4 && payment.reference === 'OP-E2E-001',
   )).toBeTruthy();
 
-  const updatedRow = page.getByRole('row').filter({ has: page.locator(`[data-sale-id="${createdSale.id}"]`) });
-  await expect(updatedRow).toContainText(/5[.,]00/, { timeout: 15000 });
-  const detail = updatedRow.locator('xpath=following-sibling::tr[1]');
-  await expect(detail).toContainText(paymentMethod.name ?? 'Efectivo');
-  await expect(detail).toContainText('OP-E2E-001');
+  await test.step('ver el abono en el detalle del cliente', async () => {
+    const updatedRow = page.getByRole('row').filter({ hasText: E2E_SEED.customerName }).first();
+    await expect(updatedRow).toContainText(/5[.,]00/, { timeout: 15000 });
 
-  await test.step('conservar la cuenta y sus abonos después del pago completo', async () => {
-    await updatedRow.getByRole('button', { name: 'Cobrar', exact: true }).click();
-    const dialog = page.getByRole('dialog', { name: 'Registrar cobro de venta' });
+    await updatedRow.getByRole('button', { name: E2E_SEED.customerName }).click();
+    const drawer = page.getByRole('dialog', { name: E2E_SEED.customerName });
+    await expect(drawer).toBeVisible();
+    await expect(drawer.getByText('Abonos recientes')).toBeVisible({ timeout: 15000 });
+    await expect(drawer.getByText('OP-E2E-001')).toBeVisible();
+    await drawer.getByRole('button', { name: 'Cerrar' }).click();
+    await expect(drawer).toBeHidden();
+  });
+
+  await test.step('saldar la cuenta y quitarla de la lista', async () => {
+    const pendingRow = page.getByRole('row').filter({ hasText: E2E_SEED.customerName }).first();
+    await pendingRow.getByRole('button', { name: 'Cobrar' }).click();
+
+    const dialog = page.getByRole('dialog', { name: 'Registrar pago' });
     await expect(dialog.getByLabel(/Monto/)).toHaveValue('5.00');
     await dialog.getByLabel('Referencia').fill('PAGO-FINAL-E2E');
     await dialog.getByRole('combobox').fill(paymentMethod.name ?? 'Efectivo');
     await page.getByRole('option', { name: paymentMethod.name ?? 'Efectivo', exact: true }).click();
-    await dialog.getByTestId('sale-collect-submit-btn').click();
+    await dialog.getByTestId('receivable-payment-submit-btn').click();
+    await dialog.getByRole('button', { name: 'Listo' }).click();
     await expect(dialog).toBeHidden();
-    await expect(page.getByRole('row').filter({ has: page.locator(`[data-sale-id="${createdSale.id}"]`) })).toHaveCount(0);
-    await page.getByRole('button', { name: /Estado de cuenta/ }).click();
-    await page.getByRole('option', { name: 'Pagadas', exact: true }).click();
-    const paidRow = page.getByRole('row').filter({ has: page.locator(`[data-sale-id="${createdSale.id}"]`) });
-    await expect(paidRow).toContainText('Cobrada');
-    await expect(paidRow.getByRole('button', { name: 'Cobrar', exact: true })).toHaveCount(0);
-    if (!(await paidRow.locator('.nb-datagrid__expand-button').getAttribute('class'))?.includes('is-expanded')) {
-      await paidRow.locator('.nb-datagrid__expand-button').click();
-    }
-    await expect(paidRow.locator('xpath=following-sibling::tr[1]')).toContainText('PAGO-FINAL-E2E');
+
+    await expect(
+      page.getByRole('row').filter({ hasText: E2E_SEED.customerName }),
+    ).toHaveCount(0, { timeout: 15000 });
   });
 
+  const settledResponse = await request.get(`${BASE_URL}/api/sales/${createdSale.id}`, { headers: auth.headers });
+  const settledSale = (await settledResponse.json()) as { paidTotal: string; balanceDue: string };
+  expect(Number(settledSale.paidTotal)).toBe(10);
+  expect(Number(settledSale.balanceDue)).toBe(0);
 });

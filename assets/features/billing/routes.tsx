@@ -25,7 +25,6 @@ export const billingRoutes: AppRouteDefinition[] = [
   { path: '/sale', element: SalesRedirect },
   { path: '/sale-consult', element: ConsultRedirect },
   { path: '/accounts-receivable', element: AccountsReceivablePage },
-  { path: '/sale/:id/collect', element: AccountsReceivablePage },
   { path: '/invoice', element: () => <LegacyCrudRedirect basePath="/billing/documents" /> },
   { path: '/invoice/:id?', element: () => <LegacyCrudRedirect basePath="/billing/documents" /> },
   { path: '/credit-note', element: () => <LegacyCrudRedirect basePath="/billing/credit-notes" /> },
