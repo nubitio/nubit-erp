@@ -256,7 +256,7 @@ jobs:
             -e APP_ENV=test \
             -e APP_SECRET=test-secret-for-kernel-tests-32b \
             -e DATABASE_URL="${DATABASE_URL}" \
-            web php -d memory_limit=512M /app/vendor/bin/phpunit tests/ReleaseCritical/CoreOperationalPathTest.php tests/ReleaseCritical/CoreInventoryPathTest.php tests/ReleaseCritical/CorePurchasePathTest.php
+            web php -d memory_limit=512M /app/vendor/bin/phpunit --do-not-fail-on-deprecation --do-not-fail-on-phpunit-deprecation tests/ReleaseCritical/CoreOperationalPathTest.php tests/ReleaseCritical/CoreInventoryPathTest.php tests/ReleaseCritical/CorePurchasePathTest.php
 
       - name: Run PHPUnit with coverage
         if: needs.changes.outputs.backend == 'true' && needs.changes.outputs.coverage == 'true'

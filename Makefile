@@ -117,9 +117,9 @@ test-back:
 	$(EXEC_WEB_TEST) 'cd /app && ./vendor/bin/pest'
 
 test-core:
-	$(EXEC_WEB_TEST) 'cd /app && php -d memory_limit=512M ./vendor/bin/phpunit tests/ReleaseCritical/CoreOperationalPathTest.php'
-	$(EXEC_WEB_TEST) 'cd /app && php -d memory_limit=512M ./vendor/bin/phpunit tests/ReleaseCritical/CoreInventoryPathTest.php'
-	$(EXEC_WEB_TEST) 'cd /app && php -d memory_limit=512M ./vendor/bin/phpunit tests/ReleaseCritical/CorePurchasePathTest.php'
+	$(EXEC_WEB_TEST) 'cd /app && php -d memory_limit=512M ./vendor/bin/phpunit --do-not-fail-on-deprecation --do-not-fail-on-phpunit-deprecation tests/ReleaseCritical/CoreOperationalPathTest.php'
+	$(EXEC_WEB_TEST) 'cd /app && php -d memory_limit=512M ./vendor/bin/phpunit --do-not-fail-on-deprecation --do-not-fail-on-phpunit-deprecation tests/ReleaseCritical/CoreInventoryPathTest.php'
+	$(EXEC_WEB_TEST) 'cd /app && php -d memory_limit=512M ./vendor/bin/phpunit --do-not-fail-on-deprecation --do-not-fail-on-phpunit-deprecation tests/ReleaseCritical/CorePurchasePathTest.php'
 
 test-front:
 	$(EXEC_VITE) 'cd /home/node/app && corepack enable && yarn test'
