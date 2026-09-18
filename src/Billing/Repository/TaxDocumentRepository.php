@@ -327,8 +327,6 @@ class TaxDocumentRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
-
-
     /**
      * @throws MathException
      */

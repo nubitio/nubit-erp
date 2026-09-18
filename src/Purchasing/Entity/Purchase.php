@@ -13,6 +13,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Contacts\Entity\Supplier;
+use App\Efact\Doctrine\AssignedUuidGenerator;
 use App\Identity\Entity\User;
 use App\Inventory\Entity\Warehouse;
 use App\Organization\Entity\Branch;
@@ -28,7 +29,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Attribute\Auditable;
 use Nubit\ApiPlatform\Attribute\SoftDeletable;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
-use App\Efact\Doctrine\AssignedUuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[SoftDeletable]

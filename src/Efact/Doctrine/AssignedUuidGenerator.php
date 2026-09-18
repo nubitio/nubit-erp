@@ -15,7 +15,7 @@ use Symfony\Component\Uid\Uuid;
  */
 final class AssignedUuidGenerator extends AbstractIdGenerator
 {
-    public function generateId(EntityManagerInterface $em, object|null $entity): string
+    public function generateId(EntityManagerInterface $em, ?object $entity): string
     {
         if (is_object($entity) && method_exists($entity, 'getId')) {
             $existing = $entity->getId();

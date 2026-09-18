@@ -12,6 +12,7 @@ use ApiPlatform\Metadata\Post;
 use App\Catalog\Entity\PaymentMethod;
 use App\Contacts\Entity\Customer;
 use App\Contacts\Entity\Supplier;
+use App\Efact\Doctrine\AssignedUuidGenerator;
 use App\Inventory\Entity\Warehouse;
 use App\Organization\Entity\Branch;
 use App\Sales\Controller\Api\MakeSaleInvoice;
@@ -33,7 +34,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Nubit\Platform\Exception\ServiceException;
 use Nubit\Platform\Http\ApiResponse;
-use App\Efact\Doctrine\AssignedUuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 

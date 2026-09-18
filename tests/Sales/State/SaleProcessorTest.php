@@ -9,7 +9,6 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use App\CashRegister\Entity\CashMovementCategory;
-
 use App\Catalog\Entity\Product;
 use App\Catalog\Repository\SunatCatalogRepository;
 use App\Contacts\Entity\Customer;

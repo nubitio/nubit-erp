@@ -168,11 +168,7 @@ class TenantMigrateCommand extends PerTenantCommand
 
     private function runAllParallel(InputInterface $input, SymfonyStyle $io, int $concurrency): int
     {
-        $io->info(sprintf(
-            'Migrating %d tenants (concurrency: %d)',
-            count($this->tenants),
-            $concurrency,
-        ));
+        $io->info(sprintf('Migrating %d tenants (concurrency: %d)', count($this->tenants), $concurrency));
 
         /** @var array<string, Process> $running */
         $running = [];

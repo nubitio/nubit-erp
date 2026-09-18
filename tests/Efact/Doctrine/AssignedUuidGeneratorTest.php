@@ -15,10 +15,7 @@ final class AssignedUuidGeneratorTest extends TestCase
     public function testKeepsPreAssignedSaleId(): void
     {
         $sale = new SaleRecord()->setId('01aaaaaaaa-bbbb-7ccc-8ddd-eeeeeeeeeeee');
-        $generated = new AssignedUuidGenerator()->generateId(
-            $this->createStub(EntityManagerInterface::class),
-            $sale,
-        );
+        $generated = new AssignedUuidGenerator()->generateId($this->createStub(EntityManagerInterface::class), $sale);
 
         self::assertSame('01aaaaaaaa-bbbb-7ccc-8ddd-eeeeeeeeeeee', $generated);
     }

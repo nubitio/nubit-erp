@@ -157,13 +157,10 @@ final class CoreSaleFixture
 
     public function onHand(Warehouse $warehouse, Product $product): string
     {
-        $qty = $this->entityManager->getConnection()->fetchOne(
-            'SELECT qty_on_hand FROM stock_items WHERE warehouse_id = :w AND product_id = :p',
-            [
-                'w' => (string) $warehouse->getId(),
-                'p' => (string) $product->getId(),
-            ],
-        );
+        $qty = $this->entityManager->getConnection()->fetchOne('SELECT qty_on_hand FROM stock_items WHERE warehouse_id = :w AND product_id = :p', [
+            'w' => (string) $warehouse->getId(),
+            'p' => (string) $product->getId(),
+        ]);
 
         return $qty === false ? '0' : (string) $qty;
     }
@@ -203,33 +200,24 @@ final class CoreSaleFixture
 
     public function cashMovementCount(string $saleId): int
     {
-        return (int) $this->entityManager->getConnection()->fetchOne(
-            'SELECT COUNT(*) FROM cash_movements WHERE sale_id = :sale_id AND movement_type = :type',
-            [
-                'sale_id' => $saleId,
-                'type' => 'SALE_IN',
-            ],
-        );
+        return (int) $this->entityManager->getConnection()->fetchOne('SELECT COUNT(*) FROM cash_movements WHERE sale_id = :sale_id AND movement_type = :type', [
+            'sale_id' => $saleId,
+            'type' => 'SALE_IN',
+        ]);
     }
 
     public function cashRefundCount(string $saleId): int
     {
-        return (int) $this->entityManager->getConnection()->fetchOne(
-            'SELECT COUNT(*) FROM cash_movements WHERE sale_id = :sale_id AND movement_type = :type',
-            [
-                'sale_id' => $saleId,
-                'type' => 'REFUND_OUT',
-            ],
-        );
+        return (int) $this->entityManager->getConnection()->fetchOne('SELECT COUNT(*) FROM cash_movements WHERE sale_id = :sale_id AND movement_type = :type', [
+            'sale_id' => $saleId,
+            'type' => 'REFUND_OUT',
+        ]);
     }
 
     private function configureTenant(): void
     {
         $settings = $this->tenantSettings->get();
-        $settings
-            ->setRequireCashRegister(true)
-            ->setAutoInvoice(false)
-            ->setNegativeStockPolicy(StockPolicy::STRICT);
+        $settings->setRequireCashRegister(true)->setAutoInvoice(false)->setNegativeStockPolicy(StockPolicy::STRICT);
         $this->tenantSettings->save($settings);
     }
 
@@ -269,14 +257,12 @@ final class CoreSaleFixture
 
     private function ensureRefundCategory(): void
     {
-        $this->entityManager->getConnection()->executeStatement(
-            <<<'SQL'
-                INSERT INTO cash_movement_category (code, name, type)
-                SELECT 'customer_refund', 'Devolución', 'expense'
-                WHERE NOT EXISTS (
-                    SELECT 1 FROM cash_movement_category WHERE code = 'customer_refund'
-                )
-                SQL,
-        );
+        $this->entityManager->getConnection()->executeStatement(<<<'SQL'
+            INSERT INTO cash_movement_category (code, name, type)
+            SELECT 'customer_refund', 'Devolución', 'expense'
+            WHERE NOT EXISTS (
+                SELECT 1 FROM cash_movement_category WHERE code = 'customer_refund'
+            )
+            SQL);
     }
 }

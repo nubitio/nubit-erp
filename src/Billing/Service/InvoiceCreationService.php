@@ -96,9 +96,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
         }
 
         $taxRegime = $this->tenantSettingsService->getTaxRegime();
-        $taxPercentage = $taxRegime === TaxRegime::NRUS
-            ? 0.0
-            : (float) ($sale->getIgv() ?? 0);
+        $taxPercentage = $taxRegime === TaxRegime::NRUS ? 0.0 : (float) ($sale->getIgv() ?? 0);
 
         $invoiceCalculator = new InvoiceCalculator(
             $lines,

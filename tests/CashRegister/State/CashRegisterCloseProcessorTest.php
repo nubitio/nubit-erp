@@ -119,9 +119,6 @@ final class CashRegisterCloseProcessorTest extends TestCase
 
     private function buildProcessor(): CashRegisterCloseProcessor
     {
-        return new CashRegisterCloseProcessor(
-            entityManager: $this->entityManager,
-            security: $this->security,
-        );
+        return new CashRegisterCloseProcessor(entityManager: $this->entityManager, security: $this->security);
     }
 }

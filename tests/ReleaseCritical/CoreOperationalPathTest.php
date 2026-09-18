@@ -96,10 +96,9 @@ final class CoreOperationalPathTest extends KernelTestCase
         self::assertEqualsWithDelta(18.0, (float) $this->fixture->onHand($world->warehouse, $world->product), 0.001);
         self::assertSame(1, $this->fixture->cashMovementCount((string) $result->getId()));
 
-        $movement = $this->entityManager->getConnection()->fetchAssociative(
-            'SELECT source_id, source_type FROM stock_movements WHERE product_id = :p ORDER BY created_at DESC LIMIT 1',
-            ['p' => (string) $world->product->getId()],
-        );
+        $movement = $this->entityManager->getConnection()->fetchAssociative('SELECT source_id, source_type FROM stock_movements WHERE product_id = :p ORDER BY created_at DESC LIMIT 1', [
+            'p' => (string) $world->product->getId(),
+        ]);
         self::assertIsArray($movement);
         self::assertSame('SALE', $movement['source_type']);
         self::assertStringStartsWith((string) $result->getId(), (string) $movement['source_id']);
@@ -157,12 +156,9 @@ final class CoreOperationalPathTest extends KernelTestCase
         self::assertInstanceOf(SaleRecord::class, $result);
         $saleId = (string) $result->getId();
 
-        static::getContainer()->get(SaleVoidUseCase::class)->__invoke(
-            $saleId,
-            'Anulación kernel',
-            (int) $world->user->getId(),
-            true,
-        );
+        static::getContainer()
+            ->get(SaleVoidUseCase::class)
+            ->__invoke($saleId, 'Anulación kernel', (int) $world->user->getId(), true);
         $this->entityManager->clear();
 
         $voided = static::getContainer()->get(SaleRecordRepository::class)->findByAnyId($saleId);
@@ -182,20 +178,17 @@ final class CoreOperationalPathTest extends KernelTestCase
         $settings->save($tenant);
 
         try {
-            $this->processor($world)->process(
-                $this->newOperationalSale($world, PaymentMethod::CASH, '5'),
-                new Post(),
-            );
+            $this->processor($world)->process($this->newOperationalSale($world, PaymentMethod::CASH, '5'), new Post());
             self::fail('Expected insufficient-stock rejection.');
         } catch (ServiceException $exception) {
             self::assertMatchesRegularExpression('/Stock insuficiente/', $exception->getMessage());
         }
 
         self::assertEqualsWithDelta(1.0, (float) $this->fixture->onHand($world->warehouse, $world->product), 0.001);
-        $count = (int) $this->entityManager->getConnection()->fetchOne(
-            'SELECT COUNT(*) FROM sales WHERE warehouse_id = :warehouse',
-            ['warehouse' => (string) $world->warehouse->getId()],
-        );
+        $count =
+            (int) $this->entityManager->getConnection()->fetchOne('SELECT COUNT(*) FROM sales WHERE warehouse_id = :warehouse', [
+                'warehouse' => (string) $world->warehouse->getId(),
+            ]);
         self::assertSame(0, $count);
     }
 
@@ -207,10 +200,7 @@ final class CoreOperationalPathTest extends KernelTestCase
         $this->expectException(DomainProblemException::class);
         $this->expectExceptionMessageMatches('/caja abierta/');
 
-        $this->processor($world)->process(
-            $this->newOperationalSale($world, PaymentMethod::CASH, '1'),
-            new Post(),
-        );
+        $this->processor($world)->process($this->newOperationalSale($world, PaymentMethod::CASH, '1'), new Post());
     }
 
     private function newOperationalSale(CoreSaleWorld $world, int $paymentMethodId, string $qty): SaleRecord
@@ -279,7 +269,7 @@ final class CoreOperationalPathTest extends KernelTestCase
             $this->entityManager,
             $container->get(SaleUtils::class),
             $container->get(TenantSettingsService::class),
-            new class () implements InvoiceCreatorInterface {
+            new class() implements InvoiceCreatorInterface {
                 public function createAndDispatchInvoiceForSaleId(string $saleId): array
                 {
                     return ['success' => false, 'message' => 'invoicing disabled in kernel characterization'];
@@ -309,8 +299,10 @@ final class CoreOperationalPathTest extends KernelTestCase
 
     private function securityStub(int $userId): Security
     {
-        return new class ($userId) implements Security {
-            public function __construct(private readonly int $userId) {}
+        return new class($userId) implements Security {
+            public function __construct(
+                private readonly int $userId,
+            ) {}
 
             public function isAuthenticated(): bool
             {

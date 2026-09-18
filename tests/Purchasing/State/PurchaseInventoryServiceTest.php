@@ -106,10 +106,10 @@ final class PurchaseInventoryServiceTest extends TestCase
 
         self::assertEqualsWithDelta(
             7.0,
-            (float) $this->connection->fetchOne(
-                'SELECT qty_on_hand FROM stock_items WHERE warehouse_id = :w AND product_id = :p',
-                ['w' => 'wh-1', 'p' => 'prod-1'],
-            ),
+            (float) $this->connection->fetchOne('SELECT qty_on_hand FROM stock_items WHERE warehouse_id = :w AND product_id = :p', [
+                'w' => 'wh-1',
+                'p' => 'prod-1',
+            ]),
             0.001,
         );
     }

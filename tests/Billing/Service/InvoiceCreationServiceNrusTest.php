@@ -38,31 +38,35 @@ final class InvoiceCreationServiceNrusTest extends TestCase
         $insertedDocument = null;
         $insertedLine = null;
         $connection = $this->createMock(Connection::class);
-        $connection->method('fetchOne')->willReturnCallback(static function (string $sql): string|false|int {
-            return match (true) {
-                str_contains($sql, 'almacen') => 'local-1',
-                str_contains($sql, 'tax_document_id') && str_contains($sql, 'FOR UPDATE') => false,
-                str_contains($sql, 'local_comprobante') => 'B001',
-                str_contains($sql, 'IFNULL') || str_contains($sql, 'MAX(') => '1',
-                str_contains($sql, 'UUID') => 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
-                str_contains($sql, 'FROM sales') && str_contains($sql, 'WHERE id') => 'sale-nrus-1',
-                str_contains($sql, 'information_schema') => 1,
-                default => false,
-            };
-        });
-        $connection->method('insert')->willReturnCallback(static function (string $table, array $data) use (
-            &$insertedDocument,
-            &$insertedLine,
-        ): int {
-            if ($table === 'tax_document') {
-                $insertedDocument = $data;
-            }
-            if ($table === 'tax_document_line') {
-                $insertedLine = $data;
-            }
+        $connection
+            ->method('fetchOne')
+            ->willReturnCallback(static function (string $sql): string|false|int {
+                return match (true) {
+                    str_contains($sql, 'almacen') => 'local-1',
+                    str_contains($sql, 'tax_document_id') && str_contains($sql, 'FOR UPDATE') => false,
+                    str_contains($sql, 'local_comprobante') => 'B001',
+                    str_contains($sql, 'IFNULL') || str_contains($sql, 'MAX(') => '1',
+                    str_contains($sql, 'UUID') => 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+                    str_contains($sql, 'FROM sales') && str_contains($sql, 'WHERE id') => 'sale-nrus-1',
+                    str_contains($sql, 'information_schema') => 1,
+                    default => false,
+                };
+            });
+        $connection
+            ->method('insert')
+            ->willReturnCallback(static function (string $table, array $data) use (
+                &$insertedDocument,
+                &$insertedLine,
+            ): int {
+                if ($table === 'tax_document') {
+                    $insertedDocument = $data;
+                }
+                if ($table === 'tax_document_line') {
+                    $insertedLine = $data;
+                }
 
-            return 1;
-        });
+                return 1;
+            });
         $connection->method('executeStatement')->willReturn(1);
 
         $resolver = $this->createStub(SaleCurrencyResolver::class);
@@ -72,7 +76,7 @@ final class InvoiceCreationServiceNrusTest extends TestCase
         $settings->method('getTaxRegime')->willReturn(TaxRegime::NRUS);
         $settings->method('getIgv')->willReturn(0.0);
 
-        $result = (new InvoiceCreationService($connection, $resolver, $settings))->createForSale($sale);
+        $result = new InvoiceCreationService($connection, $resolver, $settings)->createForSale($sale);
 
         self::assertTrue($result['success']);
         self::assertSame('03', $insertedDocument['document_type'] ?? null);

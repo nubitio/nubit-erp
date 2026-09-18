@@ -133,7 +133,7 @@ class SaleRecordRepository extends ServiceEntityRepository
 
         foreach ($records as $record) {
             $saleId = $record->getId();
-            $taxRow = $saleId !== null ? ($byMovimientoId[$saleId] ?? null) : null;
+            $taxRow = $saleId !== null ? $byMovimientoId[$saleId] ?? null : null;
 
             if ($taxRow === null) {
                 continue;

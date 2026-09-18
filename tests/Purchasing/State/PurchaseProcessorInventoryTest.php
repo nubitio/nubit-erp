@@ -102,7 +102,7 @@ final class PurchaseProcessorInventoryTest extends TestCase
 
         $inventory = new InventoryService(
             $this->connection,
-            new class () implements StockValidationPolicyInterface {
+            new class() implements StockValidationPolicyInterface {
                 public function validateSale(
                     Product $product,
                     string $warehouseId,
@@ -113,7 +113,7 @@ final class PurchaseProcessorInventoryTest extends TestCase
                 }
             },
             new UnitConversionService($this->connection),
-            new class () implements EventDispatcherInterface {
+            new class() implements EventDispatcherInterface {
                 public function dispatch(object $event): object
                 {
                     return $event;
@@ -160,10 +160,10 @@ final class PurchaseProcessorInventoryTest extends TestCase
 
         self::assertEqualsWithDelta(
             7.0,
-            (float) $this->connection->fetchOne(
-                'SELECT qty_on_hand FROM stock_items WHERE warehouse_id = :w AND product_id = :p',
-                ['w' => 'wh-1', 'p' => 'prod-1'],
-            ),
+            (float) $this->connection->fetchOne('SELECT qty_on_hand FROM stock_items WHERE warehouse_id = :w AND product_id = :p', [
+                'w' => 'wh-1',
+                'p' => 'prod-1',
+            ]),
             0.001,
         );
 

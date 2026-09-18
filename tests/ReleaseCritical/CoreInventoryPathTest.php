@@ -77,7 +77,11 @@ final class CoreInventoryPathTest extends KernelTestCase
         return new StockEntry()
             ->setType($type)
             ->setWarehouse($world->warehouse)
-            ->addItem(new StockEntryItem()->setProduct($world->product)->setQty($qty));
+            ->addItem(
+                new StockEntryItem()
+                    ->setProduct($world->product)
+                    ->setQty($qty),
+            );
     }
 
     private function processor(CoreSaleWorld $world): StockEntryProcessor
