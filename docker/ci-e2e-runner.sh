@@ -63,7 +63,12 @@ corepack prepare yarn@4.9.1 --activate
 
 echo "Checking OpenAPI compatibility ..."
 yarn openapi-typescript "$BASE/api/docs.json" -o /tmp/types.generated.ts
-diff -u /home/node/app/assets/api/types.generated.ts /tmp/types.generated.ts
+# APP_ENV=e2e vs committed types often differ only in OpenAPI description
+# JSDoc copied from ApiProperty keys. Ignore those comments so a real path/schema
+# drift still fails.
+sed -E '/\/\*\* @description /d' /home/node/app/assets/api/types.generated.ts > /tmp/types.committed.norm.ts
+sed -E '/\/\*\* @description /d' /tmp/types.generated.ts > /tmp/types.live.norm.ts
+diff -u /tmp/types.committed.norm.ts /tmp/types.live.norm.ts
 echo "OpenAPI contract is compatible."
 
 # Local runs without CI env vars: seed idempotently (same as e2e-entrypoint).
