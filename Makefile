@@ -11,12 +11,12 @@ EXEC_VITE := $(DC) exec -T --user root vite sh -lc
 # alone never switches the DB. Override it explicitly for test runs so kernel
 # tests hit demo_test, not the dev database.
 TEST_DATABASE_URL := mysql://root:$${MYSQL_ROOT_PASSWORD:-changeme}@database:3306/demo_test?serverVersion=10.7.1-MariaDB&charset=utf8mb4
-EXEC_WEB_TEST := $(DC) exec -T -e APP_ENV=test -e DATABASE_URL="$(TEST_DATABASE_URL)" web sh -lc
+EXEC_WEB_TEST := $(DC) exec -T -e APP_ENV=test -e APP_SECRET=test-secret-for-kernel-tests-32b -e DATABASE_URL="$(TEST_DATABASE_URL)" web sh -lc
 PHP_DEV := php -d memory_limit=256M
 
 .DEFAULT_GOAL := help
 
-.PHONY: help up down restart reset bootstrap install install-back install-front migrate migrate-control-plane migrate-tenants cache-clear dev build-front lint lint-php format format-php test test-back test-front e2e logs ps shell-web shell-vite
+.PHONY: help up down restart reset bootstrap install install-back install-front migrate migrate-control-plane migrate-tenants cache-clear dev build-front lint lint-php format format-php test test-back test-core test-front e2e logs ps shell-web shell-vite
 
 help:
 	@printf "\n"
@@ -37,6 +37,7 @@ help:
 	@printf "  make format           Run frontend formatter\n"
 	@printf "  make format-php       Run Mago formatter\n"
 	@printf "  make test             Run backend and frontend tests\n"
+	@printf "  make test-core        Run sales/inventory/purchase kernel tests\n"
 	@printf "  make logs             Tail web/vite/database/redis/otel logs\n"
 	@printf "  make shell-web        Open shell in web container\n"
 	@printf "  make shell-vite       Open shell in vite container\n"
@@ -114,6 +115,11 @@ test: test-back test-front
 
 test-back:
 	$(EXEC_WEB_TEST) 'cd /app && ./vendor/bin/pest'
+
+test-core:
+	$(EXEC_WEB_TEST) 'cd /app && php -d memory_limit=512M ./vendor/bin/phpunit tests/ReleaseCritical/CoreOperationalPathTest.php'
+	$(EXEC_WEB_TEST) 'cd /app && php -d memory_limit=512M ./vendor/bin/phpunit tests/ReleaseCritical/CoreInventoryPathTest.php'
+	$(EXEC_WEB_TEST) 'cd /app && php -d memory_limit=512M ./vendor/bin/phpunit tests/ReleaseCritical/CorePurchasePathTest.php'
 
 test-front:
 	$(EXEC_VITE) 'cd /home/node/app && corepack enable && yarn test'

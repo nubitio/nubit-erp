@@ -248,12 +248,23 @@ jobs:
             -e DATABASE_URL="${DATABASE_URL}" \
             web php bin/console doctrine:migrations:migrate --no-interaction
 
+      - name: Run core operational kernel tests
+        if: needs.changes.outputs.backend == 'true'
+        run: |
+          docker compose exec -T \
+            -e OTEL_SDK_DISABLED=true \
+            -e APP_ENV=test \
+            -e APP_SECRET=test-secret-for-kernel-tests-32b \
+            -e DATABASE_URL="${DATABASE_URL}" \
+            web php -d memory_limit=512M /app/vendor/bin/phpunit tests/ReleaseCritical/CoreOperationalPathTest.php tests/ReleaseCritical/CoreInventoryPathTest.php tests/ReleaseCritical/CorePurchasePathTest.php
+
       - name: Run PHPUnit with coverage
         if: needs.changes.outputs.backend == 'true' && needs.changes.outputs.coverage == 'true'
         run: |
           docker compose exec -T \
             -e OTEL_SDK_DISABLED=true \
             -e APP_ENV=test \
+            -e APP_SECRET=test-secret-for-kernel-tests-32b \
             -e DATABASE_URL="${DATABASE_URL}" \
             web php -d pcov.enabled=1 -d pcov.directory=/app/src ./vendor/bin/pest -c phpunit.coverage.xml
 
@@ -263,6 +274,7 @@ jobs:
           docker compose exec -T \
             -e OTEL_SDK_DISABLED=true \
             -e APP_ENV=test \
+            -e APP_SECRET=test-secret-for-kernel-tests-32b \
             -e DATABASE_URL="${DATABASE_URL}" \
             web ./vendor/bin/pest
 

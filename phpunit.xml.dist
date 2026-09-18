@@ -9,7 +9,9 @@
     <php>
         <ini name="display_errors" value="1" />
         <ini name="error_reporting" value="-1" />
+        <ini name="memory_limit" value="1G" />
         <server name="APP_ENV" value="test" force="true" />
+        <server name="APP_SECRET" value="test-secret-for-kernel-tests-32b" force="true" />
         <server name="SHELL_VERBOSITY" value="-1" />
         <server name="SYMFONY_PHPUNIT_REMOVE" value="" />
         <server name="SYMFONY_PHPUNIT_VERSION" value="9.6" />
@@ -18,6 +20,11 @@
     <testsuites>
         <testsuite name="Project Test Suite">
             <directory>tests</directory>
+        </testsuite>
+        <testsuite name="core">
+            <file>tests/ReleaseCritical/CoreOperationalPathTest.php</file>
+            <file>tests/ReleaseCritical/CoreInventoryPathTest.php</file>
+            <file>tests/ReleaseCritical/CorePurchasePathTest.php</file>
         </testsuite>
     </testsuites>
 

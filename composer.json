@@ -41,6 +41,7 @@
     "nubitio/admin-bundle": "^1.0",
     "nubitio/api-platform": "^1.0",
     "nubitio/platform": "^1.0",
+    "nubitio/tenant-bundle": "^1.0",
     "oneup/flysystem-bundle": "^4.9",
     "open-telemetry/exporter-otlp": "^1.3",
     "open-telemetry/opentelemetry-auto-doctrine": "^0.3.1",
