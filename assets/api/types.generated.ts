@@ -10173,7 +10173,7 @@ export interface components {
              * @description Remains true after the debt is fully collected.
              * @default false
              */
-            readonly receivableAccount: boolean;
+            receivableAccount: boolean;
             /**
              * Format: date-time
              * @description sale_record.issued_at.label
@@ -10419,7 +10419,7 @@ export interface components {
              * @description Remains true after the debt is fully collected.
              * @default false
              */
-            readonly receivableAccount: boolean;
+            receivableAccount: boolean;
             /**
              * Format: date-time
              * @description sale_record.issued_at.label
@@ -10826,7 +10826,7 @@ export interface components {
              * @description Remains true after the debt is fully collected.
              * @default false
              */
-            readonly receivableAccount: boolean;
+            receivableAccount: boolean;
             /**
              * Format: date-time
              * @description sale_record.issued_at.label
@@ -10976,7 +10976,7 @@ export interface components {
              * @description Remains true after the debt is fully collected.
              * @default false
              */
-            readonly receivableAccount: boolean;
+            receivableAccount: boolean;
             /**
              * Format: date-time
              * @description sale_record.issued_at.label
