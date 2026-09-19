@@ -6,17 +6,13 @@ namespace App\Onboarding;
 
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Repository\PaymentMethodRepository;
-use App\Contacts\Entity\Customer;
-use App\Contacts\Repository\CustomerRepository;
 use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Entity\User;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Entity\Branch;
 use App\Organization\Repository\BranchRepository;
-use App\Sales\Entity\SaleItemRecord;
-use App\Sales\Entity\SaleRecord;
-use DateTime;
+use App\Sales\Service\CustomerAccountLedger;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\ORM\EntityManagerInterface;
@@ -30,18 +26,19 @@ final readonly class OpeningReceivableImporter
 
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private CustomerRepository $customerRepository,
         private BranchRepository $branchRepository,
         private WarehouseRepository $warehouseRepository,
         private PaymentMethodRepository $paymentMethodRepository,
         private BranchContextServiceInterface $branchContext,
         private Security $security,
+        private CustomerAccountLedger $customerAccountLedger,
+        private OpeningReceivableRowImporter $rowImporter,
     ) {}
 
     /**
      * @param list<array<string, mixed>> $rows
      *
-     * @return array{created: int, errors: list<array{row: int, message: string}>}
+     * @return array{created: int, skipped: int, errors: list<array{row: int, message: string}>}
      */
     public function import(array $rows): array
     {
@@ -53,44 +50,83 @@ final readonly class OpeningReceivableImporter
         }
 
         return $this->entityManager->wrapInTransaction(function () use ($rows): array {
-            $branch = $this->resolveBranch();
-            $warehouse = $this->resolveWarehouse($branch);
-            $paymentMethod = $this->resolvePaymentMethod();
+            $tenant = $this->resolveTenantContext();
             $user = $this->security->getUser();
             $userId = $user instanceof User ? (int) $user->getId() : 0;
             $now = new DateTimeImmutable('now', new DateTimeZone('America/Lima'));
 
             $created = 0;
+            $skipped = 0;
+            /** @var list<array{row: int, message: string}> $errors */
             $errors = [];
+            /** @var list<OpeningReceivableChargeToRecord> $pendingCharges */
+            $pendingCharges = [];
 
             foreach ($rows as $index => $raw) {
-                $parsed = OpeningBalanceRow::tryFrom(is_array($raw) ? $raw : []);
-                if (is_string($parsed)) {
-                    $errors[] = ['row' => $index + 1, 'message' => $parsed];
+                $outcome = $this->rowImporter->import($raw, $tenant, $userId, $now);
+
+                if ($outcome instanceof OpeningReceivableRowError) {
+                    $errors[] = ['row' => $index + 1, 'message' => $outcome->message];
+                    continue;
+                }
+                if ($outcome instanceof OpeningReceivableRowSkipped) {
+                    ++$skipped;
                     continue;
                 }
 
-                $customer = $this->getOrCreateCustomer($parsed);
-                $sale = $this->buildSale($parsed, $customer, $branch, $warehouse, $paymentMethod, $userId, $now);
-                $this->entityManager->persist($sale);
                 ++$created;
+                $pendingCharges[] = $outcome;
+
                 if (($created % self::FLUSH_EVERY) === 0) {
                     $this->entityManager->flush();
+                    $this->recordPendingCharges($pendingCharges);
                     $this->entityManager->clear();
 
                     // clear() also detaches the shared references. Reload them before
                     // attaching the next batch so Doctrine never persists a detached
                     // branch, warehouse, or payment method.
-                    $branch = $this->resolveBranch();
-                    $warehouse = $this->resolveWarehouse($branch);
-                    $paymentMethod = $this->resolvePaymentMethod();
+                    $tenant = $this->resolveTenantContext();
                 }
             }
 
             $this->entityManager->flush();
+            $this->recordPendingCharges($pendingCharges);
 
-            return ['created' => $created, 'errors' => $errors];
+            return ['created' => $created, 'skipped' => $skipped, 'errors' => $errors];
         });
+    }
+
+    private function resolveTenantContext(): OpeningReceivableTenantContext
+    {
+        $branch = $this->resolveBranch();
+
+        return new OpeningReceivableTenantContext(
+            branch: $branch,
+            warehouse: $this->resolveWarehouse($branch),
+            paymentMethod: $this->resolvePaymentMethod(),
+        );
+    }
+
+    /**
+     * Customer ids for newly-created customers aren't assigned until they're
+     * flushed, so charges are queued per row and only booked on the customer
+     * ledger once the batch (or the final flush) has actually persisted them.
+     *
+     * @param list<OpeningReceivableChargeToRecord> $pendingCharges
+     */
+    private function recordPendingCharges(array &$pendingCharges): void
+    {
+        foreach ($pendingCharges as $charge) {
+            $this->customerAccountLedger->recordCharge(
+                customerId: (int) $charge->customer->getId(),
+                saleId: $charge->saleId,
+                occurredOn: $charge->occurredOn,
+                amount: $charge->amount,
+                description: $charge->description,
+            );
+        }
+
+        $pendingCharges = [];
     }
 
     private function resolveBranch(): Branch
@@ -127,86 +163,5 @@ final readonly class OpeningReceivableImporter
                 1,
             )[0] ?? null
         );
-    }
-
-    private function getOrCreateCustomer(OpeningBalanceRow $row): Customer
-    {
-        $existing = $this->customerRepository->findOneBy(['ruc' => $row->ruc]);
-        if ($existing instanceof Customer) {
-            if ($row->phone !== null && $existing->getPhone() === null) {
-                $existing->setPhone($row->phone);
-            }
-
-            return $existing;
-        }
-
-        $customer = new Customer()
-            ->setRuc($row->ruc)
-            ->setBusinessName($row->name)
-            ->setPhone($row->phone)
-            ->setIsActive(true);
-        $this->entityManager->persist($customer);
-
-        return $customer;
-    }
-
-    private function buildSale(
-        OpeningBalanceRow $row,
-        Customer $customer,
-        Branch $branch,
-        Warehouse $warehouse,
-        ?PaymentMethod $paymentMethod,
-        int $userId,
-        DateTimeImmutable $now,
-    ): SaleRecord {
-        $issuedDate = $now->setTime(0, 0);
-        $issuedAt = DateTime::createFromImmutable($now);
-        $number =
-            $row->number !== null && $row->number !== ''
-                ? $row->number
-                : 'SI-' . substr(bin2hex(random_bytes(4)), 0, 8);
-
-        $sale = new SaleRecord()
-            ->setWarehouse($warehouse)
-            ->setAlmacen($warehouse)
-            ->setBranch($branch)
-            ->setCliente($customer)
-            ->setFecha($issuedAt)
-            ->setIssuedAt($issuedAt)
-            ->setIssuedDate($issuedDate)
-            ->setDueDate($row->dueDate)
-            ->setFormaPago(2)
-            ->setCreditSale(true)
-            ->setTipoPago($paymentMethod)
-            ->setHasInvoice(false)
-            ->setEstado(1)
-            ->setStatus('COMPLETED')
-            ->setCurrency('PEN')
-            ->setSubtotal($row->amount)
-            ->setTaxTotal('0.00')
-            ->setTotal($row->amount)
-            ->setGrandTotal($row->amount)
-            ->setPaidTotal('0.00')
-            ->setBalanceDue($row->amount)
-            ->setCreatedBy($userId)
-            ->setSellerUserId($userId)
-            ->setNote('Saldo inicial importado desde Excel. No es un comprobante SUNAT.')
-            ->setInvoice($number)
-            ->setSerie('SI')
-            ->setNumero($number);
-
-        $item = new SaleItemRecord()
-            ->setLineNo(1)
-            ->setQty('1.000')
-            ->setUnitPrice($row->amount)
-            ->setGrossAmount($row->amount)
-            ->setTaxAmount('0.00')
-            ->setNetAmount($row->amount)
-            ->setDiscountAmount('0.00')
-            ->setNameSnapshot('Saldo inicial')
-            ->setSkuSnapshot($number);
-        $sale->addSaleItemRecord($item);
-
-        return $sale;
     }
 }

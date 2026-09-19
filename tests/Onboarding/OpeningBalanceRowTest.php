@@ -27,6 +27,48 @@ final class OpeningBalanceRowTest extends TestCase
         self::assertSame('F001-88', $row->number);
     }
 
+    public function testParsesIssuedDateWhenPresent(): void
+    {
+        $row = OpeningBalanceRow::tryFrom([
+            'RUC' => '20100100101',
+            'Nombre' => 'Andina Retail SAC',
+            'Monto' => '100',
+            'Vencimiento' => '2026-09-30',
+            'Fecha de emisión' => '2026-03-10',
+        ]);
+
+        self::assertInstanceOf(OpeningBalanceRow::class, $row);
+        self::assertNotNull($row->issuedDate);
+        self::assertSame('2026-03-10', $row->issuedDate->format('Y-m-d'));
+    }
+
+    public function testIssuedDateIsNullWhenMissing(): void
+    {
+        $row = OpeningBalanceRow::tryFrom([
+            'RUC' => '20100100101',
+            'Nombre' => 'Andina Retail SAC',
+            'Monto' => '100',
+            'Vencimiento' => '2026-09-30',
+        ]);
+
+        self::assertInstanceOf(OpeningBalanceRow::class, $row);
+        self::assertNull($row->issuedDate);
+    }
+
+    public function testIssuedDateIsNullWhenUnparseableAndRowStillValid(): void
+    {
+        $row = OpeningBalanceRow::tryFrom([
+            'RUC' => '20100100101',
+            'Nombre' => 'Andina Retail SAC',
+            'Monto' => '100',
+            'Vencimiento' => '2026-09-30',
+            'Fecha de emisión' => 'no es una fecha',
+        ]);
+
+        self::assertInstanceOf(OpeningBalanceRow::class, $row);
+        self::assertNull($row->issuedDate);
+    }
+
     public function testRejectsMissingName(): void
     {
         $row = OpeningBalanceRow::tryFrom([

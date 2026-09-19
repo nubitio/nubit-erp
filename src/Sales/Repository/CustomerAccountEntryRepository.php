@@ -113,6 +113,25 @@ class CustomerAccountEntryRepository extends ServiceEntityRepository
     }
 
     /**
+     * Whether a CHARGE_REVERSAL entry already exists for a sale — the
+     * idempotency guard for {@see \App\Billing\Sale\Void\ReceivableVoidReverser}.
+     */
+    public function hasReversalForSale(string $saleId): bool
+    {
+        $count = (int) $this
+            ->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->where('e.saleId = :sale')
+            ->andWhere('e.entryType = :type')
+            ->setParameter('sale', $saleId)
+            ->setParameter('type', CustomerAccountEntryType::CHARGE_REVERSAL)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $count > 0;
+    }
+
+    /**
      * The customer's ADVANCE entries that still have unallocated balance
      * (credit minus what has been applied through `customer_payment_applications`
      * rows bound to them), oldest first — the FIFO order an advance application

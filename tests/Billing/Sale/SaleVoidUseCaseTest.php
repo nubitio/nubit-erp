@@ -9,6 +9,7 @@ use App\Billing\Repository\TaxDocumentEventRepository;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Sale\SaleVoidUseCase;
 use App\Billing\Sale\Void\CashRefundRegistrar;
+use App\Billing\Sale\Void\ReceivableVoidReverser;
 use App\Billing\Sale\Void\StockVoidReverserInterface;
 use App\Billing\Sale\Void\SunatVoidResponse;
 use App\Billing\Sale\Void\SunatVoidService;
@@ -19,11 +20,14 @@ use App\Billing\Shared\ErrorMessages;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Enum\CashMovementType;
 use App\Catalog\Entity\PaymentMethod;
+use App\Contacts\Entity\Customer;
 use App\Efact\Audit\AuditLogger;
 use App\Sales\Domain\DocType;
 use App\Sales\Domain\SaleException;
 use App\Sales\Domain\SaleStatus;
 use App\Sales\Entity\SaleRecord;
+use App\Sales\Repository\CustomerAccountEntryRepository;
+use App\Sales\Service\CustomerAccountLedger;
 use App\Sales\State\CashSessionResolverInterface;
 use App\Sales\State\SalesWriteGateway;
 use Doctrine\DBAL\Connection;
@@ -155,6 +159,217 @@ final class SaleVoidUseCaseTest extends TestCase
         $this->expectExceptionMessage('No se puede anular una venta que ya tiene nota de crédito');
 
         $useCase('sale-cn', 'reason', 1);
+    }
+
+    // ---------------------------------------------------------------------------
+    // Guard: receivable sale with applied payments
+    // ---------------------------------------------------------------------------
+
+    public function testThrowsWhenReceivableSaleHasAppliedPayments(): void
+    {
+        $sale = $this->makeReceivableSale('sale-paid', paidTotal: '40.00', balanceDue: '60.00');
+
+        $em = $this->createStub(EntityManagerInterface::class);
+
+        $taxDocumentRepository = $this->createStub(TaxDocumentRepository::class);
+        $taxDocumentRepository->method('hasCreditNoteForSale')->willReturn(false);
+
+        $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
+
+        $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader);
+
+        $this->expectException(SaleException::class);
+        $this->expectExceptionMessage('con cobros aplicados');
+
+        $useCase('sale-paid', 'reason', 1);
+    }
+
+    public function testAllowsAndReversesReceivableSaleWithNoPaymentsApplied(): void
+    {
+        $sale = $this->makeReceivableSale('sale-unpaid', paidTotal: '0.00', balanceDue: '100.00');
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('flush');
+
+        $connection = $this->createStub(Connection::class);
+        $em->method('getConnection')->willReturn($connection);
+
+        $taxDocumentRepository = $this->createStub(TaxDocumentRepository::class);
+        $taxDocumentRepository->method('hasCreditNoteForSale')->willReturn(false);
+        $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(null); // NOTA_VENTA
+
+        $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
+
+        $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
+        $salesWriteGateway->expects(self::once())->method('zeroReceivableBalance')->with('sale-unpaid');
+
+        $entries = $this->createStub(CustomerAccountEntryRepository::class);
+        $entries->method('hasChargeForSale')->willReturn(true);
+        $entries->method('hasReversalForSale')->willReturn(false);
+
+        $ledger = $this->createMock(CustomerAccountLedger::class);
+        $ledger->expects(self::once())->method('recordChargeReversal')->with(55, 'sale-unpaid');
+
+        $useCase = $this->buildUseCase(
+            $em,
+            $taxDocumentRepository,
+            $saleV2Loader,
+            salesWriteGateway: $salesWriteGateway,
+            receivableVoidReverser: new ReceivableVoidReverser($entries, $ledger, new NullLogger()),
+        );
+
+        $response = $useCase('sale-unpaid', 'reason', 1);
+
+        self::assertTrue($response->success);
+    }
+
+    public function testSkipsReversalWhenSaleIsNotReceivable(): void
+    {
+        $sale = $this->makeActiveSale('sale-not-receivable');
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('flush');
+
+        $connection = $this->createStub(Connection::class);
+        $em->method('getConnection')->willReturn($connection);
+
+        $taxDocumentRepository = $this->createStub(TaxDocumentRepository::class);
+        $taxDocumentRepository->method('hasCreditNoteForSale')->willReturn(false);
+        $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(null);
+
+        $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
+
+        $entries = $this->createMock(CustomerAccountEntryRepository::class);
+        $entries->expects(self::never())->method('hasChargeForSale');
+
+        $ledger = $this->createMock(CustomerAccountLedger::class);
+        $ledger->expects(self::never())->method('recordChargeReversal');
+
+        $useCase = $this->buildUseCase(
+            $em,
+            $taxDocumentRepository,
+            $saleV2Loader,
+            receivableVoidReverser: new ReceivableVoidReverser($entries, $ledger, new NullLogger()),
+        );
+
+        $useCase('sale-not-receivable', 'reason', 1);
+    }
+
+    public function testReversalIsIdempotentWhenAlreadyReversed(): void
+    {
+        $sale = $this->makeReceivableSale('sale-already-reversed', paidTotal: '0.00', balanceDue: '30.00');
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('flush');
+
+        $connection = $this->createStub(Connection::class);
+        $em->method('getConnection')->willReturn($connection);
+
+        $taxDocumentRepository = $this->createStub(TaxDocumentRepository::class);
+        $taxDocumentRepository->method('hasCreditNoteForSale')->willReturn(false);
+        $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(null);
+
+        $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
+
+        $entries = $this->createStub(CustomerAccountEntryRepository::class);
+        $entries->method('hasChargeForSale')->willReturn(true);
+        $entries->method('hasReversalForSale')->willReturn(true);
+
+        $ledger = $this->createMock(CustomerAccountLedger::class);
+        $ledger->expects(self::never())->method('recordChargeReversal');
+
+        $useCase = $this->buildUseCase(
+            $em,
+            $taxDocumentRepository,
+            $saleV2Loader,
+            receivableVoidReverser: new ReceivableVoidReverser($entries, $ledger, new NullLogger()),
+        );
+
+        $response = $useCase('sale-already-reversed', 'reason', 1);
+
+        self::assertTrue($response->success);
+    }
+
+    public function testFacturaPathBlocksReceivableSaleWithAppliedPayments(): void
+    {
+        $sale = $this->makeReceivableSale('sale-factura-paid', paidTotal: '20.00', balanceDue: '80.00');
+
+        $em = $this->createStub(EntityManagerInterface::class);
+
+        $taxDocumentRepository = $this->createStub(TaxDocumentRepository::class);
+        $taxDocumentRepository->method('hasCreditNoteForSale')->willReturn(false);
+        $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(DocType::FACTURA->value);
+
+        $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
+
+        $useCase = $this->buildUseCase($em, $taxDocumentRepository, $saleV2Loader);
+
+        $this->expectException(SaleException::class);
+        $this->expectExceptionMessage('con cobros aplicados');
+
+        $useCase('sale-factura-paid', 'reason', 1);
+    }
+
+    public function testFacturaPathReversesReceivableSaleWithNoPaymentsApplied(): void
+    {
+        $sale = $this->makeReceivableSale('sale-factura-unpaid', paidTotal: '0.00', balanceDue: '80.00');
+
+        $sunatVoidResponse = $this->makeSunatVoidResponse(success: true);
+        $strategy = $this->createStub(VoidStrategyInterface::class);
+        $strategy->method('supports')->willReturn(true);
+        $strategy->method('void')->willReturn($sunatVoidResponse);
+
+        $sunatVoidService = $this->buildSunatVoidService($strategy);
+
+        $taxDocument = $this->createStub(TaxDocument::class);
+
+        $em = $this->createStub(EntityManagerInterface::class);
+        $em->method('flush');
+        $em->method('persist');
+
+        $connection = $this->createStub(Connection::class);
+        $connection->method('beginTransaction');
+        $connection->method('commit');
+        $em->method('getConnection')->willReturn($connection);
+
+        $taxDocumentRepository = $this->createStub(TaxDocumentRepository::class);
+        $taxDocumentRepository->method('hasCreditNoteForSale')->willReturn(false);
+        $taxDocumentRepository->method('findDocumentTypeBySaleId')->willReturn(DocType::FACTURA->value);
+        $taxDocumentRepository->method('findLatestAcceptedBySaleAndType')->willReturn($taxDocument);
+
+        $saleV2Loader = $this->createMock(SaleV2Loader::class);
+        $saleV2Loader->method('loadAsSale')->willReturn($sale);
+
+        $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
+        $salesWriteGateway->expects(self::once())->method('zeroReceivableBalance')->with('sale-factura-unpaid');
+
+        $entries = $this->createStub(CustomerAccountEntryRepository::class);
+        $entries->method('hasChargeForSale')->willReturn(true);
+        $entries->method('hasReversalForSale')->willReturn(false);
+
+        $ledger = $this->createMock(CustomerAccountLedger::class);
+        $ledger->expects(self::once())->method('recordChargeReversal')->with(55, 'sale-factura-unpaid');
+
+        $taxDocumentVoidUpdater = $this->buildTaxDocumentVoidUpdater($em);
+
+        $useCase = $this->buildUseCase(
+            $em,
+            $taxDocumentRepository,
+            $saleV2Loader,
+            sunatVoidService: $sunatVoidService,
+            salesWriteGateway: $salesWriteGateway,
+            taxDocumentVoidUpdater: $taxDocumentVoidUpdater,
+            receivableVoidReverser: new ReceivableVoidReverser($entries, $ledger, new NullLogger()),
+        );
+
+        $response = $useCase('sale-factura-unpaid', 'Factura void', 1);
+
+        self::assertTrue($response->success);
     }
 
     // ---------------------------------------------------------------------------
@@ -856,6 +1071,7 @@ final class SaleVoidUseCaseTest extends TestCase
         ?SunatVoidService $sunatVoidService = null,
         ?CashRefundRegistrar $cashRefundRegistrar = null,
         ?TaxDocumentVoidUpdater $taxDocumentVoidUpdater = null,
+        ?ReceivableVoidReverser $receivableVoidReverser = null,
     ): SaleVoidUseCase {
         if ($sunatVoidService === null) {
             /** @var SunatVoidService $sunatVoidService */
@@ -872,6 +1088,14 @@ final class SaleVoidUseCaseTest extends TestCase
             $taxDocumentVoidUpdater = new \ReflectionClass(TaxDocumentVoidUpdater::class)->newInstanceWithoutConstructor();
         }
 
+        if ($receivableVoidReverser === null) {
+            $receivableVoidReverser = new ReceivableVoidReverser(
+                $this->createStub(CustomerAccountEntryRepository::class),
+                $this->createStub(CustomerAccountLedger::class),
+                new NullLogger(),
+            );
+        }
+
         return new SaleVoidUseCase(
             entityManager: $em,
             taxDocumentRepository: $taxDocumentRepository,
@@ -882,6 +1106,22 @@ final class SaleVoidUseCaseTest extends TestCase
             salesWriteGateway: $salesWriteGateway ?? $this->createMock(SalesWriteGateway::class),
             saleV2Loader: $saleV2Loader,
             stockVoidReverser: $this->createMock(StockVoidReverserInterface::class),
+            receivableVoidReverser: $receivableVoidReverser,
         );
+    }
+
+    private function makeReceivableSale(string $id, string $paidTotal, string $balanceDue): SaleRecord
+    {
+        $customer = new Customer();
+        $this->setPrivateProperty($customer, 'id', 55);
+
+        $sale = $this->makeActiveSale($id);
+        $sale->setCustomer($customer);
+        $sale->setCurrency('PEN');
+        $sale->setPaidTotal($paidTotal);
+        // setBalanceDue() flips receivableAccount to true for a positive amount.
+        $sale->setBalanceDue($balanceDue);
+
+        return $sale;
     }
 }

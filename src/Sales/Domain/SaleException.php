@@ -27,4 +27,10 @@ class SaleException extends ServiceException
     {
         return new self('No se puede anular una venta que ya tiene nota de crédito');
     }
+
+    public static function hasAppliedPayments(): self
+    {
+        return new self('No se puede anular una venta con cobros aplicados. '
+        . 'Reversa o reasigna el cobro antes de anular.');
+    }
 }

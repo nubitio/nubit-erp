@@ -18,6 +18,10 @@ namespace App\Sales\Domain;
  *                 against this one and lowers the sale's balance_due, so the
  *                 net running balance is unchanged (#382).
  *  - CREDIT_NOTE  a credit note reduces what the customer owes (credit).
+ *  - CHARGE_REVERSAL cancels the still-open CHARGE of a voided credit sale
+ *                 that had no collections applied to it (credit; see
+ *                 SaleException::hasAppliedPayments(), which blocks voiding
+ *                 once a collection exists).
  */
 enum CustomerAccountEntryType: string
 {
@@ -25,4 +29,5 @@ enum CustomerAccountEntryType: string
     case PAYMENT = 'payment';
     case ADVANCE = 'advance';
     case CREDIT_NOTE = 'credit_note';
+    case CHARGE_REVERSAL = 'charge_reversal';
 }

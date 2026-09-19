@@ -39,7 +39,7 @@ final readonly class RecordCustomerChargeOnSaleConfirmed
         }
 
         $sale = $this->sales->findByAnyId($event->saleId);
-        if ($sale === null || !$sale->isReceivableAccount()) {
+        if ($sale === null || !$sale->isReceivableAccount() || $sale->getStatus() === 'VOIDED') {
             return;
         }
 

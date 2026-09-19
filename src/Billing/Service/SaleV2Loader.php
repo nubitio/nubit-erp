@@ -57,6 +57,9 @@ readonly class SaleV2Loader
                     s.series,
                     s.number,
                     s.requested_voucher_type,
+                    s.receivable_account,
+                    s.paid_total,
+                    s.balance_due,
                     (
                         SELECT pm.id
                         FROM sale_payments sp
@@ -103,6 +106,10 @@ readonly class SaleV2Loader
         $sale->setDiscountTotal($row['discount_total'] ?? '0.00');
         $sale->setCashRoundingAdjustment((string) ($row['cash_rounding_adjustment'] ?? '0.00'));
         $sale->setEstado($row['status'] === 'VOIDED' ? 0 : 1);
+        $sale->setStatus((string) $row['status']);
+        $sale->setReceivableAccount((bool) ($row['receivable_account'] ?? false));
+        $sale->setPaidTotal((string) ($row['paid_total'] ?? '0.00'));
+        $sale->setBalanceDue((string) ($row['balance_due'] ?? '0.00'));
 
         if (!empty($row['series'])) {
             $sale->setSerie((string) $row['series']);

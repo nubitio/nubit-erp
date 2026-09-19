@@ -27,8 +27,16 @@ final class OnboardingSpreadsheetController extends AbstractController
             'sample' => ['20100100101', 'Andina Retail SAC', '+51987111001', 'compras@andinaretail.pe'],
         ],
         'receivables' => [
-            'headers' => ['RUC/DNI', 'Nombre', 'Monto', 'Vencimiento', 'Número', 'Teléfono'],
-            'sample' => ['20100100101', 'Andina Retail SAC', '716.30', '2026-09-30', 'F001-88', '+51987111001'],
+            'headers' => ['RUC/DNI', 'Nombre', 'Monto', 'Vencimiento', 'Fecha de emisión', 'Número', 'Teléfono'],
+            'sample' => [
+                '20100100101',
+                'Andina Retail SAC',
+                '716.30',
+                '2026-09-30',
+                '2026-06-15',
+                'F001-88',
+                '+51987111001',
+            ],
         ],
         'payables' => [
             'headers' => ['RUC', 'Proveedor', 'Monto', 'Vencimiento', 'Número'],

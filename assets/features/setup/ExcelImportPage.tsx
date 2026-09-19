@@ -101,16 +101,20 @@ export function ExcelImportPage() {
       return;
     }
     try {
-      const response = await httpClient.post<{ created: number; errors: Array<{ row: number; message: string }> }>(
-        '/api/v1/onboarding/receivables',
-        { rows },
-      );
+      const response = await httpClient.post<{
+        created: number;
+        skipped?: number;
+        errors: Array<{ row: number; message: string }>;
+      }>('/api/v1/onboarding/receivables', { rows });
       const payload = response.data;
       const next: RowResult[] = (payload.errors ?? []).map((error) => ({
         row: error.row,
         ok: false,
         message: error.message,
       }));
+      if ((payload.skipped ?? 0) > 0) {
+        next.unshift({ row: 0, ok: true, message: `${payload.skipped} filas ya importadas (omitidas)` });
+      }
       if (payload.created > 0) {
         next.unshift({ row: 0, ok: true, message: `${payload.created} saldos por cobrar importados` });
       }

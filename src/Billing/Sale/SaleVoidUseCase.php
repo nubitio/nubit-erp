@@ -6,12 +6,14 @@ namespace App\Billing\Sale;
 
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Sale\Void\CashRefundRegistrar;
+use App\Billing\Sale\Void\ReceivableVoidReverser;
 use App\Billing\Sale\Void\StockVoidReverserInterface;
 use App\Billing\Sale\Void\SunatVoidService;
 use App\Billing\Sale\Void\TaxDocumentVoidUpdater;
 use App\Billing\Service\SaleV2Loader;
 use App\Billing\Shared\ErrorMessages;
 use App\Efact\Audit\AuditLogger;
+use App\Efact\Domain\Money;
 use App\Sales\Domain\DocType;
 use App\Sales\Domain\SaleException;
 use App\Sales\Entity\SaleRecord;
@@ -36,6 +38,7 @@ readonly class SaleVoidUseCase
         private SalesWriteGateway $salesWriteGateway,
         private SaleV2Loader $saleV2Loader,
         private StockVoidReverserInterface $stockVoidReverser,
+        private ReceivableVoidReverser $receivableVoidReverser,
     ) {}
 
     /**
@@ -74,6 +77,10 @@ readonly class SaleVoidUseCase
             throw SaleException::hasCreditNote();
         }
 
+        if ($sale->isReceivableAccount() && Money::money($sale->getPaidTotal())->isPositive()) {
+            throw SaleException::hasAppliedPayments();
+        }
+
         // Resolve document type without loading the full voucher DTO,
         // so this works in v2_authoritative mode where no movimiento row exists.
         $documentType = $this->taxDocumentRepository->findDocumentTypeBySaleId($saleId) ?? DocType::NOTA_VENTA->value;
@@ -87,6 +94,8 @@ readonly class SaleVoidUseCase
                 $sale->setUpdatedBy($userId);
                 $sale->setDateUpdated(new \DateTimeImmutable());
                 $this->cashRefundRegistrar->register($sale, $userId);
+                $this->receivableVoidReverser->reverse($sale);
+                $this->salesWriteGateway->zeroReceivableBalance($saleId);
                 $this->syncVoidToSalesV2($sale, $reason);
 
                 if ($restoreStock) {
@@ -145,6 +154,8 @@ readonly class SaleVoidUseCase
             $sale->setDateUpdated(new \DateTimeImmutable());
 
             $this->cashRefundRegistrar->register($sale, $userId);
+            $this->receivableVoidReverser->reverse($sale);
+            $this->salesWriteGateway->zeroReceivableBalance($saleId);
 
             $this->entityManager->flush();
             $this->syncVoidToSalesV2($sale, $reason);

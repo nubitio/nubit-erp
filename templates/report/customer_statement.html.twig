@@ -11,6 +11,12 @@
         .muted { color: #6b7280; }
         .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
         .header .period { text-align: right; }
+        .company-header {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb;
+        }
+        .company-header img { max-height: 48px; }
+        .company-header .name { font-size: 13px; font-weight: 700; }
         table { width: 100%; border-collapse: collapse; }
         thead th {
             text-align: left; border-bottom: 1.5px solid #111827; padding: 5px 6px;
@@ -28,6 +34,20 @@
 
 {% block body %}
     {% set money = 'PEN ' %}
+    {% set statement_logo = printLogo|default(false) and company is defined ? embedded_logo() : '' %}
+    {% if company is defined %}
+        <div class="company-header">
+            {% if statement_logo %}
+                <img src="{{ statement_logo }}" alt="Logo">
+            {% endif %}
+            <div>
+                <div class="name">{{ company.businessName }}</div>
+                <div class="muted">RUC: {{ company.ruc }}</div>
+                <div class="muted">{{ company.fiscalAddress }}</div>
+                {% if company.phone %}<div class="muted">Tel.: {{ company.phone }}</div>{% endif %}
+            </div>
+        </div>
+    {% endif %}
     <div class="header">
         <div>
             <h1>Estado de cuenta</h1>
