@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Sales\Controller;
 
+use App\Efact\Service\CompanyContext;
 use App\Sales\Report\CustomerStatement\CustomerStatement;
 use App\Sales\Report\CustomerStatement\CustomerStatementService;
+use App\Settings\Service\TenantSettingsService;
 use DateTimeImmutable;
 use DateTimeZone;
 use Nubit\Platform\Export\XlsExporter;
@@ -32,6 +34,8 @@ final class CustomerStatementController extends AbstractController
         private readonly XlsExporter $xlsExporter,
         private readonly Environment $twig,
         private readonly string $weasyprintBinary,
+        private readonly CompanyContext $companyContext,
+        private readonly TenantSettingsService $tenantSettings,
     ) {}
 
     public function __invoke(Request $request): StreamedResponse
@@ -66,7 +70,11 @@ final class CustomerStatementController extends AbstractController
 
     private function pdf(CustomerStatement $statement, string $filename): StreamedResponse
     {
-        $html = $this->twig->render('report/customer_statement.html.twig', ['statement' => $statement]);
+        $html = $this->twig->render('report/customer_statement.html.twig', [
+            'statement' => $statement,
+            'company' => $this->companyContext->getCompany(),
+            'printLogo' => $this->tenantSettings->isPrintLogo(),
+        ]);
 
         $pdf = new Pdf($this->weasyprintBinary);
         $pdf->setTimeout(30);

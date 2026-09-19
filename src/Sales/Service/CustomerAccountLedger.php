@@ -85,6 +85,33 @@ readonly class CustomerAccountLedger
     }
 
     /**
+     * Cancels the still-open CHARGE of a voided credit sale that had no
+     * collections applied to it (mirrors {@see \App\Billing\Sale\Void\CashRefundRegistrar}
+     * for the cash side). Reduces what the customer owes (credit).
+     */
+    public function recordChargeReversal(
+        int $customerId,
+        string $saleId,
+        DateTimeImmutable $occurredOn,
+        string $amount,
+        string $currency = 'PEN',
+        ?string $description = null,
+    ): CustomerAccountEntry {
+        return $this->record(
+            $customerId,
+            CustomerAccountEntryType::CHARGE_REVERSAL,
+            $occurredOn,
+            debit: '0.00',
+            credit: $amount,
+            currency: $currency,
+            saleId: $saleId,
+            source: 'sale_void',
+            sourceId: $saleId,
+            description: $description,
+        );
+    }
+
+    /**
      * Money received with no target sale — a customer advance. It moves the
      * running balance into the customer's favour (credit). Applying it to a sale
      * later adds no further entry: the caller records a

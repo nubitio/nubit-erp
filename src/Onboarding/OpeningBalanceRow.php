@@ -16,6 +16,7 @@ final readonly class OpeningBalanceRow
         public DateTimeImmutable $dueDate,
         public ?string $number,
         public ?string $phone,
+        public ?DateTimeImmutable $issuedDate = null,
     ) {}
 
     /**
@@ -29,6 +30,7 @@ final readonly class OpeningBalanceRow
         $dueRaw = self::pick($row, ['vencimiento', 'fecha de vencimiento', 'due']);
         $number = self::pick($row, ['numero', 'número', 'factura', 'comprobante']) ?: null;
         $phone = self::pick($row, ['telefono', 'teléfono', 'phone']) ?: null;
+        $issuedRaw = self::pick($row, ['fecha de emision', 'fecha de emisión', 'emision', 'emisión', 'fecha']);
 
         if ($ruc === '' || !preg_match('/^\d{8,11}$/', $ruc)) {
             return 'RUC/DNI inválido';
@@ -44,6 +46,7 @@ final readonly class OpeningBalanceRow
         }
 
         $dueDate = self::parseDate($dueRaw) ?? new DateTimeImmutable('today', new DateTimeZone('America/Lima'));
+        $issuedDate = self::parseDate($issuedRaw);
 
         return new self(
             ruc: $ruc,
@@ -52,6 +55,7 @@ final readonly class OpeningBalanceRow
             dueDate: $dueDate,
             number: $number,
             phone: $phone,
+            issuedDate: $issuedDate,
         );
     }
 

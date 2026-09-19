@@ -371,6 +371,36 @@ readonly class SalesWriteGateway
     /**
      * @throws Exception
      */
+    /**
+     * Zeroes a voided receivable sale's balance so the aging report and the
+     * customer statement stop showing a phantom debt for a document that no
+     * longer exists. Only reachable from {@see \App\Billing\Sale\SaleVoidUseCase}
+     * once {@see \App\Sales\Domain\SaleException::hasAppliedPayments()} has
+     * cleared, so balance_due here always equals the sale's untouched
+     * grand_total — nothing was ever collected against it.
+     */
+    public function zeroReceivableBalance(string $saleId): void
+    {
+        $now = new \DateTimeImmutable()->format('Y-m-d H:i:s');
+
+        $this->connection->executeStatement(
+            <<<'SQL'
+                UPDATE sales
+                SET
+                    balance_due = '0.00',
+                    updated_at = :updated_at,
+                    version_no = version_no + 1,
+                    last_modified_at = :updated_at
+                WHERE (id = :id OR legacy_movimiento_id = :id)
+                  AND balance_due <> '0.00'
+                SQL,
+            [
+                'id' => $saleId,
+                'updated_at' => $now,
+            ],
+        );
+    }
+
     public function markVoided(SaleRecord $sale, ?string $reason = null): void
     {
         $saleId = $sale->getId();

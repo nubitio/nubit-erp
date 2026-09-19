@@ -244,6 +244,13 @@ class SaleRecord
         return $this->receivableAccount;
     }
 
+    public function setReceivableAccount(bool $receivableAccount): static
+    {
+        $this->receivableAccount = $receivableAccount;
+
+        return $this;
+    }
+
     #[Groups(['sale_record:read', 'sale_record:write'])]
     #[ORM\Column(name: 'issued_at', type: Types::DATETIME_MUTABLE, nullable: true)]
     #[ApiProperty(description: 'sale_record.issued_at.label')]

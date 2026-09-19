@@ -69,6 +69,38 @@ final class CustomerAccountLedgerTest extends TestCase
         self::assertSame($entry, $persisted->last());
     }
 
+    public function testChargeReversalIsACreditTaggedAsSaleVoid(): void
+    {
+        [$ledger] = $this->makeLedger();
+
+        $entry = $ledger->recordChargeReversal(
+            1,
+            'sale-abc',
+            new DateTimeImmutable('2026-03-02'),
+            '200.00',
+            'PEN',
+            'Anulación de F001-9',
+        );
+
+        self::assertSame(CustomerAccountEntryType::CHARGE_REVERSAL, $entry->getEntryType());
+        self::assertSame('0.00', $entry->getDebit());
+        self::assertSame('200.00', $entry->getCredit());
+        self::assertSame('sale-abc', $entry->getSaleId());
+        self::assertSame('sale_void', $entry->getSource());
+        self::assertSame('sale-abc', $entry->getSourceId());
+    }
+
+    public function testChargeReversalOffsetsThePriorCharge(): void
+    {
+        [$ledger, $persisted] = $this->makeLedger();
+        $day = new DateTimeImmutable('2026-03-01');
+
+        $ledger->recordCharge(9, 'sale-x', $day, '150.00');
+        $ledger->recordChargeReversal(9, 'sale-x', $day, '150.00');
+
+        self::assertSame('0.00', $persisted->last()->getRunningBalance());
+    }
+
     public function testAdvanceReceivedIsACreditWithNoSale(): void
     {
         [$ledger] = $this->makeLedger();
