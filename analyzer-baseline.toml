@@ -4297,18 +4297,6 @@ message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
 
 [[issues]]
-file = "src/Onboarding/OpeningReceivableImporter.php"
-code = "redundant-condition"
-message = "Redundant ternary operator: condition is always truthy."
-count = 1
-
-[[issues]]
-file = "src/Onboarding/OpeningReceivableImporter.php"
-code = "redundant-type-comparison"
-message = "Redundant type assertion: `$raw` is already `array<string, mixed>`."
-count = 1
-
-[[issues]]
 file = "src/Organization/Entity/Branch.php"
 code = "invalid-property-assignment-value"
 message = 'Invalid type for property `$company`: expected `App\Organization\Entity\Company`, but got `App\Organization\Entity\Company|null`.'
