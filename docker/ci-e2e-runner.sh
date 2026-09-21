@@ -107,4 +107,5 @@ yarn test:e2e \
   e2e/auth-refresh-regression.spec.ts \
   e2e/cash-rounding.spec.ts \
   e2e/pos-credit-sale.spec.ts \
-  e2e/accounts-receivable.spec.ts
+  e2e/accounts-receivable.spec.ts \
+  e2e/catalog-create-permissions.spec.ts

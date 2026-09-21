@@ -6,6 +6,7 @@ namespace App\Tests\Identity\Security;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Billing\Entity\TaxDocument;
@@ -82,6 +83,13 @@ final class CriticalApiPermissionsTest extends TestCase
         static::assertContains("is_granted('perm:catalog.delete')", $productSecurities);
         static::assertNotContains(null, $productSecurities);
 
+        $customerSecurities = $this->operationSecurities(\App\Contacts\Entity\Customer::class);
+        static::assertContains("is_granted('perm:customers.view')", $customerSecurities);
+        static::assertContains("is_granted('perm:customers.create')", $customerSecurities);
+        static::assertContains("is_granted('perm:customers.edit')", $customerSecurities);
+        static::assertContains("is_granted('perm:customers.delete')", $customerSecurities);
+        static::assertNotContains(null, $customerSecurities);
+
         $userSecurities = $this->operationSecurities(User::class);
         static::assertContains("is_granted('perm:users.edit')", $userSecurities);
         static::assertContains("is_granted('perm:users.delete')", $userSecurities);
@@ -93,21 +101,37 @@ final class CriticalApiPermissionsTest extends TestCase
         static::assertNotContains(null, $roleSecurities);
     }
 
-    /** @param class-string $resource */
+    /**
+     * @param class-string $resource
+     *
+     * @return list<?string>
+     */
     private function operationSecurities(string $resource): array
     {
         return array_map(
-            static fn(object $operation): ?string => $operation->getSecurity(),
+            static fn(Operation $operation): ?string => $operation->getSecurity(),
             $this->operations($resource),
         );
     }
 
-    /** @param class-string $resource */
+    /**
+     * @param class-string $resource
+     *
+     * @return list<Operation>
+     */
     private function operations(string $resource): array
     {
         $reflection = new \ReflectionClass($resource);
         $apiResource = $reflection->getAttributes(ApiResource::class)[0]->newInstance();
+        $metadataOperations = $apiResource->getOperations();
+        static::assertNotNull($metadataOperations);
 
-        return iterator_to_array($apiResource->getOperations());
+        $operations = [];
+        foreach ($metadataOperations as $operation) {
+            static::assertInstanceOf(Operation::class, $operation);
+            $operations[] = $operation;
+        }
+
+        return $operations;
     }
 }

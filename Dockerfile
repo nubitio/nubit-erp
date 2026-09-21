@@ -196,6 +196,8 @@ COPY --link --chown=33:33 . /app
 # Copy built frontend assets from frontend-builder stage
 COPY --link --from=frontend-builder --chown=33:33 /app/public/build /app/public/build
 COPY --link --from=frontend-builder --chown=33:33 /app/public/themes /app/public/themes
+COPY --link --from=frontend-builder --chown=33:33 /app/public/sw.js /app/public/sw.js
+COPY --link --from=frontend-builder --chown=33:33 /app/public/workbox-*.js /app/public/
 
 RUN composer dump-autoload
 
@@ -239,6 +241,8 @@ COPY --link --chown=33:33 . /app
 # Copy built frontend assets from frontend-builder stage
 COPY --link --from=frontend-builder --chown=33:33 /app/public/build /app/public/build
 COPY --link --from=frontend-builder --chown=33:33 /app/public/themes /app/public/themes
+COPY --link --from=frontend-builder --chown=33:33 /app/public/sw.js /app/public/sw.js
+COPY --link --from=frontend-builder --chown=33:33 /app/public/workbox-*.js /app/public/
 
 # Generate optimized autoloader now that the full source is present
 RUN composer dump-autoload --no-dev --classmap-authoritative \

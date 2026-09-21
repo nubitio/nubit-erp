@@ -113,15 +113,3 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 4
 			path: src/Setup/Service/PresentationDemoSeeder.php
-
-		-
-			message: '#^Method App\\Tests\\Identity\\Security\\CriticalApiPermissionsTest\:\:operationSecurities\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: tests/Identity/Security/CriticalApiPermissionsTest.php
-
-		-
-			message: '#^Method App\\Tests\\Identity\\Security\\CriticalApiPermissionsTest\:\:operations\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: tests/Identity/Security/CriticalApiPermissionsTest.php

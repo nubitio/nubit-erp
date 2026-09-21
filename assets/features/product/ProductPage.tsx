@@ -15,6 +15,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import { ProductImportDialog } from './components/ProductImportDialog';
 import './ProductPage.scss';
 import { moneyCell } from '@shared/ui/crudFormatters';
+import { hasPermission } from '@shared/permissions';
 
 interface ProductRecord extends DataRecord {
   id: string;
@@ -204,6 +205,11 @@ const PRODUCT_COLUMN_PRESETS = [
 const productResource = defineResource<ProductRecord>(API + 'products', {
   id: 'product',
   title: 'Productos',
+  permissions: {
+    canAdd: () => hasPermission('catalog.create'),
+    canEdit: () => hasPermission('catalog.edit'),
+    canDelete: () => hasPermission('catalog.delete'),
+  },
   defaultPreset: 'basic',
   columnPresets: PRODUCT_COLUMN_PRESETS.map((preset) => ({
     key: preset.key,

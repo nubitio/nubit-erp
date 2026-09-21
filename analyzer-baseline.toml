@@ -1952,6 +1952,12 @@ count = 1
 
 [[issues]]
 file = "src/CashRegister/State/CashRegisterShiftsProvider.php"
+code = "deprecated-class"
+message = 'Class `Doctrine\ORM\Tools\Pagination\Paginator` is deprecated and should no longer be used.'
+count = 1
+
+[[issues]]
+file = "src/CashRegister/State/CashRegisterShiftsProvider.php"
 code = "docblock-type-mismatch"
 message = 'Docblock return type `ApiPlatform\State\Pagination\PartialPaginatorInterface<App\CashRegister\Entity\CashSession>|App\CashRegister\Entity\CashSession|iterable<mixed, App\CashRegister\Entity\CashSession>` is incompatible with native return type `ApiPlatform\Doctrine\Orm\Paginator`.'
 count = 1
@@ -6748,36 +6754,6 @@ count = 1
 file = "tests/Identity/EventSubscriber/BranchFilterSubscriberTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$stub`."
-count = 1
-
-[[issues]]
-file = "tests/Identity/Security/CriticalApiPermissionsTest.php"
-code = "ambiguous-object-method-access"
-message = "Cannot statically verify method call on a generic `object` type."
-count = 1
-
-[[issues]]
-file = "tests/Identity/Security/CriticalApiPermissionsTest.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
-file = "tests/Identity/Security/CriticalApiPermissionsTest.php"
-code = "mixed-method-access"
-message = "Attempting to access a method on a non-object type (`mixed`)."
-count = 3
-
-[[issues]]
-file = "tests/Identity/Security/CriticalApiPermissionsTest.php"
-code = "mixed-return-statement"
-message = "Could not infer a precise return type for function `{closure:tests/Identity/Security/CriticalApiPermissionsTest.php:100:13}`. Saw type `mixed`."
-count = 1
-
-[[issues]]
-file = "tests/Identity/Security/CriticalApiPermissionsTest.php"
-code = "possibly-null-argument"
-message = "Argument #1 of function `iterator_to_array` is possibly `null`, but parameter type `Traversable<('K.iteratoraggregate extends mixed), ('V.iteratoraggregate extends mixed)>|array<('K.iteratoraggregate extends mixed), ('V.iteratoraggregate extends mixed)>` does not accept it."
 count = 1
 
 [[issues]]

@@ -88,6 +88,23 @@ final class ProductionReliabilityConfigTest extends TestCase
         }
     }
 
+    public function testProductionImageShipsTheServiceWorkerGeneratedWithItsAssets(): void
+    {
+        $dockerfile = file_get_contents(__DIR__ . '/../../Dockerfile');
+        self::assertIsString($dockerfile);
+
+        // Both staging and production must replace the repository snapshot with
+        // the worker emitted by the same Vite build that produced public/build.
+        self::assertSame(2, substr_count(
+            $dockerfile,
+            'COPY --link --from=frontend-builder --chown=33:33 /app/public/sw.js /app/public/sw.js',
+        ));
+        self::assertSame(2, substr_count(
+            $dockerfile,
+            'COPY --link --from=frontend-builder --chown=33:33 /app/public/workbox-*.js /app/public/',
+        ));
+    }
+
     /** @param array<array-key, mixed> $rule */
     private static function ruleString(array $rule, string $key, ?string $nestedKey = null): string
     {

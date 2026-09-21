@@ -7,6 +7,7 @@ import {
 import { customerApiUrl, customerEvents, customerFormLayout } from './model/constants';
 import { CustomerFields } from './CustomerFields';
 import { useTranslation } from 'react-i18next';
+import { hasPermission } from '@shared/permissions';
 
 interface CustomerRecord extends DataRecord {
   id: string;
@@ -37,7 +38,12 @@ const customerFields = CustomerFields({ current: null });
 const customerResource = defineResource<CustomerRecord>(customerApiUrl, {
   id: 'customer',
   title: 'Clientes',
-  permissions: { canExport: true },
+  permissions: {
+    canAdd: () => hasPermission('customers.create'),
+    canEdit: () => hasPermission('customers.edit'),
+    canDelete: () => hasPermission('customers.delete'),
+    canExport: true,
+  },
   events: customerEvents,
   defaultPreset: 'basic',
   columnPresets: CUSTOMER_COLUMN_PRESETS,

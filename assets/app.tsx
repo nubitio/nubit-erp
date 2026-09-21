@@ -25,7 +25,7 @@ const queryClient = new QueryClient({
 });
 
 window.addEventListener('load', () => {
-  if ('serviceWorker' in navigator) {
+  if (import.meta.env.PROD && 'serviceWorker' in navigator) {
     void navigator.serviceWorker.register('/sw.js').then((registration) => {
       // skipWaiting (vite.config.js) activates a new SW immediately instead of
       // waiting for every tab to close. Force a full reload on takeover so the
