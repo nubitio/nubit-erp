@@ -105,6 +105,20 @@ final class ProductionReliabilityConfigTest extends TestCase
         ));
     }
 
+    public function testServiceWorkerIsNeverCachedAsAnImmutableAsset(): void
+    {
+        $caddyfile = file_get_contents(__DIR__ . '/../../docker/frankenphp/Caddyfile');
+        self::assertIsString($caddyfile);
+
+        self::assertStringContainsString('handle /sw.js', $caddyfile);
+        self::assertStringContainsString('header Cache-Control "no-cache, no-store, must-revalidate"', $caddyfile);
+        self::assertLessThan(
+            strpos($caddyfile, 'handle @static'),
+            strpos($caddyfile, 'handle /sw.js'),
+            'The exact service-worker handler must run before the generic immutable JS handler.',
+        );
+    }
+
     /** @param array<array-key, mixed> $rule */
     private static function ruleString(array $rule, string $key, ?string $nestedKey = null): string
     {

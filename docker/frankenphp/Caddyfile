@@ -44,6 +44,14 @@ route {
 
     # Encode responses
     encode gzip zstd
+
+    # The service worker is the mutable pointer to hashed assets. It must be
+    # revalidated on every visit; caching it as immutable can pin clients to a
+    # precache manifest whose chunks were removed by the next deployment.
+    handle /sw.js {
+        file_server
+        header Cache-Control "no-cache, no-store, must-revalidate"
+    }
     
     # Serve static files
     @static {
