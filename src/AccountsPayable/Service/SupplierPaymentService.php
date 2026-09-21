@@ -73,4 +73,32 @@ readonly class SupplierPaymentService
 
         return $payment;
     }
+
+    /**
+     * Reverses a previously registered payment: removes it and restores
+     * the bill's paidTotal/balanceDue/status to what they were before it.
+     * Used to correct a misposted payment without having to void the
+     * whole bill (voiding is blocked once any payment exists).
+     */
+    public function reversePayment(SupplierBill $bill, SupplierPayment $payment): void
+    {
+        if ($payment->getSupplierBill()->getId() !== $bill->getId()) {
+            throw new UnprocessableEntityHttpException('El pago no pertenece a esta factura.');
+        }
+
+        if ($bill->getStatus() === SupplierBill::VOID) {
+            throw new UnprocessableEntityHttpException('No se puede reversar un pago de una factura anulada.');
+        }
+
+        $amountMoney = Money::money($payment->getAmount());
+        $newPaidTotal = Money::money($bill->getPaidTotal())->minus($amountMoney);
+        $newBalanceDue = Money::money($bill->getBalanceDue())->plus($amountMoney);
+
+        $bill->setPaidTotal(Money::toString($newPaidTotal));
+        $bill->setBalanceDue(Money::toString($newBalanceDue));
+        $bill->setStatus($newPaidTotal->isZero() ? SupplierBill::PENDING : SupplierBill::PARTIAL);
+
+        $this->entityManager->remove($payment);
+        $this->entityManager->flush();
+    }
 }

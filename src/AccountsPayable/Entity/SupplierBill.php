@@ -12,8 +12,11 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\AccountsPayable\Dto\SupplierBillPayDto;
+use App\AccountsPayable\Dto\SupplierBillReversePaymentDto;
 use App\AccountsPayable\Repository\SupplierBillRepository;
 use App\AccountsPayable\State\SupplierBillPayProcessor;
+use App\AccountsPayable\State\SupplierBillReversePaymentProcessor;
+use App\AccountsPayable\State\SupplierBillVoidProcessor;
 use App\Contacts\Entity\Supplier;
 use App\Organization\Entity\Branch;
 use App\Purchasing\Entity\Purchase;
@@ -35,7 +38,13 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Post(),
         new Get(),
         new Patch(),
-        new Delete(),
+        new Delete(
+            // Voids in place instead of deleting the row — keeps the audit
+            // trail (paid bills must stay visible in reports/statements).
+            // Blocked in SupplierBillVoidProcessor when payments were
+            // already applied, mirroring Sales' SaleVoidUseCase guard.
+            processor: SupplierBillVoidProcessor::class,
+        ),
         new Post(
             uriTemplate: '/supplier-bills/{id}/pay',
             normalizationContext: ['groups' => ['supplier_bill:read']],
@@ -47,6 +56,14 @@ use Symfony\Component\Validator\Constraints as Assert;
             input: SupplierBillPayDto::class,
             output: SupplierBill::class,
             processor: SupplierBillPayProcessor::class,
+        ),
+        new Post(
+            uriTemplate: '/supplier-bills/{id}/reverse-payment',
+            normalizationContext: ['groups' => ['supplier_bill:read']],
+            denormalizationContext: [],
+            input: SupplierBillReversePaymentDto::class,
+            output: SupplierBill::class,
+            processor: SupplierBillReversePaymentProcessor::class,
         ),
     ],
     normalizationContext: ['groups' => ['supplier_bill:read']],
@@ -148,7 +165,7 @@ class SupplierBill
     #[ORM\Column(name: 'balance_due', type: Types::DECIMAL, precision: 12, scale: 2)]
     private string $balanceDue;
 
-    #[Groups(['supplier_bill:read', 'supplier_bill:write'])]
+    #[Groups(['supplier_bill:read'])]
     #[ApiProperty(description: 'supplier_bill.status.label')]
     #[ORM\Column(name: 'status', length: 20, options: ['default' => self::PENDING])]
     private string $status = self::PENDING;
