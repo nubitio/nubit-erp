@@ -1076,6 +1076,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sales/reports/receivable-customers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of CustomerReceivable resources.
+         * @description Retrieves the collection of CustomerReceivable resources.
+         */
+        get: operations["api_salesreportsreceivable-customers_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sales/reports/customer-statement": {
         parameters: {
             query?: never;
@@ -2645,6 +2665,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sales/reports/receivable-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a ReceivableSummary resource.
+         * @description Retrieves a ReceivableSummary resource.
+         */
+        get: operations["api_salesreportsreceivable-summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/roles": {
         parameters: {
             query?: never;
@@ -3467,6 +3507,26 @@ export interface paths {
          * @description Creates a SupplierBill resource.
          */
         post: operations["api_supplier-bills_idpay_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supplier-bills/{id}/reverse-payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a SupplierBill resource.
+         * @description Creates a SupplierBill resource.
+         */
+        post: operations["api_supplier-bills_idreverse-payment_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -5385,14 +5445,24 @@ export interface components {
             applied?: string;
             balanceDueAfter?: string;
         };
-        "CollectOnAccountApplication-customer_advance.read": Record<string, never>;
+        "CollectOnAccountApplication-customer_advance.read": {
+            saleId?: string;
+            document?: string;
+            applied?: string;
+            balanceDueAfter?: string;
+        };
         "CollectOnAccountApplication.jsonld-collect_on_account.read": {
             saleId?: string;
             document?: string;
             applied?: string;
             balanceDueAfter?: string;
         };
-        "CollectOnAccountApplication.jsonld-customer_advance.read": Record<string, never>;
+        "CollectOnAccountApplication.jsonld-customer_advance.read": {
+            saleId?: string;
+            document?: string;
+            applied?: string;
+            balanceDueAfter?: string;
+        };
         Company: {
             readonly id?: string;
             /** @description company.ruc.label */
@@ -5874,6 +5944,44 @@ export interface components {
             paymentMethodId?: number;
             paidAt?: string | null;
             reference?: string | null;
+        };
+        /**
+         * @description Read-only "Deudores" summary: one row per customer with an open credit-sale
+         *     balance, aggregated from `sales` (#409). Backs the Cuentas por cobrar
+         *     landing grid; per-invoice detail stays on the `Sale` resource.
+         */
+        "CustomerReceivable-customer_receivable.read": {
+            id?: string;
+            customerId?: number;
+            customerName?: string;
+            customerPhone?: string | null;
+            totalBalance?: string;
+            currency?: string;
+            earliestDueDate?: string | null;
+            /** @description Days past due for the oldest open invoice; negative when not yet due. */
+            overdueDays?: number | null;
+            /** @description One of: current, 1-30, 31-60, 61-90, 90+ — days past the due date. */
+            agingBucket?: string;
+            pendingCount?: number;
+        };
+        /**
+         * @description Read-only "Deudores" summary: one row per customer with an open credit-sale
+         *     balance, aggregated from `sales` (#409). Backs the Cuentas por cobrar
+         *     landing grid; per-invoice detail stays on the `Sale` resource.
+         */
+        "CustomerReceivable.jsonld-customer_receivable.read": components["schemas"]["HydraItemBaseSchema"] & {
+            id?: string;
+            customerId?: number;
+            customerName?: string;
+            customerPhone?: string | null;
+            totalBalance?: string;
+            currency?: string;
+            earliestDueDate?: string | null;
+            /** @description Days past due for the oldest open invoice; negative when not yet due. */
+            overdueDays?: number | null;
+            /** @description One of: current, 1-30, 31-60, 61-90, 90+ — days past the due date. */
+            agingBucket?: string;
+            pendingCount?: number;
         };
         "CustomerStatement.StreamedResponse": {
             /** @description Sets the PHP callback associated with this Response. */
@@ -10014,6 +10122,10 @@ export interface components {
             /** @description purchase_order_item.pending_qty.label */
             readonly pendingQty?: string;
         };
+        /** @description KPI header for "Deudores" (#409) — see {@see ReceivableSummaryController}. */
+        ReceivableSummary: Record<string, never>;
+        /** @description KPI header for "Deudores" (#409) — see {@see ReceivableSummaryController}. */
+        "ReceivableSummary.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         Role: {
             readonly id?: number;
             /** @description role.name.label */
@@ -12361,6 +12473,7 @@ export interface components {
              * @default PENDING
              */
             status: string;
+            readonly payments?: components["schemas"]["SupplierPayment-supplier_bill.read"][];
             /** @description supplier_bill.note.label */
             note?: string | null;
             /** Format: date-time */
@@ -12414,11 +12527,6 @@ export interface components {
             currency: string;
             /** @description supplier_bill.amount.label */
             amount: string;
-            /**
-             * @description supplier_bill.status.label
-             * @default PENDING
-             */
-            status: string;
             /** @description supplier_bill.note.label */
             note?: string | null;
         };
@@ -12470,11 +12578,6 @@ export interface components {
             currency: string;
             /** @description supplier_bill.amount.label */
             amount?: string;
-            /**
-             * @description supplier_bill.status.label
-             * @default PENDING
-             */
-            status: string;
             /** @description supplier_bill.note.label */
             note?: string | null;
         };
@@ -12484,6 +12587,10 @@ export interface components {
             paymentMethodId?: number;
             paidAt?: string | null;
             reference?: string | null;
+        };
+        "SupplierBill.SupplierBillReversePaymentDto": {
+            id?: string;
+            paymentId?: number;
         };
         "SupplierBill.jsonld-fixed_asset.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         "SupplierBill.jsonld-supplier_bill.read": components["schemas"]["HydraItemBaseSchema"] & {
@@ -12527,10 +12634,39 @@ export interface components {
              * @default PENDING
              */
             status: string;
+            readonly payments?: components["schemas"]["SupplierPayment.jsonld-supplier_bill.read"][];
             /** @description supplier_bill.note.label */
             note?: string | null;
             /** Format: date-time */
             readonly createdAt?: string;
+        };
+        "SupplierPayment-supplier_bill.read": {
+            readonly id?: number;
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            paymentMethod?: string;
+            amount?: string;
+            /** Format: date-time */
+            paidAt?: string;
+            reference?: string | null;
+            /** Format: date-time */
+            reversedAt?: string | null;
+        };
+        "SupplierPayment.jsonld-supplier_bill.read": {
+            readonly id?: number;
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            paymentMethod?: string;
+            amount?: string;
+            /** Format: date-time */
+            paidAt?: string;
+            reference?: string | null;
+            /** Format: date-time */
+            reversedAt?: string | null;
         };
         "TaxDocument-invoice.read": {
             readonly id?: string;
@@ -17128,6 +17264,53 @@ export interface operations {
                     "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
                     "application/problem+json": components["schemas"]["ConstraintViolation"];
                     "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_salesreportsreceivable-customers_get_collection": {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CustomerReceivable collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CustomerReceivable-customer_receivable.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["CustomerReceivable.jsonld-customer_receivable.read"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -22319,6 +22502,49 @@ export interface operations {
             };
         };
     };
+    "api_salesreportsreceivable-summary_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description ReceivableSummary resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReceivableSummary"];
+                    "application/ld+json": components["schemas"]["ReceivableSummary.jsonld"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     api_roles_get_collection: {
         parameters: {
             query?: {
@@ -24884,6 +25110,17 @@ export interface operations {
                     };
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     "api_supplier-bills_post": {
@@ -24914,6 +25151,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -24958,6 +25206,17 @@ export interface operations {
                     "application/ld+json": components["schemas"]["SupplierBill.jsonld-supplier_bill.read"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Not found */
             404: {
                 headers: {
@@ -24989,6 +25248,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
             };
             /** @description Not found */
             404: {
@@ -25032,6 +25302,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -25096,6 +25377,81 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_supplier-bills_idreverse-payment_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description SupplierBill identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new SupplierBill resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SupplierBill.SupplierBillReversePaymentDto"];
+                "application/ld+json": components["schemas"]["SupplierBill.SupplierBillReversePaymentDto"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["SupplierBill.SupplierBillReversePaymentDto"];
+            };
+        };
+        responses: {
+            /** @description SupplierBill resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierBill-supplier_bill.read"];
+                    "application/ld+json": components["schemas"]["SupplierBill.jsonld-supplier_bill.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

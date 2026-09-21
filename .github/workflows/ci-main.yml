@@ -292,6 +292,7 @@ jobs:
 
       - name: Upload backend coverage artifact
         if: needs.changes.outputs.backend == 'true' && needs.changes.outputs.coverage == 'true'
+        continue-on-error: true
         uses: actions/upload-artifact@v6
         with:
           name: backend-coverage
@@ -366,6 +367,7 @@ jobs:
 
       - name: Upload frontend coverage artifact
         if: needs.changes.outputs.frontend == 'true' && needs.changes.outputs.coverage == 'true'
+        continue-on-error: true
         uses: actions/upload-artifact@v6
         with:
           name: frontend-coverage
