@@ -102,9 +102,10 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
     await dialog.getByLabel(/Monto/).fill('4.00');
     await dialog.getByLabel('Referencia').fill('OP-E2E-001');
     const methodInput = dialog.getByText('Método de pago').locator('..').getByRole('combobox');
+    await methodInput.click();
     await methodInput.fill(paymentMethod.name ?? 'Efectivo');
-    await page.locator('.nb-form__lookup-menu button[role="option"]')
-      .filter({ hasText: paymentMethod.name ?? 'Efectivo' }).first().click();
+    await expect(page.getByRole('option', { name: paymentMethod.name ?? 'Efectivo', exact: true })).toBeVisible();
+    await page.getByRole('option', { name: paymentMethod.name ?? 'Efectivo', exact: true }).click();
     await dialog.getByTestId('receivable-payment-submit-btn').click();
 
     await expect(dialog.getByText('Aplicación')).toBeVisible({ timeout: 15000 });
@@ -145,7 +146,9 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
     const dialog = page.getByRole('dialog', { name: 'Registrar pago' });
     await expect(dialog.getByLabel(/Monto/)).toHaveValue('5.00');
     await dialog.getByLabel('Referencia').fill('PAGO-FINAL-E2E');
+    await dialog.getByRole('combobox').click();
     await dialog.getByRole('combobox').fill(paymentMethod.name ?? 'Efectivo');
+    await expect(page.getByRole('option', { name: paymentMethod.name ?? 'Efectivo', exact: true })).toBeVisible();
     await page.getByRole('option', { name: paymentMethod.name ?? 'Efectivo', exact: true }).click();
     await dialog.getByTestId('receivable-payment-submit-btn').click();
     await dialog.getByRole('button', { name: 'Listo' }).click();

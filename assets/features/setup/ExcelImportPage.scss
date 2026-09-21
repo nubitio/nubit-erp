@@ -119,3 +119,47 @@
     color: var(--danger-color, #dc2626);
   }
 }
+
+.excel-import__preview {
+  background: var(--surface-2, var(--surface-1));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  overflow: hidden;
+  padding: var(--space-3);
+}
+
+.excel-import__preview-table-wrap {
+  overflow-x: auto;
+}
+
+.excel-import__preview-table {
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+  min-width: 100%;
+
+  th,
+  td {
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.45rem 0.6rem;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  th {
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+}
+
+.excel-import__preview small,
+.excel-import__error {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.excel-import__error {
+  color: var(--danger-color, #dc2626);
+}

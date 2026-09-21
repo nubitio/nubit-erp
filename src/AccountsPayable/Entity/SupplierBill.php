@@ -14,6 +14,7 @@ use ApiPlatform\Metadata\Post;
 use App\AccountsPayable\Dto\SupplierBillPayDto;
 use App\AccountsPayable\Dto\SupplierBillReversePaymentDto;
 use App\AccountsPayable\Repository\SupplierBillRepository;
+use App\AccountsPayable\State\SupplierBillCreateProcessor;
 use App\AccountsPayable\State\SupplierBillPayProcessor;
 use App\AccountsPayable\State\SupplierBillReversePaymentProcessor;
 use App\AccountsPayable\State\SupplierBillVoidProcessor;
@@ -21,6 +22,8 @@ use App\Contacts\Entity\Supplier;
 use App\Organization\Entity\Branch;
 use App\Purchasing\Entity\Purchase;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
@@ -34,16 +37,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(name: 'idx_supplier_bill_supplier', columns: ['supplier_id'])]
 #[ApiResource(
     operations: [
-        new GetCollection(),
-        new Post(),
-        new Get(),
-        new Patch(),
+        new GetCollection(security: "is_granted('perm:accounts_payable.view')"),
+        new Post(security: "is_granted('perm:accounts_payable.create')", processor: SupplierBillCreateProcessor::class),
+        new Get(security: "is_granted('perm:accounts_payable.view')"),
+        new Patch(security: "is_granted('perm:accounts_payable.create')"),
         new Delete(
             // Voids in place instead of deleting the row — keeps the audit
             // trail (paid bills must stay visible in reports/statements).
             // Blocked in SupplierBillVoidProcessor when payments were
             // already applied, mirroring Sales' SaleVoidUseCase guard.
             processor: SupplierBillVoidProcessor::class,
+            security: "is_granted('perm:accounts_payable.void')",
         ),
         new Post(
             uriTemplate: '/supplier-bills/{id}/pay',
@@ -56,6 +60,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             input: SupplierBillPayDto::class,
             output: SupplierBill::class,
             processor: SupplierBillPayProcessor::class,
+            security: "is_granted('perm:accounts_payable.pay')",
         ),
         new Post(
             uriTemplate: '/supplier-bills/{id}/reverse-payment',
@@ -64,6 +69,7 @@ use Symfony\Component\Validator\Constraints as Assert;
             input: SupplierBillReversePaymentDto::class,
             output: SupplierBill::class,
             processor: SupplierBillReversePaymentProcessor::class,
+            security: "is_granted('perm:accounts_payable.pay')",
         ),
     ],
     normalizationContext: ['groups' => ['supplier_bill:read']],
@@ -170,6 +176,11 @@ class SupplierBill
     #[ORM\Column(name: 'status', length: 20, options: ['default' => self::PENDING])]
     private string $status = self::PENDING;
 
+    /** @var Collection<int, SupplierPayment> */
+    #[Groups(['supplier_bill:read'])]
+    #[ORM\OneToMany(mappedBy: 'supplierBill', targetEntity: SupplierPayment::class)]
+    private Collection $payments;
+
     #[Groups(['supplier_bill:read', 'supplier_bill:write'])]
     #[ApiProperty(description: 'supplier_bill.note.label')]
     #[ORM\Column(name: 'note', type: Types::TEXT, nullable: true)]
@@ -182,6 +193,13 @@ class SupplierBill
     public function __construct()
     {
         $this->createdAt = new DateTimeImmutable();
+        $this->payments = new ArrayCollection();
+    }
+
+    /** @return Collection<int, SupplierPayment> */
+    public function getPayments(): Collection
+    {
+        return $this->payments;
     }
 
     public function getId(): ?string

@@ -19,6 +19,7 @@ readonly class TenantNotificationService
     public const string EVENT_SUNAT_DAILY_SUMMARY = 'sunat_daily_summary';
     public const string EVENT_SUNAT_MAX_ATTEMPTS = 'sunat_max_attempts_blocked';
 
+    /** @var array<string, array{label: string, severity: string}> */
     private const array EVENT_DEFINITIONS = [
         self::EVENT_SUNAT_PAUSED => ['label' => 'SUNAT Paused', 'severity' => 'critical'],
         self::EVENT_SUNAT_DAILY_SUMMARY => ['label' => 'SUNAT Daily Summary', 'severity' => 'info'],

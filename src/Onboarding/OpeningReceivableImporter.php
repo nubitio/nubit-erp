@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Onboarding;
 
+use App\Accounting\Message\EconomicEvent;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Repository\PaymentMethodRepository;
 use App\Identity\Auth\BranchContextServiceInterface;
@@ -18,6 +19,7 @@ use DateTimeZone;
 use Doctrine\ORM\EntityManagerInterface;
 use RuntimeException;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 final readonly class OpeningReceivableImporter
 {
@@ -33,6 +35,7 @@ final readonly class OpeningReceivableImporter
         private Security $security,
         private CustomerAccountLedger $customerAccountLedger,
         private OpeningReceivableRowImporter $rowImporter,
+        private ?MessageBusInterface $messageBus = null,
     ) {}
 
     /**
@@ -61,8 +64,16 @@ final readonly class OpeningReceivableImporter
             $errors = [];
             /** @var list<OpeningReceivableChargeToRecord> $pendingCharges */
             $pendingCharges = [];
+            /** @var array<string, true> $seenRetryKeys */
+            $seenRetryKeys = [];
 
             foreach ($rows as $index => $raw) {
+                $retryKey = $this->rowImporter->retryKeyFor($raw);
+                if ($retryKey !== null && isset($seenRetryKeys[$retryKey])) {
+                    ++$skipped;
+                    continue;
+                }
+
                 $outcome = $this->rowImporter->import($raw, $tenant, $userId, $now);
 
                 if ($outcome instanceof OpeningReceivableRowError) {
@@ -75,6 +86,9 @@ final readonly class OpeningReceivableImporter
                 }
 
                 ++$created;
+                if ($retryKey !== null) {
+                    $seenRetryKeys[$retryKey] = true;
+                }
                 $pendingCharges[] = $outcome;
 
                 if (($created % self::FLUSH_EVERY) === 0) {
@@ -124,6 +138,15 @@ final readonly class OpeningReceivableImporter
                 amount: $charge->amount,
                 description: $charge->description,
             );
+
+            $this->messageBus?->dispatch(new EconomicEvent(
+                source: EconomicEvent::SOURCE_OPENING_RECEIVABLE,
+                sourceId: $charge->saleId,
+                kind: EconomicEvent::OPENING_RECEIVABLE,
+                occurredOn: $charge->occurredOn->format('Y-m-d'),
+                description: $charge->description ?? 'Saldo inicial por cobrar',
+                total: $charge->amount,
+            ));
         }
 
         $pendingCharges = [];

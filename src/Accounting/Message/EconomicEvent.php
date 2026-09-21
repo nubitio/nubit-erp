@@ -20,6 +20,16 @@ final readonly class EconomicEvent
 
     public const string SOURCE_CUSTOMER_ADVANCE = 'customer_advance';
 
+    public const string SOURCE_OPENING_RECEIVABLE = 'opening_receivable';
+
+    public const string SOURCE_PAYABLE_PAYMENT = 'payable_payment';
+
+    public const string SOURCE_PAYABLE_PAYMENT_REVERSAL = 'payable_payment_reversal';
+
+    public const string SOURCE_SUPPLIER_BILL = 'supplier_bill';
+
+    public const string SOURCE_SUPPLIER_BILL_REVERSAL = 'supplier_bill_reversal';
+
     public const string SALE_CASH = 'SALE_CASH';
 
     public const string SALE_CREDIT = 'SALE_CREDIT';
@@ -44,6 +54,27 @@ final readonly class EconomicEvent
 
     /** A held customer advance applied to a sale: debit Anticipos de clientes (122), credit Facturas por cobrar. */
     public const string CUSTOMER_ADVANCE_APPLIED = 'CUSTOMER_ADVANCE_APPLIED';
+
+    /** Opening customer debt imported from another system: debit receivables, credit opening equity. */
+    public const string OPENING_RECEIVABLE = 'OPENING_RECEIVABLE';
+
+    /** Payment of a supplier bill: debit payables, credit cash. */
+    public const string PAYABLE_PAYMENT_CASH = 'PAYABLE_PAYMENT_CASH';
+
+    /** Payment of a supplier bill: debit payables, credit bank. */
+    public const string PAYABLE_PAYMENT_BANK = 'PAYABLE_PAYMENT_BANK';
+
+    /** Reversal of a cash supplier-bill payment. */
+    public const string PAYABLE_PAYMENT_REVERSE_CASH = 'PAYABLE_PAYMENT_REVERSE_CASH';
+
+    /** Reversal of a bank supplier-bill payment. */
+    public const string PAYABLE_PAYMENT_REVERSE_BANK = 'PAYABLE_PAYMENT_REVERSE_BANK';
+
+    /** Direct supplier expense bill: debit expense, credit payables. */
+    public const string SUPPLIER_BILL = 'SUPPLIER_BILL';
+
+    /** Void of a direct supplier expense bill: debit payables, credit expense. */
+    public const string SUPPLIER_BILL_REVERSE = 'SUPPLIER_BILL_REVERSE';
 
     public function __construct(
         public string $source,

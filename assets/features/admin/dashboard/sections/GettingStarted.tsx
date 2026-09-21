@@ -5,7 +5,6 @@ const STEPS: Array<{ label: string; to: string }> = [
   { label: 'Series SUNAT', to: '/config/series' },
   { label: 'Primer producto', to: '/catalog/products' },
   { label: 'Primera venta', to: '/pos' },
-  { label: 'Importar Excel', to: '/setup/import' },
 ];
 
 /** Onboarding shortcuts — only rendered while tenant setup is incomplete. */

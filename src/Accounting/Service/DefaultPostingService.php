@@ -37,6 +37,8 @@ readonly class DefaultPostingService
 
     public const string CUSTOMER_ADVANCE = '122';
 
+    public const string OPENING_EQUITY = '591';
+
     public function __construct(
         private JournalPoster $journalPoster,
         private LoggerInterface $logger,
@@ -64,11 +66,12 @@ readonly class DefaultPostingService
                 'error' => $exception->getMessage(),
             ]);
 
-            if ($exception instanceof InvalidArgumentException) {
-                throw $exception;
-            }
-
-            return null;
+            // EconomicEvent is routed synchronously. Swallowing an unexpected
+            // persistence/connection failure would commit the source business
+            // fact without its journal entry. Propagate it so the caller's
+            // transaction can fail closed; the backfill command deliberately
+            // catches and reports per-event failures at its boundary.
+            throw $exception;
         }
     }
 
@@ -153,11 +156,63 @@ readonly class DefaultPostingService
                     'memo' => 'Aplicación a cuenta por cobrar',
                 ],
             ],
+            EconomicEvent::OPENING_RECEIVABLE => [
+                ['code' => self::RECEIVABLE, 'debit' => Money::toString($total), 'memo' => 'Saldo inicial por cobrar'],
+                [
+                    'code' => self::OPENING_EQUITY,
+                    'credit' => Money::toString($total),
+                    'memo' => 'Contrapartida de saldo inicial',
+                ],
+            ],
+            EconomicEvent::PAYABLE_PAYMENT_CASH => $this->payablePaymentLines(self::CASH, $total, false),
+            EconomicEvent::PAYABLE_PAYMENT_BANK => $this->payablePaymentLines(self::BANK, $total, false),
+            EconomicEvent::PAYABLE_PAYMENT_REVERSE_CASH => $this->payablePaymentLines(self::CASH, $total, true),
+            EconomicEvent::PAYABLE_PAYMENT_REVERSE_BANK => $this->payablePaymentLines(self::BANK, $total, true),
+            EconomicEvent::SUPPLIER_BILL => [
+                [
+                    'code' => self::OTHER_EXPENSE,
+                    'debit' => Money::toString($total),
+                    'memo' => 'Gasto de factura de proveedor',
+                ],
+                ['code' => self::PAYABLE, 'credit' => Money::toString($total), 'memo' => 'Factura por pagar'],
+            ],
+            EconomicEvent::SUPPLIER_BILL_REVERSE => [
+                [
+                    'code' => self::PAYABLE,
+                    'debit' => Money::toString($total),
+                    'memo' => 'Reversión de factura de proveedor',
+                ],
+                [
+                    'code' => self::OTHER_EXPENSE,
+                    'credit' => Money::toString($total),
+                    'memo' => 'Reversión del gasto de proveedor',
+                ],
+            ],
             default => throw new InvalidArgumentException(sprintf(
                 'Tipo de hecho económico no soportado: %s',
                 $event->kind,
             )),
         };
+    }
+
+    /** @return list<array{code: string, debit?: string, credit?: string, memo?: string}> */
+    private function payablePaymentLines(string $cashAccount, BigDecimal $total, bool $reverse): array
+    {
+        if ($reverse) {
+            return [
+                ['code' => $cashAccount, 'debit' => Money::toString($total), 'memo' => 'Reversión de pago a proveedor'],
+                [
+                    'code' => self::PAYABLE,
+                    'credit' => Money::toString($total),
+                    'memo' => 'Reapertura de cuenta por pagar',
+                ],
+            ];
+        }
+
+        return [
+            ['code' => self::PAYABLE, 'debit' => Money::toString($total), 'memo' => 'Aplicación de pago a proveedor'],
+            ['code' => $cashAccount, 'credit' => Money::toString($total), 'memo' => 'Salida por pago a proveedor'],
+        ];
     }
 
     /**

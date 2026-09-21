@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { dateCell, entityNameCell, moneyCell, payableStatusCell } from '@shared/ui/crudFormatters';
 import { OwnerRowButtons } from '@shared/ui/OwnerRowButtons';
 import { payableStatus } from '@shared/lib/displayFormat';
+import { hasPermission } from '@shared/permissions';
 
 interface SupplierBillRecord extends DataRecord {
   id: string;
@@ -72,6 +73,7 @@ const statusPatch = toPatch(
 
 export const SupplierBillPage = () => {
   const navigate = useNavigate();
+  const canPay = hasPermission('accounts_payable.pay');
 
   const resource = {
     ...defineResource<SupplierBillRecord>(supplierBillApiUrl, {
@@ -179,7 +181,7 @@ export const SupplierBillPage = () => {
           sortable: false,
           visibleOnForm: false,
           formatter: (cell: GridCellContext) => {
-            if (payableStatus(cell.data ?? {}) === 'paid') return null;
+            if (!canPay || payableStatus(cell.data ?? {}) === 'paid') return null;
             const id = String(cell.data?.id ?? '');
             if (!id) return null;
             return (
@@ -194,7 +196,7 @@ export const SupplierBillPage = () => {
   }),
   }),
     rowActions: (row: SupplierBillRecord) => {
-      if (payableStatus(row) === 'paid' || row.status === 'VOID') {
+      if (!canPay || payableStatus(row) === 'paid' || row.status === 'VOID') {
         return [];
       }
 

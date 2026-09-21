@@ -532,12 +532,6 @@ export function TenantOnboardingGate() {
                   <li>Local: {branch.name}</li>
                   <li>Almacén: {warehouse.name}</li>
                   <li>SUNAT: {sunatStatusLabel}</li>
-                  <li>
-                    Siguiente: importa tu Excel de productos y clientes desde{' '}
-                    <button type="button" onClick={() => navigate('/setup/import')}>
-                      Traer datos
-                    </button>
-                  </li>
                 </ul>
               </div>
             )}

@@ -41,6 +41,7 @@ const MENU_VIEW_PERMISSION: Record<string, string> = {
   'payroll-runs': 'payroll.view',
   ple: 'reports.ple',
   config: 'settings.view',
+  'setup/import': 'settings.view',
 };
 
 const NAVIGATION_TIER_RANK: Record<TenantRuntimeConfig['profile']['navigationTier'], number> = {

@@ -6,11 +6,13 @@ namespace App\AccountsPayable\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Accounting\Message\EconomicEvent;
 use App\AccountsPayable\Entity\SupplierBill;
 use App\Efact\Domain\Money;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * Handles DELETE /supplier-bills/{id}.
@@ -28,6 +30,7 @@ final readonly class SupplierBillVoidProcessor implements ProcessorInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private ?MessageBusInterface $messageBus = null,
     ) {}
 
     #[Override]
@@ -43,8 +46,22 @@ final readonly class SupplierBillVoidProcessor implements ProcessorInterface
             );
         }
 
-        $data->setStatus(SupplierBill::VOID);
-        $this->entityManager->flush();
+        $this->entityManager->wrapInTransaction(function () use ($data): void {
+            $data->setStatus(SupplierBill::VOID);
+            $this->entityManager->flush();
+
+            if ($data->getPurchase() === null) {
+                $this->messageBus?->dispatch(new EconomicEvent(
+                    source: EconomicEvent::SOURCE_SUPPLIER_BILL_REVERSAL,
+                    sourceId: (string) $data->getId(),
+                    kind: EconomicEvent::SUPPLIER_BILL_REVERSE,
+                    occurredOn: new \DateTimeImmutable('today')->format('Y-m-d'),
+                    description: 'Reversión de factura de proveedor',
+                    total: $data->getAmount(),
+                    currency: $data->getCurrency(),
+                ));
+            }
+        });
 
         return null;
     }

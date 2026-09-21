@@ -17,6 +17,7 @@ final class SupplierBillVoidProcessorTest extends TestCase
     {
         $em = $this->createMock(EntityManagerInterface::class);
         $em->expects(static::once())->method('flush');
+        $em->method('wrapInTransaction')->willReturnCallback(static fn(callable $callback): mixed => $callback());
 
         $bill = new SupplierBill()
             ->setAmount('100.00')

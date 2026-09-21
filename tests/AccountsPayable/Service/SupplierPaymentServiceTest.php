@@ -12,6 +12,7 @@ use App\Identity\Entity\User;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -32,8 +33,10 @@ final class SupplierPaymentServiceTest extends TestCase
         return $bill;
     }
 
-    private function service(EntityManagerInterface $em): SupplierPaymentService
+    private function service(EntityManagerInterface&MockObject $em): SupplierPaymentService
     {
+        $em->method('wrapInTransaction')->willReturnCallback(static fn(callable $callback): mixed => $callback());
+
         return new SupplierPaymentService($em);
     }
 
@@ -121,6 +124,7 @@ final class SupplierPaymentServiceTest extends TestCase
     {
         return new SupplierPayment()
             ->setSupplierBill($bill)
+            ->setPaymentMethod(new PaymentMethod())
             ->setAmount($amount)
             ->setPaidAt(new DateTimeImmutable());
     }
@@ -128,7 +132,6 @@ final class SupplierPaymentServiceTest extends TestCase
     public function testReversePaymentRestoresBalanceAndStatus(): void
     {
         $em = $this->createMock(EntityManagerInterface::class);
-        $em->expects(static::once())->method('remove');
         $em->expects(static::once())->method('flush');
 
         $bill = $this->pendingBill(paidTotal: '40.00', balanceDue: '60.00');
@@ -140,6 +143,7 @@ final class SupplierPaymentServiceTest extends TestCase
         static::assertSame('0.00', $bill->getPaidTotal());
         static::assertSame('100.00', $bill->getBalanceDue());
         static::assertSame(SupplierBill::PENDING, $bill->getStatus());
+        static::assertTrue($payment->isReversed());
     }
 
     public function testReversePaymentLeavesBillPartialWhenOtherPaymentsRemain(): void
@@ -155,6 +159,7 @@ final class SupplierPaymentServiceTest extends TestCase
         static::assertSame('40.00', $bill->getPaidTotal());
         static::assertSame('60.00', $bill->getBalanceDue());
         static::assertSame(SupplierBill::PARTIAL, $bill->getStatus());
+        static::assertTrue($payment->isReversed());
     }
 
     public function testReversePaymentRejectsPaymentFromAnotherBill(): void
@@ -184,6 +189,20 @@ final class SupplierPaymentServiceTest extends TestCase
 
         $this->expectException(UnprocessableEntityHttpException::class);
         $this->expectExceptionMessage('No se puede reversar un pago de una factura anulada.');
+
+        $this->service($em)->reversePayment($bill, $payment);
+    }
+
+    public function testReversePaymentRejectsTheSamePaymentTwice(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(static::never())->method('flush');
+
+        $bill = $this->pendingBill(paidTotal: '40.00', balanceDue: '60.00');
+        $payment = $this->paymentOn($bill, '40.00')->setReversedAt(new DateTimeImmutable());
+
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->expectExceptionMessage('Este pago ya fue reversado.');
 
         $this->service($em)->reversePayment($bill, $payment);
     }

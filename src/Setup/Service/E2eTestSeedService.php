@@ -435,6 +435,13 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     {
         $customer = $this->customerRepository->findOneBy(['ruc' => self::E2E_CUSTOMER_RUC]);
         if ($customer instanceof Customer) {
+            // Keep the deterministic fixture stable when a previous seed or a
+            // shared demo database already contains the same RUC.
+            if ($customer->getBusinessName() !== self::E2E_CUSTOMER_NAME) {
+                $customer->setBusinessName(self::E2E_CUSTOMER_NAME);
+                $this->entityManager->flush();
+            }
+
             return $customer;
         }
 

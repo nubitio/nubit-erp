@@ -24,6 +24,7 @@ final readonly class OpeningReceivableRowImporter
         private EntityManagerInterface $entityManager,
         private CustomerRepository $customerRepository,
         private SaleRecordRepository $saleRecordRepository,
+        private ?OpeningReceivableProductResolver $openingProductResolver = null,
     ) {}
 
     /**
@@ -56,6 +57,18 @@ final readonly class OpeningReceivableRowImporter
             amount: $parsed->amount,
             description: $this->documentLabel($sale),
         );
+    }
+
+    /**
+     * @param array<string, mixed> $raw
+     *
+     * Return the deterministic duplicate key for a valid incoming row.
+     */
+    public function retryKeyFor(array $raw): ?string
+    {
+        $parsed = OpeningBalanceRow::tryFrom($raw);
+
+        return $parsed instanceof OpeningBalanceRow ? $this->buildRetryKey($parsed) : null;
     }
 
     /**
@@ -168,6 +181,10 @@ final readonly class OpeningReceivableRowImporter
             ->setDiscountAmount('0.00')
             ->setNameSnapshot('Saldo inicial')
             ->setSkuSnapshot($number);
+        $openingProduct = $this->openingProductResolver?->resolve();
+        if ($openingProduct !== null) {
+            $item->setProduct($openingProduct);
+        }
         $sale->addSaleItemRecord($item);
 
         return $sale;

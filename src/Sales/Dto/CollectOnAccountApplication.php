@@ -12,13 +12,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
 final readonly class CollectOnAccountApplication
 {
     public function __construct(
-        #[Groups(['collect_on_account:read'])]
+        #[Groups(['collect_on_account:read', 'customer_advance:read'])]
         public string $saleId,
-        #[Groups(['collect_on_account:read'])]
+        #[Groups(['collect_on_account:read', 'customer_advance:read'])]
         public string $document,
-        #[Groups(['collect_on_account:read'])]
+        #[Groups(['collect_on_account:read', 'customer_advance:read'])]
         public string $applied,
-        #[Groups(['collect_on_account:read'])]
+        #[Groups(['collect_on_account:read', 'customer_advance:read'])]
         public string $balanceDueAfter,
     ) {}
 }

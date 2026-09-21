@@ -29,7 +29,7 @@ class SupplierPayment
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: SupplierBill::class)]
+    #[ORM\ManyToOne(targetEntity: SupplierBill::class, inversedBy: 'payments')]
     #[ORM\JoinColumn(name: 'supplier_bill_id', referencedColumnName: 'id', nullable: false)]
     private SupplierBill $supplierBill;
 
@@ -49,6 +49,10 @@ class SupplierPayment
     #[Groups(['supplier_bill:read'])]
     #[ORM\Column(name: 'reference', length: 100, nullable: true)]
     private ?string $reference = null;
+
+    #[Groups(['supplier_bill:read'])]
+    #[ORM\Column(name: 'reversed_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $reversedAt = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'created_by', referencedColumnName: 'usuario_id', nullable: false)]
@@ -123,6 +127,23 @@ class SupplierPayment
     public function setReference(?string $reference): static
     {
         $this->reference = $reference;
+
+        return $this;
+    }
+
+    public function getReversedAt(): ?DateTimeImmutable
+    {
+        return $this->reversedAt;
+    }
+
+    public function isReversed(): bool
+    {
+        return $this->reversedAt !== null;
+    }
+
+    public function setReversedAt(?DateTimeImmutable $reversedAt): static
+    {
+        $this->reversedAt = $reversedAt;
 
         return $this;
     }

@@ -241,7 +241,7 @@ contexts:
   AccountsPayable:
     namespace: App\AccountsPayable
     layer: ErpCore
-    dependsOn: [Catalog, Contacts, Efact, Identity, Organization, Purchasing]
+    dependsOn: [Accounting, Catalog, Contacts, Efact, Identity, Organization, Purchasing]
     publicContracts: []
     ownsTables: [supplier_bill, supplier_payment, expense_category]
 
@@ -320,7 +320,7 @@ contexts:
   Onboarding:
     namespace: App\Onboarding
     layer: Orchestration
-    dependsOn: [Catalog, Contacts, Identity, Inventory, Organization, Sales]
+    dependsOn: [Accounting, Catalog, Contacts, Identity, Inventory, Organization, Sales]
     publicContracts: []
     ownsTables: []
 
