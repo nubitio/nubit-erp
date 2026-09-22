@@ -69,7 +69,7 @@ final readonly class OpeningReceivableImporter
 
             foreach ($rows as $index => $raw) {
                 $retryKey = $this->rowImporter->retryKeyFor($raw);
-                if ($retryKey !== null && isset($seenRetryKeys[$retryKey])) {
+                if ($retryKey !== null && array_key_exists($retryKey, $seenRetryKeys)) {
                     ++$skipped;
                     continue;
                 }
