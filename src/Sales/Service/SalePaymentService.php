@@ -84,7 +84,7 @@ readonly class SalePaymentService
 
         $payment = $this->appendPayment($sale, $paymentMethod, $amount, $paidAt, $reference);
 
-        $this->bookCollection($payment, $sale, $createdBy, $cashSessionId, $isCash, $amountMoney, $paidAt);
+        $this->bookCollection($payment, $sale, $createdBy, $cashSessionId, $amountMoney, $paidAt);
 
         $this->recordOnCustomerLedger($sale, $payment, $amountMoney, $paidAt);
 
@@ -194,7 +194,6 @@ readonly class SalePaymentService
         SaleRecord $sale,
         User $createdBy,
         ?int $cashSessionId,
-        bool $isCash,
         BigDecimal $amountMoney,
         DateTimeImmutable $paidAt,
     ): void {
@@ -214,7 +213,9 @@ readonly class SalePaymentService
         $this->messageBus->dispatch(new EconomicEvent(
             source: EconomicEvent::SOURCE_RECEIVABLE_COLLECT,
             sourceId: (string) $payment->getId(),
-            kind: $isCash ? EconomicEvent::RECEIVABLE_COLLECT_CASH : EconomicEvent::RECEIVABLE_COLLECT_BANK,
+            kind: $cashSessionId !== null
+                ? EconomicEvent::RECEIVABLE_COLLECT_CASH
+                : EconomicEvent::RECEIVABLE_COLLECT_BANK,
             occurredOn: $paidAt->format('Y-m-d'),
             description: $this->collectionDescription($sale),
             total: Money::toString($amountMoney),
