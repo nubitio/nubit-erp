@@ -41,7 +41,7 @@ final class WorkerHeartbeatListener
         $directory = dirname($this->heartbeatFile);
 
         try {
-            if (!is_dir($directory) && !mkdir($directory, 0775, true) && !is_dir($directory)) {
+            if (!is_dir($directory) && !mkdir(directory: $directory, permissions: 0o775, recursive: true) && !is_dir($directory)) {
                 throw new \RuntimeException(sprintf('Unable to create heartbeat directory "%s".', $directory));
             }
 
