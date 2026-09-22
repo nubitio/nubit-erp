@@ -7,10 +7,7 @@ namespace App\Organization\Entity;
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Efact\Domain\ActivatableInterface;
-use App\Inventory\Entity\Warehouse;
 use App\Organization\Repository\BranchRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Nubit\TenantBundle\Attribute\QuotaResource;
@@ -71,17 +68,6 @@ class Branch implements ActivatableInterface
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'empresa_id', referencedColumnName: 'empresa_id', nullable: false)]
     private Company $company;
-
-    /**
-     * @var Collection<int, Warehouse>
-     */
-    #[ORM\OneToMany(targetEntity: Warehouse::class, mappedBy: 'branch', orphanRemoval: true)]
-    private Collection $warehouses;
-
-    public function __construct()
-    {
-        $this->warehouses = new ArrayCollection();
-    }
 
     public function getId(): ?string
     {
@@ -148,30 +134,4 @@ class Branch implements ActivatableInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Warehouse>
-     */
-    public function getWarehouses(): Collection
-    {
-        return $this->warehouses;
-    }
-
-    public function addWarehouse(Warehouse $warehouse): static
-    {
-        if (!$this->warehouses->contains($warehouse)) {
-            $this->warehouses->add($warehouse);
-            $warehouse->setBranch($this);
-        }
-
-        return $this;
-    }
-
-    public function removeWarehouse(Warehouse $warehouse): static
-    {
-        if ($this->warehouses->removeElement($warehouse) && $warehouse->getBranch() === $this) {
-            $warehouse->setBranch(null);
-        }
-
-        return $this;
-    }
 }

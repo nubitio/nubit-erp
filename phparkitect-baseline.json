@@ -25,30 +25,6 @@
             "error": "depends on App\\Billing\\Sunat\\Domain\\LycetCompanyServiceInterface, but should not depend on these namespaces: App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-003: ControlPlane must not depend on ERP, Assistant or verticals"
         },
         {
-            "fqcn": "App\\Organization\\Entity\\Branch",
-            "line": 78,
-            "filePath": "Organization\/Entity\/Branch.php",
-            "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
-        },
-        {
-            "fqcn": "App\\Organization\\Entity\\Branch",
-            "line": 78,
-            "filePath": "Organization\/Entity\/Branch.php",
-            "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
-        },
-        {
-            "fqcn": "App\\Organization\\Entity\\Branch",
-            "line": 159,
-            "filePath": "Organization\/Entity\/Branch.php",
-            "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
-        },
-        {
-            "fqcn": "App\\Organization\\Entity\\Branch",
-            "line": 169,
-            "filePath": "Organization\/Entity\/Branch.php",
-            "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
-        },
-        {
             "fqcn": "App\\Settings\\Controller\\TenantOnboardingController",
             "line": 33,
             "filePath": "Settings\/Controller\/TenantOnboardingController.php",

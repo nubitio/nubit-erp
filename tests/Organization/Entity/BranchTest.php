@@ -75,12 +75,6 @@ final class BranchTest extends TestCase
         self::assertTrue($branch->setIsActive(true)->getIsActive()); // fluent
     }
 
-    public function testWarehousesCollectionIsEmptyByDefault(): void
-    {
-        $branch = new Branch()->setName('B');
-        self::assertTrue($branch->getWarehouses()->isEmpty());
-    }
-
     public function testIdIsNullBeforePersistence(): void
     {
         self::assertNull(
