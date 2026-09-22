@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Settings\Vertical;
 
 use App\Efact\Enum\StockPolicy;
-use App\Inventory\Repository\WarehouseRepository;
-use App\Organization\Entity\Branch;
-use App\Organization\Repository\BranchRepository;
 use App\Settings\Capability\SettingsCapabilitySync;
+use App\Settings\Contract\TenantWarehousePortInterface;
 use App\Settings\Entity\TenantCapability;
 use App\Settings\Entity\TenantProfile;
 use App\Settings\Entity\TenantSettings;
@@ -34,19 +32,15 @@ final class VerticalPresetApplierTest extends TestCase
         $settings->setIgv(0.0)->setRequireCashRegister(false)->setAutoInvoice(false);
         $profile = new TenantProfile();
 
-        $branch = new Branch()->setName('Principal');
-        $branchRepo = $this->createMock(BranchRepository::class);
-        $branchRepo->method('findOneBy')->willReturn($branch);
-
-        $warehouseRepo = $this->createMock(WarehouseRepository::class);
+        $warehouseRepo = $this->createMock(TenantWarehousePortInterface::class);
         $warehouseRepo->method('count')->willReturn(0);
+        $warehouseRepo->method('hasBranch')->willReturn(true);
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('flush');
 
         $applier = new VerticalPresetApplier(
             $this->settingsRepo($settings),
-            $branchRepo,
             $warehouseRepo,
             $this->profileRepo($profile),
             $this->emptyCapabilityRepo(),
@@ -87,7 +81,6 @@ final class VerticalPresetApplierTest extends TestCase
 
         $applier = new VerticalPresetApplier(
             $this->settingsRepo(new TenantSettings()),
-            $this->stubBranchRepo(),
             $this->stubWarehouseRepo(),
             $this->profileRepo(new TenantProfile()),
             $capabilityRepo,
@@ -105,7 +98,7 @@ final class VerticalPresetApplierTest extends TestCase
     public function testMultiLocationPresetDoesNotCreateDefaultWarehouse(): void
     {
         $pharmacySettings = new TenantSettings();
-        $warehouseRepo = $this->createMock(WarehouseRepository::class);
+        $warehouseRepo = $this->createMock(TenantWarehousePortInterface::class);
         $warehouseRepo->expects(static::never())->method('count');
 
         $em = $this->createMock(EntityManagerInterface::class);
@@ -113,7 +106,6 @@ final class VerticalPresetApplierTest extends TestCase
 
         $applier = new VerticalPresetApplier(
             $this->settingsRepo($pharmacySettings),
-            $this->stubBranchRepo(),
             $warehouseRepo,
             $this->profileRepo(new TenantProfile()),
             $this->emptyCapabilityRepo(),
@@ -129,18 +121,15 @@ final class VerticalPresetApplierTest extends TestCase
 
     public function testRecordsNoteWhenNoBranchExists(): void
     {
-        $branchRepo = $this->createMock(BranchRepository::class);
-        $branchRepo->method('findOneBy')->willReturn(null);
-
-        $warehouseRepo = $this->createMock(WarehouseRepository::class);
+        $warehouseRepo = $this->createMock(TenantWarehousePortInterface::class);
         $warehouseRepo->method('count')->willReturn(0);
+        $warehouseRepo->method('hasBranch')->willReturn(false);
 
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('flush');
 
         $applier = new VerticalPresetApplier(
             $this->settingsRepo(new TenantSettings()),
-            $branchRepo,
             $warehouseRepo,
             $this->profileRepo(new TenantProfile()),
             $this->emptyCapabilityRepo(),
@@ -185,17 +174,9 @@ final class VerticalPresetApplierTest extends TestCase
         return $repo;
     }
 
-    private function stubBranchRepo(): BranchRepository&MockObject
+    private function stubWarehouseRepo(): TenantWarehousePortInterface&MockObject
     {
-        $repo = $this->createMock(BranchRepository::class);
-        $repo->method('findOneBy')->willReturn(new Branch()->setName('Principal'));
-
-        return $repo;
-    }
-
-    private function stubWarehouseRepo(): WarehouseRepository&MockObject
-    {
-        $repo = $this->createMock(WarehouseRepository::class);
+        $repo = $this->createMock(TenantWarehousePortInterface::class);
         $repo->method('count')->willReturn(1);
 
         return $repo;

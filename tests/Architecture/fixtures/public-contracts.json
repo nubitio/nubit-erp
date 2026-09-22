@@ -53,5 +53,10 @@
     "App\\Settings\\Contract\\TenantCertificateServiceInterface": [
         "list(string $tenantName): array",
         "upsert(string $tenantName, string $ruc, string $solUser, string $solPass, string $certPem, ?string $uploadedBy?, ?callable $beforeCommit?): App\\Settings\\Dto\\TenantCertificateView"
+    ],
+    "App\\Settings\\Contract\\TenantWarehousePortInterface": [
+        "count(): int",
+        "createDefault(string $name): void",
+        "hasBranch(): bool"
     ]
 }

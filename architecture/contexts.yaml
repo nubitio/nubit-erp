@@ -93,6 +93,7 @@ contexts:
     dependsOn: [Catalog, Efact, Identity, Inventory, Organization]
     publicContracts:
       - App\Settings\Contract\TenantCertificateServiceInterface
+      - App\Settings\Contract\TenantWarehousePortInterface
     ownsTables:
       [config, tenant_settings, tenant_capabilities, tenant_profile, sunat_operational_state, ubigeo, menu, menu_rol]
 

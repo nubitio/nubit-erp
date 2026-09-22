@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Vertical;
 
-use App\Inventory\Repository\WarehouseRepository;
-use App\Organization\Repository\BranchRepository;
+use App\Settings\Contract\TenantWarehousePortInterface;
 use App\Settings\Capability\CapabilityCatalog;
 use App\Settings\Enum\CapabilitySource;
 use App\Settings\Repository\TenantCapabilityRepository;
@@ -27,8 +26,7 @@ final readonly class VerticalPresetPlanner
     public function __construct(
         private TenantSettingsRepository $settingsRepository,
         private TenantCapabilityRepository $capabilityRepository,
-        private BranchRepository $branchRepository,
-        private WarehouseRepository $warehouseRepository,
+        private TenantWarehousePortInterface $warehousePort,
     ) {}
 
     public function plan(VerticalPresetInterface $preset): VerticalPresetPlan
@@ -122,11 +120,11 @@ final readonly class VerticalPresetPlanner
      */
     private function planWarehouse(VerticalPresetInterface $preset): array
     {
-        if (!$preset->usesSingleStockLocation() || $this->warehouseRepository->count([]) > 0) {
+        if (!$preset->usesSingleStockLocation() || $this->warehousePort->count() > 0) {
             return [false, []];
         }
 
-        if ($this->branchRepository->findOneBy([], ['name' => 'ASC']) === null) {
+        if (!$this->warehousePort->hasBranch()) {
             return [false, ['No existe una sucursal; se omitiría la creación del almacén por defecto.']];
         }
 

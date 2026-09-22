@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Vertical;
 
-use App\Inventory\Entity\Warehouse;
-use App\Inventory\Repository\WarehouseRepository;
-use App\Organization\Repository\BranchRepository;
+use App\Settings\Contract\TenantWarehousePortInterface;
 use App\Settings\Capability\CapabilityCatalog;
 use App\Settings\Capability\SettingsCapabilitySync;
 use App\Settings\Entity\TenantCapability;
@@ -34,8 +32,7 @@ final readonly class VerticalPresetApplier
 
     public function __construct(
         private TenantSettingsRepository $settingsRepository,
-        private BranchRepository $branchRepository,
-        private WarehouseRepository $warehouseRepository,
+        private TenantWarehousePortInterface $warehousePort,
         private TenantProfileRepository $profileRepository,
         private TenantCapabilityRepository $capabilityRepository,
         private SettingsCapabilitySync $settingsCapabilitySync,
@@ -134,20 +131,15 @@ final readonly class VerticalPresetApplier
      */
     private function ensureDefaultWarehouse(): array
     {
-        if ($this->warehouseRepository->count([]) > 0) {
+        if ($this->warehousePort->count() > 0) {
             return [false, null];
         }
 
-        $defaultBranch = $this->branchRepository->findOneBy([], ['name' => 'ASC']);
-        if ($defaultBranch === null) {
+        if (!$this->warehousePort->hasBranch()) {
             return [false, 'No existe una sucursal; se omitió la creación del almacén por defecto.'];
         }
 
-        $warehouse = new Warehouse()
-            ->setName(self::DEFAULT_WAREHOUSE_NAME)
-            ->setBranch($defaultBranch);
-
-        $this->entityManager->persist($warehouse);
+        $this->warehousePort->createDefault(self::DEFAULT_WAREHOUSE_NAME);
 
         return [true, null];
     }

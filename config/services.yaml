@@ -211,6 +211,9 @@ services:
   App\Efact\Contract\LogoProviderInterface:
     class: App\Organization\Service\CompanyLogoProvider
 
+  App\Settings\Contract\TenantWarehousePortInterface:
+    class: App\Inventory\Adapter\TenantWarehouseSettingsAdapter
+
   App\Settings\Contract\TenantCertificateServiceInterface:
     class: App\ControlPlane\Certificate\TenantCertificateSettingsAdapter
 

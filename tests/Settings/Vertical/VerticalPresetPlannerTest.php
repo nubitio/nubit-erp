@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Settings\Vertical;
 
-use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Entity\Branch;
-use App\Organization\Repository\BranchRepository;
+use App\Settings\Contract\TenantWarehousePortInterface;
 use App\Settings\Entity\TenantCapability;
 use App\Settings\Entity\TenantSettings;
 use App\Settings\Enum\CapabilitySource;
@@ -108,14 +107,11 @@ final class VerticalPresetPlannerTest extends TestCase
             ->method('findByKey')
             ->willReturnCallback(static fn(string $key): ?TenantCapability => $rows[$key] ?? null);
 
-        /** @var BranchRepository&MockObject $branchRepo */
-        $branchRepo = $this->createMock(BranchRepository::class);
-        $branchRepo->method('findOneBy')->willReturn($branch);
+        /** @var TenantWarehousePortInterface&MockObject $warehousePort */
+        $warehousePort = $this->createMock(TenantWarehousePortInterface::class);
+        $warehousePort->method('count')->willReturn($warehouseCount);
+        $warehousePort->method('hasBranch')->willReturn($branch !== null);
 
-        /** @var WarehouseRepository&MockObject $warehouseRepo */
-        $warehouseRepo = $this->createMock(WarehouseRepository::class);
-        $warehouseRepo->method('count')->willReturn($warehouseCount);
-
-        return new VerticalPresetPlanner($settingsRepo, $capabilityRepo, $branchRepo, $warehouseRepo);
+        return new VerticalPresetPlanner($settingsRepo, $capabilityRepo, $warehousePort);
     }
 }
