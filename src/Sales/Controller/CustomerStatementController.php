@@ -46,7 +46,7 @@ final class CustomerStatementController extends AbstractController
         }
 
         $format = strtolower((string) $request->query->get('format', 'pdf'));
-        if (!in_array($format, ['pdf', 'xlsx'], true)) {
+        if (!in_array(needle: $format, haystack: ['pdf', 'xlsx'], strict: true)) {
             throw new BadRequestHttpException('Formato no soportado. Use pdf o xlsx.');
         }
 
@@ -56,8 +56,17 @@ final class CustomerStatementController extends AbstractController
         );
 
         $statement = $this->statements->build($customerId, $dateFrom, $dateTo);
-        $slug = preg_replace('/[^A-Za-z0-9]+/', '-', $statement->customerName) ?? 'cliente';
-        $basename = sprintf('estado-cuenta-%s-%s-a-%s', trim($slug, '-'), $dateFrom, $dateTo);
+        $slug = preg_replace(
+            pattern: '/[^A-Za-z0-9]+/',
+            replacement: '-',
+            subject: $statement->customerName,
+        ) ?? 'cliente';
+        $basename = sprintf(
+            'estado-cuenta-%s-%s-a-%s',
+            trim(string: $slug, characters: '-'),
+            $dateFrom,
+            $dateTo,
+        );
 
         return $format === 'xlsx'
             ? $this->xlsExporter->export(
