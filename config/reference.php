@@ -2487,25 +2487,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     enable_static_query_cache?: bool|Param, // Default: true
  *     connection_keys?: list<mixed>,
  * }
- * @psalm-type NubitTenantConfig = array{
- *     enabled?: bool|Param, // Enable tenant resolution, Doctrine filter, and registry wiring. // Default: false
- *     isolation?: "column"|"database"|"schema"|"hybrid"|Param, // Default: "column"
- *     tenant_connection?: scalar|Param|null, // Doctrine connection name switched in database isolation mode. // Default: "default"
- *     control_plane_connection?: scalar|Param|null, // Doctrine connection for tenant registry lookups in database isolation mode. // Default: "default"
- *     schema_prefix?: scalar|Param|null, // Lowercase PostgreSQL identifier prefix used with the resolved positive tenant ID. // Default: "tenant_"
- *     base_schemas?: list<scalar|Param|null>,
- *     quotas_enabled?: bool|Param, // Enforce plan limits via FeatureChecker entitlements and QuotaUsageProvider implementations. // Default: false
- *     resolution?: list<scalar|Param|null>,
- *     tenant_entity?: scalar|Param|null, // FQCN of the tenant root entity used by the registry and self-filter. // Default: "Nubit\\TenantBundle\\Entity\\Tenant"
- *     unscoped_entities?: list<scalar|Param|null>,
- *     jwt_secret?: scalar|Param|null, // Secret for jwt_claim resolution. Defaults to %env(APP_SECRET)%. // Default: "%env(APP_SECRET)%"
- *     jwt_id_claim?: scalar|Param|null, // Default: "tenantId"
- *     jwt_name_claim?: scalar|Param|null, // Default: "tenantName"
- *     tenant_header?: scalar|Param|null, // Default: "X-Tenant-Id"
- *     base_domain?: scalar|Param|null, // Base domain for subdomain resolution (e.g. example.com). // Default: null
- *     rls_enabled?: bool|Param, // Set PostgreSQL app.tenant_id per request (requires RLS policies). // Default: false
- *     privileged_roles?: list<scalar|Param|null>,
- * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -2523,7 +2504,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     ai?: AiConfig,
  *     mercure?: MercureConfig,
  *     nubit_admin?: NubitAdminConfig,
- *     nubit_tenant?: NubitTenantConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -2544,7 +2524,24 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         ai?: AiConfig,
  *         mercure?: MercureConfig,
  *         nubit_admin?: NubitAdminConfig,
- *         nubit_tenant?: NubitTenantConfig,
+ *     },
+ *     "when@e2e"?: array{
+ *         imports?: ImportsConfig,
+ *         parameters?: ParametersConfig,
+ *         services?: ServicesConfig,
+ *         framework?: FrameworkConfig,
+ *         twig?: TwigConfig,
+ *         security?: SecurityConfig,
+ *         doctrine?: DoctrineConfig,
+ *         monolog?: MonologConfig,
+ *         doctrine_migrations?: DoctrineMigrationsConfig,
+ *         nelmio_cors?: NelmioCorsConfig,
+ *         api_platform?: ApiPlatformConfig,
+ *         oneup_flysystem?: OneupFlysystemConfig,
+ *         pentatrion_vite?: PentatrionViteConfig,
+ *         ai?: AiConfig,
+ *         mercure?: MercureConfig,
+ *         nubit_admin?: NubitAdminConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -2563,7 +2560,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         ai?: AiConfig,
  *         mercure?: MercureConfig,
  *         nubit_admin?: NubitAdminConfig,
- *         nubit_tenant?: NubitTenantConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -2584,7 +2580,6 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         mercure?: MercureConfig,
  *         nubit_admin?: NubitAdminConfig,
  *         dama_doctrine_test?: DamaDoctrineTestConfig,
- *         nubit_tenant?: NubitTenantConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,
@@ -2669,6 +2664,7 @@ namespace Symfony\Component\Routing\Loader\Configurator;
  * }
  * @psalm-type RoutesConfig = array{
  *     "when@dev"?: array<string, RouteConfig|ImportConfig|AliasConfig>,
+ *     "when@e2e"?: array<string, RouteConfig|ImportConfig|AliasConfig>,
  *     "when@prod"?: array<string, RouteConfig|ImportConfig|AliasConfig>,
  *     "when@test"?: array<string, RouteConfig|ImportConfig|AliasConfig>,
  *     ...<string, RouteConfig|ImportConfig|AliasConfig>
