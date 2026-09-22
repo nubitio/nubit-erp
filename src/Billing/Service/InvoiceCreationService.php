@@ -141,15 +141,7 @@ final readonly class InvoiceCreationService implements InvoiceCreationServiceInt
 
         $connection->beginTransaction();
         try {
-            if ($taxRegime === TaxRegime::NRUS) {
-                $voucherType = DocType::BOLETA->value;
-            } elseif ($requestedType === RequestedVoucherType::FACTURA) {
-                $voucherType = DocType::FACTURA->value;
-            } elseif ($requestedType === RequestedVoucherType::BOLETA) {
-                $voucherType = DocType::BOLETA->value;
-            } else {
-                $voucherType = strlen($ruc) === 11 ? DocType::FACTURA->value : DocType::BOLETA->value;
-            }
+            $voucherType = InvoiceVoucherTypeResolver::resolve($taxRegime, $requestedType, $ruc);
 
             $existingInvoice = $connection->fetchOne('SELECT tax_document_id
                  FROM tax_document
