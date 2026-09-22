@@ -286,6 +286,16 @@ services:
   App\Core\Messenger\TenantContextMiddleware:
     alias: Nubit\Platform\Messenger\TenantContextMiddleware
 
+  # The vendor observability module registers this middleware without a bus
+  # name. Symfony therefore does not attach it to the configured default bus.
+  # Bind it explicitly here: without this, HTTP/DB spans exist but trace
+  # context is lost at the Messenger boundary.
+  Nubit\Platform\Messenger\TracingMiddleware:
+    arguments:
+      $tracer: '@nubit.observability.tracer'
+    tags:
+      - { name: messenger.middleware, bus: messenger.bus.default, priority: 1000 }
+
   # OpenTelemetry Logger Provider
   open_telemetry.logger_provider:
     class: OpenTelemetry\SDK\Logs\LoggerProviderInterface
