@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\AI\Repository;
+namespace App\Billing\Contract;
 
 use App\Billing\Entity\TaxDocumentEvent;
 
 /**
- * Query contract for SUNAT rejection events used by the AI assistant.
+ * Query contract for SUNAT rejection events exposed to consumers such as AI.
  */
 interface SunatRejectionQueryInterface
 {

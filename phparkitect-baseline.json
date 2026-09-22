@@ -1,12 +1,6 @@
 {
     "violations": [
         {
-            "fqcn": "App\\Billing\\Repository\\TaxDocumentEventRepository",
-            "line": 16,
-            "filePath": "Billing\/Repository\/TaxDocumentEventRepository.php",
-            "error": "depends on App\\AI\\Repository\\SunatRejectionQueryInterface, but should not depend on these namespaces: App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant, Orchestration or any vertical"
-        },
-        {
             "fqcn": "App\\ControlPlane\\Tenant\\Adapter\\InitialSetupServiceAdapter",
             "line": 15,
             "filePath": "ControlPlane\/Tenant\/Adapter\/InitialSetupServiceAdapter.php",

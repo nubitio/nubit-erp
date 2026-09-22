@@ -1,5 +1,5 @@
 {
-    "App\\AI\\Repository\\SunatRejectionQueryInterface": [
+    "App\\Billing\\Contract\\SunatRejectionQueryInterface": [
         "findRejections(): array"
     ],
     "App\\Billing\\Sunat\\Domain\\BillRepositoryInterface": [

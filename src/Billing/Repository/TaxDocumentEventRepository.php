@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Billing\Repository;
 
-use App\AI\Repository\SunatRejectionQueryInterface;
+use App\Billing\Contract\SunatRejectionQueryInterface;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Entity\TaxDocumentEvent;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;

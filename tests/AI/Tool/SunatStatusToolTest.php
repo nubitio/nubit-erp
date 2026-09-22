@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\AI\Tool;
 
-use App\AI\Repository\SunatRejectionQueryInterface;
+use App\Billing\Contract\SunatRejectionQueryInterface;
 use App\AI\Tool\SunatStatusTool;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Entity\TaxDocumentEvent;

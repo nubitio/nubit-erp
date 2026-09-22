@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
-use App\AI\Repository\SunatRejectionQueryInterface;
+use App\Billing\Contract\SunatRejectionQueryInterface;
 use DateTimeInterface;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 

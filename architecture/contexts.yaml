@@ -190,6 +190,7 @@ contexts:
     publicContracts:
       - App\Billing\Sunat\Domain\BillRepositoryInterface
       - App\Billing\Sunat\Domain\LycetCompanyServiceInterface
+      - App\Billing\Contract\SunatRejectionQueryInterface
     ownsTables:
       - tax_document
       - tax_document_line
@@ -305,8 +306,7 @@ contexts:
     layer: Assistant
     dependsOn:
       [AccountsPayable, Billing, CashRegister, Catalog, Contacts, Efact, Identity, Inventory, Purchasing, Reporting, Sales, Settings]
-    publicContracts:
-      - App\AI\Repository\SunatRejectionQueryInterface
+    publicContracts: []
     ownsTables: [assistant_thread, assistant_thread_message, assistant_proposed_action]
 
   Setup:
