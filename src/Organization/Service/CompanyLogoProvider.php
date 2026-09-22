@@ -75,7 +75,10 @@ readonly class CompanyLogoProvider implements LogoProviderInterface
 
         $mimeType = $logo->getMimeType();
         if ($mimeType === null || !str_starts_with($mimeType, 'image/')) {
-            $mimeType = new \finfo(FILEINFO_MIME_TYPE)->buffer($contents) ?: 'application/octet-stream';
+            $detectedMimeType = new \finfo(FILEINFO_MIME_TYPE)->buffer($contents);
+            $mimeType = is_string($detectedMimeType) && $detectedMimeType !== ''
+                ? $detectedMimeType
+                : 'application/octet-stream';
         }
 
         return sprintf('data:%s;base64,%s', $mimeType, base64_encode($contents));
