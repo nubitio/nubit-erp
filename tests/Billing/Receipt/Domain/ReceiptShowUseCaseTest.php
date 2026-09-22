@@ -11,7 +11,7 @@ use App\Billing\Receipt\Domain\ReceiptRequest;
 use App\Billing\Receipt\Domain\ReceiptShowUseCase;
 use App\Billing\Receipt\Domain\ReceiptType;
 use App\Billing\Repository\TaxDocumentRepository;
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 use Nubit\Platform\Exception\NotFoundException;
 use PHPUnit\Framework\TestCase;
 

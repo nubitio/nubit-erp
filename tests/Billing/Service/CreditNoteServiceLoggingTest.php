@@ -10,7 +10,7 @@ use App\Billing\Service\CreditNoteService;
 use App\Billing\Sunat\Domain\NoteConsultUseCase;
 use App\Billing\Sunat\Domain\NoteSendUseCase;
 use App\Billing\Sunat\Model\Response\DocumentResponse;
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Greenter\Model\Response\BillResult;

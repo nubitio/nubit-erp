@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Controller;
 
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 use App\Sales\Report\CustomerStatement\CustomerStatement;
 use App\Sales\Report\CustomerStatement\CustomerStatementService;
 use App\Settings\Service\TenantSettingsService;

@@ -7,7 +7,7 @@ namespace App\Billing\Receipt\Domain;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Sunat\Domain\FileResponse;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 use League\Flysystem\FilesystemException;
 use Nubit\Platform\Filesystem\FileManager;
 

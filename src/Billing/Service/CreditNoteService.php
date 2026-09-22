@@ -10,7 +10,7 @@ use App\Billing\Sunat\Domain\NoteConsultUseCase;
 use App\Billing\Sunat\Domain\NoteSendUseCase;
 use App\Billing\Sunat\Model\Response\DocumentResponse;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 use Brick\Math\Exception\MathException;
 use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;

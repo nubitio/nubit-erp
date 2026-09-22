@@ -8,7 +8,7 @@ use App\Billing\Entity\TaxDocument;
 use App\Billing\Invoice\Domain\InvoiceConsultUseCase;
 use App\Billing\Repository\TaxDocumentEventRepository;
 use App\Billing\Sunat\Domain\BillConsultUseCase;
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
 use Greenter\Model\Response\CdrResponse;

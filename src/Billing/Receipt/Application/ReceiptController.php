@@ -11,7 +11,7 @@ use App\Billing\Receipt\Domain\ReceiptShowUseCase;
 use App\Billing\Receipt\Domain\ReceiptType;
 use App\Billing\Receipt\Domain\ReceiptXmlUseCase;
 use App\Billing\Receipt\Service\VoucherPdfRenderer;
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 use App\Sales\Domain\DocType;
 use App\Settings\Service\TenantSettingsService;
 use Brick\Math\Exception\MathException;

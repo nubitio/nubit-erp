@@ -7,7 +7,7 @@ namespace App\Billing\Invoice\Domain;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Sunat\Domain\BillPdfUseCase;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 use App\Efact\Service\SettingsService;
 use Doctrine\DBAL\Exception;
 use League\Flysystem\FilesystemException;

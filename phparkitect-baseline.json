@@ -61,36 +61,6 @@
             "error": "depends on App\\Billing\\Entity\\TaxDocument, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
         },
         {
-            "fqcn": "App\\Efact\\Service\\CompanyContext",
-            "line": 13,
-            "filePath": "Efact\/Service\/CompanyContext.php",
-            "error": "depends on App\\Organization\\Entity\\Company, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
-        },
-        {
-            "fqcn": "App\\Efact\\Service\\CompanyContext",
-            "line": 16,
-            "filePath": "Efact\/Service\/CompanyContext.php",
-            "error": "depends on App\\Organization\\Repository\\CompanyRepository, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
-        },
-        {
-            "fqcn": "App\\Efact\\Service\\CompanyContext",
-            "line": 19,
-            "filePath": "Efact\/Service\/CompanyContext.php",
-            "error": "depends on App\\Organization\\Entity\\Company, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
-        },
-        {
-            "fqcn": "App\\Efact\\Service\\CompanyContext",
-            "line": 21,
-            "filePath": "Efact\/Service\/CompanyContext.php",
-            "error": "depends on App\\Organization\\Entity\\Company, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
-        },
-        {
-            "fqcn": "App\\Efact\\Service\\CompanyContext",
-            "line": 26,
-            "filePath": "Efact\/Service\/CompanyContext.php",
-            "error": "depends on App\\Organization\\Entity\\Company, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
-        },
-        {
             "fqcn": "App\\Efact\\Service\\LogoProvider",
             "line": 86,
             "filePath": "Efact\/Service\/LogoProvider.php",

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Efact\Service;
+namespace App\Organization\Service;
 
 use App\Organization\Entity\Company;
 use App\Organization\Repository\CompanyRepository;

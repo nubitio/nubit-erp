@@ -8,7 +8,7 @@ use App\Billing\Entity\TaxDocument;
 use App\Billing\Invoice\Domain\ValidateInvoiceUseCase;
 use App\Billing\Invoice\Domain\Voucher;
 use App\Billing\Repository\TaxDocumentRepository;
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 use App\Efact\Service\SettingsService;
 use App\Settings\Entity\ConfigKey;
 use Doctrine\ORM\EntityManagerInterface;

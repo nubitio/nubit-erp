@@ -6,7 +6,7 @@ namespace App\Billing\Controller;
 
 use App\Billing\Receipt\ReceiptPayload;
 use App\Billing\Repository\TaxDocumentRepository;
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 use Doctrine\DBAL\Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;

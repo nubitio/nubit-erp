@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Reporting\Ple;
 
 use App\Accounting\Message\EconomicEvent;
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 use Doctrine\DBAL\Connection;
 
 /**

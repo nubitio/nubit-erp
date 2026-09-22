@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Billing\Receipt\Domain;
 
 use App\Billing\Repository\TaxDocumentRepository;
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 use Nubit\Platform\Exception\NotFoundException;
 use Nubit\Platform\Exception\ServiceException;
 

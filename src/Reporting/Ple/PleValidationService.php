@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Reporting\Ple;
 
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 
 final readonly class PleValidationService
 {

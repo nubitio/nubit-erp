@@ -11,7 +11,7 @@ use App\Billing\Sunat\Domain\BillSendUseCase;
 use App\Billing\Sunat\Model\Response\DocumentResponse;
 use App\Efact\Audit\AuditLogger;
 use App\Efact\Config\EfactConstants as Constants;
-use App\Efact\Service\CompanyContext;
+use App\Organization\Service\CompanyContext;
 use Doctrine\DBAL\Exception;
 use Doctrine\Persistence\ManagerRegistry;
 use League\Flysystem\FilesystemException;
