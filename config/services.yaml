@@ -200,6 +200,8 @@ services:
     # Efact-owned adapter: maps concrete app entities to portable quota resource names.
     class: App\ControlPlane\Billing\Quota\EfactEntityQuotaResourceResolver
 
+  Nubit\TenantBundle\Quota\QuotaResourceRegistry: ~
+
   App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface:
     class: App\ControlPlane\Tenant\Adapter\InitialSetupServiceAdapter
 

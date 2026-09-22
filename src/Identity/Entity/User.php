@@ -20,6 +20,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Attribute\SoftDeletable;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
+use Nubit\TenantBundle\Attribute\QuotaResource;
 use Override;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -28,6 +29,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[SoftDeletable]
+#[QuotaResource('users')]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'usuario')]
 #[ApiResource(

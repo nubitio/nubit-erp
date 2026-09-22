@@ -18,6 +18,7 @@ use App\Organization\Entity\Branch;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Nubit\TenantBundle\Quota\QuotaResourceRegistry;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class ControlPlaneBillingDomainTest extends TestCase
@@ -217,7 +218,7 @@ final class ControlPlaneBillingDomainTest extends TestCase
         bool $supported,
         ?string $expectedResource,
     ): void {
-        $resolver = new EfactEntityQuotaResourceResolver();
+        $resolver = new EfactEntityQuotaResourceResolver(new QuotaResourceRegistry());
 
         self::assertSame($supported, $resolver->supports($entity));
         self::assertSame($expectedResource, $resolver->resolveResource($entity));

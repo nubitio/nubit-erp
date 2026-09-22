@@ -28,10 +28,12 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Attribute\Auditable;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
+use Nubit\TenantBundle\Attribute\QuotaResource;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: TaxDocumentRepository::class)]
+#[QuotaResource('invoices')]
 #[ORM\Table(name: 'tax_document')]
 #[ORM\UniqueConstraint(name: 'uq_tax_document_number_branch', columns: [
     'document_type',

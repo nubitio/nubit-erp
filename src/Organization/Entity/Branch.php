@@ -13,10 +13,12 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
+use Nubit\TenantBundle\Attribute\QuotaResource;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 
 #[ORM\Entity(repositoryClass: BranchRepository::class)]
+#[QuotaResource('branches')]
 #[ORM\Table(name: 'local')]
 #[ApiResource(normalizationContext: ['groups' => ['branch:read']], filters: [DataGridFilter::class], mercure: true)]
 class Branch implements ActivatableInterface

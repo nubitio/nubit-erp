@@ -18,10 +18,12 @@ use App\Inventory\Entity\PriceList;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Attribute\Exportable;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
+use Nubit\TenantBundle\Attribute\QuotaResource;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[Exportable]
+#[QuotaResource('customers')]
 #[ORM\Entity(repositoryClass: CustomerRepository::class)]
 #[ORM\Table(name: 'cliente')]
 #[ApiResource(

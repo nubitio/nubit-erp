@@ -4,30 +4,20 @@ declare(strict_types=1);
 
 namespace App\ControlPlane\Billing\Quota;
 
-use App\Billing\Entity\TaxDocument;
-use App\Catalog\Entity\Product;
-use App\Contacts\Entity\Customer;
-use App\Identity\Entity\User;
-use App\Organization\Entity\Branch;
 use Nubit\Platform\Quota\Contract\QuotaResourceResolverInterface;
+use Nubit\TenantBundle\Quota\QuotaResourceRegistry;
 
 final readonly class EfactEntityQuotaResourceResolver implements QuotaResourceResolverInterface
 {
-    private const array ENTITY_RESOURCE_MAP = [
-        User::class => 'users',
-        Customer::class => 'customers',
-        Product::class => 'products',
-        TaxDocument::class => 'invoices',
-        Branch::class => 'branches',
-    ];
+    public function __construct(private QuotaResourceRegistry $registry) {}
 
     public function supports(object $subject): bool
     {
-        return isset(self::ENTITY_RESOURCE_MAP[$subject::class]);
+        return $this->resolveResource($subject) !== null;
     }
 
     public function resolveResource(object $subject): ?string
     {
-        return self::ENTITY_RESOURCE_MAP[$subject::class] ?? null;
+        return $this->registry->resolve($subject);
     }
 }

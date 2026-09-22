@@ -30,12 +30,14 @@ use Doctrine\ORM\Mapping as ORM;
 use Nubit\AdminBundle\Media\Entity\Media;
 use Nubit\ApiPlatform\Attribute\Auditable;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
+use Nubit\TenantBundle\Attribute\QuotaResource;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[Auditable]
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
+#[QuotaResource('products')]
 #[ORM\Table(name: 'producto')]
 #[ApiResource(
     operations: [
