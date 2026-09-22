@@ -109,29 +109,33 @@ final readonly class StatementAssembler
     {
         $movements = [];
         foreach ($charges as $charge) {
-            if ($charge['date'] >= $dateFrom && $charge['date'] <= $dateTo) {
-                $movements[] = [
-                    'sort' => $charge['date'] . '-0',
-                    'kind' => 'charge',
-                    'date' => $charge['date'],
-                    'document' => $charge['document'],
-                    'detail' => 'Venta al crédito',
-                    'amount' => $charge['amount'],
-                ];
+            if ($charge['date'] < $dateFrom || $charge['date'] > $dateTo) {
+                continue;
             }
+
+            $movements[] = [
+                'sort' => $charge['date'] . '-0',
+                'kind' => 'charge',
+                'date' => $charge['date'],
+                'document' => $charge['document'],
+                'detail' => 'Venta al crédito',
+                'amount' => $charge['amount'],
+            ];
         }
 
         foreach ($payments as $payment) {
-            if ($payment['date'] >= $dateFrom && $payment['date'] <= $dateTo) {
-                $movements[] = [
-                    'sort' => $payment['date'] . '-1',
-                    'kind' => 'payment',
-                    'date' => $payment['date'],
-                    'document' => $payment['document'],
-                    'detail' => $payment['detail'] === '' ? 'Cobro' : $payment['detail'],
-                    'amount' => $payment['amount'],
-                ];
+            if ($payment['date'] < $dateFrom || $payment['date'] > $dateTo) {
+                continue;
             }
+
+            $movements[] = [
+                'sort' => $payment['date'] . '-1',
+                'kind' => 'payment',
+                'date' => $payment['date'],
+                'document' => $payment['document'],
+                'detail' => $payment['detail'] === '' ? 'Cobro' : $payment['detail'],
+                'amount' => $payment['amount'],
+            ];
         }
 
         usort($movements, static fn(array $a, array $b): int => $a['sort'] <=> $b['sort']);
