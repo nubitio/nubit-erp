@@ -107,7 +107,6 @@ final class VerticalPresetPlannerTest extends TestCase
             ->method('findByKey')
             ->willReturnCallback(static fn(string $key): ?TenantCapability => $rows[$key] ?? null);
 
-        /** @var TenantWarehousePortInterface&MockObject $warehousePort */
         $warehousePort = $this->createMock(TenantWarehousePortInterface::class);
         $warehousePort->method('count')->willReturn($warehouseCount);
         $warehousePort->method('hasBranch')->willReturn($branch !== null);

@@ -11,12 +11,15 @@ final class MessengerObservabilityConfigTest extends TestCase
 {
     public function testTracingMiddlewareIsBoundToTheDefaultBus(): void
     {
+        /** @var array<string, mixed> $config */
         $config = Yaml::parseFile(__DIR__ . '/../../config/services.yaml', Yaml::PARSE_CUSTOM_TAGS);
+        /** @var array<string, mixed>|null $definition */
         $definition = $config['services']['Nubit\\Platform\\Messenger\\TracingMiddleware'] ?? null;
 
         self::assertIsArray($definition);
         self::assertSame('@nubit.observability.tracer', $definition['arguments']['$tracer'] ?? null);
 
+        /** @var mixed $tags */
         $tags = $definition['tags'] ?? [];
         self::assertIsArray($tags);
 

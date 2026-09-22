@@ -21,13 +21,11 @@ final class TenantCertificatePemDecoder
         if (!openssl_pkcs12_read($contents, $certs, $password)) {
             throw new \InvalidArgumentException('No se pudo leer el certificado PFX. Verifica la contraseña.');
         }
-        $certValue = $certs['cert'] ?? null;
-        $cert = is_string($certValue) ? $certValue : '';
+        $cert = is_string($certs['cert'] ?? null) ? $certs['cert'] : '';
         if ($cert === '') {
             throw new \InvalidArgumentException('El PFX no contiene un certificado valido.');
         }
-        $privateKeyValue = $certs['pkey'] ?? null;
-        $privateKey = is_string($privateKeyValue) ? $privateKeyValue : '';
+        $privateKey = is_string($certs['pkey'] ?? null) ? $certs['pkey'] : '';
         return $cert . ($privateKey === '' ? '' : "\n" . $privateKey);
     }
 }
