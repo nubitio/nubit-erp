@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\Settings\Controller;
 
-use App\ControlPlane\Certificate\CertificateStatus;
-use App\ControlPlane\Certificate\TenantCertificate;
 use App\Settings\Controller\TenantCertificateController;
+use App\Settings\Dto\TenantCertificateView;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -28,12 +27,10 @@ final class TenantCertificateControllerAuthorizationTest extends TestCase
     public function testCertificateMetadataDoesNotExposeCredentialMaterial(): void
     {
         $controller = new \ReflectionClass(TenantCertificateController::class)->newInstanceWithoutConstructor();
-        $certificate = new TenantCertificate(
+        $certificate = new TenantCertificateView(
             id: 7,
-            tenantId: 11,
-            tenantName: 'tenant-a',
             ruc: '20123456789',
-            status: CertificateStatus::Active,
+            status: 'active',
             subjectCn: 'tenant-a',
             issuerCn: 'SUNAT',
             serialNumber: 'serial-7',
@@ -41,12 +38,8 @@ final class TenantCertificateControllerAuthorizationTest extends TestCase
             validFrom: new \DateTimeImmutable('2026-01-01'),
             expiresAt: new \DateTimeImmutable('2027-01-01'),
             uploadedAt: new \DateTimeImmutable('2026-01-01'),
-            uploadedBy: 'admin',
             revokedAt: null,
-            revokedBy: null,
-            revocationReason: null,
-            supersededById: null,
-            lastAlertedAt: null,
+            lycetSyncStatus: 'synced',
         );
 
         $method = new \ReflectionMethod(TenantCertificateController::class, 'serializeCertificate');

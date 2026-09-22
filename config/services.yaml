@@ -209,6 +209,9 @@ services:
   App\ControlPlane\Certificate\CertificateLifecycleServiceInterface:
     class: App\ControlPlane\Certificate\CertificateLifecycleService
 
+  App\Settings\Contract\TenantCertificateServiceInterface:
+    class: App\ControlPlane\Certificate\TenantCertificateSettingsAdapter
+
   App\ControlPlane\Certificate\CertificateAlertServiceInterface:
     class: App\ControlPlane\Certificate\CertificateAlertService
 

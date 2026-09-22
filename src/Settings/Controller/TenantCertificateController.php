@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Settings\Controller;
 
-use App\ControlPlane\Certificate\CertificateLifecycleServiceInterface;
 use App\Efact\Audit\AuditLogger;
 use App\Identity\Security\ReauthenticationService;
+use App\Settings\Contract\TenantCertificateServiceInterface;
+use App\Settings\Dto\TenantCertificateView;
 use App\Settings\Service\TenantCertificateIdentity;
 use App\Settings\Service\TenantCertificateRequest;
 use Nubit\Platform\Tenant\Context\TenantContext;
@@ -34,7 +35,7 @@ final class TenantCertificateController extends AbstractController
         private readonly TenantContext $tenantContext,
         private readonly TenantCertificateRequest $certificateRequest,
         private readonly TenantCertificateIdentity $certificateIdentity,
-        private readonly CertificateLifecycleServiceInterface $certificates,
+        private readonly TenantCertificateServiceInterface $certificates,
         private readonly AuditLogger $auditLogger,
         private readonly LoggerInterface $logger,
         private readonly ReauthenticationService $reauthentication,
@@ -123,35 +124,20 @@ final class TenantCertificateController extends AbstractController
     /**
      * @return array<string, mixed>
      */
-    private function serializeCertificate(object $certificate): array
+    private function serializeCertificate(TenantCertificateView $certificate): array
     {
-        $metadata = get_object_vars($certificate);
-        /** @var array{
-         *     id: int,
-         *     ruc: string,
-         *     status: \BackedEnum,
-         *     subjectCn: ?string,
-         *     issuerCn: ?string,
-         *     serialNumber: ?string,
-         *     fingerprintSha256: string,
-         *     validFrom: \DateTimeImmutable,
-         *     expiresAt: \DateTimeImmutable,
-         *     uploadedAt: \DateTimeImmutable,
-         *     lycetSyncStatus: string,
-         * } $metadata */
-
         return [
-            'id' => $metadata['id'],
-            'ruc' => $metadata['ruc'],
-            'status' => $metadata['status']->value,
-            'subjectCn' => $metadata['subjectCn'],
-            'issuerCn' => $metadata['issuerCn'],
-            'serialNumber' => $metadata['serialNumber'],
-            'fingerprintSha256' => $metadata['fingerprintSha256'],
-            'validFrom' => $metadata['validFrom']->format(DATE_ATOM),
-            'expiresAt' => $metadata['expiresAt']->format(DATE_ATOM),
-            'uploadedAt' => $metadata['uploadedAt']->format(DATE_ATOM),
-            'lycetSyncStatus' => $metadata['lycetSyncStatus'],
+            'id' => $certificate->id,
+            'ruc' => $certificate->ruc,
+            'status' => $certificate->status,
+            'subjectCn' => $certificate->subjectCn,
+            'issuerCn' => $certificate->issuerCn,
+            'serialNumber' => $certificate->serialNumber,
+            'fingerprintSha256' => $certificate->fingerprintSha256,
+            'validFrom' => $certificate->validFrom->format(DATE_ATOM),
+            'expiresAt' => $certificate->expiresAt->format(DATE_ATOM),
+            'uploadedAt' => $certificate->uploadedAt->format(DATE_ATOM),
+            'lycetSyncStatus' => $certificate->lycetSyncStatus,
         ];
     }
 }

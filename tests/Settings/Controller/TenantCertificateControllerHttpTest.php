@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\Settings\Controller;
 
-use App\ControlPlane\Certificate\CertificateLifecycleServiceInterface;
-use App\ControlPlane\Certificate\CertificateStatus;
-use App\ControlPlane\Certificate\TenantCertificate;
 use App\Efact\Audit\AuditLogger;
 use App\Identity\Security\ReauthenticationService;
 use App\Organization\Entity\Company;
 use App\Organization\Repository\CompanyRepository;
 use App\Settings\Controller\TenantCertificateController;
+use App\Settings\Contract\TenantCertificateServiceInterface;
+use App\Settings\Dto\TenantCertificateView;
 use App\Settings\Service\TenantCertificateIdentity;
 use App\Settings\Service\TenantCertificatePemDecoder;
 use App\Settings\Service\TenantCertificateRequest;
@@ -31,7 +30,7 @@ final class TenantCertificateControllerHttpTest extends TestCase
 {
     private TenantContext&MockObject $tenantContext;
     private CompanyRepository&MockObject $companies;
-    private CertificateLifecycleServiceInterface&MockObject $certificates;
+    private TenantCertificateServiceInterface&MockObject $certificates;
     private AuditLogger&MockObject $audit;
     private LoggerInterface&MockObject $logger;
     private UserPasswordHasherInterface&MockObject $hasher;
@@ -40,7 +39,7 @@ final class TenantCertificateControllerHttpTest extends TestCase
     {
         $this->tenantContext = $this->createMock(TenantContext::class);
         $this->companies = $this->createMock(CompanyRepository::class);
-        $this->certificates = $this->createMock(CertificateLifecycleServiceInterface::class);
+        $this->certificates = $this->createMock(TenantCertificateServiceInterface::class);
         $this->audit = $this->createMock(AuditLogger::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->hasher = $this->createMock(UserPasswordHasherInterface::class);
@@ -94,12 +93,10 @@ final class TenantCertificateControllerHttpTest extends TestCase
                 'admin',
                 self::isType('callable'),
             )
-            ->willReturn(new TenantCertificate(
+            ->willReturn(new TenantCertificateView(
                 id: 1,
-                tenantId: 1,
-                tenantName: 'tenant-a',
                 ruc: '20123456789',
-                status: CertificateStatus::Active,
+                status: 'active',
                 subjectCn: 'tenant-a',
                 issuerCn: 'SUNAT',
                 serialNumber: 'serial',
@@ -107,12 +104,8 @@ final class TenantCertificateControllerHttpTest extends TestCase
                 validFrom: new \DateTimeImmutable(),
                 expiresAt: new \DateTimeImmutable('+1 year'),
                 uploadedAt: new \DateTimeImmutable(),
-                uploadedBy: 'admin',
                 revokedAt: null,
-                revokedBy: null,
-                revocationReason: null,
-                supersededById: null,
-                lastAlertedAt: null,
+                lycetSyncStatus: 'synced',
             ));
 
         $response = $this->controller()->__invoke($this->request([

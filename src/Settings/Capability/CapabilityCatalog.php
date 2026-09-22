@@ -8,8 +8,7 @@ use function array_key_exists;
 
 /**
  * Code-defined, versioned catalogue of operational capabilities (NB-4),
- * mirroring {@see \App\Identity\Security\PermissionCatalog} and
- * {@see \App\ControlPlane\Billing\Feature\FeatureCatalog}.
+ * mirroring the identity permission catalogue.
  *
  * This is the entitlement/capability split from ADR-013 + ADR-018 D3: a
  * capability is what the tenant's install does; `requiresEntitlement` links it

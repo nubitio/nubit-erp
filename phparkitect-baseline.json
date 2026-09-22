@@ -187,12 +187,6 @@
             "error": "depends on App\\AI\\Dto\\RecentSaleDto, but should not depend on these namespaces: App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant, Orchestration or any vertical"
         },
         {
-            "fqcn": "App\\Settings\\Controller\\TenantCertificateController",
-            "line": 37,
-            "filePath": "Settings\/Controller\/TenantCertificateController.php",
-            "error": "depends on App\\ControlPlane\\Certificate\\CertificateLifecycleServiceInterface, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
-        },
-        {
             "fqcn": "App\\Settings\\Controller\\TenantOnboardingController",
             "line": 33,
             "filePath": "Settings\/Controller\/TenantOnboardingController.php",
