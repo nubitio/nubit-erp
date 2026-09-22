@@ -189,7 +189,6 @@ contexts:
     dependsOn: [AI, CashRegister, Catalog, Contacts, ControlPlane, Efact, Identity, Inventory, Organization, Sales, Settings]
     publicContracts:
       - App\Billing\Sunat\Domain\BillRepositoryInterface
-      - App\Billing\Sunat\Domain\LycetCompanyServiceInterface
       - App\Billing\Contract\SunatRejectionQueryInterface
     ownsTables:
       - tax_document

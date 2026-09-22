@@ -13,12 +13,6 @@
             "error": "depends on App\\Setup\\Dto\\InitialSetupInput, but should not depend on these namespaces: App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-003: ControlPlane must not depend on ERP, Assistant or verticals"
         },
         {
-            "fqcn": "App\\ControlPlane\\Tenant\\Adapter\\LycetElectronicBillingCompanyAdapter",
-            "line": 13,
-            "filePath": "ControlPlane\/Tenant\/Adapter\/LycetElectronicBillingCompanyAdapter.php",
-            "error": "depends on App\\Billing\\Sunat\\Domain\\LycetCompanyServiceInterface, but should not depend on these namespaces: App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-003: ControlPlane must not depend on ERP, Assistant or verticals"
-        },
-        {
             "fqcn": "App\\Settings\\Controller\\TenantOnboardingController",
             "line": 33,
             "filePath": "Settings\/Controller\/TenantOnboardingController.php",

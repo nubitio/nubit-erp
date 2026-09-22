@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Billing\Sunat\Infrastructure;
 
-use App\Billing\Sunat\Domain\LycetCompanyServiceInterface;
+use App\ControlPlane\Tenant\Port\ElectronicBillingCompanyPortInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
@@ -21,7 +21,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  *   PUT  /api/v1/configuration/company/{ruc}/logo
  *   DELETE /api/v1/configuration/company/{ruc}
  */
-readonly class LycetCompanyService implements LycetCompanyServiceInterface
+readonly class LycetCompanyService implements ElectronicBillingCompanyPortInterface
 {
     use LycetUrlBuilder;
 

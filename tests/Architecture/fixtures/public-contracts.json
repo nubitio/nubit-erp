@@ -8,11 +8,6 @@
         "getXml(Greenter\\Model\\Sale\\Invoice $invoice): string",
         "sendBill(Greenter\\Model\\Sale\\Invoice $invoice): App\\Billing\\Sunat\\Model\\Response\\DocumentResponse"
     ],
-    "App\\Billing\\Sunat\\Domain\\LycetCompanyServiceInterface": [
-        "removeCompany(string $ruc): void",
-        "uploadCompanyLogo(string $ruc, string $imageData): void",
-        "upsertCompany(string $ruc, string $solUser, string $solPass, string $certPem, array $urls?, ?string $clientId?, ?string $clientSecret?): void"
-    ],
     "App\\Efact\\Domain\\ActivatableInterface": [
         "getIsActive(): bool"
     ],
