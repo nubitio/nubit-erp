@@ -243,6 +243,7 @@ services:
     environment:
       <<: *worker-env
       S3_PUBLIC_URL: ${S3_PUBLIC_URL}
+      NUBIT_WORKER_HEARTBEAT_FILE: /app/var/worker-async.heartbeat
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     volumes:
@@ -264,7 +265,7 @@ services:
         max-size: '10m'
         max-file: '3'
     healthcheck:
-      test: ['CMD', 'sh', '/app/docker/worker-healthcheck.sh', 'messenger:consume']
+      test: ['CMD', 'sh', '/app/docker/worker-healthcheck.sh', 'messenger:consume', '/app/var/worker-async.heartbeat']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -284,6 +285,7 @@ services:
         condition: service_healthy
     environment:
       <<: *worker-env
+      NUBIT_WORKER_HEARTBEAT_FILE: /app/var/worker-scheduler.heartbeat
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     volumes:
@@ -305,7 +307,7 @@ services:
         max-size: '10m'
         max-file: '3'
     healthcheck:
-      test: ['CMD', 'sh', '/app/docker/worker-healthcheck.sh', 'messenger:consume']
+      test: ['CMD', 'sh', '/app/docker/worker-healthcheck.sh', 'messenger:consume', '/app/var/worker-scheduler.heartbeat']
       interval: 30s
       timeout: 10s
       retries: 3

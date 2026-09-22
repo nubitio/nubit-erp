@@ -137,6 +137,7 @@ services:
       MERCURE_PUBLIC_URL: '${MERCURE_PUBLIC_URL:-http://demo.localhost:8080/.well-known/mercure}'
       MERCURE_JWT_SECRET: '${MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}'
       MESSENGER_TRANSPORT_DSN: '${MESSENGER_TRANSPORT_DSN:-doctrine://control_plane?queue_name=default}'
+      NUBIT_WORKER_HEARTBEAT_FILE: '/app/var/worker-async.heartbeat'
       MAILER_FROM: '${MAILER_FROM:-noreply@nubit.pe}'
       OTEL_PHP_AUTOLOAD_ENABLED: 'false'
       E2E_SEED_ENABLED: '1'
@@ -153,7 +154,7 @@ services:
       - object-storage
     command: php bin/console messenger:consume async --limit=1000 --memory-limit=256M -vv
     healthcheck:
-      test: ['CMD', 'sh', '/app/docker/worker-healthcheck.sh', 'messenger:consume']
+      test: ['CMD', 'sh', '/app/docker/worker-healthcheck.sh', 'messenger:consume', '/app/var/worker-async.heartbeat']
       interval: 30s
       timeout: 5s
       retries: 3

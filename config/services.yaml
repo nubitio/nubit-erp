@@ -7,6 +7,7 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+  nubit_worker_heartbeat_file: '/tmp/nubit-worker.heartbeat'
   jwt_access_token_ttl: '%env(int:AUTH_TOKEN_TTL)%'
   jwt_refresh_token_ttl: '%env(int:REFRESH_TOKEN_TTL)%'
   tenant_rate_limit: '300'
