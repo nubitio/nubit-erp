@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Efact\Command;
 
-use App\ControlPlane\Tenant\Application\TenantService;
-use App\ControlPlane\Tenant\Service\TenantConnectionSwitcher;
 use App\Efact\Config\EfactConstants as Constants;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -13,6 +11,8 @@ use Doctrine\Persistence\ConnectionRegistry;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\FilesystemOperator;
 use League\Flysystem\StorageAttributes;
+use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
+use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -28,8 +28,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class MigrateStorageToTenantPrefixCommand extends Command
 {
     public function __construct(
-        private readonly TenantService $tenantService,
-        private readonly TenantConnectionSwitcher $tenantConnectionSwitcher,
+        private readonly TenantRegistryInterface $tenantRegistry,
+        private readonly TenantConnectionSwitcherInterface $tenantConnectionSwitcher,
         private readonly ConnectionRegistry $connectionRegistry,
         private readonly FilesystemOperator $defaultFilesystem,
         private readonly LoggerInterface $logger,
@@ -72,7 +72,7 @@ final class MigrateStorageToTenantPrefixCommand extends Command
             return Command::FAILURE;
         }
 
-        $tenants = $this->tenantService->getTenants();
+        $tenants = $this->tenantRegistry->getTenants();
         if ($tenants === []) {
             $io->warning('No tenants found');
 

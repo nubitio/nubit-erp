@@ -43,18 +43,6 @@
             "error": "depends on App\\Billing\\Sunat\\Domain\\LycetCompanyServiceInterface, but should not depend on these namespaces: App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-003: ControlPlane must not depend on ERP, Assistant or verticals"
         },
         {
-            "fqcn": "App\\Efact\\Command\\MigrateStorageToTenantPrefixCommand",
-            "line": 31,
-            "filePath": "Efact\/Command\/MigrateStorageToTenantPrefixCommand.php",
-            "error": "depends on App\\ControlPlane\\Tenant\\Application\\TenantService, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
-        },
-        {
-            "fqcn": "App\\Efact\\Command\\MigrateStorageToTenantPrefixCommand",
-            "line": 32,
-            "filePath": "Efact\/Command\/MigrateStorageToTenantPrefixCommand.php",
-            "error": "depends on App\\ControlPlane\\Tenant\\Service\\TenantConnectionSwitcher, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
-        },
-        {
             "fqcn": "App\\Efact\\Doctrine\\Filter\\BranchFilter",
             "line": 25,
             "filePath": "Efact\/Doctrine\/Filter\/BranchFilter.php",
