@@ -16,7 +16,7 @@ PHP_DEV := php -d memory_limit=256M
 
 .DEFAULT_GOAL := help
 
-.PHONY: help up down restart reset bootstrap install install-back install-front migrate migrate-control-plane migrate-tenants cache-clear dev build-front lint lint-php format format-php test test-back test-core test-front e2e logs ps shell-web shell-vite
+.PHONY: help up down restart reset bootstrap install install-back install-front migrate migrate-control-plane migrate-tenants cache-clear check-generated dev build-front lint lint-php format format-php test test-back test-core test-front e2e logs ps shell-web shell-vite
 
 help:
 	@printf "\n"
@@ -30,6 +30,7 @@ help:
 	@printf "  make install          Install backend and frontend dependencies\n"
 	@printf "  make migrate          Run control plane and tenant migrations\n"
 	@printf "  make cache-clear      Clear Symfony cache\n"
+	@printf "  make check-generated  Verify generated Symfony reference artifacts\n"
 	@printf "  make dev              (Re)start Vite dev server so the app hot-reloads through :8080\n"
 	@printf "  make build-front      Production frontend build for local testing (auto-restores dev mode after)\n"
 	@printf "  make lint             Run frontend lint\n"
@@ -76,6 +77,9 @@ migrate-tenants:
 
 cache-clear:
 	$(EXEC_WEB) 'cd /app && $(PHP_DEV) bin/console cache:clear'
+
+check-generated:
+	$(EXEC_WEB) 'cd /app && sh scripts/ci/check-generated-artifacts.sh'
 
 # Always restart (not `up -d`, which no-ops if the container is already
 # running): `vite dev` only writes the dev-mode public/build/.vite/entrypoints.json

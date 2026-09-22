@@ -224,6 +224,10 @@ jobs:
         if: needs.changes.outputs.backend == 'true'
         run: docker compose exec -T web php scripts/architecture/check-platform-boundary.php
 
+      - name: Check generated Symfony reference artifacts
+        if: needs.changes.outputs.backend == 'true'
+        run: docker compose exec -T web sh scripts/ci/check-generated-artifacts.sh
+
       - name: Check versioned public API contract
         if: needs.changes.outputs.backend == 'true'
         run: docker compose exec -T web php scripts/api/check-public-contract.php
