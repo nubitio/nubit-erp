@@ -8,6 +8,7 @@ use App\Inventory\Entity\Warehouse;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Repository\BranchRepository;
 use App\Settings\Contract\TenantWarehousePortInterface;
+use App\Settings\Dto\TenantWarehouseView;
 use Doctrine\ORM\EntityManagerInterface;
 
 final readonly class TenantWarehouseSettingsAdapter implements TenantWarehousePortInterface
@@ -21,6 +22,15 @@ final readonly class TenantWarehouseSettingsAdapter implements TenantWarehousePo
     public function count(): int
     {
         return $this->warehouses->count([]);
+    }
+
+    public function defaultWarehouse(): ?TenantWarehouseView
+    {
+        $warehouse = $this->warehouses->findOneBy([], ['name' => 'ASC']);
+
+        return $warehouse === null
+            ? null
+            : new TenantWarehouseView($warehouse->getId(), $warehouse->getName());
     }
 
     public function hasBranch(): bool

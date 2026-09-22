@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Settings\Runtime;
 
-use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Repository\BranchRepository;
 use App\Settings\Capability\TenantCapabilityResolver;
+use App\Settings\Contract\TenantWarehousePortInterface;
 use App\Settings\Entity\TenantSettings;
 use App\Settings\Repository\TenantCapabilityRepository;
 use App\Settings\Repository\TenantSettingsRepository;
@@ -141,10 +141,10 @@ final class TenantRuntimeConfigProviderTest extends TestCase
         $branchRepository->method('count')->willReturn($branchCount);
         $branchRepository->method('findOneBy')->willReturn(null);
 
-        /** @var WarehouseRepository&MockObject $warehouseRepository */
-        $warehouseRepository = $this->createMock(WarehouseRepository::class);
-        $warehouseRepository->method('count')->willReturn($warehouseCount);
-        $warehouseRepository->method('findOneBy')->willReturn(null);
+        /** @var TenantWarehousePortInterface&MockObject $warehousePort */
+        $warehousePort = $this->createMock(TenantWarehousePortInterface::class);
+        $warehousePort->method('count')->willReturn($warehouseCount);
+        $warehousePort->method('defaultWarehouse')->willReturn(null);
 
         /** @var TenantCapabilityRepository&MockObject $capabilityRepository */
         $capabilityRepository = $this->createMock(TenantCapabilityRepository::class);
@@ -154,7 +154,7 @@ final class TenantRuntimeConfigProviderTest extends TestCase
             $featureChecker,
             $settingsRepository,
             $branchRepository,
-            $warehouseRepository,
+            $warehousePort,
             new VerticalPresetRegistry([new RetailPreset(), new PharmacyPreset()]),
             new TenantCapabilityResolver($featureChecker, $capabilityRepository),
         );

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\ControlPlane\Tenant\Adapter;
+namespace App\Setup\Adapter;
 
 use App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface;
 use App\ControlPlane\Tenant\Port\InitialTenantSetupRequest;

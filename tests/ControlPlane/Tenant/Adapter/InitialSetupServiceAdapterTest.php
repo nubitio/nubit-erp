@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\ControlPlane\Tenant\Adapter;
 
-use App\ControlPlane\Tenant\Adapter\InitialSetupServiceAdapter;
+use App\Setup\Adapter\InitialSetupServiceAdapter;
 use App\ControlPlane\Tenant\Port\InitialTenantSetupRequest;
 use App\Setup\Dto\InitialSetupInput;
 use App\Setup\InitialSetupService;

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Settings\Runtime;
 
-use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Repository\BranchRepository;
 use App\Settings\Capability\TenantCapabilityResolver;
+use App\Settings\Contract\TenantWarehousePortInterface;
 use App\Settings\Repository\TenantSettingsRepository;
 use App\Settings\Vertical\VerticalPresetRegistry;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
@@ -17,7 +17,7 @@ final readonly class TenantRuntimeConfigProvider
         private FeatureCheckerInterface $featureChecker,
         private TenantSettingsRepository $settingsRepository,
         private BranchRepository $branchRepository,
-        private WarehouseRepository $warehouseRepository,
+        private TenantWarehousePortInterface $warehousePort,
         private VerticalPresetRegistry $presetRegistry,
         private TenantCapabilityResolver $capabilityResolver,
     ) {}
@@ -31,9 +31,9 @@ final readonly class TenantRuntimeConfigProvider
         $entitlements = $this->featureChecker->getEntitlements();
 
         $branchCount = $this->branchRepository->count([]);
-        $warehouseCount = $this->warehouseRepository->count([]);
+        $warehouseCount = $this->warehousePort->count();
         $defaultBranch = $this->branchRepository->findOneBy([], ['name' => 'ASC']);
-        $defaultWarehouse = $this->warehouseRepository->findOneBy([], ['name' => 'ASC']);
+        $defaultWarehouse = $this->warehousePort->defaultWarehouse();
 
         $multiWarehouse = $this->isFeatureEnabled($entitlements, 'multi_warehouse');
         $lotTracking = $this->isFeatureEnabled($entitlements, 'lot_tracking');
@@ -78,8 +78,8 @@ final readonly class TenantRuntimeConfigProvider
                 'warehouse' => $defaultWarehouse === null
                     ? null
                     : [
-                        'id' => $defaultWarehouse->getId(),
-                        'name' => $defaultWarehouse->getName(),
+                        'id' => $defaultWarehouse->id,
+                        'name' => $defaultWarehouse->name,
                     ],
             ],
             'capabilities' => $this->capabilityResolver->all(),

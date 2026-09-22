@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Settings\Controller;
+namespace App\Onboarding\Controller;
 
 use App\Catalog\Entity\VoucherSeries;
 use App\Catalog\Repository\VoucherSeriesRepository;

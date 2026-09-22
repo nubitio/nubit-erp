@@ -57,6 +57,7 @@
     "App\\Settings\\Contract\\TenantWarehousePortInterface": [
         "count(): int",
         "createDefault(string $name): void",
+        "defaultWarehouse(): ?App\\Settings\\Dto\\TenantWarehouseView",
         "hasBranch(): bool"
     ]
 }

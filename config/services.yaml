@@ -203,7 +203,7 @@ services:
   Nubit\TenantBundle\Quota\QuotaResourceRegistry: ~
 
   App\ControlPlane\Tenant\Port\InitialTenantSetupPortInterface:
-    class: App\ControlPlane\Tenant\Adapter\InitialSetupServiceAdapter
+    class: App\Setup\Adapter\InitialSetupServiceAdapter
 
   App\ControlPlane\Certificate\CertificateLifecycleServiceInterface:
     class: App\ControlPlane\Certificate\CertificateLifecycleService
