@@ -79,7 +79,9 @@ class TenantMigrateCommand extends PerTenantCommand
 
         $concurrency = self::resolveConcurrency(
             $input->getOption('parallel'),
-            getenv('TENANT_MIGRATE_CONCURRENCY') ?: null,
+            ($environmentConcurrency = getenv('TENANT_MIGRATE_CONCURRENCY')) === false
+                ? null
+                : $environmentConcurrency,
         );
 
         $lock = new LockFactory(new FlockStore())->createLock('app:tenants:migrate.coordinator');
@@ -111,7 +113,11 @@ class TenantMigrateCommand extends PerTenantCommand
             return max(1, $fromEnv);
         }
 
-        return max(1, (int) ($parallelOption ?: self::DEFAULT_CONCURRENCY));
+        if ($parallelOption === null || $parallelOption === '' || $parallelOption === 0 || $parallelOption === '0') {
+            return self::DEFAULT_CONCURRENCY;
+        }
+
+        return max(1, (int) $parallelOption);
     }
 
     private function runSingleTenant(

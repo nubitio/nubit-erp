@@ -43,7 +43,7 @@ final class OpenApiReferenceValidator
             return false;
         }
         $value = $document;
-        foreach (explode('/', substr($reference, 2)) as $part) {
+        foreach (explode('/', substr($reference, offset: 2)) as $part) {
             $part = str_replace(['~1', '~0'], ['/', '~'], $part);
             if (!is_array($value) || !array_key_exists($part, $value)) {
                 return false;

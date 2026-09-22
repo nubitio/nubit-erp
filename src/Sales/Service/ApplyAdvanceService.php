@@ -236,7 +236,7 @@ readonly class ApplyAdvanceService
     ): int {
         $left = $amount;
         while ($left->isGreaterThan(0)) {
-            if (!isset($advances[$cursor])) {
+            if (!array_key_exists($cursor, $advances)) {
                 throw new UnprocessableEntityHttpException('El anticipo disponible cambió; reintente la aplicación.');
             }
 

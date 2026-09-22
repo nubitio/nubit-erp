@@ -22,9 +22,10 @@ final readonly class TenantCertificateRequest
         }
 
         try {
-            /** @var array<string, mixed> $payload */
-            $payload = $request->toArray();
-            return $payload;
+            /** @var array<string, mixed> $jsonPayload */
+            $jsonPayload = $request->toArray();
+
+            return $jsonPayload;
         } catch (\Throwable) {
             return [];
         }
@@ -48,7 +49,9 @@ final readonly class TenantCertificateRequest
             if (!is_string($value) || trim($value) === '') {
                 continue;
             }
-            $contents = $key === 'certificateBase64' ? base64_decode($value, true) : trim($value);
+            $contents = $key === 'certificateBase64'
+                ? base64_decode($value, strict: true)
+                : trim($value);
             if (!is_string($contents) || $contents === '') {
                 throw new \InvalidArgumentException('El certificado base64 no es valido.');
             }

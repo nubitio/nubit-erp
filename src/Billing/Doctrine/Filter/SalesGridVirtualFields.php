@@ -21,7 +21,7 @@ final class SalesGridVirtualFields implements GridVirtualFieldInterface
 {
     public function supports(string $resourceClass, string $field): bool
     {
-        return in_array($field, ['fullNumber', 'invoiceFullNumber', 'paymentMethod'], true);
+        return in_array($field, ['fullNumber', 'invoiceFullNumber', 'paymentMethod'], strict: true);
     }
 
     public function expression(QueryBuilder $queryBuilder, string $resourceClass, string $field): ?string
@@ -78,7 +78,7 @@ final class SalesGridVirtualFields implements GridVirtualFieldInterface
     private function joinedInvoiceExpression(QueryBuilder $queryBuilder): string
     {
         $aliases = $queryBuilder->getAllAliases();
-        if (!in_array('td', $aliases, true)) {
+        if (!in_array('td', $aliases, strict: true)) {
             // TaxDocument has a ManyToOne to SaleRecord via td.saleRecord.
             // Join TaxDocument entities where td.saleRecord = o AND td.reasonCode IS NULL.
             $queryBuilder->leftJoin(TaxDocument::class, 'td', 'WITH', 'td.saleRecord = o AND td.reasonCode IS NULL');
