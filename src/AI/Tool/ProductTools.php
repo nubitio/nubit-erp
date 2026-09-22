@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
-use App\AI\Dto\ProductSearchResultDto;
 use App\AI\Dto\ProductStockDto;
 use App\AI\Dto\ProductWarehouseStockDto;
 use App\Catalog\Entity\Product;
 use App\Catalog\Repository\ProductRepository;
+use App\Efact\Dto\ProductSearchResultDto;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Inventory\Service\ProductStockService;
 use Nubit\Platform\Exception\ServiceException;

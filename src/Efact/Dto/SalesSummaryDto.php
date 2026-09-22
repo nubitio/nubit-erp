@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\AI\Dto;
+namespace App\Efact\Dto;
 
 final readonly class SalesSummaryDto
 {

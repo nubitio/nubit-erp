@@ -7,24 +7,6 @@
             "error": "depends on App\\AI\\Repository\\SunatRejectionQueryInterface, but should not depend on these namespaces: App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant, Orchestration or any vertical"
         },
         {
-            "fqcn": "App\\Catalog\\Repository\\ProductRepository",
-            "line": -1,
-            "filePath": "Catalog\/Repository\/ProductRepository.php",
-            "error": "depends on App\\AI\\Dto\\ProductSearchResultDto, but should not depend on these namespaces: App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant, Orchestration or any vertical"
-        },
-        {
-            "fqcn": "App\\Catalog\\Repository\\ProductRepository",
-            "line": 36,
-            "filePath": "Catalog\/Repository\/ProductRepository.php",
-            "error": "depends on App\\AI\\Dto\\ProductSearchResultDto, but should not depend on these namespaces: App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant, Orchestration or any vertical"
-        },
-        {
-            "fqcn": "App\\Catalog\\Repository\\ProductRepository",
-            "line": 36,
-            "filePath": "Catalog\/Repository\/ProductRepository.php",
-            "error": "depends on App\\AI\\Dto\\ProductSearchResultDto, but should not depend on these namespaces: App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant, Orchestration or any vertical"
-        },
-        {
             "fqcn": "App\\ControlPlane\\Tenant\\Adapter\\InitialSetupServiceAdapter",
             "line": 15,
             "filePath": "ControlPlane\/Tenant\/Adapter\/InitialSetupServiceAdapter.php",
@@ -65,36 +47,6 @@
             "line": 169,
             "filePath": "Organization\/Entity\/Branch.php",
             "error": "depends on App\\Inventory\\Entity\\Warehouse, but should not depend on these namespaces: App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: Platform core must not depend on ControlPlane, ERP or verticals"
-        },
-        {
-            "fqcn": "App\\Sales\\Repository\\SalesAnalyticsRepository",
-            "line": -1,
-            "filePath": "Sales\/Repository\/SalesAnalyticsRepository.php",
-            "error": "depends on App\\AI\\Dto\\RecentSaleDto, but should not depend on these namespaces: App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant, Orchestration or any vertical"
-        },
-        {
-            "fqcn": "App\\Sales\\Repository\\SalesAnalyticsRepository",
-            "line": 25,
-            "filePath": "Sales\/Repository\/SalesAnalyticsRepository.php",
-            "error": "depends on App\\AI\\Dto\\SalesSummaryDto, but should not depend on these namespaces: App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant, Orchestration or any vertical"
-        },
-        {
-            "fqcn": "App\\Sales\\Repository\\SalesAnalyticsRepository",
-            "line": 62,
-            "filePath": "Sales\/Repository\/SalesAnalyticsRepository.php",
-            "error": "depends on App\\AI\\Dto\\SalesSummaryDto, but should not depend on these namespaces: App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant, Orchestration or any vertical"
-        },
-        {
-            "fqcn": "App\\Sales\\Repository\\SalesAnalyticsRepository",
-            "line": 96,
-            "filePath": "Sales\/Repository\/SalesAnalyticsRepository.php",
-            "error": "depends on App\\AI\\Dto\\RecentSaleDto, but should not depend on these namespaces: App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant, Orchestration or any vertical"
-        },
-        {
-            "fqcn": "App\\Sales\\Repository\\SalesAnalyticsRepository",
-            "line": 101,
-            "filePath": "Sales\/Repository\/SalesAnalyticsRepository.php",
-            "error": "depends on App\\AI\\Dto\\RecentSaleDto, but should not depend on these namespaces: App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-002\/AR-007: ERP core must not depend on Assistant, Orchestration or any vertical"
         },
         {
             "fqcn": "App\\Settings\\Controller\\TenantOnboardingController",

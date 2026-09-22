@@ -304,7 +304,7 @@ contexts:
     namespace: App\AI
     layer: Assistant
     dependsOn:
-      [AccountsPayable, Billing, CashRegister, Catalog, Contacts, Identity, Inventory, Purchasing, Reporting, Sales, Settings]
+      [AccountsPayable, Billing, CashRegister, Catalog, Contacts, Efact, Identity, Inventory, Purchasing, Reporting, Sales, Settings]
     publicContracts:
       - App\AI\Repository\SunatRejectionQueryInterface
     ownsTables: [assistant_thread, assistant_thread_message, assistant_proposed_action]

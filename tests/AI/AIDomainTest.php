@@ -7,11 +7,11 @@ namespace App\Tests\AI;
 use App\AI\Context\BranchContextAdapter;
 use App\AI\Context\BranchContextInterface;
 use App\AI\Dto\CashRegisterStatusDto;
-use App\AI\Dto\ProductSearchResultDto;
+use App\Efact\Dto\ProductSearchResultDto;
 use App\AI\Dto\ProductStockDto;
 use App\AI\Dto\ProductWarehouseStockDto;
-use App\AI\Dto\RecentSaleDto;
-use App\AI\Dto\SalesSummaryDto;
+use App\Efact\Dto\RecentSaleDto;
+use App\Efact\Dto\SalesSummaryDto;
 use App\Identity\Auth\BranchContextServiceInterface;
 use PHPUnit\Framework\TestCase;
 

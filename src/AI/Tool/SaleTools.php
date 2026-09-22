@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
-use App\AI\Dto\RecentSaleDto;
+use App\Efact\Dto\RecentSaleDto;
 use App\Reporting\Entity\TimeDimension;
 use App\Reporting\Repository\TimeDimensionRepository;
 use App\Sales\Repository\SalesAnalyticsRepository;
