@@ -152,6 +152,12 @@ services:
       - mercure
       - object-storage
     command: php bin/console messenger:consume async --limit=1000 --memory-limit=256M -vv
+    healthcheck:
+      test: ['CMD', 'sh', '/app/docker/worker-healthcheck.sh', 'messenger:consume']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   vite:
     image: node:20.19.0
