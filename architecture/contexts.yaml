@@ -313,7 +313,7 @@ contexts:
     namespace: App\Setup
     layer: Orchestration
     dependsOn:
-      [Accounting, AccountsPayable, BankReconciliation, Billing, CashRegister, Catalog, Contacts, FixedAssets, Identity, Inventory, Organization, Payroll, Purchasing, Reporting, Sales, Settings]
+      [Accounting, AccountsPayable, BankReconciliation, Billing, CashRegister, Catalog, Contacts, Efact, FixedAssets, Identity, Inventory, Organization, Payroll, Purchasing, Reporting, Sales, Settings]
     publicContracts: []
     ownsTables: []
 

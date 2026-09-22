@@ -10,7 +10,7 @@ use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\ProductKind;
 use App\Inventory\Core\Enum\ProductType;
-use App\Inventory\Core\Enum\StockPolicy;
+use App\Efact\Enum\StockPolicy;
 use App\Settings\Service\TenantSettingsService;
 
 /**

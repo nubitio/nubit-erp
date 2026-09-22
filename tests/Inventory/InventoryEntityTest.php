@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Inventory;
 
 use App\Catalog\Entity\Product;
-use App\Inventory\Core\Enum\StockPolicy;
+use App\Efact\Enum\StockPolicy;
 use App\Inventory\Dto\PriceItemDto;
 use App\Inventory\Dto\PriceListDto;
 use App\Inventory\Dto\PricesDto;

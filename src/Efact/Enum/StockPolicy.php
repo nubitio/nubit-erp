@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Inventory\Core\Enum;
+namespace App\Efact\Enum;
 
 enum StockPolicy: string
 {

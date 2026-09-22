@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Inventory\Core\Service;
 
 use App\Catalog\Entity\Product;
-use App\Inventory\Core\Enum\StockPolicy;
+use App\Efact\Enum\StockPolicy;
 use App\Inventory\Core\Service\TenantStockValidationPolicy;
 use App\Settings\Service\TenantSettingsService;
 use PHPUnit\Framework\Attributes\DataProvider;

@@ -6,7 +6,7 @@ namespace App\Tests\Sales\State;
 
 use App\Catalog\Entity\Product;
 use App\Identity\Dto\AuthUserDto;
-use App\Inventory\Core\Enum\StockPolicy;
+use App\Efact\Enum\StockPolicy;
 use App\Sales\State\NegativeStockPolicyResolver;
 use App\Settings\Service\TenantSettingsService;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;

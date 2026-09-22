@@ -7,7 +7,7 @@ namespace App\Settings\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\Patch;
-use App\Inventory\Core\Enum\StockPolicy;
+use App\Efact\Enum\StockPolicy;
 use App\Settings\Enum\DefaultCurrency;
 use App\Settings\Enum\PrintMethod;
 use App\Settings\Enum\TaxRegime;

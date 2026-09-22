@@ -1396,11 +1396,11 @@ final class SaleProcessorTest extends TestCase
         $policySettings = $this->createStub(TenantSettingsService::class);
 
         if ($shouldThrow) {
-            $policySettings->method('getNegativeStockPolicy')->willReturn(\App\Inventory\Core\Enum\StockPolicy::STRICT);
+            $policySettings->method('getNegativeStockPolicy')->willReturn(\App\Efact\Enum\StockPolicy::STRICT);
         } else {
             $policySettings
                 ->method('getNegativeStockPolicy')
-                ->willReturn(\App\Inventory\Core\Enum\StockPolicy::ALLOW_NEGATIVE);
+                ->willReturn(\App\Efact\Enum\StockPolicy::ALLOW_NEGATIVE);
         }
 
         $rcPr->getProperty('tenantSettings')->setValue($prStub, $policySettings);

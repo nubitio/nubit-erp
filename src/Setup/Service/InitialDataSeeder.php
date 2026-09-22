@@ -77,7 +77,7 @@ readonly class InitialDataSeeder
             $settings->setRequireCashRegister(true);
             $settings->setPrintMethod(\App\Settings\Enum\PrintMethod::WEBUSB);
             $settings->setDefaultCurrency(\App\Settings\Enum\DefaultCurrency::PEN);
-            $settings->setNegativeStockPolicy(\App\Inventory\Core\Enum\StockPolicy::STRICT);
+        $settings->setNegativeStockPolicy(\App\Efact\Enum\StockPolicy::STRICT);
             $this->tenantSettingsService->save($settings);
 
             $sunat = $this->sunatStateService->get();

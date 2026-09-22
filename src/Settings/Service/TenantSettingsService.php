@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Service;
 
-use App\Inventory\Core\Enum\StockPolicy;
+use App\Efact\Enum\StockPolicy;
 use App\Settings\Capability\SettingsCapabilitySync;
 use App\Settings\Entity\TenantSettings;
 use App\Settings\Enum\DefaultCurrency;

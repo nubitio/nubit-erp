@@ -17,7 +17,7 @@ use App\Contacts\Entity\Supplier;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use App\Inventory\Core\Enum\InventoryBehavior;
-use App\Inventory\Core\Enum\StockPolicy;
+use App\Efact\Enum\StockPolicy;
 use App\Inventory\Entity\Warehouse;
 use App\Organization\Entity\Branch;
 use App\Organization\Entity\Company;

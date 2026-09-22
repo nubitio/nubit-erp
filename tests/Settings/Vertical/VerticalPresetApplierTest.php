@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Settings\Vertical;
 
-use App\Inventory\Core\Enum\StockPolicy;
+use App\Efact\Enum\StockPolicy;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Entity\Branch;
 use App\Organization\Repository\BranchRepository;

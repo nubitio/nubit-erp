@@ -10,7 +10,7 @@ use App\Inventory\Core\Contract\SalesInventoryPortInterface;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
-use App\Inventory\Core\Enum\StockPolicy;
+use App\Efact\Enum\StockPolicy;
 use App\Inventory\Entity\Warehouse;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;

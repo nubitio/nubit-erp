@@ -12,7 +12,7 @@ use App\Inventory\Core\Enum\LotTrackingStrategy;
 use App\Inventory\Core\Enum\ProductKind;
 use App\Inventory\Core\Enum\ProductType;
 use App\Inventory\Core\Enum\StockMovementType;
-use App\Inventory\Core\Enum\StockPolicy;
+use App\Efact\Enum\StockPolicy;
 use App\Inventory\Core\Event\PurchaseReceived;
 use App\Inventory\Core\Event\SaleCompleted;
 use App\Inventory\Core\Event\StockMovementRecorded;

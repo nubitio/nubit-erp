@@ -15,7 +15,7 @@ use App\Efact\Domain\ActiveReferenceGuard;
 use App\Identity\Auth\BranchContextService;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Security\Security;
-use App\Inventory\Core\Enum\StockPolicy;
+use App\Efact\Enum\StockPolicy;
 use App\Organization\Repository\BranchRepository;
 use App\Sales\Domain\SaleSettlementType;
 use App\Sales\Entity\SaleRecord;

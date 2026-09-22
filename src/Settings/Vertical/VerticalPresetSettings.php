@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Settings\Vertical;
 
-use App\Inventory\Core\Enum\StockPolicy;
+use App\Efact\Enum\StockPolicy;
 use App\Settings\Enum\DefaultCurrency;
 use App\Settings\Enum\PrintMethod;
 
