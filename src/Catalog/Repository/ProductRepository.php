@@ -35,7 +35,7 @@ class ProductRepository extends ServiceEntityRepository
         return array_map(
             static fn(array $row): ProductSearchResultDto => new ProductSearchResultDto(
                 (string) $row['id'],
-                $row['code'],
+                null !== $row['code'] ? (string) $row['code'] : null,
                 (string) $row['name'],
                 (float) $row['salePrice'],
                 null, // stock is sourced from stock_items via product_stock tool, not the legacy column

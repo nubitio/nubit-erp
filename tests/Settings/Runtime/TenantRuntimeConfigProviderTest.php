@@ -141,7 +141,6 @@ final class TenantRuntimeConfigProviderTest extends TestCase
         $branchRepository->method('count')->willReturn($branchCount);
         $branchRepository->method('findOneBy')->willReturn(null);
 
-        /** @var TenantWarehousePortInterface&MockObject $warehousePort */
         $warehousePort = $this->createMock(TenantWarehousePortInterface::class);
         $warehousePort->method('count')->willReturn($warehouseCount);
         $warehousePort->method('defaultWarehouse')->willReturn(null);
