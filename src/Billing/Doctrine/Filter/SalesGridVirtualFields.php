@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Efact\Doctrine\Filter;
+namespace App\Billing\Doctrine\Filter;
 
 use App\Billing\Entity\TaxDocument;
 use App\Sales\Entity\SalePayment;

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Efact\Doctrine\Filter;
 
-use App\Billing\Recurring\Entity\SubscriptionPlan;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query\Filter\SQLFilter;
 
@@ -22,7 +21,7 @@ class BranchFilter extends SQLFilter
         // they determine where the recurring sale is issued. Subscriptions
         // can therefore reference a plan created from another active branch;
         // filtering it here makes API Platform fail while resolving that IRI.
-        if ($targetEntity->getName() === SubscriptionPlan::class) {
+        if ($targetEntity->getTableName() === 'subscription_plan') {
             return '';
         }
 

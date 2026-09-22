@@ -333,7 +333,7 @@ services:
   Nubit\ApiPlatform\Http\ExceptionListener: ~
 
   # Virtual grid fields consumed by Nubit\ApiPlatform DataGridFilter
-  App\Efact\Doctrine\Filter\SalesGridVirtualFields:
+  App\Billing\Doctrine\Filter\SalesGridVirtualFields:
     tags: ['nubit.api_platform.grid_virtual_field']
 
   App\Efact\Mercure\TenantAwareMercureHub:

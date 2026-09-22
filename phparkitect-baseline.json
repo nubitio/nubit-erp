@@ -43,24 +43,6 @@
             "error": "depends on App\\Billing\\Sunat\\Domain\\LycetCompanyServiceInterface, but should not depend on these namespaces: App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-003: ControlPlane must not depend on ERP, Assistant or verticals"
         },
         {
-            "fqcn": "App\\Efact\\Doctrine\\Filter\\BranchFilter",
-            "line": 25,
-            "filePath": "Efact\/Doctrine\/Filter\/BranchFilter.php",
-            "error": "depends on App\\Billing\\Recurring\\Entity\\SubscriptionPlan, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
-        },
-        {
-            "fqcn": "App\\Efact\\Doctrine\\Filter\\SalesGridVirtualFields",
-            "line": 64,
-            "filePath": "Efact\/Doctrine\/Filter\/SalesGridVirtualFields.php",
-            "error": "depends on App\\Sales\\Entity\\SalePayment, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
-        },
-        {
-            "fqcn": "App\\Efact\\Doctrine\\Filter\\SalesGridVirtualFields",
-            "line": 84,
-            "filePath": "Efact\/Doctrine\/Filter\/SalesGridVirtualFields.php",
-            "error": "depends on App\\Billing\\Entity\\TaxDocument, but should not depend on these namespaces: App\\Identity, App\\Organization, App\\Settings, App\\ControlPlane, App\\Catalog, App\\Contacts, App\\Inventory, App\\Sales, App\\Billing, App\\CashRegister, App\\Purchasing, App\\Reporting, App\\AccountsPayable, App\\BankReconciliation, App\\FixedAssets, App\\Payroll, App\\ExpenseReports, App\\Accounting, App\\Taxes, App\\Integration, App\\AI, App\\Setup, App\\Onboarding, App\\Pharmacy, App\\Restaurant, App\\Hospitality because AR-001: infra glue must not depend on any bounded context"
-        },
-        {
             "fqcn": "App\\Efact\\Service\\LogoProvider",
             "line": 86,
             "filePath": "Efact\/Service\/LogoProvider.php",

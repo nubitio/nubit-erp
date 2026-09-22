@@ -6,6 +6,10 @@ set -eu
 # Keep the generated type reference committed and fail when dependencies or
 # bundle configuration changed without regenerating it.
 php bin/console cache:clear --env=dev --no-warmup >/dev/null
+# Symfony's reference dump may settle its generated PHPDoc ordering on the
+# second warmup when the cache was produced by a different container state.
+# Stabilize that framework-owned artifact before comparing it with git.
+php bin/console cache:clear --env=dev --no-warmup >/dev/null
 
 if ! git diff --quiet -- config/reference.php; then
     echo 'config/reference.php is stale. Regenerate it with:' >&2
