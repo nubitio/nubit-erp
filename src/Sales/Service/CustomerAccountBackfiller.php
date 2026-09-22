@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Service;
 
+use App\Sales\Domain\CustomerAccountBackfillMode;
 use Doctrine\DBAL\Exception;
 
 /**
@@ -29,7 +30,7 @@ final readonly class CustomerAccountBackfiller
      *
      * @throws Exception
      */
-    public function run(bool $dryRun): array
+    public function run(CustomerAccountBackfillMode $mode): array
     {
         $alreadyLedgered = $this->gateway->customersWithEntries();
 
@@ -62,7 +63,7 @@ final readonly class CustomerAccountBackfiller
 
             foreach ($timeline as $entry) {
                 $entry['entry_type'] === 'charge' ? $charges++ : $payments++;
-                if (!$dryRun) {
+                if ($mode->writes()) {
                     $this->gateway->insertEntry($customerId, $entry);
                 }
             }

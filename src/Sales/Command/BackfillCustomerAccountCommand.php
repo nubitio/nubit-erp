@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Command;
 
+use App\Sales\Domain\CustomerAccountBackfillMode;
 use App\Sales\Service\CustomerAccountBackfiller;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Nubit\Platform\Symfony\Console\PerTenantCommand;
@@ -46,7 +47,9 @@ final class BackfillCustomerAccountCommand extends PerTenantCommand
         $dryRun = (bool) $input->getOption('dry-run');
 
         try {
-            $summary = $this->backfiller->run($dryRun);
+            $summary = $this->backfiller->run(
+                $dryRun ? CustomerAccountBackfillMode::DRY_RUN : CustomerAccountBackfillMode::APPLY,
+            );
         } catch (TableNotFoundException) {
             $io->warning('Skipping tenant: customer-account or Sales tables are not migrated yet.');
 
