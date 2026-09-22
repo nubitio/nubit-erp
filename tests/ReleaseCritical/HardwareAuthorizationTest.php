@@ -7,7 +7,7 @@ namespace App\Tests\ReleaseCritical;
 use App\Billing\Controller\PrintESCPOSController;
 use App\Billing\Invoice\Domain\Voucher;
 use App\Billing\Repository\TaxDocumentRepository;
-use App\Efact\Service\LogoProvider;
+use App\Efact\Contract\LogoProviderInterface;
 use App\Settings\Service\TenantSettingsService;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,7 +46,7 @@ final class HardwareAuthorizationTest extends TestCase
         $settings->method('getRc')->willReturn(0.0);
         $settings->method('getIgv')->willReturn(18.0);
 
-        $controller = new PrintESCPOSController($this->createStub(LogoProvider::class), $repository, $settings, 48);
+        $controller = new PrintESCPOSController($this->createStub(LogoProviderInterface::class), $repository, $settings, 48);
 
         $response = $controller->__invoke(
             'sale-hardware-fixture',
@@ -64,7 +64,7 @@ final class HardwareAuthorizationTest extends TestCase
     public function testPrinterControllerRejectsAnUnauthenticatedRuntimeInvocation(): void
     {
         $controller = new PrintESCPOSController(
-            $this->createStub(LogoProvider::class),
+            $this->createStub(LogoProviderInterface::class),
             $this->createStub(TaxDocumentRepository::class),
             $this->createStub(TenantSettingsService::class),
             48,

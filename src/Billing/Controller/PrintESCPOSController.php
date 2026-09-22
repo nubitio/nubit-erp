@@ -6,7 +6,7 @@ namespace App\Billing\Controller;
 
 use App\Billing\Extension\RemoteEscposImage;
 use App\Billing\Repository\TaxDocumentRepository;
-use App\Efact\Service\LogoProvider;
+use App\Efact\Contract\LogoProviderInterface;
 use App\Sales\Domain\DocType;
 use App\Sales\Dto\SaleItemDto;
 use App\Settings\Service\TenantSettingsService;
@@ -52,7 +52,7 @@ class PrintESCPOSController extends AbstractController
     ];
 
     public function __construct(
-        private readonly LogoProvider $logoProvider,
+        private readonly LogoProviderInterface $logoProvider,
         private readonly TaxDocumentRepository $taxDocumentRepository,
         private readonly TenantSettingsService $tenantSettings,
         #[Autowire('%env(PRINTER_LINE_WIDTH)%')]

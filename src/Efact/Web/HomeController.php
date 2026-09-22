@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Efact\Web;
 
-use App\Efact\Service\LogoProvider;
+use App\Efact\Contract\LogoProviderInterface;
 use Nubit\ApiPlatform\Http\BaseController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -18,7 +18,7 @@ class HomeController extends BaseController
     }
 
     #[Route('/logo', name: 'logo', methods: ['GET'])]
-    public function logo(LogoProvider $logoProvider): Response
+    public function logo(LogoProviderInterface $logoProvider): Response
     {
         $logoUrl = $logoProvider();
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Efact\Service;
 
 use App\Efact\Filesystem\S3UrlResolver;
-use App\Efact\Service\LogoProvider;
+use App\Organization\Service\CompanyLogoProvider;
 use App\Organization\Entity\Company;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
@@ -25,7 +25,7 @@ final class LogoProviderTest extends TestCase
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(static::never())->method('getRepository');
 
-        $provider = new LogoProvider(
+        $provider = new CompanyLogoProvider(
             $entityManager,
             new S3UrlResolver('https://storage.example', 'assets'),
             $tenantContext,
@@ -47,7 +47,7 @@ final class LogoProviderTest extends TestCase
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(static::once())->method('getRepository')->with(Company::class)->willReturn($repository);
 
-        $provider = new LogoProvider(
+        $provider = new CompanyLogoProvider(
             $entityManager,
             new S3UrlResolver('https://storage.example', 'assets'),
             $tenantContext,
@@ -82,7 +82,7 @@ final class LogoProviderTest extends TestCase
         static::assertSame('', $provider->embedded());
     }
 
-    private function providerWithLogo(Media $logo, callable $read): LogoProvider
+    private function providerWithLogo(Media $logo, callable $read): CompanyLogoProvider
     {
         $tenantContext = $this->createStub(TenantContext::class);
         $tenantContext->method('getTenantName')->willReturn('demo');
@@ -98,7 +98,7 @@ final class LogoProviderTest extends TestCase
         $fileManager = $this->createStub(FileManager::class);
         $fileManager->method('read')->willReturnCallback($read);
 
-        return new LogoProvider(
+        return new CompanyLogoProvider(
             $entityManager,
             new S3UrlResolver('https://storage.example', 'assets'),
             $tenantContext,

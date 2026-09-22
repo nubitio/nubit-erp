@@ -211,6 +211,9 @@ services:
   App\ControlPlane\Certificate\CertificateLifecycleServiceInterface:
     class: App\ControlPlane\Certificate\CertificateLifecycleService
 
+  App\Efact\Contract\LogoProviderInterface:
+    class: App\Organization\Service\CompanyLogoProvider
+
   App\Settings\Contract\TenantCertificateServiceInterface:
     class: App\ControlPlane\Certificate\TenantCertificateSettingsAdapter
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Efact\Twig;
 
-use App\Efact\Service\LogoProvider;
+use App\Efact\Contract\LogoProviderInterface;
 use App\Efact\Web\CspNonceService;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -13,7 +13,7 @@ use Twig\Attribute\AsTwigFunction;
 readonly class AppExtension
 {
     public function __construct(
-        private LogoProvider $logoProvider,
+        private LogoProviderInterface $logoProvider,
         private RequestStack $requestStack,
         private CspNonceService $cspNonceService,
     ) {}

@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Efact\Service;
+namespace App\Organization\Service;
 
 use App\Efact\Config\EfactConstants;
+use App\Efact\Contract\LogoProviderInterface;
 use App\Efact\Filesystem\S3UrlResolver;
 use App\Organization\Entity\Company;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,7 +14,7 @@ use Nubit\Platform\Filesystem\FileManager;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Psr\Log\LoggerInterface;
 
-readonly class LogoProvider
+readonly class CompanyLogoProvider implements LogoProviderInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
