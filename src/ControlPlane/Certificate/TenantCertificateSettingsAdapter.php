@@ -10,7 +10,9 @@ use App\Settings\Dto\TenantCertificateView;
 /** Adapts the control-plane certificate lifecycle to the tenant settings port. */
 final readonly class TenantCertificateSettingsAdapter implements TenantCertificateServiceInterface
 {
-    public function __construct(private CertificateLifecycleServiceInterface $lifecycle) {}
+    public function __construct(
+        private CertificateLifecycleServiceInterface $lifecycle,
+    ) {}
 
     public function upsert(
         string $tenantName,

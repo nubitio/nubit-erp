@@ -31,7 +31,7 @@ final class WorkerHeartbeatListener
     #[AsEventListener(event: WorkerRunningEvent::class)]
     public function onWorkerRunning(): void
     {
-        if (time() - $this->lastWriteAt >= 5) {
+        if ((time() - $this->lastWriteAt) >= 5) {
             $this->writeHeartbeat();
         }
     }
@@ -41,7 +41,11 @@ final class WorkerHeartbeatListener
         $directory = dirname($this->heartbeatFile);
 
         try {
-            if (!is_dir($directory) && !mkdir(directory: $directory, permissions: 0o775, recursive: true) && !is_dir($directory)) {
+            if (
+                !is_dir($directory)
+                && !mkdir(directory: $directory, permissions: 0o775, recursive: true)
+                && !is_dir($directory)
+            ) {
                 throw new \RuntimeException(sprintf('Unable to create heartbeat directory "%s".', $directory));
             }
 

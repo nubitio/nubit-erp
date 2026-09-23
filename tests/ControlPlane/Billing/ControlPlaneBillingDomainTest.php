@@ -16,9 +16,9 @@ use App\ControlPlane\Billing\Service\QuotaCheckResult;
 use App\Identity\Entity\User;
 use App\Organization\Entity\Branch;
 use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
+use Nubit\TenantBundle\Quota\QuotaResourceRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Nubit\TenantBundle\Quota\QuotaResourceRegistry;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 final class ControlPlaneBillingDomainTest extends TestCase

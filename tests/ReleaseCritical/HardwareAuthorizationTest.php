@@ -46,7 +46,12 @@ final class HardwareAuthorizationTest extends TestCase
         $settings->method('getRc')->willReturn(0.0);
         $settings->method('getIgv')->willReturn(18.0);
 
-        $controller = new PrintESCPOSController($this->createStub(LogoProviderInterface::class), $repository, $settings, 48);
+        $controller = new PrintESCPOSController(
+            $this->createStub(LogoProviderInterface::class),
+            $repository,
+            $settings,
+            48,
+        );
 
         $response = $controller->__invoke(
             'sale-hardware-fixture',

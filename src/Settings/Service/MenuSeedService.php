@@ -312,6 +312,62 @@ class MenuSeedService
             'icon' => 'ph ph-database',
             'parent_id' => 909,
         ],
+
+        // ── Grupo: Restaurante (mesas y cocina, NB-18) ──────────────────────
+        [
+            'id' => 830,
+            'order_index' => 14,
+            'key_name' => 'Restaurante',
+            'type' => 'group',
+            'route' => null,
+            'icon' => 'ph ph-fork-knife',
+            'parent_id' => null,
+        ],
+        [
+            'id' => 831,
+            'order_index' => 0,
+            'key_name' => 'Mesas',
+            'type' => 'route',
+            'route' => 'restaurant/mesas',
+            'icon' => 'ph ph-squares-four',
+            'parent_id' => 830,
+        ],
+        [
+            'id' => 832,
+            'order_index' => 1,
+            'key_name' => 'Cocina',
+            'type' => 'route',
+            'route' => 'restaurant/kds',
+            'icon' => 'ph ph-cooking-pot',
+            'parent_id' => 830,
+        ],
+        [
+            'id' => 835,
+            'order_index' => 2,
+            'key_name' => 'Ambientes y plantas',
+            'type' => 'route',
+            'route' => 'restaurant/admin/ambientes',
+            'icon' => 'ph ph-buildings',
+            'parent_id' => 830,
+        ],
+        [
+            'id' => 833,
+            'order_index' => 3,
+            'key_name' => 'Configurar mesas',
+            'type' => 'route',
+            'route' => 'restaurant/admin/mesas',
+            'icon' => 'ph ph-list-bullets',
+            'parent_id' => 830,
+        ],
+        [
+            'id' => 834,
+            'order_index' => 4,
+            'key_name' => 'Plano del local',
+            'type' => 'route',
+            'route' => 'restaurant/admin/plano',
+            'icon' => 'ph ph-map-trifold',
+            'parent_id' => 830,
+        ],
     ];
 
     public function __construct(

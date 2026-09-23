@@ -30,12 +30,20 @@ final readonly class MercureCookieDecorator implements LoginResponseDecoratorInt
 
     public function decorate(JsonResponse $response, UserInterface $user, TokenPair $tokenPair, Request $request): void
     {
+        // Must match the origin the browser will actually call for Mercure
+        // subscriptions (scheme + host + port), not just the tenant's bare
+        // domain — a mismatched port or scheme makes the hub reject every
+        // subscription with a silent 401.
         $tenantDomain = $this->tenantContext->getTenantDomain() ?? '';
-        $tenantOrigin = '' !== $tenantDomain ? 'https://' . $tenantDomain : '';
+        $tenantOrigin = '' !== $tenantDomain ? $request->getSchemeAndHttpHost() : '';
+        // The token's `aud` must equal the exact URL the browser uses to
+        // reach the hub — the hub derives its resource identifier from the
+        // request, so this varies per tenant subdomain.
+        $audience = $request->getSchemeAndHttpHost() . '/.well-known/mercure';
 
         $response->headers->setCookie($this->cookieFactory->createSecureCookie(
             self::MERCURE_COOKIE,
-            $this->mercureTokenService->generateSubscriberToken([$tenantOrigin . '/api/*']),
+            $this->mercureTokenService->generateSubscriberToken($audience, [$tenantOrigin . '/api/*']),
             $tokenPair->accessTokenExpiresAt,
             '/.well-known/mercure',
             null,

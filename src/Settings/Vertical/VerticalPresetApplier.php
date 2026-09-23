@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Settings\Vertical;
 
-use App\Settings\Contract\TenantWarehousePortInterface;
 use App\Settings\Capability\CapabilityCatalog;
 use App\Settings\Capability\SettingsCapabilitySync;
+use App\Settings\Contract\TenantWarehousePortInterface;
 use App\Settings\Entity\TenantCapability;
 use App\Settings\Entity\TenantSettings;
 use App\Settings\Enum\CapabilitySource;

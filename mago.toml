@@ -47,6 +47,10 @@ excessive-parameter-list = { threshold = 10, constructor-threshold = 15 }
 cyclomatic-complexity = { threshold = 20 }
 too-many-methods = { threshold = 20 }
 too-many-properties = { threshold = 20 }
+# CapabilityKey is a flat catalog enum, not branching logic — it grows by one
+# case per new capability (ADR-018 names Restaurant, then Hospitality, as
+# upcoming verticals), so the default 20 is too tight for its shape.
+too-many-enum-cases = { threshold = 30 }
 
 [analyzer]
 baseline = "analyzer-baseline.toml"

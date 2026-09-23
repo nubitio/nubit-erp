@@ -1398,9 +1398,7 @@ final class SaleProcessorTest extends TestCase
         if ($shouldThrow) {
             $policySettings->method('getNegativeStockPolicy')->willReturn(\App\Efact\Enum\StockPolicy::STRICT);
         } else {
-            $policySettings
-                ->method('getNegativeStockPolicy')
-                ->willReturn(\App\Efact\Enum\StockPolicy::ALLOW_NEGATIVE);
+            $policySettings->method('getNegativeStockPolicy')->willReturn(\App\Efact\Enum\StockPolicy::ALLOW_NEGATIVE);
         }
 
         $rcPr->getProperty('tenantSettings')->setValue($prStub, $policySettings);

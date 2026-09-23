@@ -327,6 +327,10 @@ services:
       MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_JWT_SECRET}
       MERCURE_EXTRA_DIRECTIVES: |
         cors_origins *
+        # Without this, the hub never reads the mercureAuthorization cookie
+        # at all (cookie-based subscriber auth is opt-in in Mercure.rocks v1+)
+        # and every EventSource subscription gets a bare 401 challenge.
+        cookie_name mercureAuthorization
     command: /usr/bin/caddy run --config /etc/caddy/Caddyfile
     mem_limit: 256m
     cpus: 0.5

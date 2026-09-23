@@ -100,6 +100,11 @@ final class FeatureCatalog
             'fixed_assets' => self::boolFeature('Activos fijos', self::CAT_MODULE, ['basic', 'pro']),
             'expense_reports' => self::boolFeature('Gastos de personal', self::CAT_MODULE, ['basic', 'pro']),
             'recurring_billing' => self::boolFeature('Facturación recurrente', self::CAT_MODULE, ['basic', 'pro']),
+            'restaurant_vertical' => self::boolFeature(
+                'Vertical restaurante (mesas y comandas)',
+                self::CAT_MODULE,
+                ['basic', 'pro'],
+            ),
         ];
     }
 

@@ -79,9 +79,7 @@ class TenantMigrateCommand extends PerTenantCommand
 
         $concurrency = self::resolveConcurrency(
             $input->getOption('parallel'),
-            ($environmentConcurrency = getenv('TENANT_MIGRATE_CONCURRENCY')) === false
-                ? null
-                : $environmentConcurrency,
+            ($environmentConcurrency = getenv('TENANT_MIGRATE_CONCURRENCY')) === false ? null : $environmentConcurrency,
         );
 
         $lock = new LockFactory(new FlockStore())->createLock('app:tenants:migrate.coordinator');

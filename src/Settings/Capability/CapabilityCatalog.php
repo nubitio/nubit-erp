@@ -162,6 +162,13 @@ final class CapabilityCatalog
                 ownerContext: 'Accounting',
                 requiresEntitlement: 'general_ledger',
             ),
+            new CapabilityDefinition(
+                key: CapabilityKey::RestaurantTableManagement,
+                label: 'Mesas y comandas',
+                ownerContext: 'Restaurant',
+                requiresEntitlement: 'restaurant_vertical',
+                dependsOn: [CapabilityKey::SalesCore],
+            ),
         ];
 
         $catalog = [];

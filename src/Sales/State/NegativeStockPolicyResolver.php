@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Sales\State;
 
 use App\Catalog\Entity\Product;
+use App\Efact\Enum\StockPolicy;
 use App\Identity\Dto\AuthUserDto;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\ProductKind;
 use App\Inventory\Core\Enum\ProductType;
-use App\Efact\Enum\StockPolicy;
 use App\Settings\Service\TenantSettingsService;
 
 /**

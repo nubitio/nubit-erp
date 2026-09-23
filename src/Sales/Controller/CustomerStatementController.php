@@ -56,17 +56,9 @@ final class CustomerStatementController extends AbstractController
         );
 
         $statement = $this->statements->build($customerId, $dateFrom, $dateTo);
-        $slug = preg_replace(
-            pattern: '/[^A-Za-z0-9]+/',
-            replacement: '-',
-            subject: $statement->customerName,
-        ) ?? 'cliente';
-        $basename = sprintf(
-            'estado-cuenta-%s-%s-a-%s',
-            trim(string: $slug, characters: '-'),
-            $dateFrom,
-            $dateTo,
-        );
+        $slug =
+            preg_replace(pattern: '/[^A-Za-z0-9]+/', replacement: '-', subject: $statement->customerName) ?? 'cliente';
+        $basename = sprintf('estado-cuenta-%s-%s-a-%s', trim(string: $slug, characters: '-'), $dateFrom, $dateTo);
 
         return $format === 'xlsx'
             ? $this->xlsExporter->export(

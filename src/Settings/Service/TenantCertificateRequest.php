@@ -49,9 +49,7 @@ final readonly class TenantCertificateRequest
             if (!is_string($value) || trim($value) === '') {
                 continue;
             }
-            $contents = $key === 'certificateBase64'
-                ? base64_decode($value, strict: true)
-                : trim($value);
+            $contents = $key === 'certificateBase64' ? base64_decode($value, strict: true) : trim($value);
             if (!is_string($contents) || $contents === '') {
                 throw new \InvalidArgumentException('El certificado base64 no es valido.');
             }

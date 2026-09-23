@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Inventory\Core;
 
+use App\Efact\Enum\StockPolicy;
 use App\Inventory\Core\Dto\MovementDraft;
 use App\Inventory\Core\Dto\StockAuthorizationResult;
 use App\Inventory\Core\Dto\StockValidationResult;
@@ -12,7 +13,6 @@ use App\Inventory\Core\Enum\LotTrackingStrategy;
 use App\Inventory\Core\Enum\ProductKind;
 use App\Inventory\Core\Enum\ProductType;
 use App\Inventory\Core\Enum\StockMovementType;
-use App\Efact\Enum\StockPolicy;
 use App\Inventory\Core\Event\PurchaseReceived;
 use App\Inventory\Core\Event\SaleCompleted;
 use App\Inventory\Core\Event\StockMovementRecorded;

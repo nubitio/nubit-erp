@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Sales\State;
 
 use App\Catalog\Entity\Product;
+use App\Efact\Enum\StockPolicy;
 use App\Identity\Dto\AuthUserDto;
 use App\Inventory\Core\Contract\SalesInventoryPortInterface;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\LotTrackingStrategy;
-use App\Efact\Enum\StockPolicy;
 use App\Inventory\Entity\Warehouse;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;

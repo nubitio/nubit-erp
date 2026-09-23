@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Billing\Invoice\Domain;
 
 use App\Billing\Repository\TaxDocumentRepository;
-use App\Organization\Service\CompanyContext;
 use App\Efact\Service\SettingsService;
+use App\Organization\Service\CompanyContext;
 use App\Settings\Entity\ConfigKey;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;

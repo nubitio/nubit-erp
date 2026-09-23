@@ -34,4 +34,5 @@ enum CapabilityKey: string
     case FixedAssetsTracking = 'fixed_assets.tracking';
     case ExpenseReportsCore = 'expense_reports.core';
     case AccountingGeneralLedger = 'accounting.general_ledger';
+    case RestaurantTableManagement = 'restaurant.table_management';
 }

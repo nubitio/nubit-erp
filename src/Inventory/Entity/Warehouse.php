@@ -78,7 +78,7 @@ class Warehouse implements ActivatableInterface
 
     #[Groups(['warehouse:read'])]
     #[ApiProperty(description: 'warehouse.branch.label')]
-    #[ORM\ManyToOne(inversedBy: 'warehouses')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'local_id', referencedColumnName: 'local_id')]
     private ?Branch $branch = null;
 

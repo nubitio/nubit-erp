@@ -3391,16 +3391,16 @@
         },
         {
             "name": "nubitio/admin-bundle",
-            "version": "v1.0.3",
+            "version": "v1.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nubitio/admin-bundle.git",
-                "reference": "bf1f5b69098f6b4ccbaccdc4e3249e3a9eb702a3"
+                "reference": "9a3f62fdbd1514b2c251ef0beb188bc9b6389459"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nubitio/admin-bundle/zipball/bf1f5b69098f6b4ccbaccdc4e3249e3a9eb702a3",
-                "reference": "bf1f5b69098f6b4ccbaccdc4e3249e3a9eb702a3",
+                "url": "https://api.github.com/repos/nubitio/admin-bundle/zipball/9a3f62fdbd1514b2c251ef0beb188bc9b6389459",
+                "reference": "9a3f62fdbd1514b2c251ef0beb188bc9b6389459",
                 "shasum": ""
             },
             "require": {
@@ -3480,7 +3480,7 @@
                 "issues": "https://github.com/nubitio/nubit-symfony/issues",
                 "source": "https://github.com/nubitio/nubit-symfony"
             },
-            "time": "2026-09-18T02:02:51+00:00"
+            "time": "2026-09-23T03:40:44+00:00"
         },
         {
             "name": "nubitio/api-platform",

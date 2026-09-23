@@ -18,12 +18,13 @@ final class TenantCertificateSettingsAdapterTest extends TestCase
         $beforeCommit = static function (): void {};
         $certificate = $this->certificate();
         $lifecycle = $this->createMock(CertificateLifecycleServiceInterface::class);
-        $lifecycle->expects(self::once())
+        $lifecycle
+            ->expects(self::once())
             ->method('upsert')
             ->with('tenant-a', '20123456789', 'sol-user', 'sol-pass', 'pem', 'admin', $beforeCommit)
             ->willReturn($certificate);
 
-        $view = (new TenantCertificateSettingsAdapter($lifecycle))->upsert(
+        $view = new TenantCertificateSettingsAdapter($lifecycle)->upsert(
             'tenant-a',
             '20123456789',
             'sol-user',
@@ -44,7 +45,7 @@ final class TenantCertificateSettingsAdapterTest extends TestCase
         $lifecycle = $this->createMock(CertificateLifecycleServiceInterface::class);
         $lifecycle->method('list')->with('tenant-a')->willReturn([$this->certificate()]);
 
-        $views = (new TenantCertificateSettingsAdapter($lifecycle))->list('tenant-a');
+        $views = new TenantCertificateSettingsAdapter($lifecycle)->list('tenant-a');
 
         self::assertCount(1, $views);
         self::assertSame('20123456789', $views[0]->ruc);

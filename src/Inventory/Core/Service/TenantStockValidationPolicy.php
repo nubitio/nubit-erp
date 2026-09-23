@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Inventory\Core\Service;
 
 use App\Catalog\Entity\Product;
+use App\Efact\Enum\StockPolicy;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
 use App\Inventory\Core\Enum\InventoryBehavior;
 use App\Inventory\Core\Enum\ProductKind;
 use App\Inventory\Core\Enum\ProductType;
-use App\Efact\Enum\StockPolicy;
 use App\Settings\Service\TenantSettingsService;
 
 /**

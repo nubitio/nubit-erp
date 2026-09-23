@@ -133,5 +133,4 @@ class Branch implements ActivatableInterface
 
         return $this;
     }
-
 }

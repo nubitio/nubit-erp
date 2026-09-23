@@ -64,6 +64,5 @@ final readonly class AuditLogMessageHandler
                 ->createSchemaManager()
                 ->tablesExist(['audit_logs']);
         });
-
     }
 }

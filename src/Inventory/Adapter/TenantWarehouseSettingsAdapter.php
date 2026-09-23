@@ -28,9 +28,7 @@ final readonly class TenantWarehouseSettingsAdapter implements TenantWarehousePo
     {
         $warehouse = $this->warehouses->findOneBy([], ['name' => 'ASC']);
 
-        return $warehouse === null
-            ? null
-            : new TenantWarehouseView($warehouse->getId(), $warehouse->getName());
+        return $warehouse === null ? null : new TenantWarehouseView($warehouse->getId(), $warehouse->getName());
     }
 
     public function hasBranch(): bool
@@ -45,6 +43,10 @@ final readonly class TenantWarehouseSettingsAdapter implements TenantWarehousePo
             return;
         }
 
-        $this->entityManager->persist(new Warehouse()->setName($name)->setBranch($branch));
+        $this->entityManager->persist(
+            new Warehouse()
+                ->setName($name)
+                ->setBranch($branch),
+        );
     }
 }

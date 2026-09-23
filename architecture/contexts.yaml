@@ -330,3 +330,10 @@ contexts:
     dependsOn: [Catalog, Inventory, Sales]
     publicContracts: []
     ownsTables: [pharmacy_products, pharmacy_batches, pharmacy_batch_movements, pharmacy_prescriptions]
+
+  Restaurant:
+    namespace: App\Restaurant
+    layer: Vertical
+    dependsOn: [Catalog]
+    publicContracts: []
+    ownsTables: [restaurant_tables, restaurant_orders, restaurant_order_items, restaurant_areas]

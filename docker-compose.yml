@@ -270,10 +270,20 @@ services:
       # Uncomment the following line to disable HTTPS,
       SERVER_NAME: ':80'
       MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
+      MERCURE_PUBLISHER_JWT_ALG: 'HS256'
       MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
+      MERCURE_SUBSCRIBER_JWT_ALG: 'HS256'
+      # Must equal MercureSubscriberTokenService's $issuer (defaults to this
+      # same value) — the hub rejects every subscriber token as coming from
+      # an "untrusted issuer" otherwise.
+      MERCURE_TRUSTED_ISSUERS: 'https://localhost'
       # Set the URL of your Symfony project (without trailing slash!) as value of the cors_origins directive
       MERCURE_EXTRA_DIRECTIVES: |
         cors_origins http://127.0.0.1:8000 http://demo.localhost:8080 http://localhost:5173 http://localhost:5174 http://localhost:8080
+        # Without this, the hub never reads the mercureAuthorization cookie
+        # at all (cookie-based subscriber auth is opt-in in Mercure.rocks v1+)
+        # and every EventSource subscription gets a bare 401 challenge.
+        cookie_name mercureAuthorization
     healthcheck:
       # v1.0.0 has no /healthz route; `/` responds 200 from the stock Caddyfile.
       test: ['CMD', 'curl', '-f', 'http://localhost/']

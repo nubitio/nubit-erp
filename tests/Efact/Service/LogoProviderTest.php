@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Efact\Service;
 
 use App\Efact\Filesystem\S3UrlResolver;
-use App\Organization\Service\CompanyLogoProvider;
 use App\Organization\Entity\Company;
+use App\Organization\Service\CompanyLogoProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Nubit\AdminBundle\Media\Entity\Media;

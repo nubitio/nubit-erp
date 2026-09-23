@@ -25,9 +25,11 @@ final class MessengerObservabilityConfigTest extends TestCase
 
         $defaultBusTags = array_filter(
             $tags,
-            static fn(mixed $tag): bool => is_array($tag)
+            static fn(mixed $tag): bool => (
+                is_array($tag)
                 && ($tag['name'] ?? null) === 'messenger.middleware'
-                && ($tag['bus'] ?? null) === 'messenger.bus.default',
+                && ($tag['bus'] ?? null) === 'messenger.bus.default'
+            ),
         );
 
         self::assertNotSame([], $defaultBusTags);

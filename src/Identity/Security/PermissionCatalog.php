@@ -203,6 +203,14 @@ final class PermissionCatalog
                     'accounting.view' => 'Ver libro mayor y asientos',
                 ],
             ],
+            'restaurant' => [
+                'label' => 'Restaurante',
+                'permissions' => [
+                    'restaurant.view' => 'Ver mesas, comandas y cocina',
+                    'restaurant.operate' => 'Abrir mesas, tomar comandas y cobrar',
+                    'restaurant.manage' => 'Crear y editar mesas y ambientes',
+                ],
+            ],
         ];
     }
 

@@ -1,0 +1,703 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Restaurant vertical (NB-18) — mesas, comanda y cocina
+//
+// Deliberately NOT the admin design system look (@nubitio/ui). This vertical
+// gets its own visual language because it's used differently: a waiter
+// tapping fast on a tablet mid-service, and a screen glanced at from across a
+// kitchen. Two typefaces carry that: Fraunces (a display serif, for the
+// human-facing headings — table names, dish names) and the app's existing
+// mono token (used here because a comanda IS a printed ticket, not as a
+// decorative "data" font). Colour encodes table/ticket status only, nothing
+// else — lime (libre/fresh), teal (ocupada/in progress), coral (por
+// cobrar/urgent). Buttons and other chrome stay in the host app's own sans
+// so this still reads as part of Nubit ERP, not a foreign import.
+// ─────────────────────────────────────────────────────────────────────────────
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap');
+
+.restaurant-proto {
+  --rest-ink: #16232c;
+  --rest-ink-soft: #3d4f59;
+  --rest-sand: #eee6d3;
+  --rest-paper: #fbf7ec;
+  --rest-lime: #96b830;
+  --rest-lime-ink: #3c4a12;
+  --rest-teal: #2f6f6b;
+  --rest-coral: #e2574c;
+  --rest-display: 'Fraunces', ui-serif, Georgia, serif;
+  --rest-ticket-font: var(--font-family-mono, 'JetBrains Mono', 'SFMono-Regular', monospace);
+
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 1.5rem;
+  background: var(--rest-sand);
+  color: var(--rest-ink);
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+.restaurant-proto-tag {
+  align-self: flex-start;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--rest-ink);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--rest-ink);
+  background: transparent;
+  white-space: nowrap;
+}
+
+// ─── Shared button (used in the comanda footer) ────────────────────────────
+.restaurant-btn {
+  width: 100%;
+  padding: 0.95rem 1rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.08s ease, opacity 0.15s ease;
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):active {
+    transform: scale(0.98);
+  }
+}
+
+.restaurant-btn--lime {
+  background: var(--rest-lime);
+  color: var(--rest-lime-ink);
+}
+
+.restaurant-btn--teal {
+  background: var(--rest-teal);
+  color: #fff;
+}
+
+.restaurant-btn--ink {
+  background: var(--rest-ink);
+  color: #fff;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The floor (table map)
+// ─────────────────────────────────────────────────────────────────────────────
+.restaurant-floor__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+    font-family: var(--rest-display);
+    font-size: 2rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0.2rem 0 0;
+    color: var(--rest-ink-soft);
+  }
+}
+
+.restaurant-floor__zone {
+  margin-bottom: 2rem;
+}
+
+.restaurant-floor__zone-title {
+  display: inline-block;
+  margin: 0 0 0.9rem;
+  padding: 0.2rem 0.7rem 0.25rem;
+  background: var(--rest-ink);
+  color: var(--rest-sand);
+  font-family: var(--rest-display);
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.restaurant-floor__tables {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  align-items: flex-start;
+}
+
+// Table shapes echo real table shapes: round for 2, square-ish for 4, a
+// wide bench for 6+. Status is a solid fill, not a thin accent border, so
+// the whole floor reads as a colour-coded plan at a glance.
+.restaurant-table {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--rest-ink);
+  background: #fff;
+  box-shadow: 0 1px 0 rgba(22, 35, 44, 0.08);
+  position: relative;
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(22, 35, 44, 0.18);
+  }
+
+  &.is-libre {
+    background: var(--rest-lime);
+    color: var(--rest-lime-ink);
+  }
+
+  &.is-ocupada {
+    background: var(--rest-teal);
+    color: #fff;
+  }
+
+  &.is-por_cobrar {
+    background: var(--rest-coral);
+    color: #fff;
+  }
+}
+
+.restaurant-table--round {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+}
+
+.restaurant-table--square {
+  width: 116px;
+  height: 116px;
+  border-radius: 14px;
+}
+
+.restaurant-table--long {
+  width: 176px;
+  height: 100px;
+  border-radius: 20px;
+}
+
+.restaurant-table__code {
+  font-family: var(--rest-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.restaurant-table__seats {
+  font-size: 0.72rem;
+  opacity: 0.85;
+}
+
+.restaurant-table__status {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: lowercase;
+  opacity: 0.9;
+}
+
+.restaurant-table__count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 1.35rem;
+  height: 1.35rem;
+  padding: 0 0.3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--rest-ink);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The comanda (order screen)
+// ─────────────────────────────────────────────────────────────────────────────
+.restaurant-order__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+
+  h1 {
+    margin: 0;
+    font-family: var(--rest-display);
+    font-size: 1.7rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0.15rem 0 0;
+    color: var(--rest-ink-soft);
+    font-size: 0.9rem;
+  }
+
+  > div:nth-child(2) {
+    flex: 1;
+  }
+}
+
+.restaurant-order__back {
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border: 1px solid var(--rest-ink);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--rest-ink);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.restaurant-order__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) 360px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+// ─── Menu: big, tap-friendly, dish names in the display face ──────────────
+.restaurant-menu__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+
+  button {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--rest-ink);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--rest-ink);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+
+    &.is-active {
+      background: var(--rest-ink);
+      color: var(--rest-sand);
+    }
+  }
+}
+
+.restaurant-menu__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 0.85rem;
+}
+
+.restaurant-dish {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  min-height: 92px;
+  padding: 1rem;
+  border: none;
+  border-radius: 12px;
+  background: var(--rest-paper);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease, transform 0.08s ease;
+
+  &:hover:not(:disabled) {
+    background: #fff;
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.restaurant-dish__name {
+  font-family: var(--rest-display);
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.restaurant-dish__price {
+  font-family: var(--rest-ticket-font);
+  font-size: 0.85rem;
+  color: var(--rest-ink-soft);
+}
+
+// ─── Ticket: the comanda itself, styled like the paper it represents ──────
+.restaurant-ticket {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 1.5rem;
+}
+
+.restaurant-ticket__paper {
+  background: var(--rest-paper);
+  border-radius: 4px;
+  padding: 1.1rem 1.1rem 0.9rem;
+  font-family: var(--rest-ticket-font);
+  box-shadow: 0 2px 0 rgba(22, 35, 44, 0.06);
+  // Perforated top edge — a comanda is torn from a strip, not a rounded card.
+  background-image: radial-gradient(circle, var(--rest-sand) 3px, transparent 3.5px);
+  background-position: top -4px left 0;
+  background-size: 16px 8px;
+  background-repeat: repeat-x;
+}
+
+.restaurant-ticket__head {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 1px dashed var(--rest-ink-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.restaurant-ticket__empty {
+  margin: 0.5rem 0 1rem;
+  font-size: 0.85rem;
+  color: var(--rest-ink-soft);
+}
+
+.restaurant-ticket__lines {
+  display: flex;
+  flex-direction: column;
+}
+
+.restaurant-ticket__line {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.4rem 0;
+  border-bottom: 1px dotted color-mix(in srgb, var(--rest-ink) 20%, transparent);
+  font-size: 0.85rem;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.restaurant-ticket__line-qty {
+  color: var(--rest-ink-soft);
+}
+
+.restaurant-ticket__line-name {
+  min-width: 0;
+}
+
+.restaurant-ticket__line-price {
+  font-weight: 700;
+}
+
+.restaurant-ticket__line-status {
+  grid-column: 2 / 3;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--rest-ink-soft);
+}
+
+.restaurant-ticket__line.is-enviado .restaurant-ticket__line-status {
+  color: var(--rest-teal);
+}
+
+.restaurant-ticket__line.is-listo .restaurant-ticket__line-status {
+  color: var(--rest-coral);
+}
+
+.restaurant-ticket__line-action {
+  grid-column: 3 / 4;
+  justify-self: end;
+  margin-top: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--rest-ink);
+  border-radius: 999px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.65rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.restaurant-ticket__total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.7rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--rest-ink);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.restaurant-order__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Kitchen Display System — built for a glance from across the kitchen, not a
+// desk: dark ground (kitchens run dim), oversized mono type, colour is the
+// only signal that matters (how long a ticket has waited).
+// ─────────────────────────────────────────────────────────────────────────────
+.restaurant-kds {
+  background: var(--rest-ink);
+  color: var(--rest-sand);
+  min-height: 100vh;
+}
+
+.restaurant-kds__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+    font-family: var(--rest-display);
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+
+  .restaurant-proto-tag {
+    border-color: var(--rest-sand);
+    color: var(--rest-sand);
+  }
+}
+
+.restaurant-kds__empty {
+  color: color-mix(in srgb, var(--rest-sand) 60%, transparent);
+  font-size: 1.1rem;
+}
+
+.restaurant-kds__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+.restaurant-kds-ticket {
+  background: var(--rest-paper);
+  color: var(--rest-ink);
+  border-radius: 6px;
+  padding: 1rem 1.1rem;
+  font-family: var(--rest-ticket-font);
+  border-top: 6px solid var(--rest-lime);
+
+  &.is-due {
+    border-top-color: color-mix(in srgb, var(--rest-teal) 70%, var(--rest-lime) 30%);
+  }
+
+  &.is-late {
+    border-top-color: var(--rest-coral);
+    animation: rest-kds-alert 1.3s ease-in-out infinite;
+  }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.6rem;
+    font-family: var(--rest-display);
+  }
+
+  &__table {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  &__time {
+    font-family: var(--rest-ticket-font);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--rest-ink-soft);
+  }
+
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+
+    &.is-ready {
+      color: var(--rest-ink-soft);
+      text-decoration: line-through;
+    }
+
+    button {
+      padding: 0.3rem 0.65rem;
+      border: none;
+      border-radius: 999px;
+      background: var(--rest-ink);
+      color: var(--rest-sand);
+      font-family: inherit;
+      font-size: 0.72rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  }
+
+  &__check {
+    color: var(--rest-teal);
+    font-weight: 800;
+  }
+}
+
+@keyframes rest-kds-alert {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(226, 87, 76, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--rest-coral) 35%, transparent);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Responsive
+// ─────────────────────────────────────────────────────────────────────────────
+@media (max-width: 860px) {
+  .restaurant-order__body {
+    grid-template-columns: 1fr;
+  }
+
+  .restaurant-ticket {
+    position: static;
+  }
+}
+
+// A kitchen screen is usually a tablet or TV mounted a couple of metres
+// away — scale ticket text up so it stays legible from there.
+@media (min-width: 1600px) {
+  .restaurant-kds-ticket {
+    padding: 1.4rem 1.5rem;
+
+    &__table {
+      font-size: 1.5rem;
+    }
+
+    li {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Floor-plan editor — a fixed canvas the owner drags tables onto. Same table
+// shapes/colours as the operational map; the only new thing here is that
+// position is free (absolute) instead of flowing in a grid.
+// ─────────────────────────────────────────────────────────────────────────────
+.restaurant-floor-admin .restaurant-floor__header p {
+  max-width: 46ch;
+}
+
+// Outer wrapper: full width, height set inline to the already-scaled
+// canvas height so the page doesn't reserve empty space below it. The
+// canvas itself keeps its fixed logical size and is scaled down to fit via
+// `transform: scale()` (see useResponsiveCanvasScale) — a tablet in a
+// waiter's hand is usually narrower than the 1000px logical floor plan.
+.restaurant-floor-editor-wrap {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.restaurant-floor-editor {
+  position: relative;
+  transform-origin: top left;
+  border: 1px dashed var(--rest-ink-soft);
+  border-radius: 8px;
+  background-color: var(--rest-paper);
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--rest-ink) 12%, transparent) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+
+.restaurant-floor-editor .restaurant-table {
+  position: absolute;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+// Operational table map (TableMapPage): same canvas, but tables are tapped
+// to open their comanda, not dragged — no editing here.
+.restaurant-floor-editor--readonly .restaurant-table {
+  cursor: pointer;
+
+  &:active {
+    cursor: pointer;
+  }
+}
+
+.restaurant-floor__empty {
+  color: var(--rest-ink-soft);
+  font-size: 0.95rem;
+}
+
+// Ambientes/plantas tab strip — shared by the floor-plan editor and the
+// operational table map so switching areas feels identical in both.
+.restaurant-area-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+
+  button {
+    padding: 0.45rem 0.9rem;
+    border: 1px solid var(--rest-ink);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--rest-ink);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.12s ease, color 0.12s ease;
+
+    &.is-active {
+      background: var(--rest-ink);
+      color: var(--rest-sand);
+    }
+
+    &:hover:not(.is-active) {
+      background: color-mix(in srgb, var(--rest-ink) 8%, transparent);
+    }
+  }
+}

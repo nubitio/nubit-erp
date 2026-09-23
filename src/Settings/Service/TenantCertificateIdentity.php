@@ -40,10 +40,12 @@ final readonly class TenantCertificateIdentity
 
     public function solUserWithRuc(string $solUser, string $ruc): string
     {
-        return $ruc . (preg_replace(
-            '/^' . preg_quote($ruc, delimiter: '/') . '/',
-            replacement: '',
-            subject: $solUser,
-        ) ?? $solUser);
+        return (
+            $ruc
+            . (
+                preg_replace('/^' . preg_quote($ruc, delimiter: '/') . '/', replacement: '', subject: $solUser)
+                ?? $solUser
+            )
+        );
     }
 }
