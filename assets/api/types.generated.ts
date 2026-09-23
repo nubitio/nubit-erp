@@ -2685,6 +2685,274 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/restaurant/areas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of RestaurantArea resources.
+         * @description Retrieves the collection of RestaurantArea resources.
+         */
+        get: operations["api_restaurantareas_get_collection"];
+        put?: never;
+        /**
+         * Creates a RestaurantArea resource.
+         * @description Creates a RestaurantArea resource.
+         */
+        post: operations["api_restaurantareas_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/restaurant/areas/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a RestaurantArea resource.
+         * @description Retrieves a RestaurantArea resource.
+         */
+        get: operations["api_restaurantareas_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the RestaurantArea resource.
+         * @description Removes the RestaurantArea resource.
+         */
+        delete: operations["api_restaurantareas_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the RestaurantArea resource.
+         * @description Updates the RestaurantArea resource.
+         */
+        patch: operations["api_restaurantareas_id_patch"];
+        trace?: never;
+    };
+    "/api/restaurant/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of RestaurantOrder resources.
+         * @description Retrieves the collection of RestaurantOrder resources.
+         */
+        get: operations["api_restaurantorders_get_collection"];
+        put?: never;
+        /**
+         * Creates a RestaurantOrder resource.
+         * @description Creates a RestaurantOrder resource.
+         */
+        post: operations["api_restaurantorders_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/restaurant/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a RestaurantOrder resource.
+         * @description Retrieves a RestaurantOrder resource.
+         */
+        get: operations["api_restaurantorders_id_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/restaurant/orders/{id}/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a RestaurantOrder resource.
+         * @description Creates a RestaurantOrder resource.
+         */
+        post: operations["api_restaurantorders_idclose_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/restaurant/orders/{id}/request-bill": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a RestaurantOrder resource.
+         * @description Creates a RestaurantOrder resource.
+         */
+        post: operations["api_restaurantorders_idrequest-bill_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/restaurant/orders/{id}/send-to-kitchen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a RestaurantOrder resource.
+         * @description Creates a RestaurantOrder resource.
+         */
+        post: operations["api_restaurantorders_idsend-to-kitchen_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/restaurant/order-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a RestaurantOrderItem resource.
+         * @description Creates a RestaurantOrderItem resource.
+         */
+        post: operations["api_restaurantorder-items_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/restaurant/order-items/{id}/delivered": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a RestaurantOrderItem resource.
+         * @description Creates a RestaurantOrderItem resource.
+         */
+        post: operations["api_restaurantorder-items_iddelivered_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/restaurant/order-items/{id}/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a RestaurantOrderItem resource.
+         * @description Creates a RestaurantOrderItem resource.
+         */
+        post: operations["api_restaurantorder-items_idready_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/restaurant/tables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of RestaurantTable resources.
+         * @description Retrieves the collection of RestaurantTable resources.
+         */
+        get: operations["api_restauranttables_get_collection"];
+        put?: never;
+        /**
+         * Creates a RestaurantTable resource.
+         * @description Creates a RestaurantTable resource.
+         */
+        post: operations["api_restauranttables_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/restaurant/tables/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a RestaurantTable resource.
+         * @description Retrieves a RestaurantTable resource.
+         */
+        get: operations["api_restauranttables_id_get"];
+        put?: never;
+        post?: never;
+        /**
+         * Removes the RestaurantTable resource.
+         * @description Removes the RestaurantTable resource.
+         */
+        delete: operations["api_restauranttables_id_delete"];
+        options?: never;
+        head?: never;
+        /**
+         * Updates the RestaurantTable resource.
+         * @description Updates the RestaurantTable resource.
+         */
+        patch: operations["api_restauranttables_id_patch"];
+        trace?: never;
+    };
     "/api/roles": {
         parameters: {
             query?: never;
@@ -4207,6 +4475,7 @@ export interface components {
          */
         "AssetDepreciationEntry-asset_depreciation_entry.read": {
             readonly id?: string;
+            /** @description asset_depreciation_entry.fixed_asset.label */
             fixedAsset?: components["schemas"]["FixedAsset-asset_depreciation_entry.read"];
             /**
              * Format: date-time
@@ -4228,6 +4497,7 @@ export interface components {
          */
         "AssetDepreciationEntry.jsonld-asset_depreciation_entry.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
+            /** @description asset_depreciation_entry.fixed_asset.label */
             fixedAsset?: components["schemas"]["FixedAsset.jsonld-asset_depreciation_entry.read"];
             /**
              * Format: date-time
@@ -4244,6 +4514,7 @@ export interface components {
         "Assistant.AssistantRequest": {
             messages: components["schemas"]["AssistantMessageInput"][];
             attachments?: components["schemas"]["AttachmentInput"][];
+            /** @description Optional screen context: which screen the user is on and what entity is active. */
             screenContext?: components["schemas"]["ScreenContextInput"] | null;
         };
         "Assistant.AssistantResponse": {
@@ -4360,6 +4631,7 @@ export interface components {
          */
         "BankStatementImport-bank_statement_import.read": {
             readonly id?: string;
+            /** @description bank_statement_import.bank_account.label */
             bankAccount?: components["schemas"]["BankAccount-bank_statement_import.read"];
             fileName?: string;
             bankProfile?: string;
@@ -4398,6 +4670,7 @@ export interface components {
          */
         "BankStatementImport.jsonld-bank_statement_import.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
+            /** @description bank_statement_import.bank_account.label */
             bankAccount?: components["schemas"]["BankAccount.jsonld-bank_statement_import.read"];
             fileName?: string;
             bankProfile?: string;
@@ -4439,7 +4712,9 @@ export interface components {
          */
         "BankStatementLine-bank_statement_line.read": {
             readonly id?: number | string;
+            /** @description bank_statement_line.bank_account.label */
             bankAccount?: components["schemas"]["BankAccount-bank_statement_line.read"];
+            /** @description bank_statement_line.import_batch.label */
             importBatch?: components["schemas"]["BankStatementImport-bank_statement_line.read"];
             /** Format: date-time */
             transactionDate?: string;
@@ -4496,7 +4771,9 @@ export interface components {
          */
         "BankStatementLine.jsonld-bank_statement_line.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number | string;
+            /** @description bank_statement_line.bank_account.label */
             bankAccount?: components["schemas"]["BankAccount.jsonld-bank_statement_line.read"];
+            /** @description bank_statement_line.import_batch.label */
             importBatch?: components["schemas"]["BankStatementImport.jsonld-bank_statement_line.read"];
             /** Format: date-time */
             transactionDate?: string;
@@ -4533,7 +4810,6 @@ export interface components {
              * @example https://example.com/
              */
             company?: string;
-            warehouses?: string[];
         };
         "Branch-branch.read": {
             readonly id?: string;
@@ -4548,6 +4824,7 @@ export interface components {
              * @default true
              */
             isActive: boolean;
+            /** @description branch.company.label */
             company?: components["schemas"]["Company-branch.read"];
         };
         "Branch-cash_register.read": {
@@ -4601,7 +4878,6 @@ export interface components {
              * @example https://example.com/
              */
             company?: string;
-            warehouses?: string[];
         };
         "Branch.jsonld-branch.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
@@ -4616,6 +4892,7 @@ export interface components {
              * @default true
              */
             isActive: boolean;
+            /** @description branch.company.label */
             company?: components["schemas"]["Company.jsonld-branch.read"];
         };
         "Branch.jsonld-cash_register.read": components["schemas"]["HydraItemBaseSchema"] & {
@@ -4715,6 +4992,7 @@ export interface components {
              * @example https://example.com/
              */
             cashSession?: string | null;
+            /** @description cash_movement.category.label */
             category?: components["schemas"]["CashMovementCategory-cash_movement.read"];
             /**
              * @description cash_movement.type.label
@@ -4754,6 +5032,7 @@ export interface components {
              * @example https://example.com/
              */
             cashSession?: string | null;
+            /** @description cash_movement.category.label */
             category?: components["schemas"]["CashMovementCategory.jsonld-cash_movement.read"];
             /**
              * @description cash_movement.type.label
@@ -4880,6 +5159,7 @@ export interface components {
         };
         "CashRegister-cash_register.read": {
             readonly id?: number;
+            /** @description cash_register.branch.label */
             branch?: components["schemas"]["Branch-cash_register.read"];
             /** @description cash_register.name.label */
             name?: string;
@@ -5080,6 +5360,7 @@ export interface components {
         };
         "CashRegister.jsonld-cash_register.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
+            /** @description cash_register.branch.label */
             branch?: components["schemas"]["Branch.jsonld-cash_register.read"];
             /** @description cash_register.name.label */
             name?: string;
@@ -5169,6 +5450,7 @@ export interface components {
              * @example https://example.com/
              */
             cashSession?: string | null;
+            /** @description cash_movement.category.label */
             category?: components["schemas"]["CashMovementCategory-cash_movement.read"];
             /**
              * @description cash_movement.type.label
@@ -5197,6 +5479,7 @@ export interface components {
              * @example https://example.com/
              */
             cashSession?: string | null;
+            /** @description cash_movement.category.label */
             category?: components["schemas"]["CashMovementCategory.jsonld-cash_movement.read"];
             /**
              * @description cash_movement.type.label
@@ -5341,6 +5624,7 @@ export interface components {
             readonly id?: string;
             /** @description category.name.label */
             name: string;
+            /** @description category.parent.label */
             parent?: components["schemas"]["Category-category.read"] | null;
             /**
              * @description category.is_active.label
@@ -5351,6 +5635,7 @@ export interface components {
         "Category-category.write": {
             /** @description category.name.label */
             name: string;
+            /** @description category.parent.label */
             parent?: components["schemas"]["Category-category.write"] | null;
             /**
              * @description category.is_active.label
@@ -5361,6 +5646,7 @@ export interface components {
         "Category-category.write.jsonMergePatch": {
             /** @description category.name.label */
             name?: string;
+            /** @description category.parent.label */
             parent?: components["schemas"]["Category-category.write"] | null;
             /**
              * @description category.is_active.label
@@ -5379,6 +5665,7 @@ export interface components {
             name: string;
         };
         "Category.jsonld-category.read": {
+            /** @description category.parent.label */
             parent?: components["schemas"]["Category.jsonld-category.read"] | null;
             /**
              * @description category.is_active.label
@@ -5515,6 +5802,7 @@ export interface components {
             fiscalAddress: string;
             /** @description company.phone.label */
             phone?: string | null;
+            /** @description company.logo.label */
             logo?: components["schemas"]["Media-company.read"] | null;
             /** @description company.ubigeo_code.label */
             ubigeoCode?: string | null;
@@ -5587,6 +5875,7 @@ export interface components {
             fiscalAddress: string;
             /** @description company.phone.label */
             phone?: string | null;
+            /** @description company.logo.label */
             logo?: components["schemas"]["Media.jsonld-company.read"] | null;
             /** @description company.ubigeo_code.label */
             ubigeoCode?: string | null;
@@ -6326,7 +6615,9 @@ export interface components {
         };
         "CustomerSubscription-customer_subscription.read": {
             readonly id?: string;
+            /** @description customer_subscription.customer.label */
             customer: components["schemas"]["Customer-customer_subscription.read"];
+            /** @description customer_subscription.plan.label */
             plan: components["schemas"]["SubscriptionPlan-customer_subscription.read"];
             /**
              * @description customer_subscription.status.label
@@ -6455,7 +6746,9 @@ export interface components {
         };
         "CustomerSubscription.jsonld-customer_subscription.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
+            /** @description customer_subscription.customer.label */
             customer: components["schemas"]["Customer.jsonld-customer_subscription.read"];
+            /** @description customer_subscription.plan.label */
             plan: components["schemas"]["SubscriptionPlan.jsonld-customer_subscription.read"];
             /**
              * @description customer_subscription.status.label
@@ -6854,7 +7147,9 @@ export interface components {
          */
         "Employee-employee.read": {
             readonly id?: string;
+            /** @description employee.company.label */
             company: components["schemas"]["Company-employee.read"];
+            /** @description employee.user.label */
             user?: components["schemas"]["User-employee.read"] | null;
             /** @description employee.dni.label */
             dni?: string;
@@ -7049,7 +7344,9 @@ export interface components {
          */
         "Employee.jsonld-employee.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
+            /** @description employee.company.label */
             company: components["schemas"]["Company.jsonld-employee.read"];
+            /** @description employee.user.label */
             user?: components["schemas"]["User.jsonld-employee.read"] | null;
             /** @description employee.dni.label */
             dni?: string;
@@ -7234,8 +7531,11 @@ export interface components {
          */
         "ExpenseReport-expense_report.read": {
             readonly id?: string;
+            /** @description expense_report.employee.label */
             employee: components["schemas"]["User-expense_report.read"];
+            /** @description expense_report.category.label */
             category: components["schemas"]["ExpenseCategory-expense_report.read"];
+            /** @description expense_report.branch.label */
             branch: components["schemas"]["Branch-expense_report.read"];
             /** @description expense_report.description.label */
             description: string;
@@ -7251,12 +7551,14 @@ export interface components {
              * @description expense_report.expense_date.label
              */
             expenseDate: string;
+            /** @description expense_report.receipt_media.label */
             receiptMedia?: components["schemas"]["Media-expense_report.read"] | null;
             /**
              * @description expense_report.status.label
              * @default PENDING
              */
             status: string;
+            /** @description expense_report.reviewed_by.label */
             reviewedBy?: components["schemas"]["User-expense_report.read"] | null;
             /**
              * Format: date-time
@@ -7398,8 +7700,11 @@ export interface components {
          */
         "ExpenseReport.jsonld-expense_report.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
+            /** @description expense_report.employee.label */
             employee: components["schemas"]["User.jsonld-expense_report.read"];
+            /** @description expense_report.category.label */
             category: components["schemas"]["ExpenseCategory.jsonld-expense_report.read"];
+            /** @description expense_report.branch.label */
             branch: components["schemas"]["Branch.jsonld-expense_report.read"];
             /** @description expense_report.description.label */
             description: string;
@@ -7415,12 +7720,14 @@ export interface components {
              * @description expense_report.expense_date.label
              */
             expenseDate: string;
+            /** @description expense_report.receipt_media.label */
             receiptMedia?: components["schemas"]["Media.jsonld-expense_report.read"] | null;
             /**
              * @description expense_report.status.label
              * @default PENDING
              */
             status: string;
+            /** @description expense_report.reviewed_by.label */
             reviewedBy?: components["schemas"]["User.jsonld-expense_report.read"] | null;
             /**
              * Format: date-time
@@ -7459,6 +7766,7 @@ export interface components {
             cost: string;
             /** @description fixed_asset.useful_life_months.label */
             usefulLifeMonths: number;
+            /** @description fixed_asset.source_bill.label */
             sourceBill?: components["schemas"]["SupplierBill-fixed_asset.read"] | null;
             /**
              * @description fixed_asset.accumulated_depreciation.label
@@ -7572,6 +7880,7 @@ export interface components {
             cost: string;
             /** @description fixed_asset.useful_life_months.label */
             usefulLifeMonths: number;
+            /** @description fixed_asset.source_bill.label */
             sourceBill?: components["schemas"]["SupplierBill.jsonld-fixed_asset.read"] | null;
             /**
              * @description fixed_asset.accumulated_depreciation.label
@@ -8060,6 +8369,7 @@ export interface components {
          */
         "PayrollRun-payroll_run.read": {
             readonly id?: string;
+            /** @description payroll_run.company.label */
             company: components["schemas"]["Company-payroll_run.read"];
             /**
              * Format: date-time
@@ -8184,6 +8494,7 @@ export interface components {
          */
         "PayrollRun.jsonld-payroll_run.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
+            /** @description payroll_run.company.label */
             company: components["schemas"]["Company.jsonld-payroll_run.read"];
             /**
              * Format: date-time
@@ -8234,7 +8545,9 @@ export interface components {
          */
         "PayslipEntry-payslip_entry.read": {
             readonly id?: string;
+            /** @description payslip_entry.payroll_run.label */
             payrollRun?: components["schemas"]["PayrollRun-payslip_entry.read"];
+            /** @description payslip_entry.employee.label */
             employee?: components["schemas"]["Employee-payslip_entry.read"];
             /** @description payslip_entry.gross_salary.label */
             grossSalary?: string;
@@ -8303,7 +8616,9 @@ export interface components {
          */
         "PayslipEntry.jsonld-payslip_entry.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
+            /** @description payslip_entry.payroll_run.label */
             payrollRun?: components["schemas"]["PayrollRun.jsonld-payslip_entry.read"];
+            /** @description payslip_entry.employee.label */
             employee?: components["schemas"]["Employee.jsonld-payslip_entry.read"];
             /** @description payslip_entry.gross_salary.label */
             grossSalary?: string;
@@ -8913,6 +9228,7 @@ export interface components {
              * @default NONE
              */
             lotTrackingStrategy: string;
+            /** @description product.base_unit.label */
             baseUnit?: components["schemas"]["UnitOfMeasure-product.read"] | null;
             /**
              * @description product.is_active.label
@@ -8921,7 +9237,9 @@ export interface components {
             isActive: boolean;
             /** @description product.name.label */
             name: string;
+            /** @description product.category.label */
             category: components["schemas"]["Category-product.read"];
+            /** @description product.unit_of_measure.label */
             unitOfMeasure: components["schemas"]["UnitOfMeasure-product.read"];
             /** @description product.purchase_price.label */
             purchasePrice?: string | null;
@@ -8933,7 +9251,9 @@ export interface components {
             /** @description product.min_stock.label */
             minStock?: string | null;
             stocks?: string[];
+            /** @description product.photo.label */
             photo?: components["schemas"]["Media-product.read"] | null;
+            /** @description product.detraction_catalog.label */
             detractionCatalog?: components["schemas"]["SunatCatalog-product.read"] | null;
         };
         "Product-product.write": {
@@ -9092,7 +9412,9 @@ export interface components {
             code?: string | null;
             /** @description product.name.label */
             name: string;
+            /** @description product.category.label */
             category: components["schemas"]["Category-stock_item.read"];
+            /** @description product.unit_of_measure.label */
             unitOfMeasure: components["schemas"]["UnitOfMeasure-stock_item.read"];
         };
         "Product-subscription_plan.read": Record<string, never>;
@@ -9136,6 +9458,7 @@ export interface components {
              * @default NONE
              */
             lotTrackingStrategy: string;
+            /** @description product.base_unit.label */
             baseUnit?: components["schemas"]["UnitOfMeasure.jsonld-product.read"] | null;
             /**
              * @description product.is_active.label
@@ -9144,7 +9467,9 @@ export interface components {
             isActive: boolean;
             /** @description product.name.label */
             name: string;
+            /** @description product.category.label */
             category: components["schemas"]["Category.jsonld-product.read"];
+            /** @description product.unit_of_measure.label */
             unitOfMeasure: components["schemas"]["UnitOfMeasure.jsonld-product.read"];
             /** @description product.purchase_price.label */
             purchasePrice?: string | null;
@@ -9156,7 +9481,9 @@ export interface components {
             /** @description product.min_stock.label */
             minStock?: string | null;
             stocks?: string[];
+            /** @description product.photo.label */
             photo?: components["schemas"]["Media.jsonld-product.read"] | null;
+            /** @description product.detraction_catalog.label */
             detractionCatalog?: components["schemas"]["SunatCatalog.jsonld-product.read"] | null;
         };
         "Product.jsonld-purchase_item.read": components["schemas"]["HydraItemBaseSchema"] & {
@@ -9187,7 +9514,9 @@ export interface components {
             code?: string | null;
             /** @description product.name.label */
             name: string;
+            /** @description product.category.label */
             category: components["schemas"]["Category.jsonld-stock_item.read"];
+            /** @description product.unit_of_measure.label */
             unitOfMeasure: components["schemas"]["UnitOfMeasure.jsonld-stock_item.read"];
         };
         "Product.jsonld-subscription_plan.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
@@ -9367,7 +9696,9 @@ export interface components {
              * @example https://example.com/
              */
             branch?: string | null;
+            /** @description purchase.warehouse.label */
             warehouse?: components["schemas"]["Warehouse-purchase.read"] | null;
+            /** @description purchase.supplier.label */
             supplier?: components["schemas"]["Supplier-purchase.read"] | null;
             /**
              * Format: iri-reference
@@ -9576,7 +9907,9 @@ export interface components {
              * @example https://example.com/
              */
             branch?: string | null;
+            /** @description purchase.warehouse.label */
             warehouse?: components["schemas"]["Warehouse.jsonld-purchase.read"] | null;
+            /** @description purchase.supplier.label */
             supplier?: components["schemas"]["Supplier.jsonld-purchase.read"] | null;
             /**
              * Format: iri-reference
@@ -9738,6 +10071,7 @@ export interface components {
              * @default 0
              */
             lineNo: number;
+            /** @description purchase_item.product.label */
             product?: components["schemas"]["Product-purchase_item.read"] | null;
             /** @description purchase_item.variant_id.label */
             variantId?: string | null;
@@ -9830,6 +10164,7 @@ export interface components {
              * @default 0
              */
             lineNo: number;
+            /** @description purchase_item.product.label */
             product?: components["schemas"]["Product.jsonld-purchase_item.read"] | null;
             /** @description purchase_item.variant_id.label */
             variantId?: string | null;
@@ -9913,8 +10248,11 @@ export interface components {
         "PurchaseOrder-purchase_order.read": {
             readonly id?: string;
             orderNo?: number | null;
+            /** @description purchase_order.branch.label */
             branch?: components["schemas"]["Branch-purchase_order.read"] | null;
+            /** @description purchase_order.warehouse.label */
             warehouse?: components["schemas"]["Warehouse-purchase_order.read"] | null;
+            /** @description purchase_order.supplier.label */
             supplier?: components["schemas"]["Supplier-purchase_order.read"];
             /**
              * Format: iri-reference
@@ -10029,8 +10367,11 @@ export interface components {
         "PurchaseOrder.jsonld-purchase_order.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
             orderNo?: number | null;
+            /** @description purchase_order.branch.label */
             branch?: components["schemas"]["Branch.jsonld-purchase_order.read"] | null;
+            /** @description purchase_order.warehouse.label */
             warehouse?: components["schemas"]["Warehouse.jsonld-purchase_order.read"] | null;
+            /** @description purchase_order.supplier.label */
             supplier?: components["schemas"]["Supplier.jsonld-purchase_order.read"];
             /**
              * Format: iri-reference
@@ -10066,6 +10407,7 @@ export interface components {
             readonly id?: number;
             /** @default 0 */
             lineNo: number;
+            /** @description purchase_order_item.product.label */
             product?: components["schemas"]["Product-purchase_order.read"] | null;
             /** @default  */
             nameSnapshot: string;
@@ -10102,6 +10444,7 @@ export interface components {
             readonly id?: number;
             /** @default 0 */
             lineNo: number;
+            /** @description purchase_order_item.product.label */
             product?: components["schemas"]["Product.jsonld-purchase_order.read"] | null;
             /** @default  */
             nameSnapshot: string;
@@ -10126,6 +10469,377 @@ export interface components {
         ReceivableSummary: Record<string, never>;
         /** @description KPI header for "Deudores" (#409) — see {@see ReceivableSummaryController}. */
         "ReceivableSummary.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        /**
+         * @description A named area of the floor (e.g. "Salón", "Terraza VIP"), scoped to a floor
+         *     number for restaurants with more than one level (NB-18 follow-up). The
+         *     floor-plan editor and the operational table map both show one tab per
+         *     area, ordered by `(floor, orderIndex)`.
+         *
+         *     `name`/`floor`/`orderIndex` also carry `restaurant_table:read` so a
+         *     `RestaurantTable` embeds its area inline instead of just an IRI — same
+         *     pattern already used between `Warehouse`/`Branch` in this project.
+         */
+        "RestaurantArea-restaurant_area.read": {
+            readonly id?: number;
+            name?: string;
+            /** @default 1 */
+            floor: number;
+            /** @default 0 */
+            orderIndex: number;
+        };
+        /**
+         * @description A named area of the floor (e.g. "Salón", "Terraza VIP"), scoped to a floor
+         *     number for restaurants with more than one level (NB-18 follow-up). The
+         *     floor-plan editor and the operational table map both show one tab per
+         *     area, ordered by `(floor, orderIndex)`.
+         *
+         *     `name`/`floor`/`orderIndex` also carry `restaurant_table:read` so a
+         *     `RestaurantTable` embeds its area inline instead of just an IRI — same
+         *     pattern already used between `Warehouse`/`Branch` in this project.
+         */
+        "RestaurantArea-restaurant_area.write": {
+            name?: string;
+            /** @default 1 */
+            floor: number;
+            /** @default 0 */
+            orderIndex: number;
+        };
+        /**
+         * @description A named area of the floor (e.g. "Salón", "Terraza VIP"), scoped to a floor
+         *     number for restaurants with more than one level (NB-18 follow-up). The
+         *     floor-plan editor and the operational table map both show one tab per
+         *     area, ordered by `(floor, orderIndex)`.
+         *
+         *     `name`/`floor`/`orderIndex` also carry `restaurant_table:read` so a
+         *     `RestaurantTable` embeds its area inline instead of just an IRI — same
+         *     pattern already used between `Warehouse`/`Branch` in this project.
+         */
+        "RestaurantArea-restaurant_area.write.jsonMergePatch": {
+            name?: string;
+            /** @default 1 */
+            floor: number;
+            /** @default 0 */
+            orderIndex: number;
+        };
+        "RestaurantArea-restaurant_table.read": {
+            readonly id?: number;
+            name?: string;
+            /** @default 1 */
+            floor: number;
+            /** @default 0 */
+            orderIndex: number;
+        };
+        /**
+         * @description A named area of the floor (e.g. "Salón", "Terraza VIP"), scoped to a floor
+         *     number for restaurants with more than one level (NB-18 follow-up). The
+         *     floor-plan editor and the operational table map both show one tab per
+         *     area, ordered by `(floor, orderIndex)`.
+         *
+         *     `name`/`floor`/`orderIndex` also carry `restaurant_table:read` so a
+         *     `RestaurantTable` embeds its area inline instead of just an IRI — same
+         *     pattern already used between `Warehouse`/`Branch` in this project.
+         */
+        "RestaurantArea.jsonld-restaurant_area.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            name?: string;
+            /** @default 1 */
+            floor: number;
+            /** @default 0 */
+            orderIndex: number;
+        };
+        /**
+         * @description A named area of the floor (e.g. "Salón", "Terraza VIP"), scoped to a floor
+         *     number for restaurants with more than one level (NB-18 follow-up). The
+         *     floor-plan editor and the operational table map both show one tab per
+         *     area, ordered by `(floor, orderIndex)`.
+         *
+         *     `name`/`floor`/`orderIndex` also carry `restaurant_table:read` so a
+         *     `RestaurantTable` embeds its area inline instead of just an IRI — same
+         *     pattern already used between `Warehouse`/`Branch` in this project.
+         */
+        "RestaurantArea.jsonld-restaurant_table.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            name?: string;
+            /** @default 1 */
+            floor: number;
+            /** @default 0 */
+            orderIndex: number;
+        };
+        /**
+         * @description A comanda: the accumulating order for one table's dining session (NB-18).
+         *     Stays open while the table is in use; only at `close()` does it hand off
+         *     to Sales — done entirely from the frontend against the same
+         *     `POST /api/sales` the web POS already uses, so this context never
+         *     references Sales in PHP (`saleId` here is an opaque string, no FK).
+         */
+        "RestaurantOrder-restaurant_order.read": {
+            readonly id?: number;
+            tableId?: number;
+            /** Format: date-time */
+            readonly openedAt?: string;
+            /** Format: date-time */
+            readonly closedAt?: string | null;
+            readonly saleId?: string | null;
+            items?: components["schemas"]["RestaurantOrderItem-restaurant_order.read"][];
+        };
+        /**
+         * @description A comanda: the accumulating order for one table's dining session (NB-18).
+         *     Stays open while the table is in use; only at `close()` does it hand off
+         *     to Sales — done entirely from the frontend against the same
+         *     `POST /api/sales` the web POS already uses, so this context never
+         *     references Sales in PHP (`saleId` here is an opaque string, no FK).
+         */
+        "RestaurantOrder.CloseOrderInput": {
+            /** @default  */
+            saleId: string;
+        };
+        /**
+         * @description A comanda: the accumulating order for one table's dining session (NB-18).
+         *     Stays open while the table is in use; only at `close()` does it hand off
+         *     to Sales — done entirely from the frontend against the same
+         *     `POST /api/sales` the web POS already uses, so this context never
+         *     references Sales in PHP (`saleId` here is an opaque string, no FK).
+         */
+        "RestaurantOrder.OpenTableInput": {
+            /** @default 0 */
+            tableId: number;
+        };
+        /**
+         * @description A comanda: the accumulating order for one table's dining session (NB-18).
+         *     Stays open while the table is in use; only at `close()` does it hand off
+         *     to Sales — done entirely from the frontend against the same
+         *     `POST /api/sales` the web POS already uses, so this context never
+         *     references Sales in PHP (`saleId` here is an opaque string, no FK).
+         */
+        "RestaurantOrder.RequestBillInput": Record<string, never>;
+        /**
+         * @description A comanda: the accumulating order for one table's dining session (NB-18).
+         *     Stays open while the table is in use; only at `close()` does it hand off
+         *     to Sales — done entirely from the frontend against the same
+         *     `POST /api/sales` the web POS already uses, so this context never
+         *     references Sales in PHP (`saleId` here is an opaque string, no FK).
+         */
+        "RestaurantOrder.SendToKitchenInput": Record<string, never>;
+        /**
+         * @description A comanda: the accumulating order for one table's dining session (NB-18).
+         *     Stays open while the table is in use; only at `close()` does it hand off
+         *     to Sales — done entirely from the frontend against the same
+         *     `POST /api/sales` the web POS already uses, so this context never
+         *     references Sales in PHP (`saleId` here is an opaque string, no FK).
+         */
+        "RestaurantOrder.jsonld-restaurant_order.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            tableId?: number;
+            /** Format: date-time */
+            readonly openedAt?: string;
+            /** Format: date-time */
+            readonly closedAt?: string | null;
+            readonly saleId?: string | null;
+            items?: components["schemas"]["RestaurantOrderItem.jsonld-restaurant_order.read"][];
+        };
+        "RestaurantOrderItem-restaurant_order.read": {
+            readonly id?: number;
+            productId?: string;
+            productName?: string;
+            unitPrice?: string;
+            qty?: number;
+            notes?: string | null;
+            /**
+             * @default PENDING
+             * @enum {string}
+             */
+            readonly status: "PENDING" | "SENT" | "READY" | "DELIVERED";
+            /** Format: date-time */
+            readonly sentAt?: string | null;
+            /** Format: date-time */
+            readonly readyAt?: string | null;
+            /** Format: date-time */
+            readonly deliveredAt?: string | null;
+        };
+        /**
+         * @description One comanda line (NB-18). Snapshots the product's name/price at the time
+         *     it was added — a menu price change later must not alter a comanda already
+         *     in progress. Linked to `Catalog\Product` by id only (composition, no FK),
+         *     same pattern as `Pharmacy\Entity\PharmacyProduct`.
+         */
+        "RestaurantOrderItem-restaurant_order_item.read": {
+            readonly id?: number;
+            productId?: string;
+            productName?: string;
+            unitPrice?: string;
+            qty?: number;
+            notes?: string | null;
+            /**
+             * @default PENDING
+             * @enum {string}
+             */
+            readonly status: "PENDING" | "SENT" | "READY" | "DELIVERED";
+            /** Format: date-time */
+            readonly sentAt?: string | null;
+            /** Format: date-time */
+            readonly readyAt?: string | null;
+            /** Format: date-time */
+            readonly deliveredAt?: string | null;
+        };
+        /**
+         * @description One comanda line (NB-18). Snapshots the product's name/price at the time
+         *     it was added — a menu price change later must not alter a comanda already
+         *     in progress. Linked to `Catalog\Product` by id only (composition, no FK),
+         *     same pattern as `Pharmacy\Entity\PharmacyProduct`.
+         */
+        "RestaurantOrderItem.AddOrderItemInput": {
+            /** @default 0 */
+            orderId: number;
+            /** @default  */
+            productId: string;
+            /** @default 1 */
+            qty: number;
+            notes?: string | null;
+        };
+        /**
+         * @description One comanda line (NB-18). Snapshots the product's name/price at the time
+         *     it was added — a menu price change later must not alter a comanda already
+         *     in progress. Linked to `Catalog\Product` by id only (composition, no FK),
+         *     same pattern as `Pharmacy\Entity\PharmacyProduct`.
+         */
+        "RestaurantOrderItem.MarkOrderItemDeliveredInput": Record<string, never>;
+        /**
+         * @description One comanda line (NB-18). Snapshots the product's name/price at the time
+         *     it was added — a menu price change later must not alter a comanda already
+         *     in progress. Linked to `Catalog\Product` by id only (composition, no FK),
+         *     same pattern as `Pharmacy\Entity\PharmacyProduct`.
+         */
+        "RestaurantOrderItem.MarkOrderItemReadyInput": Record<string, never>;
+        /**
+         * @description One comanda line (NB-18). Snapshots the product's name/price at the time
+         *     it was added — a menu price change later must not alter a comanda already
+         *     in progress. Linked to `Catalog\Product` by id only (composition, no FK),
+         *     same pattern as `Pharmacy\Entity\PharmacyProduct`.
+         */
+        "RestaurantOrderItem.jsonld-restaurant_order.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            productId?: string;
+            productName?: string;
+            unitPrice?: string;
+            qty?: number;
+            notes?: string | null;
+            /**
+             * @default PENDING
+             * @enum {string}
+             */
+            readonly status: "PENDING" | "SENT" | "READY" | "DELIVERED";
+            /** Format: date-time */
+            readonly sentAt?: string | null;
+            /** Format: date-time */
+            readonly readyAt?: string | null;
+            /** Format: date-time */
+            readonly deliveredAt?: string | null;
+        };
+        /**
+         * @description One comanda line (NB-18). Snapshots the product's name/price at the time
+         *     it was added — a menu price change later must not alter a comanda already
+         *     in progress. Linked to `Catalog\Product` by id only (composition, no FK),
+         *     same pattern as `Pharmacy\Entity\PharmacyProduct`.
+         */
+        "RestaurantOrderItem.jsonld-restaurant_order_item.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            productId?: string;
+            productName?: string;
+            unitPrice?: string;
+            qty?: number;
+            notes?: string | null;
+            /**
+             * @default PENDING
+             * @enum {string}
+             */
+            readonly status: "PENDING" | "SENT" | "READY" | "DELIVERED";
+            /** Format: date-time */
+            readonly sentAt?: string | null;
+            /** Format: date-time */
+            readonly readyAt?: string | null;
+            /** Format: date-time */
+            readonly deliveredAt?: string | null;
+        };
+        /**
+         * @description A dining table on the floor (NB-18). Composition, not a shared "location"
+         *     abstraction: this vertical owns its own floor plan, unrelated to
+         *     `Inventory\Warehouse` or `Organization\Branch`.
+         *
+         *     `positionX`/`positionY` place the table on the floor-plan editor's canvas;
+         *     `null` means the owner hasn't dragged it onto the plan yet.
+         */
+        "RestaurantTable-restaurant_table.read": {
+            readonly id?: number;
+            code?: string;
+            area?: components["schemas"]["RestaurantArea-restaurant_table.read"];
+            seats?: number;
+            /**
+             * @default FREE
+             * @enum {string}
+             */
+            readonly status: "FREE" | "OCCUPIED" | "AWAITING_PAYMENT";
+            positionX?: number | null;
+            positionY?: number | null;
+        };
+        /**
+         * @description A dining table on the floor (NB-18). Composition, not a shared "location"
+         *     abstraction: this vertical owns its own floor plan, unrelated to
+         *     `Inventory\Warehouse` or `Organization\Branch`.
+         *
+         *     `positionX`/`positionY` place the table on the floor-plan editor's canvas;
+         *     `null` means the owner hasn't dragged it onto the plan yet.
+         */
+        "RestaurantTable-restaurant_table.write": {
+            code?: string;
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            area?: string;
+            seats?: number;
+            positionX?: number | null;
+            positionY?: number | null;
+        };
+        /**
+         * @description A dining table on the floor (NB-18). Composition, not a shared "location"
+         *     abstraction: this vertical owns its own floor plan, unrelated to
+         *     `Inventory\Warehouse` or `Organization\Branch`.
+         *
+         *     `positionX`/`positionY` place the table on the floor-plan editor's canvas;
+         *     `null` means the owner hasn't dragged it onto the plan yet.
+         */
+        "RestaurantTable-restaurant_table.write.jsonMergePatch": {
+            code?: string;
+            /**
+             * Format: iri-reference
+             * @example https://example.com/
+             */
+            area?: string;
+            seats?: number;
+            positionX?: number | null;
+            positionY?: number | null;
+        };
+        /**
+         * @description A dining table on the floor (NB-18). Composition, not a shared "location"
+         *     abstraction: this vertical owns its own floor plan, unrelated to
+         *     `Inventory\Warehouse` or `Organization\Branch`.
+         *
+         *     `positionX`/`positionY` place the table on the floor-plan editor's canvas;
+         *     `null` means the owner hasn't dragged it onto the plan yet.
+         */
+        "RestaurantTable.jsonld-restaurant_table.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            code?: string;
+            area?: components["schemas"]["RestaurantArea.jsonld-restaurant_table.read"];
+            seats?: number;
+            /**
+             * @default FREE
+             * @enum {string}
+             */
+            readonly status: "FREE" | "OCCUPIED" | "AWAITING_PAYMENT";
+            positionX?: number | null;
+            positionY?: number | null;
+        };
         Role: {
             readonly id?: number;
             /** @description role.name.label */
@@ -10223,6 +10937,7 @@ export interface components {
              * @example https://example.com/
              */
             warehouse?: string | null;
+            /** @description sale_record.customer.label */
             customer?: components["schemas"]["Customer-sale_record.read"] | null;
             /** @description sale_record.seller_user_id.label */
             sellerUserId?: number | null;
@@ -10338,6 +11053,7 @@ export interface components {
             publicReceiptUrl?: string | null;
             /** @description sale_record.document_type.label */
             documentType?: string | null;
+            /** @description sale_record.payment_method.label */
             paymentMethod?: components["schemas"]["PaymentMethod-sale_record.read"] | null;
             /** @description sale_record.discount_percent.label */
             discountPercent?: string | null;
@@ -10469,6 +11185,7 @@ export interface components {
              * @example https://example.com/
              */
             warehouse?: string | null;
+            /** @description sale_record.customer.label */
             customer?: components["schemas"]["Customer.jsonld-sale_record.read"] | null;
             /** @description sale_record.seller_user_id.label */
             sellerUserId?: number | null;
@@ -10584,6 +11301,7 @@ export interface components {
             publicReceiptUrl?: string | null;
             /** @description sale_record.document_type.label */
             documentType?: string | null;
+            /** @description sale_record.payment_method.label */
             paymentMethod?: components["schemas"]["PaymentMethod.jsonld-sale_record.read"] | null;
             /** @description sale_record.discount_percent.label */
             discountPercent?: string | null;
@@ -10606,6 +11324,7 @@ export interface components {
              * @default 0
              */
             lineNo: number;
+            /** @description sale_item_record.product.label */
             product?: components["schemas"]["Product-sale_item_record.read"] | null;
             /**
              * @description sale_item_record.qty.label
@@ -10658,6 +11377,7 @@ export interface components {
              * @default 0
              */
             lineNo: number;
+            /** @description sale_item_record.product.label */
             product?: components["schemas"]["Product.jsonld-sale_item_record.read"] | null;
             /**
              * @description sale_item_record.qty.label
@@ -10711,8 +11431,11 @@ export interface components {
          */
         "SaleQuote-sale_quote.read": {
             readonly id?: string;
+            /** @description sale_quote.branch.label */
             branch?: components["schemas"]["Branch-sale_quote.read"] | null;
+            /** @description sale_quote.warehouse.label */
             warehouse?: components["schemas"]["Warehouse-sale_quote.read"] | null;
+            /** @description sale_quote.customer.label */
             customer?: components["schemas"]["Customer-sale_quote.read"] | null;
             sellerUserId?: number | null;
             /** @default draft */
@@ -10876,6 +11599,7 @@ export interface components {
              * @example https://example.com/
              */
             warehouse?: string | null;
+            /** @description sale_record.customer.label */
             customer?: components["schemas"]["Customer-sale_record.read"] | null;
             /** @description sale_record.seller_user_id.label */
             sellerUserId?: number | null;
@@ -10991,6 +11715,7 @@ export interface components {
             publicReceiptUrl?: string | null;
             /** @description sale_record.document_type.label */
             documentType?: string | null;
+            /** @description sale_record.payment_method.label */
             paymentMethod?: components["schemas"]["PaymentMethod-sale_record.read"] | null;
             /** @description sale_record.discount_percent.label */
             discountPercent?: string | null;
@@ -11026,6 +11751,7 @@ export interface components {
              * @example https://example.com/
              */
             warehouse?: string | null;
+            /** @description sale_record.customer.label */
             customer?: components["schemas"]["Customer.jsonld-sale_record.read"] | null;
             /** @description sale_record.seller_user_id.label */
             sellerUserId?: number | null;
@@ -11141,6 +11867,7 @@ export interface components {
             publicReceiptUrl?: string | null;
             /** @description sale_record.document_type.label */
             documentType?: string | null;
+            /** @description sale_record.payment_method.label */
             paymentMethod?: components["schemas"]["PaymentMethod.jsonld-sale_record.read"] | null;
             /** @description sale_record.discount_percent.label */
             discountPercent?: string | null;
@@ -11164,8 +11891,11 @@ export interface components {
          */
         "SaleQuote.jsonld-sale_quote.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
+            /** @description sale_quote.branch.label */
             branch?: components["schemas"]["Branch.jsonld-sale_quote.read"] | null;
+            /** @description sale_quote.warehouse.label */
             warehouse?: components["schemas"]["Warehouse.jsonld-sale_quote.read"] | null;
+            /** @description sale_quote.customer.label */
             customer?: components["schemas"]["Customer.jsonld-sale_quote.read"] | null;
             sellerUserId?: number | null;
             /** @default draft */
@@ -11206,6 +11936,7 @@ export interface components {
             readonly id?: number;
             /** @default 0 */
             lineNo: number;
+            /** @description sale_quote_item.product.label */
             product?: components["schemas"]["Product-sale_quote.read"] | null;
             /** @default 0.000 */
             qty: string;
@@ -11229,6 +11960,7 @@ export interface components {
             readonly id?: number;
             /** @default 0 */
             lineNo: number;
+            /** @description sale_quote_item.product.label */
             product?: components["schemas"]["Product.jsonld-sale_quote.read"] | null;
             /** @default 0.000 */
             qty: string;
@@ -11775,6 +12507,7 @@ export interface components {
         };
         "StockEntryItem-stock_entry.read": {
             readonly id?: number;
+            /** @description stock_entry_item.product.label */
             product: components["schemas"]["Product-stock_entry.read"];
             /**
              * @description stock_entry_item.qty.label
@@ -11817,6 +12550,7 @@ export interface components {
         };
         "StockEntryItem-stock_entry_items.read": {
             readonly id?: number;
+            /** @description stock_entry_item.product.label */
             product: components["schemas"]["Product-stock_entry_items.read"];
             /**
              * @description stock_entry_item.qty.label
@@ -11838,6 +12572,7 @@ export interface components {
         };
         "StockEntryItem.jsonld-stock_entry.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
+            /** @description stock_entry_item.product.label */
             product: components["schemas"]["Product.jsonld-stock_entry.read"];
             /**
              * @description stock_entry_item.qty.label
@@ -11859,6 +12594,7 @@ export interface components {
         };
         "StockEntryItem.jsonld-stock_entry_items.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
+            /** @description stock_entry_item.product.label */
             product: components["schemas"]["Product.jsonld-stock_entry_items.read"];
             /**
              * @description stock_entry_item.qty.label
@@ -11879,7 +12615,9 @@ export interface components {
             note?: string | null;
         };
         "StockItem-stock_item.read": {
+            /** @description stock_item.warehouse.label */
             warehouse?: components["schemas"]["Warehouse-stock_item.read"];
+            /** @description stock_item.product.label */
             product?: components["schemas"]["Product-stock_item.read"];
             /**
              * @description stock_item.qty_on_hand.label
@@ -11908,7 +12646,9 @@ export interface components {
             readonly unitCode?: string;
         };
         "StockItem.jsonld-stock_item.read": components["schemas"]["HydraItemBaseSchema"] & {
+            /** @description stock_item.warehouse.label */
             warehouse?: components["schemas"]["Warehouse.jsonld-stock_item.read"];
+            /** @description stock_item.product.label */
             product?: components["schemas"]["Product.jsonld-stock_item.read"];
             /**
              * @description stock_item.qty_on_hand.label
@@ -12030,12 +12770,14 @@ export interface components {
             readonly id?: string;
             /** @description subscription_plan.name.label */
             name: string;
+            /** @description subscription_plan.product.label */
             product: components["schemas"]["Product-customer_subscription.read"];
         };
         "SubscriptionPlan-subscription_plan.read": {
             readonly id?: string;
             /** @description subscription_plan.name.label */
             name: string;
+            /** @description subscription_plan.product.label */
             product: components["schemas"]["Product-subscription_plan.read"];
             /**
              * @description subscription_plan.billing_cycle.label
@@ -12054,7 +12796,9 @@ export interface components {
              * @default true
              */
             isActive: boolean;
+            /** @description subscription_plan.branch.label */
             branch: components["schemas"]["Branch-subscription_plan.read"];
+            /** @description subscription_plan.warehouse.label */
             warehouse: components["schemas"]["Warehouse-subscription_plan.read"];
         };
         "SubscriptionPlan-subscription_plan.write": {
@@ -12139,12 +12883,14 @@ export interface components {
             readonly id?: string;
             /** @description subscription_plan.name.label */
             name: string;
+            /** @description subscription_plan.product.label */
             product: components["schemas"]["Product.jsonld-customer_subscription.read"];
         };
         "SubscriptionPlan.jsonld-subscription_plan.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
             /** @description subscription_plan.name.label */
             name: string;
+            /** @description subscription_plan.product.label */
             product: components["schemas"]["Product.jsonld-subscription_plan.read"];
             /**
              * @description subscription_plan.billing_cycle.label
@@ -12163,7 +12909,9 @@ export interface components {
              * @default true
              */
             isActive: boolean;
+            /** @description subscription_plan.branch.label */
             branch: components["schemas"]["Branch.jsonld-subscription_plan.read"];
+            /** @description subscription_plan.warehouse.label */
             warehouse: components["schemas"]["Warehouse.jsonld-subscription_plan.read"];
         };
         SunatCatalog: {
@@ -12434,9 +13182,13 @@ export interface components {
         "SupplierBill-fixed_asset.read": Record<string, never>;
         "SupplierBill-supplier_bill.read": {
             readonly id?: string;
+            /** @description supplier_bill.supplier.label */
             supplier: components["schemas"]["Supplier-supplier_bill.read"];
+            /** @description supplier_bill.branch.label */
             branch: components["schemas"]["Branch-supplier_bill.read"];
+            /** @description supplier_bill.purchase.label */
             purchase?: components["schemas"]["Purchase-supplier_bill.read"] | null;
+            /** @description supplier_bill.category.label */
             category: components["schemas"]["ExpenseCategory-supplier_bill.read"];
             /** @description supplier_bill.document_type.label */
             documentType?: string | null;
@@ -12595,9 +13347,13 @@ export interface components {
         "SupplierBill.jsonld-fixed_asset.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         "SupplierBill.jsonld-supplier_bill.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
+            /** @description supplier_bill.supplier.label */
             supplier: components["schemas"]["Supplier.jsonld-supplier_bill.read"];
+            /** @description supplier_bill.branch.label */
             branch: components["schemas"]["Branch.jsonld-supplier_bill.read"];
+            /** @description supplier_bill.purchase.label */
             purchase?: components["schemas"]["Purchase.jsonld-supplier_bill.read"] | null;
+            /** @description supplier_bill.category.label */
             category: components["schemas"]["ExpenseCategory.jsonld-supplier_bill.read"];
             /** @description supplier_bill.document_type.label */
             documentType?: string | null;
@@ -12670,6 +13426,7 @@ export interface components {
         };
         "TaxDocument-invoice.read": {
             readonly id?: string;
+            /** @description tax_document.customer.label */
             customer?: components["schemas"]["Customer-invoice.read"] | null;
             /** @description tax_document.series.label */
             series?: string;
@@ -12700,6 +13457,7 @@ export interface components {
         };
         "TaxDocument-invoice.read_creditnote.read": {
             readonly id?: string;
+            /** @description tax_document.customer.label */
             customer?: components["schemas"]["Customer-invoice.read_creditnote.read"] | null;
             /** @description tax_document.document_type.label */
             documentType?: string;
@@ -12756,6 +13514,7 @@ export interface components {
         };
         "TaxDocument.jsonld-invoice.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
+            /** @description tax_document.customer.label */
             customer?: components["schemas"]["Customer.jsonld-invoice.read"] | null;
             /** @description tax_document.series.label */
             series?: string;
@@ -12786,6 +13545,7 @@ export interface components {
         };
         "TaxDocument.jsonld-invoice.read_creditnote.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
+            /** @description tax_document.customer.label */
             customer?: components["schemas"]["Customer.jsonld-invoice.read_creditnote.read"] | null;
             /** @description tax_document.document_type.label */
             documentType?: string;
@@ -13332,6 +14092,7 @@ export interface components {
             readonly id?: number;
             /** @description user.username.label */
             username: string;
+            /** @description user.role.label */
             role?: components["schemas"]["Role-user.read"];
         };
         "User.jsonld-employee.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
@@ -13344,6 +14105,7 @@ export interface components {
             readonly id?: number;
             /** @description user.username.label */
             username: string;
+            /** @description user.role.label */
             role?: components["schemas"]["Role.jsonld-user.read"];
         };
         "UserNotification-user_notification.read": {
@@ -13580,7 +14342,9 @@ export interface components {
         };
         "VoucherSerie-voucher_series.read": {
             readonly id?: number;
+            /** @description voucher_series.branch.label */
             branch?: components["schemas"]["Branch-voucher_series.read"];
+            /** @description voucher_series.voucher_type.label */
             voucherType?: components["schemas"]["VoucherType-voucher_series.read"];
             /** @description voucher_series.series.label */
             series?: string;
@@ -13618,7 +14382,9 @@ export interface components {
         };
         "VoucherSerie.jsonld-voucher_series.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
+            /** @description voucher_series.branch.label */
             branch?: components["schemas"]["Branch.jsonld-voucher_series.read"];
+            /** @description voucher_series.voucher_type.label */
             voucherType?: components["schemas"]["VoucherType.jsonld-voucher_series.read"];
             /** @description voucher_series.series.label */
             series?: string;
@@ -13722,6 +14488,7 @@ export interface components {
             readonly id?: string;
             /** @description warehouse.name.label */
             name?: string;
+            /** @description warehouse.branch.label */
             branch?: components["schemas"]["Branch-warehouse.read"] | null;
             /**
              * @description warehouse.is_active.label
@@ -13772,6 +14539,7 @@ export interface components {
             readonly id?: string;
             /** @description warehouse.name.label */
             name?: string;
+            /** @description warehouse.branch.label */
             branch?: components["schemas"]["Branch.jsonld-warehouse.read"] | null;
             /**
              * @description warehouse.is_active.label
@@ -16964,6 +17732,17 @@ export interface operations {
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Customer.xlsx"][];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
     api_customers_post: {
@@ -16994,6 +17773,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17039,6 +17829,17 @@ export interface operations {
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Customer.xlsx"];
                 };
             };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
             /** @description Not found */
             404: {
                 headers: {
@@ -17070,6 +17871,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
             };
             /** @description Not found */
             404: {
@@ -17113,6 +17925,17 @@ export interface operations {
             };
             /** @description Invalid input */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -22541,6 +23364,1081 @@ export interface operations {
                     "application/ld+json": components["schemas"]["Error.jsonld"];
                     "application/problem+json": components["schemas"]["Error"];
                     "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_restaurantareas_get_collection: {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description RestaurantArea collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantArea-restaurant_area.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["RestaurantArea.jsonld-restaurant_area.read"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_restaurantareas_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new RestaurantArea resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestaurantArea-restaurant_area.write"];
+                "application/ld+json": components["schemas"]["RestaurantArea-restaurant_area.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["RestaurantArea-restaurant_area.write"];
+            };
+        };
+        responses: {
+            /** @description RestaurantArea resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantArea-restaurant_area.read"];
+                    "application/ld+json": components["schemas"]["RestaurantArea.jsonld-restaurant_area.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    api_restaurantareas_id_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description RestaurantArea identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description RestaurantArea resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantArea-restaurant_area.read"];
+                    "application/ld+json": components["schemas"]["RestaurantArea.jsonld-restaurant_area.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_restaurantareas_id_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description RestaurantArea identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description RestaurantArea resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_restaurantareas_id_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description RestaurantArea identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated RestaurantArea resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["RestaurantArea-restaurant_area.write.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description RestaurantArea resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantArea-restaurant_area.read"];
+                    "application/ld+json": components["schemas"]["RestaurantArea.jsonld-restaurant_area.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    api_restaurantorders_get_collection: {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description RestaurantOrder collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantOrder-restaurant_order.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["RestaurantOrder.jsonld-restaurant_order.read"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_restaurantorders_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new RestaurantOrder resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestaurantOrder.OpenTableInput"];
+                "application/ld+json": components["schemas"]["RestaurantOrder.OpenTableInput"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["RestaurantOrder.OpenTableInput"];
+            };
+        };
+        responses: {
+            /** @description RestaurantOrder resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantOrder-restaurant_order.read"];
+                    "application/ld+json": components["schemas"]["RestaurantOrder.jsonld-restaurant_order.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    api_restaurantorders_id_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description RestaurantOrder identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description RestaurantOrder resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantOrder-restaurant_order.read"];
+                    "application/ld+json": components["schemas"]["RestaurantOrder.jsonld-restaurant_order.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_restaurantorders_idclose_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description RestaurantOrder identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new RestaurantOrder resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestaurantOrder.CloseOrderInput"];
+                "application/ld+json": components["schemas"]["RestaurantOrder.CloseOrderInput"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["RestaurantOrder.CloseOrderInput"];
+            };
+        };
+        responses: {
+            /** @description RestaurantOrder resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantOrder-restaurant_order.read"];
+                    "application/ld+json": components["schemas"]["RestaurantOrder.jsonld-restaurant_order.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_restaurantorders_idrequest-bill_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description RestaurantOrder identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new RestaurantOrder resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestaurantOrder.RequestBillInput"];
+                "application/ld+json": components["schemas"]["RestaurantOrder.RequestBillInput"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["RestaurantOrder.RequestBillInput"];
+            };
+        };
+        responses: {
+            /** @description RestaurantOrder resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantOrder-restaurant_order.read"];
+                    "application/ld+json": components["schemas"]["RestaurantOrder.jsonld-restaurant_order.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_restaurantorders_idsend-to-kitchen_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description RestaurantOrder identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new RestaurantOrder resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestaurantOrder.SendToKitchenInput"];
+                "application/ld+json": components["schemas"]["RestaurantOrder.SendToKitchenInput"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["RestaurantOrder.SendToKitchenInput"];
+            };
+        };
+        responses: {
+            /** @description RestaurantOrder resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantOrder-restaurant_order.read"];
+                    "application/ld+json": components["schemas"]["RestaurantOrder.jsonld-restaurant_order.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_restaurantorder-items_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new RestaurantOrderItem resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestaurantOrderItem.AddOrderItemInput"];
+                "application/ld+json": components["schemas"]["RestaurantOrderItem.AddOrderItemInput"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["RestaurantOrderItem.AddOrderItemInput"];
+            };
+        };
+        responses: {
+            /** @description RestaurantOrderItem resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantOrderItem-restaurant_order_item.read"];
+                    "application/ld+json": components["schemas"]["RestaurantOrderItem.jsonld-restaurant_order_item.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_restaurantorder-items_iddelivered_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description RestaurantOrderItem identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new RestaurantOrderItem resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestaurantOrderItem.MarkOrderItemDeliveredInput"];
+                "application/ld+json": components["schemas"]["RestaurantOrderItem.MarkOrderItemDeliveredInput"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["RestaurantOrderItem.MarkOrderItemDeliveredInput"];
+            };
+        };
+        responses: {
+            /** @description RestaurantOrderItem resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantOrderItem-restaurant_order_item.read"];
+                    "application/ld+json": components["schemas"]["RestaurantOrderItem.jsonld-restaurant_order_item.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_restaurantorder-items_idready_post": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description RestaurantOrderItem identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The new RestaurantOrderItem resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestaurantOrderItem.MarkOrderItemReadyInput"];
+                "application/ld+json": components["schemas"]["RestaurantOrderItem.MarkOrderItemReadyInput"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["RestaurantOrderItem.MarkOrderItemReadyInput"];
+            };
+        };
+        responses: {
+            /** @description RestaurantOrderItem resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantOrderItem-restaurant_order_item.read"];
+                    "application/ld+json": components["schemas"]["RestaurantOrderItem.jsonld-restaurant_order_item.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    api_restauranttables_get_collection: {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description RestaurantTable collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantTable-restaurant_table.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["RestaurantTable.jsonld-restaurant_table.read"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_restauranttables_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new RestaurantTable resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RestaurantTable-restaurant_table.write"];
+                "application/ld+json": components["schemas"]["RestaurantTable-restaurant_table.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["RestaurantTable-restaurant_table.write"];
+            };
+        };
+        responses: {
+            /** @description RestaurantTable resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantTable-restaurant_table.read"];
+                    "application/ld+json": components["schemas"]["RestaurantTable.jsonld-restaurant_table.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    api_restauranttables_id_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description RestaurantTable identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description RestaurantTable resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantTable-restaurant_table.read"];
+                    "application/ld+json": components["schemas"]["RestaurantTable.jsonld-restaurant_table.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_restauranttables_id_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description RestaurantTable identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description RestaurantTable resource deleted */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    api_restauranttables_id_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description RestaurantTable identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** @description The updated RestaurantTable resource */
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["RestaurantTable-restaurant_table.write.jsonMergePatch"];
+            };
+        };
+        responses: {
+            /** @description RestaurantTable resource updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RestaurantTable-restaurant_table.read"];
+                    "application/ld+json": components["schemas"]["RestaurantTable.jsonld-restaurant_table.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
                 };
             };
         };
