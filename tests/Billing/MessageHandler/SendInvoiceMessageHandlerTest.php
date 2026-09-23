@@ -81,8 +81,9 @@ final class SendInvoiceMessageHandlerTest extends TestCase
     public function testInvokeLogsTenantIdOnFailure(): void
     {
         $message = new SendInvoiceMessage('doc-002', 'tenant-beta');
+        $exception = new \RuntimeException('SUNAT unreachable');
 
-        $this->billSendUseCase->method('__invoke')->willThrowException(new \RuntimeException('SUNAT unreachable'));
+        $this->billSendUseCase->method('__invoke')->willThrowException($exception);
 
         $capturedErrorContext = null;
         $this->logger
@@ -99,9 +100,13 @@ final class SendInvoiceMessageHandlerTest extends TestCase
 
         $this->assertNotNull($capturedErrorContext, 'send_invoice.failed must be logged on exception');
         $this->assertSame(
-            'tenant-beta',
-            $capturedErrorContext['tenant_id'],
-            'send_invoice.failed must carry tenant_id from the message',
+            [
+                'tenant_id' => 'tenant-beta',
+                'tax_document_id' => 'doc-002',
+                'error' => 'SUNAT unreachable',
+                'exception' => $exception,
+            ],
+            $capturedErrorContext,
         );
     }
 

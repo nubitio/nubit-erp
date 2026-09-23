@@ -36,7 +36,9 @@ final readonly class SendInvoiceMessageHandler
         } catch (\Throwable $e) {
             $this->billingLogger->error('send_invoice.failed', [
                 'tenant_id' => $tenantId,
-                'exception' => $e->getMessage(),
+                'tax_document_id' => $message->taxDocumentId,
+                'error' => $e->getMessage(),
+                'exception' => $e,
             ]);
 
             throw $e;

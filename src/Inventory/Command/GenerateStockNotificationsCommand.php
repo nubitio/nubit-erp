@@ -169,7 +169,7 @@ final class GenerateStockNotificationsCommand extends PerTenantCommand
         $rows = $this->connection->fetchAllAssociative(<<<'SQL'
             SELECT
                 p.descripcion   AS product_name,
-                a.nombre        AS warehouse_name,
+                a.descripcion   AS warehouse_name,
                 si.qty_on_hand  AS qty_on_hand,
                 p.stock_minimo  AS min_stock
             FROM stock_items si

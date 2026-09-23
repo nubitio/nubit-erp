@@ -6,6 +6,8 @@ namespace App\Integration\Repository;
 
 use App\Integration\Webhook\WebhookDelivery;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\ParameterType;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 use SensitiveParameter;
 
@@ -53,12 +55,13 @@ class WebhookDeliveryRepository extends ServiceEntityRepository
         $connection->executeStatement(
             'UPDATE integration_webhook_delivery SET claim_token = NULL, claim_until = NULL WHERE claim_until IS NULL OR claim_until < :now',
             ['now' => $now],
+            ['now' => Types::DATETIME_IMMUTABLE],
         );
         $ids = $connection->fetchFirstColumn(
             'SELECT id FROM integration_webhook_delivery WHERE status IN (:pending, :failed) AND next_retry_at IS NOT NULL AND next_retry_at <= :now AND claim_token IS NULL ORDER BY created_at ASC LIMIT '
                 . max(1, $limit),
             ['pending' => WebhookDelivery::STATUS_PENDING, 'failed' => WebhookDelivery::STATUS_FAILED, 'now' => $now],
-            ['pending' => \Doctrine\DBAL\ParameterType::STRING, 'failed' => \Doctrine\DBAL\ParameterType::STRING],
+            ['pending' => ParameterType::STRING, 'failed' => ParameterType::STRING, 'now' => Types::DATETIME_IMMUTABLE],
         );
         if ([] === $ids) {
             return [];
@@ -71,6 +74,7 @@ class WebhookDeliveryRepository extends ServiceEntityRepository
                 1 !== $connection->executeStatement(
                     'UPDATE integration_webhook_delivery SET claim_token = :token, claim_until = :until WHERE id = :id AND claim_token IS NULL',
                     ['token' => $token, 'until' => $until, 'id' => $id],
+                    ['until' => Types::DATETIME_IMMUTABLE],
                 )
             ) {
                 continue;
@@ -95,7 +99,11 @@ class WebhookDeliveryRepository extends ServiceEntityRepository
                     'pending' => WebhookDelivery::STATUS_PENDING,
                     'failed' => WebhookDelivery::STATUS_FAILED,
                 ],
-                ['pending' => \Doctrine\DBAL\ParameterType::STRING, 'failed' => \Doctrine\DBAL\ParameterType::STRING],
+                [
+                    'pending' => ParameterType::STRING,
+                    'failed' => ParameterType::STRING,
+                    'now' => Types::DATETIME_IMMUTABLE,
+                ],
             );
     }
 

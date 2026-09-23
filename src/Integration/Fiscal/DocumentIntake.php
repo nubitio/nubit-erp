@@ -11,6 +11,7 @@ use App\Integration\Message\SendIntegrationDocumentMessage;
 use App\Integration\Repository\IntegrationDocumentRepository;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
+use Nubit\Platform\Messenger\TenantStamp;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\DispatchAfterCurrentBusStamp;
@@ -118,7 +119,15 @@ final readonly class DocumentIntake
                 (string) $document->getId(),
                 (string) ($this->tenantContext->getTenantName() ?? 'unknown'),
             ),
-            [new DispatchAfterCurrentBusStamp()],
+            [
+                new TenantStamp(
+                    $this->tenantContext->getTenantId(),
+                    $this->tenantContext->getTenantName(),
+                    $this->tenantContext->getTenantDomain(),
+                    $this->tenantContext->getRequestId(),
+                ),
+                new DispatchAfterCurrentBusStamp(),
+            ],
         );
     }
 

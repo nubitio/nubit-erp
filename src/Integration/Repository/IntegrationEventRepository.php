@@ -6,6 +6,7 @@ namespace App\Integration\Repository;
 
 use App\Integration\Event\IntegrationEvent;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 use SensitiveParameter;
 
@@ -50,6 +51,7 @@ class IntegrationEventRepository extends ServiceEntityRepository
                 'processing' => IntegrationEvent::STATUS_PROCESSING,
                 'now' => $now,
             ],
+            ['now' => Types::DATETIME_IMMUTABLE],
         );
         $ids = $connection->fetchFirstColumn(
             'SELECT id FROM integration_event WHERE status = :pending ORDER BY occurred_at ASC LIMIT ' . max(1, $limit),
@@ -72,6 +74,7 @@ class IntegrationEventRepository extends ServiceEntityRepository
                         'id' => $id,
                         'pending' => IntegrationEvent::STATUS_PENDING,
                     ],
+                    ['until' => Types::DATETIME_IMMUTABLE],
                 )
             ) {
                 continue;
@@ -87,11 +90,15 @@ class IntegrationEventRepository extends ServiceEntityRepository
         === (int) $this
             ->getEntityManager()
             ->getConnection()
-            ->fetchOne('SELECT 1 FROM integration_event WHERE id = :id AND status = :status AND claim_token = :token AND claim_until >= :now', [
-                'id' => $id,
-                'status' => IntegrationEvent::STATUS_PROCESSING,
-                'token' => $token,
-                'now' => $now,
-            ]);
+            ->fetchOne(
+                'SELECT 1 FROM integration_event WHERE id = :id AND status = :status AND claim_token = :token AND claim_until >= :now',
+                [
+                    'id' => $id,
+                    'status' => IntegrationEvent::STATUS_PROCESSING,
+                    'token' => $token,
+                    'now' => $now,
+                ],
+                ['now' => Types::DATETIME_IMMUTABLE],
+            );
     }
 }

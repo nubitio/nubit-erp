@@ -19,6 +19,7 @@ use App\Sales\Port\Result\RejectedDocumentReplacementResult;
 use App\Sales\Port\SaleInvoicePrinterInterface;
 use App\Sales\Port\SaleVoiderInterface;
 use App\Sales\State\DetractionCalculatorInterface;
+use Nubit\Platform\Messenger\TenantStamp;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -56,12 +57,18 @@ final readonly class SaleInvoicingAdapter implements
         $result = $this->invoiceCreationService->createForSale($sale);
 
         if ($result['success'] && isset($result['invoiceId'])) {
+            $tenantId = $this->tenantContext->getTenantId();
             $this->messageBus->dispatch(
-                new SendInvoiceMessage(
-                    $result['invoiceId'],
-                    (string) ($this->tenantContext->getTenantId() ?? 'unknown'),
-                ),
-                [new DispatchAfterCurrentBusStamp()],
+                new SendInvoiceMessage($result['invoiceId'], (string) ($tenantId ?? 'unknown')),
+                [
+                    new TenantStamp(
+                        $tenantId,
+                        $this->tenantContext->getTenantName(),
+                        $this->tenantContext->getTenantDomain(),
+                        $this->tenantContext->getRequestId(),
+                    ),
+                    new DispatchAfterCurrentBusStamp(),
+                ],
             );
         }
 

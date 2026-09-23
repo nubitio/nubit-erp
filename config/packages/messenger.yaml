@@ -3,6 +3,13 @@ framework:
     # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
     failure_transport: failed
 
+    buses:
+      messenger.bus.default:
+        middleware:
+          - Nubit\Platform\Messenger\TenantStampMiddleware
+          - Nubit\Platform\Messenger\TenantContextMiddleware
+          - Nubit\Platform\Messenger\TracingMiddleware
+
     transports:
       # https://symfony.com/doc/current/messenger.html#transport-configuration
       async:

@@ -94,7 +94,7 @@ final class TenantUsageCollectCommand extends Command
             ];
 
             if ($percent >= 100.0) {
-                $this->logger->error('Tenant quota exceeded', $context);
+                $this->logger->warning('Tenant quota exceeded', $context);
                 $this->auditLogger->log('tenant.quota.exceeded', $context);
                 continue;
             }

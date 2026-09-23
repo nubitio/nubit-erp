@@ -74,6 +74,7 @@ final class WebhooksTickCommand extends Command
                 $this->logger->error('integration.webhooks.tick_failed', [
                     'tenant' => $name,
                     'error' => $e->getMessage(),
+                    'exception' => $e,
                 ]);
             }
         }

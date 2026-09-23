@@ -15,6 +15,7 @@ use App\Sales\Domain\RequestedVoucherType;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\State\DetractionCalculatorInterface;
 use Nubit\Platform\Http\ApiResponse;
+use Nubit\Platform\Messenger\TenantStamp;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -72,7 +73,13 @@ final class SaleInvoicingAdapterTest extends TestCase
         self::assertSame('tax-1', $capturedMessage->taxDocumentId);
         self::assertSame('123', $capturedMessage->getTenantId());
         self::assertIsArray($capturedStamps);
-        self::assertContainsOnlyInstancesOf(DispatchAfterCurrentBusStamp::class, $capturedStamps);
+        self::assertCount(2, $capturedStamps);
+        self::assertInstanceOf(TenantStamp::class, $capturedStamps[0]);
+        self::assertSame(123, $capturedStamps[0]->tenantId);
+        self::assertSame('tenant', $capturedStamps[0]->tenantName);
+        self::assertSame('tenant.test', $capturedStamps[0]->tenantDomain);
+        self::assertSame('request-1', $capturedStamps[0]->requestId);
+        self::assertInstanceOf(DispatchAfterCurrentBusStamp::class, $capturedStamps[1]);
     }
 
     public function testCreateInvoiceForSaleIdPassesRequestedVoucherTypeOverrideThrough(): void
