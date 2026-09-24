@@ -10,6 +10,7 @@ parameters:
   nubit_worker_heartbeat_file: '/tmp/nubit-worker.heartbeat'
   jwt_access_token_ttl: '%env(int:AUTH_TOKEN_TTL)%'
   jwt_refresh_token_ttl: '%env(int:REFRESH_TOKEN_TTL)%'
+  mercure_default_trusted_issuer: 'https://localhost'
   tenant_rate_limit: '300'
   tenant_rate_window: '60'
   mercadopago_access_token: ''
@@ -87,6 +88,7 @@ services:
     arguments:
       $mercureJwtSecret: '%env(MERCURE_JWT_SECRET)%'
       $tokenTtl: '%jwt_access_token_ttl%'
+      $issuer: '%env(default:mercure_default_trusted_issuer:MERCURE_TRUSTED_ISSUERS)%'
   Aws\S3\S3Client:
     arguments:
       - version: 'latest'

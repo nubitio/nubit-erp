@@ -273,8 +273,8 @@ services:
       MERCURE_PUBLISHER_JWT_ALG: 'HS256'
       MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_SUBSCRIBER_JWT_ALG: 'HS256'
-      # Issuer allowlist for subscriber JWTs that include an `iss` claim.
-      # The admin-bundle subscriber tokens currently omit that claim.
+      # Must match the $issuer configured for the subscriber token service.
+      # Both fall back to https://localhost when unset.
       MERCURE_TRUSTED_ISSUERS: 'https://localhost'
       # Set the URL of your Symfony project (without trailing slash!) as value of the cors_origins directive
       MERCURE_EXTRA_DIRECTIVES: |

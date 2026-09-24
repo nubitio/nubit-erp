@@ -36,9 +36,11 @@ final readonly class MercureCookieDecorator implements LoginResponseDecoratorInt
         // subscription with a silent 401.
         $tenantDomain = $this->tenantContext->getTenantDomain() ?? '';
         $tenantOrigin = '' !== $tenantDomain ? $request->getSchemeAndHttpHost() : '';
+        $audience = $request->getSchemeAndHttpHost() . '/.well-known/mercure';
+
         $response->headers->setCookie($this->cookieFactory->createSecureCookie(
             self::MERCURE_COOKIE,
-            $this->mercureTokenService->generateSubscriberToken([$tenantOrigin . '/api/*']),
+            $this->mercureTokenService->generateSubscriberToken($audience, [$tenantOrigin . '/api/*']),
             $tokenPair->accessTokenExpiresAt,
             '/.well-known/mercure',
             null,
