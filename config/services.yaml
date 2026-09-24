@@ -10,10 +10,6 @@ parameters:
   nubit_worker_heartbeat_file: '/tmp/nubit-worker.heartbeat'
   jwt_access_token_ttl: '%env(int:AUTH_TOKEN_TTL)%'
   jwt_refresh_token_ttl: '%env(int:REFRESH_TOKEN_TTL)%'
-  # Matches the Mercure hub's own Caddyfile default (`issuer {$MERCURE_TRUSTED_ISSUERS:https://localhost}`),
-  # so local dev needs no extra env var. Set MERCURE_TRUSTED_ISSUERS identically
-  # on the app and the hub in production if you change it.
-  mercure_default_trusted_issuer: 'https://localhost'
   tenant_rate_limit: '300'
   tenant_rate_window: '60'
   mercadopago_access_token: ''
@@ -91,11 +87,6 @@ services:
     arguments:
       $mercureJwtSecret: '%env(MERCURE_JWT_SECRET)%'
       $tokenTtl: '%jwt_access_token_ttl%'
-      # Must equal the hub's trusted issuer (see docker-compose.yml's
-      # `mercure` service — MERCURE_TRUSTED_ISSUERS is unset there, so the
-      # hub falls back to its Caddyfile default), or the hub rejects every
-      # subscription as "untrusted issuer".
-      $issuer: '%env(default:mercure_default_trusted_issuer:MERCURE_TRUSTED_ISSUERS)%'
   Aws\S3\S3Client:
     arguments:
       - version: 'latest'
