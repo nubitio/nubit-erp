@@ -1,3 +1,3 @@
 #!/bin/sh
 
-sh scripts/quality-check.sh
+sh scripts/pre-push-check.sh
