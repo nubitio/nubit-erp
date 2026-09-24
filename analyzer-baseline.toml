@@ -6334,7 +6334,7 @@ count = 1
 file = "tests/CashRegister/State/CashRegisterOpenProcessorTest.php"
 code = "unknown-class-instantiation"
 message = "Cannot determine the concrete class for instantiation."
-count = 2
+count = 1
 
 [[issues]]
 file = "tests/CashRegister/State/CashSessionClosureSummaryProviderTest.php"

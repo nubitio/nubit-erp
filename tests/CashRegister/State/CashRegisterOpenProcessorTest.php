@@ -188,7 +188,9 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $this->entityManager->method('find')->with(CashRegister::class, 1)->willReturn($cashRegister);
 
         $this->connection->expects($this->once())->method('beginTransaction');
-        $this->connection->method('executeStatement')->willThrowException(new \RuntimeException('Original database error'));
+        $this->connection
+            ->method('executeStatement')
+            ->willThrowException(new \RuntimeException('Original database error'));
         $this->connection->method('isTransactionActive')->willReturn(false);
         $this->connection->expects($this->never())->method('rollBack');
 
