@@ -504,7 +504,7 @@ jobs:
           set -euo pipefail
           docker compose exec -T --user www-data web php bin/console cache:clear --no-warmup --no-debug
           docker compose exec -T --user www-data web php bin/console cache:warmup --no-debug
-          docker compose exec -T web sh /app/scripts/ci/wait-for-spa.sh http://127.0.0.1
+          bash scripts/ci/wait-for-spa-host.sh
 
       - name: Run Playwright e2e tests
         if: needs.changes.outputs.e2e == 'true'
