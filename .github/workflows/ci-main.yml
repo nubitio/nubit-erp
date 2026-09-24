@@ -302,6 +302,7 @@ jobs:
           name: backend-coverage
           path: ${{ runner.temp }}/php-coverage
           if-no-files-found: error
+          retention-days: 14
 
       - name: Stop backend stack
         if: always() && needs.changes.outputs.backend == 'true'
@@ -376,6 +377,7 @@ jobs:
         with:
           name: frontend-coverage
           path: var/coverage/frontend
+          retention-days: 14
 
   e2e:
     name: End-to-End Workflows
