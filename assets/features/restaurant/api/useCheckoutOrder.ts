@@ -13,7 +13,7 @@ import { buildSettlementPayload, createSinglePaymentLine } from '@shared/lib/sal
 import { useWarehouses } from '@shared/hooks/useWarehouses';
 import { usePosPaymentMethods } from '@features/pos/usePosCatalogData';
 import * as api from './restaurantApi';
-import { clearCheckoutIdempotencyKey, getCheckoutIdempotencyKey } from './checkoutIdempotency';
+import { getCheckoutIdempotencyKey } from './checkoutIdempotency';
 import type { OrderItemMock } from '../types';
 
 const API = getCoreApiBaseUrl();
@@ -59,6 +59,7 @@ export function useCheckoutOrder() {
         discountAmount: '0.00',
         netAmount: computeLineAmount(item.qty, item.unitPrice, 0).netAmount.toFixed(2),
       }));
+      const idempotencyKey = await getCheckoutIdempotencyKey(orderId);
 
       const response = await httpClient.post<Record<string, unknown>>(
         `${API}sales`,
@@ -79,12 +80,11 @@ export function useCheckoutOrder() {
           grandTotal: total.toFixed(2),
           writeItems,
         },
-        { headers: { 'Idempotency-Key': getCheckoutIdempotencyKey(orderId) } },
+        { headers: { 'Idempotency-Key': idempotencyKey } },
       );
 
       const saleId = String(response.data.id ?? extractCollection([response.data])[0]);
       await api.closeOrder(orderId, saleId);
-      clearCheckoutIdempotencyKey(orderId);
 
       return saleId;
     },

@@ -1,27 +1,21 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { clearCheckoutIdempotencyKey, getCheckoutIdempotencyKey } from './checkoutIdempotency';
+import { describe, expect, it } from 'vitest';
+import { getCheckoutIdempotencyKey } from './checkoutIdempotency';
 
 describe('restaurant checkout idempotency', () => {
-  beforeEach(() => localStorage.clear());
+  it('derives the same UUID v5 for the same order on separate clients', async () => {
+    const clientOneKey = await getCheckoutIdempotencyKey('42');
+    const clientTwoKey = await getCheckoutIdempotencyKey('42');
 
-  it('reuses the key for retries of the same order', () => {
-    const firstKey = getCheckoutIdempotencyKey('order-1');
-
-    expect(getCheckoutIdempotencyKey('order-1')).toBe(firstKey);
-    expect(firstKey).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    expect(clientOneKey).toBe(clientTwoKey);
+    expect(clientOneKey).toBe('6e94f168-8497-5d1f-b411-ea85f4e4dc79');
+    expect(clientOneKey).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     );
   });
 
-  it('uses different keys for different orders', () => {
-    expect(getCheckoutIdempotencyKey('order-1')).not.toBe(getCheckoutIdempotencyKey('order-2'));
-  });
-
-  it('clears the key when checkout is complete', () => {
-    const firstKey = getCheckoutIdempotencyKey('order-1');
-
-    clearCheckoutIdempotencyKey('order-1');
-
-    expect(getCheckoutIdempotencyKey('order-1')).not.toBe(firstKey);
+  it('derives different keys for different order ids', async () => {
+    await expect(getCheckoutIdempotencyKey('42')).resolves.not.toBe(
+      await getCheckoutIdempotencyKey('43'),
+    );
   });
 });
