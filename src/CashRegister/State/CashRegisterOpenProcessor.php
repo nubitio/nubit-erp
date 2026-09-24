@@ -119,7 +119,11 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
             throw new ConflictHttpException('Esta caja ya tiene un turno abierto.');
         } catch (\Throwable $e) {
             if ($connection->isTransactionActive()) {
-                $connection->rollBack();
+                try {
+                    $connection->rollBack();
+                } catch (\Throwable) {
+                    throw $e;
+                }
             }
 
             throw $e;

@@ -53,6 +53,14 @@ class TenantConnection extends Connection
             throw new ServiceException('Tenant connection is required');
         }
 
+        if (
+            $this->isConnected
+            && $connection === ($this->tenantParams['dbname'] ?? null)
+            && $connection === ($this->tenantParams['user'] ?? null)
+        ) {
+            return;
+        }
+
         if ($this->isConnected) {
             $this->close();
         }
@@ -95,8 +103,8 @@ class TenantConnection extends Connection
     #[Override]
     public function close(): void
     {
+        parent::close();
         $this->isConnected = false;
-        $this->_conn = null;
     }
 
     private function resolveConfigPath(): string

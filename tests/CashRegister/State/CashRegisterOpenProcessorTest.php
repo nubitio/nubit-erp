@@ -207,6 +207,43 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $processor->process(new CashRegisterOpenDto(id: 1, openingBalance: '100'), new Post());
     }
 
+    public function testOriginalExceptionIsPreservedWhenRollbackFindsNoPhysicalTransaction(): void
+    {
+        $authUser = new AuthUserDto(userId: 4, username: 'cajero4');
+        $this->security->method('connectedUser')->willReturn($authUser);
+        $this->entityManager->method('persist')->willReturnCallback(static fn() => null);
+        $this->entityManager->method('flush')->willReturnCallback(static fn() => null);
+        $this->entityManager->method('getReference')->willReturn(new User());
+
+        $branch = new Branch();
+        $this->setBranchId($branch, 'branch-4');
+        $this->branchRepository->method('find')->willReturn($branch);
+        $cashRegister = new CashRegister()->setBranch($branch);
+        $this->entityManager->method('find')->with(CashRegister::class, 1)->willReturn($cashRegister);
+
+        $this->connection->expects($this->once())->method('beginTransaction');
+        $this->connection
+            ->method('executeStatement')
+            ->willThrowException(new \RuntimeException('Original insert failure'));
+        $this->connection->method('isTransactionActive')->willReturn(true);
+        $this->connection
+            ->expects($this->once())
+            ->method('rollBack')
+            ->willThrowException(new \RuntimeException('There is no active transaction'));
+
+        $processor = new CashRegisterOpenProcessor(
+            entityManager: $this->entityManager,
+            security: $this->security,
+            branchContextService: $this->buildBranchContextWithFixedId('branch-4'),
+            branchRepository: $this->branchRepository,
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Original insert failure');
+
+        $processor->process(new CashRegisterOpenDto(id: 1, openingBalance: '100'), new Post());
+    }
+
     /**
      * Build a BranchContextService stub (final readonly) that returns a fixed branch ID.
      * Uses a real JWT signed with the test secret and decoded by a real JWTManager stub.
