@@ -16,9 +16,9 @@ final class RestaurantOrderTest extends TestCase
 
         $order->close('sale-12');
 
-        self::assertFalse($order->isOpen());
-        self::assertSame('sale-12', $order->getSaleId());
-        self::assertNotNull($order->getClosedAt());
+        static::assertFalse($order->isOpen());
+        static::assertSame('sale-12', $order->getSaleId());
+        static::assertNotNull($order->getClosedAt());
     }
 
     public function testClosingAgainWithTheSameSaleIsIdempotent(): void
@@ -29,8 +29,8 @@ final class RestaurantOrderTest extends TestCase
 
         $order->close('sale-12');
 
-        self::assertSame($closedAt, $order->getClosedAt());
-        self::assertSame('sale-12', $order->getSaleId());
+        static::assertSame($closedAt, $order->getClosedAt());
+        static::assertSame('sale-12', $order->getSaleId());
     }
 
     public function testCannotAssociateAClosedOrderWithAnotherSale(): void
@@ -45,6 +45,6 @@ final class RestaurantOrderTest extends TestCase
     public function testCannotCloseWithoutASaleId(): void
     {
         $this->expectException(DomainException::class);
-        (new RestaurantOrder(8))->close('');
+        new RestaurantOrder(8)->close('');
     }
 }

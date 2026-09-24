@@ -33,15 +33,15 @@ final class CloseOrderProcessorTest extends TestCase
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::once())->method('flush');
 
-        $result = (new CloseOrderProcessor($orders, $tables, $entityManager))->process(
+        $result = new CloseOrderProcessor($orders, $tables, $entityManager)->process(
             $this->input('sale-12'),
             new Post(),
             ['id' => 'order-1'],
         );
 
-        self::assertSame($order, $result);
-        self::assertSame('sale-12', $order->getSaleId());
-        self::assertFalse($order->isOpen());
+        static::assertSame($order, $result);
+        static::assertSame('sale-12', $order->getSaleId());
+        static::assertFalse($order->isOpen());
     }
 
     public function testRetryWithTheSameSaleDoesNotFreeATableThatMayHaveBeenReopened(): void
@@ -58,13 +58,13 @@ final class CloseOrderProcessorTest extends TestCase
         $entityManager = $this->createMock(EntityManagerInterface::class);
         $entityManager->expects(self::never())->method('flush');
 
-        $result = (new CloseOrderProcessor($orders, $tables, $entityManager))->process(
+        $result = new CloseOrderProcessor($orders, $tables, $entityManager)->process(
             $this->input('sale-12'),
             new Post(),
             ['id' => 'order-1'],
         );
 
-        self::assertSame($order, $result);
+        static::assertSame($order, $result);
     }
 
     public function testRejectsClosingTheOrderAgainstAnotherSale(): void
@@ -82,11 +82,9 @@ final class CloseOrderProcessorTest extends TestCase
         $entityManager->expects(self::never())->method('flush');
 
         $this->expectException(UnprocessableEntityHttpException::class);
-        (new CloseOrderProcessor($orders, $tables, $entityManager))->process(
-            $this->input('sale-13'),
-            new Post(),
-            ['id' => 'order-1'],
-        );
+        new CloseOrderProcessor($orders, $tables, $entityManager)->process($this->input('sale-13'), new Post(), [
+            'id' => 'order-1',
+        ]);
     }
 
     public function testThrowsWhenOrderDoesNotExist(): void
@@ -101,11 +99,9 @@ final class CloseOrderProcessorTest extends TestCase
         $entityManager->expects(self::never())->method('flush');
 
         $this->expectException(NotFoundHttpException::class);
-        (new CloseOrderProcessor($orders, $tables, $entityManager))->process(
-            $this->input('sale-12'),
-            new Post(),
-            ['id' => 'missing'],
-        );
+        new CloseOrderProcessor($orders, $tables, $entityManager)->process($this->input('sale-12'), new Post(), [
+            'id' => 'missing',
+        ]);
     }
 
     private function input(string $saleId): CloseOrderInput

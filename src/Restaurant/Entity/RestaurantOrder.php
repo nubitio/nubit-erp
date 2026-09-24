@@ -18,10 +18,10 @@ use App\Restaurant\State\RequestBillProcessor;
 use App\Restaurant\State\SendToKitchenInput;
 use App\Restaurant\State\SendToKitchenProcessor;
 use DateTimeImmutable;
-use DomainException;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use DomainException;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 
