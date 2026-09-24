@@ -18,6 +18,7 @@ use App\Restaurant\State\RequestBillProcessor;
 use App\Restaurant\State\SendToKitchenInput;
 use App\Restaurant\State\SendToKitchenProcessor;
 use DateTimeImmutable;
+use DomainException;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -165,6 +166,18 @@ class RestaurantOrder
 
     public function close(string $saleId): self
     {
+        if ($saleId === '') {
+            throw new DomainException('La venta asociada a la comanda es obligatoria.');
+        }
+
+        if (!$this->isOpen()) {
+            if ($this->saleId === $saleId) {
+                return $this;
+            }
+
+            throw new DomainException('La comanda ya está asociada a otra venta.');
+        }
+
         $this->saleId = $saleId;
         $this->closedAt = new DateTimeImmutable();
 
