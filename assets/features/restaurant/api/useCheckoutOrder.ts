@@ -2,12 +2,18 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { getIRI } from '@shared/lib/SharedUtils';
-import { extractCollection, isCashPaymentMethod, nowUtcIso, todayBusinessDate } from '@shared/pos/helpers';
+import {
+  extractCollection,
+  isCashPaymentMethod,
+  nowUtcIso,
+  todayBusinessDate,
+} from '@shared/pos/helpers';
 import { computeLineAmount } from '@shared/lib/saleCalculations';
 import { buildSettlementPayload, createSinglePaymentLine } from '@shared/lib/salePayments';
 import { useWarehouses } from '@shared/hooks/useWarehouses';
 import { usePosPaymentMethods } from '@features/pos/usePosCatalogData';
 import * as api from './restaurantApi';
+import { getCheckoutIdempotencyKey } from './checkoutIdempotency';
 import type { OrderItemMock } from '../types';
 
 const API = getCoreApiBaseUrl();
@@ -53,24 +59,29 @@ export function useCheckoutOrder() {
         discountAmount: '0.00',
         netAmount: computeLineAmount(item.qty, item.unitPrice, 0).netAmount.toFixed(2),
       }));
+      const idempotencyKey = await getCheckoutIdempotencyKey(orderId);
 
-      const response = await httpClient.post<Record<string, unknown>>(`${API}sales`, {
-        issuedAt: nowUtcIso(),
-        issuedDate: todayBusinessDate(),
-        warehouse: warehouse.iri,
-        customer: null,
-        paymentMethod: getIRI(`${API}payment-methods`, String(cashMethod.id)),
-        settlements,
-        note: 'Venta generada desde Restaurant (mesa).',
-        discountPercent: '0.00',
-        cashRoundingAdjustment: '0.00',
-        emitInvoice: true,
-        requestedVoucherType: 'AUTO',
-        currency: 'PEN',
-        exchangeRate: '1.000000',
-        grandTotal: total.toFixed(2),
-        writeItems,
-      });
+      const response = await httpClient.post<Record<string, unknown>>(
+        `${API}sales`,
+        {
+          issuedAt: nowUtcIso(),
+          issuedDate: todayBusinessDate(),
+          warehouse: warehouse.iri,
+          customer: null,
+          paymentMethod: getIRI(`${API}payment-methods`, String(cashMethod.id)),
+          settlements,
+          note: 'Venta generada desde Restaurant (mesa).',
+          discountPercent: '0.00',
+          cashRoundingAdjustment: '0.00',
+          emitInvoice: true,
+          requestedVoucherType: 'AUTO',
+          currency: 'PEN',
+          exchangeRate: '1.000000',
+          grandTotal: total.toFixed(2),
+          writeItems,
+        },
+        { headers: { 'Idempotency-Key': idempotencyKey } },
+      );
 
       const saleId = String(response.data.id ?? extractCollection([response.data])[0]);
       await api.closeOrder(orderId, saleId);

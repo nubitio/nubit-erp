@@ -117,9 +117,11 @@ Instead:
 
 - Table naming stays permanently inconsistent; readers must consult the
   `ownsTables` manifest rather than infer ownership from a prefix (D4).
-- Keeping verticals in-repo means the monolith keeps growing; the AR-rule CI
-  guard (NB-1) is what stops that growth from eroding the boundaries, and it does
-  not exist yet.
+- Keeping verticals in-repo means the monolith keeps growing; PHPArkitect,
+  `architecture/contexts.yaml`, and the architecture tests now provide initial
+  enforcement (NB-1/NB-2/NB-13/NB-15/NB-16). This is still partial: the
+  PHPArkitect baseline contains pre-existing violations, and individual tests
+  cover specific rules rather than proving all AR-001…AR-010 end-to-end.
 - Deferring ERP-core extraction (D2) means if a second first-party consumer does
   appear, there is a real extraction project to do then, not now.
 

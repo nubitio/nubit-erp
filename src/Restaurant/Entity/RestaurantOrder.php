@@ -21,6 +21,7 @@ use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use DomainException;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
 
@@ -165,8 +166,16 @@ class RestaurantOrder
 
     public function close(string $saleId): self
     {
+        if ($saleId === '') {
+            throw new DomainException('La venta asociada a la comanda es obligatoria.');
+        }
+
         if (!$this->isOpen()) {
-            return $this;
+            if ($this->saleId === $saleId) {
+                return $this;
+            }
+
+            throw new DomainException('La comanda ya está asociada a otra venta.');
         }
 
         $this->saleId = $saleId;

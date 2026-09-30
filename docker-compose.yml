@@ -273,9 +273,8 @@ services:
       MERCURE_PUBLISHER_JWT_ALG: 'HS256'
       MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
       MERCURE_SUBSCRIBER_JWT_ALG: 'HS256'
-      # Must equal MercureSubscriberTokenService's $issuer (defaults to this
-      # same value) — the hub rejects every subscriber token as coming from
-      # an "untrusted issuer" otherwise.
+      # Must match the $issuer configured for the subscriber token service.
+      # Both fall back to https://localhost when unset.
       MERCURE_TRUSTED_ISSUERS: 'https://localhost'
       # Set the URL of your Symfony project (without trailing slash!) as value of the cors_origins directive
       MERCURE_EXTRA_DIRECTIVES: |

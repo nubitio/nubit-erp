@@ -302,6 +302,7 @@ jobs:
           name: backend-coverage
           path: ${{ runner.temp }}/php-coverage
           if-no-files-found: error
+          retention-days: 7
 
       - name: Stop backend stack
         if: always() && needs.changes.outputs.backend == 'true'
@@ -376,6 +377,7 @@ jobs:
         with:
           name: frontend-coverage
           path: var/coverage/frontend
+          retention-days: 7
 
   e2e:
     name: End-to-End Workflows
@@ -504,7 +506,7 @@ jobs:
           set -euo pipefail
           docker compose exec -T --user www-data web php bin/console cache:clear --no-warmup --no-debug
           docker compose exec -T --user www-data web php bin/console cache:warmup --no-debug
-          docker compose exec -T web sh /app/scripts/ci/wait-for-spa.sh http://127.0.0.1
+          bash scripts/ci/wait-for-spa-host.sh
 
       - name: Run Playwright e2e tests
         if: needs.changes.outputs.e2e == 'true'

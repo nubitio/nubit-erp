@@ -10,7 +10,9 @@ use App\Restaurant\Entity\RestaurantOrder;
 use App\Restaurant\Repository\RestaurantOrderRepository;
 use App\Restaurant\Repository\RestaurantTableRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use DomainException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * @implements ProcessorInterface<CloseOrderInput, RestaurantOrder>
@@ -37,7 +39,15 @@ final readonly class CloseOrderProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Comanda no encontrada.');
         }
 
-        $order->close($data->saleId);
+        if (!$order->isOpen() && $order->getSaleId() === $data->saleId) {
+            return $order;
+        }
+
+        try {
+            $order->close($data->saleId);
+        } catch (DomainException $exception) {
+            throw new UnprocessableEntityHttpException($exception->getMessage(), $exception);
+        }
 
         $table = $this->tableRepository->find($order->getTableId());
         $table?->markFree();

@@ -64,34 +64,36 @@ Observabilidad: cada operación relevante emite log estructurado con
 
 ---
 
-## 2. Estado actual de efact (2026-09-30)
+## 2. Estado actual de efact (revisado 2026-09-24)
 
 ### 2.1 Ya alineado con el destino
 
 | Área | Estado en efact |
 |---|---|
-| Monolito modular + bounded contexts | ~20 contextos bajo `src/<Context>` (ADR-001) |
+| Monolito modular + bounded contexts | Contextos bajo `src/<Context>`; inventario vigente en `architecture/contexts.yaml` y ADR-001 |
 | Comunicación entre contextos | Symfony Messenger domain events + **una** excepción síncrona documentada (Sales↔Billing↔Inventory↔CashRegister para el camino venta→stock→CPE→caja) |
 | Platform Core portable | Extraído a Composer: `nubitio/platform`, `nubitio/api-platform`, `nubitio/admin-bundle` (v0.15); contratos de tenant, feature gates, quotas en `Nubit\Platform\` |
 | Multi-tenancy | Database-per-tenant + BD de control plane separada (ADR-007); `TenantConnection` conmuta por subdominio |
-| Entitlements vs Capabilities (concepto) | ADR-013; `TenantRuntimeConfigProvider`, `TenantSettings`, seam `VerticalPresetInterface` con `RetailPreset` y `PharmacyPreset` |
+| Entitlements vs Capabilities | ADR-013/018; catálogo versionado, `TenantCapabilityResolver`, estado por tenant y sincronización de compatibilidad bajo `src/Settings/Capability/` |
 | RBAC por capacidad | `PermissionCatalog` en código + `role_permission`; voter prefijo `perm:`, super admin `*` |
 | Ledgers append-only / CPE inmutables | ADR-003 (`stock_movements` verificado; `cash_movements` con guard DB desde #318) |
 | API pública de integración + webhooks | ADR-017 (`integration_*`) |
-| Guard de frontera Platform | `scripts/architecture/check-platform-boundary.php` en CI + pre-push |
+| Guard de fronteras | Guard Platform/Core en CI + pre-push; PHPArkitect deriva reglas de capa del manifiesto y hay pruebas en `tests/Architecture/` |
+| Verticales | `src/Pharmacy` implementa perfiles/productos, lotes, recetas, política de stock y reacción a ventas. Restaurant incluye mesas/áreas/pedidos, flujos de cocina y UI de salón/cocina con Mercure; revisar aún su madurez y cobertura de pruebas |
+| Propiedad de datos | `architecture/contexts.yaml` registra `ownsTables` y `externalTables`; hay pruebas de consistencia, ownership, naming y escrituras cruzadas |
 
 ### 2.2 Brechas frente al destino
 
 | # | Brecha | Evidencia | Impacto |
 |---|---|---|---|
-| G1 | **Hospitality sigue sin bounded context.** Pharmacy y Restaurant ya son contextos `Vertical`. Pharmacy cubre producto, lote, prescripción y FEFO. Restaurant cubre áreas, mesas, comanda y cocina; los modificadores de plato todavía no existen. | `src/Pharmacy`, `src/Restaurant` | Medio — queda NB-19 y el seguimiento de modificadores |
-| G2 | **Verificación de AR-001…AR-010.** ~~El guard sólo cubría Platform/Core.~~ Resuelto por NB-1: `phparkitect.php` deriva las capas de `architecture/contexts.yaml` y corre en CI. El baseline de violaciones preexistentes sólo puede reducirse. | `composer check:architecture` | Cerrado |
-| G3 | **Catálogo de capabilities de 1ª clase.** ~~Falta `CapabilityKey` / `CapabilityCatalog` / `TenantCapabilityResolver` / `tenant_capabilities`.~~ Resuelto por NB-4…NB-7. | `src/Settings/Capability/`, migraciones `Version20260906040000` y `Version20260906050000` | Cerrado |
-| G4 | **Sin separación física `apps/` · `modules/` · `verticals/`.** Todo plano bajo `src/`. No hay mecanismo de composición de "producto" más allá de `VerticalPreset`. | árbol `src/` | Medio — reconciliable, ver §3 decisión D1 |
-| G5 | **Propiedad de datos por módulo no forzada; naming de tablas inconsistente.** Mezcla legacy español (`producto`, `cliente`, `almacen`, `comprobante`, `movimiento`) y prefijado por contexto (`inventory_movements`, `payroll_*`, `bank_*`, `integration_*`). Namespace legacy `App\Entity\` aún referenciado. | `migrations/`, lista forbidden del guard | Medio — bloquea AR-005 verificable |
-| G6 | **Módulos no declaran sus dependencias** (`dependsOn`). ~~No hay manifiesto por contexto.~~ Resuelto por NB-2: `architecture/contexts.yaml` + test de consistencia. | `architecture/contexts.yaml` | Cerrado |
-| G7 | **Namespacing de API por vertical a medias.** Pharmacy y Restaurant ya exponen `/api/pharmacy/*` y `/api/restaurant/*`. Hospitality no tiene prefijo porque el contexto no existe. | rutas API actuales | Bajo — sigue a Hospitality |
-| G8 | **Puntos de extensión no sistematizados.** Existen seams sueltos (ADR-014 descuentos, interfaces `SaleInvoicing*`), pero no un registro `StockPolicy` / `PriceCalculator` / `TaxCalculator` / `PaymentProvider` con default + override por vertical. | `src/Sales`, `src/Taxes` | Medio — habilita especialización sin tocar core |
+| G1 | **Cobertura de verticales incompleta.** Pharmacy ya es un bounded context con perfiles, lotes, recetas, vencimiento y reacción a ventas. Restaurant ya incluye áreas/mesas, pedidos, estados de cocina, endpoints/procesadores y UI de salón/cocina con actualizaciones Mercure; falta validar y ampliar pruebas funcionales y confirmar alcance del cierre/cobro contra Sales. Hospitality no figura aún en el manifiesto. | `src/Pharmacy`, `src/Restaurant`, `assets/features/restaurant`, `architecture/contexts.yaml`; NB-18/19 | Alto — falta madurez verificada y completar verticales objetivo |
+| G2 | **Reglas arquitectónicas con cobertura parcial.** PHPArkitect deriva capas del manifiesto y aplica restricciones con baseline; hay pruebas dedicadas de límites, ownership, escrituras cruzadas y contratos. Esto mejora sustancialmente el enforcement, pero no demuestra que las diez reglas AR-001…AR-010 estén verificadas de extremo a extremo ni elimina las violaciones preexistentes del baseline. | `phparkitect.php`, `phparkitect-baseline.json`, `tests/Architecture/` | Alto — mantener CI y reducir baseline |
+| G3 | **Capabilities operativas implementadas; presets aún no totalmente declarativos.** Existen catálogo, enum, resolver fail-closed, estado por tenant y sincronización con settings de compatibilidad. El contrato de preset sigue centrado en settings y capabilities; menús, seeds y UI defaults declarativos continúan como seguimiento. | `src/Settings/Capability/`, `VerticalPresetInterface`; NB-8 | Medio — completar el empaquetado declarativo y retirar compatibilidad gradualmente |
+| G4 | **Sin separación física `apps/` · `modules/` · `verticals/`.** Los contextos siguen bajo `src/`; es intencional según D1, no una reorganización pendiente. | ADR-018 D1 | Cerrado por decisión |
+| G5 | **Propiedad de datos inventariada y escrituras raw-SQL cruzadas comprobadas.** El manifiesto enumera tablas tenant y externas; hay pruebas de ownership, naming y escrituras cruzadas raw-SQL (con excepciones explícitas). El guard no pretende detectar lecturas cruzadas ni reemplaza la revisión de acceso ORM. Los nombres legacy en español se congelan por D4; tablas nuevas usan `<context>_*`. | `architecture/contexts.yaml`, `tests/Architecture/{TableOwnershipTest,CrossContextTableWriteTest,NewTableNamingConventionTest}.php` | Medio — mantener inventario y ampliar cobertura si aparecen escrituras ORM cruzadas |
+| G6 | **Dependencias de contexto declaradas.** El manifiesto y sus pruebas de consistencia están implementados; las dependencias registradas reflejan referencias observadas y no constituyen por sí mismas aprobación del acoplamiento. | `architecture/contexts.yaml`, `ContextManifestCodeTest` | Cerrado como inventario; racionalizar acoplamientos sigue siendo trabajo continuo |
+| G7 | **API namespaced de Pharmacy y Restaurant implementada.** Pharmacy tiene rutas `/api/pharmacy/...`; Restaurant declara recursos y procesadores para mesas, áreas, pedidos e ítems. Conviene mantener contrato/documentación API y pruebas alineados con las rutas disponibles. | `src/Pharmacy`, `src/Restaurant`, `assets/features/restaurant/api/` | Bajo — fortalecer contrato y pruebas |
+| G8 | **Catálogo de extension points y prueba de consistencia implementados; cobertura funcional sigue evolucionando.** `ExtensionPointCatalogTest` comprueba interfaces marcadas, implementación default, estrategia de resolución y presencia en la documentación. La cobertura depende de qué seams del core se hayan registrado en ese catálogo. | `src/Efact/Extension/`, `docs/architecture/extension-points.md`, `tests/Architecture/ExtensionPointCatalogTest.php` | Medio |
 | G9 | **Observabilidad de correlación entre módulos sin verificar.** OpenTelemetry auto-instrumentado, pero no confirmado el log estructurado por operación con `module` + `correlation_id` propagado por el bus de eventos. | `composer.json` open-telemetry/* | Bajo |
 | G10 | **`Taxes` es delgado y compartido** (consumido por Billing/Payroll). El destino lo trata como utilidad fiscal, no dominio — alineado, pero su frontera con Billing no está declarada como contrato. | ADR-001 nota sobre `Taxes` | Bajo |
 
@@ -119,47 +121,47 @@ IDs `NB-n`. Cada tarea: **Objetivo · Entregable · Criterio de aceptación**. O
 
 ### Fase 0 — Sentar fronteras y tooling (habilita todo lo demás)
 
-**NB-1 · Verificador de reglas AR-001…AR-010** — hecho (commit tras #327)
+**NB-1 · Verificador de reglas arquitectónicas** — implementado; cobertura completa AR-001…AR-010 por confirmar
 Objetivo: convertir las reglas en un check de CI, no sólo el guard Platform actual.
 Entregable: `phparkitect.php` (capas derivadas de `architecture/contexts.yaml`, ver NB-2); `phparkitect-baseline.json` (violaciones pre-existentes, sólo puede reducirse); `composer check:architecture`; job en `ci-main.yml` + `scripts/quality-check.sh` (pre-push).
 Nota: se eligió PHPArkitect sobre Deptrac porque deptrac 3.0 empaqueta php-parser 4.x y no parsea la sintaxis PHP 8.4 `new Foo()->method()` usada en todo el repo.
 Criterio: el CI falla ante un import `src/Inventory` → `src/Pharmacy`; `main` verde con baseline.
 
-**NB-2 · Manifiesto de dependencias por contexto** — hecho (PR de #328)
+**NB-2 · Manifiesto de dependencias por contexto** — implementado
 Objetivo: cada contexto declara `layer`, `dependsOn`, `publicContracts`, `ownsTables`.
 Entregable: `architecture/contexts.yaml` (fuente única de verdad, 25 contextos); `phparkitect.php` deriva su mapa de capas de ahí; `tests/Architecture/ContextManifestTest.php` cruza manifiesto ↔ código (completitud bidireccional, `dependsOn` ⊇ refs reales, `ownsTables` ⊇ tablas de entidades y sin dueño doble, contratos existen).
 Criterio: `contexts.yaml` cubre todos los contextos bajo `src/`; test verde; quitar un `dependsOn` o una tabla real hace fallar el test.
 
-**NB-3 · Registrar el mapa de capas en ADR-018**
+**NB-3 · Registrar el mapa de capas en ADR-018** — implementado
 Objetivo: elevar este documento a ADR aceptada, con D1–D4 resueltas.
 Entregable: `docs/adr/ADR-018-nubit-multivertical-target-architecture.md`; `CONTEXT.md` enlaza a él.
 Criterio: D1–D4 con decisión escrita y alternativas rechazadas.
 
-### Fase 1 — Capabilities de 1ª clase (multivertical-plan Fase 1)
+### Fase 1 — Capabilities de 1ª clase (multivertical-plan Fase 1) — implementada
 
-**NB-4 · Catálogo operativo de capabilities** — hecho (#349)
+**NB-4 · Catálogo operativo de capabilities** — implementado
 Objetivo: `CapabilityKey` enum + `CapabilityDefinition` (key, label, owner context, deps, requiresEntitlement, configKeys, safeDefaults) + `CapabilityCatalog` versionado (`VERSION`).
 Entregable: `src/Settings/Capability/`; `CapabilityCatalogTest` (paridad enum↔catálogo, sin ciclos, `requiresEntitlement` en `FeatureCatalog`, `ownerContext` en `architecture/contexts.yaml`, `safeDefaults ⊆ configKeys`).
 Criterio: catálogo cubre las 20 capabilities ya implícitas (`inventory.multi_warehouse`, `inventory.lot_tracking`, `cash.sessions`, `billing.sunat`, `catalog.weighted_items`, `hardware.scale`, …).
 
-**NB-5 · Estado operacional por tenant** — hecho (PR de #331)
+**NB-5 · Estado operacional por tenant** — implementado
 Objetivo: tablas `tenant_capabilities` y `tenant_profile`.
 Entregable: migración `Version20260906040000` + entidades `TenantCapability`/`TenantProfile` + repos; enum `CapabilitySource` (preset|manual|migration|support); `VerticalPresetApplier` graba el perfil y habilita `desiredCapabilities()` con los `safeDefaults` del catálogo, respetando overrides manual/support.
 Criterio: `doctrine:migrations:migrate` verde (109 migraciones); mapping válido; aplicar un preset deja el perfil y las capabilities poblados.
 
-**NB-6 · `TenantCapabilityResolver` fail-closed** — hecho (PR de #332)
+**NB-6 · `TenantCapabilityResolver` fail-closed** — implementado
 Objetivo: resolución única: existencia → entitlement comercial → dependencias → fila del tenant / `defaultEnabled` → falla cerrado.
 Entregable: `src/Settings/Capability/TenantCapabilityResolver` (`isEnabled()`, `config()`, `require()`, `all()`) + `CapabilityNotAvailableException`; `defaultEnabled` en `CapabilityDefinition`/`CapabilityCatalog`; `TenantRuntimeConfigProvider` deriva su bloque `capabilities` del resolver (misma forma de salida; los 2 valores de config derivados de settings quedan overlaid hasta NB-7).
 Criterio: `TenantCapabilityResolverTest` (existencia, entitlement, dependencia incumplida, override de fila, `config` filtrado, `require`); `TenantRuntimeConfigProviderTest` sigue verde; `GET /api/tenant/runtime-config` expone `capabilities` con `enabled`+`config`.
 
-**NB-7 · Migrar flags dispersos a capabilities** — hecho (PR de #333)
+**NB-7 · Migrar flags dispersos a capabilities** — sincronización implementada; consumidores conservan compatibilidad con `TenantSettings`
 Objetivo: mapear `requireCashRegister`→`cash.sessions`, `autoInvoice`→`billing.sunat`, `negativeStockPolicy`→`inventory.stock_tracking`, `printMethod`→`hardware.printing`.
 Entregable: `SettingsCapabilitySync` (espejo desde `TenantSettings` a la config de las 4 filas), llamado en `TenantSettingsService::save()` y `VerticalPresetApplier`; migración `Version20260906050000` que rellena las filas por tenant; `TenantRuntimeConfigProvider` deriva `capabilities` sólo del resolver (overlay temporal eliminado). `TenantSettings` conserva columnas y getters como compat.
 Criterio: `/api/tenant/runtime-config` mantiene la salida; consumidores de dominio (SaleProcessor, políticas de stock) siguen leyendo `TenantSettings` en modo compat; sin ramificación por `vertical`.
 
 ### Fase 2 — Presets versionados y onboarding
 
-**NB-8 · `PresetApplier` con dry-run** — hecho (PR de #334)
+**NB-8 · Planificación/dry-run del preset** — implementado; preset declarativo completo queda pendiente
 Objetivo: poder previsualizar el efecto de aplicar un preset y confirmar que re-aplicar no cambia nada.
 Entregable: `VerticalPresetPlanner` (read-only) + `VerticalPresetPlan` VO (diff de settings campo→campo y de capabilities: `enable`/`config`/`noop`/`skip-manual`/`unknown`, + warehouse); `tenant:apply-preset --dry-run` imprime el diff en tablas; el aplicador registra auditoría estructurada (settings cambiados, capabilities habilitadas, warehouse) en el log del comando. Respeta overrides `manual`/`support` (los reporta como `skip-manual`).
 Criterio: `VerticalPresetPlannerTest` (fresh tenant, re-apply no-op, override manual, warehouse); `tenant:apply-preset <key> --dry-run` no persiste.
@@ -170,7 +172,7 @@ Frontend: el wizard `TenantOnboardingGate` ya tenía el paso de selección de gi
 Backend: `app:tenant:provision --vertical=<key>` corre `tenant:apply-preset` tras `--setup` (warning, no aborta); `--vertical` fluye por `ProvisionCommandRequest` → `ProvisionCommandRunner` → `TenantProvisioningService::run(vertical: …)` (default `''`, sin cambios para llamadores actuales).
 Criterio: un operador provisiona `app:tenant:provision acme --setup --vertical=pharmacy` sin tocar BD; el wizard sigue siendo la fuente de verdad post-provisión.
 
-### Fase 3 — Primera vertical como bounded context: Pharmacy
+### Fase 3 — Primera vertical como bounded context: Pharmacy — implementada en alcance inicial
 
 **NB-10 · `src/Pharmacy` bounded context** — hecho (#355 + follow-up)
 Objetivo: primera vertical como bounded context real, no un preset.
@@ -189,31 +191,29 @@ Entregable: `App\Sales\Event\SaleConfirmed` (+ `SaleConfirmedLine`) — value ob
 Seguimiento: split de una línea entre varios lotes (necesita cantidades por lote de Inventory `stock_lots`).
 Criterio: `PharmacyBoundaryTest` — nada fuera de `src/Pharmacy` importa `App\Pharmacy` (incluye `src/Sales`); `RecordBatchDrawdownOnSaleConfirmedTest` (FEFO, skip no-farmacia/NONE, idempotencia, fallback); 284 tests de Sales sin regresión.
 
-### Fase 4 — Endurecer propiedad de datos (AR-005)
+### Fase 4 — Propiedad de datos (AR-005)
 
 **NB-13 · Inventario de propiedad de tablas** — hecho (#339)
 Entregable: `architecture/contexts.yaml` `ownsTables` completo (121 tablas de dominio, cada una con un único dueño) + bloque top-level `externalTables` para las tablas de paquetes vendor/framework (`nubit_*`, `messenger_messages`, `doctrine_migration_versions`); tablas legacy sin código vivo marcadas `# dead`, pendientes de una migración DROP.
 Criterio: `tests/Architecture/TableOwnershipTest.php` (KernelTestCase) cruza el esquema vivo del tenant (`information_schema`, tras aplicar `migrations/`) contra el manifiesto — falla ante una tabla sin dueño, una tabla con dos dueños, o una entrada de `ownsTables`/`externalTables` sin tabla viva; se salta si no hay DB de tenant accesible.
 
-**NB-14 · Naming de tablas (según D4)**
-Entregable: plan de migración legacy español → prefijo por contexto, o congelación documentada.
-Criterio: tablas nuevas siempre `<context>_*`; check en revisión de migraciones.
+**NB-14 · Naming de tablas (según D4)** — decisión implementada; verificador presente
+Legacy español congelado, sin renombrado masivo. Tablas nuevas usan `<context>_*`; `NewTableNamingConventionTest` cubre la convención. Mantener el test alineado con migraciones futuras.
 
-**NB-15 · Guard de acceso cruzado a tablas**
-Objetivo: test/arquitectura que falla si un repositorio de contexto A referencia una tabla de contexto B.
-Criterio: CI falla ante `Restaurant` escribiendo `inventory_*`.
+**NB-15 · Guard de acceso cruzado a tablas** — implementado para escrituras raw-SQL
+`CrossContextTableWriteTest` escanea escrituras `INSERT`/`UPDATE`/`DELETE`/`REPLACE`/`TRUNCATE` contra tablas de otro dueño, incluye auto-test del scanner y exige ADR para excepciones sancionadas. No cubre lecturas cruzadas ni sustituye control de escrituras vía ORM.
 
 ### Fase 5 — Puntos de extensión sistemáticos (G8)
 
-**NB-16 · Registro de seams del core**
+**NB-16 · Registro de seams del core** — catálogo y guard implementados; ampliar según se formalicen nuevos seams
 Objetivo: catalogar y normalizar `SaleValidator`, `PriceCalculator`, `TaxCalculator`, `InvoiceProcessor`, `StockPolicy`, `PaymentProvider` con default + resolución por capability/vertical.
 Entregable: interfaces en el contexto dueño + `#[AsExtensionPoint]` o tag de servicio + doc.
 Criterio: añadir una regla de vertical = registrar una implementación, cero cambios en el core.
 
-### Fase 6 — Verticales siguientes
+### Fase 6 — Completar verticales existentes y añadir verticales siguientes
 
-**NB-17 · Ferretería y Farmacia (capabilities)** — multi-unidad, ubicación, stock mínimo, reposición, variantes; lotes/vencimiento/FEFO/alertas.
-**NB-18 · `src/Restaurant` bounded context** — hecho en el corte de piso, comanda y cocina (`src/Restaurant`: áreas, mesas, ítems, send-to-kitchen, cuenta y cierre). El cobro sigue saliendo por `POST /api/sales` desde el cliente, sin importar `Sales` en PHP. Seguimiento: modificadores de plato.
+**NB-17 · Completar capacidades verticales** — Pharmacy ya cubre lotes, vencimiento y FEFO inicial; quedan capacidades de ferretería y extensiones de farmacia, como dividir una línea de venta entre varios lotes.
+**NB-18 · `src/Restaurant` bounded context** — implementación inicial presente: áreas/mesas, pedidos e ítems, estados de preparación/entrega, enviar a cocina, solicitar cuenta/cerrar pedido y UI de salón/cocina con Mercure. Pendiente: verificar cobertura de pruebas, alcance de modificadores y que el cierre/cobro integre con `Sales` según la regla prevista, sin contaminar `SaleProcessor`.
 **NB-19 · `src/Hospitality` bounded context** — habitaciones, tarifas, reservas, huésped, estancia, check-in/out; integra con `Billing`.
 
 ### Fase 7 — Observabilidad y contratos
@@ -240,4 +240,4 @@ Criterio: añadir una regla de vertical = registrar una implementación, cero ca
 | Fecha | Evento |
 |---|---|
 | 2026-09-05 | Documento creado: destino multivertical Nubit + análisis de estado efact + backlog NB-1…NB-21 |
-| 2026-09-30 | G2 y G3 cerrados. G1 y G7 actualizados: Pharmacy y Restaurant ya son contextos; Hospitality y los modificadores siguen abiertos |
+| 2026-09-24 | Estado revisado contra `src/`, `architecture/contexts.yaml` y `tests/Architecture/`; se actualizaron brechas y estado de NB-1…NB-18. |

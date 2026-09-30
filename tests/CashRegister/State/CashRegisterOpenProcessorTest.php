@@ -122,16 +122,9 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $authUser = new AuthUserDto(userId: 2, username: 'cajero2');
         $this->security->method('connectedUser')->willReturn($authUser);
 
-        $this->entityManager->method('persist')->willReturnCallback(fn() => null);
-        $this->entityManager->method('flush')->willReturnCallback(fn() => null);
-        $this->entityManager
-            ->method('getReference')
-            ->willReturnCallback(static function (string $class, mixed $id): object {
-                return match ($class) {
-                    User::class => new User(),
-                    default => new $class(),
-                };
-            });
+        $this->entityManager->method('persist')->willReturnCallback(static fn() => null);
+        $this->entityManager->method('flush')->willReturnCallback(static fn() => null);
+        $this->entityManager->method('getReference')->willReturn(new User());
 
         $branch = new Branch();
         $this->setBranchId($branch, 'branch-42');
@@ -143,6 +136,7 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $this->connection->expects($this->once())->method('beginTransaction');
         $this->connection->expects($this->once())->method('rollBack');
         $this->connection->expects($this->never())->method('commit');
+        $this->connection->method('isTransactionActive')->willReturn(true);
 
         // Build UniqueConstraintViolationException using a mock Driver\Exception
         $driverEx = new class('Duplicate entry', '23000', 1062) extends \Exception implements
@@ -177,6 +171,77 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $this->expectExceptionMessage('Esta caja ya tiene un turno abierto.');
 
         $processor->process($dto, new Post());
+    }
+
+    public function testDoesNotRollbackWhenTransactionIsAlreadyInactive(): void
+    {
+        $authUser = new AuthUserDto(userId: 3, username: 'cajero3');
+        $this->security->method('connectedUser')->willReturn($authUser);
+        $this->entityManager->method('persist')->willReturnCallback(static fn() => null);
+        $this->entityManager->method('flush')->willReturnCallback(static fn() => null);
+        $this->entityManager->method('getReference')->willReturn(new User());
+
+        $branch = new Branch();
+        $this->setBranchId($branch, 'branch-3');
+        $this->branchRepository->method('find')->willReturn($branch);
+        $cashRegister = new CashRegister()->setBranch($branch);
+        $this->entityManager->method('find')->with(CashRegister::class, 1)->willReturn($cashRegister);
+
+        $this->connection->expects($this->once())->method('beginTransaction');
+        $this->connection
+            ->method('executeStatement')
+            ->willThrowException(new \RuntimeException('Original database error'));
+        $this->connection->method('isTransactionActive')->willReturn(false);
+        $this->connection->expects($this->never())->method('rollBack');
+
+        $processor = new CashRegisterOpenProcessor(
+            entityManager: $this->entityManager,
+            security: $this->security,
+            branchContextService: $this->buildBranchContextWithFixedId('branch-3'),
+            branchRepository: $this->branchRepository,
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Original database error');
+
+        $processor->process(new CashRegisterOpenDto(id: 1, openingBalance: '100'), new Post());
+    }
+
+    public function testOriginalExceptionIsPreservedWhenRollbackFindsNoPhysicalTransaction(): void
+    {
+        $authUser = new AuthUserDto(userId: 4, username: 'cajero4');
+        $this->security->method('connectedUser')->willReturn($authUser);
+        $this->entityManager->method('persist')->willReturnCallback(static fn() => null);
+        $this->entityManager->method('flush')->willReturnCallback(static fn() => null);
+        $this->entityManager->method('getReference')->willReturn(new User());
+
+        $branch = new Branch();
+        $this->setBranchId($branch, 'branch-4');
+        $this->branchRepository->method('find')->willReturn($branch);
+        $cashRegister = new CashRegister()->setBranch($branch);
+        $this->entityManager->method('find')->with(CashRegister::class, 1)->willReturn($cashRegister);
+
+        $this->connection->expects($this->once())->method('beginTransaction');
+        $this->connection
+            ->method('executeStatement')
+            ->willThrowException(new \RuntimeException('Original insert failure'));
+        $this->connection->method('isTransactionActive')->willReturn(true);
+        $this->connection
+            ->expects($this->once())
+            ->method('rollBack')
+            ->willThrowException(new \RuntimeException('There is no active transaction'));
+
+        $processor = new CashRegisterOpenProcessor(
+            entityManager: $this->entityManager,
+            security: $this->security,
+            branchContextService: $this->buildBranchContextWithFixedId('branch-4'),
+            branchRepository: $this->branchRepository,
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Original insert failure');
+
+        $processor->process(new CashRegisterOpenDto(id: 1, openingBalance: '100'), new Post());
     }
 
     /**

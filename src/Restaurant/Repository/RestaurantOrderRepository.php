@@ -18,6 +18,7 @@ class RestaurantOrderRepository extends ServiceEntityRepository
 
     public function findOpenForTable(int $tableId): ?RestaurantOrder
     {
+        /** @var RestaurantOrder|null $result */
         $result = $this
             ->createQueryBuilder('o')
             ->andWhere('o.tableId = :tableId')

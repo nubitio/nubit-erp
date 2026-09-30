@@ -2,7 +2,7 @@
 #
 # Runs the same static-analysis, lint and test checks as the CI "backend"
 # and "frontend" jobs (.github/workflows/ci-main.yml), against the running
-# local docker compose stack. Invoked by .husky/pre-push.
+# local docker compose stack. Run manually with `sh scripts/quality-check.sh`.
 #
 # The CI "e2e" job is intentionally not mirrored here: it needs a fresh
 # migrate + seed cycle and takes ~20 minutes, which is impractical to run

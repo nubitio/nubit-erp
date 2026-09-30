@@ -10,6 +10,7 @@ use App\Restaurant\Entity\RestaurantOrderItem;
 use App\Restaurant\Entity\RestaurantTable;
 use App\Restaurant\Enum\RestaurantOrderItemStatus;
 use App\Restaurant\Enum\RestaurantTableStatus;
+use DomainException;
 use PHPUnit\Framework\TestCase;
 
 final class RestaurantOrderLifecycleTest extends TestCase
@@ -50,8 +51,8 @@ final class RestaurantOrderLifecycleTest extends TestCase
         static::assertFalse($order->isOpen());
         static::assertSame('sale-1', $order->getSaleId());
 
+        $this->expectException(DomainException::class);
         $order->close('sale-2');
-        static::assertSame('sale-1', $order->getSaleId());
     }
 
     public function testKitchenTransitionsDoNotSkipStates(): void
