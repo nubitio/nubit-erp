@@ -65,7 +65,7 @@ Configurar al menos estas variables en `.env.local` para desarrollo real:
 - `BACKUP_DATABASE_URL` (para backup/restore con `mariadb-dump`)
 - `TENANT_DB_PASS` (password de DB user por tenant en provisioning)
 
-El `.env` versionado deja `APP_SECRET`, `MERCURE_JWT_SECRET` y `BIRD_*` vacíos, y `MAILER_DSN=null://null`. Los valores reales van en `.env.local` (gitignored). Si este repo llegó a un remoto, rota esos secretos: siguen en el historial de git.
+El `.env` versionado trae un `APP_SECRET` solo de desarrollo y la clave de ejemplo de Mercure. `BIRD_*` queda vacío y `MAILER_DSN=null://null`. Los valores reales van en `.env.local` (gitignored) o en `.env.prod`. Si este repo llegó a un remoto, rota los secretos que estuvieron en el historial.
 
 Opcionales según features:
 
