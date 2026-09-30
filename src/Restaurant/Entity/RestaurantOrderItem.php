@@ -182,6 +182,10 @@ class RestaurantOrderItem
 
     public function markReady(): self
     {
+        if ($this->status !== RestaurantOrderItemStatus::Sent) {
+            return $this;
+        }
+
         $this->status = RestaurantOrderItemStatus::Ready;
         $this->readyAt = new DateTimeImmutable();
 
@@ -190,6 +194,10 @@ class RestaurantOrderItem
 
     public function markDelivered(): self
     {
+        if ($this->status !== RestaurantOrderItemStatus::Ready) {
+            return $this;
+        }
+
         $this->status = RestaurantOrderItemStatus::Delivered;
         $this->deliveredAt = new DateTimeImmutable();
 

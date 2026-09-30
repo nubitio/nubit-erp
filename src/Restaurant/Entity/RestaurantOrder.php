@@ -165,6 +165,10 @@ class RestaurantOrder
 
     public function close(string $saleId): self
     {
+        if (!$this->isOpen()) {
+            return $this;
+        }
+
         $this->saleId = $saleId;
         $this->closedAt = new DateTimeImmutable();
 

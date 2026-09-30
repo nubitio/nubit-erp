@@ -58,10 +58,14 @@ Configurar al menos estas variables en `.env.local` para desarrollo real:
 - `REDIS_URL`
 - `MESSENGER_TRANSPORT_DSN`
 - `MAILER_DSN`
+- `MERCURE_JWT_SECRET`
+- `BIRD_ACCESS_KEY` (si se usa WhatsApp)
 - `ONBOARDING_DOMAIN` (para URLs de subdominio en onboarding)
 - `PROVISIONING_DATABASE_URL` (requerido para provisioning automatizado de nuevos tenants)
 - `BACKUP_DATABASE_URL` (para backup/restore con `mariadb-dump`)
 - `TENANT_DB_PASS` (password de DB user por tenant en provisioning)
+
+El `.env` versionado deja `APP_SECRET`, `MERCURE_JWT_SECRET` y `BIRD_*` vacíos, y `MAILER_DSN=null://null`. Los valores reales van en `.env.local` (gitignored). Si este repo llegó a un remoto, rota esos secretos: siguen en el historial de git.
 
 Opcionales según features:
 

@@ -64,7 +64,7 @@ Observabilidad: cada operación relevante emite log estructurado con
 
 ---
 
-## 2. Estado actual de efact (2026-09-05)
+## 2. Estado actual de efact (2026-09-30)
 
 ### 2.1 Ya alineado con el destino
 
@@ -84,13 +84,13 @@ Observabilidad: cada operación relevante emite log estructurado con
 
 | # | Brecha | Evidencia | Impacto |
 |---|---|---|---|
-| G1 | **No existe capa de verticales.** Pharmacy sólo es un `VerticalPreset` (settings/menús/seeds), sin bounded context propio (`Medicine`, `Batch`, `Expiration`, `Prescription`). No hay Restaurant ni Hospitality. | `src/Settings/Vertical/Preset/PharmacyPreset.php` es lo único "farmacia" | Alto — es el núcleo del destino multivertical |
-| G2 | **AR-001…AR-010 no se verifican por tooling.** El guard actual sólo protege las rutas de extracción Platform/Core; no comprueba dirección Vertical→ERP, ni prohíbe ERP→Vertical, ni ciclos. ADR-001 lo reconoce explícitamente como "enforcement gap". | `check-platform-boundary.php` `$checkedPaths` | Alto — sin esto la arquitectura se erosiona en cada PR |
-| G3 | **Catálogo de capabilities de 1ª clase incompleto.** Falta `CapabilityKey` enum, `CapabilityCatalog` con metadata (owner, dependencias, entitlement requerido, schema, defaults), `TenantCapabilityResolver` (fail-closed), tablas `tenant_capabilities` y `tenant_profile`. Hoy las capabilities se derivan, no se resuelven desde catálogo versionado. | `multivertical-capability-plan.md` Fase 1 sin implementar | Alto — habilita G1 sin `if vertical ===` |
+| G1 | **Hospitality sigue sin bounded context.** Pharmacy y Restaurant ya son contextos `Vertical`. Pharmacy cubre producto, lote, prescripción y FEFO. Restaurant cubre áreas, mesas, comanda y cocina; los modificadores de plato todavía no existen. | `src/Pharmacy`, `src/Restaurant` | Medio — queda NB-19 y el seguimiento de modificadores |
+| G2 | **Verificación de AR-001…AR-010.** ~~El guard sólo cubría Platform/Core.~~ Resuelto por NB-1: `phparkitect.php` deriva las capas de `architecture/contexts.yaml` y corre en CI. El baseline de violaciones preexistentes sólo puede reducirse. | `composer check:architecture` | Cerrado |
+| G3 | **Catálogo de capabilities de 1ª clase.** ~~Falta `CapabilityKey` / `CapabilityCatalog` / `TenantCapabilityResolver` / `tenant_capabilities`.~~ Resuelto por NB-4…NB-7. | `src/Settings/Capability/`, migraciones `Version20260906040000` y `Version20260906050000` | Cerrado |
 | G4 | **Sin separación física `apps/` · `modules/` · `verticals/`.** Todo plano bajo `src/`. No hay mecanismo de composición de "producto" más allá de `VerticalPreset`. | árbol `src/` | Medio — reconciliable, ver §3 decisión D1 |
 | G5 | **Propiedad de datos por módulo no forzada; naming de tablas inconsistente.** Mezcla legacy español (`producto`, `cliente`, `almacen`, `comprobante`, `movimiento`) y prefijado por contexto (`inventory_movements`, `payroll_*`, `bank_*`, `integration_*`). Namespace legacy `App\Entity\` aún referenciado. | `migrations/`, lista forbidden del guard | Medio — bloquea AR-005 verificable |
 | G6 | **Módulos no declaran sus dependencias** (`dependsOn`). ~~No hay manifiesto por contexto.~~ Resuelto por NB-2: `architecture/contexts.yaml` + test de consistencia. | `architecture/contexts.yaml` | Cerrado |
-| G7 | **Sin namespacing de API por vertical** (`/api/pharmacy/*`, `/api/restaurant/*`). | rutas API actuales | Bajo — sigue a G1 |
+| G7 | **Namespacing de API por vertical a medias.** Pharmacy y Restaurant ya exponen `/api/pharmacy/*` y `/api/restaurant/*`. Hospitality no tiene prefijo porque el contexto no existe. | rutas API actuales | Bajo — sigue a Hospitality |
 | G8 | **Puntos de extensión no sistematizados.** Existen seams sueltos (ADR-014 descuentos, interfaces `SaleInvoicing*`), pero no un registro `StockPolicy` / `PriceCalculator` / `TaxCalculator` / `PaymentProvider` con default + override por vertical. | `src/Sales`, `src/Taxes` | Medio — habilita especialización sin tocar core |
 | G9 | **Observabilidad de correlación entre módulos sin verificar.** OpenTelemetry auto-instrumentado, pero no confirmado el log estructurado por operación con `module` + `correlation_id` propagado por el bus de eventos. | `composer.json` open-telemetry/* | Bajo |
 | G10 | **`Taxes` es delgado y compartido** (consumido por Billing/Payroll). El destino lo trata como utilidad fiscal, no dominio — alineado, pero su frontera con Billing no está declarada como contrato. | ADR-001 nota sobre `Taxes` | Bajo |
@@ -213,7 +213,7 @@ Criterio: añadir una regla de vertical = registrar una implementación, cero ca
 ### Fase 6 — Verticales siguientes
 
 **NB-17 · Ferretería y Farmacia (capabilities)** — multi-unidad, ubicación, stock mínimo, reposición, variantes; lotes/vencimiento/FEFO/alertas.
-**NB-18 · `src/Restaurant` bounded context** — mesas, áreas, pedidos abiertos, comandas, modificadores, cocina; integra con `Sales` sólo al cierre/cobro; no contamina `SaleProcessor`.
+**NB-18 · `src/Restaurant` bounded context** — hecho en el corte de piso, comanda y cocina (`src/Restaurant`: áreas, mesas, ítems, send-to-kitchen, cuenta y cierre). El cobro sigue saliendo por `POST /api/sales` desde el cliente, sin importar `Sales` en PHP. Seguimiento: modificadores de plato.
 **NB-19 · `src/Hospitality` bounded context** — habitaciones, tarifas, reservas, huésped, estancia, check-in/out; integra con `Billing`.
 
 ### Fase 7 — Observabilidad y contratos
@@ -240,3 +240,4 @@ Criterio: añadir una regla de vertical = registrar una implementación, cero ca
 | Fecha | Evento |
 |---|---|
 | 2026-09-05 | Documento creado: destino multivertical Nubit + análisis de estado efact + backlog NB-1…NB-21 |
+| 2026-09-30 | G2 y G3 cerrados. G1 y G7 actualizados: Pharmacy y Restaurant ya son contextos; Hospitality y los modificadores siguen abiertos |
