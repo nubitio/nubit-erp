@@ -22,36 +22,36 @@ final class RestaurantOrderLifecycleTest extends TestCase
         $line = new RestaurantOrderItem($order, 'product-1', 'Ceviche', '25.00', 2, 'sin ají');
         $order->addItem($line);
 
-        self::assertTrue($table->isFree());
-        self::assertSame(RestaurantTableStatus::Free, $table->getStatus());
+        static::assertTrue($table->isFree());
+        static::assertSame(RestaurantTableStatus::Free, $table->getStatus());
         $table->markOccupied();
-        self::assertSame(RestaurantTableStatus::Occupied, $table->getStatus());
+        static::assertSame(RestaurantTableStatus::Occupied, $table->getStatus());
 
-        self::assertSame(RestaurantOrderItemStatus::Pending, $line->getStatus());
-        self::assertNull($line->getSentAt());
+        static::assertSame(RestaurantOrderItemStatus::Pending, $line->getStatus());
+        static::assertNull($line->getSentAt());
 
         $order->sendPendingItemsToKitchen();
-        self::assertSame(RestaurantOrderItemStatus::Sent, $line->getStatus());
-        self::assertNotNull($line->getSentAt());
+        static::assertSame(RestaurantOrderItemStatus::Sent, $line->getStatus());
+        static::assertNotNull($line->getSentAt());
 
         $line->markSent();
-        self::assertSame(RestaurantOrderItemStatus::Sent, $line->getStatus());
+        static::assertSame(RestaurantOrderItemStatus::Sent, $line->getStatus());
 
         $line->markReady();
-        self::assertSame(RestaurantOrderItemStatus::Ready, $line->getStatus());
-        self::assertNotNull($line->getReadyAt());
+        static::assertSame(RestaurantOrderItemStatus::Ready, $line->getStatus());
+        static::assertNotNull($line->getReadyAt());
 
         $line->markDelivered();
-        self::assertSame(RestaurantOrderItemStatus::Delivered, $line->getStatus());
-        self::assertNotNull($line->getDeliveredAt());
+        static::assertSame(RestaurantOrderItemStatus::Delivered, $line->getStatus());
+        static::assertNotNull($line->getDeliveredAt());
 
-        self::assertTrue($order->isOpen());
+        static::assertTrue($order->isOpen());
         $order->close('sale-1');
-        self::assertFalse($order->isOpen());
-        self::assertSame('sale-1', $order->getSaleId());
+        static::assertFalse($order->isOpen());
+        static::assertSame('sale-1', $order->getSaleId());
 
         $order->close('sale-2');
-        self::assertSame('sale-1', $order->getSaleId());
+        static::assertSame('sale-1', $order->getSaleId());
     }
 
     public function testKitchenTransitionsDoNotSkipStates(): void
@@ -62,14 +62,14 @@ final class RestaurantOrderLifecycleTest extends TestCase
 
         $line->markReady();
         $line->markDelivered();
-        self::assertSame(RestaurantOrderItemStatus::Pending, $line->getStatus());
-        self::assertNull($line->getReadyAt());
-        self::assertNull($line->getDeliveredAt());
+        static::assertSame(RestaurantOrderItemStatus::Pending, $line->getStatus());
+        static::assertNull($line->getReadyAt());
+        static::assertNull($line->getDeliveredAt());
 
         $order->sendPendingItemsToKitchen();
         $line->markDelivered();
-        self::assertSame(RestaurantOrderItemStatus::Sent, $line->getStatus());
-        self::assertNull($line->getDeliveredAt());
+        static::assertSame(RestaurantOrderItemStatus::Sent, $line->getStatus());
+        static::assertNull($line->getDeliveredAt());
     }
 
     public function testSendingToKitchenLeavesLinesThatAlreadyLeftThePendingState(): void
@@ -84,7 +84,7 @@ final class RestaurantOrderLifecycleTest extends TestCase
 
         $order->sendPendingItemsToKitchen();
 
-        self::assertSame(RestaurantOrderItemStatus::Sent, $pending->getStatus());
-        self::assertSame($sentAt, $alreadySent->getSentAt());
+        static::assertSame(RestaurantOrderItemStatus::Sent, $pending->getStatus());
+        static::assertSame($sentAt, $alreadySent->getSentAt());
     }
 }
