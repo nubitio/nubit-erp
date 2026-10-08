@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { login } from './helpers/auth';
+import { customerReceivableBalance } from './helpers/receivables';
 import { ensureOpenCashSession } from './helpers/cashbox';
 import { selectPosCustomer, waitForPosCheckoutReady } from './helpers/pos';
 import { E2E_SEED } from './support/seedConstants';
@@ -11,6 +12,7 @@ test('Crédito en el POS crea automáticamente una cuenta por cobrar', async ({ 
   const seed = await getE2ESeed();
   await login(page, seed.username, seed.password);
   await ensureOpenCashSession(page, BASE_URL);
+  const openingBalance = await customerReceivableBalance(page, E2E_SEED.customerName);
 
   await page.goto(`${BASE_URL}/#/pos`);
   await expect(page.getByTestId('pos-product-search')).toBeVisible({ timeout: 25_000 });
@@ -47,7 +49,8 @@ test('Crédito en el POS crea automáticamente una cuenta por cobrar', async ({ 
   await waitForPosCheckoutReady(page);
 
   const responsePromise = page.waitForResponse(
-    (response) => /\/api\/sales(?:\?.*)?$/.test(response.url()) && response.request().method() === 'POST',
+    (response) =>
+      /\/api\/sales(?:\?.*)?$/.test(response.url()) && response.request().method() === 'POST',
   );
   await page.getByTestId('pos-checkout-btn').click();
   const response = await responsePromise;
@@ -55,19 +58,27 @@ test('Crédito en el POS crea automáticamente una cuenta por cobrar', async ({ 
   expect(response.ok(), responseText).toBeTruthy();
 
   const requestBody = response.request().postDataJSON() as Record<string, unknown>;
-  expect(requestBody.settlements).toEqual([{
-    type: 'RECEIVABLE',
-    amount: '10.00',
-  }]);
+  expect(requestBody.settlements).toEqual([
+    {
+      type: 'RECEIVABLE',
+      amount: '10.00',
+    },
+  ]);
   expect(requestBody).not.toHaveProperty('payments');
   expect(requestBody).not.toHaveProperty('creditSale');
 
-  const sale = JSON.parse(responseText) as { balanceDue?: string; grandTotal?: string; paidTotal?: string };
+  const sale = JSON.parse(responseText) as {
+    balanceDue?: string;
+    grandTotal?: string;
+    paidTotal?: string;
+  };
   expect(Number(sale.paidTotal)).toBe(0);
   expect(Number(sale.balanceDue)).toBe(Number(sale.grandTotal));
 
   await page.goto(`${BASE_URL}/#/accounts-receivable`);
   const row = page.getByRole('row').filter({ hasText: E2E_SEED.customerName }).first();
-  const [whole, cents] = Number(sale.balanceDue).toFixed(2).split('.');
-  await expect(row).toContainText(new RegExp(`${whole}[.,]${cents}`), { timeout: 15_000 });
+  const [whole, cents] = (openingBalance + Number(sale.balanceDue)).toFixed(2).split('.');
+  await expect(row.getByRole('cell').nth(1)).toContainText(new RegExp(`${whole}[.,]${cents}`), {
+    timeout: 15_000,
+  });
 });

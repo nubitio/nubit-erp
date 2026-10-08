@@ -17,6 +17,7 @@ services:
       - '../../nubit-symfony:/nubit-symfony'
       - 'app-var:/app/var'
       - 'app-public-uploads:/app/public/uploads'
+      - './docker/php/php.dev.ini:/usr/local/etc/php/conf.d/99-app.ini:ro'
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     environment:

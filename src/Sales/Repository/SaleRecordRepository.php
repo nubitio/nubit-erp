@@ -217,6 +217,19 @@ class SaleRecordRepository extends ServiceEntityRepository
     }
 
     /**
+     * Opening imports are deduplicated tenant-wide, matching the unique index.
+     * Return only existence so another branch's sale is never exposed. DBAL
+     * deliberately bypasses the branch filter, within the current tenant DB.
+     */
+    public function hasOfflineRetryKey(string $offlineRetryKey): bool
+    {
+        return $this
+            ->getEntityManager()
+            ->getConnection()
+            ->fetchOne('SELECT 1 FROM sales WHERE offline_retry_key = :key', ['key' => $offlineRetryKey]) !== false;
+    }
+
+    /**
      * Enrich a list of SaleRecord entities with tax_document data.
      * Single DBAL query to avoid N+1.
      *

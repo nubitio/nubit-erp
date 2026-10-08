@@ -135,7 +135,7 @@ final class SalesReportSpreadsheetColumnsTest extends TestCase
             PaymentMethodBreakdownReport::class,
             [
                 'pm_1' => ['Efectivo', '#,##0.00', XlsColumn::SUMMARY_SUM],
-                'pm_2' => ['Yape', '#,##0.00', XlsColumn::SUMMARY_SUM],
+                'pm_2' => ['Credito pendiente', '#,##0.00', XlsColumn::SUMMARY_SUM],
                 'pm_other' => ['Otros métodos', '#,##0.00', XlsColumn::SUMMARY_SUM],
                 'total_paid' => ['Total pagado', '#,##0.00', XlsColumn::SUMMARY_SUM],
                 'sale_total' => ['Total comprobante', '#,##0.00', XlsColumn::SUMMARY_SUM],
@@ -223,7 +223,7 @@ final class SalesReportSpreadsheetColumnsTest extends TestCase
                 'pm_1' => '100.00',
                 'pm_2' => '50.00',
                 'pm_other' => '0.00',
-                'total_paid' => '150.00',
+                'total_paid' => '100.00',
                 'sale_total' => '150.00',
             ],
             ['pm_1', 'pm_2', 'pm_other', 'total_paid', 'sale_total'],
@@ -258,7 +258,7 @@ final class SalesReportSpreadsheetColumnsTest extends TestCase
                 ->method('fetchAllAssociative')
                 ->willReturn([
                     ['id' => 1, 'name' => 'Efectivo'],
-                    ['id' => 2, 'name' => 'Yape'],
+                    ['id' => 2, 'name' => 'Credito'],
                 ]);
 
             return new PaymentMethodBreakdownReport($this->createStub(SunatStateService::class), $connection);

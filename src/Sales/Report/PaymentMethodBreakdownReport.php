@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Report;
 
+use App\Catalog\Entity\PaymentMethod;
 use App\Settings\Service\SunatStateService;
 use Doctrine\DBAL\Connection;
 use Nubit\Platform\Export\XlsColumnSpec;
@@ -11,7 +12,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 /**
  * One row per sale, one column per active payment method with the amount paid
- * via that method, plus "Total pagado" / "Total comprobante". The XLSX exporter
+ * via that method, plus outstanding credit / "Total pagado" / "Total comprobante". The XLSX exporter
  * adds a footer row that sums every column — i.e. the per-method day totals.
  *
  * Method columns are dynamic: `pm_<id>` aliases are built from the tenant's
@@ -55,6 +56,12 @@ final class PaymentMethodBreakdownReport extends AbstractSaleReport
         $pivotSelects = '';
         foreach ($methods as $method) {
             $id = $method['id'];
+            if ($id === PaymentMethod::CREDIT) {
+                // Credit is an outstanding allocation, not a sale_payments row.
+                // MAX prevents duplicating it when the sale has several payments.
+                $pivotSelects .= "max(coalesce(s.balance_due, 0)) as pm_{$id},\n                ";
+                continue;
+            }
             $pivotSelects .= "sum(case when sp.payment_method_id = {$id} then sp.amount else 0 end) as pm_{$id},\n                ";
         }
 
@@ -77,6 +84,11 @@ final class PaymentMethodBreakdownReport extends AbstractSaleReport
                 left join tax_document i on (i.sale_id = s.id OR i.movimiento_id = s.id) and i.document_type in ('01', '03')
                 left join cliente c on c.id = s.customer_id
                 left join sale_payments sp on sp.sale_id = s.id
+                    and not exists (
+                        select 1 from payment_method debt_method
+                        where debt_method.id = sp.payment_method_id
+                          and debt_method.settlement_behavior = 'RECEIVABLE'
+                    )
             where
                 s.status in ('COMPLETED', 'PARTIALLY_RETURNED', 'RETURNED')
                 and s.issued_date between :date_from and :date_to
@@ -104,7 +116,8 @@ final class PaymentMethodBreakdownReport extends AbstractSaleReport
         ];
 
         foreach ($this->activeMethods() as $method) {
-            $columns['pm_' . $method['id']] = XlsColumnSpec::number($method['name'], '#,##0.00');
+            $label = $method['id'] === PaymentMethod::CREDIT ? $method['name'] . ' pendiente' : $method['name'];
+            $columns['pm_' . $method['id']] = XlsColumnSpec::number($label, '#,##0.00');
         }
 
         $columns['pm_other'] = XlsColumnSpec::number('Otros métodos', '#,##0.00');
@@ -130,7 +143,7 @@ final class PaymentMethodBreakdownReport extends AbstractSaleReport
 
         /** @var list<array{id: int|string, name: string}> $rows */
         $rows = $this->connection->fetchAllAssociative(
-            'SELECT id, name FROM payment_method WHERE is_active = 1 ORDER BY name',
+            'SELECT id, name FROM payment_method WHERE is_active = 1 OR id = 2 ORDER BY name',
         );
 
         $this->methodsCache = array_map(static fn(array $row): array => [

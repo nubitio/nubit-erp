@@ -61,9 +61,10 @@ readonly class CashSessionClosureSummaryProvider implements ProviderInterface
         );
         $cashOutTotal = BigDecimal::of((string) ($cashOutRaw ?: '0'));
 
-        $v2Sales = $this->connection->fetchAllAssociative("SELECT cm.payment_method_id, COALESCE(SUM(cm.amount), 0) AS total
+        $v2Sales = $this->connection->fetchAllAssociative("SELECT cm.payment_method_id,
+                COALESCE(SUM(CASE WHEN cm.movement_type = 'REFUND_OUT' THEN -cm.amount ELSE cm.amount END), 0) AS total
              FROM cash_movements cm
-             WHERE cm.cash_session_id = ? AND cm.movement_type = 'SALE_IN'
+             WHERE cm.cash_session_id = ? AND cm.movement_type IN ('SALE_IN', 'REFUND_OUT')
              GROUP BY cm.payment_method_id", [$sessionId]);
 
         /** @var array<int, BigDecimal> $salesMap */

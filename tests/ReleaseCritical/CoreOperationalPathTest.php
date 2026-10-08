@@ -4,9 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\ReleaseCritical;
 
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use App\Billing\Sale\SaleVoidUseCase;
+use App\CashRegister\Dto\CashRegisterCloseDto;
+use App\CashRegister\State\CashRegisterCloseProcessor;
+use App\CashRegister\State\CashRegisterDashboardProvider;
+use App\CashRegister\State\CashSessionClosureSummaryProvider;
+use App\CashRegister\State\CashSessionMovementsProvider;
+use App\CashRegister\State\CashSessionXReportProvider;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\Product;
 use App\Contacts\Entity\Customer;
@@ -14,6 +23,7 @@ use App\Contacts\Repository\CustomerRepository;
 use App\Efact\Domain\ActiveReferenceGuard;
 use App\Efact\Enum\StockPolicy;
 use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Security\Security;
 use App\Organization\Repository\BranchRepository;
@@ -21,7 +31,9 @@ use App\Sales\Domain\SaleSettlementType;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Port\InvoiceCreatorInterface;
 use App\Sales\Port\Result\InvoiceCreationResult;
+use App\Sales\Report\PaymentMethodBreakdownReport;
 use App\Sales\Repository\SaleRecordRepository;
+use App\Sales\Service\SalePaymentService;
 use App\Sales\Service\SaleSettlementPlanService;
 use App\Sales\State\CashSessionResolverInterface;
 use App\Sales\State\DetractionCalculatorInterface;
@@ -29,6 +41,7 @@ use App\Sales\State\SaleInventoryOrchestrator;
 use App\Sales\State\SaleProcessor;
 use App\Sales\State\SalesWriteGateway;
 use App\Sales\State\SaleUtils;
+use App\Settings\Service\SunatStateService;
 use App\Settings\Service\TenantSettingsService;
 use App\Tests\ReleaseCritical\Support\CoreSaleFixture;
 use App\Tests\ReleaseCritical\Support\CoreSaleWorld;
@@ -144,6 +157,227 @@ final class CoreOperationalPathTest extends KernelTestCase
         self::assertTrue($result->isReceivableAccount());
         self::assertSame(0, $this->fixture->cashMovementCount((string) $result->getId()));
         self::assertEqualsWithDelta(9.0, (float) $this->fixture->onHand($world->warehouse, $world->product), 0.001);
+    }
+
+    public function testMariaCreditReportAndCashReconcileBeforeAndAfterPartialCollection(): void
+    {
+        $world = $this->fixture->seed();
+        foreach (['101' => 'Caja', '121' => 'Facturas por cobrar'] as $code => $name) {
+            $accountRepository = $this->entityManager->getRepository(\App\Accounting\Entity\Account::class);
+            if ($accountRepository->findOneBy(['code' => (string) $code]) === null) {
+                $this->entityManager->persist(
+                    new \App\Accounting\Entity\Account()
+                        ->setCode((string) $code)
+                        ->setName($name),
+                );
+            }
+        }
+        $this->entityManager->flush();
+        $this->recordOpeningMovement($world);
+        $world->customer->setBusinessName('SRA MARIA');
+        $sale = $this->newOperationalSale($world, PaymentMethod::CREDIT, '1');
+        $sale->setWriteItems([[
+            'product' => (string) $world->product->getId(),
+            'qty' => '1',
+            'unitPrice' => '13.88',
+        ]]);
+        $sale->setSettlements([['type' => 'RECEIVABLE', 'amount' => '13.88']]);
+        $this->processor($world)->process($sale, new Post());
+
+        $row = $this->paymentBreakdown($world, $sale);
+        static::assertSame('13.88', $row['pm_2']);
+        static::assertSame('0.00', $row['total_paid']);
+        static::assertSame('13.88', $row['sale_total']);
+        $this->assertCashReconciles($world, '50.00');
+
+        $saleId = $sale->getId();
+        $this->entityManager->clear();
+        $sale = $this->entityManager->find(SaleRecord::class, $saleId);
+        static::assertInstanceOf(SaleRecord::class, $sale);
+        static::getContainer()
+            ->get(SalePaymentService::class)
+            ->registerPayment(
+                $sale,
+                $this->entityManager->find(PaymentMethod::class, PaymentMethod::CASH),
+                '3.88',
+                new \DateTimeImmutable(),
+                'Abono María',
+                $world->user,
+            );
+        $row = $this->paymentBreakdown($world, $sale);
+        static::assertSame('10.00', $row['pm_2']);
+        static::assertSame('3.88', $row['pm_1']);
+        static::assertSame('3.88', $row['total_paid']);
+        $this->assertCashReconciles($world, '53.88');
+
+        // Several collections must not multiply the credit pivot or count the
+        // whole invoice as cash each time. Finally settle the remaining debt.
+        foreach ([
+            ['amount' => '1.12', 'pending' => '8.88', 'paid' => '5.00', 'cash' => '55.00'],
+            ['amount' => '8.88', 'pending' => '0.00', 'paid' => '13.88', 'cash' => '63.88'],
+        ] as $collection) {
+            static::getContainer()
+                ->get(SalePaymentService::class)
+                ->registerPayment(
+                    $sale,
+                    $this->entityManager->find(PaymentMethod::class, PaymentMethod::CASH),
+                    $collection['amount'],
+                    new \DateTimeImmutable(),
+                    'Abono adicional María',
+                    $world->user,
+                );
+            $row = $this->paymentBreakdown($world, $sale);
+            static::assertSame($collection['pending'], $row['pm_2']);
+            static::assertSame($collection['paid'], $row['pm_1']);
+            static::assertSame($collection['paid'], $row['total_paid']);
+            $this->assertCashReconciles($world, $collection['cash']);
+        }
+        $this->closeWithExpectedCount($world, '63.88');
+    }
+
+    public function testVoidingUnpaidCreditDoesNotRefundMoneyThatNeverEnteredTheDrawer(): void
+    {
+        $world = $this->fixture->seed();
+        $this->recordOpeningMovement($world);
+        $sale = $this->processor($world)->process(
+            $this->newOperationalSale($world, PaymentMethod::CREDIT, '1'),
+            new Post(),
+        );
+        static::assertInstanceOf(SaleRecord::class, $sale);
+        $saleId = (string) $sale->getId();
+        $this->entityManager->clear();
+        static::getContainer()
+            ->get(SaleVoidUseCase::class)
+            ->__invoke($saleId, 'Anulación de crédito sin abonos', (int) $world->user->getId(), true);
+        static::assertSame(0, $this->fixture->cashRefundCount($saleId));
+        $this->assertCashReconciles($world, '50.00');
+        $this->closeWithExpectedCount($world, '50.00');
+    }
+
+    public function testMixedCashAndCreditReconcileAndDoNotAllowVoidingAppliedPayments(): void
+    {
+        $world = $this->fixture->seed();
+        $this->recordOpeningMovement($world);
+        $sale = $this->newOperationalSale($world, PaymentMethod::CASH, '1');
+        $sale->setSettlements([
+            ['type' => 'PAYMENT', 'paymentMethodId' => PaymentMethod::CASH, 'amount' => '4.00'],
+            ['type' => 'RECEIVABLE', 'amount' => '6.00'],
+        ]);
+        $this->processor($world)->process($sale, new Post());
+        $row = $this->paymentBreakdown($world, $sale);
+        static::assertSame('4.00', $row['pm_1']);
+        static::assertSame('6.00', $row['pm_2']);
+        static::assertSame('4.00', $row['total_paid']);
+        $this->assertCashReconciles($world, '54.00');
+
+        try {
+            static::getContainer()
+                ->get(SaleVoidUseCase::class)
+                ->__invoke((string) $sale->getId(), 'Anulación mixta', (int) $world->user->getId(), true);
+            static::fail('Credit with applied payments must not be voided.');
+        } catch (\App\Sales\Domain\SaleException $exception) {
+            static::assertStringContainsString('cobros aplicados', $exception->getMessage());
+        }
+        $this->assertCashReconciles($world, '54.00');
+        $this->entityManager->clear();
+        $this->closeWithExpectedCount($world, '54.00');
+    }
+
+    public function testMixedCashAndDigitalVoidRefundsOnlyCashAndEveryCashViewAgrees(): void
+    {
+        $world = $this->fixture->seed();
+        $this->recordOpeningMovement($world);
+        $digital = new PaymentMethod()
+            ->setName('Yape kernel')
+            ->setIsActive(true);
+        $this->entityManager->persist($digital);
+        $this->entityManager->flush();
+        $sale = $this->newOperationalSale($world, PaymentMethod::CASH, '1');
+        $sale->setSettlements([
+            ['type' => 'PAYMENT', 'paymentMethodId' => PaymentMethod::CASH, 'amount' => '4.00'],
+            ['type' => 'PAYMENT', 'paymentMethodId' => $digital->getId(), 'amount' => '6.00'],
+        ]);
+        $this->processor($world)->process($sale, new Post());
+        $this->assertCashReconciles($world, '54.00');
+        $saleId = $sale->getId();
+        $this->entityManager->clear();
+        static::getContainer()
+            ->get(SaleVoidUseCase::class)
+            ->__invoke((string) $saleId, 'Anulación con pago mixto', (int) $world->user->getId(), true);
+        static::assertSame('4.00', $this->entityManager->getConnection()->fetchOne("SELECT amount FROM cash_movements WHERE sale_id = :sale AND movement_type = 'REFUND_OUT'", [
+            'sale' => $saleId,
+        ]));
+        $this->assertCashReconciles($world, '50.00');
+        $this->closeWithExpectedCount($world, '50.00');
+    }
+
+    public function testClosingUsesSessionOpeningEvenWhenHistoricalOpeningMovementIsMissing(): void
+    {
+        $world = $this->fixture->seed();
+        $this->closeWithExpectedCount($world, '50.00');
+    }
+
+    private function recordOpeningMovement(CoreSaleWorld $world): void
+    {
+        $this->entityManager->getConnection()->executeStatement("INSERT INTO cash_movements (cash_session_id, movement_type, amount, created_by, created_at)
+             VALUES (?, 'OPENING', ?, ?, NOW())", [
+            $world->cashSession->getId(),
+            $world->cashSession->getOpeningAmount(),
+            $world->user->getId(),
+        ]);
+    }
+
+    /** @return array<string, mixed> */
+    private function paymentBreakdown(CoreSaleWorld $world, SaleRecord $sale): array
+    {
+        $sunat = $this->createStub(SunatStateService::class);
+        $sunat->method('isReceiptRequired')->willReturn(false);
+        $connection = $this->entityManager->getConnection();
+        $report = new PaymentMethodBreakdownReport($sunat, $connection);
+        $row = $connection->fetchAssociative($report->sql('AND s.id = :sale'), [
+            'date_from' => $sale->getIssuedDate()?->format('Y-m-d'),
+            'date_to' => $sale->getIssuedDate()?->format('Y-m-d'),
+            'local_id' => $world->branch->getId(),
+            'sale' => $sale->getId(),
+        ]);
+        static::assertIsArray($row);
+
+        return $row;
+    }
+
+    private function assertCashReconciles(CoreSaleWorld $world, string $expected): void
+    {
+        $container = static::getContainer();
+        $connection = $this->entityManager->getConnection();
+        $branchContext = $this->createStub(BranchContextServiceInterface::class);
+        $branchContext->method('getCurrentBranchId')->willReturn($world->branch->getId());
+        $dashboard = new CashRegisterDashboardProvider($connection, $branchContext)->provide(new GetCollection());
+        static::assertEqualsWithDelta((float) $expected, $dashboard[0]->balance, 0.001, 'Cash dashboard');
+        $variables = ['id' => $world->cashSession->getId()];
+        $summary = $container->get(CashSessionClosureSummaryProvider::class)->provide(new GetCollection(), $variables);
+        static::assertSame($expected, $summary[0]->expectedAmount, 'Closure preview');
+        $xReport = $container->get(CashSessionXReportProvider::class)->provide(new Get(), $variables);
+        static::assertSame($expected, $xReport->currentBalance, 'X report');
+        $movements = $container->get(CashSessionMovementsProvider::class)->provide(new GetCollection(), $variables);
+        $gridBalance = 0.0;
+        foreach ($movements as $movement) {
+            $gridBalance += ($movement->getType()->value === 'income' ? 1 : -1) * (float) $movement->getAmount();
+        }
+        static::assertEqualsWithDelta((float) $expected, $gridBalance, 0.001, 'Movement grid balance');
+    }
+
+    private function closeWithExpectedCount(CoreSaleWorld $world, string $expected): void
+    {
+        $dto = new CashRegisterCloseDto();
+        $dto->closureItems = [['countedAmount' => $expected, 'paymentMethod' => '/api/payment-methods/1']];
+        new CashRegisterCloseProcessor($this->entityManager, $this->securityStub((int) $world->user->getId()))->process(
+            $dto,
+            new Put(),
+            ['id' => $world->cashSession->getId()],
+        );
+        $closed = $this->entityManager->find(\App\CashRegister\Entity\CashSession::class, $world->cashSession->getId());
+        static::assertSame($expected, $closed->getExpectedAmount());
+        static::assertSame('0.00', $closed->getDifferenceAmount());
     }
 
     public function testVoidRestoresStockAndKeepsTheSaleRow(): void

@@ -42,7 +42,7 @@ final readonly class OpeningReceivableRowImporter
         }
 
         $retryKey = $this->buildRetryKey($parsed);
-        if ($this->saleRecordRepository->findByOfflineRetryKey($retryKey) !== null) {
+        if ($this->saleRecordRepository->hasOfflineRetryKey($retryKey)) {
             return new OpeningReceivableRowSkipped();
         }
 

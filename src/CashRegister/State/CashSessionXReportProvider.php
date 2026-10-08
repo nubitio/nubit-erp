@@ -60,7 +60,7 @@ readonly class CashSessionXReportProvider implements ProviderInterface
 
         $cashOutRaw = $this->connection->fetchOne(
             "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
-             WHERE cash_session_id = ? AND movement_type = 'CASH_OUT'",
+             WHERE cash_session_id = ? AND movement_type IN ('CASH_OUT', 'REFUND_OUT')",
             [$sessionId],
         );
         $cashOut = BigDecimal::of((string) ($cashOutRaw ?: '0'));

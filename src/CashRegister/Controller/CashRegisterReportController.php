@@ -68,7 +68,7 @@ class CashRegisterReportController extends AbstractController
             FROM cash_movements cm
             LEFT JOIN cash_movement_category cmc ON cmc.id = cm.category_id
             WHERE cm.cash_session_id = ?
-              AND cm.movement_type IN ('CASH_IN', 'CASH_OUT', 'SALE_IN')
+              AND cm.movement_type IN ('CASH_IN', 'CASH_OUT', 'SALE_IN', 'REFUND_OUT')
             ORDER BY cm.created_at ASC, cm.id ASC
             SQL, [$sessionId]);
 
@@ -81,7 +81,7 @@ class CashRegisterReportController extends AbstractController
             $movementType = (string) $row['movement_type'];
             $amount = BigDecimal::of((string) ($row['amount'] ?? '0'));
 
-            if ($movementType === 'CASH_OUT') {
+            if (in_array($movementType, ['CASH_OUT', 'REFUND_OUT'], true)) {
                 $expense = $expense->plus($amount);
                 $type = 'expense';
             } else {

@@ -58,7 +58,7 @@ final class CashSessionXReportProviderTest extends TestCase
                     return '50.00';
                 }
                 // CASH_OUT total
-                if (str_contains($sql, "movement_type = 'CASH_OUT'")) {
+                if (str_contains($sql, "movement_type IN ('CASH_OUT', 'REFUND_OUT')")) {
                     return '20.00';
                 }
                 // Shift duration

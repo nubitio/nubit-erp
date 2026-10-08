@@ -187,9 +187,9 @@ final class OpeningReceivableImporterTest extends TestCase
 
         $saleRecordRepository = $this->createStub(SaleRecordRepository::class);
         $saleRecordRepository
-            ->method('findByOfflineRetryKey')
-            ->willReturnCallback(static function (string $key) use (&$existingRetryKeys): ?SaleRecord {
-                return in_array($key, $existingRetryKeys, true) ? new SaleRecord() : null;
+            ->method('hasOfflineRetryKey')
+            ->willReturnCallback(static function (string $key) use (&$existingRetryKeys): bool {
+                return in_array($key, $existingRetryKeys, true);
             });
 
         $customerAccountLedger = $this->createMock(CustomerAccountLedger::class);

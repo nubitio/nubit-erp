@@ -58,10 +58,9 @@ final readonly class CashMovementHydrator
         $movement = new CashMovement();
 
         $type = match ($row['movement_type']) {
-            'CASH_OUT' => CashMovementType::EXPENSE,
+            'CASH_OUT', 'REFUND_OUT' => CashMovementType::EXPENSE,
             default => CashMovementType::INCOME,
         };
-        $movement->setType($type);
         $movement->setAmount((string) $row['amount']);
         $movement->setDescription((string) ($row['description'] ?? 'Movimiento de caja'));
         $movement->setCreatedAt(new DateTimeImmutable((string) $row['created_at']));
@@ -81,6 +80,9 @@ final readonly class CashMovementHydrator
                 $movement->setCategory($category);
             }
         }
+
+        // A category is descriptive; the ledger movement defines the sign.
+        $movement->setType($type);
 
         return $movement;
     }

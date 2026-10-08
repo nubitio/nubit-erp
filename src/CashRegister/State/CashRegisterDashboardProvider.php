@@ -50,6 +50,7 @@ readonly class CashRegisterDashboardProvider implements ProviderInterface
                 cs.opening_amount
                 + COALESCE(SUM(IF(cm.movement_type = 'CASH_IN',  cm.amount, 0)), 0)
                 - COALESCE(SUM(IF(cm.movement_type = 'CASH_OUT', cm.amount, 0)), 0)
+                - COALESCE(SUM(IF(cm.movement_type = 'REFUND_OUT', cm.amount, 0)), 0)
                 + COALESCE(SUM(IF(cm.movement_type = 'SALE_IN',  cm.amount, 0)), 0)
                 AS balance,
                 IF(cs.id IS NOT NULL AND cs.status = 'OPEN', 'open', 'closed') AS status,

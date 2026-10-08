@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { login } from './helpers/auth';
+import { customerReceivableBalance } from './helpers/receivables';
 import {
   clickCrudSave,
   clickGridToolbarButton,
@@ -19,6 +20,7 @@ test('Crédito en el módulo Ventas crea una cuenta por cobrar con el contrato c
 }) => {
   const seed = await getE2ESeed();
   await login(page, seed.username, seed.password);
+  const openingBalance = await customerReceivableBalance(page, E2E_SEED.customerName);
 
   await page.goto(`${BASE_URL}/#/billing/sales`);
   await dismissDevToolbar(page);
@@ -114,6 +116,9 @@ test('Crédito en el módulo Ventas crea una cuenta por cobrar con el contrato c
 
   await page.goto(`${BASE_URL}/#/accounts-receivable`);
   const receivable = page.getByRole('row').filter({ hasText: E2E_SEED.customerName }).first();
-  const [whole, cents] = Number(sale.balanceDue).toFixed(2).split('.');
-  await expect(receivable).toContainText(new RegExp(`${whole}[.,]${cents}`), { timeout: 15_000 });
+  const [whole, cents] = (openingBalance + Number(sale.balanceDue)).toFixed(2).split('.');
+  await expect(receivable.getByRole('cell').nth(1)).toContainText(
+    new RegExp(`${whole}[.,]${cents}`),
+    { timeout: 15_000 },
+  );
 });

@@ -95,7 +95,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
             $expectedAmount = $this->entityManager->getConnection()->fetchOne(
                 <<<'SQL'
                     SELECT COALESCE(SUM(CASE
-                        WHEN movement_type IN ('OPENING', 'SALE_IN', 'CASH_IN') THEN amount
+                        WHEN movement_type IN ('SALE_IN', 'CASH_IN') THEN amount
                         WHEN movement_type IN ('REFUND_OUT', 'CASH_OUT') THEN -amount
                         ELSE 0
                     END), 0)
@@ -104,7 +104,9 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
                     SQL,
                 ['sessionId' => $cashSession->getId()],
             );
-            $expectedTotal = BigDecimal::of((string) $expectedAmount);
+            // The session owns the opening amount. OPENING is its audit row,
+            // which may be absent in older sessions and must not be counted twice.
+            $expectedTotal = BigDecimal::of($cashSession->getOpeningAmount())->plus((string) $expectedAmount);
             $differenceTotal = $countedTotal->minus($expectedTotal);
             $expectedStr = $expectedTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
             $countedStr = $countedTotal->toScale(2, RoundingMode::HALF_UP)->__toString();

@@ -23,7 +23,13 @@ final readonly class CashRefundRegistrar
 
     public function register(SaleRecord $sale, int $userId): void
     {
-        if ($sale->getTipoPago()?->getId() !== PaymentMethod::CASH) {
+        // Billing's V2 loader returns a synthetic sale without ORM payments.
+        // Query the persisted split instead of the legacy main-method field.
+        $cashPaid = Money::money((string) $this->connection->fetchOne('SELECT COALESCE(SUM(amount), 0) FROM sale_payments WHERE sale_id = :sale_id AND payment_method_id = :method', [
+            'sale_id' => $sale->getId(),
+            'method' => PaymentMethod::CASH,
+        ]));
+        if ($cashPaid->isLessThanOrEqualTo(0)) {
             return;
         }
 
@@ -54,7 +60,9 @@ final readonly class CashRefundRegistrar
         $saleId = $sale->getId();
         $serie = $sale->getSerie() ?? '';
         $numero = $sale->getNumero() ?? '';
-        $amount = Money::toString(Money::money($sale->getTotal() ?? '0'));
+        // Return only money actually collected in cash, never the unpaid credit
+        // portion or a Yape/card payment, even if CASH was the main form field.
+        $amount = Money::toString($cashPaid);
         $now = new DateTimeImmutable();
         $seed = sprintf('cash-refund:%s:%d', $saleId, $cashSessionId);
         $hex = md5($seed);
