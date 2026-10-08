@@ -122,12 +122,14 @@ final class CoreOperationalPathTest extends KernelTestCase
         $world = $this->fixture->seed('10.000000');
         $key = Uuid::v7()->toRfc4122();
         $processor = $this->processor($world);
+        $request = Request::create('/api/sales', 'POST');
+        $request->headers->set('Idempotency-Key', $key);
 
         $first = $processor->process(
             $this->newOperationalSale($world, PaymentMethod::CASH, '1'),
             new Post(),
             [],
-            ['request' => $this->saleRequest($key)],
+            ['request' => clone $request],
         );
         self::assertInstanceOf(SaleRecord::class, $first);
 
@@ -135,7 +137,7 @@ final class CoreOperationalPathTest extends KernelTestCase
             $this->newOperationalSale($world, PaymentMethod::CASH, '1'),
             new Post(),
             [],
-            ['request' => $this->saleRequest($key)],
+            ['request' => clone $request],
         );
 
         self::assertInstanceOf(SaleRecord::class, $second);
@@ -553,13 +555,5 @@ final class CoreOperationalPathTest extends KernelTestCase
                 return true;
             }
         };
-    }
-
-    private function saleRequest(string $idempotencyKey): Request
-    {
-        $request = Request::create('/api/sales', 'POST');
-        $request->headers->set('Idempotency-Key', $idempotencyKey);
-
-        return $request;
     }
 }
