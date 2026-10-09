@@ -60,7 +60,9 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.08s ease, opacity 0.15s ease;
+  transition:
+    transform 0.08s ease,
+    opacity 0.15s ease;
 
   &:disabled {
     opacity: 0.4;
@@ -149,7 +151,9 @@
   background: #fff;
   box-shadow: 0 1px 0 rgba(22, 35, 44, 0.08);
   position: relative;
-  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.15s ease;
 
   &:hover {
     transform: translateY(-2px);
@@ -313,7 +317,9 @@
   background: var(--rest-paper);
   cursor: pointer;
   text-align: left;
-  transition: background 0.12s ease, transform 0.08s ease;
+  transition:
+    background 0.12s ease,
+    transform 0.08s ease;
 
   &:hover:not(:disabled) {
     background: #fff;
@@ -579,7 +585,8 @@
 }
 
 @keyframes rest-kds-alert {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 rgba(226, 87, 76, 0);
   }
   50% {
@@ -642,7 +649,11 @@
   border: 1px dashed var(--rest-ink-soft);
   border-radius: 8px;
   background-color: var(--rest-paper);
-  background-image: radial-gradient(circle, color-mix(in srgb, var(--rest-ink) 12%, transparent) 1.5px, transparent 1.5px);
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--rest-ink) 12%, transparent) 1.5px,
+    transparent 1.5px
+  );
   background-size: 24px 24px;
 }
 
@@ -689,7 +700,9 @@
     font-weight: 600;
     font-size: 0.85rem;
     cursor: pointer;
-    transition: background 0.12s ease, color 0.12s ease;
+    transition:
+      background 0.12s ease,
+      color 0.12s ease;
 
     &.is-active {
       background: var(--rest-ink);

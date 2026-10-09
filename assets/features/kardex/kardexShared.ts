@@ -3,7 +3,12 @@ import type { DataRecord } from '@nubitio/crud';
 export interface StockMovementRecord extends DataRecord {
   id: string;
   warehouse: { id?: string; name?: string } | null;
-  product: { id?: string; code?: string | null; name?: string; category?: { name?: string } | null } | null;
+  product: {
+    id?: string;
+    code?: string | null;
+    name?: string;
+    category?: { name?: string } | null;
+  } | null;
   occurredAt: string | null;
   movementType: string | null;
   movementTypeLabel: string | null;
@@ -46,8 +51,20 @@ export const MOVEMENT_TYPES = [
   { value: 'RECIPE_CONSUMPTION', text: 'Consumo receta', icon: 'ph-cooking-pot' },
 ] as const;
 
-const INBOUND_TYPES = new Set(['PURCHASE_IN', 'TRANSFER_IN', 'MANUAL_IN', 'VOID_REVERSAL', 'RETURN_IN']);
-const OUTBOUND_TYPES = new Set(['SALE_OUT', 'TRANSFER_OUT', 'MANUAL_OUT', 'PURCHASE_VOID', 'RECIPE_CONSUMPTION']);
+const INBOUND_TYPES = new Set([
+  'PURCHASE_IN',
+  'TRANSFER_IN',
+  'MANUAL_IN',
+  'VOID_REVERSAL',
+  'RETURN_IN',
+]);
+const OUTBOUND_TYPES = new Set([
+  'SALE_OUT',
+  'TRANSFER_OUT',
+  'MANUAL_OUT',
+  'PURCHASE_VOID',
+  'RECIPE_CONSUMPTION',
+]);
 
 export type MovementTone = 'in' | 'out' | 'neutral';
 

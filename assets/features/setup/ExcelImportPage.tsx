@@ -41,7 +41,9 @@ export function ExcelImportPage() {
   const [payableFile, setPayableFile] = useState<File | null>(null);
   const [receivableFile, setReceivableFile] = useState<File | null>(null);
   const [payablePreview, setPayablePreview] = useState<Array<Record<string, string>> | null>(null);
-  const [receivablePreview, setReceivablePreview] = useState<Array<Record<string, string>> | null>(null);
+  const [receivablePreview, setReceivablePreview] = useState<Array<Record<string, string>> | null>(
+    null,
+  );
   const [previewError, setPreviewError] = useState<string | null>(null);
 
   const stepIndex = STEPS.findIndex((item) => item.key === step);
@@ -58,7 +60,13 @@ export function ExcelImportPage() {
     try {
       rows = await spreadsheetRows(customerFile);
     } catch (error) {
-      setResults([{ row: 0, ok: false, message: error instanceof Error ? error.message : 'No se pudo leer el Excel' }]);
+      setResults([
+        {
+          row: 0,
+          ok: false,
+          message: error instanceof Error ? error.message : 'No se pudo leer el Excel',
+        },
+      ]);
       setBusy(false);
       return;
     }
@@ -123,10 +131,18 @@ export function ExcelImportPage() {
         message: error.message,
       }));
       if ((payload.skipped ?? 0) > 0) {
-        next.unshift({ row: 0, ok: true, message: `${payload.skipped} filas ya importadas (omitidas)` });
+        next.unshift({
+          row: 0,
+          ok: true,
+          message: `${payload.skipped} filas ya importadas (omitidas)`,
+        });
       }
       if (payload.created > 0) {
-        next.unshift({ row: 0, ok: true, message: `${payload.created} saldos por cobrar importados` });
+        next.unshift({
+          row: 0,
+          ok: true,
+          message: `${payload.created} saldos por cobrar importados`,
+        });
       }
       setResults(next.length > 0 ? next : [{ row: 0, ok: true, message: 'Sin filas nuevas' }]);
     } catch (error) {
@@ -134,7 +150,10 @@ export function ExcelImportPage() {
         {
           row: 0,
           ok: false,
-          message: error instanceof Error ? error.message : 'No se pudieron importar las cuentas por cobrar',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'No se pudieron importar las cuentas por cobrar',
         },
       ]);
     }
@@ -167,8 +186,11 @@ export function ExcelImportPage() {
     const branches = extractCollection<{ id?: string; '@id'?: string }>(
       (await httpClient.get(`${API}branches?pagination=false`)).data,
     );
-    const categoryIri = categories[0]?.['@id'] ?? (categories[0]?.id ? `${API}expense-categories/${categories[0].id}` : null);
-    const branchIri = branches[0]?.['@id'] ?? (branches[0]?.id ? `${API}branches/${branches[0].id}` : null);
+    const categoryIri =
+      categories[0]?.['@id'] ??
+      (categories[0]?.id ? `${API}expense-categories/${categories[0].id}` : null);
+    const branchIri =
+      branches[0]?.['@id'] ?? (branches[0]?.id ? `${API}branches/${branches[0].id}` : null);
     const next: RowResult[] = [];
 
     for (const [index, row] of rows.entries()) {
@@ -179,7 +201,11 @@ export function ExcelImportPage() {
       const number = pick(row, ['numero', 'número', 'factura']);
       const supplier = suppliers.find((item) => item.ruc === ruc);
       if (!supplier || !categoryIri || !branchIri || !amount) {
-        next.push({ row: index + 2, ok: false, message: 'Falta proveedor (RUC), monto o datos de empresa' });
+        next.push({
+          row: index + 2,
+          ok: false,
+          message: 'Falta proveedor (RUC), monto o datos de empresa',
+        });
         continue;
       }
       try {
@@ -213,7 +239,10 @@ export function ExcelImportPage() {
         <div>
           <p className="excel-import__kicker">Salir de Excel</p>
           <h1>Trae tus datos al mini ERP</h1>
-          <p>Migración inicial desde Excel: productos, clientes y saldos abiertos. Úsala al comenzar o al cambiar de sistema.</p>
+          <p>
+            Migración inicial desde Excel: productos, clientes y saldos abiertos. Úsala al comenzar
+            o al cambiar de sistema.
+          </p>
         </div>
         <Button variant="secondary" onClick={() => navigate('/dashboard')}>
           Volver al inicio
@@ -222,7 +251,10 @@ export function ExcelImportPage() {
 
       <ol className="excel-import__steps">
         {STEPS.map((item, index) => (
-          <li key={item.key} className={index === stepIndex ? 'is-active' : index < stepIndex ? 'is-done' : ''}>
+          <li
+            key={item.key}
+            className={index === stepIndex ? 'is-active' : index < stepIndex ? 'is-done' : ''}
+          >
             <strong>
               {index + 1}. {item.title}
             </strong>
@@ -234,7 +266,9 @@ export function ExcelImportPage() {
       {step === 'products' && (
         <section className="excel-import__card">
           <h2>1. Productos</h2>
-          <p>Usa la plantilla oficial con categorías y unidades. Es el mismo importador del catálogo.</p>
+          <p>
+            Usa la plantilla oficial con categorías y unidades. Es el mismo importador del catálogo.
+          </p>
           <div className="excel-import__actions">
             <Button onClick={() => setProductImportOpen(true)}>Importar productos</Button>
             <Button variant="secondary" onClick={() => setStep('customers')}>
@@ -247,11 +281,16 @@ export function ExcelImportPage() {
       {step === 'customers' && (
         <section className="excel-import__card">
           <h2>2. Clientes</h2>
-          <p>Sube el Excel que ya usas. Solo debe tener las columnas RUC/DNI, Nombre, Teléfono y Correo.</p>
+          <p>
+            Sube el Excel que ya usas. Solo debe tener las columnas RUC/DNI, Nombre, Teléfono y
+            Correo.
+          </p>
           <div className="excel-import__actions">
             <Button
               variant="secondary"
-              onClick={() => window.open('/api/v1/onboarding/spreadsheets/template/customers', '_blank')}
+              onClick={() =>
+                window.open('/api/v1/onboarding/spreadsheets/template/customers', '_blank')
+              }
             >
               Descargar plantilla
             </Button>
@@ -273,7 +312,13 @@ export function ExcelImportPage() {
             <Button onClick={() => void importCustomers()} disabled={!customerFile || busy}>
               {busy ? 'Importando…' : 'Importar clientes'}
             </Button>
-            <Button variant="secondary" onClick={() => { setResults([]); setStep('balances'); }}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setResults([]);
+                setStep('balances');
+              }}
+            >
               Siguiente
             </Button>
           </div>
@@ -283,13 +328,18 @@ export function ExcelImportPage() {
       {step === 'balances' && (
         <section className="excel-import__card">
           <h2>3. Migración de saldos iniciales</h2>
-          <p>Importa desde Excel lo que te deben y lo que debes. Primero revisa la vista previa; nada se registra hasta confirmar.</p>
+          <p>
+            Importa desde Excel lo que te deben y lo que debes. Primero revisa la vista previa; nada
+            se registra hasta confirmar.
+          </p>
 
           <h3>Por cobrar</h3>
           <div className="excel-import__actions">
             <Button
               variant="secondary"
-              onClick={() => window.open('/api/v1/onboarding/spreadsheets/template/receivables', '_blank')}
+              onClick={() =>
+                window.open('/api/v1/onboarding/spreadsheets/template/receivables', '_blank')
+              }
             >
               Plantilla por cobrar
             </Button>
@@ -315,10 +365,18 @@ export function ExcelImportPage() {
             }}
           />
           {receivablePreview && <BalancePreview kind="receivables" rows={receivablePreview} />}
-          {previewError && <p className="excel-import__error" role="alert">{previewError}</p>}
+          {previewError && (
+            <p className="excel-import__error" role="alert">
+              {previewError}
+            </p>
+          )}
           <div className="excel-import__actions">
             <Button onClick={() => void importReceivables()} disabled={!receivableFile || busy}>
-              {busy ? 'Procesando…' : receivablePreview ? 'Confirmar por cobrar' : 'Previsualizar por cobrar'}
+              {busy
+                ? 'Procesando…'
+                : receivablePreview
+                  ? 'Confirmar por cobrar'
+                  : 'Previsualizar por cobrar'}
             </Button>
           </div>
 
@@ -326,7 +384,9 @@ export function ExcelImportPage() {
           <div className="excel-import__actions">
             <Button
               variant="secondary"
-              onClick={() => window.open('/api/v1/onboarding/spreadsheets/template/payables', '_blank')}
+              onClick={() =>
+                window.open('/api/v1/onboarding/spreadsheets/template/payables', '_blank')
+              }
             >
               Plantilla por pagar
             </Button>
@@ -354,9 +414,19 @@ export function ExcelImportPage() {
           {payablePreview && <BalancePreview kind="payables" rows={payablePreview} />}
           <div className="excel-import__actions">
             <Button onClick={() => void importPayables()} disabled={!payableFile || busy}>
-              {busy ? 'Procesando…' : payablePreview ? 'Confirmar por pagar' : 'Previsualizar por pagar'}
+              {busy
+                ? 'Procesando…'
+                : payablePreview
+                  ? 'Confirmar por pagar'
+                  : 'Previsualizar por pagar'}
             </Button>
-            <Button variant="secondary" onClick={() => { setResults([]); setStep('done'); }}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setResults([]);
+                setStep('done');
+              }}
+            >
               Siguiente
             </Button>
           </div>
@@ -416,36 +486,79 @@ export function ExcelImportPage() {
   );
 }
 
-function BalancePreview({ kind, rows }: { kind: BalanceKind; rows: Array<Record<string, string>> }) {
-  const columns = kind === 'receivables'
-    ? ['ruc/dni', 'nombre', 'monto', 'vencimiento', 'numero']
-    : ['ruc', 'proveedor', 'monto', 'vencimiento', 'numero'];
+function BalancePreview({
+  kind,
+  rows,
+}: {
+  kind: BalanceKind;
+  rows: Array<Record<string, string>>;
+}) {
+  const columns =
+    kind === 'receivables'
+      ? ['ruc/dni', 'nombre', 'monto', 'vencimiento', 'numero']
+      : ['ruc', 'proveedor', 'monto', 'vencimiento', 'numero'];
   const visibleRows = rows.slice(0, 8);
   const issues = rows.filter((row) => {
-    const identity = pick(row, kind === 'receivables' ? ['ruc', 'ruc/dni', 'dni', 'documento'] : ['ruc', 'ruc proveedor', 'proveedor ruc']);
-    const name = pick(row, kind === 'receivables' ? ['nombre', 'razon social', 'razón social', 'cliente'] : ['proveedor', 'razon social', 'razón social']);
+    const identity = pick(
+      row,
+      kind === 'receivables'
+        ? ['ruc', 'ruc/dni', 'dni', 'documento']
+        : ['ruc', 'ruc proveedor', 'proveedor ruc'],
+    );
+    const name = pick(
+      row,
+      kind === 'receivables'
+        ? ['nombre', 'razon social', 'razón social', 'cliente']
+        : ['proveedor', 'razon social', 'razón social'],
+    );
     const amount = pick(row, ['monto', 'importe', 'total', 'saldo']);
     return !identity || !name || !amount || Number(amount.replace(',', '.')) <= 0;
   }).length;
 
   return (
-    <div className="excel-import__preview" aria-label={`Vista previa ${kind === 'receivables' ? 'por cobrar' : 'por pagar'}`}>
+    <div
+      className="excel-import__preview"
+      aria-label={`Vista previa ${kind === 'receivables' ? 'por cobrar' : 'por pagar'}`}
+    >
       <strong>Vista previa · {rows.length} filas</strong>
       <p className="excel-import__preview-effect">
-        Efecto al confirmar: {kind === 'receivables' ? 'Dr 121 Cuentas por cobrar · Cr 591 Saldos iniciales' : 'Dr 659 Gasto pendiente · Cr 421 Cuentas por pagar'}.
+        Efecto al confirmar:{' '}
+        {kind === 'receivables'
+          ? 'Dr 121 Cuentas por cobrar · Cr 591 Saldos iniciales'
+          : 'Dr 659 Gasto pendiente · Cr 421 Cuentas por pagar'}
+        .
       </p>
-      {issues > 0 && <p className="excel-import__preview-warning" role="alert">{issues} filas tienen datos obligatorios incompletos o un monto inválido. Corrígelas antes de confirmar.</p>}
+      {issues > 0 && (
+        <p className="excel-import__preview-warning" role="alert">
+          {issues} filas tienen datos obligatorios incompletos o un monto inválido. Corrígelas antes
+          de confirmar.
+        </p>
+      )}
       <div className="excel-import__preview-table-wrap">
         <table className="excel-import__preview-table">
-          <thead><tr>{columns.map((column) => <th key={column}>{column}</th>)}</tr></thead>
+          <thead>
+            <tr>
+              {columns.map((column) => (
+                <th key={column}>{column}</th>
+              ))}
+            </tr>
+          </thead>
           <tbody>
-            {visibleRows.map((row, index) => <tr key={`${index}-${row[columns[0]] ?? ''}`}>
-              {columns.map((column) => <td key={column}>{row[column] || '—'}</td>)}
-            </tr>)}
+            {visibleRows.map((row, index) => (
+              <tr key={`${index}-${row[columns[0]] ?? ''}`}>
+                {columns.map((column) => (
+                  <td key={column}>{row[column] || '—'}</td>
+                ))}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
-      {rows.length > visibleRows.length && <small>Se muestran las primeras {visibleRows.length} filas. Se importarán {rows.length}.</small>}
+      {rows.length > visibleRows.length && (
+        <small>
+          Se muestran las primeras {visibleRows.length} filas. Se importarán {rows.length}.
+        </small>
+      )}
     </div>
   );
 }

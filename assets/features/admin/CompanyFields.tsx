@@ -42,7 +42,9 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
           options: {
             validationCallback: (e: ValidationEvent) => {
               const doc = e.value;
-              return SharedUtils.validateRUC(typeof doc === 'string' || typeof doc === 'number' ? doc : '');
+              return SharedUtils.validateRUC(
+                typeof doc === 'string' || typeof doc === 'number' ? doc : '',
+              );
             },
             message: 'El RUC ingresado no es válido',
           },
@@ -63,7 +65,9 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
                 toast('Ingresa un RUC válido de 11 dígitos', 'warning');
                 return;
               }
-              consultService.consultRuc(doc).then((response) => {
+              consultService
+                .consultRuc(doc)
+                .then((response) => {
                   if (!response.data.active) {
                     toast('El RUC ingresado no se encuentra activo', 'error');
                     return;
@@ -71,7 +75,8 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
                   formRef.current?.setFieldValue('businessName', response.data.name);
                   formRef.current?.setFieldValue('tradeName', response.data.name);
                   formRef.current?.setFieldValue('fiscalAddress', response.data.address);
-                }).catch(() => toast('No se pudo consultar el RUC', 'error'));
+                })
+                .catch(() => toast('No se pudo consultar el RUC', 'error'));
             },
           },
         },
@@ -80,7 +85,9 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
   );
   fields.push(textField().name('businessName').label('Razón social').required(true).build());
   fields.push(textField().name('tradeName').label('Nombre comercial').build());
-  fields.push(textareaField().name('fiscalAddress').label('Domicilio fiscal').required(true).col(12).build());
+  fields.push(
+    textareaField().name('fiscalAddress').label('Domicilio fiscal').required(true).col(12).build(),
+  );
   fields.push(
     entityField(`${API}ubigeos`, 'code', 'name')
       .name('ubigeo')
@@ -97,12 +104,7 @@ export const CompanyFields = (formRef: RefObject<FormHandle | null>) => {
       .build(),
   );
   fields.push(
-    textField()
-      .name('ubigeoCode')
-      .label('Ubigeo (INEI)')
-      .hidden(true)
-      .visibleOnForm(false)
-      .build(),
+    textField().name('ubigeoCode').label('Ubigeo (INEI)').hidden(true).visibleOnForm(false).build(),
   );
   fields.push(textField().name('department').label('Departamento').readonly(true).build());
   fields.push(textField().name('province').label('Provincia').readonly(true).build());

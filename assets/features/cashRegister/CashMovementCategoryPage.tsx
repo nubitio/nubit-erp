@@ -39,11 +39,19 @@ const typePatch = toPatch(
     .label('Tipo')
     .formatter((cell) => {
       if (cell.value === 'income') {
-        return <Badge variant="success" outlined>Ingreso</Badge>;
+        return (
+          <Badge variant="success" outlined>
+            Ingreso
+          </Badge>
+        );
       }
 
       if (cell.value === 'expense') {
-        return <Badge variant="danger" outlined>Egreso</Badge>;
+        return (
+          <Badge variant="danger" outlined>
+            Egreso
+          </Badge>
+        );
       }
 
       return null;
@@ -108,8 +116,16 @@ const resource = defineResource<CashMovementCategoryRecord>(API + 'cash-movement
       { kind: 'override', key: 'code', patch: { order: 0, layoutHint: 'short', label: 'Código' } },
       { kind: 'override', key: 'name', patch: { order: 1, layoutHint: 'medium', label: 'Nombre' } },
       { kind: 'override', key: 'type', patch: { ...typePatch, order: 2, layoutHint: 'short' } },
-      { kind: 'override', key: 'system', patch: { ...booleanSwitchPatch('system', 'Sistema'), order: 3, layoutHint: 'short' } },
-      { kind: 'override', key: 'active', patch: { ...booleanSwitchPatch('active', 'Activo'), order: 4, layoutHint: 'short' } },
+      {
+        kind: 'override',
+        key: 'system',
+        patch: { ...booleanSwitchPatch('system', 'Sistema'), order: 3, layoutHint: 'short' },
+      },
+      {
+        kind: 'override',
+        key: 'active',
+        patch: { ...booleanSwitchPatch('active', 'Activo'), order: 4, layoutHint: 'short' },
+      },
     ],
   }),
 });

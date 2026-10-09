@@ -96,7 +96,15 @@ const REORDER_COLUMN_PRESETS = [
   {
     key: 'full',
     label: 'Completo',
-    columns: ['product', 'warehouse', 'qtyOnHand', 'minStock', '_coverage', 'updatedAt', '_actions'],
+    columns: [
+      'product',
+      'warehouse',
+      'qtyOnHand',
+      'minStock',
+      '_coverage',
+      'updatedAt',
+      '_actions',
+    ],
   },
 ];
 
@@ -107,9 +115,10 @@ export const ReorderPage = () => {
     () =>
       function ActionsCell({ data }: GridCellContext) {
         const product = data?.product;
-        const productId = product && typeof product === 'object'
-          ? (product as { id?: string }).id
-          : String(product ?? '');
+        const productId =
+          product && typeof product === 'object'
+            ? (product as { id?: string }).id
+            : String(product ?? '');
 
         const goKardex = (e: React.MouseEvent) => {
           e.stopPropagation();
@@ -128,7 +137,11 @@ export const ReorderPage = () => {
             <button onClick={goKardex} title="Ver Kardex" style={btnStyle}>
               <i className="ph ph-list-magnifying-glass" />
             </button>
-            <button onClick={goPurchaseOrder} title="Crear orden de compra" style={{ ...btnStyle, color: '#16a34a' }}>
+            <button
+              onClick={goPurchaseOrder}
+              title="Crear orden de compra"
+              style={{ ...btnStyle, color: '#16a34a' }}
+            >
               <i className="ph ph-clipboard-text" /> Crear OC
             </button>
           </span>
@@ -145,16 +158,16 @@ export const ReorderPage = () => {
         stateStoring: false,
         rowActions: (row) => {
           const product = row.product;
-          const productId = product && typeof product === 'object'
-            ? (product as { id?: string }).id
-            : undefined;
+          const productId =
+            product && typeof product === 'object' ? (product as { id?: string }).id : undefined;
 
           return [
             {
               key: 'kardex',
               text: 'Ver Kardex',
               icon: 'ph-list-magnifying-glass',
-              onClick: () => navigate(`/kardex${productId ? `?product=${encodeURIComponent(productId)}` : ''}`),
+              onClick: () =>
+                navigate(`/kardex${productId ? `?product=${encodeURIComponent(productId)}` : ''}`),
             },
             {
               key: 'purchase-order',
@@ -173,18 +186,31 @@ export const ReorderPage = () => {
             {
               kind: 'override',
               key: 'product',
-              patch: { order: 0, width: 260, label: 'Producto', formatter: (e) => formatName(e.value) },
+              patch: {
+                order: 0,
+                width: 260,
+                label: 'Producto',
+                formatter: (e) => formatName(e.value),
+              },
             },
             {
               kind: 'override',
               key: 'warehouse',
-              patch: { order: 1, width: 180, label: 'Almacén', formatter: (e) => formatName(e.value) },
+              patch: {
+                order: 1,
+                width: 180,
+                label: 'Almacén',
+                formatter: (e) => formatName(e.value),
+              },
             },
             {
               kind: 'override',
               key: 'qtyOnHand',
               patch: {
-                order: 2, width: 120, label: 'Stock actual', align: 'right',
+                order: 2,
+                width: 120,
+                label: 'Stock actual',
+                align: 'right',
                 formatter: (e) => formatQty(e.value),
               },
             },
@@ -192,7 +218,10 @@ export const ReorderPage = () => {
               kind: 'override',
               key: 'minStock',
               patch: {
-                order: 3, width: 120, label: 'Stock mínimo', align: 'right',
+                order: 3,
+                width: 120,
+                label: 'Stock mínimo',
+                align: 'right',
                 formatter: (e) => formatQty(e.value),
               },
             },

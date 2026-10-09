@@ -17,9 +17,33 @@ export const createCreditNoteToolbar = ({
 }: CreateCreditNoteToolbarParams): ResourceToolbarItems => ({
   selection: [
     { text: 'Ver', type: 'primary', group: 'view', groupLabel: 'Consulta', onClick: onView },
-    { text: 'Consulta CDR', type: 'warning', group: 'view', groupLabel: 'Consulta', onClick: onConsultCdr },
-    { text: 'Consulta CPE', type: 'success', group: 'view', groupLabel: 'Consulta', onClick: onConsultCpe },
-    { text: 'Enviar a SUNAT', type: 'info', group: 'delivery', groupLabel: 'Envío', onClick: onSendSunat },
-    { text: 'Enviar por correo', type: 'success', group: 'delivery', groupLabel: 'Envío', onClick: onSendEmail },
+    {
+      text: 'Consulta CDR',
+      type: 'warning',
+      group: 'view',
+      groupLabel: 'Consulta',
+      onClick: onConsultCdr,
+    },
+    {
+      text: 'Consulta CPE',
+      type: 'success',
+      group: 'view',
+      groupLabel: 'Consulta',
+      onClick: onConsultCpe,
+    },
+    {
+      text: 'Enviar a SUNAT',
+      type: 'info',
+      group: 'delivery',
+      groupLabel: 'Envío',
+      onClick: onSendSunat,
+    },
+    {
+      text: 'Enviar por correo',
+      type: 'success',
+      group: 'delivery',
+      groupLabel: 'Envío',
+      onClick: onSendEmail,
+    },
   ],
 });

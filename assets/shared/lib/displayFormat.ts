@@ -149,7 +149,10 @@ export const RECEIVABLE_STATUS_LABEL: Record<ReceivableStatusKey, string> = {
 
 export type PayableStatusKey = 'paid' | 'partial' | 'pending';
 
-export function payableStatus(row: { balanceDue?: unknown; paidTotal?: unknown }): PayableStatusKey {
+export function payableStatus(row: {
+  balanceDue?: unknown;
+  paidTotal?: unknown;
+}): PayableStatusKey {
   const balance = toNumber(row.balanceDue) ?? 0;
   const paid = toNumber(row.paidTotal) ?? 0;
   if (balance <= 0.009) return 'paid';
@@ -163,7 +166,10 @@ export const PAYABLE_STATUS_LABEL: Record<PayableStatusKey, string> = {
   pending: 'Pendiente',
 };
 
-export function entityLabel(value: unknown, keys: string[] = ['businessName', 'name', 'label']): string {
+export function entityLabel(
+  value: unknown,
+  keys: string[] = ['businessName', 'name', 'label'],
+): string {
   if (value == null || value === '') return '';
   if (typeof value === 'string') {
     if (value.startsWith('/api/')) return '';

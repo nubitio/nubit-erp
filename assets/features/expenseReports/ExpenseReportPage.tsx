@@ -19,7 +19,11 @@ import { userInformation } from '@shared/sessionInfo';
 import { hasPermission } from '@shared/permissions';
 import toast from '@shared/lib/SharedUtils';
 import { dateCell, moneyCell } from '@shared/ui/crudFormatters';
-import { expenseReportApiUrl, expenseReportEvents, expenseReportFormLayout } from './model/constants';
+import {
+  expenseReportApiUrl,
+  expenseReportEvents,
+  expenseReportFormLayout,
+} from './model/constants';
 import expenseReportService from './services/expenseReportService';
 
 interface ExpenseReportRecord extends DataRecord {
@@ -43,7 +47,10 @@ function toPatch(field: Field): SmartCrudFieldPatch<ExpenseReportRecord> {
   return patch as SmartCrudFieldPatch<ExpenseReportRecord>;
 }
 
-const STATUS_BADGE: Record<ExpenseReportRecord['status'], { variant: 'success' | 'warning' | 'secondary' | 'danger'; text: string }> = {
+const STATUS_BADGE: Record<
+  ExpenseReportRecord['status'],
+  { variant: 'success' | 'warning' | 'secondary' | 'danger'; text: string }
+> = {
   PENDING: { variant: 'warning', text: 'Pendiente' },
   APPROVED: { variant: 'secondary', text: 'Aprobado' },
   REJECTED: { variant: 'danger', text: 'Rechazado' },
@@ -63,7 +70,11 @@ const statusPatch = toPatch(
       const badge = STATUS_BADGE[cell.value as ExpenseReportRecord['status']];
       if (!badge) return null;
 
-      return <Badge variant={badge.variant} outlined>{badge.text}</Badge>;
+      return (
+        <Badge variant={badge.variant} outlined>
+          {badge.text}
+        </Badge>
+      );
     })
     .build(),
 );
@@ -141,23 +152,49 @@ const expenseReportResource = defineResource<ExpenseReportRecord>(expenseReportA
           },
         },
       },
-      { kind: 'override', key: 'description', patch: { order: 3, layoutHint: 'fullWidth', label: 'Descripción' } },
-      { kind: 'override', key: 'amount', patch: { order: 4, layoutHint: 'short', label: 'Monto', formatter: moneyCell, align: 'right' } },
-      { kind: 'override', key: 'currency', patch: { order: 5, layoutHint: 'short', label: 'Moneda' } },
-      { kind: 'override', key: 'expenseDate', patch: { order: 6, layoutHint: 'short', label: 'Fecha del gasto', formatter: dateCell } },
+      {
+        kind: 'override',
+        key: 'description',
+        patch: { order: 3, layoutHint: 'fullWidth', label: 'Descripción' },
+      },
+      {
+        kind: 'override',
+        key: 'amount',
+        patch: {
+          order: 4,
+          layoutHint: 'short',
+          label: 'Monto',
+          formatter: moneyCell,
+          align: 'right',
+        },
+      },
+      {
+        kind: 'override',
+        key: 'currency',
+        patch: { order: 5, layoutHint: 'short', label: 'Moneda' },
+      },
+      {
+        kind: 'override',
+        key: 'expenseDate',
+        patch: { order: 6, layoutHint: 'short', label: 'Fecha del gasto', formatter: dateCell },
+      },
       {
         kind: 'override',
         key: 'receiptMedia',
         patch: toPatch(
-          imageField(API)
-            .name('receiptMedia')
-            .label('Comprobante')
-            .layoutHint('upload')
-            .build(),
+          imageField(API).name('receiptMedia').label('Comprobante').layoutHint('upload').build(),
         ),
       },
-      { kind: 'override', key: 'status', patch: { ...statusPatch, order: 8, layoutHint: 'short', disabled: true } },
-      { kind: 'override', key: 'note', patch: { order: 9, layoutHint: 'fullWidth', label: 'Notas' } },
+      {
+        kind: 'override',
+        key: 'status',
+        patch: { ...statusPatch, order: 8, layoutHint: 'short', disabled: true },
+      },
+      {
+        kind: 'override',
+        key: 'note',
+        patch: { order: 9, layoutHint: 'fullWidth', label: 'Notas' },
+      },
       { kind: 'override', key: 'reviewedBy', patch: { visibleOnForm: false } },
       { kind: 'override', key: 'reviewedAt', patch: { visibleOnForm: false } },
       { kind: 'override', key: 'reviewNote', patch: { visibleOnForm: false } },
@@ -187,7 +224,11 @@ export const ExpenseReportPage = () => {
     promise
       .then(() => {
         toast(
-          kind === 'approve' ? 'Gasto aprobado' : kind === 'reject' ? 'Gasto rechazado' : 'Gasto marcado como reembolsado',
+          kind === 'approve'
+            ? 'Gasto aprobado'
+            : kind === 'reject'
+              ? 'Gasto rechazado'
+              : 'Gasto marcado como reembolsado',
           'success',
         );
         setConfirmAction(null);

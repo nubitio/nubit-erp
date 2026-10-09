@@ -16,7 +16,9 @@ export function TenantCard({ tenant }: TenantCardProps) {
           {tenant.primary_domain ? (
             <code className="ap-tenant-card__domain">{tenant.primary_domain}</code>
           ) : (
-            <span className="ap-tenant-card__domain ap-tenant-card__domain--empty">Sin dominio</span>
+            <span className="ap-tenant-card__domain ap-tenant-card__domain--empty">
+              Sin dominio
+            </span>
           )}
         </div>
         <div className="ap-tenant-card__badges">

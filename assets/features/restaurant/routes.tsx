@@ -4,7 +4,10 @@ import type { AppRouteDefinition } from '@app/router/types';
 const TableMapPage = lazyNamed(() => import('./TableMapPage'), 'TableMapPage');
 const OrderPage = lazyNamed(() => import('./OrderPage'), 'OrderPage');
 const KitchenDisplayPage = lazyNamed(() => import('./KitchenDisplayPage'), 'KitchenDisplayPage');
-const RestaurantAreasAdminPage = lazyNamed(() => import('./RestaurantAreasAdminPage'), 'RestaurantAreasAdminPage');
+const RestaurantAreasAdminPage = lazyNamed(
+  () => import('./RestaurantAreasAdminPage'),
+  'RestaurantAreasAdminPage',
+);
 const TablesAdminPage = lazyNamed(() => import('./TablesAdminPage'), 'TablesAdminPage');
 const FloorPlanEditorPage = lazyNamed(() => import('./FloorPlanEditorPage'), 'FloorPlanEditorPage');
 

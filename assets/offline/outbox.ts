@@ -125,7 +125,12 @@ const updateSaleStatus = async (
   extra: Partial<
     Pick<
       LocalSale,
-      'serverSaleId' | 'serverCode' | 'errorMessage' | 'errorCode' | 'errorAction' | 'numericErrorCode'
+      | 'serverSaleId'
+      | 'serverCode'
+      | 'errorMessage'
+      | 'errorCode'
+      | 'errorAction'
+      | 'numericErrorCode'
     >
   > = {},
 ) => {

@@ -1,6 +1,7 @@
 // ─── Account portal — auth split + app shell ────────────────────────────────
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   min-height: 100dvh;
@@ -120,13 +121,23 @@ html, body {
 }
 
 @keyframes ap-float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(20px, -30px) scale(1.04); }
-  66% { transform: translate(-15px, 20px) scale(0.97); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(20px, -30px) scale(1.04);
+  }
+  66% {
+    transform: translate(-15px, 20px) scale(0.97);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ap-brand__blob { animation: none; opacity: 0.16; }
+  .ap-brand__blob {
+    animation: none;
+    opacity: 0.16;
+  }
 }
 
 .ap-brand__content {
@@ -489,8 +500,12 @@ html, body {
   font-size: 13px;
   margin-top: 4px;
 
-  &--success { color: var(--success-color); }
-  &--error { color: var(--error-color); }
+  &--success {
+    color: var(--success-color);
+  }
+  &--error {
+    color: var(--error-color);
+  }
 }
 
 .ap-cta {
@@ -540,7 +555,10 @@ html, body {
   cursor: pointer;
   background: transparent;
   color: var(--text-secondary);
-  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
 
   &.is-active {
     background: var(--surface-card);
@@ -582,7 +600,10 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.15s;
 
   &:hover {
     border-color: color-mix(in srgb, var(--accent-color) 40%, var(--border-color));
@@ -590,7 +611,9 @@ html, body {
 
   &.is-selected {
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 1px var(--accent-color), var(--shadow-sm);
+    box-shadow:
+      0 0 0 1px var(--accent-color),
+      var(--shadow-sm);
   }
 
   &.is-current:not(.is-selected) {
@@ -683,7 +706,9 @@ html, body {
     background: var(--accent-subtle);
   }
 
-  i { font-size: 20px; }
+  i {
+    font-size: 20px;
+  }
 }
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
@@ -736,7 +761,9 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  transition: box-shadow 0.15s, border-color 0.15s;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s;
 
   &:hover {
     border-color: color-mix(in srgb, var(--accent-color) 25%, var(--border-color));
@@ -852,8 +879,12 @@ html, body {
   gap: 2px;
   font-size: 14px;
 
-  strong { font-weight: 700; }
-  span { opacity: 0.85; }
+  strong {
+    font-weight: 700;
+  }
+  span {
+    opacity: 0.85;
+  }
 }
 
 .ap-alert__icon {
@@ -953,7 +984,9 @@ html, body {
   border-bottom: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
   font-size: 14px;
 
-  &:last-child { border-bottom: none; }
+  &:last-child {
+    border-bottom: none;
+  }
 
   span:first-child {
     color: var(--text-secondary);
@@ -993,7 +1026,9 @@ html, body {
 }
 
 @keyframes ap-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .ap-status__icon {

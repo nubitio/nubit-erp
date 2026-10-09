@@ -15,11 +15,7 @@ import {
   TextField,
   Toggle,
 } from '@nubitio/ui';
-import {
-  controlPlaneClient,
-  type PlanLimits,
-  type PlanRecord,
-} from '../api/controlPlaneClient';
+import { controlPlaneClient, type PlanLimits, type PlanRecord } from '../api/controlPlaneClient';
 import {
   CpAlert,
   CpForm,
@@ -74,7 +70,10 @@ const limitItems = (limits: PlanLimits) =>
 
 const PlanPresets = ({ onSelect }: { onSelect: (preset: PlanLimits) => void }) => (
   <Cluster>
-    <Chip label={CP_STRINGS.plans.presetUnlimited} onClick={() => onSelect({ ...UNLIMITED_LIMITS })} />
+    <Chip
+      label={CP_STRINGS.plans.presetUnlimited}
+      onClick={() => onSelect({ ...UNLIMITED_LIMITS })}
+    />
     <Chip label={CP_STRINGS.plans.presetStarter} onClick={() => onSelect({ ...STARTER_LIMITS })} />
   </Cluster>
 );
@@ -135,20 +134,14 @@ const PlanEditor = ({ plan, isAdmin, onSave, onDelete, saving, deleting }: PlanE
               <TextField
                 type="number"
                 value={limits[key]}
-                onChange={(e) =>
-                  setLimits((prev) => ({ ...prev, [key]: Number(e.target.value) }))
-                }
+                onChange={(e) => setLimits((prev) => ({ ...prev, [key]: Number(e.target.value) }))}
               />
             </FormField>
           ))}
         </Grid>
 
         <Row justify="between" align="center" wrap gap={3}>
-          <Toggle
-            checked={isDefault}
-            onChange={setIsDefault}
-            label={CP_STRINGS.plans.setDefault}
-          />
+          <Toggle checked={isDefault} onChange={setIsDefault} label={CP_STRINGS.plans.setDefault} />
           <CpFormActions>
             <Button type="submit" loading={saving}>
               {CP_STRINGS.save}
@@ -185,13 +178,16 @@ export const PlansPage = () => {
   const [createDefault, setCreateDefault] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { data, isLoading, error: loadError } = useQuery({
+  const {
+    data,
+    isLoading,
+    error: loadError,
+  } = useQuery({
     queryKey: ['control-plane', 'plans'],
     queryFn: () => controlPlaneClient.getPlans(),
   });
 
-  const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ['control-plane', 'plans'] });
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['control-plane', 'plans'] });
 
   const closeCreate = () => {
     setCreateOpen(false);

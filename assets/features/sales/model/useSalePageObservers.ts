@@ -91,10 +91,13 @@ export const useSalePageObservers = ({
       if (hasSingleSelection) {
         const row = e[0];
         const rawStatus = row?.sunatStatus ?? row?.invoiceSunatStatus;
-        const statusNum = rawStatus !== undefined && rawStatus !== null && rawStatus !== ''
-          ? Number(rawStatus)
-          : -1;
-        callbacksRef.current.setReplaceEnabled(!Number.isNaN(statusNum) && statusNum >= 2000 && statusNum < 4000);
+        const statusNum =
+          rawStatus !== undefined && rawStatus !== null && rawStatus !== ''
+            ? Number(rawStatus)
+            : -1;
+        callbacksRef.current.setReplaceEnabled(
+          !Number.isNaN(statusNum) && statusNum >= 2000 && statusNum < 4000,
+        );
       } else {
         callbacksRef.current.setReplaceEnabled(false);
       }

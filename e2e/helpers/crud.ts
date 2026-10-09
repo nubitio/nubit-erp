@@ -40,10 +40,7 @@ export async function clickGridToolbarButton(page: Page, buttonText: string) {
     Eliminar: /^(Eliminar|Delete)$/i,
   };
   const text = alternatives[buttonText] ?? new RegExp(`^${buttonText}$`, 'i');
-  const btn = page
-    .locator('.nb-datagrid__toolbar .nb-button')
-    .filter({ hasText: text })
-    .first();
+  const btn = page.locator('.nb-datagrid__toolbar .nb-button').filter({ hasText: text }).first();
   await btn.waitFor({ state: 'visible', timeout: 8000 });
   await btn.click();
 }

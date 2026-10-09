@@ -26,7 +26,10 @@
   font-size: 0.82rem;
   background: var(--surface-1, #fff);
   color: var(--text-primary, #1f2937);
-  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
 
   input {
     display: none;
@@ -57,7 +60,10 @@
   padding: 0.65rem 0.75rem;
   cursor: pointer;
   text-align: left;
-  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease;
 
   &:hover {
     border-color: color-mix(in srgb, var(--primary, #2563eb) 30%, var(--border-color, #d7dce3));
@@ -81,7 +87,9 @@
   background: var(--surface-2, #f1f5f9);
   color: var(--text-secondary, #64748b);
   font-size: 1rem;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 
   .split-payments__split-card.is-active & {
     background: color-mix(in srgb, var(--primary, #2563eb) 12%, transparent);
@@ -263,7 +271,9 @@
   background-position:
     calc(100% - 14px) calc(50% - 2px),
     calc(100% - 9px) calc(50% - 2px);
-  background-size: 5px 5px, 5px 5px;
+  background-size:
+    5px 5px,
+    5px 5px;
   background-repeat: no-repeat;
   padding-right: 1.5rem;
 }
@@ -322,7 +332,9 @@
   color: var(--error-color, #dc2626);
   cursor: pointer;
   opacity: 0.7;
-  transition: opacity 0.15s ease, background 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease;
 
   &:hover {
     opacity: 1;
@@ -340,7 +352,11 @@
   transition: border-color 0.15s ease;
 
   &.is-invalid {
-    border-color: color-mix(in srgb, var(--warning-color, #d97706) 55%, var(--border-color, #d7dce3));
+    border-color: color-mix(
+      in srgb,
+      var(--warning-color, #d97706) 55%,
+      var(--border-color, #d7dce3)
+    );
     background: color-mix(in srgb, var(--warning-color, #d97706) 4%, var(--surface-1, #fff));
   }
 }
@@ -413,7 +429,11 @@
   }
 
   .split-payments__cash.is-invalid & {
-    border-color: color-mix(in srgb, var(--warning-color, #d97706) 60%, var(--border-color, #d7dce3));
+    border-color: color-mix(
+      in srgb,
+      var(--warning-color, #d97706) 60%,
+      var(--border-color, #d7dce3)
+    );
   }
 }
 
@@ -433,7 +453,10 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   padding: 0.28rem 0.65rem;
-  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
 
   &:hover:not(.is-active) {
     border-color: color-mix(in srgb, var(--primary, #2563eb) 35%, var(--border-color, #d7dce3));
@@ -461,7 +484,9 @@
   font-size: 0.8rem;
   font-weight: 600;
   padding: 0.5rem 0.75rem;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
 
   &:hover {
     border-style: solid;
@@ -479,12 +504,19 @@
     border-radius: var(--pos-radius-sm, 0.55rem);
 
     &:hover {
-      border-color: color-mix(in srgb, var(--pos-primary, var(--primary, #2563eb)) 30%, var(--pos-border, #d7dce3));
+      border-color: color-mix(
+        in srgb,
+        var(--pos-primary, var(--primary, #2563eb)) 30%,
+        var(--pos-border, #d7dce3)
+      );
       background: var(--pos-card-alt, var(--surface-2, #f8fafc));
     }
 
     &.is-active {
-      border-color: var(--pos-primary-border, color-mix(in srgb, var(--primary, #2563eb) 40%, #d7dce3));
+      border-color: var(
+        --pos-primary-border,
+        color-mix(in srgb, var(--primary, #2563eb) 40%, #d7dce3)
+      );
       background: var(--pos-primary-soft, color-mix(in srgb, var(--primary, #2563eb) 5%, #fff));
     }
   }
@@ -494,7 +526,10 @@
     border-radius: var(--pos-radius-sm, 0.55rem);
 
     .split-payments__split-card.is-active & {
-      background: var(--pos-primary-soft, color-mix(in srgb, var(--primary, #2563eb) 12%, transparent));
+      background: var(
+        --pos-primary-soft,
+        color-mix(in srgb, var(--primary, #2563eb) 12%, transparent)
+      );
       color: var(--pos-primary, var(--primary, #2563eb));
     }
   }
@@ -564,7 +599,10 @@
 
     &.is-active {
       border-color: var(--pos-primary, var(--primary, #2563eb));
-      background: var(--pos-primary-soft, color-mix(in srgb, var(--primary, #2563eb) 10%, transparent));
+      background: var(
+        --pos-primary-soft,
+        color-mix(in srgb, var(--primary, #2563eb) 10%, transparent)
+      );
       color: var(--pos-primary, var(--primary, #2563eb));
     }
   }

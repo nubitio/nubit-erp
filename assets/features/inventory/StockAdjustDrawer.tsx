@@ -90,9 +90,7 @@ function StockAdjustForm({
       return;
     }
 
-    const apiQty = operation === 'count'
-      ? String(parsedQty)
-      : String(parsedQty);
+    const apiQty = operation === 'count' ? String(parsedQty) : String(parsedQty);
 
     if (target.warehouseIri === '' || target.productIri === '') {
       toast('No se pudo identificar el producto o almacén de esta fila', 'error');
@@ -114,7 +112,8 @@ function StockAdjustForm({
       onApplied();
       onClose();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'No se pudo aplicar el ajuste de stock';
+      const message =
+        error instanceof Error ? error.message : 'No se pudo aplicar el ajuste de stock';
       toast(message, 'error');
     } finally {
       setSaving(false);
@@ -230,12 +229,7 @@ export const StockAdjustDrawer = ({ target, onClose, onApplied }: StockAdjustDra
       className="stock-adjust-drawer-panel"
     >
       {target && (
-        <StockAdjustForm
-          key={formKey}
-          target={target}
-          onClose={onClose}
-          onApplied={onApplied}
-        />
+        <StockAdjustForm key={formKey} target={target} onClose={onClose} onApplied={onApplied} />
       )}
     </Drawer>
   );

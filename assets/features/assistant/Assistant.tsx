@@ -42,7 +42,12 @@ type SpeechRecognitionLike = {
   lang: string;
   interimResults: boolean;
   maxAlternatives: number;
-  onresult: ((event: { results?: ArrayLike<ArrayLike<{ transcript?: string }>>; resultIndex?: number }) => void) | null;
+  onresult:
+    | ((event: {
+        results?: ArrayLike<ArrayLike<{ transcript?: string }>>;
+        resultIndex?: number;
+      }) => void)
+    | null;
   onerror: (() => void) | null;
   start: () => void;
 };
@@ -90,7 +95,9 @@ function AssistantMessageBubble({
         {message.text === REGENERATION_TEXT ? (
           <span>{REGENERATION_TEXT}</span>
         ) : (
-          <div className="chat-messagebubble-text">{HTMLReactParser(convertToHtml(message.text))}</div>
+          <div className="chat-messagebubble-text">
+            {HTMLReactParser(convertToHtml(message.text))}
+          </div>
         )}
         {(message.attachments?.length ?? 0) > 0 && (
           <div className="chat-message__attachments">
@@ -108,11 +115,7 @@ function AssistantMessageBubble({
         {isLastAssistantMessage && message.text !== REGENERATION_TEXT && (
           <div className="bubble-button-container">
             <IconButton icon={`ph ph-${copied ? 'check' : 'copy'}`} label="Copy" onClick={onCopy} />
-            <IconButton
-              icon="ph ph-arrow-clockwise"
-              label="Regenerate"
-              onClick={onRegenerate}
-            />
+            <IconButton icon="ph ph-arrow-clockwise" label="Regenerate" onClick={onRegenerate} />
           </div>
         )}
       </div>
@@ -212,7 +215,11 @@ export default function Assistant({
   }, []);
 
   const askAssistant = useCallback(
-    async (message: ChatMessage, currentMessages: ChatMessage[], attachments?: AssistantAttachmentPayload[]) => {
+    async (
+      message: ChatMessage,
+      currentMessages: ChatMessage[],
+      attachments?: AssistantAttachmentPayload[],
+    ) => {
       scrollToBottom();
 
       // Placeholder so the user sees the bubble appear immediately.
@@ -262,7 +269,8 @@ export default function Assistant({
       setPendingFiles([]);
 
       try {
-        const attachments = filesToUpload.length > 0 ? await Promise.all(filesToUpload.map(uploadFile)) : undefined;
+        const attachments =
+          filesToUpload.length > 0 ? await Promise.all(filesToUpload.map(uploadFile)) : undefined;
         const userMessage: ChatMessage = {
           id: Date.now(),
           role: 'user',
@@ -350,16 +358,18 @@ export default function Assistant({
           index === lastAssistantIndex ? { ...message, text: previousText } : message,
         ),
       );
-      const errorMsg = error instanceof Error ? error.message : 'No se pudo regenerar la respuesta.';
+      const errorMsg =
+        error instanceof Error ? error.message : 'No se pudo regenerar la respuesta.';
       toast(errorMsg, 'error');
     }
   }, [isProcessing, messages, stream, screenContext]);
 
   const startSpeechRecognition = useCallback(() => {
-    const Recognition = ((window as typeof window & { SpeechRecognition?: SpeechRecognitionConstructor }).SpeechRecognition ??
-      (window as typeof window & { webkitSpeechRecognition?: SpeechRecognitionConstructor }).webkitSpeechRecognition) as
-      | SpeechRecognitionConstructor
-      | undefined;
+    const Recognition = ((
+      window as typeof window & { SpeechRecognition?: SpeechRecognitionConstructor }
+    ).SpeechRecognition ??
+      (window as typeof window & { webkitSpeechRecognition?: SpeechRecognitionConstructor })
+        .webkitSpeechRecognition) as SpeechRecognitionConstructor | undefined;
     if (!Recognition) return;
 
     const recognition = new Recognition();
@@ -470,7 +480,12 @@ export default function Assistant({
             disabled={isProcessing}
           />
         )}
-        <IconButton type="submit" icon="ph ph-paper-plane-tilt" label="Enviar" disabled={isProcessing || !inputText.trim()} />
+        <IconButton
+          type="submit"
+          icon="ph ph-paper-plane-tilt"
+          label="Enviar"
+          disabled={isProcessing || !inputText.trim()}
+        />
       </form>
     </div>
   );

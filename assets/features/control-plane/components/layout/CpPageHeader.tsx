@@ -35,7 +35,9 @@ export const CpPageHeader = ({
     {(badge || actions) && (
       <div className="nb-page-header__aside">
         {badge ? (
-          <span className={`nb-badge nb-badge--${badge.variant ?? 'secondary'}`}>{badge.label}</span>
+          <span className={`nb-badge nb-badge--${badge.variant ?? 'secondary'}`}>
+            {badge.label}
+          </span>
         ) : null}
         {actions}
       </div>

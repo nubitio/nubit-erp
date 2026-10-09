@@ -20,10 +20,7 @@ import {
   runConsultCreditNoteCdrAction,
   runConsultCreditNoteCpeAction,
 } from './lib/creditNoteActions';
-import {
-  useCreditNoteRelatedDocumentObserver,
-  useCreditNoteSelectionState,
-} from './model';
+import { useCreditNoteRelatedDocumentObserver, useCreditNoteSelectionState } from './model';
 
 const API_URL = API + 'tax-documents';
 const fields = CreditNoteFields();

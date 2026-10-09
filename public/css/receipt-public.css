@@ -1,7 +1,7 @@
 /* Public receipt pages — aligned with Efact / Nubit UI tokens */
 
 :root {
-  --font-family-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-size-xs: 12px;
   --font-size-sm: 13px;
   --font-size-md: 14px;
@@ -103,7 +103,7 @@ a {
 }
 
 .receipt-brand::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   background-image: radial-gradient(
@@ -265,7 +265,10 @@ a {
   font-weight: var(--font-weight-semibold);
   color: var(--text-secondary);
   box-shadow: var(--shadow-sm);
-  transition: border-color var(--transition-base), color var(--transition-base), transform var(--transition-base);
+  transition:
+    border-color var(--transition-base),
+    color var(--transition-base),
+    transform var(--transition-base);
   white-space: nowrap;
 }
 
@@ -529,7 +532,7 @@ a {
 }
 
 .receipt-summary::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0 auto auto 0;
   width: 100%;

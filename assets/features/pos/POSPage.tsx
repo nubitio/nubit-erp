@@ -1,5 +1,14 @@
 /* eslint-disable react-hooks/set-state-in-effect -- POS initialization synchronizes branch and cash-session state */
-import React, { lazy, Suspense, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  lazy,
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import './POSPage.scss';
 import './HardwareAgentDialog.scss';
 import toast from '@shared/lib/SharedUtils';
@@ -105,9 +114,11 @@ const POSPage = () => {
         const raw = response.data;
         const items: Array<{ id: string; price: string }> = Array.isArray(raw)
           ? (raw as Array<{ id: string; price: string }>)
-          : (((raw as Record<string, unknown>).member as Array<{ id: string; price: string }> | undefined)
-            ?? ((raw as Record<string, unknown>)['hydra:member'] as Array<{ id: string; price: string }> | undefined)
-            ?? []);
+          : (((raw as Record<string, unknown>).member as
+              Array<{ id: string; price: string }> | undefined) ??
+            ((raw as Record<string, unknown>)['hydra:member'] as
+              Array<{ id: string; price: string }> | undefined) ??
+            []);
         const map = new Map<string, string>();
         for (const item of items) {
           const price = toMoneyString(item.price, '');
@@ -260,20 +271,23 @@ const POSPage = () => {
     return now;
   });
 
-  const setCajaAbierta = useCallback((nextOpen: boolean) => {
-    setCajaAbiertaState(nextOpen);
-    localStorage.setItem('pos_caja_abierta', String(nextOpen));
+  const setCajaAbierta = useCallback(
+    (nextOpen: boolean) => {
+      setCajaAbiertaState(nextOpen);
+      localStorage.setItem('pos_caja_abierta', String(nextOpen));
 
-    if (!nextOpen) {
-      localStorage.removeItem('pos_caja_opened_at');
-      setCajaOpenedAt(null);
-      return;
-    }
+      if (!nextOpen) {
+        localStorage.removeItem('pos_caja_opened_at');
+        setCajaOpenedAt(null);
+        return;
+      }
 
-    const openedAt = localStorage.getItem('pos_caja_opened_at') ?? new Date().toISOString();
-    localStorage.setItem('pos_caja_opened_at', openedAt);
-    setCajaOpenedAt(openedAt);
-  }, [setCajaOpenedAt]);
+      const openedAt = localStorage.getItem('pos_caja_opened_at') ?? new Date().toISOString();
+      localStorage.setItem('pos_caja_opened_at', openedAt);
+      setCajaOpenedAt(openedAt);
+    },
+    [setCajaOpenedAt],
+  );
 
   // ── Sync caja state with server on mount ─────────────────────────────────────────────────
   // localStorage defaults to 'open'; verify against the real cash-registers/dashboard so
@@ -411,7 +425,17 @@ const POSPage = () => {
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [checkoutDisabled, cajaAbierta, cart.length, handleCheckout, clearCart, menuData, addToCart, assistantEnabled, assistantOpen]);
+  }, [
+    checkoutDisabled,
+    cajaAbierta,
+    cart.length,
+    handleCheckout,
+    clearCart,
+    menuData,
+    addToCart,
+    assistantEnabled,
+    assistantOpen,
+  ]);
 
   const selectedWarehouse = warehouses.find((w) => w.id === selectedWarehouseId);
   const assistantScreenExtra = useMemo(
@@ -451,7 +475,9 @@ const POSPage = () => {
         onRetrySale={(saleId) => {
           void retrySale(saleId);
         }}
-        showWarehouseSelector={runtimeConfig?.ui.inventory.showWarehouseSelector ?? warehouses.length > 1}
+        showWarehouseSelector={
+          runtimeConfig?.ui.inventory.showWarehouseSelector ?? warehouses.length > 1
+        }
         onOpenCaja={() => setOpenCajaDialogOpen(true)}
         assistantEnabled={assistantEnabled}
         onAssistantClick={() => setAssistantOpen((open) => !open)}

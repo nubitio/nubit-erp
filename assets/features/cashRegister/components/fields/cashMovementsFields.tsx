@@ -46,9 +46,17 @@ const cashMovementsFields = (cashSessionId: string | undefined) => {
       .label('Tipo')
       .formatter((cell: GridCellContext) => {
         if (cell.value === 'income') {
-          return <Badge variant="success" outlined>Ingreso</Badge>;
+          return (
+            <Badge variant="success" outlined>
+              Ingreso
+            </Badge>
+          );
         } else if (cell.value === 'expense') {
-          return <Badge variant="danger" outlined>Egreso</Badge>;
+          return (
+            <Badge variant="danger" outlined>
+              Egreso
+            </Badge>
+          );
         }
       })
       .visibleOnForm(false)

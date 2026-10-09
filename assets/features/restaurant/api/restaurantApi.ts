@@ -131,7 +131,10 @@ export async function fetchAreas(): Promise<RestaurantAreaMock[]> {
 }
 
 /** Every order, open or closed — the caller filters by `closedAt` when it needs "open only". */
-export async function fetchOrders(): Promise<{ orders: OrderMock[]; openOrderIdByTableId: Map<string, string> }> {
+export async function fetchOrders(): Promise<{
+  orders: OrderMock[];
+  openOrderIdByTableId: Map<string, string>;
+}> {
   const response = await httpClient.get<unknown>(`${API}restaurant/orders?pagination=false`);
   const raw = extractCollection<ApiOrder>(response.data);
   // The API omits null properties entirely rather than sending `null`, so an
@@ -183,7 +186,11 @@ export async function markItemDelivered(itemId: string): Promise<void> {
   await httpClient.post(`${API}restaurant/order-items/${itemId}/delivered`, {});
 }
 
-export async function updateTablePosition(tableId: string, positionX: number, positionY: number): Promise<void> {
+export async function updateTablePosition(
+  tableId: string,
+  positionX: number,
+  positionY: number,
+): Promise<void> {
   await httpClient.patch(`${API}restaurant/tables/${tableId}`, { positionX, positionY });
 }
 

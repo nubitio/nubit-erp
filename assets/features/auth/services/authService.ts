@@ -20,10 +20,9 @@ class AuthService {
   }
 
   consumeImpersonationToken(token: string) {
-    return httpClient.post<{ ok: boolean; user?: DataRecord }>(
-      API + 'auth/impersonate/consume',
-      { token },
-    );
+    return httpClient.post<{ ok: boolean; user?: DataRecord }>(API + 'auth/impersonate/consume', {
+      token,
+    });
   }
 
   selectBranch(branchId: string) {
@@ -38,10 +37,10 @@ class AuthService {
   }
 
   changePassword(currentPassword: string, newPassword: string) {
-    return httpClient.post<{ message: string }>(
-      API + 'auth/change-password',
-      { currentPassword, newPassword },
-    );
+    return httpClient.post<{ message: string }>(API + 'auth/change-password', {
+      currentPassword,
+      newPassword,
+    });
   }
 }
 

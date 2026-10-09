@@ -43,7 +43,9 @@ export function SplitPaymentsField({
     [paymentMethods, value],
   );
   const primaryLine = value[0];
-  const isBalanced = allowPartial ? paymentsWithinTotal(value, total) : paymentsMatchTotal(value, total);
+  const isBalanced = allowPartial
+    ? paymentsWithinTotal(value, total)
+    : paymentsMatchTotal(value, total);
   const remaining = remainingPaymentAmount(value, total);
 
   const handleQuickMethod = (methodId: number) => {

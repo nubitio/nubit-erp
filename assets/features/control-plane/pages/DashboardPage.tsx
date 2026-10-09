@@ -47,7 +47,11 @@ export const DashboardPage = () => {
       <CpSection title={CP_STRINGS.dashboard.sections.tenants}>
         <CpMetricGrid
           items={[
-            { label: CP_STRINGS.dashboard.metrics.total, value: tenantStats.total, icon: 'buildings' },
+            {
+              label: CP_STRINGS.dashboard.metrics.total,
+              value: tenantStats.total,
+              icon: 'buildings',
+            },
             {
               label: CP_STRINGS.dashboard.metrics.active,
               value: tenantStats.active,
@@ -76,7 +80,11 @@ export const DashboardPage = () => {
             layout="strip"
             density="compact"
             items={[
-              { label: CP_STRINGS.dashboard.metrics.plans, value: planStats.total_plans, icon: 'package' },
+              {
+                label: CP_STRINGS.dashboard.metrics.plans,
+                value: planStats.total_plans,
+                icon: 'package',
+              },
               {
                 label: CP_STRINGS.dashboard.metrics.withoutPlan,
                 value: planStats.tenants_without_plan,
@@ -118,7 +126,9 @@ export const DashboardPage = () => {
 
       <CpSection title={CP_STRINGS.dashboard.sections.audit}>
         {auditSummary.length === 0 ? (
-          <Card variant="panel" title={CP_STRINGS.dashboard.auditEmpty}>{CP_STRINGS.dashboard.auditEmptyHint}</Card>
+          <Card variant="panel" title={CP_STRINGS.dashboard.auditEmpty}>
+            {CP_STRINGS.dashboard.auditEmptyHint}
+          </Card>
         ) : (
           <DataTable
             rows={auditSummary}

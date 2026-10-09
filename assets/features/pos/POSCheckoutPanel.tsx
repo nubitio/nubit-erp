@@ -11,11 +11,7 @@ import { activeOnlyFilter } from '@shared/lib/activeEntityField';
 
 const API = getCoreApiBaseUrl();
 const ENTITY_DROPDOWN_FILTERS = activeOnlyFilter();
-import {
-  formatPosQuantity,
-  isWeightUnitCode,
-  toNumber,
-} from './posHelpers';
+import { formatPosQuantity, isWeightUnitCode, toNumber } from './posHelpers';
 import { formatPosReceiptLabel } from './posPresentation';
 import type { LocalSale } from '@offline/types';
 
@@ -336,7 +332,8 @@ export function POSCheckoutPanel({
               const quantityFloor = isWeighted ? 0.001 : 1;
               const lineDescription = item.lineDescription ?? '';
               const displayName = lineDescription || item.name;
-              const hasCustomName = lineDescription.trim() !== '' && lineDescription.trim() !== item.name;
+              const hasCustomName =
+                lineDescription.trim() !== '' && lineDescription.trim() !== item.name;
               const displayUnit = item.saleUnitCode
                 ? `/${item.saleUnitCode.toLowerCase()}`
                 : ' c/u';
@@ -351,7 +348,10 @@ export function POSCheckoutPanel({
 
               const commitNameEdit = () => {
                 const nextName = editingNameVal.trim();
-                updateLineDescription(item.id, nextName === '' || nextName === item.name ? '' : nextName);
+                updateLineDescription(
+                  item.id,
+                  nextName === '' || nextName === item.name ? '' : nextName,
+                );
                 setEditingNameId(null);
               };
 
@@ -537,7 +537,9 @@ export function POSCheckoutPanel({
             >
               <i className={`ph ph-caret-${noteOpen ? 'down' : 'right'}`} aria-hidden="true" />
               <span>Nota interna</span>
-              {!noteOpen && note.trim() && <span className="pos-note-section__badge">Con contenido</span>}
+              {!noteOpen && note.trim() && (
+                <span className="pos-note-section__badge">Con contenido</span>
+              )}
             </button>
             {noteOpen && (
               <div id="pos-internal-note" className="pos-note-section__content">
@@ -595,7 +597,11 @@ export function POSCheckoutPanel({
               {emitInvoice && (
                 <div className="pos-footer-option-row">
                   <span className="pos-discount-label">Tipo de comprobante</span>
-                  <div className="pos-discount-presets" role="group" aria-label="Tipo de comprobante">
+                  <div
+                    className="pos-discount-presets"
+                    role="group"
+                    aria-label="Tipo de comprobante"
+                  >
                     <Chip
                       label="Automático"
                       active={requestedVoucherType === 'AUTO'}

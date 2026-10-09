@@ -3,7 +3,8 @@
 $radius-card: var(--radius-xl);
 
 // ─── Root ────────────────────────────────────────────────────────────────────
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -44,12 +45,18 @@ html, body {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(circle, color-mix(in srgb, var(--on-accent-color) 7%, transparent) 1px, transparent 1px);
+    background-image: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--on-accent-color) 7%, transparent) 1px,
+      transparent 1px
+    );
     background-size: 24px 24px;
     pointer-events: none;
   }
 
-  @media (max-width: 860px) { display: none; }
+  @media (max-width: 860px) {
+    display: none;
+  }
 }
 
 // animated blobs
@@ -69,8 +76,10 @@ html, body {
 
 // blobs: tinted variants of --accent-color against the dark background
 .blob-1 {
-  width: 520px; height: 520px;
-  top: -140px; left: -120px;
+  width: 520px;
+  height: 520px;
+  top: -140px;
+  left: -120px;
   background: radial-gradient(
     circle,
     color-mix(in srgb, var(--accent-color) 70%, #fff),
@@ -80,8 +89,10 @@ html, body {
 }
 
 .blob-2 {
-  width: 360px; height: 360px;
-  bottom: -80px; right: -60px;
+  width: 360px;
+  height: 360px;
+  bottom: -80px;
+  right: -60px;
   background: radial-gradient(
     circle,
     color-mix(in srgb, var(--accent-color) 80%, #fff),
@@ -92,8 +103,10 @@ html, body {
 }
 
 .blob-3 {
-  width: 240px; height: 240px;
-  top: 40%; left: 40%;
+  width: 240px;
+  height: 240px;
+  top: 40%;
+  left: 40%;
   background: radial-gradient(
     circle,
     color-mix(in srgb, var(--accent-color) 90%, #fff),
@@ -104,9 +117,16 @@ html, body {
 }
 
 @keyframes float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%       { transform: translate(20px, -30px) scale(1.04); }
-  66%       { transform: translate(-15px, 20px) scale(0.97); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(20px, -30px) scale(1.04);
+  }
+  66% {
+    transform: translate(-15px, 20px) scale(0.97);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -141,7 +161,6 @@ html, body {
     filter: brightness(0) invert(1);
     opacity: 0.92;
   }
-
 }
 
 .nubit-brand {
@@ -170,7 +189,8 @@ html, body {
     width: 100%;
     max-width: 300px;
     height: auto;
-    filter: drop-shadow(0 20px 40px color-mix(in srgb, var(--text-primary) 30%, transparent)) brightness(1.1);
+    filter: drop-shadow(0 20px 40px color-mix(in srgb, var(--text-primary) 30%, transparent))
+      brightness(1.1);
   }
 }
 
@@ -262,7 +282,10 @@ html, body {
     }
   }
 
-  @media (max-width: 860px) { display: flex; justify-content: center; }
+  @media (max-width: 860px) {
+    display: flex;
+    justify-content: center;
+  }
 }
 
 // the card

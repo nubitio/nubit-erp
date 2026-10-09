@@ -35,7 +35,10 @@ function renderCell<Row extends Record<string, unknown>>(col: MiniTableColumn<Ro
 }
 
 /** Compact, borderless data table for dashboard breakdown widgets. */
-export function MiniTable<Row extends Record<string, unknown>>({ columns, rows }: MiniTableProps<Row>) {
+export function MiniTable<Row extends Record<string, unknown>>({
+  columns,
+  rows,
+}: MiniTableProps<Row>) {
   return (
     <div className="efact-mini-table__wrap">
       <table className="efact-mini-table">

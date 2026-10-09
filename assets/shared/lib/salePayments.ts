@@ -44,9 +44,8 @@ const moneyValue = (value: string | number | null | undefined): MoneyValue => {
   if (value === null || value === undefined || value === '') return zeroMoney();
   if (typeof value === 'number' && !Number.isFinite(value)) return zeroMoney();
 
-  const raw = typeof value === 'number'
-    ? value.toFixed(PAYMENT_SCALE)
-    : value.trim().replace(',', '.');
+  const raw =
+    typeof value === 'number' ? value.toFixed(PAYMENT_SCALE) : value.trim().replace(',', '.');
   const parsed = parseCoreMoneyInput(raw, PAYMENT_CURRENCY, PAYMENT_SCALE, 'en-US');
 
   if (parsed.ok) return parsed.value;
@@ -86,12 +85,15 @@ export const creditPaymentAmount = (
 ): number => {
   const methodById = new Map(paymentMethods.map((method) => [method.id, method]));
 
-  return minorToNumber(lines.reduce(
-    (sum, line) => isCreditPaymentMethod(methodById.get(line.methodId ?? -1))
-      ? sum + minorUnits(line.amount)
-      : sum,
-    0n,
-  ));
+  return minorToNumber(
+    lines.reduce(
+      (sum, line) =>
+        isCreditPaymentMethod(methodById.get(line.methodId ?? -1))
+          ? sum + minorUnits(line.amount)
+          : sum,
+      0n,
+    ),
+  );
 };
 
 export const hasCreditPayment = (
@@ -107,10 +109,8 @@ export const paymentsWithinTotal = (lines: SalePaymentLineDraft[], total: number
   lines.reduce((sum, line) => sum + minorUnits(line.amount), 0n) <= minorUnits(total);
 
 export const remainingPaymentAmount = (lines: SalePaymentLineDraft[], total: number): number => {
-  const remaining = minorUnits(total) - lines.reduce(
-    (sum, line) => sum + minorUnits(line.amount),
-    0n,
-  );
+  const remaining =
+    minorUnits(total) - lines.reduce((sum, line) => sum + minorUnits(line.amount), 0n);
   return remaining > 0n ? minorToNumber(remaining) : 0;
 };
 
@@ -167,7 +167,8 @@ export const createSplitPaymentLines = (
 ): SalePaymentLineDraft[] => {
   const totalMinor = minorUnits(total);
   const primaryMinor = minorUnits(primaryAmount);
-  const normalizedPrimary = primaryMinor < 0n ? 0n : primaryMinor > totalMinor ? totalMinor : primaryMinor;
+  const normalizedPrimary =
+    primaryMinor < 0n ? 0n : primaryMinor > totalMinor ? totalMinor : primaryMinor;
   const secondaryAmount = totalMinor - normalizedPrimary;
 
   return [
@@ -185,12 +186,7 @@ export const enableSplitPaymentLines = (
     paymentMethods.find((method) => method.id !== primaryMethodId)?.id ?? null;
   const primaryAmount = roundMoney(total / 2);
 
-  return createSplitPaymentLines(
-    primaryMethodId,
-    secondaryMethodId,
-    primaryAmount,
-    total,
-  );
+  return createSplitPaymentLines(primaryMethodId, secondaryMethodId, primaryAmount, total);
 };
 
 export const rebalancePaymentLines = (
@@ -242,9 +238,7 @@ export const updatePaymentLineMethod = (
   index: number,
   methodId: number,
 ): SalePaymentLineDraft[] =>
-  lines.map((line, lineIndex) =>
-    lineIndex === index ? { ...line, methodId } : line,
-  );
+  lines.map((line, lineIndex) => (lineIndex === index ? { ...line, methodId } : line));
 
 export const addPaymentLine = (
   lines: SalePaymentLineDraft[],
@@ -254,14 +248,10 @@ export const addPaymentLine = (
   const usedMethodIds = new Set(
     lines.map((line) => line.methodId).filter((id): id is number => id != null),
   );
-  const nextMethodId =
-    paymentMethods.find((method) => !usedMethodIds.has(method.id))?.id ?? null;
+  const nextMethodId = paymentMethods.find((method) => !usedMethodIds.has(method.id))?.id ?? null;
   const remaining = remainingPaymentAmount(lines, total);
 
-  return [
-    ...lines,
-    createPaymentLine(nextMethodId, remaining > 0 ? remaining : 0),
-  ];
+  return [...lines, createPaymentLine(nextMethodId, remaining > 0 ? remaining : 0)];
 };
 
 export const removePaymentLine = (
@@ -310,9 +300,7 @@ export const buildSettlementPayload = (
       }
 
       const isCash = isCashPaymentMethod(method);
-      const tendered = isCash
-        ? minorUnits(line.tenderedAmount ?? line.amount)
-        : amount;
+      const tendered = isCash ? minorUnits(line.tenderedAmount ?? line.amount) : amount;
       const change = isCash && tendered > amount ? tendered - amount : 0n;
 
       return {
@@ -333,10 +321,13 @@ export const buildPaymentPayload = (
   lines: SalePaymentLineDraft[],
   paymentMethods: PaymentMethodOption[],
   total: number,
-): SalePaymentPayloadLine[] => buildSettlementPayload(lines, paymentMethods, total)
-  .filter((settlement): settlement is Extract<SaleSettlementPayloadLine, { type: 'PAYMENT' }> =>
-    settlement.type === 'PAYMENT')
-  .map(({ type: _type, ...payment }) => payment);
+): SalePaymentPayloadLine[] =>
+  buildSettlementPayload(lines, paymentMethods, total)
+    .filter(
+      (settlement): settlement is Extract<SaleSettlementPayloadLine, { type: 'PAYMENT' }> =>
+        settlement.type === 'PAYMENT',
+    )
+    .map(({ type: _type, ...payment }) => payment);
 
 export const totalCashChangeAmount = (
   lines: SalePaymentLineDraft[],
@@ -349,9 +340,7 @@ export const totalCashChangeAmount = (
   );
 };
 
-export type PaymentValidationResult =
-  | { valid: true }
-  | { valid: false; message: string };
+export type PaymentValidationResult = { valid: true } | { valid: false; message: string };
 
 export const validatePaymentLines = (
   lines: SalePaymentLineDraft[],

@@ -13,7 +13,9 @@ function defaultPosition(unplacedIndex: number): { x: number; y: number } {
  * in `/restaurant/admin/plano`. Shared by the editor and the operational
  * table map so both agree on the same layout.
  */
-export function useTableCanvasPositions(tables: RestaurantTableMock[]): Map<string, { x: number; y: number }> {
+export function useTableCanvasPositions(
+  tables: RestaurantTableMock[],
+): Map<string, { x: number; y: number }> {
   return useMemo(() => {
     const map = new Map<string, { x: number; y: number }>();
     let unplacedIndex = 0;

@@ -224,7 +224,11 @@ export const IntegrationWebhooksCard = () => {
           </label>
           {eventTypes.map((type) => (
             <label key={type} className="integration-check">
-              <input type="checkbox" checked={types.includes(type)} onChange={() => toggleType(type)} />
+              <input
+                type="checkbox"
+                checked={types.includes(type)}
+                onChange={() => toggleType(type)}
+              />
               {type}
             </label>
           ))}
@@ -275,7 +279,11 @@ const DeliveryLogDrawer = ({ endpoint, onClose, onRetried }: DeliveryLogDrawerPr
   return (
     <Drawer isOpen={endpoint !== null} onClose={onClose} title="Entregas recientes" width="40rem">
       {rows.length === 0 ? (
-        <EmptyState icon="tray" title="Sin entregas" description="Aún no se ha enviado ningún evento a este endpoint." />
+        <EmptyState
+          icon="tray"
+          title="Sin entregas"
+          description="Aún no se ha enviado ningún evento a este endpoint."
+        />
       ) : (
         <DataTable<WebhookDeliveryDto>
           variant="flush"
@@ -312,7 +320,12 @@ const DeliveryLogDrawer = ({ endpoint, onClose, onRetried }: DeliveryLogDrawerPr
           ]}
           renderActions={(row) =>
             row.status !== 'delivered' ? (
-              <Button size="sm" variant="ghost" loading={retry.isPending} onClick={() => retry.mutate(row.id)}>
+              <Button
+                size="sm"
+                variant="ghost"
+                loading={retry.isPending}
+                onClick={() => retry.mutate(row.id)}
+              >
                 Reintentar
               </Button>
             ) : null

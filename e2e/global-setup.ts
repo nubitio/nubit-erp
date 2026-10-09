@@ -19,10 +19,12 @@ async function globalSetup(): Promise<void> {
       timeout: 60_000,
     });
     await page.locator('form.login-form').waitFor({ state: 'visible', timeout: 60_000 });
-    await page.goto(`${baseUrl}/#/pos`, {
-      waitUntil: 'domcontentloaded',
-      timeout: 30_000,
-    }).catch(() => undefined);
+    await page
+      .goto(`${baseUrl}/#/pos`, {
+        waitUntil: 'domcontentloaded',
+        timeout: 30_000,
+      })
+      .catch(() => undefined);
   } finally {
     await browser.close();
   }

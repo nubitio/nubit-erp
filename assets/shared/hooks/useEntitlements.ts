@@ -31,9 +31,7 @@ export const ENTITLEMENTS_QUERY_KEY = ['tenant-entitlements'] as const;
 // ---------------------------------------------------------------------------
 
 async function fetchEntitlements(): Promise<EntitlementsResponse> {
-  return httpRequestData(
-    httpClient.get<EntitlementsResponse>('/api/tenant/entitlements'),
-  );
+  return httpRequestData(httpClient.get<EntitlementsResponse>('/api/tenant/entitlements'));
 }
 
 // ---------------------------------------------------------------------------

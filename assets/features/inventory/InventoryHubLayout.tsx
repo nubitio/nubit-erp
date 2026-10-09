@@ -18,7 +18,13 @@ export const InventoryHubLayout = () => {
       defaultPath="/inventory/stock"
       tabsAriaLabel="Secciones de inventario"
       tabs={[
-        { key: 'stock', label: 'Existencias', path: '/inventory/stock', icon: 'ph-package', visible: true },
+        {
+          key: 'stock',
+          label: 'Existencias',
+          path: '/inventory/stock',
+          icon: 'ph-package',
+          visible: true,
+        },
         {
           key: 'movements',
           label: 'Movimientos',
@@ -33,7 +39,13 @@ export const InventoryHubLayout = () => {
           icon: 'ph-arrows-left-right',
           visible: true,
         },
-        { key: 'reorder', label: 'Reorden', path: '/inventory/reorder', icon: 'ph-warning-circle', visible: true },
+        {
+          key: 'reorder',
+          label: 'Reorden',
+          path: '/inventory/reorder',
+          icon: 'ph-warning-circle',
+          visible: true,
+        },
         {
           key: 'warehouses',
           label: 'Almacenes',
@@ -48,7 +60,8 @@ export const InventoryHubLayout = () => {
           : {
               visible: true,
               tone: 'info',
-              message: 'Las transferencias entre almacenes están disponibles con el plan multi-almacén.',
+              message:
+                'Las transferencias entre almacenes están disponibles con el plan multi-almacén.',
             }
       }
     />

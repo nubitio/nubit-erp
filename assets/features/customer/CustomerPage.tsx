@@ -1,9 +1,4 @@
-import {
-  SchemaCrudPage,
-  defineFields,
-  defineResource,
-  type DataRecord,
-} from '@nubitio/crud';
+import { SchemaCrudPage, defineFields, defineResource, type DataRecord } from '@nubitio/crud';
 import { customerApiUrl, customerEvents, customerFormLayout } from './model/constants';
 import { CustomerFields } from './CustomerFields';
 import { useTranslation } from 'react-i18next';

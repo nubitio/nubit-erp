@@ -45,9 +45,9 @@ export const RolePermissionsPanel = ({ treeRef, matrixRef }: RolePermissionsPane
       </div>
       <div hidden={tab !== 'actions'}>
         <p className="role-permissions-panel__help">
-          Los permisos de acción controlan lo que el usuario puede hacer aunque tenga visible el menú.
-          Para cambiar solo el precio de una venta usa “Modificar precio de línea en el POS”; para
-          cambiar el precio maestro usa “Editar productos y precios del catálogo”.
+          Los permisos de acción controlan lo que el usuario puede hacer aunque tenga visible el
+          menú. Para cambiar solo el precio de una venta usa “Modificar precio de línea en el POS”;
+          para cambiar el precio maestro usa “Editar productos y precios del catálogo”.
         </p>
         <PermissionMatrix ref={matrixRef} />
       </div>

@@ -15,7 +15,13 @@ export const CatalogHubLayout = () => {
       defaultPath="/catalog/products"
       tabsAriaLabel="Secciones de catálogo"
       tabs={[
-        { key: 'products', label: 'Productos', path: '/catalog/products', icon: 'ph-cube', visible: true },
+        {
+          key: 'products',
+          label: 'Productos',
+          path: '/catalog/products',
+          icon: 'ph-cube',
+          visible: true,
+        },
         {
           key: 'categories',
           label: 'Categorías',

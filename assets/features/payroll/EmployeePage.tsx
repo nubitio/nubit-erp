@@ -132,9 +132,21 @@ const employeeResource = defineResource<EmployeeRecord>(employeeApiUrl, {
         },
       },
       { kind: 'override', key: 'dni', patch: { order: 1, layoutHint: 'short', label: 'DNI' } },
-      { kind: 'override', key: 'firstName', patch: { order: 2, layoutHint: 'medium', label: 'Nombres' } },
-      { kind: 'override', key: 'lastName', patch: { order: 3, layoutHint: 'medium', label: 'Apellidos' } },
-      { kind: 'override', key: 'hireDate', patch: { order: 4, layoutHint: 'short', label: 'Fecha de ingreso', formatter: dateCell } },
+      {
+        kind: 'override',
+        key: 'firstName',
+        patch: { order: 2, layoutHint: 'medium', label: 'Nombres' },
+      },
+      {
+        kind: 'override',
+        key: 'lastName',
+        patch: { order: 3, layoutHint: 'medium', label: 'Apellidos' },
+      },
+      {
+        kind: 'override',
+        key: 'hireDate',
+        patch: { order: 4, layoutHint: 'short', label: 'Fecha de ingreso', formatter: dateCell },
+      },
       {
         kind: 'override',
         key: 'terminationDate',
@@ -150,11 +162,37 @@ const employeeResource = defineResource<EmployeeRecord>(employeeApiUrl, {
           defaultValue: () => undefined,
         },
       },
-      { kind: 'override', key: 'contractType', patch: { ...contractTypePatch, order: 6, layoutHint: 'short' } },
-      { kind: 'override', key: 'baseSalary', patch: { order: 7, layoutHint: 'short', label: 'Sueldo base', formatter: moneyCell, align: 'right' } },
-      { kind: 'override', key: 'pensionScheme', patch: { ...pensionSchemePatch, order: 8, layoutHint: 'short' } },
-      { kind: 'override', key: 'afpProvider', patch: { ...afpProviderPatch, order: 9, layoutHint: 'short' } },
-      { kind: 'override', key: 'epsAffiliated', patch: { ...epsAffiliatedPatch, order: 10, layoutHint: 'short' } },
+      {
+        kind: 'override',
+        key: 'contractType',
+        patch: { ...contractTypePatch, order: 6, layoutHint: 'short' },
+      },
+      {
+        kind: 'override',
+        key: 'baseSalary',
+        patch: {
+          order: 7,
+          layoutHint: 'short',
+          label: 'Sueldo base',
+          formatter: moneyCell,
+          align: 'right',
+        },
+      },
+      {
+        kind: 'override',
+        key: 'pensionScheme',
+        patch: { ...pensionSchemePatch, order: 8, layoutHint: 'short' },
+      },
+      {
+        kind: 'override',
+        key: 'afpProvider',
+        patch: { ...afpProviderPatch, order: 9, layoutHint: 'short' },
+      },
+      {
+        kind: 'override',
+        key: 'epsAffiliated',
+        patch: { ...epsAffiliatedPatch, order: 10, layoutHint: 'short' },
+      },
       {
         kind: 'override',
         key: 'user',
@@ -170,7 +208,11 @@ const employeeResource = defineResource<EmployeeRecord>(employeeApiUrl, {
           helpText: 'Solo si el empleado también tiene una cuenta de acceso al sistema.',
         },
       },
-      { kind: 'override', key: 'status', patch: { ...statusPatch, order: 12, layoutHint: 'short', disabled: true } },
+      {
+        kind: 'override',
+        key: 'status',
+        patch: { ...statusPatch, order: 12, layoutHint: 'short', disabled: true },
+      },
       { kind: 'override', key: 'createdAt', patch: { visibleOnForm: false, visible: false } },
     ],
   }),
@@ -179,8 +221,8 @@ const employeeResource = defineResource<EmployeeRecord>(employeeApiUrl, {
 export const EmployeePage = () => (
   <>
     <ErpModuleBanner tone="warning">
-      Calcula AFP, CTS y quinta como apoyo operativo. Valida PLAME y los pagos con tu contador
-      antes de declarar.
+      Calcula AFP, CTS y quinta como apoyo operativo. Valida PLAME y los pagos con tu contador antes
+      de declarar.
     </ErpModuleBanner>
     <SchemaCrudPage resource={employeeResource} />
   </>

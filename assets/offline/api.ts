@@ -31,7 +31,7 @@ type ApiErrorPayload = {
 };
 
 const asApiErrorPayload = (payload: unknown): ApiErrorPayload =>
-  payload && typeof payload === 'object' ? payload as ApiErrorPayload : {};
+  payload && typeof payload === 'object' ? (payload as ApiErrorPayload) : {};
 
 const parseJsonSafely = async (response: Response): Promise<unknown> => {
   try {
@@ -45,14 +45,21 @@ const parseErrorMessage = (payload: unknown, fallback: string) => {
   const errorPayload = asApiErrorPayload(payload);
   const violations = Array.isArray(errorPayload.violations)
     ? errorPayload.violations
-        .map((item: unknown) => item && typeof item === 'object' ? (item as { message?: unknown }).message : undefined)
-        .filter((message: unknown): message is string => typeof message === 'string' && message.length > 0)
+        .map((item: unknown) =>
+          item && typeof item === 'object' ? (item as { message?: unknown }).message : undefined,
+        )
+        .filter(
+          (message: unknown): message is string =>
+            typeof message === 'string' && message.length > 0,
+        )
     : [];
 
   return (
     (typeof errorPayload.detail === 'string' ? errorPayload.detail : undefined) ||
     (typeof errorPayload.message === 'string' ? errorPayload.message : undefined) ||
-    (typeof errorPayload['hydra:description'] === 'string' ? errorPayload['hydra:description'] : undefined) ||
+    (typeof errorPayload['hydra:description'] === 'string'
+      ? errorPayload['hydra:description']
+      : undefined) ||
     violations.join('\n') ||
     (typeof errorPayload.title === 'string' ? errorPayload.title : undefined) ||
     fallback
@@ -64,7 +71,8 @@ const parseErrorMetadata = (payload: unknown) => {
   return {
     errorCode: typeof errorPayload.errorCode === 'string' ? errorPayload.errorCode : undefined,
     action: typeof errorPayload.action === 'string' ? errorPayload.action : undefined,
-    numericCode: typeof errorPayload.numericCode === 'number' ? errorPayload.numericCode : undefined,
+    numericCode:
+      typeof errorPayload.numericCode === 'number' ? errorPayload.numericCode : undefined,
   };
 };
 

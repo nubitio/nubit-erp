@@ -4,1120 +4,1120 @@
  */
 
 export interface paths {
-    "/api/v1/ping": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Validate credentials and report client scopes */
-        get: operations["pingIntegrationApi"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  '/api/v1/ping': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/documents": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Queue a fiscal document for emission */
-        post: operations["submitDocument"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Validate credentials and report client scopes */
+    get: operations['pingIntegrationApi'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/documents': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/documents/{reference}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Poll a submitted document */
-        get: operations["getDocument"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    /** Queue a fiscal document for emission */
+    post: operations['submitDocument'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/documents/{reference}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/webhook-endpoints": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listWebhookEndpoints"];
-        put?: never;
-        post: operations["createWebhookEndpoint"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** Poll a submitted document */
+    get: operations['getDocument'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/webhook-endpoints': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/webhook-endpoints/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete: operations["deleteWebhookEndpoint"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['listWebhookEndpoints'];
+    put?: never;
+    post: operations['createWebhookEndpoint'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/webhook-endpoints/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/webhook-endpoints/{id}/rotate-secret": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["rotateWebhookSecret"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post?: never;
+    delete: operations['deleteWebhookEndpoint'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/webhook-endpoints/{id}/rotate-secret': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/onboarding/spreadsheets/template/{type}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["downloadOnboardingSpreadsheetTemplate"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['rotateWebhookSecret'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/onboarding/spreadsheets/template/{type}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/onboarding/spreadsheets/rows": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["parseOnboardingSpreadsheet"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['downloadOnboardingSpreadsheetTemplate'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/onboarding/spreadsheets/rows': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/onboarding/receivables": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["importOpeningReceivables"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['parseOnboardingSpreadsheet'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/onboarding/receivables': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/bank-statement-imports": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["uploadBankStatement"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['importOpeningReceivables'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/bank-statement-imports': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/bank-reconciliation/unreconciled-movements": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listUnreconciledMovements"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['uploadBankStatement'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/bank-reconciliation/unreconciled-movements': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/ple/preview": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["previewPle"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['listUnreconciledMovements'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/ple/preview': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/ple/validate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["validatePle"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['previewPle'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/ple/validate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/ple/zip": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["downloadPleZip"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['validatePle'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/ple/zip': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/ple/sales": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["downloadPleSales"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['downloadPleZip'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/ple/sales': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/ple/purchases": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["downloadPlePurchases"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['downloadPleSales'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/ple/purchases': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/ple/diary": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["downloadPleDiary"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['downloadPlePurchases'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/ple/diary': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/ple/ledger": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["downloadPleLedger"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['downloadPleDiary'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/ple/ledger': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/payroll/{payrollRunId}/plame": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["downloadPayrollPlame"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['downloadPleLedger'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/payroll/{payrollRunId}/plame': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/exchange-rate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getLegacyExchangeRate"];
-        put: operations["updateLegacyExchangeRate"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['downloadPayrollPlame'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/exchange-rate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/exchange-rate/sync": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["syncLegacyExchangeRate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['getLegacyExchangeRate'];
+    put: operations['updateLegacyExchangeRate'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/exchange-rate/sync': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/products/export": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["exportProducts"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['syncLegacyExchangeRate'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/products/export': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/products/import/template": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["downloadProductImportTemplate"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['exportProducts'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/products/import/template': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/products/import": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["importProducts"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get: operations['downloadProductImportTemplate'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/products/import': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/api/v1/credit-notes/reasons": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listCreditNoteReasons"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    get?: never;
+    put?: never;
+    post: operations['importProducts'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/credit-notes/reasons': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    get: operations['listCreditNoteReasons'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        Error: {
-            error: {
-                /** @example validation_failed */
-                code: string;
-                message: string;
-                details?: {
-                    [key: string]: unknown;
-                }[];
-            };
-        };
-        Customer: {
-            document_type?: string | null;
-            document_number?: string | null;
-            name: string;
-            /** Format: email */
-            email?: string | null;
-            address?: string | null;
-        };
-        DocumentRequest: {
-            /** @description Caller-owned idempotency key. Reuse with a different payload returns 409. */
-            external_id: string;
-            /** @enum {string} */
-            document_type: "invoice" | "receipt";
-            series: string;
-            number: number;
-            /** @default PEN */
-            currency: string;
-            /** @description Integer minor currency units (céntimos). */
-            subtotal_minor: number;
-            tax_minor: number;
-            total_minor: number;
-            customer: components["schemas"]["Customer"];
-            line_description: string;
-            order_reference?: string | null;
-        };
-        DocumentAccepted: {
-            reference: string;
-            status: string;
-            external_id: string;
-        };
-        DocumentStatus: components["schemas"]["DocumentAccepted"] & {
-            sunat_status?: string | null;
-            document_type?: string;
-            series?: string;
-            number?: number;
-            cdr_reference?: string | null;
-            error?: string | null;
-            /** Format: date-time */
-            created_at?: string;
-            /** Format: date-time */
-            updated_at?: string;
-        };
-        WebhookEndpointRequest: {
-            /** Format: uri */
-            url: string;
-            types?: string[];
-        };
-        WebhookEndpoint: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uri */
-            url: string;
-            types: string[];
-            /** @enum {string} */
-            status: "enabled" | "disabled";
-            disabled_reason?: string | null;
-            consecutive_failures?: number;
-            /** Format: date-time */
-            created_at: string;
-        };
-        WebhookEndpointCreated: components["schemas"]["WebhookEndpoint"] & {
-            /** @description Returned only on create and rotate. */
-            secret: string;
-        };
-        PingResponse: {
-            ok: boolean;
-            client: string;
-            tenant: string;
-            scopes: string[];
-            /** @constant */
-            api_version: "v1";
-        };
-        /** @description Authentication context returned by authenticated endpoints. */
-        Auth: {
-            client: string;
-            tenant: string;
-            scopes: string[];
-        };
-        Status: {
-            status: string;
-            message?: string | null;
-        };
-        Pagination: {
-            page: number;
-            per_page: number;
-            total: number;
-            total_pages?: number;
-        };
-        JsonObject: {
-            [key: string]: unknown;
-        };
-        UploadRequest: {
-            /** Format: binary */
-            file: string;
-        };
+  schemas: {
+    Error: {
+      error: {
+        /** @example validation_failed */
+        code: string;
+        message: string;
+        details?: {
+          [key: string]: unknown;
+        }[];
+      };
     };
-    responses: {
-        /** @description Missing or invalid credentials */
-        Unauthenticated: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Authenticated but missing the required role or scope */
-        Forbidden: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Malformed JSON */
-        BadRequest: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Request validation failed */
-        ValidationFailed: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Idempotency key was reused with a different payload */
-        IdempotencyConflict: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description Resource not found */
-        NotFound: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["Error"];
-            };
-        };
-        /** @description JSON response */
-        Json: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/json": components["schemas"]["JsonObject"];
-            };
-        };
-        /** @description XLSX download */
-        Spreadsheet: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
-            };
-        };
-        /** @description ZIP download */
-        Zip: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "application/zip": string;
-            };
-        };
-        /** @description Text file download */
-        TextFile: {
-            headers: {
-                [name: string]: unknown;
-            };
-            content: {
-                "text/plain": string;
-            };
-        };
+    Customer: {
+      document_type?: string | null;
+      document_number?: string | null;
+      name: string;
+      /** Format: email */
+      email?: string | null;
+      address?: string | null;
     };
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    DocumentRequest: {
+      /** @description Caller-owned idempotency key. Reuse with a different payload returns 409. */
+      external_id: string;
+      /** @enum {string} */
+      document_type: 'invoice' | 'receipt';
+      series: string;
+      number: number;
+      /** @default PEN */
+      currency: string;
+      /** @description Integer minor currency units (céntimos). */
+      subtotal_minor: number;
+      tax_minor: number;
+      total_minor: number;
+      customer: components['schemas']['Customer'];
+      line_description: string;
+      order_reference?: string | null;
+    };
+    DocumentAccepted: {
+      reference: string;
+      status: string;
+      external_id: string;
+    };
+    DocumentStatus: components['schemas']['DocumentAccepted'] & {
+      sunat_status?: string | null;
+      document_type?: string;
+      series?: string;
+      number?: number;
+      cdr_reference?: string | null;
+      error?: string | null;
+      /** Format: date-time */
+      created_at?: string;
+      /** Format: date-time */
+      updated_at?: string;
+    };
+    WebhookEndpointRequest: {
+      /** Format: uri */
+      url: string;
+      types?: string[];
+    };
+    WebhookEndpoint: {
+      /** Format: uuid */
+      id: string;
+      /** Format: uri */
+      url: string;
+      types: string[];
+      /** @enum {string} */
+      status: 'enabled' | 'disabled';
+      disabled_reason?: string | null;
+      consecutive_failures?: number;
+      /** Format: date-time */
+      created_at: string;
+    };
+    WebhookEndpointCreated: components['schemas']['WebhookEndpoint'] & {
+      /** @description Returned only on create and rotate. */
+      secret: string;
+    };
+    PingResponse: {
+      ok: boolean;
+      client: string;
+      tenant: string;
+      scopes: string[];
+      /** @constant */
+      api_version: 'v1';
+    };
+    /** @description Authentication context returned by authenticated endpoints. */
+    Auth: {
+      client: string;
+      tenant: string;
+      scopes: string[];
+    };
+    Status: {
+      status: string;
+      message?: string | null;
+    };
+    Pagination: {
+      page: number;
+      per_page: number;
+      total: number;
+      total_pages?: number;
+    };
+    JsonObject: {
+      [key: string]: unknown;
+    };
+    UploadRequest: {
+      /** Format: binary */
+      file: string;
+    };
+  };
+  responses: {
+    /** @description Missing or invalid credentials */
+    Unauthenticated: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['Error'];
+      };
+    };
+    /** @description Authenticated but missing the required role or scope */
+    Forbidden: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['Error'];
+      };
+    };
+    /** @description Malformed JSON */
+    BadRequest: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['Error'];
+      };
+    };
+    /** @description Request validation failed */
+    ValidationFailed: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['Error'];
+      };
+    };
+    /** @description Idempotency key was reused with a different payload */
+    IdempotencyConflict: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['Error'];
+      };
+    };
+    /** @description Resource not found */
+    NotFound: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['Error'];
+      };
+    };
+    /** @description JSON response */
+    Json: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/json': components['schemas']['JsonObject'];
+      };
+    };
+    /** @description XLSX download */
+    Spreadsheet: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': string;
+      };
+    };
+    /** @description ZIP download */
+    Zip: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'application/zip': string;
+      };
+    };
+    /** @description Text file download */
+    TextFile: {
+      headers: {
+        [name: string]: unknown;
+      };
+      content: {
+        'text/plain': string;
+      };
+    };
+  };
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    pingIntegrationApi: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Authenticated integration client */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PingResponse"];
-                };
-            };
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-        };
+  pingIntegrationApi: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    submitDocument: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Authenticated integration client */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["DocumentRequest"];
-            };
+        content: {
+          'application/json': components['schemas']['PingResponse'];
         };
-        responses: {
-            /** @description Existing or immediately accepted document */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DocumentAccepted"];
-                };
-            };
-            /** @description Document queued */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DocumentAccepted"];
-                };
-            };
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            409: components["responses"]["IdempotencyConflict"];
-            422: components["responses"]["ValidationFailed"];
-        };
+      };
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
     };
-    getDocument: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                reference: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Document status */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DocumentStatus"];
-                };
-            };
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-        };
+  };
+  submitDocument: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    listWebhookEndpoints: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Configured endpoints */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        data: components["schemas"]["WebhookEndpoint"][];
-                    };
-                };
-            };
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-        };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['DocumentRequest'];
+      };
     };
-    createWebhookEndpoint: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description Existing or immediately accepted document */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["WebhookEndpointRequest"];
-            };
+        content: {
+          'application/json': components['schemas']['DocumentAccepted'];
         };
-        responses: {
-            /** @description Endpoint and one-time signing secret */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WebhookEndpointCreated"];
-                };
-            };
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            422: components["responses"]["ValidationFailed"];
+      };
+      /** @description Document queued */
+      202: {
+        headers: {
+          [name: string]: unknown;
         };
+        content: {
+          'application/json': components['schemas']['DocumentAccepted'];
+        };
+      };
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      409: components['responses']['IdempotencyConflict'];
+      422: components['responses']['ValidationFailed'];
     };
-    deleteWebhookEndpoint: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Endpoint deleted */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-        };
+  };
+  getDocument: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        reference: string;
+      };
+      cookie?: never;
     };
-    rotateWebhookSecret: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Document status */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description Endpoint and new one-time signing secret */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["WebhookEndpointCreated"];
-                };
-            };
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
+        content: {
+          'application/json': components['schemas']['DocumentStatus'];
         };
+      };
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
     };
-    downloadOnboardingSpreadsheetTemplate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                type: "customers" | "receivables" | "payables";
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["Spreadsheet"];
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-        };
+  };
+  listWebhookEndpoints: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    parseOnboardingSpreadsheet: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Configured endpoints */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "multipart/form-data": components["schemas"]["UploadRequest"];
-            };
+        content: {
+          'application/json': {
+            data: components['schemas']['WebhookEndpoint'][];
+          };
         };
-        responses: {
-            200: components["responses"]["Json"];
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-        };
+      };
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
     };
-    importOpeningReceivables: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["JsonObject"];
-            };
-        };
-        responses: {
-            200: components["responses"]["Json"];
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            422: components["responses"]["ValidationFailed"];
-        };
+  };
+  createWebhookEndpoint: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    uploadBankStatement: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": components["schemas"]["UploadRequest"];
-            };
-        };
-        responses: {
-            202: components["responses"]["Json"];
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-        };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['WebhookEndpointRequest'];
+      };
     };
-    listUnreconciledMovements: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    responses: {
+      /** @description Endpoint and one-time signing secret */
+      201: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["Json"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
+        content: {
+          'application/json': components['schemas']['WebhookEndpointCreated'];
         };
+      };
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      422: components['responses']['ValidationFailed'];
     };
-    previewPle: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["Json"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-        };
+  };
+  deleteWebhookEndpoint: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
     };
-    validatePle: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Endpoint deleted */
+      204: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["Json"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-        };
+        content?: never;
+      };
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
     };
-    downloadPleZip: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["Zip"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-        };
+  };
+  rotateWebhookSecret: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        id: string;
+      };
+      cookie?: never;
     };
-    downloadPleSales: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description Endpoint and new one-time signing secret */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["TextFile"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
+        content: {
+          'application/json': components['schemas']['WebhookEndpointCreated'];
         };
+      };
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
     };
-    downloadPlePurchases: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["TextFile"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-        };
+  };
+  downloadOnboardingSpreadsheetTemplate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        type: 'customers' | 'receivables' | 'payables';
+      };
+      cookie?: never;
     };
-    downloadPleDiary: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["TextFile"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-        };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['Spreadsheet'];
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
     };
-    downloadPleLedger: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["TextFile"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-        };
+  };
+  parseOnboardingSpreadsheet: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    downloadPayrollPlame: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                payrollRunId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["TextFile"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-            404: components["responses"]["NotFound"];
-        };
+    requestBody: {
+      content: {
+        'multipart/form-data': components['schemas']['UploadRequest'];
+      };
     };
-    getLegacyExchangeRate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["Json"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-        };
+    responses: {
+      200: components['responses']['Json'];
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
     };
-    updateLegacyExchangeRate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["JsonObject"];
-            };
-        };
-        responses: {
-            200: components["responses"]["Json"];
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-        };
+  };
+  importOpeningReceivables: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    syncLegacyExchangeRate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["Json"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-        };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['JsonObject'];
+      };
     };
-    exportProducts: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["Spreadsheet"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-        };
+    responses: {
+      200: components['responses']['Json'];
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      422: components['responses']['ValidationFailed'];
     };
-    downloadProductImportTemplate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["Spreadsheet"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-        };
+  };
+  uploadBankStatement: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    importProducts: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": components["schemas"]["UploadRequest"];
-            };
-        };
-        responses: {
-            202: components["responses"]["Json"];
-            400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-        };
+    requestBody: {
+      content: {
+        'multipart/form-data': components['schemas']['UploadRequest'];
+      };
     };
-    listCreditNoteReasons: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: components["responses"]["Json"];
-            401: components["responses"]["Unauthenticated"];
-            403: components["responses"]["Forbidden"];
-        };
+    responses: {
+      202: components['responses']['Json'];
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
     };
+  };
+  listUnreconciledMovements: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['Json'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  previewPle: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['Json'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+    };
+  };
+  validatePle: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['Json'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+    };
+  };
+  downloadPleZip: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['Zip'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+    };
+  };
+  downloadPleSales: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['TextFile'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+    };
+  };
+  downloadPlePurchases: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['TextFile'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+    };
+  };
+  downloadPleDiary: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['TextFile'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+    };
+  };
+  downloadPleLedger: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['TextFile'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+    };
+  };
+  downloadPayrollPlame: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        payrollRunId: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['TextFile'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+      404: components['responses']['NotFound'];
+    };
+  };
+  getLegacyExchangeRate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['Json'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  updateLegacyExchangeRate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['JsonObject'];
+      };
+    };
+    responses: {
+      200: components['responses']['Json'];
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  syncLegacyExchangeRate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['Json'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  exportProducts: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['Spreadsheet'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  downloadProductImportTemplate: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['Spreadsheet'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  importProducts: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'multipart/form-data': components['schemas']['UploadRequest'];
+      };
+    };
+    responses: {
+      202: components['responses']['Json'];
+      400: components['responses']['BadRequest'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+    };
+  };
+  listCreditNoteReasons: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      200: components['responses']['Json'];
+      401: components['responses']['Unauthenticated'];
+      403: components['responses']['Forbidden'];
+    };
+  };
 }

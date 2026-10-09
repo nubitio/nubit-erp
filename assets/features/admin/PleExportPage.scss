@@ -80,7 +80,9 @@
   border-radius: 10px;
   box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 
   &:hover:not(:disabled) {
     border-color: color-mix(in srgb, var(--accent-color) 35%, transparent);

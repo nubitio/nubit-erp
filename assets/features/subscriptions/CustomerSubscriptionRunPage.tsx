@@ -26,7 +26,15 @@ const resource = defineResource<SubscriptionRunRecord>(customerSubscriptionRunAp
     {
       key: 'basic',
       label: 'Básico',
-      columns: ['subscription', 'periodStart', 'periodEnd', 'source', 'status', 'saleId', 'createdAt'],
+      columns: [
+        'subscription',
+        'periodStart',
+        'periodEnd',
+        'source',
+        'status',
+        'saleId',
+        'createdAt',
+      ],
     },
   ],
   permissions: { canAdd: false, canEdit: false, canDelete: false },

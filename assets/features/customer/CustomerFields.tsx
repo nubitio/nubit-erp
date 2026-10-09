@@ -98,7 +98,13 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
       .build(),
   );
   fields.push(
-    textareaField().name('businessName').label('Razón social').layoutHint('fullWidth').required(true).sortable(true).build(),
+    textareaField()
+      .name('businessName')
+      .label('Razón social')
+      .layoutHint('fullWidth')
+      .required(true)
+      .sortable(true)
+      .build(),
   );
   fields.push(textareaField().name('fiscalAddress').label('Domicilio').layoutHint('long').build());
   fields.push(

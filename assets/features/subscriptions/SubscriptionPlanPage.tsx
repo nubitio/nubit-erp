@@ -12,7 +12,11 @@ import {
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
-import { subscriptionPlanApiUrl, subscriptionPlanEvents, subscriptionPlanFormLayout } from './model/constants';
+import {
+  subscriptionPlanApiUrl,
+  subscriptionPlanEvents,
+  subscriptionPlanFormLayout,
+} from './model/constants';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import { useTranslation } from 'react-i18next';
 import { moneyCell } from '@shared/ui/crudFormatters';
@@ -66,14 +70,19 @@ const subscriptionPlanResource = defineResource<SubscriptionPlanRecord>(subscrip
   formLayout: subscriptionPlanFormLayout,
   emptyState: {
     title: 'Sin planes de suscripción',
-    description: 'Crea un plan solo si facturas cuotas recurrentes. Si no, puedes ignorar este módulo.',
+    description:
+      'Crea un plan solo si facturas cuotas recurrentes. Si no, puedes ignorar este módulo.',
     icon: 'arrows-clockwise',
   },
   fieldContract: defineFields<SubscriptionPlanRecord>({
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'name', patch: { order: 0, layoutHint: 'fullWidth', label: 'Nombre del plan' } },
+      {
+        kind: 'override',
+        key: 'name',
+        patch: { order: 0, layoutHint: 'fullWidth', label: 'Nombre del plan' },
+      },
       {
         kind: 'override',
         key: 'product',
@@ -92,7 +101,17 @@ const subscriptionPlanResource = defineResource<SubscriptionPlanRecord>(subscrip
         key: 'billingCycle',
         patch: { ...billingCyclePatch, order: 2, layoutHint: 'short' },
       },
-      { kind: 'override', key: 'amount', patch: { order: 3, layoutHint: 'short', label: 'Monto por periodo', formatter: moneyCell, align: 'right' } },
+      {
+        kind: 'override',
+        key: 'amount',
+        patch: {
+          order: 3,
+          layoutHint: 'short',
+          label: 'Monto por periodo',
+          formatter: moneyCell,
+          align: 'right',
+        },
+      },
       {
         kind: 'override',
         key: 'paymentTermDays',
@@ -157,7 +176,11 @@ export const SubscriptionPlanPage = () => {
     },
   };
 
-  return <SchemaCrudPage resource={{ ...resource, title: t('subscriptionPlan.title', 'Planes de suscripción') }} />;
+  return (
+    <SchemaCrudPage
+      resource={{ ...resource, title: t('subscriptionPlan.title', 'Planes de suscripción') }}
+    />
+  );
 };
 
 SubscriptionPlanPage.EVENTS = subscriptionPlanEvents;

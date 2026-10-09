@@ -71,14 +71,14 @@ export function SplitPaymentsEditor({
     }
   }, [value.length]);
 
-  const lines = splitEnabled
-    ? value
-    : [value[0] ?? createSinglePaymentLine(null, total)];
+  const lines = splitEnabled ? value : [value[0] ?? createSinglePaymentLine(null, total)];
   const primaryLine = lines[0] ?? createSinglePaymentLine(null, total);
   const assigned = sumPaymentAmounts(lines);
   const remaining = remainingPaymentAmount(value, total);
   const overAssigned = Math.max(0, roundMoney(assigned - roundMoney(total)));
-  const isBalanced = allowPartial ? paymentsWithinTotal(value, total) : paymentsMatchTotal(value, total);
+  const isBalanced = allowPartial
+    ? paymentsWithinTotal(value, total)
+    : paymentsMatchTotal(value, total);
   const canAddLine = splitEnabled && value.length < paymentMethods.length;
   const showActions = splitEnabled && value.length > 1;
 
@@ -88,10 +88,7 @@ export function SplitPaymentsEditor({
       index,
       method: paymentMethods.find((item) => item.id === line.methodId) ?? null,
     }))
-    .filter(
-      ({ line, method }) =>
-        isCashPaymentMethod(method) && parseMoneyInput(line.amount) > 0,
-    );
+    .filter(({ line, method }) => isCashPaymentMethod(method) && parseMoneyInput(line.amount) > 0);
 
   const methodOptionsForLine = useMemo(
     () => (lineIndex: number) => {
@@ -146,7 +143,11 @@ export function SplitPaymentsEditor({
   return (
     <div className={`split-payments split-payments--${variant}`}>
       {showMethodPicker && (
-        <div className="split-payments__methods" role="radiogroup" aria-label="Método de pago principal">
+        <div
+          className="split-payments__methods"
+          role="radiogroup"
+          aria-label="Método de pago principal"
+        >
           {paymentMethods.map((method) => (
             <label
               key={method.id}
@@ -179,7 +180,10 @@ export function SplitPaymentsEditor({
           <strong>Pago dividido</strong>
           <span>{splitEnabled ? 'Varios métodos en una venta' : 'Un solo método de pago'}</span>
         </span>
-        <span className={`split-payments__split-switch${splitEnabled ? ' is-on' : ''}`} aria-hidden="true">
+        <span
+          className={`split-payments__split-switch${splitEnabled ? ' is-on' : ''}`}
+          aria-hidden="true"
+        >
           <span className="split-payments__split-switch-thumb" />
         </span>
       </button>
@@ -198,18 +202,20 @@ export function SplitPaymentsEditor({
           <thead>
             <tr>
               <th scope="col">Método</th>
-              <th scope="col" className="split-payments__col-money">Monto</th>
+              <th scope="col" className="split-payments__col-money">
+                Monto
+              </th>
               {showActions && <th scope="col" className="split-payments__col-action" />}
             </tr>
           </thead>
           <tbody>
             {lines.map((line, index) => {
               const method = paymentMethods.find((item) => item.id === line.methodId) ?? null;
-              const isLastSplitLine = splitEnabled && index === lines.length - 1 && lines.length > 1;
+              const isLastSplitLine =
+                splitEnabled && index === lines.length - 1 && lines.length > 1;
               const options = methodOptionsForLine(index);
-              const amountValue = splitEnabled || allowPartial
-                ? line.amount
-                : roundMoney(total).toFixed(2);
+              const amountValue =
+                splitEnabled || allowPartial ? line.amount : roundMoney(total).toFixed(2);
 
               return (
                 <tr key={`payment-line-${index}`}>
@@ -219,7 +225,9 @@ export function SplitPaymentsEditor({
                         className="split-payments__cell-input split-payments__cell-select"
                         value={line.methodId ?? ''}
                         onChange={(event) =>
-                          onChange(updatePaymentLineMethod(value, index, Number(event.target.value)))
+                          onChange(
+                            updatePaymentLineMethod(value, index, Number(event.target.value)),
+                          )
                         }
                         aria-label={`Método de pago ${index + 1}`}
                       >
@@ -233,9 +241,7 @@ export function SplitPaymentsEditor({
                         ))}
                       </select>
                     ) : (
-                      <span className="split-payments__cell-text">
-                        {method?.name ?? '—'}
-                      </span>
+                      <span className="split-payments__cell-text">{method?.name ?? '—'}</span>
                     )}
                   </td>
                   <td className="split-payments__col-money">
@@ -291,9 +297,7 @@ export function SplitPaymentsEditor({
               </tr>
             )}
             <tr>
-              <td className="split-payments__footer-label is-strong">
-                Total venta
-              </td>
+              <td className="split-payments__footer-label is-strong">Total venta</td>
               <td className="split-payments__col-money split-payments__footer-value is-strong">
                 {formatMoney(total, currency)}
               </td>
@@ -326,19 +330,14 @@ export function SplitPaymentsEditor({
       )}
 
       {cashEntries.map(({ line, index }) => {
-        const cashAmount = splitEnabled
-          ? parseMoneyInput(line.amount)
-          : roundMoney(total);
+        const cashAmount = splitEnabled ? parseMoneyInput(line.amount) : roundMoney(total);
         const tendered = parseMoneyInput(line.tenderedAmount ?? line.amount);
         const change = roundMoney(tendered - cashAmount);
         const insufficient = change < -0.009;
         const inputId = `split-payments-cash-${index}`;
 
         return (
-          <div
-            key={inputId}
-            className={`split-payments__cash${insufficient ? ' is-invalid' : ''}`}
-          >
+          <div key={inputId} className={`split-payments__cash${insufficient ? ' is-invalid' : ''}`}>
             <div className="split-payments__cash-row">
               <span className="split-payments__cash-icon" aria-hidden="true">
                 <i className="ph ph-money" />

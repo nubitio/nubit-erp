@@ -5,7 +5,7 @@ import { getE2EBaseUrl } from '../support/e2eSeed';
 async function fillDxInput(page: Page, ariaLabel: string, value: string) {
   const loginInputIds: Record<string, string> = {
     Usuario: '#login-username',
-    'Contraseña': '#login-password',
+    Contraseña: '#login-password',
   };
   const input = page
     .locator(
@@ -55,7 +55,10 @@ export async function login(page: Page, username: string, password: string) {
   await page.locator('form.login-form').getByRole('button', { name: 'Ingresar' }).click();
 
   const loginResponse = await loginResponsePromise;
-  expect(loginResponse.ok(), `login API debe responder 2xx (status ${loginResponse.status()})`).toBeTruthy();
+  expect(
+    loginResponse.ok(),
+    `login API debe responder 2xx (status ${loginResponse.status()})`,
+  ).toBeTruthy();
 
   try {
     const firstBranch = page.locator('[data-testid="branch-picker-option"]').first();
@@ -84,7 +87,13 @@ export async function login(page: Page, username: string, password: string) {
   const onAppRoute =
     page.url().includes('/#/dashboard') ||
     page.url().includes('/#/pos') ||
-    !(page.url().includes('/#/login') || (await page.locator('form.login-form').isVisible().catch(() => false)));
+    !(
+      page.url().includes('/#/login') ||
+      (await page
+        .locator('form.login-form')
+        .isVisible()
+        .catch(() => false))
+    );
 
   expect(onAppRoute, 'debe salir de /login tras autenticarse').toBeTruthy();
 }

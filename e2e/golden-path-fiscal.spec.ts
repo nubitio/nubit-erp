@@ -81,8 +81,11 @@ test.describe('Golden path fiscal — POS a SUNAT y PDF', () => {
       await optionsToggle.click();
       const emitInvoiceToggle = page.getByLabel('Emitir boleta o factura SUNAT');
       const defaultEmitInvoice = await emitInvoiceToggle.isChecked();
-      await page.locator('.pos-footer-option-row')
-        .filter({ hasText: 'Emitir boleta/factura SUNAT' }).locator('label').click();
+      await page
+        .locator('.pos-footer-option-row')
+        .filter({ hasText: 'Emitir boleta/factura SUNAT' })
+        .locator('label')
+        .click();
       await page.locator('.nb-chip').filter({ hasText: /^5%$/ }).click();
       const noteToggle = page.locator('.pos-note-section__toggle');
       await noteToggle.click();
@@ -114,14 +117,24 @@ test.describe('Golden path fiscal — POS a SUNAT y PDF', () => {
       await page.getByTestId('pos-postsale-new-sale').click();
 
       await expect(page.locator('.pos-cart-lines')).toContainText('Orden vacía');
-      await expect(page.locator('.pos-footer-options__toggle')).toHaveAttribute('aria-expanded', 'false');
-      await expect(page.locator('.pos-note-section__toggle')).toHaveAttribute('aria-expanded', 'false');
+      await expect(page.locator('.pos-footer-options__toggle')).toHaveAttribute(
+        'aria-expanded',
+        'false',
+      );
+      await expect(page.locator('.pos-note-section__toggle')).toHaveAttribute(
+        'aria-expanded',
+        'false',
+      );
       await expect(page.getByTestId('pos-customer').locator('input').first()).not.toHaveValue(
         new RegExp(E2E_SEED.customerName, 'i'),
       );
       await page.locator('.pos-footer-options__toggle').click();
-      await expect(page.getByLabel('Emitir boleta o factura SUNAT')).toBeChecked({ checked: defaultEmitInvoice });
-      await expect(page.locator('.nb-chip').filter({ hasText: /^Ninguno$/ })).toHaveClass(/is-active/);
+      await expect(page.getByLabel('Emitir boleta o factura SUNAT')).toBeChecked({
+        checked: defaultEmitInvoice,
+      });
+      await expect(page.locator('.nb-chip').filter({ hasText: /^Ninguno$/ })).toHaveClass(
+        /is-active/,
+      );
       await page.locator('.pos-note-section__toggle').click();
       await expect(page.getByLabel('Nota interna de la venta')).toHaveValue('');
     });

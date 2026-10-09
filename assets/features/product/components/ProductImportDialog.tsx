@@ -256,7 +256,9 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
             <span className="product-import-result__value">{result.updated}</span>
             <span className="product-import-result__label">Actualizados</span>
           </div>
-          <div className={`product-import-result__card${result.errors.length > 0 ? ' product-import-result__card--error' : ''}`}>
+          <div
+            className={`product-import-result__card${result.errors.length > 0 ? ' product-import-result__card--error' : ''}`}
+          >
             <span className="product-import-result__value">{result.errors.length}</span>
             <span className="product-import-result__label">Errores</span>
           </div>
@@ -304,19 +306,11 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
       onClose={handleClose}
       footer={
         <div className="product-import-footer">
-          <Button
-            variant="secondary"
-            onClick={handleClose}
-            disabled={isRunning}
-          >
+          <Button variant="secondary" onClick={handleClose} disabled={isRunning}>
             Cerrar
           </Button>
           {status === 'idle' && (
-            <Button
-              variant="primary"
-              disabled={!selectedFile}
-              onClick={() => void handleImport()}
-            >
+            <Button variant="primary" disabled={!selectedFile} onClick={() => void handleImport()}>
               Importar
             </Button>
           )}

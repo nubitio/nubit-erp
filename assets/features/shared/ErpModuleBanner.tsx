@@ -11,10 +11,7 @@ interface ErpModuleBannerProps {
 export function ErpModuleBanner({ tone = 'info', children }: ErpModuleBannerProps) {
   return (
     <div className={`erp-module-banner erp-module-banner--${tone}`} role="note">
-      <i
-        className={`ph ${tone === 'warning' ? 'ph-warning' : 'ph-info'}`}
-        aria-hidden="true"
-      />
+      <i className={`ph ${tone === 'warning' ? 'ph-warning' : 'ph-info'}`} aria-hidden="true" />
       <p>{children}</p>
     </div>
   );

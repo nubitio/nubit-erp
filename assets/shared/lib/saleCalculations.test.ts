@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  computeCartTotals,
-  computeLineAmount,
-  computeTotals,
-  round2,
-} from './saleCalculations';
+import { computeCartTotals, computeLineAmount, computeTotals, round2 } from './saleCalculations';
 
 describe('saleCalculations exact money', () => {
   it('rounds monetary halves using HALF_UP semantics', () => {
@@ -41,9 +36,9 @@ describe('saleCalculations exact money', () => {
     );
 
     expect(totals.total).toBe(27.81);
-    expect(
-      round2(totals.gravadoBase + totals.exoneradoBase + totals.inafectoBase),
-    ).toBe(totals.total);
+    expect(round2(totals.gravadoBase + totals.exoneradoBase + totals.inafectoBase)).toBe(
+      totals.total,
+    );
   });
 
   it('does not create a negative inafecto base from allocation rounding', () => {

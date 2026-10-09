@@ -479,7 +479,10 @@
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    opacity 0.12s ease;
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);

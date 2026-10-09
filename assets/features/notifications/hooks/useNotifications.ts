@@ -123,12 +123,10 @@ export function useNotifications(): UseNotificationsResult {
         ),
       );
 
-      notificationService
-        .markRead(id)
-        .catch(() => {
-          // Revert the optimistic update by re-syncing with server
-          if (mountedRef.current) fetchNotifications();
-        });
+      notificationService.markRead(id).catch(() => {
+        // Revert the optimistic update by re-syncing with server
+        if (mountedRef.current) fetchNotifications();
+      });
     },
     [fetchNotifications],
   );
@@ -139,12 +137,10 @@ export function useNotifications(): UseNotificationsResult {
       prev.map((n) => (n.readAt === null ? { ...n, readAt: new Date().toISOString() } : n)),
     );
 
-    notificationService
-      .markAllRead()
-      .catch(() => {
-        // Revert the optimistic update by re-syncing with server
-        if (mountedRef.current) fetchNotifications();
-      });
+    notificationService.markAllRead().catch(() => {
+      // Revert the optimistic update by re-syncing with server
+      if (mountedRef.current) fetchNotifications();
+    });
   }, [fetchNotifications]);
 
   const unreadCount = notifications.filter((n) => n.readAt === null).length;

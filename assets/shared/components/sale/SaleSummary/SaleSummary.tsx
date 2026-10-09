@@ -4,7 +4,10 @@ import './SaleSummary.scss';
 
 export interface SaleSummaryProps {
   /** Partial or full SaleTotals. Only the fields needed for display are used. */
-  totals: Pick<SaleTotals, 'subtotal' | 'discount' | 'gravadoBase' | 'exoneradoBase' | 'inafectoBase' | 'igv' | 'total'>;
+  totals: Pick<
+    SaleTotals,
+    'subtotal' | 'discount' | 'gravadoBase' | 'exoneradoBase' | 'inafectoBase' | 'igv' | 'total'
+  >;
   /** Currency code for formatting (default: PEN). */
   currency?: string;
   /** Current IGV rate as decimal (e.g. 0.18 or 0.105). Used for the label only. */
@@ -27,8 +30,7 @@ export const SaleSummary: React.FC<SaleSummaryProps> = ({
   formatMoney,
   className = '',
 }) => {
-  const hasNonGravado =
-    (totals.exoneradoBase ?? 0) > 0 || (totals.inafectoBase ?? 0) > 0;
+  const hasNonGravado = (totals.exoneradoBase ?? 0) > 0 || (totals.inafectoBase ?? 0) > 0;
 
   const igvLabel =
     typeof igvRate === 'number'

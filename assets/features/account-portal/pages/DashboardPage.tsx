@@ -20,7 +20,9 @@ export function DashboardPage() {
     enabled: session.data?.authenticated === true,
     refetchInterval: (query) => {
       const provisions = query.state.data?.provisions ?? [];
-      const hasActive = provisions.some((item) => item.status === 'dispatched' || item.status === 'running');
+      const hasActive = provisions.some(
+        (item) => item.status === 'dispatched' || item.status === 'running',
+      );
       return hasActive ? 4000 : false;
     },
   });
@@ -39,7 +41,9 @@ export function DashboardPage() {
 
   const tenants = dashboard.data?.tenants ?? [];
   const provisions = dashboard.data?.provisions ?? [];
-  const activeProvisions = provisions.filter((item) => item.status === 'dispatched' || item.status === 'running');
+  const activeProvisions = provisions.filter(
+    (item) => item.status === 'dispatched' || item.status === 'running',
+  );
   const failedProvisions = provisions.filter((item) => item.status === 'failed');
 
   const dismissProvision = async (provisionId: number) => {

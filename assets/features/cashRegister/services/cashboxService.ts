@@ -19,9 +19,7 @@ export interface CashRegisterDashboardDto {
 
 class CashboxService {
   getDashboard() {
-    return httpClient.get<CashRegisterDashboardDto[]>(
-      API + 'cash-registers/dashboard',
-    );
+    return httpClient.get<CashRegisterDashboardDto[]>(API + 'cash-registers/dashboard');
   }
 }
 

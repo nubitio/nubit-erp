@@ -8,7 +8,9 @@ type CashRegisterDashboardRow = {
 };
 
 async function waitForCashboxGrid(page: Page) {
-  await expect(page.locator('.nb-datagrid__toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({
+  await expect(
+    page.locator('.nb-datagrid__toolbar').filter({ hasText: /caja/i }).first(),
+  ).toBeVisible({
     timeout: 15000,
   });
   await page.locator('.nb-datagrid__row').first().waitFor({ state: 'visible', timeout: 15000 });
@@ -82,7 +84,8 @@ export async function ensureOpenCashSession(page: Page, baseUrl: string): Promis
       }, baseUrl);
       const openReg = Array.isArray(dashData)
         ? dashData.find(
-            (r: CashRegisterDashboardRow) => r.status === 'open' && (r.cashSessionId ?? r.cashShiftId),
+            (r: CashRegisterDashboardRow) =>
+              r.status === 'open' && (r.cashSessionId ?? r.cashShiftId),
           )
         : null;
       const cashSessionId = openReg?.cashSessionId ?? openReg?.cashShiftId;

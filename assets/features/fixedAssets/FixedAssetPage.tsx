@@ -39,7 +39,10 @@ function toPatch(field: Field): SmartCrudFieldPatch<FixedAssetRecord> {
   return patch as SmartCrudFieldPatch<FixedAssetRecord>;
 }
 
-const STATUS_BADGE: Record<FixedAssetRecord['status'], { variant: 'success' | 'warning' | 'secondary' | 'danger'; text: string }> = {
+const STATUS_BADGE: Record<
+  FixedAssetRecord['status'],
+  { variant: 'success' | 'warning' | 'secondary' | 'danger'; text: string }
+> = {
   ACTIVE: { variant: 'success', text: 'Activo' },
   FULLY_DEPRECIATED: { variant: 'secondary', text: 'Depreciado' },
   DISPOSED: { variant: 'danger', text: 'Dado de baja' },
@@ -57,7 +60,11 @@ const statusPatch = toPatch(
       const badge = STATUS_BADGE[cell.value as FixedAssetRecord['status']];
       if (!badge) return null;
 
-      return <Badge variant={badge.variant} outlined>{badge.text}</Badge>;
+      return (
+        <Badge variant={badge.variant} outlined>
+          {badge.text}
+        </Badge>
+      );
     })
     .build(),
 );
@@ -88,8 +95,16 @@ const fixedAssetResource = defineResource<FixedAssetRecord>(fixedAssetApiUrl, {
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'description', patch: { order: 0, layoutHint: 'fullWidth', label: 'Descripción' } },
-      { kind: 'override', key: 'purchaseDate', patch: { order: 1, layoutHint: 'short', label: 'Fecha de compra', formatter: dateCell } },
+      {
+        kind: 'override',
+        key: 'description',
+        patch: { order: 0, layoutHint: 'fullWidth', label: 'Descripción' },
+      },
+      {
+        kind: 'override',
+        key: 'purchaseDate',
+        patch: { order: 1, layoutHint: 'short', label: 'Fecha de compra', formatter: dateCell },
+      },
       {
         kind: 'override',
         key: 'sourceBill',
@@ -103,11 +118,50 @@ const fixedAssetResource = defineResource<FixedAssetRecord>(fixedAssetApiUrl, {
           label: 'Factura de origen',
         },
       },
-      { kind: 'override', key: 'cost', patch: { order: 3, layoutHint: 'short', label: 'Costo', formatter: moneyCell, align: 'right' } },
-      { kind: 'override', key: 'usefulLifeMonths', patch: { order: 4, layoutHint: 'short', label: 'Vida útil (meses)' } },
-      { kind: 'override', key: 'accumulatedDepreciation', patch: { order: 5, layoutHint: 'short', label: 'Depreciación acumulada', disabled: true, visibleOnForm: false, formatter: moneyCell } },
-      { kind: 'override', key: 'status', patch: { ...statusPatch, order: 6, layoutHint: 'short', disabled: true, visibleOnForm: false } },
-      { kind: 'override', key: 'note', patch: { order: 7, layoutHint: 'fullWidth', label: 'Notas' } },
+      {
+        kind: 'override',
+        key: 'cost',
+        patch: {
+          order: 3,
+          layoutHint: 'short',
+          label: 'Costo',
+          formatter: moneyCell,
+          align: 'right',
+        },
+      },
+      {
+        kind: 'override',
+        key: 'usefulLifeMonths',
+        patch: { order: 4, layoutHint: 'short', label: 'Vida útil (meses)' },
+      },
+      {
+        kind: 'override',
+        key: 'accumulatedDepreciation',
+        patch: {
+          order: 5,
+          layoutHint: 'short',
+          label: 'Depreciación acumulada',
+          disabled: true,
+          visibleOnForm: false,
+          formatter: moneyCell,
+        },
+      },
+      {
+        kind: 'override',
+        key: 'status',
+        patch: {
+          ...statusPatch,
+          order: 6,
+          layoutHint: 'short',
+          disabled: true,
+          visibleOnForm: false,
+        },
+      },
+      {
+        kind: 'override',
+        key: 'note',
+        patch: { order: 7, layoutHint: 'fullWidth', label: 'Notas' },
+      },
       { kind: 'override', key: 'disposedAt', patch: { visibleOnForm: false } },
       { kind: 'override', key: 'disposalNote', patch: { visibleOnForm: false } },
       { kind: 'override', key: 'createdAt', patch: { visibleOnForm: false, visible: false } },

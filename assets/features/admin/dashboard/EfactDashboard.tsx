@@ -37,7 +37,9 @@ const RECENT_SALES_COLUMNS: Array<MiniTableColumn<RecentSaleRow>> = [
   { key: 'total', label: 'Total', format: 'currency', align: 'right' },
 ];
 
-const LOW_STOCK_COLUMNS: Array<MiniTableColumn<EfactDeclarativeDashboardPayload['lowStock'][number]>> = [
+const LOW_STOCK_COLUMNS: Array<
+  MiniTableColumn<EfactDeclarativeDashboardPayload['lowStock'][number]>
+> = [
   { key: 'name', label: 'Producto' },
   { key: 'currentStock', label: 'Actual', format: 'number', align: 'right' },
   { key: 'minStock', label: 'Mínimo', format: 'number', align: 'right' },

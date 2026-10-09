@@ -82,8 +82,16 @@ const resource = defineResource<SunatCatalogRecord>(sunatCatalogEndpoints.list()
     directives: [
       { kind: 'override', key: 'catalog', patch: { order: 0, width: 100, label: 'Catálogo' } },
       { kind: 'override', key: 'code', patch: { order: 1, width: 100, label: 'Código' } },
-      { kind: 'override', key: 'description', patch: { order: 2, width: 320, label: 'Descripción' } },
-      { kind: 'override', key: 'percentage', patch: { order: 3, width: 110, label: 'Porcentaje', align: 'right' } },
+      {
+        kind: 'override',
+        key: 'description',
+        patch: { order: 2, width: 320, label: 'Descripción' },
+      },
+      {
+        kind: 'override',
+        key: 'percentage',
+        patch: { order: 3, width: 110, label: 'Porcentaje', align: 'right' },
+      },
       { kind: 'override', key: 'active', patch: activePatch },
     ],
   }),

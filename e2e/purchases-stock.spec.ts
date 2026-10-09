@@ -50,16 +50,20 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     await expect(page).toHaveURL(/\/#\/purchases/);
 
     const auth = await loginViaApi(request, BASE_URL, credentials.username, credentials.password);
-    const warehousesResponse = await request.get(`${BASE_URL}/api/warehouses?page=1&itemsPerPage=20`, {
-      headers: auth.headers,
-    });
+    const warehousesResponse = await request.get(
+      `${BASE_URL}/api/warehouses?page=1&itemsPerPage=20`,
+      {
+        headers: auth.headers,
+      },
+    );
     expect(warehousesResponse.ok()).toBeTruthy();
     const warehouses = parseApiCollection<{
       id: string;
       name: string;
       branch?: string | { id?: string };
     }>(await warehousesResponse.json());
-    const warehouse = warehouses.find((item) => item.name?.includes('CI E2E')) ?? warehouses[0] ?? null;
+    const warehouse =
+      warehouses.find((item) => item.name?.includes('CI E2E')) ?? warehouses[0] ?? null;
 
     const branchRef = warehouse?.branch;
     let branchId =
@@ -67,12 +71,18 @@ test.describe('Compras — crear compra e incremento de stock', () => {
         ? (branchRef.match(/\/([^/]+)$/)?.[1] ?? null)
         : (branchRef?.id ?? null);
     if (!branchId) {
-      const branchesResponse = await request.get(`${BASE_URL}/api/branches?page=1&itemsPerPage=20`, {
-        headers: auth.headers,
-      });
+      const branchesResponse = await request.get(
+        `${BASE_URL}/api/branches?page=1&itemsPerPage=20`,
+        {
+          headers: auth.headers,
+        },
+      );
       expect(branchesResponse.ok()).toBeTruthy();
-      const branches = parseApiCollection<{ id: string; name?: string }>(await branchesResponse.json());
-      branchId = branches.find((item) => item.name?.includes('CI E2E'))?.id ?? branches[0]?.id ?? null;
+      const branches = parseApiCollection<{ id: string; name?: string }>(
+        await branchesResponse.json(),
+      );
+      branchId =
+        branches.find((item) => item.name?.includes('CI E2E'))?.id ?? branches[0]?.id ?? null;
     }
 
     const productsResponse = await request.get(
@@ -116,7 +126,6 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     resolvedBranchId = seedData.branchId;
     resolvedProductId = seedData.productId;
     stockBefore = seedData.stockBefore;
-
   });
 
   test('03 - Crear compra y verificar stock incrementado', async ({ request }) => {

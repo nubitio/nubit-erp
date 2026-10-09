@@ -59,16 +59,11 @@ export const BulkStockReceiptDialog = ({
   };
 
   return (
-    <AppDialog
-      open={open}
-      onClose={onClose}
-      title="Ingreso masivo"
-      width={440}
-    >
+    <AppDialog open={open} onClose={onClose} title="Ingreso masivo" width={440}>
       <div className="bulk-stock-receipt" data-testid="bulk-stock-receipt-dialog">
         <p className="bulk-stock-receipt__intro">
-          Se registrará la misma cantidad como ingreso manual para{' '}
-          <strong>{targets.length}</strong> producto(s) seleccionado(s).
+          Se registrará la misma cantidad como ingreso manual para <strong>{targets.length}</strong>{' '}
+          producto(s) seleccionado(s).
         </p>
 
         <label className="stock-adjust-drawer__field">
@@ -113,7 +108,9 @@ export const BulkStockReceiptDialog = ({
   );
 };
 
-export function parseStockItemCompositeId(stockItemId: string): { warehouseId: string; productId: string } | null {
+export function parseStockItemCompositeId(
+  stockItemId: string,
+): { warehouseId: string; productId: string } | null {
   const separator = stockItemId.indexOf(':');
   if (separator <= 0) return null;
   const warehouseId = stockItemId.slice(0, separator);

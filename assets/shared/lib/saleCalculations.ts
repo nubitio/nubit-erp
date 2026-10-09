@@ -65,7 +65,7 @@ const powerOfTen = (scale: number): bigint => 10n ** BigInt(scale);
 /** Integer division rounded half away from zero (HALF_UP for positive money). */
 const divideHalfUp = (numerator: bigint, denominator: bigint): bigint => {
   if (denominator === 0n) return 0n;
-  const negative = (numerator < 0n) !== (denominator < 0n);
+  const negative = numerator < 0n !== denominator < 0n;
   const absoluteNumerator = numerator < 0n ? -numerator : numerator;
   const absoluteDenominator = denominator < 0n ? -denominator : denominator;
   const rounded = (absoluteNumerator + absoluteDenominator / 2n) / absoluteDenominator;
@@ -74,10 +74,7 @@ const divideHalfUp = (numerator: bigint, denominator: bigint): bigint => {
 
 const decimalToMinor = (value: MoneyInput): bigint => {
   const decimal = decimalValue(value);
-  return divideHalfUp(
-    decimal.coefficient * powerOfTen(MONEY_SCALE),
-    powerOfTen(decimal.scale),
-  );
+  return divideHalfUp(decimal.coefficient * powerOfTen(MONEY_SCALE), powerOfTen(decimal.scale));
 };
 
 const multiplyToMinor = (left: MoneyInput, right: MoneyInput): bigint => {
@@ -109,8 +106,7 @@ export const isGravado = (taxType: SunatTaxType | undefined): boolean =>
 /**
  * Returns true if the given SUNAT tax type is exonerado (exempt).
  */
-export const isExonerado = (taxType: SunatTaxType | undefined): boolean =>
-  taxType === '20';
+export const isExonerado = (taxType: SunatTaxType | undefined): boolean => taxType === '20';
 
 /**
  * Compute the gross amount, discount amount, and net amount for a single sale line.
@@ -165,9 +161,7 @@ export const computeTotals = (
   const inafectoSubtotalMinor = subtotalMinor - gravadoSubtotalMinor - exoneradoSubtotalMinor;
   // Proportional allocation of header discount across each group.
   const allocate = (groupSubtotal: bigint): bigint =>
-    subtotalMinor > 0n
-      ? divideHalfUp(afterDiscountMinor * groupSubtotal, subtotalMinor)
-      : 0n;
+    subtotalMinor > 0n ? divideHalfUp(afterDiscountMinor * groupSubtotal, subtotalMinor) : 0n;
 
   let gravadoBaseMinor = allocate(gravadoSubtotalMinor);
   let exoneradoBaseMinor = allocate(exoneradoSubtotalMinor);

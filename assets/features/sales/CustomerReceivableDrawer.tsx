@@ -206,10 +206,7 @@ export const CustomerReceivableDrawer = ({
       }
     >
       {customer && (
-        <CustomerReceivableDetail
-          key={`${customer.id}-${refreshKey}`}
-          customer={customer}
-        />
+        <CustomerReceivableDetail key={`${customer.id}-${refreshKey}`} customer={customer} />
       )}
     </Drawer>
   );

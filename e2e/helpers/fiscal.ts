@@ -16,7 +16,10 @@ export async function loginViaApi(
     data: { username, password },
   });
   const loginBody = await login.text();
-  expect(login.ok(), `login API debe responder 2xx (status ${login.status()} ${loginBody})`).toBeTruthy();
+  expect(
+    login.ok(),
+    `login API debe responder 2xx (status ${login.status()} ${loginBody})`,
+  ).toBeTruthy();
 
   const payload = JSON.parse(loginBody) as { token?: string };
   const accessToken = payload.token;
@@ -57,7 +60,11 @@ export async function listTaxDocumentsForSale(
   });
   expect(response.ok(), 'listar tax-documents debe responder 2xx').toBeTruthy();
 
-  return (await response.json()) as Array<{ id?: string; sunatStatus?: string | null; cdrPath?: string | null }>;
+  return (await response.json()) as Array<{
+    id?: string;
+    sunatStatus?: string | null;
+    cdrPath?: string | null;
+  }>;
 }
 
 export async function sendTaxDocument(
@@ -124,7 +131,11 @@ export async function getVoucherForSale(
   };
 }
 
-export function buildReceiptPdfUrl(baseUrl: string, voucherType: string, taxDocumentId: string): string {
+export function buildReceiptPdfUrl(
+  baseUrl: string,
+  voucherType: string,
+  taxDocumentId: string,
+): string {
   const payload = Buffer.from(
     JSON.stringify({ type: voucherType, id: taxDocumentId }),
     'utf8',

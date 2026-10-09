@@ -4,13 +4,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 .pos-shell {
   // Surfaces — inherit from the main app's semantic variables
-  --pos-bg: var(--surface-0);                   // page background
-  --pos-card: var(--surface-1);                 // card/panel surface
-  --pos-card-alt: var(--surface-2);             // alternate surface (input rows, etc.)
-  --pos-border: var(--border-color);            // border / separator
-  --pos-muted: var(--text-secondary);           // secondary label text
-  --pos-text: var(--text-primary);              // primary body text
-  --pos-text-soft: var(--text-secondary);       // subdued text
+  --pos-bg: var(--surface-0); // page background
+  --pos-card: var(--surface-1); // card/panel surface
+  --pos-card-alt: var(--surface-2); // alternate surface (input rows, etc.)
+  --pos-border: var(--border-color); // border / separator
+  --pos-muted: var(--text-secondary); // secondary label text
+  --pos-text: var(--text-primary); // primary body text
+  --pos-text-soft: var(--text-secondary); // subdued text
 
   // Accent — follows the app's primary colour
   --pos-primary: var(--accent-color);
@@ -115,7 +115,9 @@
   justify-content: center;
   cursor: pointer;
   color: var(--pos-text);
-  transition: background var(--pos-transition), color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    color var(--pos-transition);
 
   &:hover {
     background: var(--pos-primary-soft);
@@ -137,7 +139,10 @@
   color: var(--pos-muted);
   white-space: nowrap;
 
-  svg { flex-shrink: 0; color: var(--pos-muted); }
+  svg {
+    flex-shrink: 0;
+    color: var(--pos-muted);
+  }
 
   strong {
     color: var(--pos-text);
@@ -170,7 +175,9 @@
     min-height: 28px;
     min-width: 80px;
     max-width: 160px;
-    transition: border-color var(--pos-transition), box-shadow var(--pos-transition);
+    transition:
+      border-color var(--pos-transition),
+      box-shadow var(--pos-transition);
 
     &:hover:not(:disabled),
     .nb-dropdown--open & {
@@ -229,8 +236,12 @@
   border-radius: 50%;
   flex-shrink: 0;
 
-  .is-open & { background: var(--pos-success); }
-  .is-closed & { background: var(--pos-danger); }
+  .is-open & {
+    background: var(--pos-success);
+  }
+  .is-closed & {
+    background: var(--pos-danger);
+  }
 }
 
 // Opening time shown inside the badge when caja is open
@@ -252,8 +263,12 @@
   flex-shrink: 0;
   cursor: default;
 
-  &.is-online  { background: var(--pos-success); }
-  &.is-offline { background: var(--pos-danger); }
+  &.is-online {
+    background: var(--pos-success);
+  }
+  &.is-offline {
+    background: var(--pos-danger);
+  }
 
   // Syncing: pulse animation draws attention without taking text space
   &.is-syncing {
@@ -263,8 +278,15 @@
 }
 
 @keyframes pos-dot-pulse {
-  0%, 100% { opacity: 1;   transform: scale(1); }
-  50%       { opacity: 0.4; transform: scale(0.75); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.75);
+  }
 }
 
 // Network badge (legacy — kept for any other consumers)
@@ -419,11 +441,18 @@
   font-size: 0.72rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background var(--pos-transition), color var(--pos-transition), border-color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    color var(--pos-transition),
+    border-color var(--pos-transition);
   white-space: nowrap;
   flex-shrink: 0;
 
-  &:hover { background: var(--pos-primary-soft); color: var(--pos-primary); border-color: var(--pos-primary-border); }
+  &:hover {
+    background: var(--pos-primary-soft);
+    color: var(--pos-primary);
+    border-color: var(--pos-primary-border);
+  }
 
   &.is-active {
     background: var(--pos-primary);
@@ -431,7 +460,9 @@
     color: var(--on-accent-color);
     border-color: var(--pos-primary);
 
-    svg { color: var(--on-accent-color); }
+    svg {
+      color: var(--on-accent-color);
+    }
   }
 }
 
@@ -448,7 +479,9 @@
   border: 1px solid;
   transition: opacity var(--pos-transition);
 
-  &:hover { opacity: 0.85; }
+  &:hover {
+    opacity: 0.85;
+  }
 
   &.is-open {
     background: var(--pos-success-soft);
@@ -512,7 +545,10 @@
   justify-content: center;
   cursor: pointer;
   color: var(--pos-text);
-  transition: background var(--pos-transition), border-color var(--pos-transition), color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    border-color var(--pos-transition),
+    color var(--pos-transition);
 
   &:hover {
     background: var(--pos-primary-soft);
@@ -531,14 +567,18 @@
   height: var(--pos-touch);
   background: var(--pos-card-alt);
   color: var(--pos-muted);
-  transition: border-color var(--pos-transition), box-shadow var(--pos-transition);
+  transition:
+    border-color var(--pos-transition),
+    box-shadow var(--pos-transition);
 
   &:focus-within {
     border-color: var(--pos-primary-border);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--pos-focus-ring) 10%, transparent);
     background: var(--pos-card);
 
-    svg { color: var(--pos-primary); }
+    svg {
+      color: var(--pos-primary);
+    }
   }
 
   input {
@@ -550,8 +590,12 @@
     color: var(--pos-text);
     font-size: 0.875rem;
 
-    &::placeholder { color: var(--pos-muted); }
-    &::-webkit-search-cancel-button { display: none; }
+    &::placeholder {
+      color: var(--pos-muted);
+    }
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
   }
 }
 
@@ -569,7 +613,9 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
-  transition: background var(--pos-transition), color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    color var(--pos-transition);
 
   &:hover {
     background: var(--pos-danger-soft);
@@ -644,7 +690,9 @@
   -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
   mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
 
-  &::-webkit-scrollbar { display: none; }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .pos-chip {
@@ -661,7 +709,10 @@
   gap: 0.35rem;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: background var(--pos-transition), color var(--pos-transition), border-color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    color var(--pos-transition),
+    border-color var(--pos-transition);
 
   &:hover:not(.is-active) {
     background: var(--pos-card-alt);
@@ -690,8 +741,13 @@
   scrollbar-width: thin;
   scrollbar-color: var(--pos-border) transparent;
 
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: var(--pos-border); border-radius: 4px; }
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--pos-border);
+    border-radius: 4px;
+  }
 }
 
 // ─── Empty / error states ────────────────────────────────────────────────────
@@ -890,7 +946,10 @@
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-  transition: background var(--pos-transition), color var(--pos-transition), border-color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    color var(--pos-transition),
+    border-color var(--pos-transition);
 
   &:hover,
   &:focus-visible {
@@ -973,7 +1032,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background var(--pos-transition), border-color var(--pos-transition), color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    border-color var(--pos-transition),
+    color var(--pos-transition);
 
   &:hover {
     background: var(--pos-primary);
@@ -981,16 +1043,21 @@
     border-color: var(--pos-primary);
   }
 
-  &:active { opacity: 0.8; }
+  &:active {
+    opacity: 0.8;
+  }
 }
 
 .pos-payment-btn--more {
   border-style: dashed;
 
-  svg { transition: transform var(--pos-transition); }
-  svg.is-flipped { transform: rotate(180deg); }
+  svg {
+    transition: transform var(--pos-transition);
+  }
+  svg.is-flipped {
+    transform: rotate(180deg);
+  }
 }
-
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Right panel — Checkout / Cart
@@ -1130,7 +1197,9 @@
     transition: background var(--pos-transition);
     white-space: nowrap;
 
-    &:hover { background: var(--pos-primary-soft); }
+    &:hover {
+      background: var(--pos-primary-soft);
+    }
   }
 }
 
@@ -1150,8 +1219,13 @@
   display: flex;
   flex-direction: column;
 
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: var(--pos-border); border-radius: 4px; }
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--pos-border);
+    border-radius: 4px;
+  }
 }
 
 // Config row: warehouse + customer (compact)
@@ -1174,11 +1248,16 @@
   outline: none;
   color: var(--pos-text);
   font-size: 0.85rem;
-  transition: border-color var(--pos-transition), box-shadow var(--pos-transition);
+  transition:
+    border-color var(--pos-transition),
+    box-shadow var(--pos-transition);
 
-  &::placeholder { color: var(--pos-muted); }
+  &::placeholder {
+    color: var(--pos-muted);
+  }
 
-  &:focus, &:focus-visible {
+  &:focus,
+  &:focus-visible {
     border-color: var(--pos-primary-border);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--pos-focus-ring) 9%, transparent);
     background: var(--pos-card);
@@ -1203,8 +1282,13 @@
   line-height: 1.4;
   margin-top: 0.3rem;
 
-  strong { font-weight: 700; }
-  small { opacity: 0.75; font-size: 0.72rem; }
+  strong {
+    font-weight: 700;
+  }
+  small {
+    opacity: 0.75;
+    font-size: 0.72rem;
+  }
 }
 
 .pos-selected-customer__clear {
@@ -1218,7 +1302,9 @@
   opacity: 0.7;
   padding: 0;
 
-  &:hover { opacity: 1; }
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .pos-customer-suggestions {
@@ -1252,11 +1338,17 @@
   text-align: left;
   cursor: pointer;
   font-size: 0.84rem;
-  transition: background var(--pos-transition), border-color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    border-color var(--pos-transition);
 
-  small { color: var(--pos-muted); font-size: 0.75rem; }
+  small {
+    color: var(--pos-muted);
+    font-size: 0.75rem;
+  }
 
-  &:hover, &.is-active {
+  &:hover,
+  &.is-active {
     border-color: var(--pos-primary-border);
     background: var(--pos-primary-soft);
     color: var(--pos-primary);
@@ -1273,7 +1365,9 @@
   font-weight: 600;
   font-size: 0.8rem;
   color: var(--pos-text-soft);
-  transition: background var(--pos-transition), color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    color var(--pos-transition);
 
   &:hover:not(:disabled) {
     background: var(--pos-primary-soft);
@@ -1281,7 +1375,10 @@
     border-color: var(--pos-primary-border);
   }
 
-  &:disabled { cursor: not-allowed; opacity: 0.5; }
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 }
 
 // ─── Cart lines — divider-separated rows ──────────────────────────────────────
@@ -1313,12 +1410,14 @@
   border-bottom: 1px solid var(--pos-border);
   background: transparent;
 
-  &:last-child { border-bottom: 0; }
+  &:last-child {
+    border-bottom: 0;
+  }
 }
 
 // Info block: constrained to available width, never bleeds into controls
 .pos-line__body {
-  min-width: 0;  // critical for text-overflow to work inside grid
+  min-width: 0; // critical for text-overflow to work inside grid
   display: flex;
   flex-direction: column;
   gap: 0.05rem;
@@ -1391,7 +1490,10 @@
   align-items: center;
   gap: 0.25rem;
   width: max-content;
-  transition: background var(--pos-transition), border-color var(--pos-transition), color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    border-color var(--pos-transition),
+    color var(--pos-transition);
 
   i {
     opacity: 0;
@@ -1461,7 +1563,10 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background var(--pos-transition), color var(--pos-transition), border-color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    color var(--pos-transition),
+    border-color var(--pos-transition);
 
   &:hover,
   &:focus-visible {
@@ -1497,7 +1602,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background var(--pos-transition), color var(--pos-transition);
+    transition:
+      background var(--pos-transition),
+      color var(--pos-transition);
 
     &:hover {
       background: var(--pos-primary-soft);
@@ -1542,7 +1649,9 @@
   align-items: center;
   justify-content: center;
   background: var(--pos-bg);
-  transition: background var(--pos-transition), color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    color var(--pos-transition);
 
   &:hover {
     background: var(--pos-primary-soft);
@@ -1615,9 +1724,13 @@
   text-align: left;
   cursor: pointer;
 
-  i { font-size: 0.75rem; }
+  i {
+    font-size: 0.75rem;
+  }
 
-  &:hover { color: var(--pos-text); }
+  &:hover {
+    color: var(--pos-text);
+  }
 }
 
 .pos-note-section__badge {
@@ -1670,7 +1783,10 @@
   font-size: var(--font-size-sm);
   cursor: pointer;
   color: var(--pos-text-soft);
-  transition: background var(--pos-transition), border-color var(--pos-transition), color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    border-color var(--pos-transition),
+    color var(--pos-transition);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1690,7 +1806,7 @@
 }
 
 .pos-payment-btn--more {
-  grid-column: 1 / -1;  // always spans full width — anchors the expand toggle below the grid
+  grid-column: 1 / -1; // always spans full width — anchors the expand toggle below the grid
   background: transparent;
   border-style: dashed;
   font-size: var(--font-size-xs);
@@ -1720,11 +1836,17 @@
   text-align: left;
   transition: color var(--pos-transition);
 
-  span { flex: 1; }
+  span {
+    flex: 1;
+  }
 
-  &:hover { color: var(--pos-text); }
+  &:hover {
+    color: var(--pos-text);
+  }
 
-  &.is-open { color: var(--pos-text); }
+  &.is-open {
+    color: var(--pos-text);
+  }
 
   &__value {
     font-size: 0.82rem;
@@ -1753,7 +1875,11 @@
   gap: var(--space-1);
   flex-wrap: wrap;
 
-  .nb-chip { flex: 1; min-width: 2.8rem; justify-content: center; }
+  .nb-chip {
+    flex: 1;
+    min-width: 2.8rem;
+    justify-content: center;
+  }
 }
 
 .pos-discount-label {
@@ -1787,7 +1913,9 @@
     color: var(--pos-text);
     font-size: 0.875rem;
     outline: none;
-    transition: border-color var(--pos-transition), box-shadow var(--pos-transition);
+    transition:
+      border-color var(--pos-transition),
+      box-shadow var(--pos-transition);
 
     &:focus {
       border-color: var(--pos-primary-border);
@@ -1806,7 +1934,9 @@
     align-items: center;
     justify-content: center;
     color: var(--pos-muted);
-    transition: background var(--pos-transition), color var(--pos-transition);
+    transition:
+      background var(--pos-transition),
+      color var(--pos-transition);
 
     &:hover {
       background: var(--pos-danger-soft);
@@ -1838,7 +1968,9 @@
     font-size: 1.15rem;
     font-weight: 700;
     outline: none;
-    transition: border-color var(--pos-transition), box-shadow var(--pos-transition);
+    transition:
+      border-color var(--pos-transition),
+      box-shadow var(--pos-transition);
 
     &:focus {
       border-color: var(--pos-primary);
@@ -1864,8 +1996,12 @@
   gap: 0.5rem;
   font-size: 0.82rem;
 
-  span { color: var(--pos-muted); }
-  strong { font-weight: 700; }
+  span {
+    color: var(--pos-muted);
+  }
+  strong {
+    font-weight: 700;
+  }
 }
 
 .pos-summary__discount {
@@ -1905,9 +2041,13 @@
   font-weight: 600;
   cursor: pointer;
 
-  i { font-size: 0.75rem; }
+  i {
+    font-size: 0.75rem;
+  }
 
-  &:hover { color: var(--pos-text); }
+  &:hover {
+    color: var(--pos-text);
+  }
 }
 
 .pos-footer-options__badge {
@@ -1936,7 +2076,10 @@
 
   .pos-discount-presets {
     flex-wrap: nowrap;
-    .nb-chip { flex: 0 0 auto; min-width: 2.5rem; }
+    .nb-chip {
+      flex: 0 0 auto;
+      min-width: 2.5rem;
+    }
   }
 }
 
@@ -1949,8 +2092,13 @@
   border-radius: var(--pos-radius-sm);
   font-size: 0.82rem;
 
-  span { font-weight: 600; }
-  strong { font-weight: 800; font-size: 0.9rem; }
+  span {
+    font-weight: 600;
+  }
+  strong {
+    font-weight: 800;
+    font-size: 0.9rem;
+  }
 
   &.is-change {
     background: var(--pos-success-soft);
@@ -2065,7 +2213,9 @@
     opacity: 0.88;
   }
 
-  &:active:not(:disabled) { opacity: 0.78; }
+  &:active:not(:disabled) {
+    opacity: 0.78;
+  }
 
   &:disabled {
     cursor: not-allowed;
@@ -2165,7 +2315,10 @@
       font-size: 0.85rem;
       font-weight: 600;
       cursor: pointer;
-      transition: background var(--pos-transition), color var(--pos-transition), border-color var(--pos-transition);
+      transition:
+        background var(--pos-transition),
+        color var(--pos-transition),
+        border-color var(--pos-transition);
 
       &.is-active {
         background: var(--pos-primary-soft);
@@ -2201,8 +2354,12 @@
   }
 
   // Show/hide based on active panel
-  .pos-shell[data-active-panel='catalog'] .pos-cart-panel { display: none; }
-  .pos-shell[data-active-panel='cart'] .pos-catalog { display: none; }
+  .pos-shell[data-active-panel='catalog'] .pos-cart-panel {
+    display: none;
+  }
+  .pos-shell[data-active-panel='cart'] .pos-catalog {
+    display: none;
+  }
 
   // The operator header carries too much content (sucursal, caja, almacén,
   // cajero, plus action icons) to ever fit a phone width without either
@@ -2262,8 +2419,12 @@
 
 // ─── Skeleton loader ──────────────────────────────────────────────────────────
 @keyframes pos-shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position:  200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .pos-skeleton-grid {
@@ -2341,10 +2502,22 @@
 
 // ─── Product card — add bounce ────────────────────────────────────────────────
 @keyframes pos-card-bounce {
-  0%   { transform: scale(1);    box-shadow: var(--pos-shadow-sm); }
-  30%  { transform: scale(0.95); box-shadow: none; }
-  65%  { transform: scale(1.04); box-shadow: var(--pos-shadow); }
-  100% { transform: scale(1);    box-shadow: var(--pos-shadow-sm); }
+  0% {
+    transform: scale(1);
+    box-shadow: var(--pos-shadow-sm);
+  }
+  30% {
+    transform: scale(0.95);
+    box-shadow: none;
+  }
+  65% {
+    transform: scale(1.04);
+    box-shadow: var(--pos-shadow);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: var(--pos-shadow-sm);
+  }
 }
 
 .pos-product-card.is-adding {
@@ -2369,9 +2542,17 @@
 
 // ─── Total hero — value flash when it changes ─────────────────────────────────
 @keyframes pos-total-flash {
-  0%   { color: var(--pos-text); }
-  40%  { color: var(--pos-primary); transform: scale(1.04); }
-  100% { color: var(--pos-text); transform: scale(1); }
+  0% {
+    color: var(--pos-text);
+  }
+  40% {
+    color: var(--pos-primary);
+    transform: scale(1.04);
+  }
+  100% {
+    color: var(--pos-text);
+    transform: scale(1);
+  }
 }
 
 .pos-total-hero.is-updated strong {
@@ -2381,8 +2562,14 @@
 
 // ─── Change row — positive entrance ──────────────────────────────────────────
 @keyframes pos-change-in {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .pos-change-row.is-change {
@@ -2391,27 +2578,58 @@
 
 // ─── Checkout success flash overlay ──────────────────────────────────────────
 @keyframes pos-success-enter {
-  from { opacity: 0; transform: scale(0.88); }
-  35%  { opacity: 1; transform: scale(1.02); }
-  60%  { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(1.06); }
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.06);
+  }
 }
 
 // Enter-only animations (end at opacity: 1, stay visible)
 @keyframes pos-enter {
-  from { opacity: 0; transform: scale(0.93); }
-  to   { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.93);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes pos-backdrop-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes pos-check-pop {
-  0%   { transform: scale(0); opacity: 0; }
-  60%  { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 // Post-sale success overlay — intentionally rendered over a colored background.
@@ -2520,9 +2738,13 @@
     font-weight: 700;
     cursor: pointer;
     border: 2px solid transparent;
-    transition: transform 80ms ease, opacity 80ms ease;
+    transition:
+      transform 80ms ease,
+      opacity 80ms ease;
 
-    &:active { transform: scale(0.97); }
+    &:active {
+      transform: scale(0.97);
+    }
 
     &--primary {
       // White pill button on green overlay — works in both light and dark themes
@@ -2531,7 +2753,9 @@
       color: var(--pos-success);
       border-color: rgba(255, 255, 255, 0.92);
 
-      &:hover { opacity: 0.9; }
+      &:hover {
+        opacity: 0.9;
+      }
     }
 
     &--secondary {
@@ -2539,7 +2763,9 @@
       color: rgba(255, 255, 255, 0.9);
       border-color: rgba(255, 255, 255, 0.55);
 
-      &:hover { background: rgba(255, 255, 255, 0.14); }
+      &:hover {
+        background: rgba(255, 255, 255, 0.14);
+      }
     }
   }
 }
@@ -2556,7 +2782,9 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background var(--pos-transition), color var(--pos-transition);
+  transition:
+    background var(--pos-transition),
+    color var(--pos-transition);
 
   &:hover {
     background: var(--pos-primary-soft);
@@ -2581,7 +2809,9 @@
     padding: 0.45rem 0.35rem;
     border-radius: var(--pos-radius-sm);
 
-    &:hover { background: var(--pos-card-alt); }
+    &:hover {
+      background: var(--pos-card-alt);
+    }
 
     span {
       font-size: 0.83rem;
@@ -2617,9 +2847,13 @@
 
 // ─── Line quantity — touch-friendly micro improvements ────────────────────────
 .pos-line__qty button {
-  transition: background var(--pos-transition), transform 80ms ease;
+  transition:
+    background var(--pos-transition),
+    transform 80ms ease;
 
-  &:active { transform: scale(0.88); }
+  &:active {
+    transform: scale(0.88);
+  }
 }
 
 // ─── Chip active — sharper feedback ───────────────────────────────────────────
@@ -2630,7 +2864,9 @@
     border-color var(--pos-transition),
     transform 80ms ease;
 
-  &:active { transform: scale(0.95); }
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 // ─── Panel warehouse label — subtle but readable ───────────────────────────────
@@ -2658,7 +2894,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // DENSITY — compact
 // ─────────────────────────────────────────────────────────────────────────────
-html[data-density="compact"] {
+html[data-density='compact'] {
   .pos-shell {
     gap: var(--space-1);
     padding: var(--space-2);
@@ -2681,14 +2917,28 @@ html[data-density="compact"] {
     padding: 0;
   }
 
-  .pos-line__name { font-size: var(--font-size-xs); }
-  .pos-line__unit { font-size: 0.65rem; }
-  .pos-line__total { font-size: var(--font-size-sm); min-width: 3rem; }
+  .pos-line__name {
+    font-size: var(--font-size-xs);
+  }
+  .pos-line__unit {
+    font-size: 0.65rem;
+  }
+  .pos-line__total {
+    font-size: var(--font-size-sm);
+    min-width: 3rem;
+  }
 
   .pos-line__qty {
     gap: 0;
-    button { width: 1.4rem; height: 1.4rem; font-size: 0.75rem; }
-    span   { width: 1.4rem; font-size: var(--font-size-xs); }
+    button {
+      width: 1.4rem;
+      height: 1.4rem;
+      font-size: 0.75rem;
+    }
+    span {
+      width: 1.4rem;
+      font-size: var(--font-size-xs);
+    }
   }
 
   // Category chips
@@ -2711,10 +2961,18 @@ html[data-density="compact"] {
   .pos-customer-row {
     padding: 0 var(--space-3);
     gap: var(--space-1);
-    &__icon { font-size: 1.2rem; }
-    &__name { font-size: var(--font-size-sm); }
-    &__sub  { font-size: 0.65rem; }
-    &__change { font-size: 0.7rem; }
+    &__icon {
+      font-size: 1.2rem;
+    }
+    &__name {
+      font-size: var(--font-size-sm);
+    }
+    &__sub {
+      font-size: 0.65rem;
+    }
+    &__change {
+      font-size: 0.7rem;
+    }
   }
 
   // Footer
@@ -2724,14 +2982,22 @@ html[data-density="compact"] {
   }
 
   // Summary
-  .pos-summary { gap: 0.15rem; }
-  .pos-summary__row { font-size: var(--font-size-xs); }
+  .pos-summary {
+    gap: 0.15rem;
+  }
+  .pos-summary__row {
+    font-size: var(--font-size-xs);
+  }
 
   // Total
   .pos-total-hero {
     padding: 0;
-    span   { font-size: var(--font-size-xs); }
-    strong { font-size: 1.5rem; }
+    span {
+      font-size: var(--font-size-xs);
+    }
+    strong {
+      font-size: 1.5rem;
+    }
   }
 
   // Payment
@@ -2749,15 +3015,21 @@ html[data-density="compact"] {
 
   // Discount row
   .pos-footer-option-row {
-    .pos-discount-label { font-size: var(--font-size-xs); }
-    .nb-chip           { font-size: var(--font-size-xs); min-width: 2rem; padding: 0.1rem 0.4rem; }
+    .pos-discount-label {
+      font-size: var(--font-size-xs);
+    }
+    .nb-chip {
+      font-size: var(--font-size-xs);
+      min-width: 2rem;
+      padding: 0.1rem 0.4rem;
+    }
   }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DENSITY — comfortable
 // ─────────────────────────────────────────────────────────────────────────────
-html[data-density="comfortable"] {
+html[data-density='comfortable'] {
   .pos-shell {
     gap: var(--space-3);
     padding: var(--space-4);
@@ -2778,14 +3050,28 @@ html[data-density="comfortable"] {
     padding: var(--space-2) 0;
   }
 
-  .pos-line__name  { font-size: var(--font-size-md); }
-  .pos-line__unit  { font-size: var(--font-size-sm); }
-  .pos-line__total { font-size: var(--font-size-md); min-width: 5.5rem; }
+  .pos-line__name {
+    font-size: var(--font-size-md);
+  }
+  .pos-line__unit {
+    font-size: var(--font-size-sm);
+  }
+  .pos-line__total {
+    font-size: var(--font-size-md);
+    min-width: 5.5rem;
+  }
 
   .pos-line__qty {
     gap: 0.15rem;
-    button { width: 1.9rem; height: 1.9rem; font-size: 1rem; }
-    span   { width: 2rem;   font-size: var(--font-size-md); }
+    button {
+      width: 1.9rem;
+      height: 1.9rem;
+      font-size: 1rem;
+    }
+    span {
+      width: 2rem;
+      font-size: var(--font-size-md);
+    }
   }
 
   .pos-chip {
@@ -2798,12 +3084,20 @@ html[data-density="comfortable"] {
     gap: var(--space-3);
   }
 
-  .pos-summary { gap: 0.45rem; }
-  .pos-summary__row { font-size: var(--font-size-sm); }
+  .pos-summary {
+    gap: 0.45rem;
+  }
+  .pos-summary__row {
+    font-size: var(--font-size-sm);
+  }
 
   .pos-total-hero {
-    span   { font-size: var(--font-size-sm); }
-    strong { font-size: 2.25rem; }
+    span {
+      font-size: var(--font-size-sm);
+    }
+    strong {
+      font-size: 2.25rem;
+    }
   }
 
   .pos-payment-btn {
@@ -2814,7 +3108,9 @@ html[data-density="comfortable"] {
 
   .pos-customer-row {
     padding: var(--space-2) var(--space-5);
-    &__name { font-size: var(--font-size-md); }
+    &__name {
+      font-size: var(--font-size-md);
+    }
   }
 }
 

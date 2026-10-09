@@ -53,11 +53,7 @@ function renderProductPhoto(photo: { path?: string } | null | undefined, name: s
     return (
       <div className="product-photo-cell">
         <a href={photo.path} target="_blank" rel="noreferrer">
-          <img
-            src={photo.path}
-            alt={name}
-            className="product-photo-cell__image"
-          />
+          <img src={photo.path} alt={name} className="product-photo-cell__image" />
         </a>
       </div>
     );
@@ -74,11 +70,7 @@ function renderProductPhoto(photo: { path?: string } | null | undefined, name: s
 
   return (
     <div className="product-photo-cell">
-      <div
-        title={name}
-        aria-label={name}
-        className="product-photo-cell__fallback"
-      >
+      <div title={name} aria-label={name} className="product-photo-cell__fallback">
         {initials}
       </div>
     </div>
@@ -104,9 +96,7 @@ function renderDetractionText(
 
 function renderDetractionOption(item: unknown) {
   const detraction = item as
-    | { code?: string; description?: string; percentage?: number | null }
-    | null
-    | undefined;
+    { code?: string; description?: string; percentage?: number | null } | null | undefined;
   const code = detraction?.code?.trim();
   const description = detraction?.description?.trim();
   const percentage = detraction?.percentage;
@@ -248,13 +238,27 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'name', patch: { order: 0, layoutHint: 'fullWidth', label: 'Nombre' } },
+      {
+        kind: 'override',
+        key: 'name',
+        patch: { order: 0, layoutHint: 'fullWidth', label: 'Nombre' },
+      },
       { kind: 'override', key: 'code', patch: { order: 1, layoutHint: 'short', label: 'Código' } },
-      { kind: 'override', key: 'category', patch: { order: 2, layoutHint: 'lookup', label: 'Categoría' } },
+      {
+        kind: 'override',
+        key: 'category',
+        patch: { order: 2, layoutHint: 'lookup', label: 'Categoría' },
+      },
       {
         kind: 'override',
         key: 'salePrice',
-        patch: { order: 3, layoutHint: 'money', align: 'right', label: 'Precio de venta', formatter: moneyCell },
+        patch: {
+          order: 3,
+          layoutHint: 'money',
+          align: 'right',
+          label: 'Precio de venta',
+          formatter: moneyCell,
+        },
       },
       {
         kind: 'override',
@@ -292,7 +296,11 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
         },
       },
       { kind: 'override', key: 'sku', patch: { order: 11, layoutHint: 'short', label: 'SKU' } },
-      { kind: 'override', key: 'barcode', patch: { order: 12, layoutHint: 'short', label: 'Código de barras' } },
+      {
+        kind: 'override',
+        key: 'barcode',
+        patch: { order: 12, layoutHint: 'short', label: 'Código de barras' },
+      },
       {
         kind: 'override',
         key: 'unitOfMeasure',
@@ -414,9 +422,7 @@ export function ProductPage() {
 
   return (
     <>
-      <SchemaCrudPage
-        resource={productResourceWithImport}
-      />
+      <SchemaCrudPage resource={productResourceWithImport} />
       <ProductImportDialog
         isOpen={importOpen}
         onClose={() => setImportOpen(false)}

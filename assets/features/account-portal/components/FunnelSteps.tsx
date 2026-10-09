@@ -14,8 +14,7 @@ export function FunnelSteps({ current }: FunnelStepsProps) {
     <nav className="ap-funnel ap-funnel--compact" aria-label="Progreso de registro">
       <ol className="ap-funnel__list">
         {STEPS.map((step) => {
-          const state =
-            step.id < current ? 'done' : step.id === current ? 'current' : 'upcoming';
+          const state = step.id < current ? 'done' : step.id === current ? 'current' : 'upcoming';
           return (
             <li key={step.id} className={`ap-funnel__step ap-funnel__step--${state}`}>
               <span className="ap-funnel__marker" aria-hidden="true">

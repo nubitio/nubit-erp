@@ -1,15 +1,7 @@
 import './FinancialReportsPage.scss';
 import { useState } from 'react';
 import { Badge } from '@nubitio/ui';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { financialReportsApi } from './api/financialReportsEndpoints';
 import { ErpModuleBanner } from '@features/shared/ErpModuleBanner';
 import { useCashFlow, useProfitAndLoss } from './useFinancialReports';
@@ -51,7 +43,15 @@ function KpiCard({ label, value, icon, tone = 'default', loading, badge }: KpiCa
   );
 }
 
-function MoneyTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number; name: string }[]; label?: string }) {
+function MoneyTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: { value: number; name: string }[];
+  label?: string;
+}) {
   if (!active || !payload?.length) return null;
   return (
     <div className="fr-chart-tooltip">
@@ -89,9 +89,24 @@ function ProfitAndLossTab() {
                 width={90}
               />
               <Tooltip content={<MoneyTooltip />} />
-              <Bar dataKey="ingresos" name="Ingresos" fill="var(--success-color, #16a34a)" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="costoVentas" name="Costo de ventas" fill="var(--warning-color, #d97706)" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="utilidadNeta" name="Utilidad neta" fill="var(--accent-color, #4f46e5)" radius={[3, 3, 0, 0]} />
+              <Bar
+                dataKey="ingresos"
+                name="Ingresos"
+                fill="var(--success-color, #16a34a)"
+                radius={[3, 3, 0, 0]}
+              />
+              <Bar
+                dataKey="costoVentas"
+                name="Costo de ventas"
+                fill="var(--warning-color, #d97706)"
+                radius={[3, 3, 0, 0]}
+              />
+              <Bar
+                dataKey="utilidadNeta"
+                name="Utilidad neta"
+                fill="var(--accent-color, #4f46e5)"
+                radius={[3, 3, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -112,7 +127,9 @@ function ProfitAndLossTab() {
             <tbody>
               {(data?.gastosOperativos.porCategoria.length ?? 0) === 0 ? (
                 <tr>
-                  <td colSpan={2} className="fr-table__empty">Sin gastos registrados en este periodo.</td>
+                  <td colSpan={2} className="fr-table__empty">
+                    Sin gastos registrados en este periodo.
+                  </td>
                 </tr>
               ) : (
                 data?.gastosOperativos.porCategoria.map((gasto) => (
@@ -127,7 +144,9 @@ function ProfitAndLossTab() {
               <tfoot>
                 <tr>
                   <td>Total</td>
-                  <td className="fr-table__amount">{fmtMoney(data?.gastosOperativos.total ?? 0)}</td>
+                  <td className="fr-table__amount">
+                    {fmtMoney(data?.gastosOperativos.total ?? 0)}
+                  </td>
                 </tr>
               </tfoot>
             )}
@@ -162,8 +181,18 @@ function CashFlowTab() {
                 width={90}
               />
               <Tooltip content={<MoneyTooltip />} />
-              <Bar dataKey="entradas" name="Entradas" fill="var(--success-color, #16a34a)" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="salidas" name="Salidas" fill="var(--danger-color, #dc2626)" radius={[3, 3, 0, 0]} />
+              <Bar
+                dataKey="entradas"
+                name="Entradas"
+                fill="var(--success-color, #16a34a)"
+                radius={[3, 3, 0, 0]}
+              />
+              <Bar
+                dataKey="salidas"
+                name="Salidas"
+                fill="var(--danger-color, #dc2626)"
+                radius={[3, 3, 0, 0]}
+              />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -186,7 +215,9 @@ function CashFlowTab() {
             <tbody>
               {(data?.proyectado.length ?? 0) === 0 ? (
                 <tr>
-                  <td colSpan={4} className="fr-table__empty">Sin cuentas por cobrar/pagar próximas a vencer.</td>
+                  <td colSpan={4} className="fr-table__empty">
+                    Sin cuentas por cobrar/pagar próximas a vencer.
+                  </td>
                 </tr>
               ) : (
                 data?.proyectado.map((week) => (
@@ -221,8 +252,8 @@ export function FinancialReportsPage() {
           <div>
             <h1 className="fr-page__title">Resultado del negocio</h1>
             <p className="fr-page__subtitle">
-              {pnlLoading ? '…' : pnlData?.periodLabel} · Estimado operativo a partir de ventas, compras y caja.
-              No reemplaza la contabilidad formal.
+              {pnlLoading ? '…' : pnlData?.periodLabel} · Estimado operativo a partir de ventas,
+              compras y caja. No reemplaza la contabilidad formal.
             </p>
           </div>
           <button type="button" className="fr-export-button" onClick={handleExport}>

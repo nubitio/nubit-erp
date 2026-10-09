@@ -44,17 +44,17 @@ export const useCompanyObservers = ({ loadingEvent, formRef }: UseCompanyObserve
       httpClient
         .get<UbigeoResponse>(companyEndpoints.ubigeo(data.value))
         .then((response) => {
-            const ubigeo = response.data;
-            formRef.current?.setFieldValue('ubigeoCode', ubigeo.code ?? '');
-            formRef.current?.setFieldValue('department', ubigeo.department ?? '');
-            formRef.current?.setFieldValue('province', ubigeo.province ?? '');
-            formRef.current?.setFieldValue('district', ubigeo.district ?? '');
-          })
+          const ubigeo = response.data;
+          formRef.current?.setFieldValue('ubigeoCode', ubigeo.code ?? '');
+          formRef.current?.setFieldValue('department', ubigeo.department ?? '');
+          formRef.current?.setFieldValue('province', ubigeo.province ?? '');
+          formRef.current?.setFieldValue('district', ubigeo.district ?? '');
+        })
         .catch(() => {
-            formRef.current?.setFieldValue('ubigeoCode', '');
-            formRef.current?.setFieldValue('department', '');
-            formRef.current?.setFieldValue('province', '');
-            formRef.current?.setFieldValue('district', '');
+          formRef.current?.setFieldValue('ubigeoCode', '');
+          formRef.current?.setFieldValue('department', '');
+          formRef.current?.setFieldValue('province', '');
+          formRef.current?.setFieldValue('district', '');
         })
         .finally(() => emit(loadingEvent, false));
     });

@@ -33,10 +33,7 @@ export const SaleTaxDocumentsDialog = ({ saleId, visible, onClose }: Props) => {
     [],
   );
 
-  const rowActions = useMemo(
-    () => createInvoiceRowActions(actionHandlers),
-    [actionHandlers],
-  );
+  const rowActions = useMemo(() => createInvoiceRowActions(actionHandlers), [actionHandlers]);
 
   return (
     <AppDialog

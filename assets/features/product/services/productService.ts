@@ -25,9 +25,7 @@ class ProductService {
 
   getOne(id: string, asPromise = false) {
     if (asPromise) {
-      return httpRequestData<ProductDto>(
-        httpClient.get<ProductDto>(`${API}products/${id}`),
-      );
+      return httpRequestData<ProductDto>(httpClient.get<ProductDto>(`${API}products/${id}`));
     }
     return httpClient.get<ProductDto>(`${API}products/${id}`);
   }
@@ -42,9 +40,7 @@ class ProductService {
   }
 
   getStock(id: string, warehouseId: string) {
-    return httpClient.get<ProductStockDto>(
-      `${API}products/${id}/stock/${warehouseId}`,
-    );
+    return httpClient.get<ProductStockDto>(`${API}products/${id}/stock/${warehouseId}`);
   }
 
   updateSalePrice(id: string, salePrice: number): Promise<ProductDto> {

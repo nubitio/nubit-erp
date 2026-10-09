@@ -35,15 +35,11 @@ class NotificationService {
   }
 
   markRead(id: number): Promise<void> {
-    return httpClient
-      .patch<void>(API + `user-notifications/${id}/read`, {})
-      .then(() => undefined);
+    return httpClient.patch<void>(API + `user-notifications/${id}/read`, {}).then(() => undefined);
   }
 
   markAllRead(): Promise<void> {
-    return httpClient
-      .post<void>(API + 'user-notifications/read-all')
-      .then(() => undefined);
+    return httpClient.post<void>(API + 'user-notifications/read-all').then(() => undefined);
   }
 }
 

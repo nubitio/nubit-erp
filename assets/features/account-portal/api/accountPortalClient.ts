@@ -56,15 +56,19 @@ export interface ProvisionStatus {
 }
 
 async function apFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await exceptionalFetch(path, {
-    credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-      ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
-      ...init?.headers,
+  const response = await exceptionalFetch(
+    path,
+    {
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
+        ...init?.headers,
+      },
+      ...init,
     },
-    ...init,
-  }, 'api-documentation');
+    'api-documentation',
+  );
 
   if (!response.ok) {
     const body = (await response.json().catch(() => ({}))) as { error?: string };
@@ -106,7 +110,9 @@ export const accountPortalClient = {
   dismissProvision: (provisionId: number) =>
     apFetch<{ ok: boolean }>(`/api/account/provisions/${provisionId}/dismiss`, { method: 'POST' }),
   checkSubdomain: (subdomain: string) =>
-    apFetch<SubdomainCheck>(`/api/account/subdomains/check?subdomain=${encodeURIComponent(subdomain)}`),
+    apFetch<SubdomainCheck>(
+      `/api/account/subdomains/check?subdomain=${encodeURIComponent(subdomain)}`,
+    ),
   provision: (payload: {
     tenantName: string;
     subdomain: string;
@@ -139,7 +145,10 @@ export const accountPortalClient = {
       { method: 'POST', body: JSON.stringify(payload) },
     ),
   cancelSubscription: (tenantId: number) =>
-    apFetch<{ ok: boolean; message: string }>(`/api/account/tenants/${tenantId}/cancel-subscription`, {
-      method: 'POST',
-    }),
+    apFetch<{ ok: boolean; message: string }>(
+      `/api/account/tenants/${tenantId}/cancel-subscription`,
+      {
+        method: 'POST',
+      },
+    ),
 };

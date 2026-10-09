@@ -5,13 +5,7 @@ import { Avatar, ThemeSwitcher } from '@nubitio/ui';
 import { useControlPlaneRoles } from '../hooks/useControlPlaneRoles';
 import { CP_STRINGS } from '../i18n/es';
 
-const ControlPlaneUserMenu = ({
-  user,
-  close,
-}: {
-  user: string | null;
-  close: () => void;
-}) => (
+const ControlPlaneUserMenu = ({ user, close }: { user: string | null; close: () => void }) => (
   <div className="cp-user-menu">
     <div className="cp-user-menu__profile">
       <Avatar owner={user ?? 'admin'} size={32} />
@@ -52,11 +46,7 @@ export const ControlPlaneShell = () => {
       menuItems={menuItems}
       renderThemeSwitcher={() => <ThemeSwitcher />}
       renderUserMenu={({ close }) => <ControlPlaneUserMenu user={user} close={close} />}
-      footer={
-        <span className="nb-admin-footer-copyright">
-          efact · {new Date().getFullYear()}
-        </span>
-      }
+      footer={<span className="nb-admin-footer-copyright">efact · {new Date().getFullYear()}</span>}
     >
       <Outlet />
     </AdminShell>

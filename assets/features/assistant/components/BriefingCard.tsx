@@ -63,9 +63,7 @@ export function BriefingCard({ compact = false }: BriefingCardProps) {
           <span>Resumen del día</span>
           <i className={`ph ${expanded ? 'ph-caret-up' : 'ph-caret-down'}`} aria-hidden="true" />
         </button>
-        {expanded && (
-          <div className="briefing-card__body">{HTMLReactParser(htmlContent)}</div>
-        )}
+        {expanded && <div className="briefing-card__body">{HTMLReactParser(htmlContent)}</div>}
       </div>
     );
   }

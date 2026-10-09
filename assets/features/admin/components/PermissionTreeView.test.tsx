@@ -2,11 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { createRef } from 'react';
 import { render, screen, fireEvent, act, cleanup } from '@testing-library/react';
 
-import {
-  PermissionTreeView,
-  type PermissionTreeHandle,
-  type RoleMenu,
-} from './PermissionTreeView';
+import { PermissionTreeView, type PermissionTreeHandle, type RoleMenu } from './PermissionTreeView';
 
 const MENUS: RoleMenu[] = [
   {
@@ -75,9 +71,7 @@ describe('PermissionTreeView', () => {
     );
 
     fireEvent.click(screen.getByLabelText('Facturación'));
-    expect(ref.current?.getSelectedPermissionIds()).not.toEqual(
-      expect.arrayContaining([300]),
-    );
+    expect(ref.current?.getSelectedPermissionIds()).not.toEqual(expect.arrayContaining([300]));
   });
 
   it('toggling a child keeps the parent id in sync', () => {
@@ -86,8 +80,6 @@ describe('PermissionTreeView', () => {
     fireEvent.click(screen.getByLabelText('Expandir Facturación'));
     fireEvent.click(screen.getByLabelText('Comprobantes'));
 
-    expect(ref.current?.getSelectedPermissionIds()).not.toEqual(
-      expect.arrayContaining([300, 301]),
-    );
+    expect(ref.current?.getSelectedPermissionIds()).not.toEqual(expect.arrayContaining([300, 301]));
   });
 });

@@ -1,5 +1,14 @@
 import { useMemo } from 'react';
-import { Bar, BarChart, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  Cell,
+  LabelList,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 import { currencyFormatter } from '@shared/ui/dashboard/formatters';
 
@@ -43,8 +52,16 @@ export function PaymentMethodBars({ data }: PaymentMethodBarsProps) {
           axisLine={false}
           tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
         />
-        <Tooltip cursor={{ fill: 'var(--surface-2)' }} content={<MoneyTooltip labelKey="method" />} />
-        <Bar dataKey="total" radius={BAR_RADIUS_RIGHT} maxBarSize={22} animationDuration={CHART_ANIM_MS}>
+        <Tooltip
+          cursor={{ fill: 'var(--surface-2)' }}
+          content={<MoneyTooltip labelKey="method" />}
+        />
+        <Bar
+          dataKey="total"
+          radius={BAR_RADIUS_RIGHT}
+          maxBarSize={22}
+          animationDuration={CHART_ANIM_MS}
+        >
           {rows.map((row) => (
             <Cell key={row.method} fill={CHART_ACCENT} />
           ))}

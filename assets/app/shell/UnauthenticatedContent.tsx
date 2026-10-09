@@ -23,19 +23,19 @@ export const UnauthenticatedContent = () => {
     <Routes>
       <Route
         path="/login"
-        element={(
+        element={
           <Suspense fallback={<AuthRouteLoading />}>
             <LoginPage />
           </Suspense>
-        )}
+        }
       />
       <Route
         path="/impersonate"
-        element={(
+        element={
           <Suspense fallback={<AuthRouteLoading />}>
             <ImpersonateBridgePage />
           </Suspense>
-        )}
+        }
       />
       <Route path="*" element={<Navigate to={`/login${loginRedirectSearch}`} replace />} />
     </Routes>

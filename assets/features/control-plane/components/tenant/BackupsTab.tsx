@@ -165,8 +165,16 @@ export const BackupsTab = ({
                 header: S.colSize,
                 accessor: (backup) => formatBytes(backup.size_bytes),
               },
-              { id: 'status', header: CP_STRINGS.tenants.colStatus, accessor: (backup) => backup.status },
-              { id: 'created', header: CP_STRINGS.users.colCreated, accessor: (backup) => backup.created_at },
+              {
+                id: 'status',
+                header: CP_STRINGS.tenants.colStatus,
+                accessor: (backup) => backup.status,
+              },
+              {
+                id: 'created',
+                header: CP_STRINGS.users.colCreated,
+                accessor: (backup) => backup.created_at,
+              },
             ]}
             rowActions={(backup) => [
               ...(backup.status === 'completed'

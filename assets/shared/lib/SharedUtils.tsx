@@ -106,9 +106,17 @@ export class SharedUtils {
 
   static booleanFormatter(value: boolean) {
     if (value) {
-      return <Badge variant="primary" outlined>SI</Badge>;
+      return (
+        <Badge variant="primary" outlined>
+          SI
+        </Badge>
+      );
     } else if (!value) {
-      return <Badge variant="secondary" outlined>NO</Badge>;
+      return (
+        <Badge variant="secondary" outlined>
+          NO
+        </Badge>
+      );
     } else {
       return '';
     }
@@ -269,79 +277,166 @@ export class SharedUtils {
     if (typeof value === 'string') {
       const normalized = value.trim().toLowerCase();
       if (normalized === 'aceptado' || normalized === 'accepted') {
-        return <Badge variant="success" outlined>ACEPTADO</Badge>;
+        return (
+          <Badge variant="success" outlined>
+            ACEPTADO
+          </Badge>
+        );
       }
       if (normalized === 'pendiente' || normalized === 'pending') {
-        return <Badge variant="info" outlined>PENDIENTE SUNAT</Badge>;
+        return (
+          <Badge variant="info" outlined>
+            PENDIENTE SUNAT
+          </Badge>
+        );
       }
       if (normalized === 'enviado' || normalized === 'sent') {
-        return <Badge variant="primary" outlined>ENVIADO</Badge>;
+        return (
+          <Badge variant="primary" outlined>
+            ENVIADO
+          </Badge>
+        );
       }
       if (normalized === 'rechazado' || normalized === 'rejected') {
-        return <Badge variant="danger" outlined>RECHAZADO</Badge>;
+        return (
+          <Badge variant="danger" outlined>
+            RECHAZADO
+          </Badge>
+        );
       }
       if (normalized === 'observado' || normalized === 'observed') {
-        return <Badge variant="secondary" outlined>OBSERVADO</Badge>;
+        return (
+          <Badge variant="secondary" outlined>
+            OBSERVADO
+          </Badge>
+        );
       }
     }
 
     const raw = value === null || value === undefined || value === '' ? -1 : Number(value);
     const code = Number.isNaN(raw) ? -1 : raw;
     if (code === -1) {
-      return <Badge variant="info" outlined>PENDIENTE SUNAT</Badge>;
+      return (
+        <Badge variant="info" outlined>
+          PENDIENTE SUNAT
+        </Badge>
+      );
     } else if (code === 0) {
-      return <Badge variant="success" outlined>ACEPTADO</Badge>;
+      return (
+        <Badge variant="success" outlined>
+          ACEPTADO
+        </Badge>
+      );
     } else if (code < 2000) {
-      return <Badge variant="warning" outlined>ERRÓNEO</Badge>;
+      return (
+        <Badge variant="warning" outlined>
+          ERRÓNEO
+        </Badge>
+      );
     } else if (code >= 2000 && code < 4000) {
-      return <Badge variant="danger" outlined>RECHAZADO</Badge>;
+      return (
+        <Badge variant="danger" outlined>
+          RECHAZADO
+        </Badge>
+      );
     } else if (code >= 4000) {
-      return <Badge variant="secondary" outlined>OBSERVADO</Badge>;
+      return (
+        <Badge variant="secondary" outlined>
+          OBSERVADO
+        </Badge>
+      );
     }
   }
 
   static saleStatusFormatter(sale: DataRecord | null | undefined) {
     const isVoided = sale?.estado === 2 || sale?.invoiceVoided === 2 || sale?.status === 'VOIDED';
     if (isVoided) {
-      return <Badge variant="danger" outlined>ANULADO</Badge>;
+      return (
+        <Badge variant="danger" outlined>
+          ANULADO
+        </Badge>
+      );
     }
 
     const hasInvoice = !!sale?.invoice || !!sale?.invoiceFullNumber;
     if (!hasInvoice) {
-      return <Badge variant="success" outlined>COBRADA</Badge>;
+      return (
+        <Badge variant="success" outlined>
+          COBRADA
+        </Badge>
+      );
     }
 
-    const rawStatus = String(sale?.invoiceSunatStatus ?? sale?.sunatStatus ?? '').trim().toLowerCase();
+    const rawStatus = String(sale?.invoiceSunatStatus ?? sale?.sunatStatus ?? '')
+      .trim()
+      .toLowerCase();
     if (rawStatus === '' || rawStatus === 'null') {
-      return <Badge variant="info" outlined>EMITIDA</Badge>;
+      return (
+        <Badge variant="info" outlined>
+          EMITIDA
+        </Badge>
+      );
     }
 
-    if (rawStatus === 'pendiente' || rawStatus === 'pending' || rawStatus === 'enviado' || rawStatus === 'sent') {
-      return <Badge variant="primary" outlined>ENVIADA A SUNAT</Badge>;
+    if (
+      rawStatus === 'pendiente' ||
+      rawStatus === 'pending' ||
+      rawStatus === 'enviado' ||
+      rawStatus === 'sent'
+    ) {
+      return (
+        <Badge variant="primary" outlined>
+          ENVIADA A SUNAT
+        </Badge>
+      );
     }
 
     if (rawStatus === 'aceptado' || rawStatus === 'accepted') {
-      return <Badge variant="success" outlined>ACEPTADA SUNAT</Badge>;
+      return (
+        <Badge variant="success" outlined>
+          ACEPTADA SUNAT
+        </Badge>
+      );
     }
 
     const statusNumber = Number(rawStatus);
     if (Number.isNaN(statusNumber)) {
-      return <Badge variant="primary" outlined>ENVIADA A SUNAT</Badge>;
+      return (
+        <Badge variant="primary" outlined>
+          ENVIADA A SUNAT
+        </Badge>
+      );
     }
 
     if (statusNumber === 0) {
-      return <Badge variant="success" outlined>ACEPTADA SUNAT</Badge>;
+      return (
+        <Badge variant="success" outlined>
+          ACEPTADA SUNAT
+        </Badge>
+      );
     }
 
     if (statusNumber < 2000) {
-      return <Badge variant="warning" outlined>ERRÓNEA</Badge>;
+      return (
+        <Badge variant="warning" outlined>
+          ERRÓNEA
+        </Badge>
+      );
     }
 
     if (statusNumber < 4000) {
-      return <Badge variant="danger" outlined>RECHAZADA</Badge>;
+      return (
+        <Badge variant="danger" outlined>
+          RECHAZADA
+        </Badge>
+      );
     }
 
-    return <Badge variant="secondary" outlined>OBSERVADA</Badge>;
+    return (
+      <Badge variant="secondary" outlined>
+        OBSERVADA
+      </Badge>
+    );
   }
 }
 

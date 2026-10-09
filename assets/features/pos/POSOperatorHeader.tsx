@@ -129,7 +129,10 @@ export function POSOperatorHeader({
               <i className="ph ph-package" aria-hidden="true" />
               <span className="pos-operator-header__label">Almacén</span>
               {!showWarehouseSelector || warehouses.length === 1 ? (
-                <strong>{warehouses.find((warehouse) => warehouse.id === selectedWarehouseId)?.name ?? warehouses[0].name}</strong>
+                <strong>
+                  {warehouses.find((warehouse) => warehouse.id === selectedWarehouseId)?.name ??
+                    warehouses[0].name}
+                </strong>
               ) : (
                 <AppDropdown
                   id="pos-warehouse-select"
@@ -194,7 +197,7 @@ export function POSOperatorHeader({
           <button
             type="button"
             className="pos-caja-action-btn is-open"
-            onClick={() => onOpenCaja ? onOpenCaja() : setCajaAbierta(true)}
+            onClick={() => (onOpenCaja ? onOpenCaja() : setCajaAbierta(true))}
           >
             Abrir caja
           </button>

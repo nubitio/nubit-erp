@@ -57,8 +57,16 @@ const resource = defineResource<BranchRecord>(branchEndpoints.list(), {
     strategy: 'augment',
     directives: [
       { kind: 'override', key: 'name', patch: { order: 0, layoutHint: 'medium', label: 'Nombre' } },
-      { kind: 'override', key: 'phone', patch: { order: 1, layoutHint: 'short', label: 'Teléfono' } },
-      { kind: 'override', key: 'address', patch: { order: 2, layoutHint: 'long', label: 'Dirección' } },
+      {
+        kind: 'override',
+        key: 'phone',
+        patch: { order: 1, layoutHint: 'short', label: 'Teléfono' },
+      },
+      {
+        kind: 'override',
+        key: 'address',
+        patch: { order: 2, layoutHint: 'long', label: 'Dirección' },
+      },
       {
         kind: 'override',
         key: 'isActive',
@@ -71,7 +79,11 @@ const resource = defineResource<BranchRecord>(branchEndpoints.list(), {
           formatter: (cell: GridCellContext) => SharedUtils.booleanFormatter(Boolean(cell.value)),
         },
       },
-      { kind: 'override', key: 'company', patch: { order: 4, layoutHint: 'lookup', label: 'Empresa' } },
+      {
+        kind: 'override',
+        key: 'company',
+        patch: { order: 4, layoutHint: 'lookup', label: 'Empresa' },
+      },
     ],
   }),
 });

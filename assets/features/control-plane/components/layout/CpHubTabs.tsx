@@ -43,11 +43,7 @@ export const CpHubTabs = <T extends string>({
         {tab.icon && <i className={iconClass(tab.icon)} aria-hidden />}
         <span>{tab.label}</span>
         {tab.badge != null && tab.badge > 0 && (
-          <Badge
-            variant={tab.badgeVariant === 'warning' ? 'warning' : 'secondary'}
-            size="sm"
-            pill
-          >
+          <Badge variant={tab.badgeVariant === 'warning' ? 'warning' : 'secondary'} size="sm" pill>
             {tab.badge}
           </Badge>
         )}

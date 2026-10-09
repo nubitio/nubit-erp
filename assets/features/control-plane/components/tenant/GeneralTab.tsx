@@ -76,7 +76,11 @@ export const GeneralTab = ({ tenant, plans, isAdmin, onUpdated }: GeneralTabProp
               <TextField value={name} onChange={(e) => setName(e.target.value)} required />
             </FormField>
             <FormField label={S.connection}>
-              <TextField value={connection} onChange={(e) => setConnection(e.target.value)} required />
+              <TextField
+                value={connection}
+                onChange={(e) => setConnection(e.target.value)}
+                required
+              />
             </FormField>
             <Button type="submit" loading={saveDetails.isPending} fullWidth>
               {S.saveDetails}
@@ -143,7 +147,9 @@ export const GeneralTab = ({ tenant, plans, isAdmin, onUpdated }: GeneralTabProp
                 });
               }}
             >
-              {tenant.status === 'suspended' ? CP_STRINGS.tenants.unsuspend : CP_STRINGS.tenants.suspend}
+              {tenant.status === 'suspended'
+                ? CP_STRINGS.tenants.unsuspend
+                : CP_STRINGS.tenants.suspend}
             </Button>
           )}
         </div>

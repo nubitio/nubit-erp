@@ -124,7 +124,11 @@ export const TenantListPage = () => {
 
       {formError && !createOpen && <CpAlert tone="danger">{formError}</CpAlert>}
 
-      <Card variant="panel" title={CP_STRINGS.tenants.listTitle(data.tenants.length)} className="nb-table-surface">
+      <Card
+        variant="panel"
+        title={CP_STRINGS.tenants.listTitle(data.tenants.length)}
+        className="nb-table-surface"
+      >
         <DataTable
           fill
           variant="flush"
@@ -143,7 +147,11 @@ export const TenantListPage = () => {
                 </>
               ),
             },
-            { id: 'plan', header: CP_STRINGS.tenants.colPlan, accessor: (tenant) => tenant.plan ?? '—' },
+            {
+              id: 'plan',
+              header: CP_STRINGS.tenants.colPlan,
+              accessor: (tenant) => tenant.plan ?? '—',
+            },
             {
               id: 'domain',
               header: CP_STRINGS.tenants.colDomain,

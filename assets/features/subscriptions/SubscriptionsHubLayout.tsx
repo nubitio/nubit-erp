@@ -11,7 +11,13 @@ export const SubscriptionsHubLayout = () => {
       defaultPath="/subscriptions/plans"
       tabsAriaLabel="Secciones de suscripciones"
       tabs={[
-        { key: 'plans', label: 'Planes', path: '/subscriptions/plans', icon: 'ph-package', visible: hasPermission('subscriptions.view') },
+        {
+          key: 'plans',
+          label: 'Planes',
+          path: '/subscriptions/plans',
+          icon: 'ph-package',
+          visible: hasPermission('subscriptions.view'),
+        },
         {
           key: 'customer-subscriptions',
           label: 'Suscripciones de clientes',

@@ -29,7 +29,13 @@ export function ProvisionAlerts({ active, failed, onDismiss }: ProvisionAlertsPr
             <strong>{item.tenant_name}</strong>
             <span>Hubo un problema creando tu empresa. Contacta a soporte.</span>
           </div>
-          <Button type="button" variant="ghost" size="sm" onClick={() => onDismiss(item.id)} aria-label="Descartar">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onDismiss(item.id)}
+            aria-label="Descartar"
+          >
             <i className="ph ph-x" aria-hidden="true" />
           </Button>
         </div>

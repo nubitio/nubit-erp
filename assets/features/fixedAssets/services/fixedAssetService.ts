@@ -7,7 +7,10 @@ type FixedAssetActionResponse = unknown;
 
 const fixedAssetService = () => {
   const dispose = (id: string, disposalNote?: string) => {
-    return httpClient.post<FixedAssetActionResponse>(API + `fixed-assets/${id}/dispose`, { id, disposalNote });
+    return httpClient.post<FixedAssetActionResponse>(API + `fixed-assets/${id}/dispose`, {
+      id,
+      disposalNote,
+    });
   };
 
   return { dispose };

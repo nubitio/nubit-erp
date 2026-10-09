@@ -66,10 +66,7 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
         return { isOk: true, data: userData };
       } catch (err: unknown) {
         const anyErr = err as { data?: { detail?: string; message?: string } };
-        const message =
-          anyErr?.data?.detail ||
-          anyErr?.data?.message ||
-          'Authentication failed';
+        const message = anyErr?.data?.detail || anyErr?.data?.message || 'Authentication failed';
         return { isOk: false, message };
       }
     },

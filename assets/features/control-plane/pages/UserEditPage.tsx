@@ -162,9 +162,7 @@ export const UserEditPage = () => {
                 onChange={setIsActive}
                 label={CP_STRINGS.active}
               />
-              {isSelf && (
-                <CpAlert tone="warning">{CP_STRINGS.users.cannotDeactivateSelf}</CpAlert>
-              )}
+              {isSelf && <CpAlert tone="warning">{CP_STRINGS.users.cannotDeactivateSelf}</CpAlert>}
               <CpFormActions>
                 <Button type="submit" loading={save.isPending}>
                   {CP_STRINGS.users.saveChanges}

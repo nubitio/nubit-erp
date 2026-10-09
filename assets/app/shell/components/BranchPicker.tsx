@@ -56,7 +56,9 @@ export const BranchPicker = ({
     }
 
     setSelecting(true);
-    authService.selectBranch(selectedBranch.id).then(() => {
+    authService
+      .selectBranch(selectedBranch.id)
+      .then(() => {
         branchService.setSelectedBranchId(selectedBranch.id);
         branchService.setSelectedBranchName(selectedBranch.name);
         close();
@@ -66,9 +68,11 @@ export const BranchPicker = ({
 
         requestAuthSessionSync();
         navigate(nextPath, { replace: true });
-      }).catch(() => {
+      })
+      .catch(() => {
         setSelecting(false);
-      }).finally(() => {
+      })
+      .finally(() => {
         setSelecting(false);
       });
   }, [selectedBranch, selecting, close, navigate, redirectPath]);
@@ -100,7 +104,7 @@ export const BranchPicker = ({
 
     // eslint-disable-next-line react-hooks/set-state-in-effect -- loading initial branch options into local popup state is intentional during visibility sync
     loadBranchData(initialBranches);
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally run only on visibility toggle and length changes, not on identity changes of the array
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally run only on visibility toggle and length changes, not on identity changes of the array
   }, [visible, initialBranches.length, loadBranchData]);
 
   useEffect(() => {
@@ -113,12 +117,15 @@ export const BranchPicker = ({
     setLoadingBranches(true);
 
     let cancelled = false;
-    branchService.getAll().then((response) => {
+    branchService
+      .getAll()
+      .then((response) => {
         if (cancelled) return;
         const raw = response?.data;
         const data: Branch[] = Array.isArray(raw) ? (raw as Branch[]) : [];
         loadBranchData(data);
-      }).catch(() => {
+      })
+      .catch(() => {
         if (cancelled) return;
         setHasLoaded(false);
         setLoadingBranches(false);
@@ -127,7 +134,7 @@ export const BranchPicker = ({
     return () => {
       cancelled = true;
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- initialBranches.length is checked as a guard but this effect should not re-run when it changes; effect above handles the initialBranches case
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initialBranches.length is checked as a guard but this effect should not re-run when it changes; effect above handles the initialBranches case
   }, [visible, hasLoaded, loadBranchData]);
 
   useEffect(() => {
@@ -137,7 +144,7 @@ export const BranchPicker = ({
       // eslint-disable-next-line react-hooks/set-state-in-effect -- reset cached visibility state when the shell picker closes
       setHasLoaded(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only react to visibility changes, not state setters
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only react to visibility changes, not state setters
   }, [visible]);
 
   return (

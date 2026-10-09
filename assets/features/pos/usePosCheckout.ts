@@ -121,7 +121,9 @@ export const usePosCheckout = ({
   const [lastSaleId, setLastSaleId] = useState<string | null>(null);
   const [lastSaleReceiptUrl, setLastSaleReceiptUrl] = useState<string | null>(null);
   const [emitInvoice, setEmitInvoice] = useState(autoInvoice);
-  const [requestedVoucherType, setRequestedVoucherType] = useState<'AUTO' | 'FACTURA' | 'BOLETA'>('AUTO');
+  const [requestedVoucherType, setRequestedVoucherType] = useState<'AUTO' | 'FACTURA' | 'BOLETA'>(
+    'AUTO',
+  );
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -167,7 +169,10 @@ export const usePosCheckout = ({
 
   const readScaleQuantity = async (): Promise<number | null> => {
     if (!scaleReady) {
-      toast('Balanza no configurada. Ingresa el peso manualmente o configúrala en Hardware local.', 'warning');
+      toast(
+        'Balanza no configurada. Ingresa el peso manualmente o configúrala en Hardware local.',
+        'warning',
+      );
       return null;
     }
 
@@ -176,9 +181,15 @@ export const usePosCheckout = ({
       return await waitForStableWeight({ timeoutMs: 4_000, pollMs: 300 });
     } catch (err) {
       if (err instanceof LocalAgentNotAvailableError) {
-        toast('Agente de hardware no disponible. Configure el cableado en Hardware local.', 'warning');
+        toast(
+          'Agente de hardware no disponible. Configure el cableado en Hardware local.',
+          'warning',
+        );
       } else {
-        toast('No se obtuvo peso estable. Use el botón de balanza o ingrese manualmente.', 'warning');
+        toast(
+          'No se obtuvo peso estable. Use el botón de balanza o ingrese manualmente.',
+          'warning',
+        );
       }
       return null;
     }
@@ -215,9 +226,10 @@ export const usePosCheckout = ({
 
   const addToCart = async (item: PosItem) => {
     const tracksInventory = item.trackInventory !== false;
-    const warehouseStock = useWarehouseStockChecks && selectedWarehouseId
-      ? await fetchWarehouseStock(item.id, selectedWarehouseId)
-      : undefined;
+    const warehouseStock =
+      useWarehouseStockChecks && selectedWarehouseId
+        ? await fetchWarehouseStock(item.id, selectedWarehouseId)
+        : undefined;
     const effectiveStock = warehouseStock ?? item.stock;
 
     if (
@@ -340,9 +352,10 @@ export const usePosCheckout = ({
       return;
     }
 
-    const warehouseStock = useWarehouseStockChecks && selectedWarehouseId
-      ? await fetchWarehouseStock(id, selectedWarehouseId)
-      : undefined;
+    const warehouseStock =
+      useWarehouseStockChecks && selectedWarehouseId
+        ? await fetchWarehouseStock(id, selectedWarehouseId)
+        : undefined;
     const effectiveStock = warehouseStock ?? currentItem.stock;
     const tracksInventory = currentItem.trackInventory !== false;
 
@@ -388,9 +401,7 @@ export const usePosCheckout = ({
     }
 
     setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.id === id ? { ...item, salePrice: normalizedPrice } : item,
-      ),
+      prevCart.map((item) => (item.id === id ? { ...item, salePrice: normalizedPrice } : item)),
     );
   };
 
@@ -419,7 +430,10 @@ export const usePosCheckout = ({
     const configuredCurrency = settings.getCached(Setting.DEFAULT_CURRENCY)?.value;
     setCurrency(configuredCurrency === 'USD' ? 'USD' : 'PEN');
     const configuredRate = settings.getCached(Setting.DEFAULT_USD_EXCHANGE_RATE)?.value;
-    if ((typeof configuredRate === 'string' || typeof configuredRate === 'number') && Number(configuredRate) > 0) {
+    if (
+      (typeof configuredRate === 'string' || typeof configuredRate === 'number') &&
+      Number(configuredRate) > 0
+    ) {
       setExchangeRate(String(configuredRate));
     }
 
@@ -571,9 +585,7 @@ export const usePosCheckout = ({
             amountReceived: payment.tendered_amount
               ? Number.parseFloat(payment.tendered_amount)
               : Number.parseFloat(payment.amount),
-            changeAmount: payment.change_amount
-              ? Number.parseFloat(payment.change_amount)
-              : 0,
+            changeAmount: payment.change_amount ? Number.parseFloat(payment.change_amount) : 0,
           };
         }),
         totals: {
@@ -587,7 +599,9 @@ export const usePosCheckout = ({
       });
 
       if (submitResult.mode === 'server') {
-        const displayCode = publicSaleCode(submitResult.invoiceFullNumber ?? submitResult.serverCode);
+        const displayCode = publicSaleCode(
+          submitResult.invoiceFullNumber ?? submitResult.serverCode,
+        );
         toast(displayCode ? `Venta registrada (${displayCode})` : 'Venta registrada', 'success');
         setLastSaleId(submitResult.serverSaleId);
         setLastSaleCode(displayCode);

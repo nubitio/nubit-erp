@@ -57,14 +57,19 @@ const resource = defineResource<RestaurantTableRecord>(restaurantTableEndpoints.
   viewMode: { mode: 'drawer', drawerSize: 'sm' },
   emptyState: {
     title: 'Sin mesas',
-    description: 'Crea primero un ambiente en "Ambientes y plantas", luego registra las mesas aquí.',
+    description:
+      'Crea primero un ambiente en "Ambientes y plantas", luego registra las mesas aquí.',
     icon: 'squares-four',
   },
   fieldContract: defineFields<RestaurantTableRecord>({
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'code', patch: { order: 0, label: 'Código', required: true, width: 120 } },
+      {
+        kind: 'override',
+        key: 'code',
+        patch: { order: 0, label: 'Código', required: true, width: 120 },
+      },
       { kind: 'override', key: 'area', patch: areaPatch },
       { kind: 'override', key: 'seats', patch: seatsPatch },
       { kind: 'override', key: 'status', patch: { label: 'Estado', readonly: true } },

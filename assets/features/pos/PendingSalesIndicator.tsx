@@ -18,7 +18,11 @@ export const PendingSalesIndicator = ({
 
   return (
     <div className="pos-pending-sales">
-      <button type="button" className="pos-pending-sales__button" onClick={() => setOpen((value) => !value)}>
+      <button
+        type="button"
+        className="pos-pending-sales__button"
+        onClick={() => setOpen((value) => !value)}
+      >
         Ventas pendientes: {pendingSalesCount} · Ver detalle
       </button>
       {open && (

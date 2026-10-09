@@ -34,7 +34,9 @@ export const toOptionalNumber = (value: unknown): number | undefined => {
 };
 
 export const toMoneyString = (value: unknown, fallback = '0.00'): string => {
-  const raw = String(value ?? '').trim().replace(',', '.');
+  const raw = String(value ?? '')
+    .trim()
+    .replace(',', '.');
   // API decimal columns commonly arrive with four fractional digits
   // (for example "5.0000"). The localized input parser intentionally caps
   // user-entered money at two decimals, so normalize canonical API decimals
@@ -80,7 +82,7 @@ export const formatPosQuantity = (value: number, unitCode?: string): string => {
 };
 
 const asRecord = (value: unknown): Record<string, unknown> =>
-  value !== null && typeof value === 'object' ? value as Record<string, unknown> : {};
+  value !== null && typeof value === 'object' ? (value as Record<string, unknown>) : {};
 
 export const normalizeProduct = (raw: unknown): PosItem => {
   const record = asRecord(raw);
@@ -138,18 +140,17 @@ export const normalizeProduct = (raw: unknown): PosItem => {
     sku: record.sku ? String(record.sku) : undefined,
     barcode: record.barcode ? String(record.barcode) : undefined,
     taxType,
-    category:
-      categoryRecord.id
-        ? {
-            id: String(categoryRecord.id),
-            name: String(categoryRecord.name ?? 'Sin categoria'),
-            icon: categoryRecord.icon as string | undefined,
-            active: categoryRecord.active as boolean | undefined,
-          }
-        : {
-            id: 'uncategorized',
-            name: 'Sin categoria',
-          },
+    category: categoryRecord.id
+      ? {
+          id: String(categoryRecord.id),
+          name: String(categoryRecord.name ?? 'Sin categoria'),
+          icon: categoryRecord.icon as string | undefined,
+          active: categoryRecord.active as boolean | undefined,
+        }
+      : {
+          id: 'uncategorized',
+          name: 'Sin categoria',
+        },
   };
 };
 

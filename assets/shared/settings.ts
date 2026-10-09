@@ -50,7 +50,10 @@ class Settings {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.settings));
       localStorage.setItem(STORAGE_TS_KEY, new Date().toISOString());
     } catch (error) {
-      console.warn('[Settings] Failed to refresh settings from server; using cached values.', error);
+      console.warn(
+        '[Settings] Failed to refresh settings from server; using cached values.',
+        error,
+      );
     }
   }
 

@@ -64,10 +64,14 @@ export const taxesApi = {
   },
   detracciones(period?: string) {
     const params = period ? `?period=${period}` : '';
-    return httpRequestData(httpClient.get<DetraccionResponse>(`${BASE}taxes/detracciones${params}`));
+    return httpRequestData(
+      httpClient.get<DetraccionResponse>(`${BASE}taxes/detracciones${params}`),
+    );
   },
   retencionesPercepciones(period?: string) {
     const params = period ? `?period=${period}` : '';
-    return httpRequestData(httpClient.get<RetencionPercepcionResponse>(`${BASE}taxes/retenciones-percepciones${params}`));
+    return httpRequestData(
+      httpClient.get<RetencionPercepcionResponse>(`${BASE}taxes/retenciones-percepciones${params}`),
+    );
   },
 };

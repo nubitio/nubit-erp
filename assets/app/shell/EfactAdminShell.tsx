@@ -65,9 +65,7 @@ export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShe
       ? menuService.getMenuByRoleIdForRuntimeConfig(roleId, runtimeConfig)
       : menuService.getMenuByRoleId(roleId);
 
-    menuRequest
-      .then((response) => setMenuItems(response.data))
-      .catch(() => setMenuItems([]));
+    menuRequest.then((response) => setMenuItems(response.data)).catch(() => setMenuItems([]));
   }, [runtimeConfig, runtimeConfigError]);
 
   return (

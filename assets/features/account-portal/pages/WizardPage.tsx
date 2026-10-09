@@ -133,7 +133,9 @@ export function WizardPage() {
             <div className="ap-subdomain">
               <TextField
                 value={subdomain}
-                onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                onChange={(e) =>
+                  setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
+                }
                 required
               />
               <span className="ap-subdomain__suffix">{domainSuffix}</span>
@@ -184,7 +186,9 @@ export function WizardPage() {
               required
             />
             {adminPasswordConfirm && !passwordOk ? (
-              <p className="ap-hint ap-hint--error">Las contraseñas deben coincidir (mín. 8 caracteres).</p>
+              <p className="ap-hint ap-hint--error">
+                Las contraseñas deben coincidir (mín. 8 caracteres).
+              </p>
             ) : null}
           </FormField>
         </section>

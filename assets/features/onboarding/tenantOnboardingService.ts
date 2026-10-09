@@ -50,15 +50,26 @@ export interface SaveWarehouseInput {
 
 export const tenantOnboardingService = {
   snapshot() {
-    return httpRequestData(httpClient.get<TenantOnboardingSnapshot>('/api/tenant/onboarding/snapshot'));
+    return httpRequestData(
+      httpClient.get<TenantOnboardingSnapshot>('/api/tenant/onboarding/snapshot'),
+    );
   },
   saveCompany(input: SaveCompanyInput) {
-    return httpRequestData(httpClient.post<{ company: OnboardingCompany }>('/api/tenant/onboarding/company', input));
+    return httpRequestData(
+      httpClient.post<{ company: OnboardingCompany }>('/api/tenant/onboarding/company', input),
+    );
   },
   saveBranch(input: SaveBranchInput) {
-    return httpRequestData(httpClient.post<{ branch: OnboardingBranch }>('/api/tenant/onboarding/branch', input));
+    return httpRequestData(
+      httpClient.post<{ branch: OnboardingBranch }>('/api/tenant/onboarding/branch', input),
+    );
   },
   saveWarehouse(input: SaveWarehouseInput) {
-    return httpRequestData(httpClient.post<{ warehouse: OnboardingWarehouse }>('/api/tenant/onboarding/warehouse', input));
+    return httpRequestData(
+      httpClient.post<{ warehouse: OnboardingWarehouse }>(
+        '/api/tenant/onboarding/warehouse',
+        input,
+      ),
+    );
   },
 };

@@ -15,7 +15,13 @@ export const BillingHubLayout = () => {
       defaultPath="/billing/sales"
       tabsAriaLabel="Secciones de facturación"
       tabs={[
-        { key: 'sales', label: 'Ventas', path: '/billing/sales', icon: 'ph-shopping-cart', visible: true },
+        {
+          key: 'sales',
+          label: 'Ventas',
+          path: '/billing/sales',
+          icon: 'ph-shopping-cart',
+          visible: true,
+        },
         {
           key: 'consult',
           label: 'Consultas',
@@ -23,7 +29,13 @@ export const BillingHubLayout = () => {
           icon: 'ph-chart-line-up',
           visible: showOperationalReviewTabs,
         },
-        { key: 'documents', label: 'Comprobantes', path: '/billing/documents', icon: 'ph-file-text', visible: true },
+        {
+          key: 'documents',
+          label: 'Comprobantes',
+          path: '/billing/documents',
+          icon: 'ph-file-text',
+          visible: true,
+        },
         {
           key: 'credit-notes',
           label: 'Notas de crédito',

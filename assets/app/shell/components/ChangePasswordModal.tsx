@@ -88,8 +88,7 @@ export const ChangePasswordModal = ({ visible, onClose }: ChangePasswordModalPro
       .catch((err: unknown) => {
         const anyErr = err as { data?: { message?: string } };
         const message =
-          anyErr?.data?.message ||
-          'No se pudo cambiar la contraseña. Inténtalo nuevamente.';
+          anyErr?.data?.message || 'No se pudo cambiar la contraseña. Inténtalo nuevamente.';
         toast(message, 'error');
       })
       .finally(() => {
@@ -129,7 +128,11 @@ export const ChangePasswordModal = ({ visible, onClose }: ChangePasswordModalPro
             onClick={onToggle}
           />
         </span>
-        {error && <span className="change-password-field__error" id={`${field}-error`}>{error}</span>}
+        {error && (
+          <span className="change-password-field__error" id={`${field}-error`}>
+            {error}
+          </span>
+        )}
       </label>
     );
   };
@@ -148,18 +151,10 @@ export const ChangePasswordModal = ({ visible, onClose }: ChangePasswordModalPro
       className="change-password-modal"
       footer={
         <>
-          <Button
-            variant="secondary"
-            disabled={loading}
-            onClick={handleClose}
-          >
+          <Button variant="secondary" disabled={loading} onClick={handleClose}>
             Cancelar
           </Button>
-          <Button
-            variant="primary"
-            loading={loading}
-            onClick={handleSubmit}
-          >
+          <Button variant="primary" loading={loading} onClick={handleSubmit}>
             Guardar
           </Button>
         </>
@@ -174,12 +169,8 @@ export const ChangePasswordModal = ({ visible, onClose }: ChangePasswordModalPro
             showCurrent,
             () => setShowCurrent((prev) => !prev),
           )}
-          {renderPasswordField(
-            'newPassword',
-            'Nueva contraseña',
-            'Nueva contraseña',
-            showNew,
-            () => setShowNew((prev) => !prev),
+          {renderPasswordField('newPassword', 'Nueva contraseña', 'Nueva contraseña', showNew, () =>
+            setShowNew((prev) => !prev),
           )}
           {renderPasswordField(
             'confirmPassword',

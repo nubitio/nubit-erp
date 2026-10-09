@@ -147,7 +147,9 @@
   border-radius: 8px;
   background: var(--surface-1, #fff);
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 
   &--receive.stock-adjust-drawer__op--active {
     border-color: var(--success-color, #16a34a);
@@ -392,7 +394,10 @@
   background: transparent;
   color: var(--text-tertiary, var(--color-text-muted));
   cursor: pointer;
-  transition: color 0.12s, border-color 0.12s, background 0.12s;
+  transition:
+    color 0.12s,
+    border-color 0.12s,
+    background 0.12s;
 
   &:hover {
     color: var(--error-color, #dc2626);

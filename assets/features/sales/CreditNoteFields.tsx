@@ -30,7 +30,11 @@ type CreditNoteDetailRow = DataRecord & {
 };
 
 type FieldChangeContext = {
-  defaultSetCellValue: (row: CreditNoteDetailRow, value: unknown, currentRow: CreditNoteDetailRow) => void;
+  defaultSetCellValue: (
+    row: CreditNoteDetailRow,
+    value: unknown,
+    currentRow: CreditNoteDetailRow,
+  ) => void;
 };
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import type { DataRecord, GridCellContext } from '@nubitio/crud';
@@ -121,7 +125,9 @@ export const CreditNoteFields = () => {
     dateField()
       .name('issueDate')
       .label('Fecha')
-      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
+      .formatter((cell: GridCellContext) =>
+        SharedUtils.dateFormatter(cell.value as string | Date | null | undefined),
+      )
       .required(true)
       .build(),
   );
@@ -129,7 +135,10 @@ export const CreditNoteFields = () => {
     entityField(API + 'customers', 'id', 'businessName')
       .name('customer')
       .label('Cliente')
-      .formatter((cell: GridCellContext) => (cell.value as { businessName?: string } | undefined)?.businessName)
+      .formatter(
+        (cell: GridCellContext) =>
+          (cell.value as { businessName?: string } | undefined)?.businessName,
+      )
       .visibleOnForm(false)
       .build(),
   );
@@ -171,7 +180,12 @@ export const CreditNoteFields = () => {
       .name('affectedDocument')
       .label('Doc. afectado')
       .align('center')
-      .formatter((cell: GridCellContext) => (cell.value ?? (cell.data.sale as { invoice?: string } | undefined)?.invoice ?? '') as React.ReactNode)
+      .formatter(
+        (cell: GridCellContext) =>
+          (cell.value ??
+            (cell.data.sale as { invoice?: string } | undefined)?.invoice ??
+            '') as React.ReactNode,
+      )
       .build(),
   );
   fields.push(
@@ -179,7 +193,9 @@ export const CreditNoteFields = () => {
       .name('sunatStatus')
       .label('Envio sunat')
       .align('center')
-      .formatter((cell: GridCellContext) => SharedUtils.billStatusFormatter(cell.value as string | number | null | undefined))
+      .formatter((cell: GridCellContext) =>
+        SharedUtils.billStatusFormatter(cell.value as string | number | null | undefined),
+      )
       .build(),
   );
   fields.push(noneField().name('sunatMessage').label('Mensaje sunat').build());
@@ -221,7 +237,12 @@ export const CreditNoteDetailFields = (currency: string = 'PEN') => {
       .align('center')
       .valueType('number')
       .precision(2)
-      .onChange(function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+      .onChange(function (
+        this: FieldChangeContext,
+        rowData: DataRecord,
+        value: unknown,
+        currentRowData: DataRecord,
+      ) {
         const row = rowData as CreditNoteDetailRow;
         const currentRow = currentRowData as CreditNoteDetailRow;
         if (value === '') return;
@@ -235,7 +256,9 @@ export const CreditNoteDetailFields = (currency: string = 'PEN') => {
     currencyField()
       .name('unitPrice')
       .label('Precio')
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number, currency))
+      .formatter((cell: GridCellContext) =>
+        NumberUtils.formatCurrency(cell.value as number, currency),
+      )
       .readonly(true)
       .build(),
   );
@@ -243,7 +266,9 @@ export const CreditNoteDetailFields = (currency: string = 'PEN') => {
     currencyField()
       .name('total')
       .label('Total')
-      .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number, currency))
+      .formatter((cell: GridCellContext) =>
+        NumberUtils.formatCurrency(cell.value as number, currency),
+      )
       .readonly(true)
       .build(),
   );

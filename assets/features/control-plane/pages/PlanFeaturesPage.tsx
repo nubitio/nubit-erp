@@ -14,7 +14,11 @@ export const PlanFeaturesPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [savedCell, setSavedCell] = useState<string | null>(null);
 
-  const { data, isLoading, error: loadError } = useQuery({
+  const {
+    data,
+    isLoading,
+    error: loadError,
+  } = useQuery({
     queryKey: ['control-plane', 'plan-features'],
     queryFn: () => controlPlaneClient.getPlanFeatures(),
   });
@@ -147,7 +151,11 @@ export const PlanFeaturesPage = () => {
                               saving={update.isPending}
                               saved={savedCell === cellId}
                               onSave={(payload) =>
-                                update.mutate({ planName: plan.name, featureKey: feature.key, ...payload })
+                                update.mutate({
+                                  planName: plan.name,
+                                  featureKey: feature.key,
+                                  ...payload,
+                                })
                               }
                             />
                           );

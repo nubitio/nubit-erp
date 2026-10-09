@@ -45,7 +45,8 @@ export function TenantDetailPage() {
 
   useEffect(() => {
     const payment = searchParams.get('payment');
-    if (payment === 'success') notify('Pago procesado. Tu suscripción se actualizará en breve.', 'success');
+    if (payment === 'success')
+      notify('Pago procesado. Tu suscripción se actualizará en breve.', 'success');
     if (payment === 'cancelled') notify('El cambio de suscripción fue cancelado.', 'warning');
   }, [notify, searchParams]);
 
@@ -151,7 +152,13 @@ export function TenantDetailPage() {
               <p className="ap-panel__desc">
                 Al cancelar, tu empresa pasará al plan Free al final del periodo actual.
               </p>
-              <Button type="button" variant="secondary" loading={busy} disabled={busy} onClick={cancelSubscription}>
+              <Button
+                type="button"
+                variant="secondary"
+                loading={busy}
+                disabled={busy}
+                onClick={cancelSubscription}
+              >
                 Cancelar suscripción
               </Button>
             </>

@@ -13,22 +13,22 @@ export const usePosCustomers = () => {
   const [priceListId, setPriceListId] = useState<number | null>(null);
   const clearedRef = useRef(false);
 
-  const applyCustomer = useCallback((
-    mapped: CustomerOption | null,
-    preserveKnownPriceList = false,
-  ) => {
-    if (!mapped) {
-      return;
-    }
+  const applyCustomer = useCallback(
+    (mapped: CustomerOption | null, preserveKnownPriceList = false) => {
+      if (!mapped) {
+        return;
+      }
 
-    setSelectedCustomerId(mapped.id);
-    setSelectedCustomer(mapped);
-    setPriceListId((current) =>
-      preserveKnownPriceList && mapped.priceListId == null
-        ? current
-        : (mapped.priceListId ?? null),
-    );
-  }, []);
+      setSelectedCustomerId(mapped.id);
+      setSelectedCustomer(mapped);
+      setPriceListId((current) =>
+        preserveKnownPriceList && mapped.priceListId == null
+          ? current
+          : (mapped.priceListId ?? null),
+      );
+    },
+    [],
+  );
 
   useEffect(() => {
     if (selectedCustomerId !== null || clearedRef.current) {
@@ -39,13 +39,19 @@ export const usePosCustomers = () => {
     const controller = new AbortController();
 
     httpClient
-      .get<unknown>(`${customerEndpoints.list()}?ruc=${ANONYMOUS_CUSTOMER_RUC}`, { signal: controller.signal })
+      .get<unknown>(`${customerEndpoints.list()}?ruc=${ANONYMOUS_CUSTOMER_RUC}`, {
+        signal: controller.signal,
+      })
       .then(({ data }) => {
         if (cancelled) return;
         const raw = data as { member?: unknown[]; 'hydra:member'?: unknown[] };
-        const first = raw.member?.[0] ?? raw['hydra:member']?.[0] ?? (Array.isArray(data) ? data[0] : data);
+        const first =
+          raw.member?.[0] ?? raw['hydra:member']?.[0] ?? (Array.isArray(data) ? data[0] : data);
         const mapped = mapPosCustomer(first);
-        if (mapped && String((first as { ruc?: string } | undefined)?.ruc ?? '') === ANONYMOUS_CUSTOMER_RUC) {
+        if (
+          mapped &&
+          String((first as { ruc?: string } | undefined)?.ruc ?? '') === ANONYMOUS_CUSTOMER_RUC
+        ) {
           applyCustomer(mapped);
         }
       })
@@ -75,37 +81,40 @@ export const usePosCustomers = () => {
     setPriceListId(null);
   }, []);
 
-  const selectCustomer = useCallback((value: string | null, item?: unknown) => {
-    if (!value) {
-      clearSelectedCustomer();
-      return;
-    }
+  const selectCustomer = useCallback(
+    (value: string | null, item?: unknown) => {
+      if (!value) {
+        clearSelectedCustomer();
+        return;
+      }
 
-    clearedRef.current = false;
-    const id = Number(value);
-    const mappedFromItem = mapPosCustomer(item);
+      clearedRef.current = false;
+      const id = Number(value);
+      const mappedFromItem = mapPosCustomer(item);
 
-    setSelectedCustomerId(id);
-    setSelectedCustomer(
-      mappedFromItem ?? {
-        id,
-        businessName: `Cliente ${id}`,
-      },
-    );
-    setPriceListId(mappedFromItem?.priceListId ?? null);
+      setSelectedCustomerId(id);
+      setSelectedCustomer(
+        mappedFromItem ?? {
+          id,
+          businessName: `Cliente ${id}`,
+        },
+      );
+      setPriceListId(mappedFromItem?.priceListId ?? null);
 
-    void httpClient
-      .get<unknown>(`${customerEndpoints.detail(id)}?_=${Date.now()}`)
-      .then(({ data }) => {
-        // Some customer detail projections omit the relation even though the
-        // search result included it. Do not erase a tariff we already resolved
-        // from the selected option in that case.
-        applyCustomer(mapPosCustomer(data), true);
-      })
-      .catch(() => {
-        /* keep the lightweight selection if detail fetch fails */
-      });
-  }, [applyCustomer, clearSelectedCustomer]);
+      void httpClient
+        .get<unknown>(`${customerEndpoints.detail(id)}?_=${Date.now()}`)
+        .then(({ data }) => {
+          // Some customer detail projections omit the relation even though the
+          // search result included it. Do not erase a tariff we already resolved
+          // from the selected option in that case.
+          applyCustomer(mapPosCustomer(data), true);
+        })
+        .catch(() => {
+          /* keep the lightweight selection if detail fetch fails */
+        });
+    },
+    [applyCustomer, clearSelectedCustomer],
+  );
 
   return {
     selectedCustomerId,

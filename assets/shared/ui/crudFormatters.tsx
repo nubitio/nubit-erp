@@ -31,10 +31,15 @@ export function invoiceNumberCell(cell: GridCellContext): string {
 }
 
 export function entityNameCell(cell: GridCellContext): string {
-  return entityLabel(cell.value) || entityLabel(cell.data?.supplier) || entityLabel(cell.data?.customer);
+  return (
+    entityLabel(cell.value) || entityLabel(cell.data?.supplier) || entityLabel(cell.data?.customer)
+  );
 }
 
-const RECEIVABLE_BADGE: Record<ReceivableStatusKey, 'success' | 'warning' | 'danger' | 'secondary'> = {
+const RECEIVABLE_BADGE: Record<
+  ReceivableStatusKey,
+  'success' | 'warning' | 'danger' | 'secondary'
+> = {
   paid: 'success',
   pending: 'warning',
   partial: 'secondary',

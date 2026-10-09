@@ -120,19 +120,14 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
   }, [open, agentOnline, config?.scale.enabled]);
 
   const updatePrinter = (patch: Partial<AgentConfig['printer']>) => {
-    setConfig((prev) =>
-      prev ? { ...prev, printer: { ...prev.printer, ...patch } } : prev,
-    );
+    setConfig((prev) => (prev ? { ...prev, printer: { ...prev.printer, ...patch } } : prev));
   };
 
   const updateScale = (patch: Partial<AgentConfig['scale']>) => {
     setConfig((prev) => (prev ? { ...prev, scale: { ...prev.scale, ...patch } } : prev));
   };
 
-  const persistConfig = async (
-    next: AgentConfig,
-    successMessage?: string,
-  ): Promise<boolean> => {
+  const persistConfig = async (next: AgentConfig, successMessage?: string): Promise<boolean> => {
     setSaving(true);
     try {
       const result = await saveAgentConfig({
@@ -337,9 +332,7 @@ export function HardwareAgentDialog({ open, onClose }: HardwareAgentDialogProps)
               {config.scale.enabled && (
                 <div className="hardware-agent-dialog__live-weight">
                   <span className="hardware-agent-dialog__live-label">Peso en vivo</span>
-                  <strong>
-                    {liveWeight?.kg != null ? `${liveWeight.kg.toFixed(3)} kg` : '—'}
-                  </strong>
+                  <strong>{liveWeight?.kg != null ? `${liveWeight.kg.toFixed(3)} kg` : '—'}</strong>
                   {liveWeight?.stable && (
                     <span className="hardware-agent-dialog__badge is-ok">Estable</span>
                   )}

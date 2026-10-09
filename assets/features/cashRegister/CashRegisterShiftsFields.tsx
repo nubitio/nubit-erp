@@ -24,10 +24,18 @@ export const CashRegisterShiftsFields = () => {
       .label('Estado')
       .formatter((cell: GridCellContext) => {
         if (cell.value === 'OPEN') {
-          return <Badge variant="success" outlined>Abierto</Badge>;
+          return (
+            <Badge variant="success" outlined>
+              Abierto
+            </Badge>
+          );
         }
         if (cell.value === 'CLOSED') {
-          return <Badge variant="secondary" outlined>Cerrado</Badge>;
+          return (
+            <Badge variant="secondary" outlined>
+              Cerrado
+            </Badge>
+          );
         }
       })
       .build(),
