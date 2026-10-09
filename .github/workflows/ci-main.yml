@@ -504,6 +504,10 @@ jobs:
         if: needs.changes.outputs.e2e == 'true'
         run: |
           set -euo pipefail
+          # A health probe can look up the `demo` tenant before it is registered;
+          # TenantService caches that miss for 300s and every request then 404s
+          # with "Tenant not found". Drop it now that the tenant exists.
+          docker compose exec -T --user www-data web php bin/console cache:pool:clear cache.app
           docker compose exec -T --user www-data web php bin/console cache:clear --no-warmup --no-debug
           docker compose exec -T --user www-data web php bin/console cache:warmup --no-debug
           bash scripts/ci/wait-for-spa-host.sh

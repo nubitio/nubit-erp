@@ -27,7 +27,7 @@ final class CashRefundRegistrarTest extends TestCase
         $sale = $this->makeSale(id: 'sale-001', total: '150.00', serie: 'B001', numero: '100');
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $connection = $this->createConnectionMock($sale->getTotal());
+        $connection = $this->createConnectionMock((string) $sale->getTotal());
         $resolver = $this->createResolverMock(sessionId: 42);
 
         // Simulate category lookup returning a row
@@ -55,7 +55,7 @@ final class CashRefundRegistrarTest extends TestCase
         $sale = $this->makeSale(id: 'sale-desc', total: '200.00', serie: 'F001', numero: '999');
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $connection = $this->createConnectionMock($sale->getTotal());
+        $connection = $this->createConnectionMock((string) $sale->getTotal());
         $resolver = $this->createResolverMock(sessionId: 5);
 
         $connection->method('fetchAssociative')->willReturn(['id' => 3]);
@@ -89,7 +89,7 @@ final class CashRefundRegistrarTest extends TestCase
         $sale = $this->makeSale(id: 'sale-mtype', total: '50.00');
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $connection = $this->createConnectionMock($sale->getTotal());
+        $connection = $this->createConnectionMock((string) $sale->getTotal());
         $resolver = $this->createResolverMock(sessionId: 1);
 
         $connection->method('fetchAssociative')->willReturn(['id' => 2]);
@@ -114,7 +114,7 @@ final class CashRefundRegistrarTest extends TestCase
         $sale = $this->makeSale(id: 'sale-amt', total: '75.50');
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $connection = $this->createConnectionMock($sale->getTotal());
+        $connection = $this->createConnectionMock((string) $sale->getTotal());
         $resolver = $this->createResolverMock(sessionId: 10);
 
         $connection->method('fetchAssociative')->willReturn(['id' => 4]);
@@ -145,7 +145,7 @@ final class CashRefundRegistrarTest extends TestCase
         $sale = $this->makeSale(id: 'sale-noshift', total: '200.00');
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $connection = $this->createConnectionMock($sale->getTotal());
+        $connection = $this->createConnectionMock((string) $sale->getTotal());
         $resolver = $this->createResolverMock(sessionId: null);
 
         $connection->expects(self::never())->method('fetchAssociative');
@@ -160,7 +160,7 @@ final class CashRefundRegistrarTest extends TestCase
         $sale = $this->makeSale(id: 'sale-noshift-ok', total: '100.00');
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $connection = $this->createConnectionMock($sale->getTotal());
+        $connection = $this->createConnectionMock((string) $sale->getTotal());
         $resolver = $this->createResolverMock(sessionId: null);
 
         $registrar = new CashRefundRegistrar($connection, $resolver, new NullLogger());
@@ -218,7 +218,7 @@ final class CashRefundRegistrarTest extends TestCase
         $sale = $this->makeSale(id: 'sale-nocat', total: '80.00');
         $sale->setTipoPago($this->makeCashPaymentMethod());
 
-        $connection = $this->createConnectionMock($sale->getTotal());
+        $connection = $this->createConnectionMock((string) $sale->getTotal());
         $resolver = $this->createResolverMock(sessionId: 3);
 
         $connection->method('fetchAssociative')->willReturn(false); // category missing

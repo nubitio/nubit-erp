@@ -1,0 +1,15 @@
+# Local replica of the CI e2e stack. Used by scripts/ci/e2e-local.sh as:
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.ci.yml:docker-compose.e2e-local.yml
+#   COMPOSE_PROJECT_NAME=nubit-e2e
+#
+# It runs in its own compose project (own DB volume, own network) so it never
+# touches the dev stack. The fixed container names in docker-compose.yml would
+# collide with the dev containers, so they are dropped here; the Playwright
+# runner still resolves `nubit-erp-web`, which is kept as a network alias.
+services:
+  web:
+    container_name: !reset null
+    networks:
+      default:
+        aliases:
+          - nubit-erp-web
