@@ -23,3 +23,6 @@ public/sw.js
 public/workbox-*.js
 phparkitect-baseline.json
 tests/Architecture/fixtures/public-contracts.json
+
+# Output of openapi-typescript; CI diffs it against a fresh generation
+assets/api/*.generated.ts
