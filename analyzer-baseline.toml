@@ -6021,12 +6021,6 @@ count = 2
 [[issues]]
 file = "tests/Billing/Sale/SaleVoidUseCaseTest.php"
 code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$cashRefundRegistrar`."
-count = 1
-
-[[issues]]
-file = "tests/Billing/Sale/SaleVoidUseCaseTest.php"
-code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$cashSessionResolver`."
 count = 2
 
