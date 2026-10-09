@@ -47,10 +47,22 @@ export function LoginPage() {
     >
       <form className="ap-form" onSubmit={submit}>
         <FormField label="Email">
-          <TextField type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
+          <TextField
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+          />
         </FormField>
         <FormField label="Contraseña">
-          <TextField type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
+          <TextField
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
         </FormField>
         <Button type="submit" variant="primary" loading={busy} disabled={busy}>
           Entrar

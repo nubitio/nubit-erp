@@ -29,12 +29,19 @@ import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
 const BASE_URL = getE2EBaseUrl();
 
-async function setTaxRegime(request: APIRequestContext, auth: AuthSession, regime: 'GENERAL' | 'NRUS') {
+async function setTaxRegime(
+  request: APIRequestContext,
+  auth: AuthSession,
+  regime: 'GENERAL' | 'NRUS',
+) {
   const response = await request.patch(`${BASE_URL}/api/tenant/settings`, {
     headers: { ...auth.headers, 'Content-Type': 'application/merge-patch+json' },
     data: { taxRegime: regime },
   });
-  expect(response.ok(), `PATCH tenant/settings taxRegime=${regime} debe responder 2xx`).toBeTruthy();
+  expect(
+    response.ok(),
+    `PATCH tenant/settings taxRegime=${regime} debe responder 2xx`,
+  ).toBeTruthy();
   const body = (await response.json()) as { taxRegime?: string };
   expect(body.taxRegime, `taxRegime debe persistir como ${regime}`).toBe(regime);
 }
@@ -68,7 +75,9 @@ async function sellToSeedCustomer(page: import('@playwright/test').Page): Promis
     await productCard.click();
   }
 
-  await expect(page.locator('.pos-line__name').filter({ hasText: E2E_SEED.productName })).toBeVisible({
+  await expect(
+    page.locator('.pos-line__name').filter({ hasText: E2E_SEED.productName }),
+  ).toBeVisible({
     timeout: 8000,
   });
 
@@ -100,7 +109,8 @@ async function sellToSeedCustomer(page: import('@playwright/test').Page): Promis
   await waitForPosCheckoutReady(page);
 
   const createSaleResponsePromise = page.waitForResponse(
-    (response) => /\/api\/sales(?:\?.*)?$/.test(response.url()) && response.request().method() === 'POST',
+    (response) =>
+      /\/api\/sales(?:\?.*)?$/.test(response.url()) && response.request().method() === 'POST',
     { timeout: 20000 },
   );
 
@@ -112,7 +122,9 @@ async function sellToSeedCustomer(page: import('@playwright/test').Page): Promis
   const createdSale = (await createSaleResponse.json()) as { id?: string; '@id'?: string };
   const saleId =
     createdSale.id ??
-    (typeof createdSale['@id'] === 'string' ? (createdSale['@id'].match(/\/([^/]+)$/)?.[1] ?? '') : '');
+    (typeof createdSale['@id'] === 'string'
+      ? (createdSale['@id'].match(/\/([^/]+)$/)?.[1] ?? '')
+      : '');
   expect(saleId, 'la venta POS debe devolver un id').toBeTruthy();
 
   await expect(page.getByTestId('pos-postsale-title')).toBeVisible({ timeout: 20000 });
@@ -145,7 +157,9 @@ test.describe('NRUS — régimen tributario fuerza tipo de comprobante', () => {
 
         const taxDocumentId = String(documents[0].id);
         const document = await getTaxDocument(request, BASE_URL, auth, taxDocumentId);
-        expect(document.documentType, 'GENERAL + cliente con RUC debe emitir Factura (01)').toBe('01');
+        expect(document.documentType, 'GENERAL + cliente con RUC debe emitir Factura (01)').toBe(
+          '01',
+        );
       });
 
       await page.getByTestId('pos-postsale-new-sale').click();

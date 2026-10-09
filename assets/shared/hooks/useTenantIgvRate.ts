@@ -136,7 +136,7 @@ export function useTenantIgvRate(): UseTenantIgvRateResult {
     initialData: persistedData,
     initialDataUpdatedAt: persistedData !== undefined ? 0 : undefined,
     staleTime: 10 * 60 * 1000, // 10 minutes — rate changes only via admin configuration
-    gcTime: 30 * 60 * 1000,    // 30 minutes — keep in memory for the full session
+    gcTime: 30 * 60 * 1000, // 30 minutes — keep in memory for the full session
     retry: 2,
     retryDelay: 1000,
   });

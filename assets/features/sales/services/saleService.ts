@@ -18,22 +18,16 @@ class SaleService {
   }
 
   makeInvoice(saleId: string, requestedVoucherType?: 'AUTO' | 'BOLETA' | 'FACTURA') {
-    return httpClient.post<AppResponse>(
-      `${API}sales/${saleId}/invoice`,
-      {
-        saleId,
-        requestedVoucherType,
-      },
-    );
+    return httpClient.post<AppResponse>(`${API}sales/${saleId}/invoice`, {
+      saleId,
+      requestedVoucherType,
+    });
   }
 
   printInvoice(saleId: string) {
-    return httpClient.get<ArrayBuffer>(
-      `${API}sales/${saleId}/print-invoice`,
-      {
-        responseType: 'arraybuffer',
-      },
-    );
+    return httpClient.get<ArrayBuffer>(`${API}sales/${saleId}/print-invoice`, {
+      responseType: 'arraybuffer',
+    });
   }
 
   makeNote(noteId: string) {

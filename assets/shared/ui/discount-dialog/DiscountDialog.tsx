@@ -130,10 +130,7 @@ export const DiscountDialog = () => {
       showCloseButton={true}
       restoreFocus={false}
       footer={
-        <Button
-          variant="primary"
-          onClick={() => onApply(discountPercent, discountAmount)}
-        >
+        <Button variant="primary" onClick={() => onApply(discountPercent, discountAmount)}>
           Aceptar
         </Button>
       }
@@ -142,9 +139,7 @@ export const DiscountDialog = () => {
         {NumberUtils.formatCurrency(total - discountAmount)}
       </h3>
       {discountAmount > 0 && (
-        <p className="discount-dialog__previous-total">
-          {NumberUtils.formatCurrency(total)}
-        </p>
+        <p className="discount-dialog__previous-total">{NumberUtils.formatCurrency(total)}</p>
       )}
       <div className="discount-dialog__form">
         <FormField label="Descuento %" htmlFor="discount-percent">

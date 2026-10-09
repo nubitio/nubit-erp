@@ -26,32 +26,35 @@ const queryClient = new QueryClient({
 
 window.addEventListener('load', () => {
   if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-    void navigator.serviceWorker.register('/sw.js').then((registration) => {
-      // skipWaiting (vite.config.js) activates a new SW immediately instead of
-      // waiting for every tab to close. Force a full reload on takeover so the
-      // swap always lands as one clean version change, never a mid-session mix
-      // of old cached chunks and a new SW (that mix is what caused the
-      // "Invalid hook call" / infinite session-expired loop after a deploy).
-      let reloading = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (reloading) return;
-        reloading = true;
-        window.location.reload();
-      });
+    void navigator.serviceWorker
+      .register('/sw.js')
+      .then((registration) => {
+        // skipWaiting (vite.config.js) activates a new SW immediately instead of
+        // waiting for every tab to close. Force a full reload on takeover so the
+        // swap always lands as one clean version change, never a mid-session mix
+        // of old cached chunks and a new SW (that mix is what caused the
+        // "Invalid hook call" / infinite session-expired loop after a deploy).
+        let reloading = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (reloading) return;
+          reloading = true;
+          window.location.reload();
+        });
 
-      // The SPA uses HashRouter, so route changes never trigger a real
-      // navigation — the browser's built-in "check for SW update on
-      // navigate" never fires during a long-lived POS session. Poll
-      // explicitly instead.
-      const checkForUpdate = () => void registration.update();
-      window.setInterval(checkForUpdate, 30 * 60 * 1000);
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') checkForUpdate();
+        // The SPA uses HashRouter, so route changes never trigger a real
+        // navigation — the browser's built-in "check for SW update on
+        // navigate" never fires during a long-lived POS session. Poll
+        // explicitly instead.
+        const checkForUpdate = () => void registration.update();
+        window.setInterval(checkForUpdate, 30 * 60 * 1000);
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') checkForUpdate();
+        });
+      })
+      .catch(() => {
+        // Service workers can be unavailable in private browsing and isolated
+        // test contexts. The SPA must remain usable without offline support.
       });
-    }).catch(() => {
-      // Service workers can be unavailable in private browsing and isolated
-      // test contexts. The SPA must remain usable without offline support.
-    });
   }
 
   const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);

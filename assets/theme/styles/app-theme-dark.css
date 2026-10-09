@@ -2,7 +2,7 @@
 /* Nubit ERP dark theme — source of truth. Copied to public/themes/ at build time. */
 /* Modern SaaS look: near-black neutral canvas, low-contrast borders, flat shadows. */
 :root,
-[data-theme=dark] {
+[data-theme='dark'] {
   --base-bg: #0f0f0f;
   --base-bg-darken-4: #0a0a0a;
   --base-bg-darken-5: #000000;
@@ -80,6 +80,6 @@
   --tooltip-success-button-color: rgba(48, 164, 108, 0.12);
 }
 
-[data-theme=dark] {
-  content: "";
+[data-theme='dark'] {
+  content: '';
 }

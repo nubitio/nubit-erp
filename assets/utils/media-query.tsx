@@ -73,4 +73,3 @@ function getScreenSize() {
     isLarge: largeMedia.matches,
   };
 }
-

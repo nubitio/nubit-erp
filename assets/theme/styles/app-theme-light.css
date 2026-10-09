@@ -2,7 +2,7 @@
 /* Nubit ERP light theme — source of truth. Copied to public/themes/ at build time. */
 /* Modern SaaS look: near-white neutral canvas, low-contrast borders, soft shadows. */
 :root,
-[data-theme=light] {
+[data-theme='light'] {
   --base-bg: #ffffff;
   --base-bg-darken-4: #fafafa;
   --base-bg-darken-5: #f2f2f2;
@@ -78,6 +78,6 @@
   --tooltip-success-button-color: rgba(24, 121, 78, 0.1);
 }
 
-[data-theme=light] {
-  content: "";
+[data-theme='light'] {
+  content: '';
 }

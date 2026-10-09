@@ -32,22 +32,22 @@ const CATEGORY_LABEL: Record<Category, string> = {
 };
 
 const TYPE_CATEGORY: Record<NotificationType, Category> = {
-  sunat_error:          'sunat',
-  sunat_blocked:        'sunat',
+  sunat_error: 'sunat',
+  sunat_blocked: 'sunat',
   certificate_expiring: 'sunat',
-  stock_low:            'stock',
-  cash_not_opened:      'system',
-  quota_warning:        'system',
-  daily_briefing:       'system',
-  sale_due_soon:        'system',
-  sale_overdue:         'system',
+  stock_low: 'stock',
+  cash_not_opened: 'system',
+  quota_warning: 'system',
+  daily_briefing: 'system',
+  sale_due_soon: 'system',
+  sale_overdue: 'system',
 };
 
 // ── Icon config per type ────────────────────────────────────────────────────
 
 interface IconConfig {
   icon: string;
-  bg: string;   // CSS color for the icon square background
+  bg: string; // CSS color for the icon square background
   color: string; // CSS color for the icon itself
 }
 
@@ -58,34 +58,66 @@ const DEFAULT_ICON: IconConfig = {
 };
 
 const TYPE_ICON: Record<NotificationType, IconConfig> = {
-  sunat_error:          { icon: 'ph ph-warning',       bg: 'var(--status-danger-bg)',   color: 'var(--error-color)' },
-  sunat_blocked:        { icon: 'ph ph-seal-warning',   bg: 'var(--status-danger-bg)',   color: 'var(--error-color)' },
-  certificate_expiring: { icon: 'ph ph-certificate',    bg: 'var(--status-danger-bg)',   color: 'var(--error-color)' },
-  stock_low:            { icon: 'ph ph-cube',           bg: 'var(--status-warning-bg)',  color: 'var(--warning-color)' },
-  cash_not_opened:      { icon: 'ph ph-cash-register',  bg: 'var(--status-info-bg)',     color: 'var(--info-color)' },
-  quota_warning:        { icon: 'ph ph-chart-bar',      bg: 'var(--status-warning-bg)',  color: 'var(--warning-color)' },
-  daily_briefing:       { icon: 'ph ph-seal-check',     bg: 'var(--status-success-bg)',  color: 'var(--success-color)' },
-  sale_due_soon:        { icon: 'ph ph-calendar-check', bg: 'var(--status-info-bg)',     color: 'var(--info-color)' },
-  sale_overdue:         { icon: 'ph ph-calendar-x',     bg: 'var(--status-warning-bg)',  color: 'var(--warning-color)' },
+  sunat_error: {
+    icon: 'ph ph-warning',
+    bg: 'var(--status-danger-bg)',
+    color: 'var(--error-color)',
+  },
+  sunat_blocked: {
+    icon: 'ph ph-seal-warning',
+    bg: 'var(--status-danger-bg)',
+    color: 'var(--error-color)',
+  },
+  certificate_expiring: {
+    icon: 'ph ph-certificate',
+    bg: 'var(--status-danger-bg)',
+    color: 'var(--error-color)',
+  },
+  stock_low: { icon: 'ph ph-cube', bg: 'var(--status-warning-bg)', color: 'var(--warning-color)' },
+  cash_not_opened: {
+    icon: 'ph ph-cash-register',
+    bg: 'var(--status-info-bg)',
+    color: 'var(--info-color)',
+  },
+  quota_warning: {
+    icon: 'ph ph-chart-bar',
+    bg: 'var(--status-warning-bg)',
+    color: 'var(--warning-color)',
+  },
+  daily_briefing: {
+    icon: 'ph ph-seal-check',
+    bg: 'var(--status-success-bg)',
+    color: 'var(--success-color)',
+  },
+  sale_due_soon: {
+    icon: 'ph ph-calendar-check',
+    bg: 'var(--status-info-bg)',
+    color: 'var(--info-color)',
+  },
+  sale_overdue: {
+    icon: 'ph ph-calendar-x',
+    bg: 'var(--status-warning-bg)',
+    color: 'var(--warning-color)',
+  },
 };
 
 const SEVERITY_DOT_COLOR: Record<NotificationSeverity, string> = {
   critical: 'var(--error-color)',
-  warning:  'var(--warning-color)',
-  info:     'var(--accent-color)',
+  warning: 'var(--warning-color)',
+  info: 'var(--accent-color)',
 };
 
 // ── Action link label per type ───────────────────────────────────────────────
 
 const TYPE_ACTION_LABEL: Partial<Record<NotificationType, string>> = {
-  sunat_error:          'Ver comprobante',
-  sunat_blocked:        'Ver comprobante',
+  sunat_error: 'Ver comprobante',
+  sunat_blocked: 'Ver comprobante',
   certificate_expiring: 'Ver certificado',
-  stock_low:            'Ver inventario',
-  cash_not_opened:      'Abrir caja',
-  quota_warning:        'Ver configuración',
-  sale_due_soon:        'Ver cuentas por cobrar',
-  sale_overdue:         'Ver cuentas por cobrar',
+  stock_low: 'Ver inventario',
+  cash_not_opened: 'Abrir caja',
+  quota_warning: 'Ver configuración',
+  sale_due_soon: 'Ver cuentas por cobrar',
+  sale_overdue: 'Ver cuentas por cobrar',
 };
 
 // ── Time formatting ──────────────────────────────────────────────────────────
@@ -110,7 +142,9 @@ const NotificationPanel = (props: NotificationPanelProps) => {
   const allRead = notifications.every((n) => n.readAt !== null);
 
   // Category counts (unread only for the badge, total for filter)
-  const categoryCounts = (['sunat', 'stock', 'system'] as Category[]).reduce<Record<Category, number>>(
+  const categoryCounts = (['sunat', 'stock', 'system'] as Category[]).reduce<
+    Record<Category, number>
+  >(
     (acc, cat) => {
       acc[cat] = notifications.filter((n) => TYPE_CATEGORY[n.type] === cat).length;
       return acc;
@@ -118,9 +152,10 @@ const NotificationPanel = (props: NotificationPanelProps) => {
     { all: notifications.length, sunat: 0, stock: 0, system: 0 },
   );
 
-  const filtered = activeCategory === 'all'
-    ? notifications
-    : notifications.filter((n) => TYPE_CATEGORY[n.type] === activeCategory);
+  const filtered =
+    activeCategory === 'all'
+      ? notifications
+      : notifications.filter((n) => TYPE_CATEGORY[n.type] === activeCategory);
 
   const handleItemClick = (item: Notification) => {
     markRead(item.id);
@@ -165,11 +200,7 @@ const NotificationPanel = (props: NotificationPanelProps) => {
           >
             Marcar todo leído
           </button>
-          <IconButton
-            icon="ph ph-x"
-            label="Cerrar notificaciones"
-            onClick={props.onHiding}
-          />
+          <IconButton icon="ph ph-x" label="Cerrar notificaciones" onClick={props.onHiding} />
         </div>
       </div>
 
@@ -189,7 +220,9 @@ const NotificationPanel = (props: NotificationPanelProps) => {
             >
               {CATEGORY_LABEL[cat]}
               {count > 0 && (
-                <span className={`notif-panel__filter-count${activeCategory === cat ? ' is-active' : ''}`}>
+                <span
+                  className={`notif-panel__filter-count${activeCategory === cat ? ' is-active' : ''}`}
+                >
                   {count}
                 </span>
               )}
@@ -227,7 +260,10 @@ const NotificationPanel = (props: NotificationPanelProps) => {
                 tabIndex={0}
                 onClick={() => handleItemClick(item)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleItemClick(item); }
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleItemClick(item);
+                  }
                 }}
               >
                 {/* Icon square */}

@@ -42,13 +42,15 @@ const API = getCoreApiBaseUrl();
 interface StockItemRecord extends DataRecord {
   id: string;
   warehouse: { id?: string; name?: string; code?: string | null } | string;
-  product: {
-    id?: string;
-    code?: string | null;
-    name?: string;
-    category?: { id?: string; name?: string } | null;
-    unitOfMeasure?: { id?: number; name?: string } | null;
-  } | string;
+  product:
+    | {
+        id?: string;
+        code?: string | null;
+        name?: string;
+        category?: { id?: string; name?: string } | null;
+        unitOfMeasure?: { id?: number; name?: string } | null;
+      }
+    | string;
   qtyOnHand: string;
   qtyReserved: string;
   qtyAvailable: string;
@@ -100,7 +102,10 @@ const formatQty = (value: unknown) => {
 
 function formatQtyWithCoverage({ value, data }: GridCellContext) {
   const qtyLabel = formatQty(value);
-  const pct = stockCoveragePercent(String(value ?? '0'), data?.minStock as string | null | undefined);
+  const pct = stockCoveragePercent(
+    String(value ?? '0'),
+    data?.minStock as string | null | undefined,
+  );
   const color = stockCoverageColor(pct);
 
   return (
@@ -113,7 +118,9 @@ function formatQtyWithCoverage({ value, data }: GridCellContext) {
             style={{ width: `${pct}%`, background: color }}
           />
         </span>
-        <span className="stock-coverage-cell__pct" style={{ color }}>{pct}%</span>
+        <span className="stock-coverage-cell__pct" style={{ color }}>
+          {pct}%
+        </span>
       </span>
     </span>
   );
@@ -227,15 +234,18 @@ export const StockItemPage = () => {
     void queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
   }, [queryClient]);
 
-  const openKardex = useCallback((row: StockItemRecord) => {
-    const params = new URLSearchParams();
-    const whId = extractEntityId(row.warehouse);
-    const prId = extractEntityId(row.product);
-    if (whId) params.set('warehouse', whId);
-    if (prId) params.set('product', prId);
-    const kardexPath = inInventoryHub ? '/inventory/movements' : '/kardex';
-    navigate(`${kardexPath}?${params.toString()}`);
-  }, [inInventoryHub, navigate]);
+  const openKardex = useCallback(
+    (row: StockItemRecord) => {
+      const params = new URLSearchParams();
+      const whId = extractEntityId(row.warehouse);
+      const prId = extractEntityId(row.product);
+      if (whId) params.set('warehouse', whId);
+      if (prId) params.set('product', prId);
+      const kardexPath = inInventoryHub ? '/inventory/movements' : '/kardex';
+      navigate(`${kardexPath}?${params.toString()}`);
+    },
+    [inInventoryHub, navigate],
+  );
 
   const openAdjustDrawer = useCallback((row: StockItemRecord) => {
     setAdjustTarget(rowToAdjustTarget(row));
@@ -253,12 +263,14 @@ export const StockItemPage = () => {
             const parsed = parseStockItemCompositeId(String(id));
             if (!parsed) return [];
             const row = selectedRowsRef.current.get(String(id));
-            return [{
-              stockItemId: String(id),
-              productId: parsed.productId,
-              warehouseId: parsed.warehouseId,
-              productLabel: row ? formatProductLabel(row.product) : String(id),
-            } satisfies BulkStockReceiptTarget];
+            return [
+              {
+                stockItemId: String(id),
+                productId: parsed.productId,
+                warehouseId: parsed.warehouseId,
+                productLabel: row ? formatProductLabel(row.product) : String(id),
+              } satisfies BulkStockReceiptTarget,
+            ];
           });
           if (targets.length === 0) return;
           setBulkTargets(targets);
@@ -299,8 +311,25 @@ export const StockItemPage = () => {
       ? ['product', 'qtyOnHand', 'qtyAvailable', 'minStock', '_actions']
       : ['product', 'qtyOnHand', 'qtyAvailable', 'minStock', '_actions'];
     const fullColumns = showWarehouseColumn
-      ? ['warehouse', 'product', 'qtyOnHand', 'qtyReserved', 'qtyAvailable', 'minStock', 'updatedAt', '_actions']
-      : ['product', 'qtyOnHand', 'qtyReserved', 'qtyAvailable', 'minStock', 'updatedAt', '_actions'];
+      ? [
+          'warehouse',
+          'product',
+          'qtyOnHand',
+          'qtyReserved',
+          'qtyAvailable',
+          'minStock',
+          'updatedAt',
+          '_actions',
+        ]
+      : [
+          'product',
+          'qtyOnHand',
+          'qtyReserved',
+          'qtyAvailable',
+          'minStock',
+          'updatedAt',
+          '_actions',
+        ];
 
     return [
       { key: 'compact', label: 'Compacto', columns: compactColumns },
@@ -316,9 +345,7 @@ export const StockItemPage = () => {
 
   const resource = useMemo(
     () =>
-      defineResource<StockItemRecord>(
-        buildStockItemsUrl(categoryFilterId, statusFilter),
-        {
+      defineResource<StockItemRecord>(buildStockItemsUrl(categoryFilterId, statusFilter), {
         id: `stock-item-${warehouseFilterId ?? 'all'}-${categoryFilterId ?? 'all'}-${statusFilter}`,
         title: inInventoryHub ? '' : 'Existencias',
         mode: 'normal',
@@ -405,7 +432,11 @@ export const StockItemPage = () => {
                 formatter: (e) => formatQty(e.value),
               },
             },
-            { kind: 'override', key: 'updatedAt', patch: { order: 6, width: 150, label: 'Actualizado' } },
+            {
+              kind: 'override',
+              key: 'updatedAt',
+              patch: { order: 6, width: 150, label: 'Actualizado' },
+            },
             {
               kind: 'append' as const,
               field: {

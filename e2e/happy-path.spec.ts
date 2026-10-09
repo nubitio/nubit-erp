@@ -95,7 +95,7 @@ async function fillDxInput(page: Page, ariaLabel: string | string[], value: stri
   const labels = Array.isArray(ariaLabel) ? ariaLabel : [ariaLabel];
   const loginInputIds: Record<string, string> = {
     Usuario: '#login-username',
-    'Contraseña': '#login-password',
+    Contraseña: '#login-password',
   };
   let input = page.locator('__missing__');
 
@@ -157,7 +157,9 @@ function crudDialog(page: Page, name: RegExp = /nuevo|new|editar|edit/i) {
 }
 
 function crudDialogBody(page: Page, name?: RegExp) {
-  return crudDialog(page, name).locator('.crud-drawer__body, .nb-crud-page-shell__body, .nb-dialog__body, .nb-crud-dialog__body');
+  return crudDialog(page, name).locator(
+    '.crud-drawer__body, .nb-crud-page-shell__body, .nb-dialog__body, .nb-crud-dialog__body',
+  );
 }
 
 /**
@@ -218,7 +220,8 @@ async function ensureLoggedIn(page: Page) {
 
   // Also wait for the login form — give more time for SPA to initialize and redirect
   const loginForm = page.locator('form.login-form');
-  const isLoginPage = isLoginUrl || (await loginForm.isVisible({ timeout: 8000 }).catch(() => false));
+  const isLoginPage =
+    isLoginUrl || (await loginForm.isVisible({ timeout: 8000 }).catch(() => false));
   if (!isLoginPage) {
     return;
   }
@@ -298,7 +301,10 @@ async function recoverCashSessionId(page: Page): Promise<string | null> {
         return resp.ok ? resp.json() : [];
       }, BASE_URL);
       const openReg = Array.isArray(dashData)
-        ? dashData.find((r: CashRegisterDashboardRow) => r.status === 'open' && (r.cashSessionId ?? r.cashShiftId))
+        ? dashData.find(
+            (r: CashRegisterDashboardRow) =>
+              r.status === 'open' && (r.cashSessionId ?? r.cashShiftId),
+          )
         : null;
       const cashSessionId = openReg?.cashSessionId ?? openReg?.cashShiftId;
       if (cashSessionId) {
@@ -440,7 +446,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
         await acceptBtn.click();
         // Wait for the dialog to close after accepting
-        await page.locator('[data-testid="branch-picker-option"]').first().waitFor({ state: 'hidden', timeout: 10000 });
+        await page
+          .locator('[data-testid="branch-picker-option"]')
+          .first()
+          .waitFor({ state: 'hidden', timeout: 10000 });
       } catch {
         // No apareció el picker — probablemente sólo hay 1 local (auto-seleccionado)
         // o la rama fue seleccionada automáticamente
@@ -477,7 +486,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
         ? payload
         : (payload.data ?? payload.items ?? payload.member ?? payload['hydra:member'] ?? []);
     });
-    const seedProduct = seedProducts.find((product: { name?: string }) => product.name === SEED_PRODUCT_NAME);
+    const seedProduct = seedProducts.find(
+      (product: { name?: string }) => product.name === SEED_PRODUCT_NAME,
+    );
     expect(seedProduct).toBeTruthy();
     expect(Number(seedProduct.salePrice)).toBe(Number(SEED_PRODUCT_PRICE));
 
@@ -492,7 +503,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
     await gotoProtectedRoute(page, 'cashbox');
     await waitForGridLoad(page);
     // Check that the nb-datagrid toolbar with "Cajas" title is visible
-    await expect(page.locator('.nb-datagrid__toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({
+    await expect(
+      page.locator('.nb-datagrid__toolbar').filter({ hasText: /caja/i }).first(),
+    ).toBeVisible({
       timeout: 15000,
     });
 
@@ -523,7 +536,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
           return resp.ok ? resp.json() : [];
         }, BASE_URL);
         const openReg = Array.isArray(dashData)
-          ? dashData.find((r: CashRegisterDashboardRow) => r.status === 'open' && (r.cashSessionId ?? r.cashShiftId))
+          ? dashData.find(
+              (r: CashRegisterDashboardRow) =>
+                r.status === 'open' && (r.cashSessionId ?? r.cashShiftId),
+            )
           : null;
         const cashSessionId = openReg?.cashSessionId ?? openReg?.cashShiftId;
         if (cashSessionId) {
@@ -588,7 +604,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
     await test.step('Filtrar y verificar el cliente seed del entorno E2E', async () => {
       // NativeDataGridView: RUC/DNI is the first text filter input (nth(0))
-      const rucFilterInput = page.locator('.nb-datagrid__filter-row input[type="text"]:visible').first();
+      const rucFilterInput = page
+        .locator('.nb-datagrid__filter-row input[type="text"]:visible')
+        .first();
       try {
         await rucFilterInput.waitFor({ state: 'visible', timeout: 5000 });
         await rucFilterInput.click({ clickCount: 3 });
@@ -728,14 +746,19 @@ test.describe('Happy Path — flujo completo de venta', () => {
       if (!openedCashSessionId) {
         openedCashSessionId = await recoverCashSessionId(page);
       }
-      expect(openedCashSessionId, 'debe haber una caja abierta para registrar ventas').not.toBeNull();
+      expect(
+        openedCashSessionId,
+        'debe haber una caja abierta para registrar ventas',
+      ).not.toBeNull();
     });
 
     await test.step('Navegar a /#/billing/sales', async () => {
       await gotoProtectedRoute(page, 'billing/sales');
       await dismissDevToolbar(page);
       await waitForGridLoad(page);
-      await expect(page.locator('.nb-datagrid__toolbar').filter({ hasText: 'Ventas' }).first()).toBeVisible({
+      await expect(
+        page.locator('.nb-datagrid__toolbar').filter({ hasText: 'Ventas' }).first(),
+      ).toBeVisible({
         timeout: 15000,
       });
     });
@@ -760,7 +783,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
         if (currentVal.trim().length === 0) {
           await almacenInput.click();
           await page.waitForTimeout(300);
-          const firstWarehouse = page.locator('.nb-form__lookup-menu button[role="option"]').first();
+          const firstWarehouse = page
+            .locator('.nb-form__lookup-menu button[role="option"]')
+            .first();
           await firstWarehouse.waitFor({ state: 'visible', timeout: 8000 });
           await firstWarehouse.click();
           await page.waitForTimeout(300);
@@ -816,7 +841,13 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // The product's onChange auto-populates unitPrice; read via inputValue()
       // Column indices: 0=product, 1=qty, 2=unitPrice, 3=discountPercent, 4=discountAmount, 5=netAmount
-      const priceValue = await committedRow.locator('td').nth(2).locator('input').first().inputValue().catch(() => '0');
+      const priceValue = await committedRow
+        .locator('td')
+        .nth(2)
+        .locator('input')
+        .first()
+        .inputValue()
+        .catch(() => '0');
       expect(Number(priceValue)).toBeGreaterThan(0);
     });
 
@@ -866,9 +897,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       salesModuleSaleId = createdSale.id ?? null;
       expect(salesModuleSaleId, 'la respuesta de /api/sales debe incluir id').toBeTruthy();
 
-      await expect(
-        saleDialog,
-      ).toBeHidden({
+      await expect(saleDialog).toBeHidden({
         timeout: 15000,
       });
       await waitForGridLoad(page);
@@ -947,9 +976,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await categoryInput.click();
 
         // NativeEntitySelect dropdown — wait for options to load
-        const firstOption = page
-          .locator('.nb-form__lookup-menu button[role="option"]')
-          .first();
+        const firstOption = page.locator('.nb-form__lookup-menu button[role="option"]').first();
         await firstOption.waitFor({ state: 'visible', timeout: 8000 });
         await firstOption.click();
       });
@@ -995,13 +1022,17 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // ───────────────────────────────────────────────────────────────────────────
   test('09 - Movimientos de caja son append-only', async () => {
     await test.step('El movimiento creado sigue visible con el monto original', async () => {
-      const movementRow = page.locator('.nb-datagrid__row').filter({ hasText: createdMovementRowText! });
+      const movementRow = page
+        .locator('.nb-datagrid__row')
+        .filter({ hasText: createdMovementRowText! });
       await movementRow.waitFor({ state: 'visible', timeout: 10000 });
       await expect(movementRow).toContainText('50');
     });
 
     await test.step('No hay acción Editar en el menú de fila', async () => {
-      const movementRow = page.locator('.nb-datagrid__row').filter({ hasText: createdMovementRowText! });
+      const movementRow = page
+        .locator('.nb-datagrid__row')
+        .filter({ hasText: createdMovementRowText! });
       await movementRow.click();
 
       const rowActionsButton = movementRow.locator('.nb-datagrid__row-actions button').first();
@@ -1032,9 +1063,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       expect(openedCashSessionId, 'cashSessionId debe estar disponible del paso 4').not.toBeNull();
       await page.goto(`${BASE_URL}/#/cash-session/${openedCashSessionId}/close`);
       // CashRegisterClose renders an h1.cash-close__title (custom component, not a CRUD grid)
-      await expect(
-        page.locator('h1.cash-close__title'),
-      ).toBeVisible({ timeout: 20000 });
+      await expect(page.locator('h1.cash-close__title')).toBeVisible({ timeout: 20000 });
     });
 
     await test.step('Ingresar montos contados en el grid editable', async () => {
@@ -1116,7 +1145,9 @@ test.describe('Happy Path — flujo completo de venta', () => {
         .catch(() => {});
       await waitForGridLoad(page);
       // Check nb-datagrid toolbar for cashbox dashboard
-      await expect(page.locator('.nb-datagrid__toolbar').filter({ hasText: /caja/i }).first()).toBeVisible({
+      await expect(
+        page.locator('.nb-datagrid__toolbar').filter({ hasText: /caja/i }).first(),
+      ).toBeVisible({
         timeout: 15000,
       });
 

@@ -51,15 +51,17 @@ export const InventoryOperationsPage = () => {
             onClick: () => navigate('/outbound/new'),
           },
           ...(showTransfers
-            ? [{
-                key: 'transfer',
-                title: 'Transferencia',
-                description: 'Mueve stock entre almacenes.',
-                icon: 'ph-arrows-left-right',
-                accent: 'transfer' as const,
-                testId: 'inventory-operation-transfer',
-                onClick: () => navigate('/transfer/new'),
-              }]
+            ? [
+                {
+                  key: 'transfer',
+                  title: 'Transferencia',
+                  description: 'Mueve stock entre almacenes.',
+                  icon: 'ph-arrows-left-right',
+                  accent: 'transfer' as const,
+                  testId: 'inventory-operation-transfer',
+                  onClick: () => navigate('/transfer/new'),
+                },
+              ]
             : []),
         ]}
       />

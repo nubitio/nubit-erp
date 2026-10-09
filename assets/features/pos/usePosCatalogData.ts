@@ -38,12 +38,8 @@ export function usePosPaymentMethods() {
     queryKey: ['pos-payment-methods'],
     queryFn: () =>
       httpRequestData<unknown>(
-        httpClient.get<unknown>(
-          `${API}payment-methods?itemsPerPage=100&page=1`,
-        ),
-      ).then(
-        (responseData) => mapPaymentMethods(responseData).filter((m) => m.isActive),
-      ),
+        httpClient.get<unknown>(`${API}payment-methods?itemsPerPage=100&page=1`),
+      ).then((responseData) => mapPaymentMethods(responseData).filter((m) => m.isActive)),
     staleTime: 5 * 60 * 1000,
     placeholderData: [],
   });
@@ -77,8 +73,7 @@ export function usePosWarehouses(currentBranchId: string, enabled = true) {
         );
 
   // Fall back to full list if filtering removed everything (exact same behavior as before)
-  const finalList =
-    filteredByBranch.length > 0 ? filteredByBranch : legacyWarehouses;
+  const finalList = filteredByBranch.length > 0 ? filteredByBranch : legacyWarehouses;
 
   // We still return a useQuery-like shape for backward compatibility with the callers
   return {
@@ -103,10 +98,13 @@ export const usePosCatalogData = ({ currentBranchId, runtimeConfig }: UsePosCata
 
   // ── Payment methods ──────────────────────────────────────────────────────────
   const { data: paymentMethods = [] } = usePosPaymentMethods();
-  const [selectedPaymentMethodOverrideId, setSelectedPaymentMethodId] = useState<number | null>(null);
-  const defaultPaymentMethodId = paymentMethods.length > 0
-    ? (paymentMethods.find((item) => isCashPaymentMethod(item))?.id ?? paymentMethods[0].id)
-    : null;
+  const [selectedPaymentMethodOverrideId, setSelectedPaymentMethodId] = useState<number | null>(
+    null,
+  );
+  const defaultPaymentMethodId =
+    paymentMethods.length > 0
+      ? (paymentMethods.find((item) => isCashPaymentMethod(item))?.id ?? paymentMethods[0].id)
+      : null;
   const selectedPaymentMethodId = selectedPaymentMethodOverrideId ?? defaultPaymentMethodId;
 
   // ── Warehouses ───────────────────────────────────────────────────────────────
@@ -114,17 +112,15 @@ export const usePosCatalogData = ({ currentBranchId, runtimeConfig }: UsePosCata
   const defaultWarehouse = runtimeConfig?.defaults.warehouse;
   const shouldFetchWarehouses =
     runtimeConfig?.ui.inventory.showWarehouseSelector !== false || !defaultWarehouseId;
-  const { data: fetchedWarehouses = [] } = usePosWarehouses(
-    currentBranchId,
-    shouldFetchWarehouses,
-  );
+  const { data: fetchedWarehouses = [] } = usePosWarehouses(currentBranchId, shouldFetchWarehouses);
   const warehouses = shouldFetchWarehouses
     ? fetchedWarehouses
     : defaultWarehouse
       ? [{ id: defaultWarehouse.id, name: defaultWarehouse.name }]
       : [];
   const [selectedWarehouseOverrideId, setSelectedWarehouseId] = useState<string>('');
-  const selectedWarehouseId = selectedWarehouseOverrideId || defaultWarehouseId || warehouses[0]?.id || '';
+  const selectedWarehouseId =
+    selectedWarehouseOverrideId || defaultWarehouseId || warehouses[0]?.id || '';
 
   return {
     loading,

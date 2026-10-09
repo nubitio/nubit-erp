@@ -93,7 +93,11 @@
     }
 
     &:hover {
-      border-color: color-mix(in srgb, var(--status-warning-text) 45%, var(--status-warning-border));
+      border-color: color-mix(
+        in srgb,
+        var(--status-warning-text) 45%,
+        var(--status-warning-border)
+      );
     }
   }
 

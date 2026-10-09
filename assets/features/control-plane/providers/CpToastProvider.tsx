@@ -10,11 +10,9 @@ export const CpToastProvider = ({ children }: CpToastProviderProps) => {
   const { toasts, dismiss, runtime } = useAppRuntime();
 
   useEffect(() => {
-    registerCpNotify(
-      (message: string, type: NotificationType = 'info', durationMs = 4000) => {
-        runtime.notify(message, type, durationMs);
-      },
-    );
+    registerCpNotify((message: string, type: NotificationType = 'info', durationMs = 4000) => {
+      runtime.notify(message, type, durationMs);
+    });
 
     return () => registerCpNotify(null);
   }, [runtime]);

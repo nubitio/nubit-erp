@@ -32,7 +32,11 @@ const resource = defineResource<VoucherSeriesRecord>(API + 'voucher-series', {
     strategy: 'augment',
     directives: [
       { kind: 'override', key: 'series', patch: { order: 0, width: 140, label: 'Serie' } },
-      { kind: 'override', key: 'voucherType', patch: { order: 1, width: 220, label: 'Tipo de comprobante' } },
+      {
+        kind: 'override',
+        key: 'voucherType',
+        patch: { order: 1, width: 220, label: 'Tipo de comprobante' },
+      },
       { kind: 'override', key: 'branch', patch: { label: 'Sucursal' } },
       { kind: 'override', key: 'associatedSeries', patch: { label: 'Serie asociada' } },
       {

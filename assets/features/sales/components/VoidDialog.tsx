@@ -56,11 +56,7 @@ const VoidDialogInner = ({ onConfirm, onCancel }: VoidDialogProps) => {
           <Button variant="secondary" onClick={handleCancel}>
             Cancelar
           </Button>
-          <Button
-            variant="primary"
-            disabled={!reason.trim()}
-            onClick={handleConfirm}
-          >
+          <Button variant="primary" disabled={!reason.trim()} onClick={handleConfirm}>
             Confirmar
           </Button>
         </>

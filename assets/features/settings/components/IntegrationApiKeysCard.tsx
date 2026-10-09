@@ -1,8 +1,22 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AppDialog, Badge, Button, Card, DataTable, EmptyState, Text, TextField, useConfirm } from '@nubitio/ui';
+import {
+  AppDialog,
+  Badge,
+  Button,
+  Card,
+  DataTable,
+  EmptyState,
+  Text,
+  TextField,
+  useConfirm,
+} from '@nubitio/ui';
 import toast from '@shared/lib/SharedUtils';
-import { integrationService, type ApiClientDto, type ApiKeyDto } from '../services/integrationService';
+import {
+  integrationService,
+  type ApiClientDto,
+  type ApiKeyDto,
+} from '../services/integrationService';
 import { SecretRevealDialog } from './SecretRevealDialog';
 
 const QUERY_KEY = ['settings', 'integration', 'api-clients'];
@@ -27,7 +41,10 @@ export const IntegrationApiKeysCard = () => {
   const [scopes, setScopes] = useState<string[]>(['documents:write', 'documents:read']);
   const [revealed, setRevealed] = useState<{ secret: string; title: string } | null>(null);
 
-  const query = useQuery({ queryKey: QUERY_KEY, queryFn: () => integrationService.listApiClients() });
+  const query = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: () => integrationService.listApiClients(),
+  });
   const invalidate = () => queryClient.invalidateQueries({ queryKey: QUERY_KEY });
 
   const createMutation = useMutation({
@@ -110,7 +127,11 @@ export const IntegrationApiKeysCard = () => {
               id: 'key',
               header: 'Llave',
               render: ({ key }) =>
-                key ? <code className="integration-prefix">{key.prefix}…</code> : <Text tone="muted">—</Text>,
+                key ? (
+                  <code className="integration-prefix">{key.prefix}…</code>
+                ) : (
+                  <Text tone="muted">—</Text>
+                ),
             },
             {
               id: 'status',

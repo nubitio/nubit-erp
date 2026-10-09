@@ -87,9 +87,7 @@ const CertificateDetailDrawer = ({
       closeLabel={CP_STRINGS.close}
     >
       {detail.isLoading && <p className="cp-muted">{CP_STRINGS.loading}</p>}
-      {detail.error && (
-        <CpAlert tone="danger">{(detail.error as Error).message}</CpAlert>
-      )}
+      {detail.error && <CpAlert tone="danger">{(detail.error as Error).message}</CpAlert>}
       {cert && (
         <>
           <p className="cp-muted">{S.detailHint}</p>
@@ -151,7 +149,9 @@ const CertificateDetailDrawer = ({
               },
               {
                 term: S.lastAlerted,
-                value: formatDateTime(field(cert, 'lastAlertedAt', 'last_alerted_at') as string | null),
+                value: formatDateTime(
+                  field(cert, 'lastAlertedAt', 'last_alerted_at') as string | null,
+                ),
               },
               {
                 term: S.lycetSync,
@@ -254,51 +254,51 @@ export const CertificatesTab = ({
 
       {isAdmin && (
         <Col spanMd={4}>
-        <Card variant="panel" title={S.uploadTitle}>
-          <CpForm
-            onSubmit={(e) => {
-              e.preventDefault();
-              upload.mutate();
-            }}
-          >
-            <FormField label={S.ruc}>
-              <TextField
-                value={ruc}
-                onChange={(e) => setRuc(e.target.value)}
-                maxLength={11}
-                required
-              />
-            </FormField>
-            <FormField label={S.solUser}>
-              <TextField value={solUser} onChange={(e) => setSolUser(e.target.value)} required />
-            </FormField>
-            <FormField label={S.solPassword}>
-              <TextField
-                type="password"
-                value={solPass}
-                onChange={(e) => setSolPass(e.target.value)}
-                required
-              />
-            </FormField>
-            <FormField label={S.pemFile} helpText={S.pemHint}>
-              <FileDropzone
-                accept=".pem,.crt"
-                value={pemFile ? { fileName: pemFile.name } : null}
-                labels={{
-                  prompt: S.dropzonePrompt,
-                  hint: S.dropzoneHint,
-                  replace: S.dropzoneReplace,
-                  remove: S.dropzoneRemove,
-                }}
-                onFileSelect={setPemFile}
-                onClear={() => setPemFile(null)}
-              />
-            </FormField>
-            <Button type="submit" loading={upload.isPending} fullWidth disabled={!pemFile}>
-              {S.uploadSubmit}
-            </Button>
-          </CpForm>
-        </Card>
+          <Card variant="panel" title={S.uploadTitle}>
+            <CpForm
+              onSubmit={(e) => {
+                e.preventDefault();
+                upload.mutate();
+              }}
+            >
+              <FormField label={S.ruc}>
+                <TextField
+                  value={ruc}
+                  onChange={(e) => setRuc(e.target.value)}
+                  maxLength={11}
+                  required
+                />
+              </FormField>
+              <FormField label={S.solUser}>
+                <TextField value={solUser} onChange={(e) => setSolUser(e.target.value)} required />
+              </FormField>
+              <FormField label={S.solPassword}>
+                <TextField
+                  type="password"
+                  value={solPass}
+                  onChange={(e) => setSolPass(e.target.value)}
+                  required
+                />
+              </FormField>
+              <FormField label={S.pemFile} helpText={S.pemHint}>
+                <FileDropzone
+                  accept=".pem,.crt"
+                  value={pemFile ? { fileName: pemFile.name } : null}
+                  labels={{
+                    prompt: S.dropzonePrompt,
+                    hint: S.dropzoneHint,
+                    replace: S.dropzoneReplace,
+                    remove: S.dropzoneRemove,
+                  }}
+                  onFileSelect={setPemFile}
+                  onClear={() => setPemFile(null)}
+                />
+              </FormField>
+              <Button type="submit" loading={upload.isPending} fullWidth disabled={!pemFile}>
+                {S.uploadSubmit}
+              </Button>
+            </CpForm>
+          </Card>
         </Col>
       )}
 
@@ -340,9 +340,7 @@ export const CertificatesTab = ({
                   header: S.colFingerprint,
                   render: (cert) => {
                     const fingerprint = field(cert, 'fingerprintSha256', 'fingerprint_sha256');
-                    return (
-                      <Code>{fingerprint ? String(fingerprint).slice(0, 12) : '—'}</Code>
-                    );
+                    return <Code>{fingerprint ? String(fingerprint).slice(0, 12) : '—'}</Code>;
                   },
                 },
                 {
@@ -354,7 +352,8 @@ export const CertificatesTab = ({
               ]}
               rowActions={(cert) => {
                 const status = resolveStatus(cert);
-                const revocable = isAdmin && ['active', 'expiring_soon', 'expired'].includes(status);
+                const revocable =
+                  isAdmin && ['active', 'expiring_soon', 'expired'].includes(status);
                 return [
                   {
                     label: CP_STRINGS.view,

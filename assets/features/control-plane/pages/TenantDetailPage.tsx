@@ -57,12 +57,14 @@ export const TenantDetailPage = () => {
 
   const suspend = useMutation({
     mutationFn: () => controlPlaneClient.suspendTenant(tenantId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['control-plane', 'tenant', tenantId] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['control-plane', 'tenant', tenantId] }),
   });
 
   const unsuspend = useMutation({
     mutationFn: () => controlPlaneClient.unsuspendTenant(tenantId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['control-plane', 'tenant', tenantId] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ['control-plane', 'tenant', tenantId] }),
   });
 
   if (!Number.isFinite(tenantId) || tenantId <= 0) {
@@ -126,11 +128,7 @@ export const TenantDetailPage = () => {
               <>
                 <TenantStatusBadge status={tenant.status} />
                 {isSuperAdmin && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setImpersonateVisible(true)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => setImpersonateVisible(true)}>
                     {CP_STRINGS.tenantDetail.impersonate}
                   </Button>
                 )}
@@ -240,9 +238,7 @@ export const TenantDetailPage = () => {
           {activeTab === 'notifications' && (
             <NotificationsTab tenantId={tenantId} isAdmin={isAdmin} />
           )}
-          {activeTab === 'features' && (
-            <FeaturesTab tenantId={tenantId} isAdmin={isAdmin} />
-          )}
+          {activeTab === 'features' && <FeaturesTab tenantId={tenantId} isAdmin={isAdmin} />}
         </div>
       </div>
       <ConfirmHost />

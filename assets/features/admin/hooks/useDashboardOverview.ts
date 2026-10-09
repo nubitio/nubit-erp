@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';

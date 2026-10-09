@@ -84,13 +84,7 @@ export function NetworkErrorState({ onRetry }: RetryProps) {
 }
 
 /** No records match the current search / filter. */
-export function NoResultsState({
-  query,
-  onClear,
-}: {
-  query?: string;
-  onClear?: () => void;
-}) {
+export function NoResultsState({ query, onClear }: { query?: string; onClear?: () => void }) {
   return (
     <EmptyState
       variant="default"

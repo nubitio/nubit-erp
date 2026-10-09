@@ -75,11 +75,7 @@ describe('salePayments', () => {
     const lines = enableSplitPaymentLines(1, methods, 90);
     const withPlin = addPaymentLine(lines, methods, 90);
     const rebalanced = rebalancePaymentLines(
-      [
-        { methodId: 1, amount: '30.00' },
-        { methodId: 6, amount: '20.00' },
-        withPlin[2],
-      ],
+      [{ methodId: 1, amount: '30.00' }, { methodId: 6, amount: '20.00' }, withPlin[2]],
       90,
     );
 
@@ -169,8 +165,8 @@ describe('salePayments', () => {
       { methodId: 6, amount: '0.20' },
     ];
 
-    expect(paymentsMatchTotal(lines, 0.30)).toBe(true);
-    expect(remainingPaymentAmount(lines, 0.30)).toBe(0);
+    expect(paymentsMatchTotal(lines, 0.3)).toBe(true);
+    expect(remainingPaymentAmount(lines, 0.3)).toBe(0);
   });
 
   it('does not hide a one-cent mismatch behind a tolerance', () => {
@@ -183,11 +179,11 @@ describe('salePayments', () => {
   it('calculates cash change exactly in minor units', () => {
     const lines = [{ methodId: 1, amount: '19.90', tenderedAmount: '20.00' }];
 
-    expect(buildPaymentPayload(lines, methods, 19.90)[0]).toMatchObject({
+    expect(buildPaymentPayload(lines, methods, 19.9)[0]).toMatchObject({
       amount: '19.90',
       tendered_amount: '20.00',
       change_amount: '0.10',
     });
-    expect(totalCashChangeAmount(lines, methods, 19.90)).toBe(0.1);
+    expect(totalCashChangeAmount(lines, methods, 19.9)).toBe(0.1);
   });
 });

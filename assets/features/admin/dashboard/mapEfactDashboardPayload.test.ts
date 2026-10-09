@@ -58,9 +58,7 @@ const emptyDashboardData = (): DashboardData => ({
   lowStockProducts: [],
   paymentMethodsToday: [],
   hourlySalesToday: [],
-  recentSalesToday: [
-    { id: '99', issuedAt: '10:30', paymentMethod: 'Efectivo', total: 50 },
-  ],
+  recentSalesToday: [{ id: '99', issuedAt: '10:30', paymentMethod: 'Efectivo', total: 50 }],
 });
 
 describe('pickLast7SalesDays', () => {
@@ -83,9 +81,7 @@ describe('pickLast7SalesDays', () => {
     const today = DateTime.now().setZone('America/Lima').day;
 
     // only provide data for today, nothing else
-    const rows = pickLast7SalesDays([
-      { day: today, label: 'Lunes', total: 999 },
-    ]);
+    const rows = pickLast7SalesDays([{ day: today, label: 'Lunes', total: 999 }]);
 
     expect(rows).toHaveLength(7);
     // today's bar has data; the other 6 are zero

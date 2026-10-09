@@ -9,7 +9,10 @@ import { SettingsIntegrationsTab } from './SettingsIntegrationsTab';
 import { SettingsCrudPanel } from './SettingsCrudPanel';
 import { useTenantRuntimeConfig } from '@shared/hooks';
 
-const VoucherSeriesPage = lazyNamed(() => import('@features/catalog/VoucherSeriesPage'), 'VoucherSeriesPage');
+const VoucherSeriesPage = lazyNamed(
+  () => import('@features/catalog/VoucherSeriesPage'),
+  'VoucherSeriesPage',
+);
 const UserPage = lazyNamed(() => import('@features/admin/UserPage'), 'UserPage');
 const RolePage = lazyNamed(() => import('@features/admin/RolePage'), 'RolePage');
 const BranchPage = lazyNamed(() => import('@features/admin/BranchPage'), 'BranchPage');

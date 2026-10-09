@@ -50,9 +50,7 @@ export const usePriceListObservers = ({
       prices.current?.showLoading('Cargando precios...');
 
       void httpRequestData<PriceEditorRow[]>(
-        httpClient.get<PriceEditorRow[]>(
-          priceListEndpoints.prices(row.id as string | number),
-        ),
+        httpClient.get<PriceEditorRow[]>(priceListEndpoints.prices(row.id as string | number)),
       )
         .then((items) => {
           prices.current?.setRows(items);

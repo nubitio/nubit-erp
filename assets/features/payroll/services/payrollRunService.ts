@@ -10,7 +10,13 @@ export interface PayrollRunRecord {
   id: string;
   company: unknown;
   period: string;
-  type: 'REGULAR' | 'GRATIFICATION_JULY' | 'GRATIFICATION_DECEMBER' | 'CTS_MAY' | 'CTS_NOVEMBER' | 'LIQUIDACION';
+  type:
+    | 'REGULAR'
+    | 'GRATIFICATION_JULY'
+    | 'GRATIFICATION_DECEMBER'
+    | 'CTS_MAY'
+    | 'CTS_NOVEMBER'
+    | 'LIQUIDACION';
   status: 'DRAFT' | 'CALCULATED' | 'APPROVED' | 'PAID';
   calculatedAt: string | null;
   approvedAt: string | null;
@@ -49,25 +55,34 @@ export interface EmployeeSummary {
 const LD_JSON_HEADERS = { Accept: 'application/ld+json' };
 
 const payrollRunService = () => {
-  const get = (id: string) => httpRequestData(httpClient.get<PayrollRunRecord>(`${API}payroll-runs/${id}`));
+  const get = (id: string) =>
+    httpRequestData(httpClient.get<PayrollRunRecord>(`${API}payroll-runs/${id}`));
 
   const listEntries = (payrollRunId: string) =>
     httpRequestData(
-      httpClient.get<{ member: PayslipEntryRecord[] }>(`${API}payslip-entries?payrollRun=${payrollRunId}`, {
-        headers: LD_JSON_HEADERS,
-      }),
+      httpClient.get<{ member: PayslipEntryRecord[] }>(
+        `${API}payslip-entries?payrollRun=${payrollRunId}`,
+        {
+          headers: LD_JSON_HEADERS,
+        },
+      ),
     ).then((data) => data.member ?? []);
 
   const listEmployees = () =>
     httpRequestData(
-      httpClient.get<{ member: EmployeeSummary[] }>(`${API}employees`, { headers: LD_JSON_HEADERS }),
+      httpClient.get<{ member: EmployeeSummary[] }>(`${API}employees`, {
+        headers: LD_JSON_HEADERS,
+      }),
     ).then((data) => data.member ?? []);
 
-  const calculate = (id: string) => httpClient.post<PayrollRunActionResponse>(API + `payroll-runs/${id}/calculate`, { id });
+  const calculate = (id: string) =>
+    httpClient.post<PayrollRunActionResponse>(API + `payroll-runs/${id}/calculate`, { id });
 
-  const approve = (id: string) => httpClient.post<PayrollRunActionResponse>(API + `payroll-runs/${id}/approve`, { id });
+  const approve = (id: string) =>
+    httpClient.post<PayrollRunActionResponse>(API + `payroll-runs/${id}/approve`, { id });
 
-  const pay = (id: string) => httpClient.post<PayrollRunActionResponse>(API + `payroll-runs/${id}/pay`, { id });
+  const pay = (id: string) =>
+    httpClient.post<PayrollRunActionResponse>(API + `payroll-runs/${id}/pay`, { id });
 
   const plameExportUrl = (id: string) => `${API}v1/payroll/${id}/plame`;
 

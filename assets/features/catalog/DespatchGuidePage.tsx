@@ -44,27 +44,28 @@ export function DespatchGuidePage() {
   }, []);
 
   const resource = useMemo(
-    () => defineResource<DespatchGuideRecord>(API + 'despatch_guides', {
-      id: 'despatchGuide',
-      title: 'Guías de remisión',
-      viewMode: 'page',
-      emptyState: {
-        title: 'Sin guías de remisión',
-        description: 'Registra y envía guías de remisión electrónica a SUNAT.',
-        icon: 'truck',
-      },
-      toolbar: {
-        selection: [
-          {
-            text: 'Enviar a SUNAT',
-            type: 'info',
-            group: 'delivery',
-            groupLabel: 'Envío',
-            onClick: sendSelectedGuide,
-          },
-        ],
-      },
-    }),
+    () =>
+      defineResource<DespatchGuideRecord>(API + 'despatch_guides', {
+        id: 'despatchGuide',
+        title: 'Guías de remisión',
+        viewMode: 'page',
+        emptyState: {
+          title: 'Sin guías de remisión',
+          description: 'Registra y envía guías de remisión electrónica a SUNAT.',
+          icon: 'truck',
+        },
+        toolbar: {
+          selection: [
+            {
+              text: 'Enviar a SUNAT',
+              type: 'info',
+              group: 'delivery',
+              groupLabel: 'Envío',
+              onClick: sendSelectedGuide,
+            },
+          ],
+        },
+      }),
     [sendSelectedGuide],
   );
 

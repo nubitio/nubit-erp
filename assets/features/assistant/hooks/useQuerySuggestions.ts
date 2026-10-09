@@ -3,7 +3,6 @@ import { useLocation } from 'react-router-dom';
 import { getSessionUser } from '@shared/sessionInfo';
 import { cashboxService } from '@features/cashRegister';
 
-
 export interface QuerySuggestion {
   id: string;
   label: string;
@@ -145,7 +144,8 @@ export function useQuerySuggestions(): { suggestions: QuerySuggestion[] } {
   useEffect(() => {
     let cancelled = false;
 
-    cashboxService.getDashboard()
+    cashboxService
+      .getDashboard()
       .then((response) => {
         if (cancelled) return;
         const registers = response.data ?? [];

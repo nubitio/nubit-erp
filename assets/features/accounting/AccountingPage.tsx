@@ -184,7 +184,9 @@ export function AccountingPage() {
                 value={period.slice(0, 4)}
                 onChange={(event) => setPeriod(`${event.target.value}${period.slice(4, 6)}`)}
               >
-                {Array.from({ length: 6 }, (_, index) => String(new Date().getFullYear() - 3 + index)).map((year) => (
+                {Array.from({ length: 6 }, (_, index) =>
+                  String(new Date().getFullYear() - 3 + index),
+                ).map((year) => (
                   <option key={year} value={year}>
                     {year}
                   </option>
@@ -195,8 +197,8 @@ export function AccountingPage() {
         </div>
 
         <ErpModuleBanner>
-          Esto es el mayor operativo del negocio, no un cierre contable certificado. Sirve para ver si
-          caja, inventario, IGV y resultados cuadran.
+          Esto es el mayor operativo del negocio, no un cierre contable certificado. Sirve para ver
+          si caja, inventario, IGV y resultados cuadran.
         </ErpModuleBanner>
 
         <div className="acc-tabs" role="tablist" aria-label="Libros contables">
@@ -256,8 +258,12 @@ export function AccountingPage() {
                       <td>{formatDate(line.date)}</td>
                       <td>{line.entryNo}</td>
                       <td>{line.description}</td>
-                      <td className="acc-table__amount">{Number(line.debit) ? money(line.debit) : ''}</td>
-                      <td className="acc-table__amount">{Number(line.credit) ? money(line.credit) : ''}</td>
+                      <td className="acc-table__amount">
+                        {Number(line.debit) ? money(line.debit) : ''}
+                      </td>
+                      <td className="acc-table__amount">
+                        {Number(line.credit) ? money(line.credit) : ''}
+                      </td>
                       <td className="acc-table__amount">{money(line.balance)}</td>
                     </tr>
                   ))}
@@ -285,7 +291,9 @@ export function AccountingPage() {
             {loading ? (
               <p className="acc-empty">Cargando…</p>
             ) : (trial?.accounts.length ?? 0) === 0 ? (
-              <p className="acc-empty">Todavía no hay asientos en este periodo. Vende o compra para generarlos.</p>
+              <p className="acc-empty">
+                Todavía no hay asientos en este periodo. Vende o compra para generarlos.
+              </p>
             ) : (
               <table className="acc-table">
                 <thead>
@@ -305,8 +313,12 @@ export function AccountingPage() {
                       </td>
                       <td className="acc-table__amount">{money(row.debit)}</td>
                       <td className="acc-table__amount">{money(row.credit)}</td>
-                      <td className="acc-table__amount">{Number(row.deudor) ? money(row.deudor) : ''}</td>
-                      <td className="acc-table__amount">{Number(row.acreedor) ? money(row.acreedor) : ''}</td>
+                      <td className="acc-table__amount">
+                        {Number(row.deudor) ? money(row.deudor) : ''}
+                      </td>
+                      <td className="acc-table__amount">
+                        {Number(row.acreedor) ? money(row.acreedor) : ''}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -320,7 +332,9 @@ export function AccountingPage() {
             {loading ? (
               <p className="acc-empty">Cargando…</p>
             ) : journal.length === 0 ? (
-              <p className="acc-empty">El diario se llena solo con cada venta, compra o movimiento de caja.</p>
+              <p className="acc-empty">
+                El diario se llena solo con cada venta, compra o movimiento de caja.
+              </p>
             ) : (
               <table className="acc-table">
                 <thead>

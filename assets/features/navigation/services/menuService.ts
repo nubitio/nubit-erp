@@ -102,12 +102,16 @@ function menuItemSortIndex(item: AdminMenuItem): number {
   if (ownIndex !== undefined) return ownIndex;
 
   return Math.min(
-    ...(item.items ?? []).map((child) => DAILY_OPERATION_INDEX.get(normalizePath(child.path)) ?? Number.MAX_SAFE_INTEGER),
+    ...(item.items ?? []).map(
+      (child) => DAILY_OPERATION_INDEX.get(normalizePath(child.path)) ?? Number.MAX_SAFE_INTEGER,
+    ),
   );
 }
 
 function normalizePath(path: unknown): string {
-  return String(path ?? '').replace(/^\/+/, '').toLowerCase();
+  return String(path ?? '')
+    .replace(/^\/+/, '')
+    .toLowerCase();
 }
 
 function isAllowedMenuPath(path: string, runtimeConfig: TenantRuntimeConfig): boolean {

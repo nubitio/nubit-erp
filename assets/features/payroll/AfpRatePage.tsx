@@ -44,7 +44,13 @@ const AFP_RATE_COLUMN_PRESETS = [
   {
     key: 'basic',
     label: 'Básico',
-    columns: ['afpProvider', 'mandatoryContributionRate', 'insurancePremiumRate', 'commissionRate', 'effectiveFrom'],
+    columns: [
+      'afpProvider',
+      'mandatoryContributionRate',
+      'insurancePremiumRate',
+      'commissionRate',
+      'effectiveFrom',
+    ],
   },
 ];
 
@@ -84,12 +90,36 @@ const resource = defineResource<AfpRateRecord>(API + 'afp-rates', {
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'afpProvider', patch: { ...afpProviderPatch, order: 0, layoutHint: 'short' } },
-      { kind: 'override', key: 'effectiveFrom', patch: { order: 1, layoutHint: 'short', label: 'Vigente desde' } },
-      { kind: 'override', key: 'mandatoryContributionRate', patch: { order: 2, layoutHint: 'short', label: 'Aporte obligatorio' } },
-      { kind: 'override', key: 'insurancePremiumRate', patch: { order: 3, layoutHint: 'short', label: 'Prima de seguro' } },
-      { kind: 'override', key: 'commissionRate', patch: { order: 4, layoutHint: 'short', label: 'Comisión' } },
-      { kind: 'override', key: 'note', patch: { order: 5, layoutHint: 'fullWidth', label: 'Notas' } },
+      {
+        kind: 'override',
+        key: 'afpProvider',
+        patch: { ...afpProviderPatch, order: 0, layoutHint: 'short' },
+      },
+      {
+        kind: 'override',
+        key: 'effectiveFrom',
+        patch: { order: 1, layoutHint: 'short', label: 'Vigente desde' },
+      },
+      {
+        kind: 'override',
+        key: 'mandatoryContributionRate',
+        patch: { order: 2, layoutHint: 'short', label: 'Aporte obligatorio' },
+      },
+      {
+        kind: 'override',
+        key: 'insurancePremiumRate',
+        patch: { order: 3, layoutHint: 'short', label: 'Prima de seguro' },
+      },
+      {
+        kind: 'override',
+        key: 'commissionRate',
+        patch: { order: 4, layoutHint: 'short', label: 'Comisión' },
+      },
+      {
+        kind: 'override',
+        key: 'note',
+        patch: { order: 5, layoutHint: 'fullWidth', label: 'Notas' },
+      },
     ],
   }),
 });

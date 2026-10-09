@@ -20,9 +20,7 @@ export function AttentionStrip({ lowStockCount, pendingSunatCount }: AttentionSt
       key: 'sunat',
       count: pendingSunatCount,
       label:
-        pendingSunatCount === 1
-          ? 'comprobante pendiente SUNAT'
-          : 'comprobantes pendientes SUNAT',
+        pendingSunatCount === 1 ? 'comprobante pendiente SUNAT' : 'comprobantes pendientes SUNAT',
       to: '/billing/documents',
     },
   ].filter(Boolean) as Array<{ key: string; count: number; label: string; to: string }>;

@@ -1,7 +1,13 @@
 import { useMemo } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { EntityDropdown } from '@nubitio/crud';
-import { DateRangePicker, HubPanel, KpiMetricRow, SegmentedControl, type KpiMetricItem } from '@nubitio/ui';
+import {
+  DateRangePicker,
+  HubPanel,
+  KpiMetricRow,
+  SegmentedControl,
+  type KpiMetricItem,
+} from '@nubitio/ui';
 import { productEndpoints } from '@features/catalog/api/catalogEndpoints';
 import { useKardexSummary } from './useKardexSummary';
 import {
@@ -44,7 +50,13 @@ export function KardexDashboard({
   onToChange,
   onValuationChange,
 }: KardexDashboardProps) {
-  const { data: summary, isLoading } = useKardexSummary(productId, warehouseId, from, to, valuation);
+  const { data: summary, isLoading } = useKardexSummary(
+    productId,
+    warehouseId,
+    from,
+    to,
+    valuation,
+  );
 
   const kpiItems = useMemo<KpiMetricItem[]>(() => {
     const unit = summary?.product.unitName ? ` ${summary.product.unitName}` : '';
@@ -53,7 +65,11 @@ export function KardexDashboard({
       return [
         { label: 'Stock actual', value: '—', icon: 'ph-package' },
         { label: 'Valor stock', value: '—', icon: 'ph-coins' },
-        { label: valuation === 'fifo' ? 'Costo FIFO' : 'Costo prom.', value: '—', icon: 'ph-scales' },
+        {
+          label: valuation === 'fifo' ? 'Costo FIFO' : 'Costo prom.',
+          value: '—',
+          icon: 'ph-scales',
+        },
         { label: 'Total entradas', value: '—', icon: 'ph-arrow-down-left', tone: 'success' },
         { label: 'Total salidas', value: '—', icon: 'ph-arrow-up-right', tone: 'danger' },
         { label: 'Movimientos', value: '—', icon: 'ph-list-numbers' },
@@ -186,7 +202,6 @@ export function KardexDashboard({
           <p>Selecciona un producto para ver el kardex de movimientos.</p>
         </div>
       )}
-
     </HubPanel>
   );
 }

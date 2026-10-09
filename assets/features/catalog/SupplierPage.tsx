@@ -71,8 +71,16 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
     source: 'hydra',
     strategy: 'augment',
     directives: [
-      { kind: 'override', key: 'businessName', patch: { order: 1, layoutHint: 'fullWidth', label: 'Razón social' } },
-      { kind: 'override', key: 'phone', patch: { order: 3, layoutHint: 'short', label: 'Teléfono' } },
+      {
+        kind: 'override',
+        key: 'businessName',
+        patch: { order: 1, layoutHint: 'fullWidth', label: 'Razón social' },
+      },
+      {
+        kind: 'override',
+        key: 'phone',
+        patch: { order: 3, layoutHint: 'short', label: 'Teléfono' },
+      },
       {
         kind: 'override',
         key: 'isActive',
@@ -148,7 +156,12 @@ const resource = defineResource<SupplierRecord>(supplierEndpoints.list(), {
       {
         kind: 'override',
         key: 'fiscalAddress',
-        patch: { order: 2, type: FieldType.TEXTAREA, layoutHint: 'long', label: 'Domicilio fiscal' },
+        patch: {
+          order: 2,
+          type: FieldType.TEXTAREA,
+          layoutHint: 'long',
+          label: 'Domicilio fiscal',
+        },
       },
     ],
   }),

@@ -25,13 +25,20 @@ type InboundDetailRow = DataRecord & {
 };
 
 type FieldChangeContext = {
-  defaultSetCellValue: (row: InboundDetailRow, value: unknown, currentRow: InboundDetailRow) => void;
+  defaultSetCellValue: (
+    row: InboundDetailRow,
+    value: unknown,
+    currentRow: InboundDetailRow,
+  ) => void;
 };
 import NumberUtils from '@shared/lib/NumberUtils';
 import { SharedUtils } from '@shared/lib/SharedUtils';
 import type { DataRecord, GridCellContext } from '@nubitio/crud';
 
-export const InboundFields = (branchId: string | number = '', runtimeConfig?: TenantRuntimeConfig) => {
+export const InboundFields = (
+  branchId: string | number = '',
+  runtimeConfig?: TenantRuntimeConfig,
+) => {
   const fields: Field[] = [];
 
   const defaultWarehouseId = runtimeConfig?.defaults.warehouse?.id ?? '';
@@ -53,7 +60,9 @@ export const InboundFields = (branchId: string | number = '', runtimeConfig?: Te
       .name('issuedAt')
       .label('Fecha')
       .width(130)
-      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
+      .formatter((cell: GridCellContext) =>
+        SharedUtils.dateFormatter(cell.value as string | Date | null | undefined),
+      )
       .build(),
   );
   const warehouseField = entityField(API + 'warehouses', 'id', 'name')
@@ -144,7 +153,12 @@ export const InboundDetailFields = () => {
       .name('product')
       .label('Producto')
       .minWidth(200)
-      .onChange(async function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+      .onChange(async function (
+        this: FieldChangeContext,
+        rowData: DataRecord,
+        value: unknown,
+        currentRowData: DataRecord,
+      ) {
         const row = rowData as InboundDetailRow;
         const currentRow = currentRowData as InboundDetailRow;
         const product = (await productService.getOne(String(value), true)) as ProductDto;
@@ -162,7 +176,12 @@ export const InboundDetailFields = () => {
       .label('Cantidad')
       .defaultValue(0)
       .align('center')
-      .onChange(function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+      .onChange(function (
+        this: FieldChangeContext,
+        rowData: DataRecord,
+        value: unknown,
+        currentRowData: DataRecord,
+      ) {
         const row = rowData as InboundDetailRow;
         const currentRow = currentRowData as InboundDetailRow;
         if (value === '') return;
@@ -186,7 +205,12 @@ export const InboundDetailFields = () => {
       .label('Precio unitario')
       .defaultValue(0)
       .formatter((cell: GridCellContext) => NumberUtils.formatCurrency(cell.value as number))
-      .onChange(function (this: FieldChangeContext, rowData: DataRecord, value: unknown, currentRowData: DataRecord) {
+      .onChange(function (
+        this: FieldChangeContext,
+        rowData: DataRecord,
+        value: unknown,
+        currentRowData: DataRecord,
+      ) {
         const row = rowData as InboundDetailRow;
         const currentRow = currentRowData as InboundDetailRow;
         if (value === '') return;

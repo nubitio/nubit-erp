@@ -6,27 +6,19 @@ const API = getCoreApiBaseUrl();
 
 class TaxDocumentService {
   consultDocument(documentId: string) {
-    return httpClient.get<AppResponse>(
-      `${API}tax-documents/${documentId}/consult`,
-    );
+    return httpClient.get<AppResponse>(`${API}tax-documents/${documentId}/consult`);
   }
 
   sendDocument(documentId: string) {
-    return httpClient.post<AppResponse>(
-      `${API}tax-documents/${documentId}/send`,
-    );
+    return httpClient.post<AppResponse>(`${API}tax-documents/${documentId}/send`);
   }
 
   validateDocument(documentId: string) {
-    return httpClient.post<AppResponse>(
-      `${API}tax-documents/${documentId}/validate`,
-    );
+    return httpClient.post<AppResponse>(`${API}tax-documents/${documentId}/validate`);
   }
 
   sendEmail(documentId: string) {
-    return httpClient.post<unknown>(
-      `${API}tax-documents/${documentId}/email`,
-    );
+    return httpClient.post<unknown>(`${API}tax-documents/${documentId}/email`);
   }
 }
 

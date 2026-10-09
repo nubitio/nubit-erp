@@ -56,10 +56,12 @@ export const CashMovements = () => {
           {
             column: 'amount',
             label: 'Balance',
-            summaryType: ({ rows }) => rows.reduce(
-              (total, item) => total + (item.type === 'income' ? Number(item.amount) : -Number(item.amount)),
-              0,
-            ),
+            summaryType: ({ rows }) =>
+              rows.reduce(
+                (total, item) =>
+                  total + (item.type === 'income' ? Number(item.amount) : -Number(item.amount)),
+                0,
+              ),
             valueFormat: (value) => NumberUtils.formatCurrency(Number(value ?? 0)),
           },
         ]}

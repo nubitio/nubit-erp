@@ -25,25 +25,25 @@ export interface StockEntryPrefill {
 }
 
 const REASON_OPTIONS = [
-  { value: 'INITIAL_STOCK',    text: 'Carga inicial' },
+  { value: 'INITIAL_STOCK', text: 'Carga inicial' },
   { value: 'COUNT_CORRECTION', text: 'Corrección por conteo' },
-  { value: 'LOSS',             text: 'Pérdida / merma' },
-  { value: 'DAMAGE',           text: 'Producto dañado' },
-  { value: 'THEFT',            text: 'Robo / sustracción' },
-  { value: 'EXPIRY',           text: 'Producto vencido' },
-  { value: 'OTHER',            text: 'Otro' },
+  { value: 'LOSS', text: 'Pérdida / merma' },
+  { value: 'DAMAGE', text: 'Producto dañado' },
+  { value: 'THEFT', text: 'Robo / sustracción' },
+  { value: 'EXPIRY', text: 'Producto vencido' },
+  { value: 'OTHER', text: 'Otro' },
 ];
 
 const TYPE_MAP: Record<StockEntryMode, string> = {
-  receipt:    'RECEIPT',
-  issue:      'ISSUE',
-  transfer:   'TRANSFER',
+  receipt: 'RECEIPT',
+  issue: 'ISSUE',
+  transfer: 'TRANSFER',
   adjustment: 'ADJUSTMENT',
 };
 
 const OPERATION_TYPE_MAP: Record<StockEntryMode, number> = {
   receipt: 1,
-  issue:   2,
+  issue: 2,
   transfer: 1,
   adjustment: 1,
 };
@@ -116,30 +116,14 @@ export const StockEntryFields = (
 
   // Reason — only for ADJUSTMENT
   if (mode === 'adjustment') {
-    fields.push(
-      enumField(REASON_OPTIONS)
-        .name('reason')
-        .label('Razón')
-        .required(true)
-        .build(),
-    );
+    fields.push(enumField(REASON_OPTIONS).name('reason').label('Razón').required(true).build());
   }
 
-  fields.push(
-    textareaField()
-      .name('note')
-      .label('Nota')
-      .build(),
-  );
+  fields.push(textareaField().name('note').label('Nota').build());
 
   // Read-only grid columns
   fields.push(
-    textField()
-      .name('typeLabel')
-      .label('Tipo')
-      .readonly(true)
-      .visibleOnForm(false)
-      .build(),
+    textField().name('typeLabel').label('Tipo').readonly(true).visibleOnForm(false).build(),
   );
 
   fields.push(
@@ -148,7 +132,9 @@ export const StockEntryFields = (
       .label('Fecha')
       .readonly(true)
       .visibleOnForm(false)
-      .formatter((cell: GridCellContext) => SharedUtils.dateFormatter(cell.value as string | Date | null | undefined))
+      .formatter((cell: GridCellContext) =>
+        SharedUtils.dateFormatter(cell.value as string | Date | null | undefined),
+      )
       .build(),
   );
 
@@ -157,7 +143,10 @@ export const StockEntryFields = (
 
 // ─── Item fields ──────────────────────────────────────────────────────────────
 
-export const StockEntryItemFields = (mode: StockEntryMode, prefill?: StockEntryPrefill): Field[] => {
+export const StockEntryItemFields = (
+  mode: StockEntryMode,
+  prefill?: StockEntryPrefill,
+): Field[] => {
   const fields: Field[] = [];
 
   fields.push(identityField().build());
@@ -210,12 +199,7 @@ export const StockEntryItemFields = (mode: StockEntryMode, prefill?: StockEntryP
       .build(),
   );
 
-  fields.push(
-    textareaField()
-      .name('note')
-      .label('Nota')
-      .build(),
-  );
+  fields.push(textareaField().name('note').label('Nota').build());
 
   return fields;
 };

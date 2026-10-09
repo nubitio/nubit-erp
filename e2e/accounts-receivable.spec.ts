@@ -8,30 +8,43 @@ import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
 const BASE_URL = getE2EBaseUrl();
 
-test('filtra la deuda por cliente, registra un abono y muestra el historial', async ({ page, request }) => {
+test('filtra la deuda por cliente, registra un abono y muestra el historial', async ({
+  page,
+  request,
+}) => {
   const seed = await getE2ESeed();
   await login(page, seed.username, seed.password);
   await ensureOpenCashSession(page, BASE_URL);
   const auth = await loginViaApi(request, BASE_URL, seed.username, seed.password);
 
-  const [customersResponse, productsResponse, warehousesResponse, methodsResponse] = await Promise.all([
-    request.get(`${BASE_URL}/api/customers?itemsPerPage=100`, { headers: auth.headers }),
-    request.get(`${BASE_URL}/api/products?itemsPerPage=100`, { headers: auth.headers }),
-    request.get(`${BASE_URL}/api/warehouses?itemsPerPage=100`, { headers: auth.headers }),
-    request.get(`${BASE_URL}/api/payment-methods?itemsPerPage=100`, { headers: auth.headers }),
-  ]);
-  for (const response of [customersResponse, productsResponse, warehousesResponse, methodsResponse]) {
+  const [customersResponse, productsResponse, warehousesResponse, methodsResponse] =
+    await Promise.all([
+      request.get(`${BASE_URL}/api/customers?itemsPerPage=100`, { headers: auth.headers }),
+      request.get(`${BASE_URL}/api/products?itemsPerPage=100`, { headers: auth.headers }),
+      request.get(`${BASE_URL}/api/warehouses?itemsPerPage=100`, { headers: auth.headers }),
+      request.get(`${BASE_URL}/api/payment-methods?itemsPerPage=100`, { headers: auth.headers }),
+    ]);
+  for (const response of [
+    customersResponse,
+    productsResponse,
+    warehousesResponse,
+    methodsResponse,
+  ]) {
     expect(response.ok(), `${response.url()} debe responder 2xx`).toBeTruthy();
   }
 
-  const customer = parseApiCollection<{ id: number; ruc?: string }>(await customersResponse.json())
-    .find((item) => item.ruc === E2E_SEED.customerDni);
-  const product = parseApiCollection<{ id: string; code?: string; salePrice: string }>(await productsResponse.json())
-    .find((item) => item.code === E2E_SEED.productCode);
-  const warehouse = parseApiCollection<{ id: string; name?: string }>(await warehousesResponse.json())
-    .find((item) => item.name === E2E_SEED.warehouseName);
-  const paymentMethod = parseApiCollection<{ id: number; name?: string }>(await methodsResponse.json())
-    .find((item) => /efectivo/i.test(item.name ?? ''));
+  const customer = parseApiCollection<{ id: number; ruc?: string }>(
+    await customersResponse.json(),
+  ).find((item) => item.ruc === E2E_SEED.customerDni);
+  const product = parseApiCollection<{ id: string; code?: string; salePrice: string }>(
+    await productsResponse.json(),
+  ).find((item) => item.code === E2E_SEED.productCode);
+  const warehouse = parseApiCollection<{ id: string; name?: string }>(
+    await warehousesResponse.json(),
+  ).find((item) => item.name === E2E_SEED.warehouseName);
+  const paymentMethod = parseApiCollection<{ id: number; name?: string }>(
+    await methodsResponse.json(),
+  ).find((item) => /efectivo/i.test(item.name ?? ''));
   if (!customer || !product || !warehouse || !paymentMethod) {
     throw new Error('Faltan datos E2E para crear la cuenta por cobrar');
   }
@@ -56,14 +69,16 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
       currency: 'PEN',
       exchangeRate: '1.000000',
       grandTotal: '10.00',
-      writeItems: [{
-        product: `/api/products/${product.id}`,
-        qty: 1,
-        unitPrice: '10.00',
-        description: E2E_SEED.productName,
-        discountAmount: '0.00',
-        netAmount: '10.00',
-      }],
+      writeItems: [
+        {
+          product: `/api/products/${product.id}`,
+          qty: 1,
+          unitPrice: '10.00',
+          description: E2E_SEED.productName,
+          discountAmount: '0.00',
+          netAmount: '10.00',
+        },
+      ],
     },
   });
   const createBody = await createResponse.text();
@@ -72,15 +87,18 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
   expect(Number(createdSale.balanceDue)).toBe(9);
 
   await test.step('rechazar crédito como cobro sin alterar el saldo', async () => {
-    const credit = parseApiCollection<{ id: number; settlementBehavior?: string }>(await methodsResponse.json())
-      .find((method) => method.settlementBehavior === 'RECEIVABLE');
+    const credit = parseApiCollection<{ id: number; settlementBehavior?: string }>(
+      await methodsResponse.json(),
+    ).find((method) => method.settlementBehavior === 'RECEIVABLE');
     expect(credit, 'Debe existir el método crédito').toBeTruthy();
     const rejected = await request.post(`${BASE_URL}/api/sales/${createdSale.id}/collect`, {
       headers: auth.headers,
       data: { id: createdSale.id, amount: 4, paymentMethodId: credit!.id },
     });
     expect(rejected.status()).toBe(422);
-    const unchanged = await request.get(`${BASE_URL}/api/sales/${createdSale.id}`, { headers: auth.headers });
+    const unchanged = await request.get(`${BASE_URL}/api/sales/${createdSale.id}`, {
+      headers: auth.headers,
+    });
     const body = await unchanged.json();
     expect(Number(body.balanceDue)).toBe(9);
     expect(Number(body.paidTotal)).toBe(1);
@@ -104,7 +122,9 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
     const methodInput = dialog.getByText('Método de pago').locator('..').getByRole('combobox');
     await methodInput.click();
     await methodInput.fill(paymentMethod.name ?? 'Efectivo');
-    await expect(page.getByRole('option', { name: paymentMethod.name ?? 'Efectivo', exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('option', { name: paymentMethod.name ?? 'Efectivo', exact: true }),
+    ).toBeVisible();
     await page.getByRole('option', { name: paymentMethod.name ?? 'Efectivo', exact: true }).click();
     await dialog.getByTestId('receivable-payment-submit-btn').click();
 
@@ -113,7 +133,9 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
     await expect(dialog).toBeHidden();
   });
 
-  const detailResponse = await request.get(`${BASE_URL}/api/sales/${createdSale.id}`, { headers: auth.headers });
+  const detailResponse = await request.get(`${BASE_URL}/api/sales/${createdSale.id}`, {
+    headers: auth.headers,
+  });
   expect(detailResponse.ok()).toBeTruthy();
   const updatedSale = (await detailResponse.json()) as {
     paidTotal: string;
@@ -122,9 +144,11 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
   };
   expect(Number(updatedSale.paidTotal)).toBe(5);
   expect(Number(updatedSale.balanceDue)).toBe(5);
-  expect(updatedSale.payments?.some(
-    (payment) => Number(payment.amount) === 4 && payment.reference === 'OP-E2E-001',
-  )).toBeTruthy();
+  expect(
+    updatedSale.payments?.some(
+      (payment) => Number(payment.amount) === 4 && payment.reference === 'OP-E2E-001',
+    ),
+  ).toBeTruthy();
 
   await test.step('ver el abono en el detalle del cliente', async () => {
     const updatedRow = page.getByRole('row').filter({ hasText: E2E_SEED.customerName }).first();
@@ -148,18 +172,22 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
     await dialog.getByLabel('Referencia').fill('PAGO-FINAL-E2E');
     await dialog.getByRole('combobox').click();
     await dialog.getByRole('combobox').fill(paymentMethod.name ?? 'Efectivo');
-    await expect(page.getByRole('option', { name: paymentMethod.name ?? 'Efectivo', exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('option', { name: paymentMethod.name ?? 'Efectivo', exact: true }),
+    ).toBeVisible();
     await page.getByRole('option', { name: paymentMethod.name ?? 'Efectivo', exact: true }).click();
     await dialog.getByTestId('receivable-payment-submit-btn').click();
     await dialog.getByRole('button', { name: 'Listo' }).click();
     await expect(dialog).toBeHidden();
 
-    await expect(
-      page.getByRole('row').filter({ hasText: E2E_SEED.customerName }),
-    ).toHaveCount(0, { timeout: 15000 });
+    await expect(page.getByRole('row').filter({ hasText: E2E_SEED.customerName })).toHaveCount(0, {
+      timeout: 15000,
+    });
   });
 
-  const settledResponse = await request.get(`${BASE_URL}/api/sales/${createdSale.id}`, { headers: auth.headers });
+  const settledResponse = await request.get(`${BASE_URL}/api/sales/${createdSale.id}`, {
+    headers: auth.headers,
+  });
   const settledSale = (await settledResponse.json()) as { paidTotal: string; balanceDue: string };
   expect(Number(settledSale.paidTotal)).toBe(10);
   expect(Number(settledSale.balanceDue)).toBe(0);

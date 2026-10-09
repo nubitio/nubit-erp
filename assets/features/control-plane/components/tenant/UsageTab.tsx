@@ -33,7 +33,12 @@ const formatDelta = (resource: string, delta: number): string => {
   return `${sign}${formatValue(resource, Math.abs(delta))}`;
 };
 
-export const UsageTab = ({ quotaSummary, usageLatest, usageDeltas, quotaAlerts }: UsageTabProps) => {
+export const UsageTab = ({
+  quotaSummary,
+  usageLatest,
+  usageDeltas,
+  quotaAlerts,
+}: UsageTabProps) => {
   const deltaRows = Object.entries(usageDeltas).map(([resource, d]) => ({ resource, ...d }));
 
   return (
@@ -135,7 +140,11 @@ export const UsageTab = ({ quotaSummary, usageLatest, usageDeltas, quotaAlerts }
                 render: (row) => {
                   const tone =
                     row.delta > 0 ? ' cp-delta--up' : row.delta < 0 ? ' cp-delta--down' : '';
-                  return <span className={`cp-delta${tone}`}>{formatDelta(row.resource, row.delta)}</span>;
+                  return (
+                    <span className={`cp-delta${tone}`}>
+                      {formatDelta(row.resource, row.delta)}
+                    </span>
+                  );
                 },
               },
             ]}

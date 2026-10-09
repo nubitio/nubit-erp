@@ -1,4 +1,7 @@
-export function stockCoveragePercent(qtyOnHand: string | number, minStock: string | number | null | undefined): number {
+export function stockCoveragePercent(
+  qtyOnHand: string | number,
+  minStock: string | number | null | undefined,
+): number {
   const stock = parseFloat(String(qtyOnHand ?? '0'));
   const minimum = parseFloat(String(minStock ?? '0'));
 

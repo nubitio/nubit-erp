@@ -85,12 +85,16 @@ class IntegrationService {
 
   rotateWebhookSecret(id: string) {
     return httpClient
-      .post<WebhookEndpointDto & { secret: string }>(`${BASE}/webhook-endpoints/${id}/rotate-secret`)
+      .post<WebhookEndpointDto & { secret: string }>(
+        `${BASE}/webhook-endpoints/${id}/rotate-secret`,
+      )
       .then((r) => r.data);
   }
 
   toggleWebhook(id: string) {
-    return httpClient.post<WebhookEndpointDto>(`${BASE}/webhook-endpoints/${id}/toggle`).then((r) => r.data);
+    return httpClient
+      .post<WebhookEndpointDto>(`${BASE}/webhook-endpoints/${id}/toggle`)
+      .then((r) => r.data);
   }
 
   deleteWebhook(id: string) {

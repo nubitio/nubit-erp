@@ -50,7 +50,9 @@ export function useInventoryCategories() {
           .filter(Boolean),
       );
       const categories = extractCategories(categoriesResponse.data);
-      return usedIds.size > 0 ? categories.filter((category) => usedIds.has(category.id)) : categories;
+      return usedIds.size > 0
+        ? categories.filter((category) => usedIds.has(category.id))
+        : categories;
     },
     staleTime: 5 * 60_000,
   });

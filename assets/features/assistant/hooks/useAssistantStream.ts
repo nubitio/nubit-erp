@@ -1,7 +1,10 @@
 import { useCallback, useRef, useState } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { exceptionalFetch } from '@shared/api/network';
-import type { AssistantChatMessage, AssistantAttachmentPayload } from '../services/assistantService';
+import type {
+  AssistantChatMessage,
+  AssistantAttachmentPayload,
+} from '../services/assistantService';
 import type { ProposedAction } from '../components/ActionCard';
 import type { ScreenContext } from '../types';
 

@@ -4,9 +4,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Badge, Button, ConfirmDialog } from '@nubitio/ui';
 import toast from '@shared/lib/SharedUtils';
 import { formatMoney, formatMonthPeriod } from '@shared/lib/displayFormat';
-import payrollRunService, { type PayrollRunRecord, type PayslipEntryRecord } from './services/payrollRunService';
+import payrollRunService, {
+  type PayrollRunRecord,
+  type PayslipEntryRecord,
+} from './services/payrollRunService';
 
-const STATUS_BADGE: Record<PayrollRunRecord['status'], { variant: 'success' | 'warning' | 'secondary' | 'danger'; text: string }> = {
+const STATUS_BADGE: Record<
+  PayrollRunRecord['status'],
+  { variant: 'success' | 'warning' | 'secondary' | 'danger'; text: string }
+> = {
   DRAFT: { variant: 'warning', text: 'Borrador' },
   CALCULATED: { variant: 'secondary', text: 'Calculada' },
   APPROVED: { variant: 'secondary', text: 'Aprobada' },
@@ -30,12 +36,21 @@ export const PayrollRunDetailPage = () => {
   const reload = useCallback(() => {
     if (!id) return;
     setLoading(true);
-    Promise.all([payrollRunService().get(id), payrollRunService().listEntries(id), payrollRunService().listEmployees()])
+    Promise.all([
+      payrollRunService().get(id),
+      payrollRunService().listEntries(id),
+      payrollRunService().listEmployees(),
+    ])
       .then(([runData, entriesData, employeesData]) => {
         setRun(runData);
         setEntries(entriesData);
         setEmployeeNames(
-          Object.fromEntries(employeesData.map((employee) => [employee['@id'], `${employee.firstName} ${employee.lastName}`])),
+          Object.fromEntries(
+            employeesData.map((employee) => [
+              employee['@id'],
+              `${employee.firstName} ${employee.lastName}`,
+            ]),
+          ),
         );
       })
       .finally(() => setLoading(false));
@@ -49,12 +64,20 @@ export const PayrollRunDetailPage = () => {
     if (!id || !confirmAction) return;
     const service = payrollRunService();
     const promise =
-      confirmAction === 'calculate' ? service.calculate(id) : confirmAction === 'approve' ? service.approve(id) : service.pay(id);
+      confirmAction === 'calculate'
+        ? service.calculate(id)
+        : confirmAction === 'approve'
+          ? service.approve(id)
+          : service.pay(id);
 
     promise
       .then(() => {
         toast(
-          confirmAction === 'calculate' ? 'Planilla calculada' : confirmAction === 'approve' ? 'Corrida aprobada' : 'Corrida marcada como pagada',
+          confirmAction === 'calculate'
+            ? 'Planilla calculada'
+            : confirmAction === 'approve'
+              ? 'Corrida aprobada'
+              : 'Corrida marcada como pagada',
           'success',
         );
         setConfirmAction(null);
@@ -76,16 +99,27 @@ export const PayrollRunDetailPage = () => {
   return (
     <div className="view-wrapper-scroll">
       <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1rem',
+          }}
+        >
           <div>
             <Button variant="secondary" size="sm" onClick={() => navigate('/payroll-runs')}>
               ← Volver a corridas
             </Button>
             <h1>Corrida de planilla — {formatMonthPeriod(run.period)}</h1>
             <p style={{ margin: '0.35rem 0 0', color: 'var(--text-secondary)' }}>
-              {entries.length} {entries.length === 1 ? 'empleado' : 'empleados'} · Neto a pagar {formatMoney(netTotal)}
+              {entries.length} {entries.length === 1 ? 'empleado' : 'empleados'} · Neto a pagar{' '}
+              {formatMoney(netTotal)}
             </p>
-            <Badge variant={badge.variant} outlined>{badge.text}</Badge>
+            <Badge variant={badge.variant} outlined>
+              {badge.text}
+            </Badge>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             {run.status === 'DRAFT' && (
@@ -93,7 +127,9 @@ export const PayrollRunDetailPage = () => {
             )}
             {run.status === 'CALCULATED' && (
               <>
-                <Button variant="secondary" onClick={() => setConfirmAction('calculate')}>Recalcular</Button>
+                <Button variant="secondary" onClick={() => setConfirmAction('calculate')}>
+                  Recalcular
+                </Button>
                 <Button onClick={() => setConfirmAction('approve')}>Aprobar</Button>
               </>
             )}
@@ -101,7 +137,11 @@ export const PayrollRunDetailPage = () => {
               <Button onClick={() => setConfirmAction('pay')}>Registrar pago</Button>
             )}
             {(run.status === 'APPROVED' || run.status === 'PAID') && (
-              <a href={payrollRunService().plameExportUrl(run.id)} target="_blank" rel="noopener noreferrer">
+              <a
+                href={payrollRunService().plameExportUrl(run.id)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Button variant="secondary">Exportar PLAME</Button>
               </a>
             )}
@@ -133,7 +173,9 @@ export const PayrollRunDetailPage = () => {
           <tbody>
             {entries.length === 0 ? (
               <tr>
-                <td colSpan={run.type === 'LIQUIDACION' ? 5 : 7}>Sin boletas — usa &quot;Calcular&quot; para generarlas.</td>
+                <td colSpan={run.type === 'LIQUIDACION' ? 5 : 7}>
+                  Sin boletas — usa &quot;Calcular&quot; para generarlas.
+                </td>
               </tr>
             ) : (
               entries.map((entry) => {
@@ -179,7 +221,11 @@ export const PayrollRunDetailPage = () => {
       <ConfirmDialog
         open={confirmAction !== null}
         title={
-          confirmAction === 'calculate' ? 'Calcular planilla' : confirmAction === 'approve' ? 'Aprobar corrida' : 'Marcar como pagada'
+          confirmAction === 'calculate'
+            ? 'Calcular planilla'
+            : confirmAction === 'approve'
+              ? 'Aprobar corrida'
+              : 'Marcar como pagada'
         }
         message={
           confirmAction === 'calculate'

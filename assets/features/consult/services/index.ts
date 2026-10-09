@@ -1,2 +1,1 @@
 export { consultService } from './consultService';
-

@@ -1,4 +1,12 @@
-import { SchemaCrudPage, defineFields, defineResource, numberField, type DataRecord, type Field, type SmartCrudFieldPatch } from '@nubitio/crud';
+import {
+  SchemaCrudPage,
+  defineFields,
+  defineResource,
+  numberField,
+  type DataRecord,
+  type Field,
+  type SmartCrudFieldPatch,
+} from '@nubitio/crud';
 import { restaurantAreaEndpoints } from './api/restaurantAreaEndpoints';
 
 interface RestaurantAreaRecord extends DataRecord {

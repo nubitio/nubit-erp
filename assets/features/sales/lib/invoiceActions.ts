@@ -23,10 +23,7 @@ export const buildInvoiceWhatsAppShareUrl = (row: InvoiceRow): string | null => 
 
   const receiptUrl = resolvePublicReceiptUrl(row.publicReceiptUrl);
   const docLabel = row.documentType === '03' ? 'Boleta' : 'Factura';
-  const customerName =
-    typeof row.customer === 'string'
-      ? row.customer
-      : row.customer?.businessName;
+  const customerName = typeof row.customer === 'string' ? row.customer : row.customer?.businessName;
   const amount =
     row.total != null
       ? `${row.currency === 'USD' ? '$' : row.currency === 'EUR' ? '€' : 'S/'} ${Number(row.total).toFixed(2)}`
@@ -49,10 +46,7 @@ export type InvoiceActionHandlers = {
   notify: (message: string, type: 'success' | 'error' | 'warning' | 'info') => void;
 };
 
-export const openInvoiceReceipt = (
-  row: InvoiceRow,
-  notify: InvoiceActionHandlers['notify'],
-) => {
+export const openInvoiceReceipt = (row: InvoiceRow, notify: InvoiceActionHandlers['notify']) => {
   if (!row.publicReceiptUrl) {
     notify('El comprobante no tiene URL pública disponible', 'warning');
     return;
@@ -60,10 +54,7 @@ export const openInvoiceReceipt = (
   window.open(resolvePublicReceiptUrl(row.publicReceiptUrl), '_blank');
 };
 
-export const shareInvoiceWhatsApp = (
-  row: InvoiceRow,
-  notify: InvoiceActionHandlers['notify'],
-) => {
+export const shareInvoiceWhatsApp = (row: InvoiceRow, notify: InvoiceActionHandlers['notify']) => {
   const shareUrl = buildInvoiceWhatsAppShareUrl(row);
   if (!shareUrl) {
     notify('El comprobante no tiene URL pública disponible', 'warning');

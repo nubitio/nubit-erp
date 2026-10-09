@@ -54,7 +54,11 @@ const VoucherTypeDialogInner = ({ onConfirm, onCancel }: VoucherTypeDialogProps)
     >
       <div>
         <p>Tipo de comprobante a emitir:</p>
-        <div role="group" aria-label="Tipo de comprobante" style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <div
+          role="group"
+          aria-label="Tipo de comprobante"
+          style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}
+        >
           {OPTIONS.map((option) => (
             <Chip
               key={option.value}

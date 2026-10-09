@@ -2,7 +2,9 @@ import { AppDialog, Button, FormField, TextField } from '@nubitio/ui';
 import { EntityDropdown } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { useRef, useState } from 'react';
-import customerAccountService, { type CollectOnAccountApplication } from './services/customerAccountService';
+import customerAccountService, {
+  type CollectOnAccountApplication,
+} from './services/customerAccountService';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 
@@ -83,7 +85,8 @@ export const CollectPaymentDialog = ({
           {balanceDue
             ? `Saldo pendiente: ${NumberUtils.formatCurrency(Number(balanceDue), currency)}. `
             : ''}
-          El pago se aplica a los comprobantes más antiguos y se registra una sola vez en caja o banco.
+          El pago se aplica a los comprobantes más antiguos y se registra una sola vez en caja o
+          banco.
         </p>
       </div>
 
@@ -93,8 +96,8 @@ export const CollectPaymentDialog = ({
           <ul style={{ marginTop: 6 }}>
             {applied.map((line) => (
               <li key={line.saleId}>
-                {line.document} · {NumberUtils.formatCurrency(Number(line.applied), currency)} · saldo{' '}
-                {NumberUtils.formatCurrency(Number(line.balanceDueAfter), currency)}
+                {line.document} · {NumberUtils.formatCurrency(Number(line.applied), currency)} ·
+                saldo {NumberUtils.formatCurrency(Number(line.balanceDueAfter), currency)}
               </li>
             ))}
           </ul>
@@ -164,7 +167,11 @@ export const CollectPaymentDialog = ({
 
           <div className="mb-3">
             <FormField label="Referencia" htmlFor="receivable-payment-reference">
-              <TextField ref={referenceRef} id="receivable-payment-reference" placeholder="N° de operación" />
+              <TextField
+                ref={referenceRef}
+                id="receivable-payment-reference"
+                placeholder="N° de operación"
+              />
             </FormField>
           </div>
 

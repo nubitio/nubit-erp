@@ -124,10 +124,12 @@
   font-size: var(--font-size-xxs);
   font-weight: var(--font-weight-bold);
   line-height: 1;
-  transition: background var(--transition-base), color var(--transition-base);
+  transition:
+    background var(--transition-base),
+    color var(--transition-base);
 
   &.is-active {
-    background: rgba(255,255,255,0.25);
+    background: rgba(255, 255, 255, 0.25);
     color: #fff;
   }
 }
@@ -139,8 +141,12 @@
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) transparent;
 
-  &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
   &::-webkit-scrollbar-thumb {
     background-color: var(--border-color);
     border-radius: var(--radius-sm);
@@ -292,7 +298,10 @@
   padding: 2px var(--space-1);
   margin-top: 2px;
   border-radius: var(--radius-sm);
-  transition: opacity var(--transition-base), color var(--transition-base), background var(--transition-base);
+  transition:
+    opacity var(--transition-base),
+    color var(--transition-base),
+    background var(--transition-base);
 
   &:hover {
     background: var(--surface-2);

@@ -104,14 +104,19 @@ export const LoginForm = () => {
 
         const selectedBranch = response.data.branch;
         if (selectedBranch?.id) {
-          await applyBranchAndRedirect({ id: selectedBranch.id, name: selectedBranch.name ?? 'Local' });
+          await applyBranchAndRedirect({
+            id: selectedBranch.id,
+            name: selectedBranch.name ?? 'Local',
+          });
           return;
         }
 
         try {
           const branchesResponse = await branchService.getAll();
           const rawBranches = branchesResponse?.data;
-          const allBranches: BranchOption[] = Array.isArray(rawBranches) ? (rawBranches as BranchOption[]) : [];
+          const allBranches: BranchOption[] = Array.isArray(rawBranches)
+            ? (rawBranches as BranchOption[])
+            : [];
           // Disabled branches stay available for historical reports but cannot start a session.
           const branches = allBranches.filter((branch) => branch.isActive !== false);
 
@@ -135,7 +140,10 @@ export const LoginForm = () => {
         }
       } catch (err) {
         setSubmitError(
-          extractApiError(err, 'No se pudo iniciar sesión. Verifica tus credenciales e inténtalo de nuevo.'),
+          extractApiError(
+            err,
+            'No se pudo iniciar sesión. Verifica tus credenciales e inténtalo de nuevo.',
+          ),
         );
         setLoading(false);
       }

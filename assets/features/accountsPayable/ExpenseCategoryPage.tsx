@@ -68,7 +68,8 @@ const resource = defineResource<ExpenseCategoryRecord>(API + 'expense-categories
   formLayout: EXPENSE_CATEGORY_FORM_LAYOUT,
   emptyState: {
     title: 'Sin categorías de gasto',
-    description: 'Crea categorías para clasificar facturas de proveedor (comisiones bancarias, alquiler, etc.).',
+    description:
+      'Crea categorías para clasificar facturas de proveedor (comisiones bancarias, alquiler, etc.).',
     icon: 'tag',
   },
   fieldContract: defineFields<ExpenseCategoryRecord>({
@@ -77,8 +78,16 @@ const resource = defineResource<ExpenseCategoryRecord>(API + 'expense-categories
     directives: [
       { kind: 'override', key: 'code', patch: { order: 0, layoutHint: 'short', label: 'Código' } },
       { kind: 'override', key: 'name', patch: { order: 1, layoutHint: 'medium', label: 'Nombre' } },
-      { kind: 'override', key: 'system', patch: { ...booleanSwitchPatch('system', 'Sistema'), order: 2, layoutHint: 'short' } },
-      { kind: 'override', key: 'active', patch: { ...booleanSwitchPatch('active', 'Activo'), order: 3, layoutHint: 'short' } },
+      {
+        kind: 'override',
+        key: 'system',
+        patch: { ...booleanSwitchPatch('system', 'Sistema'), order: 2, layoutHint: 'short' },
+      },
+      {
+        kind: 'override',
+        key: 'active',
+        patch: { ...booleanSwitchPatch('active', 'Activo'), order: 3, layoutHint: 'short' },
+      },
     ],
   }),
 });

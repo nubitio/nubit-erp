@@ -44,9 +44,7 @@ export const RoleCheckboxes = ({ selected, onChange }: RoleCheckboxesProps) => (
             <>
               <strong
                 style={
-                  'danger' in role && role.danger
-                    ? { color: 'var(--error-color)' }
-                    : undefined
+                  'danger' in role && role.danger ? { color: 'var(--error-color)' } : undefined
                 }
               >
                 {role.label}

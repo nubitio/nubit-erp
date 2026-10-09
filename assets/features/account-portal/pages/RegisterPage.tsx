@@ -46,13 +46,33 @@ export function RegisterPage() {
     >
       <form className="ap-form" onSubmit={submit}>
         <FormField label="Email">
-          <TextField type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
+          <TextField
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+          />
         </FormField>
         <FormField label="Contraseña">
-          <TextField type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" minLength={8} required />
+          <TextField
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
+            minLength={8}
+            required
+          />
         </FormField>
         <FormField label="Confirmar contraseña">
-          <TextField type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" minLength={8} required />
+          <TextField
+            type="password"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            autoComplete="new-password"
+            minLength={8}
+            required
+          />
         </FormField>
         <Button type="submit" variant="primary" loading={busy} disabled={busy}>
           Continuar

@@ -106,9 +106,7 @@ function extractCustomers(raw: unknown): CustomerSearchOption[] {
   });
 }
 
-export function useCustomerSearch(
-  options: UseCustomerSearchOptions = {},
-): UseCustomerSearchResult {
+export function useCustomerSearch(options: UseCustomerSearchOptions = {}): UseCustomerSearchResult {
   const pageSize = options.pageSize ?? 50;
   const extraParams = options.extraParams;
 

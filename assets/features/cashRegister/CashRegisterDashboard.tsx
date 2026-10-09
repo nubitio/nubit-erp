@@ -40,7 +40,8 @@ export const CashRegisterDashboard = () => {
         filterRow={false}
         emptyState={{
           title: 'Sin cajas',
-          description: 'Crea una caja para abrir turno, cobrar en efectivo y cerrar al final del día.',
+          description:
+            'Crea una caja para abrir turno, cobrar en efectivo y cerrar al final del día.',
           icon: 'cash-register',
         }}
       />

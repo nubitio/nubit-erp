@@ -42,8 +42,7 @@ export const ExchangeRatePage = () => {
     }
     setSaving(true);
     try {
-      const response = await httpClient.put<ExchangeRateData>(API_URL, { rate: rateInput },
-      );
+      const response = await httpClient.put<ExchangeRateData>(API_URL, { rate: rateInput });
       setData(response.data);
       setRateInput(response.data.rate);
       toast('Tipo de cambio actualizado', 'success');
@@ -57,8 +56,7 @@ export const ExchangeRatePage = () => {
   const handleSync = async () => {
     setSyncing(true);
     try {
-      const response = await httpClient.post<ExchangeRateData>(`${API_URL}/sync`,
-      );
+      const response = await httpClient.post<ExchangeRateData>(`${API_URL}/sync`);
       setData(response.data);
       setRateInput(response.data.rate);
       toast('Tipo de cambio sincronizado desde BCRP', 'success');
@@ -73,7 +71,9 @@ export const ExchangeRatePage = () => {
     <div style={{ maxWidth: 480, margin: '2rem auto', padding: '0 1rem' }}>
       <h2 style={{ marginBottom: '0.5rem' }}>Tipo de Cambio USD/PEN</h2>
       {data?.updated_at && (
-        <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+        <p
+          style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem', fontSize: '0.875rem' }}
+        >
           Última actualización: {new Date(data.updated_at).toLocaleString('es-PE')} (UTC)
         </p>
       )}
@@ -83,7 +83,10 @@ export const ExchangeRatePage = () => {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
-            <label htmlFor="exchange-rate-input" style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 500 }}>
+            <label
+              htmlFor="exchange-rate-input"
+              style={{ display: 'block', marginBottom: '0.4rem', fontWeight: 500 }}
+            >
               1 USD =
             </label>
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>

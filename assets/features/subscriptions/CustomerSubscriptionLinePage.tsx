@@ -6,10 +6,7 @@ import {
   type DataRecord,
 } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
-import {
-  customerSubscriptionApiUrl,
-  customerSubscriptionLineApiUrl,
-} from './model/constants';
+import { customerSubscriptionApiUrl, customerSubscriptionLineApiUrl } from './model/constants';
 import { hasPermission } from '@shared/permissions';
 
 const API = getCoreApiBaseUrl();
@@ -45,7 +42,10 @@ const resource = defineResource<SubscriptionLineRecord>(customerSubscriptionLine
     type: 'sections',
     sections: [
       { label: 'Suscripción', fields: ['subscription'] },
-      { label: 'Concepto', fields: ['product', 'description', 'quantity', 'unitPrice', 'sortOrder'] },
+      {
+        label: 'Concepto',
+        fields: ['product', 'description', 'quantity', 'unitPrice', 'sortOrder'],
+      },
     ],
   },
   fieldContract: defineFields<SubscriptionLineRecord>({
@@ -88,9 +88,21 @@ const resource = defineResource<SubscriptionLineRecord>(customerSubscriptionLine
           helpText: 'Vacío usa el nombre del producto.',
         },
       },
-      { kind: 'override', key: 'quantity', patch: { order: 3, label: 'Cantidad', layoutHint: 'short' } },
-      { kind: 'override', key: 'unitPrice', patch: { order: 4, label: 'Precio unitario', layoutHint: 'money' } },
-      { kind: 'override', key: 'sortOrder', patch: { order: 5, label: 'Orden', layoutHint: 'short' } },
+      {
+        kind: 'override',
+        key: 'quantity',
+        patch: { order: 3, label: 'Cantidad', layoutHint: 'short' },
+      },
+      {
+        kind: 'override',
+        key: 'unitPrice',
+        patch: { order: 4, label: 'Precio unitario', layoutHint: 'money' },
+      },
+      {
+        kind: 'override',
+        key: 'sortOrder',
+        patch: { order: 5, label: 'Orden', layoutHint: 'short' },
+      },
     ],
   }),
 });

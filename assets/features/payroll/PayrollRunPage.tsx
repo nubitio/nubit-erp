@@ -22,7 +22,13 @@ interface PayrollRunRecord extends DataRecord {
   id: string;
   company: unknown;
   period: string;
-  type: 'REGULAR' | 'GRATIFICATION_JULY' | 'GRATIFICATION_DECEMBER' | 'CTS_MAY' | 'CTS_NOVEMBER' | 'LIQUIDACION';
+  type:
+    | 'REGULAR'
+    | 'GRATIFICATION_JULY'
+    | 'GRATIFICATION_DECEMBER'
+    | 'CTS_MAY'
+    | 'CTS_NOVEMBER'
+    | 'LIQUIDACION';
   status: 'DRAFT' | 'CALCULATED' | 'APPROVED' | 'PAID';
 }
 
@@ -42,7 +48,10 @@ const TYPE_TEXT: Record<PayrollRunRecord['type'], string> = {
   LIQUIDACION: 'Liquidación de beneficios sociales',
 };
 
-const STATUS_BADGE: Record<PayrollRunRecord['status'], { variant: 'success' | 'warning' | 'secondary' | 'danger'; text: string }> = {
+const STATUS_BADGE: Record<
+  PayrollRunRecord['status'],
+  { variant: 'success' | 'warning' | 'secondary' | 'danger'; text: string }
+> = {
   DRAFT: { variant: 'warning', text: 'Borrador' },
   CALCULATED: { variant: 'secondary', text: 'Calculada' },
   APPROVED: { variant: 'secondary', text: 'Aprobada' },
@@ -53,7 +62,9 @@ const typePatch = toPatch(
   enumField(Object.entries(TYPE_TEXT).map(([value, text]) => ({ value, text })))
     .name('type')
     .label('Tipo')
-    .formatter((cell: GridCellContext) => TYPE_TEXT[cell.value as PayrollRunRecord['type']] ?? cell.value)
+    .formatter(
+      (cell: GridCellContext) => TYPE_TEXT[cell.value as PayrollRunRecord['type']] ?? cell.value,
+    )
     .build(),
 );
 
@@ -65,7 +76,11 @@ const statusPatch = toPatch(
       const badge = STATUS_BADGE[cell.value as PayrollRunRecord['status']];
       if (!badge) return null;
 
-      return <Badge variant={badge.variant} outlined>{badge.text}</Badge>;
+      return (
+        <Badge variant={badge.variant} outlined>
+          {badge.text}
+        </Badge>
+      );
     })
     .build(),
 );
@@ -89,7 +104,8 @@ const payrollRunResource = defineResource<PayrollRunRecord>(payrollRunApiUrl, {
   sort: [{ selector: 'period', desc: true }],
   emptyState: {
     title: 'Sin corridas de planilla',
-    description: 'Crea una corrida para calcular la planilla regular, gratificaciones o CTS de un periodo.',
+    description:
+      'Crea una corrida para calcular la planilla regular, gratificaciones o CTS de un periodo.',
     icon: 'calculator',
   },
   fieldContract: defineFields<PayrollRunRecord>({
@@ -109,9 +125,17 @@ const payrollRunResource = defineResource<PayrollRunRecord>(payrollRunApiUrl, {
           label: 'Empresa',
         },
       },
-      { kind: 'override', key: 'period', patch: { order: 1, layoutHint: 'short', label: 'Periodo', formatter: monthPeriodCell } },
+      {
+        kind: 'override',
+        key: 'period',
+        patch: { order: 1, layoutHint: 'short', label: 'Periodo', formatter: monthPeriodCell },
+      },
       { kind: 'override', key: 'type', patch: { ...typePatch, order: 2, layoutHint: 'short' } },
-      { kind: 'override', key: 'status', patch: { ...statusPatch, order: 3, layoutHint: 'short', disabled: true } },
+      {
+        kind: 'override',
+        key: 'status',
+        patch: { ...statusPatch, order: 3, layoutHint: 'short', disabled: true },
+      },
       { kind: 'override', key: 'calculatedAt', patch: { visibleOnForm: false } },
       { kind: 'override', key: 'approvedAt', patch: { visibleOnForm: false } },
       { kind: 'override', key: 'paidAt', patch: { visibleOnForm: false } },

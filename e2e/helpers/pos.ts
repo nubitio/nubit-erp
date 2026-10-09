@@ -20,10 +20,9 @@ export async function selectPosCustomer(page: Page, opts: SelectPosCustomerOptio
 
   const searchTerm = opts.search ?? opts.name;
   const responsePromise = page
-    .waitForResponse(
-      (r) => r.url().includes('/customers') && r.request().method() === 'GET',
-      { timeout: 15000 },
-    )
+    .waitForResponse((r) => r.url().includes('/customers') && r.request().method() === 'GET', {
+      timeout: 15000,
+    })
     .catch(() => null);
 
   await searchInput.click();
@@ -90,7 +89,10 @@ export async function completePosCashPayment(page: Page) {
     }
   }
 
-  const doneBtn = page.locator('.split-payments-drawer__actions button').filter({ hasText: /listo|cerrar|guardar/i }).first();
+  const doneBtn = page
+    .locator('.split-payments-drawer__actions button')
+    .filter({ hasText: /listo|cerrar|guardar/i })
+    .first();
   if (await doneBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
     await doneBtn.click();
   } else {

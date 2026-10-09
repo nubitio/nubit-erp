@@ -30,12 +30,17 @@ export function FloorPlanEditorPage() {
   const { containerRef, scale } = useResponsiveCanvasScale(CANVAS_WIDTH);
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
-  const [localPositions, setLocalPositions] = useState<Record<string, { x: number; y: number }>>({});
+  const [localPositions, setLocalPositions] = useState<Record<string, { x: number; y: number }>>(
+    {},
+  );
 
   const positionFor = (table: RestaurantTableMock): { x: number; y: number } =>
     localPositions[table.id] ?? basePositions.get(table.id) ?? { x: 40, y: 40 };
 
-  const handlePointerDown = (event: React.PointerEvent<HTMLButtonElement>, table: RestaurantTableMock) => {
+  const handlePointerDown = (
+    event: React.PointerEvent<HTMLButtonElement>,
+    table: RestaurantTableMock,
+  ) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const canvasRect = canvas.getBoundingClientRect();
@@ -74,14 +79,17 @@ export function FloorPlanEditorPage() {
       <header className="restaurant-floor__header">
         <div>
           <h1>Plano del local</h1>
-          <p>Arrastra cada mesa a su lugar real. Las mesas sin ubicar aparecen apiladas arriba a la izquierda.</p>
+          <p>
+            Arrastra cada mesa a su lugar real. Las mesas sin ubicar aparecen apiladas arriba a la
+            izquierda.
+          </p>
         </div>
       </header>
 
       {tabs.length === 0 ? (
         <p className="restaurant-floor__empty">
-          Crea primero un ambiente en &ldquo;Ambientes y plantas&rdquo; y algunas mesas en &ldquo;Configurar
-          mesas&rdquo;.
+          Crea primero un ambiente en &ldquo;Ambientes y plantas&rdquo; y algunas mesas en
+          &ldquo;Configurar mesas&rdquo;.
         </p>
       ) : (
         <>
@@ -100,7 +108,11 @@ export function FloorPlanEditorPage() {
             ))}
           </div>
 
-          <div ref={containerRef} className="restaurant-floor-editor-wrap" style={{ height: CANVAS_HEIGHT * scale }}>
+          <div
+            ref={containerRef}
+            className="restaurant-floor-editor-wrap"
+            style={{ height: CANVAS_HEIGHT * scale }}
+          >
             <div
               ref={canvasRef}
               className="restaurant-floor-editor"

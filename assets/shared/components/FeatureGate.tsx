@@ -155,7 +155,12 @@ function UpgradeGate({ planBadge, upgradeMessage, children }: UpgradeGateProps) 
         aria-expanded={open}
         aria-label={`Requiere plan ${planBadge}`}
         onClick={handleBadgeClick}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleBadgeClick(e as unknown as React.MouseEvent); } }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleBadgeClick(e as unknown as React.MouseEvent);
+          }
+        }}
       >
         <Badge variant="primary" size="sm" pill>
           🔒 {planBadge}

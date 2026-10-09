@@ -17,7 +17,8 @@ export function KitchenDisplayPage() {
     .filter((t) => t.currentOrderId)
     .map((t) => {
       const order = orders[t.currentOrderId as string];
-      const kitchenItems = order?.items.filter((it) => it.status === 'enviado' || it.status === 'listo') ?? [];
+      const kitchenItems =
+        order?.items.filter((it) => it.status === 'enviado' || it.status === 'listo') ?? [];
       return { table: t, items: kitchenItems };
     })
     .filter((t) => t.items.length > 0);
@@ -29,7 +30,9 @@ export function KitchenDisplayPage() {
       </header>
 
       {tickets.length === 0 ? (
-        <p className="restaurant-kds__empty">Sin comandas en curso — aquí aparecen apenas un mesero envíe un pedido.</p>
+        <p className="restaurant-kds__empty">
+          Sin comandas en curso — aquí aparecen apenas un mesero envíe un pedido.
+        </p>
       ) : (
         <div className="restaurant-kds__grid">
           {tickets.map(({ table, items }) => (

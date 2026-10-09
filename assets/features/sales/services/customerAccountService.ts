@@ -70,7 +70,10 @@ export const customerAccountService = {
       paymentMethodId: input.paymentMethodId,
       paidAt: input.paidAt,
       reference: input.reference,
-      applications: (input.applications ?? []).map((a) => ({ saleId: a.saleId, amount: round2(a.amount) })),
+      applications: (input.applications ?? []).map((a) => ({
+        saleId: a.saleId,
+        amount: round2(a.amount),
+      })),
     });
   },
 
@@ -89,7 +92,10 @@ export const customerAccountService = {
       customerId: input.customerId,
       amount: round2(input.amount),
       paidAt: input.paidAt,
-      applications: (input.applications ?? []).map((a) => ({ saleId: a.saleId, amount: round2(a.amount) })),
+      applications: (input.applications ?? []).map((a) => ({
+        saleId: a.saleId,
+        amount: round2(a.amount),
+      })),
     });
   },
 };

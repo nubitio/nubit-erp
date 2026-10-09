@@ -208,7 +208,9 @@ body {
   font-size: var(--font-size-sm, 0.875rem);
   color: var(--text-secondary);
   text-decoration: none;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 
 .cp-user-menu__logout:hover {

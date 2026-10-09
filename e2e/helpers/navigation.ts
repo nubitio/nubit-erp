@@ -39,5 +39,7 @@ export async function gotoProtectedRoute(
     await page.waitForURL(new RegExp(escaped), { timeout: 15000 });
   }
 
-  await expect(loginForm).toBeHidden({ timeout: 5000 }).catch(() => {});
+  await expect(loginForm)
+    .toBeHidden({ timeout: 5000 })
+    .catch(() => {});
 }

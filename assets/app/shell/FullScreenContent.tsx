@@ -15,13 +15,13 @@ export const FullScreenContent = () => {
     <Routes>
       <Route
         path="/pos"
-        element={(
+        element={
           <RouteErrorBoundary>
             <Suspense fallback={<FullScreenRouteLoading />}>
               <POSPage />
             </Suspense>
           </RouteErrorBoundary>
-        )}
+        }
       />
       <Route path="*" element={<Navigate to="/pos" />} />
     </Routes>

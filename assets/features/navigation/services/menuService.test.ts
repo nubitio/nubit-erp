@@ -5,7 +5,9 @@ import { filterMenuByRuntimeConfig } from './menuService';
 
 function runtimeConfig(
   navigationTier: TenantRuntimeConfig['profile']['navigationTier'],
-  overrides: Partial<TenantRuntimeConfig['ui']['inventory'] & TenantRuntimeConfig['ui']['reports']> = {},
+  overrides: Partial<
+    TenantRuntimeConfig['ui']['inventory'] & TenantRuntimeConfig['ui']['reports']
+  > = {},
   capabilities: TenantRuntimeConfig['capabilities'] = {},
 ): TenantRuntimeConfig {
   return {
@@ -73,7 +75,14 @@ describe('filterMenuByRuntimeConfig', () => {
       runtimeConfig('advanced'),
     );
 
-    expect(visiblePaths(filtered)).toEqual(['dashboard', 'pos', 'cashbox', 'billing', 'catalog', 'config']);
+    expect(visiblePaths(filtered)).toEqual([
+      'dashboard',
+      'pos',
+      'cashbox',
+      'billing',
+      'catalog',
+      'config',
+    ]);
   });
 
   it('uses the first daily action of a menu group to order that group', () => {
@@ -162,10 +171,13 @@ describe('filterMenuByRuntimeConfig', () => {
   });
 
   it('treats receivables as sales and keeps supplier payables separately authorized', () => {
-    localStorage.setItem('user', JSON.stringify({
-      username: 'seller',
-      permissions: ['sales.view'],
-    }));
+    localStorage.setItem(
+      'user',
+      JSON.stringify({
+        username: 'seller',
+        permissions: ['sales.view'],
+      }),
+    );
 
     const filtered = filterMenuByRuntimeConfig(
       menu(['accounts-receivable', 'accounts-payable']),

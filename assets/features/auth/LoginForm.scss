@@ -92,7 +92,9 @@
     background: transparent;
     cursor: pointer;
     opacity: 0.5;
-    transition: opacity var(--transition-base), background var(--transition-base);
+    transition:
+      opacity var(--transition-base),
+      background var(--transition-base);
     color: var(--text-secondary);
 
     &:hover {
@@ -157,7 +159,9 @@
   }
 
   @keyframes login-spin {
-    to { transform: rotate(360deg); }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   // ── Error box ─────────────────────────────────────────────────────────────

@@ -36,7 +36,11 @@ export function OrderPage() {
     return (
       <div className="restaurant-proto restaurant-order">
         <p>Mesa no encontrada.</p>
-        <button type="button" className="restaurant-btn restaurant-btn--lime" onClick={() => navigate('/restaurant/mesas')}>
+        <button
+          type="button"
+          className="restaurant-btn restaurant-btn--lime"
+          onClick={() => navigate('/restaurant/mesas')}
+        >
           Ir al piso
         </button>
       </div>
@@ -50,7 +54,11 @@ export function OrderPage() {
       {
         onSuccess: () => navigate('/restaurant/mesas'),
         onError: (error) => {
-          toast(error instanceof Error ? error.message : 'No se pudo registrar la venta.', 'error', 6000);
+          toast(
+            error instanceof Error ? error.message : 'No se pudo registrar la venta.',
+            'error',
+            6000,
+          );
         },
       },
     );
@@ -154,7 +162,9 @@ export function OrderPage() {
             <button
               type="button"
               className="restaurant-btn restaurant-btn--teal"
-              disabled={table.status !== 'ocupada' || !order?.items.length || requestBillMutation.isPending}
+              disabled={
+                table.status !== 'ocupada' || !order?.items.length || requestBillMutation.isPending
+              }
               onClick={() => order && requestBillMutation.mutate(order.id)}
             >
               Pedir la cuenta

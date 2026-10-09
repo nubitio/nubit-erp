@@ -1,4 +1,10 @@
-import { PLANS, planPrice, type BillingCycle, type PaymentGateway, type PlanKey } from '../lib/plans';
+import {
+  PLANS,
+  planPrice,
+  type BillingCycle,
+  type PaymentGateway,
+  type PlanKey,
+} from '../lib/plans';
 
 interface PlanSelectorProps {
   plan: PlanKey;
@@ -84,7 +90,10 @@ export function PlanSelector({
                 onClick={() => onGatewayChange(value)}
                 aria-pressed={gateway === value}
               >
-                <i className={`ph ${value === 'paypal' ? 'ph-paypal-logo' : 'ph-credit-card'}`} aria-hidden="true" />
+                <i
+                  className={`ph ${value === 'paypal' ? 'ph-paypal-logo' : 'ph-credit-card'}`}
+                  aria-hidden="true"
+                />
                 {value === 'paypal' ? 'PayPal' : 'MercadoPago'}
               </button>
             ))}

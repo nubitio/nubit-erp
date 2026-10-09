@@ -79,7 +79,15 @@ interface FiscalCardProps {
   loading?: boolean;
 }
 
-function FiscalCard({ title, icon, iconTone, baseImponible, igv, igvLabel, loading }: FiscalCardProps) {
+function FiscalCard({
+  title,
+  icon,
+  iconTone,
+  baseImponible,
+  igv,
+  igvLabel,
+  loading,
+}: FiscalCardProps) {
   return (
     <div className="taxes-card">
       <div className="taxes-card__header">
@@ -104,7 +112,13 @@ function FiscalCard({ title, icon, iconTone, baseImponible, igv, igvLabel, loadi
   );
 }
 
-function HistorialTable({ rows, loading }: { rows: IgvSummaryResponse['historial']; loading?: boolean }) {
+function HistorialTable({
+  rows,
+  loading,
+}: {
+  rows: IgvSummaryResponse['historial'];
+  loading?: boolean;
+}) {
   if (loading) {
     return (
       <div className="taxes-card">
@@ -150,7 +164,13 @@ function HistorialTable({ rows, loading }: { rows: IgvSummaryResponse['historial
   );
 }
 
-function LiquidacionPanel({ data, loading }: { data: IgvSummaryResponse | undefined; loading: boolean }) {
+function LiquidacionPanel({
+  data,
+  loading,
+}: {
+  data: IgvSummaryResponse | undefined;
+  loading: boolean;
+}) {
   const handleGeneratePdt = () => {
     toast('La generación del PDT estará disponible en una próxima versión.', 'info', 3000);
   };
@@ -199,7 +219,12 @@ function LiquidacionPanel({ data, loading }: { data: IgvSummaryResponse | undefi
         <span>Vence el {loading ? '…' : formatDate(data?.vencimiento ?? '')}</span>
       </div>
 
-      <button type="button" className="taxes-liquidacion__cta" disabled={loading} onClick={handleGeneratePdt}>
+      <button
+        type="button"
+        className="taxes-liquidacion__cta"
+        disabled={loading}
+        onClick={handleGeneratePdt}
+      >
         <i className="ph ph-paper-plane-tilt" aria-hidden="true" />
         Generar declaración PDT
       </button>
@@ -273,16 +298,14 @@ function DetraccionesTab({ period, periodLabel }: { period?: string; periodLabel
           icon="ph-check-circle"
           tone="info"
         />
-        <KpiCard
-          label="CUENTA DETRACCIONES"
-          value={data?.cuenta ?? '—'}
-          icon="ph-bank"
-        />
+        <KpiCard label="CUENTA DETRACCIONES" value={data?.cuenta ?? '—'} icon="ph-bank" />
       </div>
 
       {/* Table */}
       <div className="taxes-card">
-        <div className="taxes-historial__title">Comprobantes con detracción · {periodLabel ?? 'Periodo actual'}</div>
+        <div className="taxes-historial__title">
+          Comprobantes con detracción · {periodLabel ?? 'Periodo actual'}
+        </div>
         <div className="taxes-table-wrap">
           <table className="taxes-table">
             <thead>
@@ -299,24 +322,32 @@ function DetraccionesTab({ period, periodLabel }: { period?: string; periodLabel
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="taxes-table__empty">No hay detracciones en este periodo.</td>
-                </tr>
-              ) : items.map((item, i) => (
-                <tr key={`${item.series}-${item.number}-${i}`}>
-                  <td>{item.series}-{item.number}</td>
-                  <td className="taxes-table__name" title={item.cliente}>{item.cliente}</td>
-                  <td>{item.concepto}</td>
-                  <td>{item.spot_percent}%</td>
-                  <td>{fmtMoney(item.base)}</td>
-                  <td className="taxes-table__pagar">{fmtMoney(item.detraccion)}</td>
-                  <td>
-                    <span className={`taxes-badge taxes-badge--${item.estado}`}>
-                      <span className="taxes-badge__dot" aria-hidden="true" />
-                      {item.estado === 'depositado' ? 'DEPOSITADO' : 'PENDIENTE'}
-                    </span>
+                  <td colSpan={7} className="taxes-table__empty">
+                    No hay detracciones en este periodo.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                items.map((item, i) => (
+                  <tr key={`${item.series}-${item.number}-${i}`}>
+                    <td>
+                      {item.series}-{item.number}
+                    </td>
+                    <td className="taxes-table__name" title={item.cliente}>
+                      {item.cliente}
+                    </td>
+                    <td>{item.concepto}</td>
+                    <td>{item.spot_percent}%</td>
+                    <td>{fmtMoney(item.base)}</td>
+                    <td className="taxes-table__pagar">{fmtMoney(item.detraccion)}</td>
+                    <td>
+                      <span className={`taxes-badge taxes-badge--${item.estado}`}>
+                        <span className="taxes-badge__dot" aria-hidden="true" />
+                        {item.estado === 'depositado' ? 'DEPOSITADO' : 'PENDIENTE'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -340,7 +371,9 @@ function RetencionesTab({ period, periodLabel }: { period?: string; periodLabel?
   return (
     <div className="taxes-ret-layout">
       <div className="taxes-card">
-        <div className="taxes-historial__title">Retenciones y percepciones · {periodLabel ?? 'Periodo actual'}</div>
+        <div className="taxes-historial__title">
+          Retenciones y percepciones · {periodLabel ?? 'Periodo actual'}
+        </div>
         <div className="taxes-table-wrap">
           <table className="taxes-table">
             <thead>
@@ -357,23 +390,31 @@ function RetencionesTab({ period, periodLabel }: { period?: string; periodLabel?
             <tbody>
               {items.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="taxes-table__empty">No hay retenciones ni percepciones en este periodo.</td>
-                </tr>
-              ) : items.map((item, i) => (
-                <tr key={`${item.document_reference}-${i}`}>
-                  <td>
-                    <span className={`taxes-badge taxes-badge--${item.type === 'retencion' ? 'declarado' : 'retencion'}`}>
-                      {capitalize(item.type)}
-                    </span>
+                  <td colSpan={7} className="taxes-table__empty">
+                    No hay retenciones ni percepciones en este periodo.
                   </td>
-                  <td>{capitalize(item.direction)}</td>
-                  <td className="taxes-table__name" title={item.counterparty_name}>{item.counterparty_name}</td>
-                  <td>{item.document_reference}</td>
-                  <td>{item.rate}%</td>
-                  <td>{fmtMoney(item.base_amount)}</td>
-                  <td className="taxes-table__pagar">{fmtMoney(item.amount)}</td>
                 </tr>
-              ))}
+              ) : (
+                items.map((item, i) => (
+                  <tr key={`${item.document_reference}-${i}`}>
+                    <td>
+                      <span
+                        className={`taxes-badge taxes-badge--${item.type === 'retencion' ? 'declarado' : 'retencion'}`}
+                      >
+                        {capitalize(item.type)}
+                      </span>
+                    </td>
+                    <td>{capitalize(item.direction)}</td>
+                    <td className="taxes-table__name" title={item.counterparty_name}>
+                      {item.counterparty_name}
+                    </td>
+                    <td>{item.document_reference}</td>
+                    <td>{item.rate}%</td>
+                    <td>{fmtMoney(item.base_amount)}</td>
+                    <td className="taxes-table__pagar">{fmtMoney(item.amount)}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

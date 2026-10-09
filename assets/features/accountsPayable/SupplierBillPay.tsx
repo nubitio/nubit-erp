@@ -72,7 +72,9 @@ export const SupplierBillPay = () => {
         toast('Pago registrado', 'success');
         navigate('/accounts-payable');
       })
-      .catch(() => toast('No se pudo registrar el pago. Revisa el saldo y el método seleccionado.', 'error'))
+      .catch(() =>
+        toast('No se pudo registrar el pago. Revisa el saldo y el método seleccionado.', 'error'),
+      )
       .finally(() => {
         setIsProcessing(false);
       });
@@ -99,9 +101,16 @@ export const SupplierBillPay = () => {
                 {payment.paidAt} · {formatMoney(payment.amount, bill.currency ?? 'PEN')}{' '}
                 {payment.reference ? `· ${payment.reference} ` : ''}
                 {payment.reversedAt ? (
-                  <Badge variant="danger" outlined>Reversado</Badge>
+                  <Badge variant="danger" outlined>
+                    Reversado
+                  </Badge>
                 ) : (
-                  <Button type="button" variant="ghost" size="sm" onClick={() => reversePayment(payment)}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => reversePayment(payment)}
+                  >
                     Reversar
                   </Button>
                 )}
@@ -111,62 +120,88 @@ export const SupplierBillPay = () => {
         </section>
       )}
       {bill && Number(bill.balanceDue ?? 0) <= 0 ? (
-        <p role="status">Esta factura está totalmente pagada. Puedes reversar un pago desde el historial.</p>
+        <p role="status">
+          Esta factura está totalmente pagada. Puedes reversar un pago desde el historial.
+        </p>
       ) : (
-      <form
-        style={{ width: 320 }}
-        onSubmit={(e) => {
-          e.preventDefault();
-          registerPayment();
-        }}
-      >
-        <div className="mb-3">
-          <FormField label={<>Monto <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>*</span></>} htmlFor="supplier-bill-pay-amount">
-            <TextField
-              ref={amountRef}
-              id="supplier-bill-pay-amount"
-              type="number"
-              min={0}
-              max={bill?.balanceDue}
-              step={0.01}
-              required
-              placeholder="0.00"
-            />
-          </FormField>
-        </div>
-
-        <div className="mb-3">
-          <FormField label={<>Método de pago <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>*</span></>} htmlFor="supplier-bill-pay-method">
-            <EntityDropdown
-              url={API + 'payment-methods'}
-              filters={[
-                { field: 'settlementBehavior', operator: '=', value: 'COLLECTED' },
-                { field: 'isActive', operator: '=', value: 1 },
-              ]}
-              value={paymentMethodId}
-              onChange={setPaymentMethodId}
-              placeholder="Selecciona un método de pago"
-              searchExpr={['name']}
-            />
-          </FormField>
-        </div>
-
-        <div className="mb-3">
-          <FormField label="Referencia" htmlFor="supplier-bill-pay-reference">
-            <TextField ref={referenceRef} id="supplier-bill-pay-reference" placeholder="N° de operación" />
-          </FormField>
-        </div>
-
-        <Button
-          type="submit"
-          variant="success"
-          fullWidth
-          loading={isProcessing}
-          data-testid="supplier-bill-pay-submit-btn"
+        <form
+          style={{ width: 320 }}
+          onSubmit={(e) => {
+            e.preventDefault();
+            registerPayment();
+          }}
         >
-          {isProcessing ? 'Procesando...' : 'Registrar pago'}
-        </Button>
-      </form>
+          <div className="mb-3">
+            <FormField
+              label={
+                <>
+                  Monto{' '}
+                  <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>
+                    *
+                  </span>
+                </>
+              }
+              htmlFor="supplier-bill-pay-amount"
+            >
+              <TextField
+                ref={amountRef}
+                id="supplier-bill-pay-amount"
+                type="number"
+                min={0}
+                max={bill?.balanceDue}
+                step={0.01}
+                required
+                placeholder="0.00"
+              />
+            </FormField>
+          </div>
+
+          <div className="mb-3">
+            <FormField
+              label={
+                <>
+                  Método de pago{' '}
+                  <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>
+                    *
+                  </span>
+                </>
+              }
+              htmlFor="supplier-bill-pay-method"
+            >
+              <EntityDropdown
+                url={API + 'payment-methods'}
+                filters={[
+                  { field: 'settlementBehavior', operator: '=', value: 'COLLECTED' },
+                  { field: 'isActive', operator: '=', value: 1 },
+                ]}
+                value={paymentMethodId}
+                onChange={setPaymentMethodId}
+                placeholder="Selecciona un método de pago"
+                searchExpr={['name']}
+              />
+            </FormField>
+          </div>
+
+          <div className="mb-3">
+            <FormField label="Referencia" htmlFor="supplier-bill-pay-reference">
+              <TextField
+                ref={referenceRef}
+                id="supplier-bill-pay-reference"
+                placeholder="N° de operación"
+              />
+            </FormField>
+          </div>
+
+          <Button
+            type="submit"
+            variant="success"
+            fullWidth
+            loading={isProcessing}
+            data-testid="supplier-bill-pay-submit-btn"
+          >
+            {isProcessing ? 'Procesando...' : 'Registrar pago'}
+          </Button>
+        </form>
       )}
     </Card>
   );

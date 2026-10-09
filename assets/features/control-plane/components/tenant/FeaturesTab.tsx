@@ -120,11 +120,7 @@ export const FeaturesTab = ({ tenantId, isAdmin }: FeaturesTabProps) => {
   }
 
   if (features.error || !features.data) {
-    return (
-      <CpAlert tone="danger">
-        {(features.error as Error)?.message ?? S.loadError}
-      </CpAlert>
-    );
+    return <CpAlert tone="danger">{(features.error as Error)?.message ?? S.loadError}</CpAlert>;
   }
 
   return (

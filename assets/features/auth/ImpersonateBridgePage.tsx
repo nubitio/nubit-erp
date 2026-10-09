@@ -37,7 +37,9 @@ export const ImpersonateBridgePage = () => {
         requestAuthSessionSync();
         navigate('/', { replace: true });
       } catch (err) {
-        setError(extractErrorMessage(err, 'No se pudo seleccionar el local. Inténtalo nuevamente.'));
+        setError(
+          extractErrorMessage(err, 'No se pudo seleccionar el local. Inténtalo nuevamente.'),
+        );
       }
     },
     [navigate],
@@ -71,7 +73,9 @@ export const ImpersonateBridgePage = () => {
         if (cancelled) return;
 
         const rawBranches = branchesResponse?.data;
-        const allBranches: BranchOption[] = Array.isArray(rawBranches) ? (rawBranches as BranchOption[]) : [];
+        const allBranches: BranchOption[] = Array.isArray(rawBranches)
+          ? (rawBranches as BranchOption[])
+          : [];
         const branches = allBranches.filter((branch) => branch.isActive !== false);
 
         if (branches.length === 0) {

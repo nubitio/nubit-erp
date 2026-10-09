@@ -26,12 +26,14 @@ interface CountLine {
 
 interface StockItemApiRow {
   id?: string;
-  product?: {
-    id?: string;
-    code?: string | null;
-    name?: string;
-    '@id'?: string;
-  } | string;
+  product?:
+    | {
+        id?: string;
+        code?: string | null;
+        name?: string;
+        '@id'?: string;
+      }
+    | string;
   qtyOnHand?: string;
 }
 
@@ -91,7 +93,9 @@ async function fetchStockItems(warehouseId: string): Promise<CountLine[]> {
       const productId =
         product && typeof product === 'object'
           ? String((product as { id?: string }).id ?? '')
-          : String(product ?? '').split('/').pop() ?? '';
+          : (String(product ?? '')
+              .split('/')
+              .pop() ?? '');
 
       if (!productId) return null;
 
@@ -141,10 +145,7 @@ export const CycleCountPage = () => {
   const returnTo = searchParams.get('returnTo') ?? '/inventory/stock';
 
   const defaultWarehouseId =
-    prefillWarehouseId ||
-    runtimeConfig?.defaults.warehouse?.id ||
-    warehouses[0]?.id ||
-    '';
+    prefillWarehouseId || runtimeConfig?.defaults.warehouse?.id || warehouses[0]?.id || '';
 
   const showWarehouseSelector = runtimeConfig?.ui.inventory.showWarehouseSelector ?? true;
 

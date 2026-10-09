@@ -19,26 +19,43 @@ export function PageErrorFallback({ error }: { error: Error | null }) {
       size="md"
       title={t('common.error')}
       description="Esta sección encontró un error. Puedes volver al inicio o intentar de nuevo."
-      action={(
+      action={
         <>
-          <Button
-            variant="secondary"
-            onClick={() => navigate('/dashboard')}
-          >
+          <Button variant="secondary" onClick={() => navigate('/dashboard')}>
             Ir al inicio
           </Button>
-          <Button
-            variant="primary"
-            onClick={() => window.location.reload()}
-          >
+          <Button variant="primary" onClick={() => window.location.reload()}>
             {t('common.retry')}
           </Button>
           {import.meta.env.DEV && error && (
-            <details style={{ textAlign: 'left', maxWidth: '40rem', width: '100%', marginTop: 'var(--space-3)' }}>
-              <summary style={{ cursor: 'pointer', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)', fontSize: 'var(--font-size-xs)' }}>
+            <details
+              style={{
+                textAlign: 'left',
+                maxWidth: '40rem',
+                width: '100%',
+                marginTop: 'var(--space-3)',
+              }}
+            >
+              <summary
+                style={{
+                  cursor: 'pointer',
+                  fontWeight: 'var(--font-weight-semibold)',
+                  color: 'var(--text-secondary)',
+                  fontSize: 'var(--font-size-xs)',
+                }}
+              >
                 Detalles del error (dev)
               </summary>
-              <pre style={{ margin: 'var(--space-2) 0 0', overflow: 'auto', fontSize: 'var(--font-size-xs)', color: 'var(--error-color)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              <pre
+                style={{
+                  margin: 'var(--space-2) 0 0',
+                  overflow: 'auto',
+                  fontSize: 'var(--font-size-xs)',
+                  color: 'var(--error-color)',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                }}
+              >
                 {error.toString()}
                 {'\n\n'}
                 {error.stack}
@@ -46,7 +63,7 @@ export function PageErrorFallback({ error }: { error: Error | null }) {
             </details>
           )}
         </>
-      )}
+      }
     />
   );
 }

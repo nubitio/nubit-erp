@@ -96,20 +96,27 @@ export interface PlanFeatureMatrixPayload {
   plans: PlanRecord[];
   features: FeatureCatalogEntry[];
   categories: Record<string, string>;
-  matrix: Record<string, Record<string, { isEnabled: boolean; configJson: Record<string, unknown> | null }>>;
+  matrix: Record<
+    string,
+    Record<string, { isEnabled: boolean; configJson: Record<string, unknown> | null }>
+  >;
 }
 
 async function cpFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const isFormData = init?.body instanceof FormData;
-  const response = await exceptionalFetch(path, {
-    credentials: 'include',
-    headers: {
-      Accept: 'application/json',
-      ...(!isFormData && init?.body ? { 'Content-Type': 'application/json' } : {}),
-      ...init?.headers,
+  const response = await exceptionalFetch(
+    path,
+    {
+      credentials: 'include',
+      headers: {
+        Accept: 'application/json',
+        ...(!isFormData && init?.body ? { 'Content-Type': 'application/json' } : {}),
+        ...init?.headers,
+      },
+      ...init,
     },
-    ...init,
-  }, 'api-documentation');
+    'api-documentation',
+  );
 
   if (response.status === 401 || response.status === 403) {
     window.location.href = '/admin/login';
@@ -139,26 +146,18 @@ export const controlPlaneClient = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
-  deleteTenant: (id: number) =>
-    cpFetch<{ ok: boolean }>(tenantPath(id), { method: 'DELETE' }),
+  deleteTenant: (id: number) => cpFetch<{ ok: boolean }>(tenantPath(id), { method: 'DELETE' }),
   restoreTenant: (id: number) =>
     cpFetch<{ ok: boolean }>(`${tenantPath(id)}/restore`, { method: 'POST' }),
   purgeTenant: (id: number) =>
     cpFetch<{ ok: boolean }>(`${tenantPath(id)}/purge`, { method: 'POST' }),
   getPlans: () => cpFetch<PlansPayload>('/api/control-plane/plans'),
-  createPlan: (payload: {
-    name: string;
-    limits: PlanLimits;
-    isDefault: boolean;
-  }) =>
+  createPlan: (payload: { name: string; limits: PlanLimits; isDefault: boolean }) =>
     cpFetch<{ ok: boolean }>('/api/control-plane/plans', {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
-  updatePlan: (
-    id: number,
-    payload: { name: string; limits: PlanLimits; isDefault: boolean },
-  ) =>
+  updatePlan: (id: number, payload: { name: string; limits: PlanLimits; isDefault: boolean }) =>
     cpFetch<{ ok: boolean }>(`/api/control-plane/plans/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(payload),
@@ -168,7 +167,8 @@ export const controlPlaneClient = {
   getAuditLog: (params: URLSearchParams) =>
     cpFetch<AuditLogPayload>(`/api/control-plane/audit-log?${params.toString()}`),
   getAdminUsers: () => cpFetch<AdminUsersPayload>('/api/control-plane/users'),
-  getAdminUser: (id: number) => cpFetch<{ user: AdminUserRecord }>(`/api/control-plane/users/${id}`),
+  getAdminUser: (id: number) =>
+    cpFetch<{ user: AdminUserRecord }>(`/api/control-plane/users/${id}`),
   createAdminUser: (payload: {
     username: string;
     password: string;
@@ -179,10 +179,7 @@ export const controlPlaneClient = {
       method: 'POST',
       body: JSON.stringify(payload),
     }),
-  updateAdminUser: (
-    id: number,
-    payload: { roles: string[]; isActive: boolean },
-  ) =>
+  updateAdminUser: (id: number, payload: { roles: string[]; isActive: boolean }) =>
     cpFetch<{ ok: boolean }>(`/api/control-plane/users/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(payload),
@@ -191,10 +188,7 @@ export const controlPlaneClient = {
     cpFetch<{ ok: boolean; is_active: boolean }>(`/api/control-plane/users/${id}/toggle`, {
       method: 'POST',
     }),
-  resetAdminUserPassword: (
-    id: number,
-    payload: { password: string; confirmPassword: string },
-  ) =>
+  resetAdminUserPassword: (id: number, payload: { password: string; confirmPassword: string }) =>
     cpFetch<{ ok: boolean }>(`/api/control-plane/users/${id}/reset-password`, {
       method: 'POST',
       body: JSON.stringify(payload),
@@ -273,12 +267,14 @@ export const controlPlaneClient = {
       body: JSON.stringify({ matrix }),
     }),
   testTenantNotification: (id: number, eventKey: string, channel: string) =>
-    cpFetch<{ ok: boolean; sent: boolean; message: string }>(`${tenantPath(id)}/notifications/test`, {
-      method: 'POST',
-      body: JSON.stringify({ eventKey, channel }),
-    }),
-  getTenantFeatures: (id: number) =>
-    cpFetch<TenantFeaturesPayload>(`${tenantPath(id)}/features`),
+    cpFetch<{ ok: boolean; sent: boolean; message: string }>(
+      `${tenantPath(id)}/notifications/test`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ eventKey, channel }),
+      },
+    ),
+  getTenantFeatures: (id: number) => cpFetch<TenantFeaturesPayload>(`${tenantPath(id)}/features`),
   createTenantFeature: (
     id: number,
     payload: {

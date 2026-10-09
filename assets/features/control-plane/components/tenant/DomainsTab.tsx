@@ -70,11 +70,7 @@ export const DomainsTab = ({ tenantId, domains, isAdmin, onUpdated }: DomainsTab
                   required
                 />
               </FormField>
-              <Toggle
-                label={S.setPrimary}
-                checked={isPrimary}
-                onChange={setIsPrimary}
-              />
+              <Toggle label={S.setPrimary} checked={isPrimary} onChange={setIsPrimary} />
               <Button type="submit" loading={add.isPending} fullWidth>
                 {S.addSubmit}
               </Button>

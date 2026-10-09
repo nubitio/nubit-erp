@@ -580,6 +580,13 @@ final class SaleVoidUseCaseTest extends TestCase
 
         // V2: CashRefundRegistrar uses DBAL Connection + CashSessionResolver
         $dbalConnection = $this->createMock(Connection::class);
+        // fetchOne serves two queries: cash collected for the sale, then the idempotency check.
+        $dbalConnection->method('fetchOne')->willReturnCallback(static fn(string $sql): string|false => str_contains(
+            $sql,
+            'sale_payments',
+        )
+                ? '100.00'
+                : false);
         $dbalConnection->method('fetchAssociative')->willReturn(['id' => 7]); // category found
         $dbalConnection->expects(self::once())->method('executeStatement'); // row written
 
@@ -614,7 +621,7 @@ final class SaleVoidUseCaseTest extends TestCase
 
     public function testCashRefundMovementNotPersistedWhenSaleHasNoCashPayment(): void
     {
-        // No tipo_pago set → CashRefundRegistrar exits immediately, no DB access
+        // No cash collected → CashRefundRegistrar exits right after the cash lookup
         $sale = $this->makeActiveSale('sale-nocash');
 
         $em = $this->createMock(EntityManagerInterface::class);
@@ -626,6 +633,7 @@ final class SaleVoidUseCaseTest extends TestCase
 
         // V2: Connection and resolver must NOT be invoked (early return on non-cash payment)
         $dbalConnection = $this->createMock(Connection::class);
+        $dbalConnection->method('fetchOne')->willReturn('0'); // nothing collected in cash
         $dbalConnection->expects(self::never())->method('fetchAssociative');
         $dbalConnection->expects(self::never())->method('executeStatement');
 
@@ -1079,8 +1087,14 @@ final class SaleVoidUseCaseTest extends TestCase
         }
 
         if ($cashRefundRegistrar === null) {
-            /** @var CashRefundRegistrar $cashRefundRegistrar */
-            $cashRefundRegistrar = new \ReflectionClass(CashRefundRegistrar::class)->newInstanceWithoutConstructor();
+            // No cash collected: register() returns before touching the resolver.
+            $noCashConnection = $this->createStub(Connection::class);
+            $noCashConnection->method('fetchOne')->willReturn('0');
+            $cashRefundRegistrar = new CashRefundRegistrar(
+                $noCashConnection,
+                $this->createStub(CashSessionResolverInterface::class),
+                new NullLogger(),
+            );
         }
 
         if ($taxDocumentVoidUpdater === null) {

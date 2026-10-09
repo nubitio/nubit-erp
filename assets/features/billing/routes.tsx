@@ -6,12 +6,14 @@ import { BillingHubLayout } from './BillingHubLayout';
 const SalePage = lazyNamed(() => import('@features/sales/SalePage'), 'SalePage');
 const InvoicePage = lazyNamed(() => import('@features/sales/InvoicePage'), 'InvoicePage');
 const CreditNotePage = lazyNamed(() => import('@features/sales/CreditNotePage'), 'CreditNotePage');
-const SaleConsultPage = lazyNamed(() => import('@features/sales/SaleConsultPage'), 'SaleConsultPage');
+const SaleConsultPage = lazyNamed(
+  () => import('@features/sales/SaleConsultPage'),
+  'SaleConsultPage',
+);
 const AccountsReceivablePage = lazyNamed(
   () => import('@features/sales/AccountsReceivablePage'),
   'AccountsReceivablePage',
 );
-
 
 const SalesRedirect = () => <Navigate to="/billing/sales" replace />;
 const ConsultRedirect = () => <Navigate to="/billing/consult" replace />;
@@ -28,7 +30,10 @@ export const billingRoutes: AppRouteDefinition[] = [
   { path: '/invoice', element: () => <LegacyCrudRedirect basePath="/billing/documents" /> },
   { path: '/invoice/:id?', element: () => <LegacyCrudRedirect basePath="/billing/documents" /> },
   { path: '/credit-note', element: () => <LegacyCrudRedirect basePath="/billing/credit-notes" /> },
-  { path: '/credit-note/:id?', element: () => <LegacyCrudRedirect basePath="/billing/credit-notes" /> },
+  {
+    path: '/credit-note/:id?',
+    element: () => <LegacyCrudRedirect basePath="/billing/credit-notes" />,
+  },
   {
     path: '/billing',
     element: BillingHubLayout,

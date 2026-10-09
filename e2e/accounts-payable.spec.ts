@@ -7,29 +7,41 @@ import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
 const BASE_URL = getE2EBaseUrl();
 
-test('registra una factura por pagar, la paga, la reversa y conserva la auditor√≠a', async ({ page, request }) => {
+test('registra una factura por pagar, la paga, la reversa y conserva la auditor√≠a', async ({
+  page,
+  request,
+}) => {
   const seed = await getE2ESeed();
   await login(page, seed.username, seed.password);
   const auth = await loginViaApi(request, BASE_URL, seed.username, seed.password);
 
-  const [suppliersResponse, branchesResponse, categoriesResponse, methodsResponse] = await Promise.all([
-    request.get(`${BASE_URL}/api/suppliers?itemsPerPage=100`, { headers: auth.headers }),
-    request.get(`${BASE_URL}/api/branches?itemsPerPage=100`, { headers: auth.headers }),
-    request.get(`${BASE_URL}/api/expense-categories?itemsPerPage=100`, { headers: auth.headers }),
-    request.get(`${BASE_URL}/api/payment-methods?itemsPerPage=100`, { headers: auth.headers }),
-  ]);
+  const [suppliersResponse, branchesResponse, categoriesResponse, methodsResponse] =
+    await Promise.all([
+      request.get(`${BASE_URL}/api/suppliers?itemsPerPage=100`, { headers: auth.headers }),
+      request.get(`${BASE_URL}/api/branches?itemsPerPage=100`, { headers: auth.headers }),
+      request.get(`${BASE_URL}/api/expense-categories?itemsPerPage=100`, { headers: auth.headers }),
+      request.get(`${BASE_URL}/api/payment-methods?itemsPerPage=100`, { headers: auth.headers }),
+    ]);
 
-  for (const response of [suppliersResponse, branchesResponse, categoriesResponse, methodsResponse]) {
+  for (const response of [
+    suppliersResponse,
+    branchesResponse,
+    categoriesResponse,
+    methodsResponse,
+  ]) {
     expect(response.ok(), `${response.url()} debe responder 2xx`).toBeTruthy();
   }
 
-  const supplier = parseApiCollection<{ id: string; ruc?: string; businessName?: string }>(await suppliersResponse.json())
-    .find((item) => item.ruc === E2E_SEED.supplierRuc);
-  const branch = parseApiCollection<{ id: string; name?: string }>(await branchesResponse.json())
-    .find((item) => item.name === E2E_SEED.branchName);
+  const supplier = parseApiCollection<{ id: string; ruc?: string; businessName?: string }>(
+    await suppliersResponse.json(),
+  ).find((item) => item.ruc === E2E_SEED.supplierRuc);
+  const branch = parseApiCollection<{ id: string; name?: string }>(
+    await branchesResponse.json(),
+  ).find((item) => item.name === E2E_SEED.branchName);
   const category = parseApiCollection<{ id: number }>(await categoriesResponse.json())[0];
-  const cash = parseApiCollection<{ id: number; name?: string }>(await methodsResponse.json())
-    .find((item) => /efectivo/i.test(item.name ?? ''));
+  const cash = parseApiCollection<{ id: number; name?: string }>(await methodsResponse.json()).find(
+    (item) => /efectivo/i.test(item.name ?? ''),
+  );
 
   if (!supplier || !branch || !category || !cash) {
     throw new Error('Faltan datos E2E para crear la cuenta por pagar');
@@ -67,14 +79,19 @@ test('registra una factura por pagar, la paga, la reversa y conserva la auditor√
   await page.getByLabel(/Monto/).fill('118.00');
   const methodInput = page.getByText('M√©todo de pago').locator('..').getByRole('combobox');
   await methodInput.fill(cash.name ?? 'Efectivo');
-  await page.locator('.nb-form__lookup-menu button[role="option"]')
-    .filter({ hasText: cash.name ?? 'Efectivo' }).first().click();
+  await page
+    .locator('.nb-form__lookup-menu button[role="option"]')
+    .filter({ hasText: cash.name ?? 'Efectivo' })
+    .first()
+    .click();
   await page.getByTestId('supplier-bill-pay-submit-btn').click();
   await expect(page).toHaveURL(/#\/accounts-payable/);
 
-  const paidResponse = await request.get(`${BASE_URL}/api/supplier-bills/${created.id}`, { headers: auth.headers });
+  const paidResponse = await request.get(`${BASE_URL}/api/supplier-bills/${created.id}`, {
+    headers: auth.headers,
+  });
   expect(paidResponse.ok()).toBeTruthy();
-  const paid = await paidResponse.json() as {
+  const paid = (await paidResponse.json()) as {
     status: string;
     balanceDue: string;
     payments?: Array<{ id: number; amount: string; reversedAt?: string | null }>;
@@ -90,8 +107,10 @@ test('registra una factura por pagar, la paga, la reversa y conserva la auditor√
   await expect(page.getByText('Pago reversado')).toBeVisible();
   await expect(page.getByText(/Saldo pendiente.*118[.,]00/)).toBeVisible();
 
-  const reversedResponse = await request.get(`${BASE_URL}/api/supplier-bills/${created.id}`, { headers: auth.headers });
-  const reversed = await reversedResponse.json() as {
+  const reversedResponse = await request.get(`${BASE_URL}/api/supplier-bills/${created.id}`, {
+    headers: auth.headers,
+  });
+  const reversed = (await reversedResponse.json()) as {
     status: string;
     balanceDue: string;
     payments?: Array<{ amount: string; reversedAt?: string | null }>;
@@ -105,9 +124,13 @@ test('registra una factura por pagar, la paga, la reversa y conserva la auditor√
     { headers: auth.headers },
   );
   expect(ledgerResponse.ok()).toBeTruthy();
-  const ledger = await ledgerResponse.json() as { lines: Array<{ description: string }> };
-  expect(ledger.lines.some((line) => line.description === 'Pago de factura de proveedor')).toBeTruthy();
-  expect(ledger.lines.some((line) => line.description === 'Reversi√≥n de pago de factura de proveedor')).toBeTruthy();
+  const ledger = (await ledgerResponse.json()) as { lines: Array<{ description: string }> };
+  expect(
+    ledger.lines.some((line) => line.description === 'Pago de factura de proveedor'),
+  ).toBeTruthy();
+  expect(
+    ledger.lines.some((line) => line.description === 'Reversi√≥n de pago de factura de proveedor'),
+  ).toBeTruthy();
 
   const trialResponse = await request.get(
     `${BASE_URL}/api/general-ledger/trial-balance?period=${today.slice(0, 7).replace('-', '')}`,

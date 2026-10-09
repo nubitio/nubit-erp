@@ -15,7 +15,13 @@ interface SecretRevealDialogProps {
  * server only kept a hash — so the copy button and the warning are the whole
  * point of this dialog.
  */
-export const SecretRevealDialog = ({ open, title, secret, hint, onClose }: SecretRevealDialogProps) => {
+export const SecretRevealDialog = ({
+  open,
+  title,
+  secret,
+  hint,
+  onClose,
+}: SecretRevealDialogProps) => {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {

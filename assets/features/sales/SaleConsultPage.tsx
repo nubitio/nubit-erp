@@ -155,11 +155,12 @@ export const SaleConsultPage = () => {
     setLoading(true);
     try {
       const response = await httpClient.get<Blob>(url, { responseType: 'blob' });
-      downloadBlob(response.data, getFilenameFromDisposition(response.headers['content-disposition']));
+      downloadBlob(
+        response.data,
+        getFilenameFromDisposition(response.headers['content-disposition']),
+      );
     } catch (err) {
-      const message = err instanceof Error
-        ? err.message
-        : 'No se pudo exportar el reporte.';
+      const message = err instanceof Error ? err.message : 'No se pudo exportar el reporte.';
       setError(message);
     } finally {
       setLoading(false);
@@ -172,51 +173,57 @@ export const SaleConsultPage = () => {
     gridRef.current?.reset();
   }, []);
 
-  const toolbar = useMemo<DataGridViewOptions['toolbar']>(() => ({
-    primary: [
-      {
-        text: loading ? 'Generando...' : 'Exportar XLSX',
-        icon: 'ph-download-simple',
-        type: 'primary',
-        onClick: handleGenerateReport,
-        disabled: !canGenerate || loading,
-      },
-    ],
-    utility: [
-      {
-        text: 'Limpiar',
-        icon: 'ph-x',
-        onClick: handleClear,
-        disabled: loading,
-      },
-    ],
-    showRefresh: true,
-  }), [canGenerate, handleClear, handleGenerateReport, loading]);
+  const toolbar = useMemo<DataGridViewOptions['toolbar']>(
+    () => ({
+      primary: [
+        {
+          text: loading ? 'Generando...' : 'Exportar XLSX',
+          icon: 'ph-download-simple',
+          type: 'primary',
+          onClick: handleGenerateReport,
+          disabled: !canGenerate || loading,
+        },
+      ],
+      utility: [
+        {
+          text: 'Limpiar',
+          icon: 'ph-x',
+          onClick: handleClear,
+          disabled: loading,
+        },
+      ],
+      showRefresh: true,
+    }),
+    [canGenerate, handleClear, handleGenerateReport, loading],
+  );
 
-  const beforeToolbar = useCallback(() => (
-    <>
-      <AppDropdown
-        id="sales-consult-report"
-        label="Reporte"
-        icon="ph-chart-bar"
-        value={selectedReport}
-        options={reportTypes.map((report) => ({ value: report.value, label: report.text }))}
-        disabled={loading}
-        variant="toolbar"
-        showFieldLabel={false}
-        onChange={(value) => {
-          setSelectedReport(value);
-          setError(null);
-        }}
-      />
-      <ColumnChooserButton
-        state={columnChooserState}
-        triggerLabel={t('crudPage.columnChooserLabel')}
-        selectAllLabel={t('crudPage.columnChooserSelectAll')}
-        resetLabel={t('crudPage.columnChooserReset')}
-      />
-    </>
-  ), [loading, columnChooserState, selectedReport, t]);
+  const beforeToolbar = useCallback(
+    () => (
+      <>
+        <AppDropdown
+          id="sales-consult-report"
+          label="Reporte"
+          icon="ph-chart-bar"
+          value={selectedReport}
+          options={reportTypes.map((report) => ({ value: report.value, label: report.text }))}
+          disabled={loading}
+          variant="toolbar"
+          showFieldLabel={false}
+          onChange={(value) => {
+            setSelectedReport(value);
+            setError(null);
+          }}
+        />
+        <ColumnChooserButton
+          state={columnChooserState}
+          triggerLabel={t('crudPage.columnChooserLabel')}
+          selectAllLabel={t('crudPage.columnChooserSelectAll')}
+          resetLabel={t('crudPage.columnChooserReset')}
+        />
+      </>
+    ),
+    [loading, columnChooserState, selectedReport, t],
+  );
 
   return (
     <div className="sale-consult-page">

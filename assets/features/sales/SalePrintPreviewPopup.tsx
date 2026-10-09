@@ -28,10 +28,7 @@ export const SalePrintPreviewPopup = (props: SalePrintPreviewPopupProps) => {
       className="sale-print-preview-popup"
       footer={
         <>
-          <Button
-            variant="secondary"
-            onClick={props.onNegative}
-          >
+          <Button variant="secondary" onClick={props.onNegative}>
             Cerrar
           </Button>
           <Button variant="primary" onClick={props.onPositive}>

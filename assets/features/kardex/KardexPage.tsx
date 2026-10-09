@@ -97,7 +97,8 @@ const rowOf = (e: FormatterEvent): StockMovementRecord => e.data as StockMovemen
 
 const formatNote = (value: unknown): string => {
   const note = String(value ?? '');
-  if (note === 'Applied by InventoryServiceSalesInventoryPort') return 'Venta aplicada automáticamente';
+  if (note === 'Applied by InventoryServiceSalesInventoryPort')
+    return 'Venta aplicada automáticamente';
   return note;
 };
 
@@ -115,7 +116,11 @@ const formatLineValueForOut = (e: FormatterEvent) => {
 
 const buildFields = (scoped: boolean, showValuation: boolean): Field[] => [
   identityField().build(),
-  { ...textField().name('movementTypeLabel').label('').build(), visible: false, visibleOnForm: false },
+  {
+    ...textField().name('movementTypeLabel').label('').build(),
+    visible: false,
+    visibleOnForm: false,
+  },
   { ...textField().name('sourceType').label('').build(), visible: false, visibleOnForm: false },
 
   {
@@ -143,18 +148,25 @@ const buildFields = (scoped: boolean, showValuation: boolean): Field[] => [
     formatter: (e: FormatterEvent) => formatReference(e.data as StockMovementRecord),
   },
   {
-    ...entityField(API + 'warehouses', 'id', 'name').name('warehouse').label('Almacén').build(),
+    ...entityField(API + 'warehouses', 'id', 'name')
+      .name('warehouse')
+      .label('Almacén')
+      .build(),
     order: 3,
     width: 150,
     visible: !scoped,
     formatter: (e: FormatterEvent) => {
       const value = e.value;
-      if (value && typeof value === 'object') return String((value as { name?: string }).name ?? '');
+      if (value && typeof value === 'object')
+        return String((value as { name?: string }).name ?? '');
       return String(value ?? '');
     },
   },
   {
-    ...entityField(API + 'products', 'id', 'name').name('product').label('Producto').build(),
+    ...entityField(API + 'products', 'id', 'name')
+      .name('product')
+      .label('Producto')
+      .build(),
     order: 4,
     width: 220,
     visible: !scoped,
@@ -379,7 +391,9 @@ export const KardexPage = () => {
 
   return (
     <div
-      className={inInventoryHub ? 'inventory-kardex-page kardex-page' : 'view-wrapper-scroll kardex-page'}
+      className={
+        inInventoryHub ? 'inventory-kardex-page kardex-page' : 'view-wrapper-scroll kardex-page'
+      }
       data-testid={inInventoryHub ? 'inventory-kardex-page' : undefined}
     >
       <DataGridView
@@ -405,7 +419,8 @@ export const KardexPage = () => {
           productId
             ? {
                 title: 'Sin movimientos',
-                description: 'No hay movimientos registrados para este producto en el período visible.',
+                description:
+                  'No hay movimientos registrados para este producto en el período visible.',
                 icon: 'list-magnifying-glass',
               }
             : {

@@ -6021,12 +6021,6 @@ count = 2
 [[issues]]
 file = "tests/Billing/Sale/SaleVoidUseCaseTest.php"
 code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$cashRefundRegistrar`."
-count = 1
-
-[[issues]]
-file = "tests/Billing/Sale/SaleVoidUseCaseTest.php"
-code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$cashSessionResolver`."
 count = 2
 
@@ -6877,6 +6871,54 @@ message = "Possible argument type mismatch for argument #2 of `bccomp`: expected
 count = 1
 
 [[issues]]
+file = "tests/Onboarding/OpeningReceivableBranchDeduplicationTest.php"
+code = "ambiguous-object-method-access"
+message = "Cannot statically verify method call on a generic `object` type."
+count = 8
+
+[[issues]]
+file = "tests/Onboarding/OpeningReceivableBranchDeduplicationTest.php"
+code = "less-specific-argument"
+message = 'Argument type mismatch for argument #1 of `App\Tests\ReleaseCritical\Support\CoreSaleFixture::__construct`: expected `Doctrine\ORM\EntityManagerInterface`, but provided type `null|object` is less specific.'
+count = 1
+
+[[issues]]
+file = "tests/Onboarding/OpeningReceivableBranchDeduplicationTest.php"
+code = "less-specific-argument"
+message = 'Argument type mismatch for argument #2 of `App\Tests\ReleaseCritical\Support\CoreSaleFixture::__construct`: expected `App\Settings\Service\TenantSettingsService`, but provided type `null|object` is less specific.'
+count = 1
+
+[[issues]]
+file = "tests/Onboarding/OpeningReceivableBranchDeduplicationTest.php"
+code = "mixed-assignment"
+message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
+count = 4
+
+[[issues]]
+file = "tests/Onboarding/OpeningReceivableBranchDeduplicationTest.php"
+code = "mixed-method-access"
+message = "Attempting to access a method on a non-object type (`mixed`)."
+count = 4
+
+[[issues]]
+file = "tests/Onboarding/OpeningReceivableBranchDeduplicationTest.php"
+code = "possible-method-access-on-null"
+message = "Attempting to call a method on `null`."
+count = 8
+
+[[issues]]
+file = "tests/Onboarding/OpeningReceivableBranchDeduplicationTest.php"
+code = "possibly-null-argument"
+message = 'Argument #1 of method `App\Tests\ReleaseCritical\Support\CoreSaleFixture::__construct` is possibly `null`, but parameter type `Doctrine\ORM\EntityManagerInterface` does not accept it.'
+count = 1
+
+[[issues]]
+file = "tests/Onboarding/OpeningReceivableBranchDeduplicationTest.php"
+code = "possibly-null-argument"
+message = 'Argument #2 of method `App\Tests\ReleaseCritical\Support\CoreSaleFixture::__construct` is possibly `null`, but parameter type `App\Settings\Service\TenantSettingsService` does not accept it.'
+count = 1
+
+[[issues]]
 file = "tests/Operations/ProductionReliabilityConfigTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
@@ -7006,13 +7048,37 @@ count = 1
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "ambiguous-object-method-access"
 message = "Cannot statically verify method call on a generic `object` type."
-count = 5
+count = 13
+
+[[issues]]
+file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
+code = "invalid-array-access"
+message = 'Cannot access array index on object `ApiPlatform\State\Pagination\PartialPaginatorInterface<App\CashRegister\Dto\CashRegisterDashboardDto>` that does not implement `ArrayAccess`.'
+count = 1
+
+[[issues]]
+file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
+code = "invalid-array-access"
+message = 'Cannot access array index on object `App\CashRegister\Dto\CashRegisterDashboardDto` that does not implement `ArrayAccess`.'
+count = 1
+
+[[issues]]
+file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
+code = "invalid-iterator"
+message = "The expression provided to `foreach` is not iterable. It resolved to type `mixed`, which is not iterable."
+count = 1
+
+[[issues]]
+file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
+code = "invalid-type-cast"
+message = "Casting `mixed` to `float`."
+count = 1
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
-count = 7
+count = 9
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
@@ -7112,26 +7178,50 @@ count = 1
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
+code = "mixed-array-access"
+message = "Unsafe array access on type `mixed`."
+count = 1
+
+[[issues]]
+file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 9
+count = 14
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "mixed-method-access"
 message = "Attempting to access a method on a non-object type (`mixed`)."
+count = 3
+
+[[issues]]
+file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
+code = "mixed-property-access"
+message = "Attempting to access a property on a non-object type (`mixed`)."
+count = 3
+
+[[issues]]
+file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
+code = "null-property-access"
+message = "Attempting to access a property on an expression that is always `null`."
 count = 1
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "possible-method-access-on-null"
 message = "Attempting to call a method on `null`."
-count = 5
+count = 15
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "possibly-invalid-argument"
 message = 'Possible argument type mismatch for argument #1 of `PHPUnit\Framework\Assert::assertStringStartsWith`: expected `non-empty-string`, but possibly received `string`.'
+count = 1
+
+[[issues]]
+file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
+code = "possibly-invalid-array-access"
+message = 'Cannot perform array access on value of type `iterable<mixed, App\CashRegister\Dto\CashRegisterDashboardDto>`.'
 count = 1
 
 [[issues]]
@@ -7216,6 +7306,12 @@ count = 1
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "possibly-null-argument"
 message = 'Argument #8 of method `App\Sales\State\SaleProcessor::__construct` is possibly `null`, but parameter type `Psr\Log\LoggerInterface` does not accept it.'
+count = 1
+
+[[issues]]
+file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
+code = "possibly-null-array-access"
+message = "Cannot perform array access on possibly `null` value."
 count = 1
 
 [[issues]]

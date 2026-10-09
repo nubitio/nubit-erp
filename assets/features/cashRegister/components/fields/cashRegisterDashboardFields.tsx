@@ -1,4 +1,10 @@
-import { identityField, currencyField, textField, type Field, type GridCellContext } from '@nubitio/crud';
+import {
+  identityField,
+  currencyField,
+  textField,
+  type Field,
+  type GridCellContext,
+} from '@nubitio/crud';
 import { Badge, Button, IconButton } from '@nubitio/ui';
 import NumberUtils from '../../../../shared/lib/NumberUtils';
 
@@ -13,9 +19,17 @@ const cashRegisterDashboardFields = (navigate: (path: string) => void) => {
       .label('Estado')
       .formatter((cell: GridCellContext) => {
         if (cell.data.status === 'open') {
-          return <Badge variant="success" outlined>Abierta</Badge>;
+          return (
+            <Badge variant="success" outlined>
+              Abierta
+            </Badge>
+          );
         } else {
-          return <Badge variant="secondary" outlined>Cerrada</Badge>;
+          return (
+            <Badge variant="secondary" outlined>
+              Cerrada
+            </Badge>
+          );
         }
       })
       .build(),

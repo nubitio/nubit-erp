@@ -17,7 +17,7 @@
 .tenant-onboarding__assistant {
   height: 360px;
   min-height: 280px;
-  border: 1px solid var(--border-color, rgba(0, 0, 0, .12));
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
   border-radius: 12px;
   overflow: hidden;
 }
@@ -33,9 +33,9 @@
   min-height: 620px;
   max-height: calc(100dvh - (var(--space-6, 32px) * 2));
   background: var(--surface-card, var(--surface-1, #fff));
-  border: 1px solid var(--border-color, rgba(0, 0, 0, .12));
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
   border-radius: var(--radius-lg, 14px);
-  box-shadow: var(--shadow-md, 0 12px 34px rgba(0, 0, 0, .12));
+  box-shadow: var(--shadow-md, 0 12px 34px rgba(0, 0, 0, 0.12));
   padding: var(--space-6, 32px);
   display: flex;
   flex-direction: column;
@@ -58,7 +58,7 @@
   gap: var(--space-3, 12px);
   font-size: var(--font-size-xl, 24px);
   font-weight: var(--font-weight-bold, 700);
-  letter-spacing: -.02em;
+  letter-spacing: -0.02em;
 }
 
 .tenant-onboarding__logo {
@@ -108,7 +108,7 @@
   margin: 0 0 var(--space-2, 8px);
   font-size: var(--font-size-2xl, 28px);
   line-height: var(--line-height-tight, 1.15);
-  letter-spacing: -.025em;
+  letter-spacing: -0.025em;
 }
 
 .tenant-onboarding__main > p,

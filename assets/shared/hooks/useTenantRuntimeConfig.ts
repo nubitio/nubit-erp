@@ -58,9 +58,7 @@ export interface TenantRuntimeConfig {
 export const TENANT_RUNTIME_CONFIG_QUERY_KEY = ['tenant-runtime-config'] as const;
 
 async function fetchTenantRuntimeConfig(): Promise<TenantRuntimeConfig> {
-  return httpRequestData(
-    httpClient.get<TenantRuntimeConfig>('/api/tenant/runtime-config'),
-  );
+  return httpRequestData(httpClient.get<TenantRuntimeConfig>('/api/tenant/runtime-config'));
 }
 
 export function useTenantRuntimeConfig() {

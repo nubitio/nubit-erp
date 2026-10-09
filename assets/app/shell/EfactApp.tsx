@@ -5,7 +5,11 @@ import { useLocation } from 'react-router-dom';
 import { hasCommittedAuthSession, useAuth } from '@app/contexts/auth';
 import { useScreenSizeClass } from '@nubitio/admin';
 import { useTheme } from '@nubitio/ui';
-import { HydraResourceSchemaProvider, HydraResourceStoreProvider, SchemaProvider } from '@nubitio/hydra';
+import {
+  HydraResourceSchemaProvider,
+  HydraResourceStoreProvider,
+  SchemaProvider,
+} from '@nubitio/hydra';
 import { Content } from './Content';
 
 import '../../styles.scss';
@@ -59,9 +63,7 @@ function AuthenticatedRoot() {
   return (
     <SchemaProvider>
       <HydraResourceSchemaProvider>
-        <HydraResourceStoreProvider>
-          {page}
-        </HydraResourceStoreProvider>
+        <HydraResourceStoreProvider>{page}</HydraResourceStoreProvider>
       </HydraResourceSchemaProvider>
     </SchemaProvider>
   );
@@ -70,15 +72,7 @@ function AuthenticatedRoot() {
 function AppShell({ screenSizeClass }: { screenSizeClass: string }) {
   const { isLoaded } = useTheme();
 
-  return (
-    <div className={`app ${screenSizeClass}`}>
-      {isLoaded ? (
-        <RootApp />
-      ) : (
-        ''
-      )}
-    </div>
-  );
+  return <div className={`app ${screenSizeClass}`}>{isLoaded ? <RootApp /> : ''}</div>;
 }
 
 export const EfactApp = () => {

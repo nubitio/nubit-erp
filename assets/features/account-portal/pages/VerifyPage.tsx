@@ -43,7 +43,9 @@ export function VerifyPage() {
       variant="auth"
       funnelStep={2}
       title="Verifica tu email"
-      subtitle={email ? `Ingresa el código enviado a ${email}` : 'Ingresa el código de verificación.'}
+      subtitle={
+        email ? `Ingresa el código enviado a ${email}` : 'Ingresa el código de verificación.'
+      }
     >
       <form className="ap-form" onSubmit={submit}>
         <input type="hidden" name="email" value={email} />

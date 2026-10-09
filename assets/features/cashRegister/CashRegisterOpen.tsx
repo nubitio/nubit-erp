@@ -45,16 +45,26 @@ export const CashRegisterOpen = () => {
           }}
         >
           <div className="mb-3">
-            <FormField label={<>Saldo inicial <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>*</span></>} htmlFor="cash-opening-balance">
-            <TextField
-              ref={inputRef}
-              id="cash-opening-balance"
-              type="number"
-              min={0}
-              step={0.01}
-              required
-              placeholder="0.00"
-            />
+            <FormField
+              label={
+                <>
+                  Saldo inicial{' '}
+                  <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>
+                    *
+                  </span>
+                </>
+              }
+              htmlFor="cash-opening-balance"
+            >
+              <TextField
+                ref={inputRef}
+                id="cash-opening-balance"
+                type="number"
+                min={0}
+                step={0.01}
+                required
+                placeholder="0.00"
+              />
             </FormField>
           </div>
 

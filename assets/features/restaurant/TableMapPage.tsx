@@ -39,8 +39,8 @@ export function TableMapPage() {
 
       {tabs.length === 0 ? (
         <p className="restaurant-floor__empty">
-          Aún no hay ambientes configurados — créalos en &ldquo;Ambientes y plantas&rdquo;, agrega mesas en
-          &ldquo;Configurar mesas&rdquo; y ubícalas en &ldquo;Plano del local&rdquo;.
+          Aún no hay ambientes configurados — créalos en &ldquo;Ambientes y plantas&rdquo;, agrega
+          mesas en &ldquo;Configurar mesas&rdquo; y ubícalas en &ldquo;Plano del local&rdquo;.
         </p>
       ) : (
         <>
@@ -59,7 +59,11 @@ export function TableMapPage() {
             ))}
           </div>
 
-          <div ref={containerRef} className="restaurant-floor-editor-wrap" style={{ height: CANVAS_HEIGHT * scale }}>
+          <div
+            ref={containerRef}
+            className="restaurant-floor-editor-wrap"
+            style={{ height: CANVAS_HEIGHT * scale }}
+          >
             <div
               className="restaurant-floor-editor restaurant-floor-editor--readonly"
               style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT, transform: `scale(${scale})` }}
@@ -70,7 +74,9 @@ export function TableMapPage() {
                   <TableMapCard
                     key={table.id}
                     table={table}
-                    itemCount={table.currentOrderId ? orders[table.currentOrderId]?.items.length ?? 0 : 0}
+                    itemCount={
+                      table.currentOrderId ? (orders[table.currentOrderId]?.items.length ?? 0) : 0
+                    }
                     onClick={() => handleOpen(table.id, table.status === 'libre')}
                     style={{ left: position.x, top: position.y }}
                   />

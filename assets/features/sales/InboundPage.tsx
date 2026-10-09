@@ -31,8 +31,23 @@ export const PurchasesPage = () => {
       ? ['issuedAt', 'supplier', 'warehouse', 'note', 'grandTotal']
       : ['issuedAt', 'supplier', 'note', 'grandTotal'];
     const formFields = showWarehouseColumn
-      ? ['issuedAt', 'warehouse', 'supplier', 'supplierDocType', 'supplierDocSeries', 'supplierDocNumber', 'grandTotal']
-      : ['issuedAt', 'supplier', 'supplierDocType', 'supplierDocSeries', 'supplierDocNumber', 'grandTotal'];
+      ? [
+          'issuedAt',
+          'warehouse',
+          'supplier',
+          'supplierDocType',
+          'supplierDocSeries',
+          'supplierDocNumber',
+          'grandTotal',
+        ]
+      : [
+          'issuedAt',
+          'supplier',
+          'supplierDocType',
+          'supplierDocSeries',
+          'supplierDocNumber',
+          'grandTotal',
+        ];
 
     return defineResource(API + 'purchases', {
       id: 'purchases',
@@ -65,7 +80,8 @@ export const PurchasesPage = () => {
       defaultPreset: 'basic',
       emptyState: {
         title: 'Sin compras registradas',
-        description: 'Ingresa mercadería de un proveedor para que el stock y el costo se actualicen.',
+        description:
+          'Ingresa mercadería de un proveedor para que el stock y el costo se actualicen.',
         icon: 'shopping-cart',
       },
       formLayout: {

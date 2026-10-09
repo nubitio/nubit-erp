@@ -2,7 +2,9 @@ import { AppDialog, Button, FormField, TextField } from '@nubitio/ui';
 import { EntityDropdown } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { useRef, useState } from 'react';
-import customerAccountService, { type CollectOnAccountApplication } from './services/customerAccountService';
+import customerAccountService, {
+  type CollectOnAccountApplication,
+} from './services/customerAccountService';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 
@@ -18,7 +20,13 @@ interface Props {
   onDone: () => void;
 }
 
-export const CustomerAdvanceDialog = ({ customerId, customerName, currency = 'PEN', onClose, onDone }: Props) => {
+export const CustomerAdvanceDialog = ({
+  customerId,
+  customerName,
+  currency = 'PEN',
+  onClose,
+  onDone,
+}: Props) => {
   const [mode, setMode] = useState<Mode>('receive');
   const [amountValue, setAmountValue] = useState('');
   const referenceRef = useRef<HTMLInputElement>(null);
@@ -195,7 +203,11 @@ export const CustomerAdvanceDialog = ({ customerId, customerName, currency = 'PE
               </div>
               <div className="mb-3">
                 <FormField label="Referencia" htmlFor="customer-advance-reference">
-                  <TextField ref={referenceRef} id="customer-advance-reference" placeholder="N° de operación" />
+                  <TextField
+                    ref={referenceRef}
+                    id="customer-advance-reference"
+                    placeholder="N° de operación"
+                  />
                 </FormField>
               </div>
             </>
@@ -203,8 +215,8 @@ export const CustomerAdvanceDialog = ({ customerId, customerName, currency = 'PE
 
           {mode === 'apply' && (
             <p style={{ margin: '0 0 12px', color: 'var(--text-muted)' }}>
-              El anticipo se aplica a las facturas pendientes por antigüedad (FIFO). No puede exceder el saldo a favor
-              disponible.
+              El anticipo se aplica a las facturas pendientes por antigüedad (FIFO). No puede
+              exceder el saldo a favor disponible.
             </p>
           )}
 
@@ -215,7 +227,11 @@ export const CustomerAdvanceDialog = ({ customerId, customerName, currency = 'PE
             loading={isProcessing}
             data-testid="customer-advance-submit-btn"
           >
-            {isProcessing ? 'Procesando...' : mode === 'receive' ? 'Registrar anticipo' : 'Aplicar anticipo'}
+            {isProcessing
+              ? 'Procesando...'
+              : mode === 'receive'
+                ? 'Registrar anticipo'
+                : 'Aplicar anticipo'}
           </Button>
         </form>
       )}

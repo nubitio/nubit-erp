@@ -30,10 +30,14 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
   const auth = await loginViaApi(request, BASE_URL, seed.username, seed.password);
 
   const products = members<{ id: string; code?: string; salePrice: string }>(
-    await json(await request.get(`${BASE_URL}/api/products?itemsPerPage=100`, { headers: auth.headers })),
+    await json(
+      await request.get(`${BASE_URL}/api/products?itemsPerPage=100`, { headers: auth.headers }),
+    ),
   );
   const customers = members<{ id: number; ruc?: string; priceList?: unknown }>(
-    await json(await request.get(`${BASE_URL}/api/customers?itemsPerPage=100`, { headers: auth.headers })),
+    await json(
+      await request.get(`${BASE_URL}/api/customers?itemsPerPage=100`, { headers: auth.headers }),
+    ),
   );
   const product = products.find((item) => item.code === E2E_SEED.productCode);
   const customer = customers.find((item) => item.ruc === E2E_SEED.customerDni);
@@ -48,14 +52,22 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
   const patchHeaders = { ...auth.headers, 'Content-Type': 'application/merge-patch+json' };
 
   try {
-    await json(await request.patch(`${BASE_URL}/api/customers/${customer.id}`, {
-      headers: patchHeaders,
-      data: { priceList: listIri },
-    }));
-    const updatedCustomer = await json(await request.get(`${BASE_URL}/api/customers/${customer.id}`, { headers: auth.headers }));
+    await json(
+      await request.patch(`${BASE_URL}/api/customers/${customer.id}`, {
+        headers: patchHeaders,
+        data: { priceList: listIri },
+      }),
+    );
+    const updatedCustomer = await json(
+      await request.get(`${BASE_URL}/api/customers/${customer.id}`, { headers: auth.headers }),
+    );
     expect(JSON.stringify(updatedCustomer)).toContain(listIri);
     const appliedPrices = members<{ id: string; price: string }>(
-      await json(await request.get(`${BASE_URL}/api/price-lists/${createdList.id}/apply`, { headers: auth.headers })),
+      await json(
+        await request.get(`${BASE_URL}/api/price-lists/${createdList.id}/apply`, {
+          headers: auth.headers,
+        }),
+      ),
     );
     expect(Number(appliedPrices.find((item) => item.id === product.id)?.price)).toBe(5);
 
@@ -71,11 +83,14 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
       await selectPosCustomer(page, { name: E2E_SEED.customerName });
       const browserApplyResponse = await applyResponsePromise;
       expect(browserApplyResponse.ok()).toBeTruthy();
-      const browserPrices = members<{ id: string; price: string }>(await browserApplyResponse.json());
+      const browserPrices = members<{ id: string; price: string }>(
+        await browserApplyResponse.json(),
+      );
       expect(Number(browserPrices.find((item) => item.id === product.id)?.price)).toBe(5);
       await page.getByTestId('pos-product-search').fill(E2E_SEED.productName);
 
-      const card = page.getByTestId('pos-product-card')
+      const card = page
+        .getByTestId('pos-product-card')
         .filter({ hasText: E2E_SEED.productName })
         .filter({ hasNotText: E2E_SEED.product2Name })
         .first();
@@ -99,13 +114,19 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
 
       const customerInput = body.getByLabel(/Cliente/i).first();
       await customerInput.fill(E2E_SEED.customerName);
-      await page.locator('.nb-form__lookup-menu button[role="option"]')
-        .filter({ hasText: E2E_SEED.customerName }).first().click();
+      await page
+        .locator('.nb-form__lookup-menu button[role="option"]')
+        .filter({ hasText: E2E_SEED.customerName })
+        .first()
+        .click();
 
       await page.locator('button[aria-label="Agregar detalle"]').first().click();
-      const row = page.getByRole('row').filter({
-        has: page.getByRole('button', { name: 'Abrir Producto' }),
-      }).last();
+      const row = page
+        .getByRole('row')
+        .filter({
+          has: page.getByRole('button', { name: 'Abrir Producto' }),
+        })
+        .last();
       const productCell = row.getByRole('cell').nth(0);
       const cellButton = productCell.getByRole('button');
       if (await cellButton.isVisible({ timeout: 1000 }).catch(() => false)) {
@@ -117,25 +138,42 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
       await productInput.waitFor({ state: 'visible' });
       await productInput.click();
       await productInput.pressSequentially(E2E_SEED.productName, { delay: 30 });
-      await page.locator('.nb-form__lookup-menu button[role="option"]')
-        .filter({ hasText: E2E_SEED.productName }).first().click();
+      await page
+        .locator('.nb-form__lookup-menu button[role="option"]')
+        .filter({ hasText: E2E_SEED.productName })
+        .first()
+        .click();
 
-      await expect(row.getByRole('cell').nth(2).getByRole('spinbutton')).toHaveValue('5', { timeout: 10000 });
+      await expect(row.getByRole('cell').nth(2).getByRole('spinbutton')).toHaveValue('5', {
+        timeout: 10000,
+      });
     });
   } finally {
     await request.patch(`${BASE_URL}/api/customers/${customer.id}`, {
       headers: patchHeaders,
       data: { priceList: customer.priceList ?? null },
     });
-    await request.delete(`${BASE_URL}/api/price-lists/${createdList.id}`, { headers: auth.headers });
+    await request.delete(`${BASE_URL}/api/price-lists/${createdList.id}`, {
+      headers: auth.headers,
+    });
   }
 });
 
-test('la tarifa es un selector en clientes y permite asignar varios desde listas de precios', async ({ page, request }) => {
+test('la tarifa es un selector en clientes y permite asignar varios desde listas de precios', async ({
+  page,
+  request,
+}) => {
   const seed = await getE2ESeed();
   const auth = await loginViaApi(request, BASE_URL, seed.username, seed.password);
-  const allCustomers = members<{ id: number; ruc?: string; businessName: string; priceList?: unknown }>(
-    await json(await request.get(`${BASE_URL}/api/customers?itemsPerPage=100`, { headers: auth.headers })),
+  const allCustomers = members<{
+    id: number;
+    ruc?: string;
+    businessName: string;
+    priceList?: unknown;
+  }>(
+    await json(
+      await request.get(`${BASE_URL}/api/customers?itemsPerPage=100`, { headers: auth.headers }),
+    ),
   );
   const targets = [
     allCustomers.find((item) => item.ruc === '00000000'),
@@ -144,10 +182,12 @@ test('la tarifa es un selector en clientes y permite asignar varios desde listas
   expect(targets).toHaveLength(2);
 
   const listName = `Tarifa masiva E2E ${Date.now()}`;
-  const list = (await json(await request.post(`${BASE_URL}/api/price-lists`, {
-    headers: auth.headers,
-    data: { name: listName, multiplier: '0.9000' },
-  }))) as { id: number };
+  const list = (await json(
+    await request.post(`${BASE_URL}/api/price-lists`, {
+      headers: auth.headers,
+      data: { name: listName, multiplier: '0.9000' },
+    }),
+  )) as { id: number };
   const patchHeaders = { ...auth.headers, 'Content-Type': 'application/merge-patch+json' };
 
   try {
@@ -182,7 +222,10 @@ test('la tarifa es un selector en clientes y permite asignar varios desde listas
     let patchCount = 0;
     const patchesFinished = new Promise<void>((resolve) => {
       page.on('response', (response) => {
-        if (response.request().method() === 'PATCH' && /\/api\/customers\/\d+/.test(response.url())) {
+        if (
+          response.request().method() === 'PATCH' &&
+          /\/api\/customers\/\d+/.test(response.url())
+        ) {
           patchCount += 1;
           if (patchCount === targets.length) resolve();
         }
@@ -193,14 +236,20 @@ test('la tarifa es un selector en clientes y permite asignar varios desde listas
     await expect(dialog).toBeHidden();
 
     for (const target of targets) {
-      const updated = await json(await request.get(`${BASE_URL}/api/customers/${target.id}`, { headers: auth.headers }));
+      const updated = await json(
+        await request.get(`${BASE_URL}/api/customers/${target.id}`, { headers: auth.headers }),
+      );
       expect(JSON.stringify(updated)).toContain(`/api/price-lists/${list.id}`);
     }
   } finally {
-    await Promise.all(targets.map((target) => request.patch(`${BASE_URL}/api/customers/${target.id}`, {
-      headers: patchHeaders,
-      data: { priceList: target.priceList ?? null },
-    })));
+    await Promise.all(
+      targets.map((target) =>
+        request.patch(`${BASE_URL}/api/customers/${target.id}`, {
+          headers: patchHeaders,
+          data: { priceList: target.priceList ?? null },
+        }),
+      ),
+    );
     await request.delete(`${BASE_URL}/api/price-lists/${list.id}`, { headers: auth.headers });
   }
 });

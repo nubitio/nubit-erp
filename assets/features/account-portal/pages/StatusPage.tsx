@@ -70,11 +70,19 @@ export function StatusPage() {
               </a>
             </>
           ) : isFailed ? (
-            <>No se pudo crear <strong>{current?.tenantName}</strong>.</>
+            <>
+              No se pudo crear <strong>{current?.tenantName}</strong>.
+            </>
           ) : (
             <>
               Estamos creando <strong>{current?.tenantName ?? 'tu empresa'}</strong>
-              {current?.domain ? <> en <strong>{current.domain}</strong></> : null}.
+              {current?.domain ? (
+                <>
+                  {' '}
+                  en <strong>{current.domain}</strong>
+                </>
+              ) : null}
+              .
               <br />
               Esto puede tomar unos segundos.
             </>

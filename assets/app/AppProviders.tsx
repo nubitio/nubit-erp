@@ -18,9 +18,10 @@ import { SmartCrudAuthBridge } from './SmartCrudAuthBridge';
 import { handleSessionExpired } from '@shared/lib/sessionExpiredEvent';
 
 function notifyServerError(error: unknown) {
-  const status = typeof error === 'object' && error !== null && 'status' in error
-    ? Number(error.status)
-    : undefined;
+  const status =
+    typeof error === 'object' && error !== null && 'status' in error
+      ? Number(error.status)
+      : undefined;
 
   if (status !== undefined && status >= 500) {
     toast('Error interno del servidor. No se pudo completar la operación.', 'error', 6000);
@@ -44,52 +45,53 @@ interface AppProvidersProps {
 }
 
 export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => {
-  const httpConfig = useMemo(() => ({
-    // baseUrl is now optional — it falls back to the one configured in CoreConfigProvider.
-    // We still pass it here for explicitness / backward compat with advanced use cases.
-    baseUrl: EFECT_API_BASE_URL,
-    // Bearer token, CSRF, correlation id and refresh/login paths are shared with
-    // the module-level `httpClient` — see httpTransport.ts. Only the failure UX
-    // differs here: crud surfaces errors through its own grid/form UI, so this
-    // client keeps the narrower "server error" toast.
-    ...httpTransport,
-    onUnauthorized: handleSessionExpired,
-    onError: notifyServerError,
-  }), []);
+  const httpConfig = useMemo(
+    () => ({
+      // baseUrl is now optional — it falls back to the one configured in CoreConfigProvider.
+      // We still pass it here for explicitness / backward compat with advanced use cases.
+      baseUrl: EFECT_API_BASE_URL,
+      // Bearer token, CSRF, correlation id and refresh/login paths are shared with
+      // the module-level `httpClient` — see httpTransport.ts. Only the failure UX
+      // differs here: crud surfaces errors through its own grid/form UI, so this
+      // client keeps the narrower "server error" toast.
+      ...httpTransport,
+      onUnauthorized: handleSessionExpired,
+      onError: notifyServerError,
+    }),
+    [],
+  );
 
-  const runtimeConfig = useMemo(() => ({
-    notify: toast,
-    confirm: (message: string) => window.confirm(message),
-  }), []);
+  const runtimeConfig = useMemo(
+    () => ({
+      notify: toast,
+      confirm: (message: string) => window.confirm(message),
+    }),
+    [],
+  );
 
   return (
     <ThemeProvider storageKey="app-theme" themePrefix="app-theme-" basePath="/themes/">
       <DensityProvider>
         <AccentColorApplier />
         <Router>
-        <CoreProvider
-          http={httpConfig}
-          runtime={runtimeConfig}
-        >
-          <CoreConfigProvider
-            locale={EFACT_BUSINESS_LOCALE}
-            timezone={EFACT_BUSINESS_TIMEZONE}
-            currency={EFACT_BUSINESS_CURRENCY}
-            apiBaseUrl={EFECT_API_BASE_URL}
-          >
-            <AuthProvider>
-              <SmartCrudAuthBridge>
-                <ConnectivityProvider>
-                  <OutboxSyncProvider>
-                    <MercureProvider hubUrl={mercureHubUrl}>
-                      {children}
-                    </MercureProvider>
-                  </OutboxSyncProvider>
-                </ConnectivityProvider>
-              </SmartCrudAuthBridge>
-            </AuthProvider>
-          </CoreConfigProvider>
-        </CoreProvider>
+          <CoreProvider http={httpConfig} runtime={runtimeConfig}>
+            <CoreConfigProvider
+              locale={EFACT_BUSINESS_LOCALE}
+              timezone={EFACT_BUSINESS_TIMEZONE}
+              currency={EFACT_BUSINESS_CURRENCY}
+              apiBaseUrl={EFECT_API_BASE_URL}
+            >
+              <AuthProvider>
+                <SmartCrudAuthBridge>
+                  <ConnectivityProvider>
+                    <OutboxSyncProvider>
+                      <MercureProvider hubUrl={mercureHubUrl}>{children}</MercureProvider>
+                    </OutboxSyncProvider>
+                  </ConnectivityProvider>
+                </SmartCrudAuthBridge>
+              </AuthProvider>
+            </CoreConfigProvider>
+          </CoreProvider>
         </Router>
       </DensityProvider>
     </ThemeProvider>

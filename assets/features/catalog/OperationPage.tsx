@@ -34,11 +34,19 @@ const typePatch = toPatch(
     .align('center')
     .formatter((cell) => {
       if (cell.value === 1) {
-        return <Badge variant="success" outlined>Entrada</Badge>;
+        return (
+          <Badge variant="success" outlined>
+            Entrada
+          </Badge>
+        );
       }
 
       if (cell.value === 2) {
-        return <Badge variant="danger" outlined>Salida</Badge>;
+        return (
+          <Badge variant="danger" outlined>
+            Salida
+          </Badge>
+        );
       }
 
       return null;

@@ -60,7 +60,11 @@ export const ProvisioningTab = ({
             }}
           >
             <FormField label={S.adminUser}>
-              <TextField value={adminUser} onChange={(e) => setAdminUser(e.target.value)} required />
+              <TextField
+                value={adminUser}
+                onChange={(e) => setAdminUser(e.target.value)}
+                required
+              />
             </FormField>
             <FormField label={S.adminPassword}>
               <TextField

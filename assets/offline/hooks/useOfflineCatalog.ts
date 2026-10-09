@@ -32,7 +32,12 @@ export const useOfflineCatalog = () => {
       setMenuData(products);
       setCategories(
         Array.from(
-          products.reduce((map, product) => map.set(product.category.id, product.category), new Map<string, Category>()).values(),
+          products
+            .reduce(
+              (map, product) => map.set(product.category.id, product.category),
+              new Map<string, Category>(),
+            )
+            .values(),
         ),
       );
       setLastUpdatedAt(await getLastProductsSyncAt());
@@ -48,7 +53,9 @@ export const useOfflineCatalog = () => {
       setLoadError(null);
       let cancelled = false;
       const controller = new AbortController();
-      httpClient.get<unknown>(`${API}products?itemsPerPage=9999`, { signal: controller.signal }).then(async (response) => {
+      httpClient
+        .get<unknown>(`${API}products?itemsPerPage=9999`, { signal: controller.signal })
+        .then(async (response) => {
           if (cancelled) return;
           const rawProducts = extractCollection<ProductApiPayload>(response.data);
           const normalizedProducts = rawProducts.map(normalizeProduct);
@@ -63,11 +70,15 @@ export const useOfflineCatalog = () => {
           setLoading(false);
           await persistProducts(rawProducts);
           setLastUpdatedAt(await getLastProductsSyncAt());
-        }).catch(() => {
+        })
+        .catch(() => {
           if (cancelled) return;
           setLoadError('Mostrando catálogo offline: no se pudo actualizar desde el servidor.');
         });
-      return () => { cancelled = true; controller.abort(); };
+      return () => {
+        cancelled = true;
+        controller.abort();
+      };
     };
 
     if (isOnline) {
@@ -99,6 +110,14 @@ export const useOfflineCatalog = () => {
       lastUpdatedAt,
       updateProductPrice,
     }),
-    [categories, lastUpdatedAt, loadError, loading, menuData, updateProductPrice, usingOfflineCatalog],
+    [
+      categories,
+      lastUpdatedAt,
+      loadError,
+      loading,
+      menuData,
+      updateProductPrice,
+      usingOfflineCatalog,
+    ],
   );
 };

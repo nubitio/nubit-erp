@@ -29,11 +29,21 @@
 }
 
 // ── Spacing / layout utilities (minimal — avoid Bootstrap dependency) ─────────
-.mb-3 { margin-bottom: var(--space-4); }
-.mb-4 { margin-bottom: var(--space-6); }
-.p-2  { padding: var(--space-2); }
-.text-center { text-align: center; }
-.text-decoration-line-through { text-decoration: line-through; }
+.mb-3 {
+  margin-bottom: var(--space-4);
+}
+.mb-4 {
+  margin-bottom: var(--space-6);
+}
+.p-2 {
+  padding: var(--space-2);
+}
+.text-center {
+  text-align: center;
+}
+.text-decoration-line-through {
+  text-decoration: line-through;
+}
 
 // ── Shell retouch — modern SaaS chrome ──────────────────────────────────────
 // Overrides @nubitio/admin shell classes. Loaded after vendor CSS so equal

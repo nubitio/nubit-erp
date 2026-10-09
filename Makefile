@@ -16,7 +16,7 @@ PHP_DEV := php -d memory_limit=256M
 
 .DEFAULT_GOAL := help
 
-.PHONY: help up down restart reset bootstrap install install-back install-front migrate migrate-control-plane migrate-tenants cache-clear check-generated dev build-front lint lint-php format format-php test test-back test-core test-front e2e logs ps shell-web shell-vite
+.PHONY: help up down restart reset bootstrap install install-back install-front migrate migrate-control-plane migrate-tenants cache-clear check-generated dev build-front lint lint-php format format-php test test-back test-core test-front e2e e2e-ci logs ps shell-web shell-vite
 
 help:
 	@printf "\n"
@@ -39,6 +39,7 @@ help:
 	@printf "  make format-php       Run Mago formatter\n"
 	@printf "  make test             Run backend and frontend tests\n"
 	@printf "  make test-core        Run sales/inventory/purchase kernel tests\n"
+	@printf "  make e2e-ci           Replicate the CI e2e job locally in Docker (isolated stack)\n"
 	@printf "  make logs             Tail web/vite/database/redis/otel logs\n"
 	@printf "  make shell-web        Open shell in web container\n"
 	@printf "  make shell-vite       Open shell in vite container\n"
@@ -130,6 +131,11 @@ test-front:
 
 e2e:
 	$(DC) --profile e2e run --rm e2e
+
+# Same steps as the CI e2e job (APP_ENV=e2e, fresh DB, own compose project).
+# KEEP_STACK=1 keeps it up after a failure; SKIP_BUILD=1 reuses the frontend build.
+e2e-ci:
+	bash scripts/ci/e2e-local.sh
 
 logs:
 	$(DC) logs -f web vite database redis otel-collector

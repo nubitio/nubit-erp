@@ -74,7 +74,8 @@ export function useRestaurantData(): RestaurantData {
 
   const tables = useMemo<RestaurantTableMock[]>(() => {
     const rawTables = tablesQuery.data ?? [];
-    const openOrderIdByTableId = ordersQuery.data?.openOrderIdByTableId ?? new Map<string, string>();
+    const openOrderIdByTableId =
+      ordersQuery.data?.openOrderIdByTableId ?? new Map<string, string>();
     return rawTables.map((table) => ({
       ...table,
       currentOrderId: openOrderIdByTableId.get(table.id) ?? null,
@@ -149,7 +150,8 @@ export function useRequestBill() {
 export function useCloseOrder() {
   const invalidate = useInvalidateRestaurant();
   return useMutation({
-    mutationFn: ({ orderId, saleId }: { orderId: string; saleId: string }) => api.closeOrder(orderId, saleId),
+    mutationFn: ({ orderId, saleId }: { orderId: string; saleId: string }) =>
+      api.closeOrder(orderId, saleId),
     onSuccess: invalidate,
   });
 }

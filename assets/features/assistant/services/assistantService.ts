@@ -1,4 +1,3 @@
-
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
@@ -52,27 +51,35 @@ class AssistantService {
       body.attachments = attachments;
     }
 
-    return httpClient.post<AssistantResponse>(`${API}assistant`, body).then((response: ApiResponse<AssistantResponse>) => {
-      const message = response.data?.message;
+    return httpClient
+      .post<AssistantResponse>(`${API}assistant`, body)
+      .then((response: ApiResponse<AssistantResponse>) => {
+        const message = response.data?.message;
 
-      if (!message) {
-        throw new Error('Respuesta del asistente inválida');
-      }
+        if (!message) {
+          throw new Error('Respuesta del asistente inválida');
+        }
 
-      return { message };
-    });
+        return { message };
+      });
   }
 
   currentThread(): Promise<AssistantThreadPayload> {
     return httpClient
       .get<AssistantThreadPayload>(`${API}assistant/thread`)
-      .then((response: ApiResponse<AssistantThreadPayload>) => response.data ?? { id: null, messages: [] });
+      .then(
+        (response: ApiResponse<AssistantThreadPayload>) =>
+          response.data ?? { id: null, messages: [] },
+      );
   }
 
   startNewThread(): Promise<AssistantThreadPayload> {
     return httpClient
       .post<AssistantThreadPayload>(`${API}assistant/thread`, {})
-      .then((response: ApiResponse<AssistantThreadPayload>) => response.data ?? { id: null, messages: [] });
+      .then(
+        (response: ApiResponse<AssistantThreadPayload>) =>
+          response.data ?? { id: null, messages: [] },
+      );
   }
 }
 

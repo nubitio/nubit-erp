@@ -116,16 +116,16 @@ function PleIssuesPanel({ validation }: { validation: PleBookValidation }) {
 }
 
 function voucherLabel(row: PleBookPreview['rows'][number]): string {
-  const parts = [row.documentType, row.series, row.number].filter((part) => part && part.trim() !== '');
+  const parts = [row.documentType, row.series, row.number].filter(
+    (part) => part && part.trim() !== '',
+  );
   return parts.length > 0 ? parts.join(' ') : '—';
 }
 
 function PleJournalTable({ book }: { book: PleBookPreview }) {
   if (book.rows.length === 0) {
     return (
-      <div className="ple-empty">
-        No hay asientos para este libro en el periodo seleccionado.
-      </div>
+      <div className="ple-empty">No hay asientos para este libro en el periodo seleccionado.</div>
     );
   }
 
@@ -147,13 +147,17 @@ function PleJournalTable({ book }: { book: PleBookPreview }) {
         </thead>
         <tbody>
           {book.rows.map((row) => (
-            <tr key={`${row.cuo ?? ''}-${row.correlative ?? ''}-${row.accountCode ?? ''}-${row.index}`}>
+            <tr
+              key={`${row.cuo ?? ''}-${row.correlative ?? ''}-${row.accountCode ?? ''}-${row.index}`}
+            >
               <td>{row.index}</td>
               <td>{row.issueDate}</td>
               <td>{row.cuo || '—'}</td>
               <td title={row.accountName}>
                 <span className="ple-table__account">{row.accountCode}</span>
-                {row.accountName ? <span className="ple-table__account-name">{row.accountName}</span> : null}
+                {row.accountName ? (
+                  <span className="ple-table__account-name">{row.accountName}</span>
+                ) : null}
               </td>
               <td className="ple-table__name" title={row.glosa ?? row.counterpartyName}>
                 {row.glosa || row.counterpartyName || '—'}
@@ -181,9 +185,7 @@ function PleJournalTable({ book }: { book: PleBookPreview }) {
 function PleLedgerTable({ book }: { book: PleBookPreview }) {
   if (book.rows.length === 0) {
     return (
-      <div className="ple-empty">
-        No hay registros para este libro en el periodo seleccionado.
-      </div>
+      <div className="ple-empty">No hay registros para este libro en el periodo seleccionado.</div>
     );
   }
 
@@ -217,11 +219,17 @@ function PleLedgerTable({ book }: { book: PleBookPreview }) {
               <td className="ple-table__name" title={row.counterpartyName}>
                 {row.counterpartyName}
               </td>
-              <td className={row.taxable < 0 ? 'is-negative' : undefined}>{formatMoney(row.taxable)}</td>
+              <td className={row.taxable < 0 ? 'is-negative' : undefined}>
+                {formatMoney(row.taxable)}
+              </td>
               <td className={row.igv < 0 ? 'is-negative' : undefined}>{formatMoney(row.igv)}</td>
-              <td className={row.total < 0 ? 'is-negative' : undefined}>{formatMoney(row.total)}</td>
+              <td className={row.total < 0 ? 'is-negative' : undefined}>
+                {formatMoney(row.total)}
+              </td>
               <td>
-                <span className={`ple-badge ${row.state === '2' ? 'ple-badge--void' : 'ple-badge--active'}`}>
+                <span
+                  className={`ple-badge ${row.state === '2' ? 'ple-badge--void' : 'ple-badge--active'}`}
+                >
                   {row.stateLabel}
                 </span>
               </td>
@@ -254,7 +262,10 @@ export function PleExportPage() {
   const periodValid = useMemo(() => isValidPeriod(period), [period]);
   const year = period.slice(0, 4);
   const month = period.slice(4, 6);
-  const yearOptions = useMemo(() => buildYearOptions(Number(year) || new Date().getFullYear()), [year]);
+  const yearOptions = useMemo(
+    () => buildYearOptions(Number(year) || new Date().getFullYear()),
+    [year],
+  );
 
   const loadPreview = useCallback(async () => {
     if (!periodValid) {
@@ -412,143 +423,147 @@ export function PleExportPage() {
             <i className="ph ph-circle-notch ple-loading__icon" aria-hidden="true" />
             Cargando libros electrónicos…
           </div>
-        ) : preview && (
-          <>
-            <div className="ple-cards">
-              {bookCards.map(({ key, book }) => {
-                const isActive = activeBook === key;
-                const status = resolveBookStatus(book, key, validation);
-                const dotClass =
-                  status.tone === 'ready'
-                    ? 'ple-card__dot--ready'
-                    : status.tone === 'empty'
-                      ? 'ple-card__dot--empty'
-                      : status.tone === 'error'
-                        ? 'ple-card__dot--error'
-                        : '';
+        ) : (
+          preview && (
+            <>
+              <div className="ple-cards">
+                {bookCards.map(({ key, book }) => {
+                  const isActive = activeBook === key;
+                  const status = resolveBookStatus(book, key, validation);
+                  const dotClass =
+                    status.tone === 'ready'
+                      ? 'ple-card__dot--ready'
+                      : status.tone === 'empty'
+                        ? 'ple-card__dot--empty'
+                        : status.tone === 'error'
+                          ? 'ple-card__dot--error'
+                          : '';
 
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    className={`ple-card${isActive ? ' ple-card--active' : ''}`}
-                    onClick={() => setActiveBook(key)}
-                  >
-                    <div className="ple-card__head">
-                      <span className="ple-card__code">{book.pleCode}</span>
-                      <span className={`ple-card__dot ${dotClass}`} aria-hidden="true" />
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      className={`ple-card${isActive ? ' ple-card--active' : ''}`}
+                      onClick={() => setActiveBook(key)}
+                    >
+                      <div className="ple-card__head">
+                        <span className="ple-card__code">{book.pleCode}</span>
+                        <span className={`ple-card__dot ${dotClass}`} aria-hidden="true" />
+                      </div>
+                      <span className="ple-card__label">{book.label}</span>
+                      <span className="ple-card__meta">{cardMeta(book)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {selectedBook && selectedStatus && (
+                <section className="ple-detail" aria-label={selectedBook.label}>
+                  <div className="ple-detail__header">
+                    <div className="ple-detail__title-wrap">
+                      <h2 className="ple-detail__title">
+                        {selectedBook.label}
+                        <span className="ple-detail__period">{periodLabel(period)}</span>
+                      </h2>
+                      <span
+                        className={`ple-detail__status ple-detail__status--${selectedStatus.tone}`}
+                      >
+                        {selectedStatus.tone === 'ready' && (
+                          <i className="ph ph-check-circle" aria-hidden="true" />
+                        )}
+                        {selectedStatus.tone === 'error' && (
+                          <i className="ph ph-warning-circle" aria-hidden="true" />
+                        )}
+                        {selectedStatus.label}
+                      </span>
                     </div>
-                    <span className="ple-card__label">{book.label}</span>
-                    <span className="ple-card__meta">{cardMeta(book)}</span>
-                  </button>
-                );
-              })}
-            </div>
 
-            {selectedBook && selectedStatus && (
-              <section className="ple-detail" aria-label={selectedBook.label}>
-                <div className="ple-detail__header">
-                  <div className="ple-detail__title-wrap">
-                    <h2 className="ple-detail__title">
-                      {selectedBook.label}
-                      <span className="ple-detail__period">{periodLabel(period)}</span>
-                    </h2>
-                    <span className={`ple-detail__status ple-detail__status--${selectedStatus.tone}`}>
-                      {selectedStatus.tone === 'ready' && (
-                        <i className="ph ph-check-circle" aria-hidden="true" />
+                    <div className="ple-detail__actions">
+                      {validation?.validatedAt && (
+                        <span className="ple-detail__generated">
+                          Validado {formatGeneratedAt(validation.validatedAt)}
+                        </span>
                       )}
-                      {selectedStatus.tone === 'error' && (
-                        <i className="ph ph-warning-circle" aria-hidden="true" />
+                      {!validation?.validatedAt && preview.generatedAt && (
+                        <span className="ple-detail__generated">
+                          Generado {formatGeneratedAt(preview.generatedAt)}
+                        </span>
                       )}
-                      {selectedStatus.label}
-                    </span>
+                      <Button
+                        variant="secondary"
+                        disabled={selectedBook.recordCount === 0 || busy}
+                        loading={validating === activeBook}
+                        onClick={() => void runValidation(activeBook)}
+                      >
+                        Validar
+                      </Button>
+                      <Button
+                        variant="primary"
+                        disabled={selectedBook.recordCount === 0 || busy}
+                        loading={downloading === activeBook}
+                        onClick={() => void downloadBook(activeBook)}
+                      >
+                        Descargar {selectedBook.filename ?? 'archivo PLE'}
+                      </Button>
+                    </div>
                   </div>
 
-                  <div className="ple-detail__actions">
-                    {validation?.validatedAt && (
-                      <span className="ple-detail__generated">
-                        Validado {formatGeneratedAt(validation.validatedAt)}
-                      </span>
-                    )}
-                    {!validation?.validatedAt && preview.generatedAt && (
-                      <span className="ple-detail__generated">
-                        Generado {formatGeneratedAt(preview.generatedAt)}
-                      </span>
-                    )}
-                    <Button
-                      variant="secondary"
-                      disabled={selectedBook.recordCount === 0 || busy}
-                      loading={validating === activeBook}
-                      onClick={() => void runValidation(activeBook)}
+                  {journalSelected && (
+                    <ErpModuleBanner>
+                      Diario y Mayor salen de los asientos operativos del periodo. No incluyen
+                      apertura ni cierre certificado.
+                    </ErpModuleBanner>
+                  )}
+
+                  <div className="ple-tabs" role="tablist" aria-label="Libros con vista previa">
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={activeBook === 'sales'}
+                      className={`ple-tab${activeBook === 'sales' ? ' ple-tab--active' : ''}`}
+                      onClick={() => setActiveBook('sales')}
                     >
-                      Validar
-                    </Button>
-                    <Button
-                      variant="primary"
-                      disabled={selectedBook.recordCount === 0 || busy}
-                      loading={downloading === activeBook}
-                      onClick={() => void downloadBook(activeBook)}
+                      Reg. Ventas ({salesBook?.recordCount ?? 0})
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={activeBook === 'purchases'}
+                      className={`ple-tab${activeBook === 'purchases' ? ' ple-tab--active' : ''}`}
+                      onClick={() => setActiveBook('purchases')}
                     >
-                      Descargar {selectedBook.filename ?? 'archivo PLE'}
-                    </Button>
+                      Reg. Compras ({purchasesBook?.recordCount ?? 0})
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={activeBook === 'diary'}
+                      className={`ple-tab${activeBook === 'diary' ? ' ple-tab--active' : ''}`}
+                      onClick={() => setActiveBook('diary')}
+                    >
+                      Diario ({diaryBook?.recordCount ?? 0})
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={activeBook === 'ledger'}
+                      className={`ple-tab${activeBook === 'ledger' ? ' ple-tab--active' : ''}`}
+                      onClick={() => setActiveBook('ledger')}
+                    >
+                      Mayor ({ledgerBook?.recordCount ?? 0})
+                    </button>
                   </div>
-                </div>
 
-                {journalSelected && (
-                  <ErpModuleBanner>
-                    Diario y Mayor salen de los asientos operativos del periodo. No incluyen apertura ni
-                    cierre certificado.
-                  </ErpModuleBanner>
-                )}
-
-                <div className="ple-tabs" role="tablist" aria-label="Libros con vista previa">
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={activeBook === 'sales'}
-                    className={`ple-tab${activeBook === 'sales' ? ' ple-tab--active' : ''}`}
-                    onClick={() => setActiveBook('sales')}
-                  >
-                    Reg. Ventas ({salesBook?.recordCount ?? 0})
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={activeBook === 'purchases'}
-                    className={`ple-tab${activeBook === 'purchases' ? ' ple-tab--active' : ''}`}
-                    onClick={() => setActiveBook('purchases')}
-                  >
-                    Reg. Compras ({purchasesBook?.recordCount ?? 0})
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={activeBook === 'diary'}
-                    className={`ple-tab${activeBook === 'diary' ? ' ple-tab--active' : ''}`}
-                    onClick={() => setActiveBook('diary')}
-                  >
-                    Diario ({diaryBook?.recordCount ?? 0})
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={activeBook === 'ledger'}
-                    className={`ple-tab${activeBook === 'ledger' ? ' ple-tab--active' : ''}`}
-                    onClick={() => setActiveBook('ledger')}
-                  >
-                    Mayor ({ledgerBook?.recordCount ?? 0})
-                  </button>
-                </div>
-
-                {activeValidation && <PleIssuesPanel validation={activeValidation} />}
-                {journalSelected ? (
-                  <PleJournalTable book={selectedBook} />
-                ) : (
-                  <PleLedgerTable book={selectedBook} />
-                )}
-              </section>
-            )}
-          </>
+                  {activeValidation && <PleIssuesPanel validation={activeValidation} />}
+                  {journalSelected ? (
+                    <PleJournalTable book={selectedBook} />
+                  ) : (
+                    <PleLedgerTable book={selectedBook} />
+                  )}
+                </section>
+              )}
+            </>
+          )
         )}
       </div>
     </div>

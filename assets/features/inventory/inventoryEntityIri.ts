@@ -28,10 +28,7 @@ export function extractEntityId(value: unknown): string {
 }
 
 /** Builds a canonical ApiPlatform IRI for warehouses or products. */
-export function resolveEntityIri(
-  value: unknown,
-  collection: 'warehouses' | 'products',
-): string {
+export function resolveEntityIri(value: unknown, collection: 'warehouses' | 'products'): string {
   const base = API.endsWith('/') ? API : `${API}/`;
 
   if (typeof value === 'string' && value !== '') {

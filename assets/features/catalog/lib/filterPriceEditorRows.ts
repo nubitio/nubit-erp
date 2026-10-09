@@ -7,7 +7,9 @@ export const matchesPriceEditorSearch = (row: PriceEditorRow, query: string): bo
     return true;
   }
 
-  const fields = [row.name, row.sku, row.code].filter(Boolean).map((value) => normalizeText(String(value)));
+  const fields = [row.name, row.sku, row.code]
+    .filter(Boolean)
+    .map((value) => normalizeText(String(value)));
 
   return fields.some((value) => value.includes(normalizedQuery));
 };

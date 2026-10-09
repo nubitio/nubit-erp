@@ -11,7 +11,12 @@ export function OwnerRowButtons({ actions }: { actions: OwnerRowButton[] }): Rea
   return (
     <span className="owner-row-buttons" onClick={(event: MouseEvent) => event.stopPropagation()}>
       {actions.map((action) => (
-        <Button key={action.label} size="sm" variant={action.variant ?? 'primary'} onClick={action.onClick}>
+        <Button
+          key={action.label}
+          size="sm"
+          variant={action.variant ?? 'primary'}
+          onClick={action.onClick}
+        >
           {action.label}
         </Button>
       ))}

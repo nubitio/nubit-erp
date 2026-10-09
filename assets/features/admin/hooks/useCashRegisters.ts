@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
@@ -15,7 +14,9 @@ export const useCashRegisters = () => {
   } = useQuery<CashRegisterStatus[], Error>({
     queryKey: ['cash-registers-dashboard'],
     queryFn: () =>
-      httpClient.get<CashRegisterStatus[]>(API + 'cash-registers/dashboard').then((response) => response.data ?? []),
+      httpClient
+        .get<CashRegisterStatus[]>(API + 'cash-registers/dashboard')
+        .then((response) => response.data ?? []),
     staleTime: 30_000,
     refetchInterval: 60_000,
     placeholderData: [],

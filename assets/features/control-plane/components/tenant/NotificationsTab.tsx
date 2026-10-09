@@ -77,11 +77,7 @@ export const NotificationsTab = ({ tenantId, isAdmin }: NotificationsTabProps) =
 
   const { eventDefinitions, channels } = notifications.data;
 
-  const updateRow = (
-    eventKey: string,
-    channel: string,
-    patch: Partial<NotificationChannelRow>,
-  ) => {
+  const updateRow = (eventKey: string, channel: string, patch: Partial<NotificationChannelRow>) => {
     setMatrix((prev) => {
       if (!prev) return prev;
       const next = cloneMatrix({ ...notifications.data!, matrix: prev });
@@ -134,9 +130,7 @@ export const NotificationsTab = ({ tenantId, isAdmin }: NotificationsTabProps) =
                   <SelectField
                     value={matrix[eventKey][channel].severity}
                     disabled={!isAdmin}
-                    onChange={(e) =>
-                      updateRow(eventKey, channel, { severity: e.target.value })
-                    }
+                    onChange={(e) => updateRow(eventKey, channel, { severity: e.target.value })}
                   >
                     {SEVERITIES.map((severity) => (
                       <option key={severity} value={severity}>

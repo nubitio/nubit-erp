@@ -58,7 +58,10 @@ export const LoginPage = () => {
               <br />
               en un solo lugar.
             </h1>
-            <p>Vende, factura a SUNAT, controla stock, compras, finanzas y planilla en un solo sistema.</p>
+            <p>
+              Vende, factura a SUNAT, controla stock, compras, finanzas y planilla en un solo
+              sistema.
+            </p>
           </div>
 
           <ul className="brand-features">

@@ -26,18 +26,22 @@ describe('formatPosQuantity', () => {
 
 describe('isCreditPaymentMethod', () => {
   it('recognizes commercial credit without confusing card credit', () => {
-    expect(isCreditPaymentMethod({
-      id: 27,
-      name: 'Financiamiento cliente',
-      isActive: true,
-      settlementBehavior: 'RECEIVABLE',
-    })).toBe(true);
-    expect(isCreditPaymentMethod({
-      id: 2,
-      name: 'Credito',
-      isActive: true,
-      settlementBehavior: 'COLLECTED',
-    })).toBe(false);
+    expect(
+      isCreditPaymentMethod({
+        id: 27,
+        name: 'Financiamiento cliente',
+        isActive: true,
+        settlementBehavior: 'RECEIVABLE',
+      }),
+    ).toBe(true);
+    expect(
+      isCreditPaymentMethod({
+        id: 2,
+        name: 'Credito',
+        isActive: true,
+        settlementBehavior: 'COLLECTED',
+      }),
+    ).toBe(false);
     expect(isCreditPaymentMethod({ id: 42, name: 'Crédito', isActive: true })).toBe(true);
     expect(isCreditPaymentMethod({ id: 4, name: 'Tarjeta crédito', isActive: true })).toBe(false);
   });

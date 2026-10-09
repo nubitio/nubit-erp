@@ -31,17 +31,33 @@ function ErrorFallback({ error, onReload }: { error: Error | null; onReload: () 
       fill
       title={t('common.error')}
       description="Ocurrió un error inesperado. Por favor, recarga la página para continuar."
-      action={(
+      action={
         <>
           <Button variant="primary" onClick={onReload}>
             {t('common.retry')}
           </Button>
           {import.meta.env.DEV && error && (
             <details style={{ textAlign: 'left', maxWidth: '40rem', marginTop: 'var(--space-3)' }}>
-              <summary style={{ cursor: 'pointer', fontWeight: 'var(--font-weight-semibold)', color: 'var(--text-secondary)', fontSize: 'var(--font-size-xs)' }}>
+              <summary
+                style={{
+                  cursor: 'pointer',
+                  fontWeight: 'var(--font-weight-semibold)',
+                  color: 'var(--text-secondary)',
+                  fontSize: 'var(--font-size-xs)',
+                }}
+              >
                 Detalles del error (dev)
               </summary>
-              <pre style={{ margin: 'var(--space-2) 0 0', overflow: 'auto', fontSize: 'var(--font-size-xs)', color: 'var(--error-color)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              <pre
+                style={{
+                  margin: 'var(--space-2) 0 0',
+                  overflow: 'auto',
+                  fontSize: 'var(--font-size-xs)',
+                  color: 'var(--error-color)',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                }}
+              >
                 {error.toString()}
                 {'\n\n'}
                 {error.stack}
@@ -49,7 +65,7 @@ function ErrorFallback({ error, onReload }: { error: Error | null; onReload: () 
             </details>
           )}
         </>
-      )}
+      }
     />
   );
 }

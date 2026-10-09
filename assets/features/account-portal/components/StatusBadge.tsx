@@ -22,8 +22,8 @@ export function StatusBadge({ value, kind = 'status' }: StatusBadgeProps) {
   const normalized = value.toLowerCase();
   const variant =
     kind === 'plan'
-      ? PLAN_CLASS[normalized] ?? 'ap-badge--plan-free'
-      : STATUS_CLASS[normalized] ?? 'ap-badge--status-neutral';
+      ? (PLAN_CLASS[normalized] ?? 'ap-badge--plan-free')
+      : (STATUS_CLASS[normalized] ?? 'ap-badge--status-neutral');
 
   return <span className={`ap-badge ${variant}`}>{value}</span>;
 }

@@ -4,7 +4,10 @@ import type { AppRouteDefinition } from '@app/router/types';
 import { settingsRoutes } from '@features/settings';
 
 const DashboardPage = lazyNamed(() => import('./DashboardPage'), 'DashboardPage');
-const ExcelImportPage = lazyNamed(() => import('@features/setup/ExcelImportPage'), 'ExcelImportPage');
+const ExcelImportPage = lazyNamed(
+  () => import('@features/setup/ExcelImportPage'),
+  'ExcelImportPage',
+);
 const ExchangeRatePage = lazyNamed(() => import('./ExchangeRatePage'), 'ExchangeRatePage');
 const CompanyPage = lazyNamed(() => import('./CompanyPage'), 'CompanyPage');
 const PleExportPage = lazyNamed(() => import('./PleExportPage'), 'PleExportPage');

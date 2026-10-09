@@ -103,7 +103,9 @@
   border: 1px solid color-mix(in srgb, var(--border-color) 92%, var(--base-text-color));
   border-radius: var(--radius-sm, 6px);
   box-sizing: border-box;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .cash-close__input--num {

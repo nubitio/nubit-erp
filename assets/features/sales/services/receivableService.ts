@@ -67,8 +67,6 @@ export async function listOpenInvoices(
     paidTotal: String(raw['paidTotal'] ?? '0'),
     balanceDue: String(raw['balanceDue'] ?? '0'),
     status: String(raw['status'] ?? ''),
-    payments: Array.isArray(raw['payments'])
-      ? (raw['payments'] as ReceivableInvoicePayment[])
-      : [],
+    payments: Array.isArray(raw['payments']) ? (raw['payments'] as ReceivableInvoicePayment[]) : [],
   }));
 }

@@ -30,7 +30,10 @@ export function useAreaTabs(tables: RestaurantTableMock[]): UseAreaTabsResult {
     [areas],
   );
 
-  const hasMultipleFloors = useMemo(() => new Set(sortedAreas.map((a) => a.floor)).size > 1, [sortedAreas]);
+  const hasMultipleFloors = useMemo(
+    () => new Set(sortedAreas.map((a) => a.floor)).size > 1,
+    [sortedAreas],
+  );
 
   const tabs = useMemo<AreaTab[]>(
     () =>
@@ -41,9 +44,10 @@ export function useAreaTabs(tables: RestaurantTableMock[]): UseAreaTabsResult {
     [sortedAreas, hasMultipleFloors],
   );
 
-  const activeAreaId = manualAreaId && tabs.some((t) => t.area.id === manualAreaId)
-    ? manualAreaId
-    : (tabs[0]?.area.id ?? null);
+  const activeAreaId =
+    manualAreaId && tabs.some((t) => t.area.id === manualAreaId)
+      ? manualAreaId
+      : (tabs[0]?.area.id ?? null);
 
   const tablesInActiveArea = useMemo(
     () => (activeAreaId ? tables.filter((t) => t.areaId === activeAreaId) : []),

@@ -34,7 +34,9 @@ const DAY_ABBREV: Record<string, string> = {
 
 function voucherTypeLabel(type: string): string {
   const normalized = type.trim();
-  return VOUCHER_TYPE_LABELS[normalized] ?? VOUCHER_TYPE_LABELS[normalized.toUpperCase()] ?? normalized;
+  return (
+    VOUCHER_TYPE_LABELS[normalized] ?? VOUCHER_TYPE_LABELS[normalized.toUpperCase()] ?? normalized
+  );
 }
 
 function abbreviateDayLabel(label: string): string {
@@ -52,7 +54,9 @@ function abbreviateDayLabel(label: string): string {
  * previous version matched by day number across months and could emit duplicate
  * labels, which broke the chart's category axis).
  */
-export function pickLast7SalesDays(salesByDay: SalesByDay[]): Array<{ label: string; total: number }> {
+export function pickLast7SalesDays(
+  salesByDay: SalesByDay[],
+): Array<{ label: string; total: number }> {
   const today = DateTime.now().setZone('America/Lima');
 
   return Array.from({ length: 7 }, (_, i) => {

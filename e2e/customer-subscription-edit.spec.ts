@@ -5,23 +5,35 @@ import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 type HydraRecord = { '@id'?: string; id?: string };
 type HydraCollection<T extends HydraRecord> = { 'hydra:member'?: T[]; member?: T[] } | T[];
 
-async function api<T>(page: Page, path: string, init?: RequestInit): Promise<{ body: T; status: number }> {
-  return page.evaluate(async ({ init, path }) => {
-    const storedToken = localStorage.getItem('auth_token');
-    const token = storedToken ? (JSON.parse(storedToken) as string) : null;
-    const response = await fetch(path, {
-      ...init,
-      headers: {
-        Accept: 'application/ld+json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(init?.body ? { 'Content-Type': init?.method === 'PATCH' ? 'application/merge-patch+json' : 'application/ld+json' } : {}),
-        ...init?.headers,
-      },
-    });
-    const body = (await response.json()) as T;
+async function api<T>(
+  page: Page,
+  path: string,
+  init?: RequestInit,
+): Promise<{ body: T; status: number }> {
+  return page.evaluate(
+    async ({ init, path }) => {
+      const storedToken = localStorage.getItem('auth_token');
+      const token = storedToken ? (JSON.parse(storedToken) as string) : null;
+      const response = await fetch(path, {
+        ...init,
+        headers: {
+          Accept: 'application/ld+json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(init?.body
+            ? {
+                'Content-Type':
+                  init?.method === 'PATCH' ? 'application/merge-patch+json' : 'application/ld+json',
+              }
+            : {}),
+          ...init?.headers,
+        },
+      });
+      const body = (await response.json()) as T;
 
-    return { body, status: response.status };
-  }, { init, path });
+      return { body, status: response.status };
+    },
+    { init, path },
+  );
 }
 
 function members<T extends HydraRecord>(payload: HydraCollection<T>): T[] {
@@ -51,7 +63,10 @@ test('editar una suscripción no devuelve 500', async ({ page }) => {
   });
   expect(branchSelection.status).toBe(200);
   if (branchSelection.body.token) {
-    await page.evaluate((token) => localStorage.setItem('auth_token', JSON.stringify(token)), branchSelection.body.token);
+    await page.evaluate(
+      (token) => localStorage.setItem('auth_token', JSON.stringify(token)),
+      branchSelection.body.token,
+    );
   }
 
   const [products, warehouses] = await Promise.all([

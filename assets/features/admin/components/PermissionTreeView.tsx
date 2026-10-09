@@ -138,7 +138,12 @@ export const PermissionTreeView = forwardRef<PermissionTreeHandle>((_props, ref)
         const someChildrenSelected = selectedChildrenCount > 0 && !allChildrenSelected;
 
         return (
-          <div key={menu.id} className="permission-tree__item" role="treeitem" aria-expanded={expanded}>
+          <div
+            key={menu.id}
+            className="permission-tree__item"
+            role="treeitem"
+            aria-expanded={expanded}
+          >
             <div className="permission-tree__row">
               {hasChildren ? (
                 <button

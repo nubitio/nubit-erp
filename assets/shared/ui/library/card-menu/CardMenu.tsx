@@ -11,5 +11,10 @@ interface CardMenuProps {
 }
 
 export const CardMenu = ({ items, visible = true }: CardMenuProps) => {
-  return <ContextMenu visible={visible} items={items.map(({ text, onClick }) => ({ label: text, onClick }))} />;
+  return (
+    <ContextMenu
+      visible={visible}
+      items={items.map(({ text, onClick }) => ({ label: text, onClick }))}
+    />
+  );
 };

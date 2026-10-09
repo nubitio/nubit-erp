@@ -16,10 +16,7 @@ import toast from '@shared/lib/SharedUtils';
 import { useEvents } from '@nubitio/core';
 import { usePriceListObservers } from './model/usePriceListObservers';
 import { priceEvents } from '@app/domainEvents';
-import {
-  PriceEditorGrid,
-  type PriceEditorGridHandle,
-} from './components/PriceEditorGrid';
+import { PriceEditorGrid, type PriceEditorGridHandle } from './components/PriceEditorGrid';
 import { customerApiUrl } from '@features/customer/model';
 import { httpClient } from '@shared/api/HttpClient';
 
@@ -48,7 +45,10 @@ export const PriceListPage = () => {
   const [pricesOpen, setPricesOpen] = useState(false);
   const [pricesTitle, setPricesTitle] = useState('Precios');
   const [assignmentOpen, setAssignmentOpen] = useState(false);
-  const [assignmentList, setAssignmentList] = useState<{ id: string | number; name: string } | null>(null);
+  const [assignmentList, setAssignmentList] = useState<{
+    id: string | number;
+    name: string;
+  } | null>(null);
   const [selectedCustomerIds, setSelectedCustomerIds] = useState<(string | number)[]>([]);
   const [savingAssignment, setSavingAssignment] = useState(false);
 
@@ -72,7 +72,10 @@ export const PriceListPage = () => {
               // Schedule the ADD after the dialog mounts so the ref is attached
               // and the observer can safely call setRows / showLoading on the child.
               setTimeout(() => {
-                emit(priceEvents.ADD, { title: 'Precios de ' + selectedRow.name, row: selectedRow });
+                emit(priceEvents.ADD, {
+                  title: 'Precios de ' + selectedRow.name,
+                  row: selectedRow,
+                });
               }, 0);
             },
           },
@@ -86,7 +89,10 @@ export const PriceListPage = () => {
                 toast('Debe seleccionar una tarifa', 'warning');
                 return;
               }
-              setAssignmentList({ id: String(selectedRow.id), name: String(selectedRow.name ?? '') });
+              setAssignmentList({
+                id: String(selectedRow.id),
+                name: String(selectedRow.name ?? ''),
+              });
               setSelectedCustomerIds([]);
               setAssignmentOpen(true);
             },
@@ -121,7 +127,10 @@ export const PriceListPage = () => {
     if (failed > 0) {
       toast(`Se asignaron ${updated} clientes; ${failed} no pudieron actualizarse`, 'warning');
     } else {
-      toast(`${updated} ${updated === 1 ? 'cliente asignado' : 'clientes asignados'} a ${assignmentList.name}`, 'success');
+      toast(
+        `${updated} ${updated === 1 ? 'cliente asignado' : 'clientes asignados'} a ${assignmentList.name}`,
+        'success',
+      );
     }
     setSavingAssignment(false);
     if (updated > 0) setAssignmentOpen(false);
@@ -148,7 +157,10 @@ export const PriceListPage = () => {
         onCancel={() => setAssignmentOpen(false)}
         onSave={() => void assignCustomers()}
       >
-        <p>Selecciona los clientes que usarán esta tarifa. La asignación reemplazará su tarifa actual.</p>
+        <p>
+          Selecciona los clientes que usarán esta tarifa. La asignación reemplazará su tarifa
+          actual.
+        </p>
         <DataGridView
           id="price-list-customer-assignment"
           title="Clientes"
@@ -166,7 +178,9 @@ export const PriceListPage = () => {
             setSelectedCustomerIds(
               (event.selectedRowsData ?? [])
                 .map((row) => row.id)
-                .filter((id): id is string | number => typeof id === 'string' || typeof id === 'number'),
+                .filter(
+                  (id): id is string | number => typeof id === 'string' || typeof id === 'number',
+                ),
             );
           }}
         />

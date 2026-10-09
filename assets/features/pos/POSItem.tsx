@@ -98,10 +98,10 @@ export function POSItem({
         ) : isOutOfStock ? (
           <div className="pos-product-card__out-pill">Sin stock</div>
         ) : (
-          tracksInventory && stockValue !== null && stockValue > 0 && (
-            <div className="pos-product-card__stock-corner">
-              {formatStockCount(stockValue)}
-            </div>
+          tracksInventory &&
+          stockValue !== null &&
+          stockValue > 0 && (
+            <div className="pos-product-card__stock-corner">{formatStockCount(stockValue)}</div>
           )
         )}
       </div>
@@ -109,9 +109,7 @@ export function POSItem({
       <div className="pos-product-card__title" title={item.name}>
         {item.name}
       </div>
-      {item.sku ? (
-        <div className="pos-product-card__sku">{item.sku}</div>
-      ) : null}
+      {item.sku ? <div className="pos-product-card__sku">{item.sku}</div> : null}
 
       {/* Price */}
       <div className="pos-product-card__price-row" onClick={(event) => event.stopPropagation()}>

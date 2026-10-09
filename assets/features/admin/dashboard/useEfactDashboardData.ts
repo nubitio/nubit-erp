@@ -1,7 +1,10 @@
 import { useMemo } from 'react';
 
 import { useDashboardOverview } from '../hooks/useDashboardOverview';
-import { mapEfactDashboardPayload, type EfactDeclarativeDashboardPayload } from './mapEfactDashboardPayload';
+import {
+  mapEfactDashboardPayload,
+  type EfactDeclarativeDashboardPayload,
+} from './mapEfactDashboardPayload';
 
 export type EfactDashboardResult = {
   /** The mapper always returns a fully-populated payload (zeros / empty arrays). */

@@ -135,7 +135,11 @@ export class LocalAgentNotAvailableError extends Error {
 
 async function agentFetch(path: string, init?: RequestInit): Promise<Response> {
   try {
-    return await exceptionalFetch(`${AGENT_BASE_URL}${path}`, { mode: 'cors', ...init }, 'sdk-required');
+    return await exceptionalFetch(
+      `${AGENT_BASE_URL}${path}`,
+      { mode: 'cors', ...init },
+      'sdk-required',
+    );
   } catch {
     throw new LocalAgentNotAvailableError();
   }

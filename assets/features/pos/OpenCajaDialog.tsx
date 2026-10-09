@@ -60,9 +60,7 @@ export function OpenCajaDialog({ cashRegisterId, onSuccess, onCancel }: Props) {
           boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
         }}
       >
-        <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 600 }}>
-          Abrir caja
-        </h3>
+        <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', fontWeight: 600 }}>Abrir caja</h3>
         <form onSubmit={(e) => void handleSubmit(e)}>
           <label
             style={{

@@ -70,7 +70,9 @@ export const financialReportsApi = {
     if (to) params.set('to', to);
     const query = params.toString();
     return httpRequestData(
-      httpClient.get<CashFlowResponse>(`${BASE}financial-reports/cash-flow${query ? `?${query}` : ''}`),
+      httpClient.get<CashFlowResponse>(
+        `${BASE}financial-reports/cash-flow${query ? `?${query}` : ''}`,
+      ),
     );
   },
   exportUrl(period?: string, from?: string, to?: string) {
