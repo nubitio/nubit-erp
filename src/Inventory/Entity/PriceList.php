@@ -22,6 +22,8 @@ use App\Inventory\State\PriceListProvider;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Nubit\Platform\Http\ApiResponse;
+use Symfony\Component\Serializer\Attribute\Context;
+use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 #[ORM\Entity(repositoryClass: PriceListRepository::class)]
 #[ORM\Table(name: 'price_list')]
@@ -78,6 +80,7 @@ class PriceList
      * NULL means "explicit overrides only" (original behaviour).
      */
     #[ApiProperty(description: 'price_list.multiplier.label')]
+    #[Context(denormalizationContext: [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true])]
     #[ORM\Column(type: 'decimal', precision: 8, scale: 4, nullable: true)]
     private ?string $multiplier = null;
 
@@ -103,9 +106,10 @@ class PriceList
         return $this->multiplier;
     }
 
-    public function setMultiplier(?string $multiplier): static
+    /** The form posts a JSON number; Doctrine decimals are strings. */
+    public function setMultiplier(string|int|float|null $multiplier): static
     {
-        $this->multiplier = $multiplier;
+        $this->multiplier = null === $multiplier || '' === $multiplier ? null : (string) $multiplier;
 
         return $this;
     }

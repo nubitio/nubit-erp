@@ -41,7 +41,7 @@ const baseResource = defineResource(roleEndpoints.list(), {
     description: 'Crea un rol y asigna permisos desde la barra de herramientas.',
     icon: 'shield',
   },
-  permissions: { canAdd: true, canEdit: true, canDelete: true },
+  permissions: { canEdit: true, canDelete: true },
 });
 
 export const RolePage = () => {

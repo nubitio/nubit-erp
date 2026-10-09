@@ -103,6 +103,18 @@ describe('login failures', () => {
   });
 });
 
+describe('cancelled requests', () => {
+  it('rethrows an AbortError without a toast or http-error event', async () => {
+    const abort = new DOMException('signal is aborted without reason', 'AbortError');
+    core.get.mockReturnValueOnce(Promise.reject(abort));
+
+    await expect(httpClient.get('/api/user-notifications')).rejects.toBe(abort);
+
+    expect(toasts()).toHaveLength(0);
+    expect(dispatchedEvents()).not.toContain(HTTP_ERROR_EVENT);
+  });
+});
+
 describe('expired sessions', () => {
   it('notifies session expiry and toasts on a non-login 401', async () => {
     const onExpired = vi.fn();

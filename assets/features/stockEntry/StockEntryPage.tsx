@@ -97,7 +97,6 @@ export const StockEntryPage = ({ mode }: StockEntryPageProps) => {
       },
     ],
     permissions: {
-      canAdd: true,
       canEdit: false, // stock entries are immutable
       canDelete: false,
     },

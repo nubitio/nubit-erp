@@ -26,7 +26,7 @@ const baseResource = defineResource(`${API}cash-registers`, {
     description: 'Crea una caja para operar el punto de venta.',
     icon: 'cash-register',
   },
-  permissions: { canAdd: true, canEdit: true, canDelete: true },
+  permissions: { canEdit: true, canDelete: true },
 });
 
 export const CashRegisterPage = () => {
