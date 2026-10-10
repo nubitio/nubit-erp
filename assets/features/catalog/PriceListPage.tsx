@@ -36,7 +36,7 @@ const baseResource = defineResource(priceListEndpoints.list(), {
     description: 'Crea una lista para ofrecer precios preferenciales a tus clientes.',
     icon: 'tag',
   },
-  permissions: { canAdd: true, canEdit: true, canDelete: true },
+  permissions: { canEdit: true, canDelete: true },
 });
 
 export const PriceListPage = () => {

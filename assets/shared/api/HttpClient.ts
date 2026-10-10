@@ -67,7 +67,21 @@ let tokenExpiredModalShown = false;
  * throw. Login is deliberately exempt: the login form renders the message
  * inline, and a rejected login is not an expired session.
  */
+function isAbortError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { name?: unknown }).name === 'AbortError'
+  );
+}
+
 function toAppError(error: unknown, url: string): unknown {
+  // A request cancelled on purpose (superseded poll, unmounted view) is not a
+  // failure the user needs to hear about; callers already ignore it.
+  if (isAbortError(error)) {
+    return error;
+  }
+
   const coreError = error as CoreHttpError;
   const status = coreError?.status;
 
