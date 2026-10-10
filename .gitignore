@@ -56,12 +56,6 @@ cookies.txt
 ###> phpstan/phpstan ###
 phpstan.neon
 ###< phpstan/phpstan ###
-
-###> pentatrion/vite-bundle ###
-/node_modules/
-/public/build/
-###< pentatrion/vite-bundle ###
-
 ###> compiled themes ###
 /public/themes/*.css
 /public/themes/*.css.map
@@ -83,3 +77,8 @@ phpstan.neon
 
 # graphify (knowledge graph tool) - removed, slow and low value for this project
 graphify-out/
+
+###> symfony/reprise ###
+/node_modules/
+/public/build/
+###< symfony/reprise ###

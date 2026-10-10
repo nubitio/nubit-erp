@@ -336,7 +336,7 @@ jobs:
         if: needs.changes.outputs.frontend == 'true'
         uses: actions/setup-node@v6
         with:
-          node-version: '20.19.0'
+          node-version: '24.14.1'
           cache: yarn
           cache-dependency-path: yarn.lock
 
@@ -423,7 +423,7 @@ jobs:
         if: needs.changes.outputs.e2e == 'true'
         uses: actions/setup-node@v6
         with:
-          node-version: '20.19.0'
+          node-version: '24.14.1'
           cache: yarn
           cache-dependency-path: yarn.lock
 

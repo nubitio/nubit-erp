@@ -12,7 +12,7 @@
     #}
     <title>Nubit ERP</title>
     {% block stylesheets %}
-        {{ vite_entry_link_tags('app') }}
+        {{ reprise_entry_link_tags('app') }}
     {% endblock %}
 </head>
 <body>
@@ -20,7 +20,7 @@
 <div id="root"></div>
 <div id="main-content"></div>
 {% block javascripts %}
-    {{ vite_entry_script_tags('app', { dependency: "react" }) }}
+    {{ reprise_entry_script_tags('app') }}
 {% endblock %}
 <script nonce="{{ csp_nonce() }}">
     window.app_version = '{{ setting('version') }}';

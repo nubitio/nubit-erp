@@ -13,7 +13,7 @@ return [
     Nelmio\CorsBundle\NelmioCorsBundle::class => ['all' => true],
     ApiPlatform\Symfony\Bundle\ApiPlatformBundle::class => ['all' => true],
     Oneup\FlysystemBundle\OneupFlysystemBundle::class => ['all' => true],
-    Pentatrion\ViteBundle\PentatrionViteBundle::class => ['all' => true],
+    Symfony\Reprise\RepriseBundle::class => ['all' => true],
     Symfony\AI\AiBundle\AiBundle::class => ['all' => true],
     Symfony\Bundle\MercureBundle\MercureBundle::class => ['all' => true],
     Nubit\AdminBundle\NubitAdminBundle::class => ['all' => true],

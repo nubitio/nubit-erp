@@ -118,7 +118,7 @@ The eFact platform consists of three interconnected products:
 | Framework | React 19 |
 | UI components | Native React components (in-repo Nubit CRUD engine: grids, forms) |
 | Styling | TailwindCSS 4 |
-| Build | Vite 6 + `vite-plugin-symfony` |
+| Build | Vite 7 + Symfony Reprise (`@symfony/reprise`) |
 | PWA | `vite-plugin-pwa` (Workbox service worker) |
 | Routing | React Router 6 |
 | Offline DB | Dexie 4 (IndexedDB wrapper) |

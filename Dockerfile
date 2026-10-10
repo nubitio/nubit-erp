@@ -7,6 +7,7 @@
 # -----------------------------------------------------------------------------
 ARG PHP_VERSION=8.5
 ARG FRANKENPHP_VERSION=1.10
+ARG NODE_VERSION=24.14.1
 # Semver tag of the build; promoted to ENV in the stg/prod stages and read by
 # Symfony as %env(APP_VERSION)% (surfaced in the UI: login + app footer).
 ARG APP_VERSION=dev
@@ -96,7 +97,7 @@ ENTRYPOINT ["/entrypoint.sh"]
 # -----------------------------------------------------------------------------
 # Frontend builder stage
 # -----------------------------------------------------------------------------
-FROM node:20-alpine AS frontend-builder
+FROM node:${NODE_VERSION}-alpine AS frontend-builder
 
 WORKDIR /app
 

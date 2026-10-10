@@ -1,23 +1,14 @@
 import { fileURLToPath, URL } from 'node:url';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { defineConfig } from 'vite';
-import symfonyPlugin from 'vite-plugin-symfony';
+import symfonyPlugin from '@symfony/reprise/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 import react from '@vitejs/plugin-react';
 
-// VITE_DEV_SERVER_HOSTNAME allows overriding the hostname that Symfony uses
-// when generating <script src="http://<hostname>:5173/..."> tags.
-//
-// - Default: 'localhost'  → works for the developer's browser (host machine)
-// - Set to 'host.docker.internal' when running Playwright from inside Docker,
-//   because inside a container 'localhost' resolves to the container itself,
-//   not the host. The port 5173 must be mapped in docker-compose (5173:5173).
-//
-// Usage: VITE_DEV_SERVER_HOSTNAME=host.docker.internal npm run dev
-const viteDevServerHostname = process.env.VITE_DEV_SERVER_HOSTNAME ?? 'localhost';
 // Host-visible origin for Symfony script tags. Defaults to 5174 so efact does not
 // collide with other local Vite apps that commonly bind localhost:5173.
+// Container-based browsers can use VITE_DEV_SERVER_ORIGIN=http://host.docker.internal:5174.
 const viteDevServerOrigin = process.env.VITE_DEV_SERVER_ORIGIN ?? 'http://localhost:5174';
 
 const frontendAliases = {
@@ -64,12 +55,9 @@ export default defineConfig({
   plugins: [
     react(),
     symfonyPlugin({
-      // Advertise the host-mapped origin to Symfony (entrypoints.json).
-      // See: symfony-vite.pentatrion.com/guide/tips#docker
-      viteDevServerHostname,
-      originOverride: viteDevServerOrigin,
-      // Avoid sirv intercepting /build/@vite/* before Vite's own middleware.
-      servePublic: false,
+      outputPath: 'public/build',
+      publicPath: '/build/',
+      devServerOrigin: viteDevServerOrigin,
     }),
     VitePWA({
       outDir: 'public',
@@ -172,7 +160,7 @@ export default defineConfig({
     // vite-plugin-pwa injects some helper/root-level entries into Workbox's
     // additionalManifestEntries (which runs after manifestTransforms, so they
     // cannot be filtered there).
-    // In this Symfony + vite-plugin-symfony setup those URLs are not served at
+    // In this Symfony-served app those URLs are not served at
     // the paths Workbox precaches, so SW install fails with
     // bad-precaching-response. Strip them from the generated sw.js after build.
     {
