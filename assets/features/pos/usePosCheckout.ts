@@ -37,6 +37,7 @@ import { useCurrencySettings } from '@shared/hooks/useCurrencySettings';
 import { generateIdempotencyKey, submitSale } from './saleSubmitter';
 import { publicSaleCode } from './posPresentation';
 import { useQueryClient } from '@tanstack/react-query';
+import { runCriticalOperation, useAppUpdate } from '@offline/appUpdate';
 import { useScaleReady } from './useScaleReady';
 import { Setting, settings } from '@shared/settings';
 
@@ -94,6 +95,7 @@ export const usePosCheckout = ({
   onSaleCompleted,
 }: UsePosCheckoutParams) => {
   const queryClient = useQueryClient();
+  const appUpdate = useAppUpdate();
   // ── Draft-persistence helpers ────────────────────────────────────────────
   const storageKey = `pos_draft_${storeId || 'default'}`;
 
@@ -495,6 +497,8 @@ export const usePosCheckout = ({
   const changeAmount = totalCashChangeAmount(paymentLines, paymentMethods, payableTotal);
 
   const checkoutDisabled =
+    appUpdate.required ||
+    appUpdate.updating ||
     cart.length === 0 ||
     isProcessingSale ||
     !selectedWarehouseId ||
@@ -502,7 +506,7 @@ export const usePosCheckout = ({
     total <= 0 ||
     !paymentValidation.valid;
 
-  const handleCheckout = async () => {
+  const performCheckout = async () => {
     if (posCheckoutInFlight) {
       return;
     }
@@ -675,6 +679,14 @@ export const usePosCheckout = ({
     } finally {
       posCheckoutInFlight = false;
       setIsProcessingSale(false);
+    }
+  };
+
+  const handleCheckout = async () => {
+    try {
+      await runCriticalOperation(performCheckout);
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : 'No se pudo registrar la venta.');
     }
   };
 

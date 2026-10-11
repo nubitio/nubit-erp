@@ -144,7 +144,8 @@ export const sendApiRequest = async (config: ApiRequestConfig): Promise<ApiResul
     const errorMessage = parseErrorMessage(payload, `Error HTTP ${status}`);
     const metadata = parseErrorMetadata(payload);
 
-    if (status >= 500 || status === 429) {
+    // An obsolete client must update, not permanently fail queued sales.
+    if (status >= 500 || status === 429 || status === 426) {
       return { ok: false, status, errorMessage, ...metadata, recoverable: true };
     }
 

@@ -37,11 +37,13 @@ const pingBackend = async () => {
 };
 
 export const ConnectivityProvider = ({ children }: { children: React.ReactNode }) => {
-  // Start optimistically online and status 'checking' — navigator.onLine can be unreliable
-  // in headless/Docker environments. The initial ping will correct the state within 4 seconds.
-  const [browserOnline, setBrowserOnline] = useState<boolean>(true);
-  const [apiReachable, setApiReachable] = useState<boolean>(true);
-  const [status, setStatus] = useState<ConnectivityStatus>('checking');
+  // Avoid network-dependent bootstrap effects after an offline reload. A
+  // successful mount ping still overrides false navigator.onLine in Docker.
+  const [browserOnline, setBrowserOnline] = useState<boolean>(() => navigator.onLine);
+  const [apiReachable, setApiReachable] = useState<boolean>(() => navigator.onLine);
+  const [status, setStatus] = useState<ConnectivityStatus>(() =>
+    navigator.onLine ? 'checking' : 'offline',
+  );
   const [lastCheckedAt, setLastCheckedAt] = useState<string | null>(null);
 
   const pingNow = useCallback(async () => {

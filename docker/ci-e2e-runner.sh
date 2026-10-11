@@ -98,6 +98,12 @@ if [ -z "${E2E_USERNAME:-}" ] || [ -z "${E2E_PASSWORD:-}" ] || [ -z "${E2E_SALE_
   echo "E2E seed ready: username=${E2E_USERNAME} saleId=${E2E_SALE_ID}"
 fi
 
+# Allow focused runs against the same isolated, seeded stack.
+if [ "$#" -gt 0 ]; then
+  yarn test:e2e "$@"
+  exit 0
+fi
+
 # Release-critical business flows only — no visual/debug/smoke specs.
 yarn test:e2e \
   e2e/happy-path.spec.ts \
@@ -107,5 +113,6 @@ yarn test:e2e \
   e2e/auth-refresh-regression.spec.ts \
   e2e/cash-rounding.spec.ts \
   e2e/pos-credit-sale.spec.ts \
+  e2e/pos-offline.spec.ts \
   e2e/accounts-receivable.spec.ts \
   e2e/catalog-create-permissions.spec.ts

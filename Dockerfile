@@ -102,20 +102,19 @@ FROM node:${NODE_VERSION}-alpine AS frontend-builder
 WORKDIR /app
 
 # Copy package files and assets (needed for postinstall script)
-COPY --link package.json yarn.lock ./
+COPY --link package.json yarn.lock .yarnrc.yml ./
 COPY --link assets ./assets
 COPY --link scripts ./scripts
 
 # Create public/themes directory for theme compilation
 RUN mkdir -p public/themes
 
-# Install dependencies (Yarn 4 with Corepack)
-# Configure to use node_modules instead of PnP for compatibility with sass
+# Corepack uses the exact Yarn version declared in package.json's packageManager.
+# .yarnrc.yml selects node_modules for compatibility with Sass.
+# Refuse lockfile changes so Docker builds use the same dependency graph as CI.
 # Use --mode skip-build to skip lifecycle scripts (postinstall, etc)
 RUN corepack enable && \
-    yarn set version stable && \
-    yarn config set nodeLinker node-modules && \
-    yarn install --mode skip-build
+    yarn install --immutable --mode skip-build
 
 # Run theme build after dependencies are installed
 RUN yarn build:themes
@@ -124,6 +123,7 @@ RUN yarn build:themes
 COPY --link vite.config.js ./
 COPY --link tsconfig.json ./
 COPY --link postcss.config.mjs ./
+COPY --link config/app-update.json ./config/app-update.json
 
 # Build frontend assets
 RUN yarn build

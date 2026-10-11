@@ -8,6 +8,8 @@
 #
 #   make e2e-ci                 # full run, stack removed afterwards
 #   KEEP_STACK=1 make e2e-ci    # keep the stack up to inspect a failure
+#   bash scripts/ci/e2e-local.sh e2e/pos-offline.spec.ts  # focused specs
+#   E2E_SETUP_ONLY=1 KEEP_STACK=1 bash scripts/ci/e2e-local.sh  # prepare for debugging
 #   SKIP_BUILD=1 make e2e-ci    # reuse the last frontend build (only valid right
 #                               # after a run that built it: the dev Vite server
 #                               # overwrites public/build when it restarts)
@@ -131,11 +133,16 @@ docker compose exec -T --user www-data web php bin/console cache:clear --no-warm
 docker compose exec -T --user www-data web php bin/console cache:warmup --no-debug
 bash scripts/ci/wait-for-spa-host.sh
 
+if [[ "${E2E_SETUP_ONLY:-0}" == "1" ]]; then
+  step "E2E stack is ready (tests not started)"
+  exit 0
+fi
+
 step "Running Playwright e2e (same runner as CI)"
 docker compose --profile e2e run --rm --no-deps \
   -e CI -e E2E_USERNAME -e E2E_PASSWORD -e E2E_SALE_ID \
   --entrypoint "" \
   e2e \
-  sh /home/node/app/docker/ci-e2e-runner.sh
+  sh /home/node/app/docker/ci-e2e-runner.sh "$@"
 
 step "E2E passed"

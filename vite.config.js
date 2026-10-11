@@ -81,13 +81,10 @@ export default defineConfig({
         // Some vendor chunks can exceed Workbox's default precache limit (2 MiB).
         // Keep them precacheable to avoid failing CI image builds.
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-        // Without these, a new SW installs but stays "waiting" until every tab
-        // is closed — on a POS left open all shift, that never happens, so
-        // stale precached chunks coexist with a live app that expects the new
-        // deploy (mismatched React copies, broken hooks). Activate immediately
-        // and pair with the controllerchange reload in app.tsx so the swap
-        // always happens via a clean full reload, never mid-session.
-        skipWaiting: true,
+        // Keep the existing asset graph until the cashier accepts the update.
+        // appUpdate.ts sends SKIP_WAITING after checkout/sync are idle, then
+        // reloads on controllerchange to avoid mixing old and new chunks.
+        skipWaiting: false,
         clientsClaim: true,
         // Explicitly disable navigateFallback: the app shell is served by
         // Symfony/PHP (index.php → Twig) — there is no static /index.html.

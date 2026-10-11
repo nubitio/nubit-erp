@@ -5,6 +5,7 @@ import { offlineDb } from './db';
 import { nextRetryDelayMs, MAX_OUTBOX_ATTEMPTS } from './backoff';
 import { logSyncEvent } from './telemetry';
 import { sendApiRequest } from './api';
+import { getAppUpdateState, runCriticalOperation } from './appUpdate';
 import type {
   CreateOfflineSaleInput,
   LocalSale,
@@ -262,11 +263,13 @@ const processOutboxItem = async (item: OutboxItem) => {
 };
 
 export const processOutboxQueue = async () => {
+  const update = getAppUpdateState();
+  if (update.required || update.updating) return;
   if (activeSyncPromise) {
     return activeSyncPromise;
   }
 
-  activeSyncPromise = (async () => {
+  activeSyncPromise = runCriticalOperation(async () => {
     const nowIso = asIso(new Date());
     const queue = await offlineDb.outbox
       .where('status')
@@ -289,9 +292,14 @@ export const processOutboxQueue = async () => {
         });
       }
     }
-  })().finally(() => {
-    activeSyncPromise = null;
-  });
+  })
+    .catch((error: unknown) => {
+      const current = getAppUpdateState();
+      if (!current.required && !current.updating) throw error;
+    })
+    .finally(() => {
+      activeSyncPromise = null;
+    });
 
   return activeSyncPromise;
 };
