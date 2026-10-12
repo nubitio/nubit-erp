@@ -2,6 +2,15 @@ name: Build Image
 
 on:
   workflow_call:
+    inputs:
+      ref:
+        description: Exact source commit to build
+        type: string
+        default: ''
+      version:
+        description: SemVer release tag
+        type: string
+        default: ''
     outputs:
       image_ref:
         description: Immutable image reference (ghcr.io/org/repo@sha256:...)
@@ -33,14 +42,21 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 1
+          ref: ${{ inputs.ref || github.sha }}
 
       - name: Resolve app version
         id: appver
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ "${{ github.ref_type }}" = "tag" ]; then
-            VERSION="${{ github.ref_name }}"
+          if [ -n "$RELEASE_VERSION" ]; then
+            VERSION="$RELEASE_VERSION"
+          elif [ "$REF_TYPE" = "tag" ]; then
+            VERSION="$REF_NAME"
           else
-            VERSION="$(echo '${{ github.sha }}' | cut -c1-7)"
+            VERSION="$(git rev-parse --short=7 HEAD)"
           fi
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           echo "App version: ${VERSION}" >> "$GITHUB_STEP_SUMMARY"
@@ -68,7 +84,8 @@ jobs:
           tags: |
             type=ref,event=tag
             type=sha,prefix=sha-
-            type=raw,value=main,enable=${{ github.ref_name == 'main' }}
+            type=raw,value=${{ inputs.version }},enable=${{ inputs.version != '' }}
+            type=raw,value=main,enable=${{ github.ref_name == 'main' && inputs.version == '' }}
 
       - name: Build and push (Blacksmith)
         id: build_bs

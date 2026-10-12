@@ -80,5 +80,6 @@ graphify-out/
 
 ###> symfony/reprise ###
 /node_modules/
+/scripts/release/node_modules/
 /public/build/
 ###< symfony/reprise ###

@@ -3,18 +3,48 @@ name: Rollback production
 on:
   workflow_dispatch:
     inputs:
+      release_tag:
+        description: Last known-good release (v1.2.3); provide this OR image_ref
+        required: false
+        type: string
       image_ref:
         description: Last known-good immutable image digest (ghcr.io/...@sha256:...)
-        required: true
+        required: false
         type: string
 
 permissions:
   contents: read
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require exactly one rollback target
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          IMAGE_REF: ${{ inputs.image_ref }}
+        run: |
+          if { [ -z "$RELEASE_TAG" ] && [ -z "$IMAGE_REF" ]; } || \
+             { [ -n "$RELEASE_TAG" ] && [ -n "$IMAGE_REF" ]; }; then
+            echo 'Provide exactly one of release_tag or image_ref' >&2
+            exit 1
+          fi
+
+  resolve:
+    needs: validate
+    if: inputs.release_tag != ''
+    uses: ./.github/workflows/resolve-release.yml
+    with:
+      release_tag: ${{ inputs.release_tag }}
+    secrets: inherit
+
   rollback:
+    needs: [validate, resolve]
+    if: ${{ always() && needs.validate.result == 'success' && (needs.resolve.result == 'success' || needs.resolve.result == 'skipped') }}
     uses: ./.github/workflows/deploy.yml
     with:
       environment: prod
-      image_ref: ${{ inputs.image_ref }}
+      image_ref: ${{ needs.resolve.outputs.image_ref || inputs.image_ref }}
+      ref: ${{ needs.resolve.outputs.commit || github.sha }}
+      run_migrations: false
     secrets: inherit

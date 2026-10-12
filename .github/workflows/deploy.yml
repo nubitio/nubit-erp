@@ -11,6 +11,14 @@ on:
         description: Immutable image reference (ghcr.io/org/repo@sha256:...)
         required: true
         type: string
+      ref:
+        description: Source commit containing the matching Compose definition
+        type: string
+        default: ''
+      run_migrations:
+        description: Run forward migrations (disabled for rollback)
+        type: boolean
+        default: true
 permissions:
   contents: read
 
@@ -29,6 +37,12 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 1
+          ref: ${{ inputs.ref || github.sha }}
+
+      - name: Validate deployment configuration
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+        run: ': "${APP_URL:?APP_URL is required before changing the stack}"'
 
       - name: Validate immutable image reference
         env:
@@ -44,6 +58,7 @@ jobs:
           ENDPOINT_ID: ${{ secrets.PORTAINER_ENDPOINT_ID }}
           COMPOSE_FILE: docker-compose.prod.yml
           IMAGE: ${{ inputs.image_ref }}
+          RUN_MIGRATIONS: ${{ inputs.run_migrations && 'true' || 'false' }}
         run: |
           set -euo pipefail
           bash scripts/portainer-deploy.sh

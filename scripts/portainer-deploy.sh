@@ -13,6 +13,7 @@ set -euo pipefail
 #   SWARM_ID
 #   IMAGE
 #   DRY_RUN=1
+#   RUN_MIGRATIONS=false (application rollback only)
 # ============================================
 PORTAINER_URL="${PORTAINER_URL:-}"
 PORTAINER_TOKEN="${PORTAINER_TOKEN:-}"
@@ -23,6 +24,7 @@ COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.prod.yml}"
 SWARM_ID="${SWARM_ID:-}"
 IMAGE="${IMAGE:-}"
 DRY_RUN="${DRY_RUN:-0}"
+RUN_MIGRATIONS="${RUN_MIGRATIONS:-true}"
 
 if [[ -z "$PORTAINER_URL" || -z "$PORTAINER_TOKEN" ]]; then
   echo "Missing PORTAINER_URL or PORTAINER_TOKEN" >&2
@@ -50,6 +52,14 @@ if [[ -n "$IMAGE" ]]; then
   STACK_FILE_CONTENT=$(printf "%s" "$STACK_FILE_CONTENT" | sed "$sed_script")
 fi
 
+if [[ "$RUN_MIGRATIONS" == "false" ]]; then
+  if ! printf '%s' "$STACK_FILE_CONTENT" | grep -q "RUN_MIGRATIONS: 'true'"; then
+    echo "Compose does not support migration-free rollback" >&2
+    exit 1
+  fi
+  STACK_FILE_CONTENT=$(printf '%s' "$STACK_FILE_CONTENT" | sed "s/RUN_MIGRATIONS: 'true'/RUN_MIGRATIONS: 'false'/g")
+fi
+
 printf "%s" "$STACK_FILE_CONTENT" > "$STACK_FILE_TMP"
 STACK_FILE_SIZE=$(wc -c < "$STACK_FILE_TMP" | tr -d ' ')
 if [[ "$STACK_FILE_SIZE" == "0" ]]; then
@@ -62,7 +72,7 @@ if [[ "$DRY_RUN" == "1" ]]; then
   exit 0
 fi
 
-STACKS_JSON=$(curl -sS -H "x-api-key: $PORTAINER_TOKEN" \
+STACKS_JSON=$(curl --fail-with-body -sS -H "x-api-key: $PORTAINER_TOKEN" \
   "${PORTAINER_URL%/}/api/stacks")
 
 if ! printf "%s" "$STACKS_JSON" | jq -e . >/dev/null 2>&1; then
@@ -78,9 +88,9 @@ if [[ "$(printf "%s" "$STACKS_JSON" | jq -r 'type')" != "array" ]]; then
 fi
 
 if [[ -n "$STACK_ID" ]]; then
-  STACK_JSON=$(printf "%s" "$STACKS_JSON" | jq -c ".[] | select(.Id == ($STACK_ID|tonumber))")
+  STACK_JSON=$(printf "%s" "$STACKS_JSON" | jq -c --arg id "$STACK_ID" '.[] | select(.Id == ($id|tonumber))')
 else
-  STACK_JSON=$(printf "%s" "$STACKS_JSON" | jq -c ".[] | select(.Name == \"$STACK_NAME\")")
+  STACK_JSON=$(printf "%s" "$STACKS_JSON" | jq -c --arg name "$STACK_NAME" '.[] | select(.Name == $name)')
 fi
 
 if [[ -z "$STACK_JSON" ]]; then
@@ -137,7 +147,7 @@ RESP_HEADERS="/tmp/portainer_headers.txt"
 RESP_BODY="/tmp/portainer_body.txt"
 RESP_PAYLOAD="$PAYLOAD_FILE"
 
-curl --http1.1 -sS -D "$RESP_HEADERS" -o "$RESP_BODY" -X PUT \
+curl --fail-with-body --http1.1 -sS -D "$RESP_HEADERS" -o "$RESP_BODY" -X PUT \
   -H "x-api-key: $PORTAINER_TOKEN" \
   -H "Content-Type: application/json" \
   "${PORTAINER_URL%/}/api/stacks/${FOUND_ID}?endpointId=${ENDPOINT_TO_USE}" \

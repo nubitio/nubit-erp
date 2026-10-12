@@ -20,7 +20,8 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # A newer push must never interrupt a release/production deployment.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -378,6 +379,28 @@ jobs:
           name: frontend-coverage
           path: var/coverage/frontend
           retention-days: 7
+
+  deploy-tooling:
+    name: Deployment tooling checks
+    needs: changes
+    runs-on: ${{ needs.changes.outputs.runner_light }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - run: bash -n scripts/portainer-deploy.sh
+      - run: python3 scripts/ci/test-release-pipeline.py
+
+  release:
+    name: Release after quality gates
+    needs: [backend, frontend, e2e, deploy-tooling]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/release.yml
+    permissions:
+      contents: write
+      packages: write
+      issues: write
+      pull-requests: write
+    secrets: inherit
 
   e2e:
     name: End-to-End Workflows

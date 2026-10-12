@@ -1,0 +1,52 @@
+name: Resolve release artifact
+
+on:
+  workflow_call:
+    inputs:
+      release_tag:
+        description: Published stable SemVer release (v1.2.3)
+        required: true
+        type: string
+    outputs:
+      image_ref:
+        value: ${{ jobs.resolve.outputs.image_ref }}
+      commit:
+        value: ${{ jobs.resolve.outputs.commit }}
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      image_ref: ${{ steps.resolve.outputs.image_ref }}
+      commit: ${{ steps.resolve.outputs.commit }}
+    steps:
+      - name: Resolve verified immutable release manifest
+        id: resolve
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$RELEASE_TAG" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo 'Expected stable SemVer tag vMAJOR.MINOR.PATCH' >&2
+            exit 1
+          fi
+          gh api "repos/$GH_REPO/releases/tags/$RELEASE_TAG" \
+            | jq -e '.draft == false and .prerelease == false' >/dev/null
+          gh release download "$RELEASE_TAG" --pattern deployment.json
+          COMMIT=$(gh api "repos/$GH_REPO/commits/$RELEASE_TAG" --jq .sha)
+          IMAGE_NAME="ghcr.io/${GH_REPO,,}"
+          jq -e --arg tag "$RELEASE_TAG" --arg commit "$COMMIT" --arg image "$IMAGE_NAME" '
+            .schema_version == 1 and .tag == $tag and .commit == $commit and
+            (.commit | test("^[0-9a-f]{40}$")) and
+            (.image_ref | startswith($image + "@sha256:")) and
+            (.image_ref | ltrimstr($image + "@sha256:") | test("^[0-9a-f]{64}$"))
+          ' deployment.json >/dev/null
+          echo "image_ref=$(jq -r .image_ref deployment.json)" >> "$GITHUB_OUTPUT"
+          echo "commit=$COMMIT" >> "$GITHUB_OUTPUT"
+          echo "### Target release: $RELEASE_TAG" >> "$GITHUB_STEP_SUMMARY"
+          jq -r '.image_ref' deployment.json >> "$GITHUB_STEP_SUMMARY"

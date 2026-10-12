@@ -1,0 +1,76 @@
+name: SemVer Release
+
+on:
+  workflow_call:
+
+concurrency:
+  group: semver-release-main
+  cancel-in-progress: false
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      commit: ${{ steps.release.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24.14.1'
+      - name: Install locked release tooling
+        run: npm ci --prefix scripts/release --ignore-scripts
+      - name: Publish SemVer tag and GitHub Release
+        id: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/release/publish.mjs
+
+  build:
+    needs: version
+    if: needs.version.outputs.tag != ''
+    uses: ./.github/workflows/build-image.yml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      ref: ${{ needs.version.outputs.commit }}
+      version: ${{ needs.version.outputs.tag }}
+    secrets: inherit
+
+  manifest:
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Attach immutable deployment manifest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.version.outputs.tag }}
+          RELEASE_COMMIT: ${{ needs.version.outputs.commit }}
+          IMAGE_REF: ${{ needs.build.outputs.image_ref }}
+        run: |
+          jq -n --arg tag "$RELEASE_TAG" --arg commit "$RELEASE_COMMIT" \
+            --arg image_ref "$IMAGE_REF" \
+            '{schema_version: 1, tag: $tag, commit: $commit, image_ref: $image_ref}' \
+            > deployment.json
+          gh release upload "$RELEASE_TAG" deployment.json
+
+  deploy:
+    needs: [version, build, manifest]
+    uses: ./.github/workflows/deploy.yml
+    permissions:
+      contents: read
+    with:
+      environment: prod
+      image_ref: ${{ needs.build.outputs.image_ref }}
+      ref: ${{ needs.version.outputs.commit }}
+    secrets: inherit
