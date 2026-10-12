@@ -84,3 +84,29 @@ reload once to load the new notification logic. Later deployments use the prompt
 The second test holds a real checkout request open, verifies update activation
 stays disabled, announces a required client through the version endpoint, and
 checks that the existing checkout completes while new checkouts are blocked.
+
+## Expired-token concurrency
+
+`auth-expiry-concurrency.spec.ts` exercises real cookie refresh in two tabs and
+six parallel API requests, as well as transient refresh failures and definitive
+session expiry. `assets/shared/api/authRecovery.ts` is the common recovery layer
+for direct SDK clients, provider-based CRUD/Hydra and the native outbox. The SDK's
+per-instance auto-refresh is disabled in `httpTransport`.
+
+- A single in-tab promise and the `nubit-auth-session` Web Lock coordinate
+  renewal, login, logout and branch selection. Browsers without Web Locks still
+  deduplicate within one tab.
+- Late 401 responses reuse the credential generation already published. Each
+  business request is retried at most once, keeping its body and idempotency key.
+- The private request epoch tag is removed before transmission; requests from a
+  replaced session are cancelled instead of replayed under another identity.
+- Renewal reads the current CSRF cookie. Cookie-mode responses clear legacy
+  Bearer storage; JSON-mode responses update the access token. An ordinary 403
+  permission denial does not trigger refresh.
+- Network/5xx failures remain recoverable and apply a short shared backoff.
+  Genuine invalid refresh credentials emit one expiry notice per auth session,
+  including fullscreen POS, and pause outbox sync without discarding sales.
+- `/api/auth/refresh` and `/api/auth/logout` use their own refresh credential,
+  independently of an expired access JWT. The global cookie CSRF protection
+  still applies; a fabricated Bearer cannot bypass it. Refresh consumption and
+  replacement issuance are committed together, or rolled back on failure.

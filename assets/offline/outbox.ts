@@ -6,6 +6,7 @@ import { nextRetryDelayMs, MAX_OUTBOX_ATTEMPTS } from './backoff';
 import { logSyncEvent } from './telemetry';
 import { sendApiRequest } from './api';
 import { getAppUpdateState, runCriticalOperation } from './appUpdate';
+import { getAuthSessionState } from '@shared/lib/authSessionState';
 import type {
   CreateOfflineSaleInput,
   LocalSale,
@@ -176,6 +177,18 @@ const processOutboxItem = async (item: OutboxItem) => {
     return;
   }
 
+  if (result.requiresLogin) {
+    await offlineDb.transaction('rw', offlineDb.outbox, offlineDb.sales, async () => {
+      await offlineDb.outbox.update(item.id, {
+        status: 'pending',
+        nextRetryAt: undefined,
+        lastError: 'Requiere iniciar sesión',
+      });
+      await updateSaleStatus(item.saleId, 'pending', { errorMessage: 'Requiere iniciar sesión' });
+    });
+    return;
+  }
+
   if (result.recoverable) {
     const attempts = item.attempts + 1;
 
@@ -263,6 +276,7 @@ const processOutboxItem = async (item: OutboxItem) => {
 };
 
 export const processOutboxQueue = async () => {
+  if (getAuthSessionState().active === false) return;
   const update = getAppUpdateState();
   if (update.required || update.updating) return;
   if (activeSyncPromise) {
@@ -277,6 +291,7 @@ export const processOutboxQueue = async () => {
       .sortBy('createdAt');
 
     for (const item of queue) {
+      if (getAuthSessionState().active === false) break;
       if (item.nextRetryAt && item.nextRetryAt > nowIso) {
         continue;
       }

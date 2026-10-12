@@ -18,7 +18,6 @@ import { UserMenuSection } from './components/UserMenuSection';
 import { NotificationPanel } from './components/NotificationPanel';
 import { BranchPicker } from './components/BranchPicker';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
-import { SessionExpiredDialog } from './components/SessionExpiredDialog';
 import { useFeature, useTenantRuntimeConfig } from '@shared/hooks';
 
 // Lazy-load the chat panel so it doesn't bloat the initial bundle
@@ -156,7 +155,6 @@ export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShe
         visible={showChangePassword}
         onClose={() => setShowChangePassword(false)}
       />
-      <SessionExpiredDialog />
     </>
   );
 };

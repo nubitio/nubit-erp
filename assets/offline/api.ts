@@ -76,25 +76,6 @@ const parseErrorMetadata = (payload: unknown) => {
   };
 };
 
-const refreshAuthToken = async (): Promise<boolean> => {
-  try {
-    const response = await exceptionalFetch(
-      '/api/auth/refresh',
-      {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Accept-Language': (typeof navigator !== 'undefined' && navigator.language) || 'es',
-        },
-      },
-      'offline-runtime',
-    );
-    return response.ok;
-  } catch {
-    return false;
-  }
-};
-
 export const sendApiRequest = async (config: ApiRequestConfig): Promise<ApiResult> => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -114,21 +95,7 @@ export const sendApiRequest = async (config: ApiRequestConfig): Promise<ApiResul
     );
 
   try {
-    let response = await makeRequest();
-
-    if (response.status === 401) {
-      const refreshed = await refreshAuthToken();
-      if (!refreshed) {
-        return {
-          ok: false,
-          status: 401,
-          errorMessage: 'Requiere iniciar sesión',
-          recoverable: false,
-          requiresLogin: true,
-        };
-      }
-      response = await makeRequest();
-    }
+    const response = await makeRequest();
 
     if (response.ok) {
       return {
@@ -163,6 +130,7 @@ export const sendApiRequest = async (config: ApiRequestConfig): Promise<ApiResul
   } catch (error) {
     return {
       ok: false,
+      status: error instanceof Error && 'status' in error ? Number(error.status) : undefined,
       recoverable: true,
       errorMessage: error instanceof Error ? error.message : 'Error de red',
     };

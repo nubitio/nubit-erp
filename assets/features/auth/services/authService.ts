@@ -13,6 +13,8 @@ class AuthService {
       .then((response) => {
         if (response.data.token) {
           StorageUtils.setItem('auth_token', response.data.token);
+        } else {
+          StorageUtils.removeItem('auth_token');
         }
 
         return response;

@@ -79,7 +79,7 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
     branchService.clearSelectedBranchName();
     setUser(undefined);
     // best-effort logout to clear cookie
-    authService.logout();
+    void authService.logout().catch(() => undefined);
   }, []);
 
   return <AuthContext.Provider value={{ user, signIn, signOut, loading }} {...props} />;

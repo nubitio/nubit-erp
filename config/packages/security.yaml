@@ -30,6 +30,12 @@ security:
             pattern: ^/api/account
             security: false
             stateless: false
+        auth_session:
+            # These controllers authenticate the refresh credential themselves.
+            # An expired access JWT must not prevent refresh or logout. The
+            # bundle's global cookie CSRF listener remains enabled.
+            pattern: ^/api/auth/(refresh|logout)$
+            security: false
         control_plane_api:
             pattern: ^/api/control-plane
             context: control_plane

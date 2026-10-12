@@ -10,7 +10,6 @@ import {
   type CoreRequestConfig,
 } from '@nubitio/core';
 import { handleSessionExpired } from '../lib/sessionExpiredEvent';
-import { StorageUtils } from '../lib/StorageUtils';
 import { httpTransport } from './httpTransport';
 
 export const HTTP_ERROR_EVENT = 'http-error';
@@ -44,10 +43,11 @@ const MESSAGE_BY_STATUS: Record<number, string> = {
 /**
  * The one `CoreHttpClient` behind every direct API call in the app.
  *
- * All transport concerns — Bearer token, CSRF, correlation id, the
- * refresh-on-401 loop, and Mercure hub discovery — live in `@nubitio/core`
- * and are configured once in `httpTransport`. This module only layers the
- * app's error UX on top, which is why it passes no `onError`/`onUnauthorized`
+ * Bearer token, CSRF, correlation id and Mercure hub discovery are configured
+ * once in `httpTransport`.
+ * `authRecovery` shares renewal/retry across all clients and native outbox
+ * requests. This module layers the app's error UX on top, which is why it
+ * passes no `onError`/`onUnauthorized`
  * to the client: the adapter needs the request URL to tell a failed login
  * apart from an expired session, and the client's callbacks do not receive it.
  */
@@ -55,12 +55,6 @@ const coreHttpClient = createCoreHttpClient({
   ...httpTransport,
   baseUrl: getCoreApiBaseUrl(),
 });
-
-/**
- * Session-expired is shown at most once per page load: several concurrent
- * requests can each fail their refresh, and one modal is enough.
- */
-let tokenExpiredModalShown = false;
 
 /**
  * Applies this app's error UX to a failed request and returns the error to
@@ -90,12 +84,16 @@ function toAppError(error: unknown, url: string): unknown {
   }
 
   if (status === HttpCode.UNAUTHORIZED) {
-    StorageUtils.removeItem('auth_token');
-    if (!tokenExpiredModalShown) {
-      tokenExpiredModalShown = true;
-      handleSessionExpired();
+    handleSessionExpired();
+    return error;
+  }
+
+  const refreshError = error as { authRefreshTransient?: boolean; notified?: boolean };
+  if (refreshError.authRefreshTransient) {
+    if (!refreshError.notified) {
+      refreshError.notified = true;
+      toast(error instanceof Error ? error.message : DEFAULT_MESSAGES.error, 'warning');
     }
-    toast(DEFAULT_MESSAGES.unauthorized, 'error');
     return error;
   }
 

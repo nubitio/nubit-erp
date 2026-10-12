@@ -22,6 +22,7 @@ import { AppProviders } from '../AppProviders';
 import { useTenantRuntimeConfig } from '@shared/hooks';
 import { TenantOnboardingGate } from '@features/onboarding/TenantOnboardingGate';
 import { installCsrfFetch } from '@shared/api/installCsrfFetch';
+import { SessionExpiredDialog } from './components/SessionExpiredDialog';
 
 installCsrfFetch();
 
@@ -86,6 +87,7 @@ export const EfactApp = () => {
   return (
     <AppProviders mercureHubUrl={mercureHubUrl}>
       <AppShell screenSizeClass={screenSizeClass} />
+      <SessionExpiredDialog />
     </AppProviders>
   );
 };

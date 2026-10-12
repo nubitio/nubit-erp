@@ -12,6 +12,7 @@ import { ErrorBoundary } from '@shared/components';
 import { installPosBootstrapCache } from '@offline/posBootstrap';
 import { startAppUpdates } from '@offline/appUpdate';
 import { AppUpdateNotice } from '@app/shell/components/AppUpdateNotice';
+import { installAuthRecovery } from '@shared/api/authRecovery';
 import './i18n';
 import './app.scss';
 
@@ -30,6 +31,7 @@ const queryClient = new QueryClient({
 installPosBootstrapCache(queryClient);
 
 window.addEventListener('load', () => {
+  installAuthRecovery();
   startAppUpdates();
 
   const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);

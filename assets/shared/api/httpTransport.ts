@@ -1,5 +1,6 @@
 import type { CoreHttpClientConfig } from '@nubitio/core';
 import { StorageUtils } from '@shared/lib/StorageUtils';
+import { AUTH_EPOCH_HEADER, getAuthSessionState } from '@shared/lib/authSessionState';
 
 const CSRF_COOKIE_NAME = 'CSRF_TOKEN';
 const CSRF_HEADER_NAME = 'X-CSRF-Token';
@@ -35,6 +36,8 @@ function readCookie(name: string): string | undefined {
  * it explicitly (see `HttpClient.ts`).
  */
 export const httpTransport: CoreHttpClientConfig = {
+  // One shared fetch recovery layer coordinates all SDK instances and outbox.
+  autoRefresh: false,
   refreshPath: 'auth/refresh',
   loginPath: 'auth/login',
 
@@ -44,7 +47,10 @@ export const httpTransport: CoreHttpClientConfig = {
    */
   getAuthHeaders: (): Record<string, string> => {
     const token = StorageUtils.getItem('auth_token');
-    return typeof token === 'string' && token !== '' ? { Authorization: `Bearer ${token}` } : {};
+    return {
+      [AUTH_EPOCH_HEADER]: getAuthSessionState().epoch,
+      ...(typeof token === 'string' && token !== '' ? { Authorization: `Bearer ${token}` } : {}),
+    };
   },
 
   /**
