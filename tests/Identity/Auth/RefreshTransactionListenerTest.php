@@ -17,6 +17,7 @@ use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 final class RefreshTransactionListenerTest extends TestCase
 {
+    /** @param 'commit'|'rollBack' $outcome */
     #[DataProvider('statuses')]
     public function testRotationCommitsOnlyOnSuccess(int $status, string $outcome): void
     {
@@ -36,9 +37,12 @@ final class RefreshTransactionListenerTest extends TestCase
             HttpKernelInterface::MAIN_REQUEST,
         );
         (new RefreshTransactionListener($manager))($event);
-        static::assertSame($status, $event->getController()($request)->getStatusCode());
+        $response = $event->getController()($request);
+        static::assertInstanceOf(JsonResponse::class, $response);
+        static::assertSame($status, $response->getStatusCode());
     }
 
+    /** @return iterable<string, array{int, 'commit'|'rollBack'}> */
     public static function statuses(): iterable
     {
         yield 'renewed credentials' => [200, 'commit'];

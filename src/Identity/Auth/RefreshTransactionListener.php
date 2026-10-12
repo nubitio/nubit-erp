@@ -27,6 +27,7 @@ final readonly class RefreshTransactionListener
         ) {
             return;
         }
+        /** @var callable(Request): Response $controller */
         $controller = $event->getController();
         $event->setController(function (Request $request) use ($controller): Response {
             $connection = $this->entityManager->getConnection();

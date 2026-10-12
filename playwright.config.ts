@@ -98,6 +98,10 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
+        // Full Chromium's new headless mode honors the isolated HTTP origin
+        // allowlist used by the PWA and cross-tab Web Locks regressions.
+        // chromium-headless-shell leaves those origins insecure.
+        channel: 'chromium',
         // Launch args needed when running as root inside Docker
         launchOptions: {
           args: [

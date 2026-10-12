@@ -45,9 +45,12 @@ final class MinimumAppVersionListenerTest extends TestCase
             );
             (new MinimumAppVersionListener(new AppReleaseInfo($root)))($event);
             $response = $event->getController()();
+            static::assertInstanceOf(JsonResponse::class, $response);
             static::assertSame($expected, $response->getStatusCode());
             if ($expected === 426) {
-                static::assertStringContainsString('APP_UPDATE_REQUIRED', $response->getContent());
+                $content = $response->getContent();
+                static::assertIsString($content);
+                static::assertStringContainsString('APP_UPDATE_REQUIRED', $content);
             }
         } finally {
             unlink($root . '/config/app-update.json');
@@ -56,6 +59,7 @@ final class MinimumAppVersionListenerTest extends TestCase
         }
     }
 
+    /** @return iterable<string, array{string, string, ?string, bool, int}> */
     public static function requests(): iterable
     {
         yield 'obsolete browser' => ['/api/products/1', 'PATCH', '1', false, 426];
