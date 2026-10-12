@@ -22,9 +22,13 @@ class AuthService {
   }
 
   consumeImpersonationToken(token: string) {
-    return httpClient.post<{ ok: boolean; user?: DataRecord }>(API + 'auth/impersonate/consume', {
-      token,
-    });
+    // Authenticate this exchange with the explicit support credential rather
+    // than a possibly stale session already present on the tenant domain.
+    return httpClient.post<{ ok: boolean; user?: DataRecord }>(
+      API + 'auth/impersonate/consume',
+      { token },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
   }
 
   selectBranch(branchId: string) {

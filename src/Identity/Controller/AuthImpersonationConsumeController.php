@@ -7,6 +7,7 @@ namespace App\Identity\Controller;
 use App\Identity\Auth\UserProvider;
 use Firebase\JWT\ExpiredException;
 use Nubit\AdminBundle\Auth\CookieFactory;
+use Nubit\AdminBundle\Auth\CsrfTokenPolicy;
 use Nubit\AdminBundle\Auth\JWTAuthenticator;
 use Nubit\AdminBundle\Auth\JWTManagerInterface;
 use Nubit\AdminBundle\Auth\TokenClaimsProviderInterface;
@@ -88,6 +89,13 @@ final class AuthImpersonationConsumeController extends AbstractController
         $response->headers->setCookie($this->cookieFactory->createSecureCookie(
             JWTAuthenticator::AUTH_COOKIE,
             $token,
+            $expiresAt,
+        ));
+        // Branch selection and later writes use cookie authentication, just
+        // like a normal login, and need a readable double-submit CSRF token.
+        $response->headers->setCookie($this->cookieFactory->createCsrfCookie(
+            CsrfTokenPolicy::COOKIE_NAME,
+            CsrfTokenPolicy::generate(),
             $expiresAt,
         ));
 

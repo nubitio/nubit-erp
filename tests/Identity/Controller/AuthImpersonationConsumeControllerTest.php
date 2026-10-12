@@ -9,14 +9,19 @@ use App\Identity\Controller\AuthImpersonationConsumeController;
 use App\Identity\Entity\User;
 use Firebase\JWT\ExpiredException;
 use Nubit\AdminBundle\Auth\CookieFactory;
+use Nubit\AdminBundle\Auth\CsrfProtectionListener;
+use Nubit\AdminBundle\Auth\CsrfTokenPolicy;
 use Nubit\AdminBundle\Auth\JWTAuthenticator;
 use Nubit\AdminBundle\Auth\JWTManagerInterface;
 use Nubit\AdminBundle\Auth\TokenClaimsProviderInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\RequestEvent;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 final class AuthImpersonationConsumeControllerTest extends TestCase
@@ -197,5 +202,44 @@ final class AuthImpersonationConsumeControllerTest extends TestCase
         self::assertSame(JWTAuthenticator::AUTH_COOKIE, $cookie->getName());
         self::assertSame('valid.jwt', $cookie->getValue());
         self::assertTrue($cookie->isHttpOnly());
+
+        $cookies = [];
+        foreach ($response->headers->getCookies() as $responseCookie) {
+            $cookies[$responseCookie->getName()] = $responseCookie;
+        }
+        static::assertArrayHasKey(CsrfTokenPolicy::COOKIE_NAME, $cookies);
+        $csrfCookie = $cookies[CsrfTokenPolicy::COOKIE_NAME];
+        $csrf = $csrfCookie->getValue();
+        static::assertIsString($csrf);
+        static::assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $csrf);
+        static::assertFalse($csrfCookie->isHttpOnly());
+        static::assertSame($cookie->getExpiresTime(), $csrfCookie->getExpiresTime());
+        static::assertSame($cookie->getDomain(), $csrfCookie->getDomain());
+        static::assertSame($cookie->isSecure(), $csrfCookie->isSecure());
+
+        // The next step of the bridge is a cookie-authenticated mutation.
+        $selectBranch = Request::create('https://tenant.example.com/api/auth/select-branch', 'POST', cookies: [
+            JWTAuthenticator::AUTH_COOKIE => $cookie->getValue(),
+            CsrfTokenPolicy::COOKIE_NAME => $csrf,
+        ]);
+        $selectBranch->headers->set(CsrfTokenPolicy::HEADER_NAME, $csrf);
+        $selectBranch->headers->set('Origin', 'https://tenant.example.com');
+        $event = new RequestEvent(
+            $this->createStub(HttpKernelInterface::class),
+            $selectBranch,
+            HttpKernelInterface::MAIN_REQUEST,
+        );
+        $protection = new CsrfProtectionListener(new NullLogger());
+        $protection($event);
+        static::assertFalse($event->hasResponse());
+
+        $selectBranch->headers->remove(CsrfTokenPolicy::HEADER_NAME);
+        $event = new RequestEvent(
+            $this->createStub(HttpKernelInterface::class),
+            $selectBranch,
+            HttpKernelInterface::MAIN_REQUEST,
+        );
+        $protection($event);
+        static::assertSame(Response::HTTP_FORBIDDEN, $event->getResponse()?->getStatusCode());
     }
 }
