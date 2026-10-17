@@ -106,12 +106,13 @@ final readonly class StatementRepository
                     CASE e.entry_type
                         WHEN 'credit_note' THEN 'Nota de crédito'
                         WHEN 'advance' THEN 'Anticipo recibido'
+                        WHEN 'charge_reversal' THEN 'Anulación de venta'
                         ELSE ''
                     END AS detail
                 FROM customer_account_entries e
                 LEFT JOIN sales s ON s.id = e.sale_id
                 WHERE e.customer_id = :customer
-                  AND e.entry_type IN ('payment', 'credit_note', 'advance')
+                  AND e.entry_type IN ('payment', 'credit_note', 'advance', 'charge_reversal')
                   AND e.occurred_on <= :date_to
                 ORDER BY e.id
                 SQL,

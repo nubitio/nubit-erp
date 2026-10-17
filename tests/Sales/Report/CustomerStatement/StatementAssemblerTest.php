@@ -72,6 +72,31 @@ final class StatementAssemblerTest extends TestCase
         self::assertSame('30.00', $statement->closingBalance);
     }
 
+    public function testChargeReversalAppearsAsAbonoAndCancelsVoidedCreditSale(): void
+    {
+        $statement = $this->assembler->assemble(
+            1,
+            'ACME',
+            '',
+            '2026-05-01',
+            '2026-05-31',
+            charges: [$this->charge('voided-sale', '2026-05-10', 'B001-7', '100.00', '0.00')],
+            payments: [[
+                'date' => '2026-05-12',
+                'document' => 'B001-7',
+                'amount' => '100.00',
+                'detail' => 'Anulación de venta',
+            ]],
+        );
+
+        self::assertSame('100.00', $statement->totalCharges);
+        self::assertSame('100.00', $statement->totalPayments);
+        self::assertSame('0.00', $statement->closingBalance);
+        self::assertSame('Abono', $statement->lines[1]->type);
+        self::assertSame('Anulación de venta', $statement->lines[1]->detail);
+        self::assertSame('0.00', $statement->lines[1]->balance);
+    }
+
     public function testAgingBucketsOutstandingBalanceByDaysOpenAtCutoff(): void
     {
         $statement = $this->assembler->assemble(
