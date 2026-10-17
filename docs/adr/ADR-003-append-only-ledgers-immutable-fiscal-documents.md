@@ -23,7 +23,7 @@ The existing schema allows `UPDATE` on movement rows and in-place mutation of ta
 - Corrections are new rows with a negative quantity and a reference to the original movement (e.g., `corrects_movement_id`).
 - Doctrine entities for these tables expose no setters that would allow post-persist mutation; the repository interface has only `append(Movement $m): void`.
   **Verified true for `Inventory\ApiResource\StockMovement`** (no setters, immutable after construction).
-  **`cash_movements` (plural) — verified append-only in practice, but not via this mechanism.** There is no ORM entity for `cash_movements` at all: `CashMovementWriteProcessor` and `SalesWriteGateway::writeCashSaleMovement()` both write to it with a raw DBAL `INSERT` only (`CashMovementWriteProcessor`'s own comment: "bypassing ORM and the legacy cash_movement table"). No `UPDATE`/`DELETE` against `cash_movements` was found in application code (one test-teardown `DELETE` in `E2eTestSeedService` is the only exception, and it's cleanup, not production behavior). So the invariant holds — just enforced structurally (no code path exists to mutate a row) rather than by an entity with no setters, since there's no entity in the loop.
+   **`cash_movements` (plural) — application-path append-only, not guaranteed by current migration code.** There is no ORM entity mapped to this v2 table: `CashMovementWriteProcessor` and `SalesWriteGateway::writeCashSaleMovement()` append via DBAL; reads use DBAL providers and `CashMovementHydrator`. Production application code has no update/delete workflow. Test seed/reset code does delete rows for cleanup. The trigger migration `Version20260904140000_cash_movements_immutability_guard` is now a no-op, as is `Version20260906030000_retire_cash_movements_triggers`; neither guarantees that triggers exist or removes triggers left on databases that applied the earlier trigger version. Thus append-only is an application convention, not a universal database constraint. The legacy singular `cash_movement` table/class is distinct; see ADR-004.
   **Correction, 2026-08-19:** an earlier pass of this note confused `cash_movements` (the ledger above) with `CashRegister\Entity\CashMovement`, a same-ish-named but different class mapped to the legacy **singular** `cash_movement` table — a pre-v2 table that is not `cash_movements` and is not what this ADR describes. That class does have public setters, but it's dead for writes (see ADR-004's amendment) and was never the append-only ledger to begin with. Two tables, `cash_movement` and `cash_movements`, one letter apart — worth double-checking which one is meant before trusting either name at a glance.
 
 ### Immutable fiscal documents
@@ -37,7 +37,7 @@ Tax documents (`tax_documents` table and related) are **immutable after creation
 
 ### Projection / read-model tables
 
-Reporting aggregates (stock on hand, cash totals, sales summaries) live in separate read-model tables inside the `Reporting` context. They are updated by event subscribers consuming domain events from `Inventory`, `CashRegister`, and `Sales`. These tables **may** be rebuilt from the ledger at any time — they are not source-of-truth.
+Reporting aggregates and operational projections (including stock on hand and sales summaries) may live separately from source ledgers and are not themselves the source of truth. Do not assume every cash/reporting projection is currently event-subscriber-driven or rebuildable: verify its owning implementation and rebuild path before relying on that property.
 
 ### Indexing
 

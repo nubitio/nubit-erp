@@ -1,7 +1,7 @@
 # PRD — eFact SaaS POS + Facturacion Electronica
 
-**Version:** 2026-05-14
-**Estado:** activo
+**Version:** 2026-05-14 (revisión de estado: 2026-10-16)
+**Estado:** PRD operacional; el inventario de implementación se contrasta con el código de este repositorio. Las superficies Android y marketing pertenecen a repositorios separados.
 **Producto:** eFact POS, facturacion electronica SUNAT y control plane SaaS
 **Mercado objetivo:** Peru
 
@@ -9,7 +9,7 @@
 
 ## 1. Vision
 
-eFact es una plataforma SaaS multi-tenant para pequenas y medianas empresas peruanas que necesitan vender, controlar inventario, operar caja y emitir comprobantes electronicos SUNAT desde un mismo flujo operativo.
+eFact/Nubit es una plataforma SaaS multi-tenant para empresas peruanas. El núcleo actual combina ventas/POS, inventario, caja y facturación SUNAT; incluye también capacidades iniciales de contabilidad, planillas, activos fijos, conciliación bancaria, suscripciones recurrentes y verticales de farmacia/restaurante. La cobertura de esos módulos no equivale necesariamente a un ERP financiero integral ni a madurez funcional homogénea.
 
 El producto combina tres superficies:
 
@@ -60,19 +60,19 @@ El resultado es cola en caja, errores fiscales, stock poco confiable y alto cost
 
 ## 5. Estado Actual Del Producto
 
-### Backend `efact`
+### Backend `efact` (inventario revisado 2026-10-16)
 
 - PHP 8.5, Symfony 7.4, API Platform 4.1, Doctrine ORM/Migrations y FrankenPHP.
-- Arquitectura modular por bounded contexts de producto: `Sales`, `Billing`, `Inventory`, `Purchasing`, `CashRegister`, `Catalog`, `Contacts`, `Organization`, `Identity`, `ControlPlane`, `Reporting`, `Settings`, `Setup`, `Media`, `AI` y `Efact`.
+- Arquitectura modular por bounded contexts; el inventario canónico es `architecture/contexts.yaml`. Incluye, entre otros, `Sales`, `Billing`, `Inventory`, `Purchasing`, `CashRegister`, `Catalog`, `Contacts`, `Organization`, `Identity`, `ControlPlane`, `Reporting`, `Settings`, `Accounting`, `Payroll`, `FixedAssets`, `BankReconciliation`, `ExpenseReports`, `Restaurant` y `Pharmacy`.
 - Componentes reutilizables ya extraidos como dependencias Composer `nubitio/platform`, `nubitio/api-platform` y `nubitio/admin-bundle`; `src/Core` esta retirado y conserva solo su README historico.
 - MariaDB database-per-tenant y base separada de control plane.
 - Redis para cache/colas Messenger y Mercure para eventos realtime.
-- Observabilidad OpenTelemetry con instrumentacion Symfony, Doctrine y Monolog.
+- Observabilidad con OpenTelemetry y configuración de exportación OTLP; la cobertura de correlación de operaciones entre contextos sigue siendo una brecha por validar.
 - S3/Flysystem para adjuntos, CDR/XML, backups y media tenant.
 
 ### Frontend Web
 
-- React 19, TypeScript strict, Vite 6, TailwindCSS 4.
+- React 19, TypeScript strict, Vite 7, TailwindCSS 4.
 - PWA con Workbox, Dexie/IndexedDB para modo offline y outbox.
 - React Query para cache de servidor, cliente HTTP interno sobre `fetch` y Mercure SSE para realtime.
 - Modulos actuales: venta, facturacion, compras, inventario/movimientos, transferencias, clientes, caja, configuracion, admin, asistente AI y notificaciones.
@@ -81,7 +81,7 @@ El resultado es cola en caja, errores fiscales, stock poco confiable y alto cost
 
 - Kotlin, Jetpack Compose, Room, Retrofit, Koin, Coroutines/Flow.
 - Flujo POS equivalente: login, seleccion de sucursal, productos, carrito, cliente, venta, caja e impresion ESC/POS Bluetooth.
-- El estado del repo indica documentacion de slices y QA; debe tratarse como cliente de la API eFact, no como fuente de verdad fiscal.
+- El repositorio actual no contiene el cliente Android (`efact-app`); su estado funcional no puede inferirse ni certificarse desde este repo. Debe tratarse como cliente de la API eFact, no como fuente de verdad fiscal.
 
 ---
 
@@ -164,17 +164,27 @@ Mecanismos de seguridad fiscal:
 - Resumenes diarios de ventas/compras reconstruibles por comandos programados.
 - Notificaciones in-app, incluyendo alertas de stock generadas periodicamente.
 
-### 6.8 AI y MCP
+### 6.8 Asistente de IA
 
-- Endpoint `POST /api/assistant` con herramientas para ventas, productos, caja, documentacion, stock, SUNAT y clientes.
+- Endpoints `POST /api/assistant` y `/api/assistant/stream` con herramientas para operaciones ERP.
 - Indice de conocimiento reconstruido diariamente.
-- Endpoint MCP en `/mcp` via `symfony/mcp-bundle` para exponer herramientas a clientes compatibles.
+- xAI `grok-4.3` es el modelo predeterminado; OpenAI `gpt-4o-mini` se puede configurar como alternativa. No hay endpoint MCP: paquete, configuración y rutas MCP fueron retirados.
 
-### 6.9 Control Plane SaaS
+### 6.9 Módulos ERP adicionales (implementados parcialmente)
+
+- `Accounting`: eventos económicos, asientos, consultas de mayor/balance de comprobación y exportación PLE contable. Esto no acredita cobertura completa de PCGE, cierres ni estados financieros.
+- `Payroll`: empleados, cálculo/corridas de planilla y exportación PLAME.
+- `FixedAssets`: activos, depreciación y baja.
+- `BankReconciliation`: cuentas bancarias, importación de estados y matching/reconciliación.
+- `ExpenseReports` y flujos de CxC/CxP de Sales/Purchasing: capacidades implementadas con alcance propio; no asumir cobertura de tesorería integral.
+- `Billing/Recurring`: planes de servicio, suscripciones de clientes y generación programada/manual de cargos y ventas.
+- `Pharmacy` y `Restaurant`: bounded contexts presentes. Hospitality no está implementado como contexto en este repo.
+
+### 6.10 Control Plane SaaS
 
 - Registro self-service: `/register`, verificacion email y wizard `/register/new-tenant`.
 - Provisioning automatico de base tenant, migraciones, admin inicial, sucursal, almacen, series, catalogos y metodos de pago.
-- Admin `/admin` con Http Basic separado del tenant auth.
+- Admin `/admin` con login de formulario protegido por CSRF y limitación de intentos, separado del tenant auth.
 - Planes, cuotas y feature gates por plan/tenant.
 - Overrides temporales auditables y limpieza programada.
 - Webhooks PayPal/MercadoPago con semantica idempotente.
@@ -221,7 +231,7 @@ Mecanismos de seguridad fiscal:
 | Consultas externas | `/api/consults/ruc/{id}`, `/api/consults/dni/{id}` |
 | BI/exportes | `/api/bi/{type}`, `/api/sales/report` |
 | Setup | `GET /api/setup`, `POST /api/setup` |
-| AI/MCP | `POST /api/assistant`, `/mcp` |
+| AI | `POST /api/assistant`, `/api/assistant/stream` |
 | Publico | `/receipt/{id}`, `/receipt/{id}/ticket`, `/pdf`, `/xml`, `/cdr`, `/sale/consult` |
 | Webhooks | `/webhook/paypal`, `/webhook/mercadopago` |
 

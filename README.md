@@ -8,7 +8,7 @@ SaaS multi-tenant de mini ERP para Perú: POS, inventario, compras, tesorería, 
 
 - Docker + Docker Compose plugin (`docker compose`)
 - Git
-- (Opcional local) Node 20.19+ y Yarn 4.9.1
+- (Opcional local) Node compatible con `package.json` (`^22.18.0`, `^24.11.0` o `>=26`) y Yarn 4.9.1 vía Corepack
 
 ### 2) Levantar entorno local
 
@@ -43,7 +43,7 @@ make migrate
 - App: http://localhost:8080
 - Demo tenant: http://demo.localhost:8080
 - API docs: http://localhost:8080/api/docs
-- Vite dev server: http://localhost:5173
+- Vite dev server: http://localhost:5174 (puerto del host; Vite escucha en 5173 dentro del contenedor)
 - Health: http://localhost:8080/health
 
 ## Variables de entorno críticas
@@ -190,7 +190,7 @@ docker compose exec -T web php bin/console app:tenant:provision demo --baseline-
 
 ## Acceso al admin (control plane)
 
-El panel admin está bajo `/admin` y usa `http_basic` con provider `control_plane_admin_provider`.
+El panel admin está bajo `/admin` y usa `form_login` con CSRF, limitación de 5 intentos por minuto, remember-me y el provider `control_plane_admin_provider`.
 
 Crear usuario admin de control plane:
 
@@ -230,9 +230,7 @@ docker compose exec -T web php -d pcov.enabled=1 -d pcov.directory=/app/src ./ve
 make test-front
 ```
 
-Umbrales de cobertura (archivos objetivo: `posHelpers.ts`, `offline/api.ts`):
-- **85%** líneas / funciones / sentencias
-- **80%** ramas
+Vitest coverage se recopila para el conjunto de pruebas frontend (`assets/**/*.test.ts[x]`); actualmente no hay umbral frontend global configurado. CI aplica un piso de 40% de cobertura de líneas para PHP (`COVERAGE_MIN_PHP`).
 
 El type-check TypeScript (`tsc --noEmit`) se ejecuta en CI como paso previo a Vitest.
 
@@ -249,13 +247,17 @@ make e2e
 docker compose exec -T -e E2E_SEED_ENABLED=1 web php bin/console app:test:reset-e2e
 ```
 
-Specs E2E (solo flujos críticos — CI y `make e2e`):
+Specs E2E seleccionadas como gate de release en CI (el conjunto es intencionalmente menor que todos los specs del directorio):
 
 | Archivo | Descripción |
 |---|---|
 | `e2e/happy-path.spec.ts` | Venta completa: login → producto → caja → cliente → POS → venta módulo → movimiento → cierre. |
 | `e2e/golden-path-fiscal.spec.ts` | **Golden path fiscal:** login → caja → venta POS → factura → envío SUNAT (stub) → CDR → PDF. |
 | `e2e/purchases-stock.spec.ts` | Compras: login → módulo compras → `POST /api/purchases` → stock incrementado. |
+| `e2e/auth-refresh-regression.spec.ts`, `e2e/auth-expiry-concurrency.spec.ts` | Renovación de sesión y concurrencia de autenticación. |
+| `e2e/cash-rounding.spec.ts`, `e2e/pos-credit-sale.spec.ts`, `e2e/pos-offline.spec.ts` | Redondeo, venta al crédito y operación offline de POS. |
+| `e2e/accounts-receivable.spec.ts`, `e2e/catalog-create-permissions.spec.ts` | Cuentas por cobrar y control de permisos en catálogo. |
+| `e2e/nrus-voucher-type.spec.ts` | Tipo de comprobante NRUS. |
 
 Solo el golden path fiscal:
 
@@ -317,7 +319,7 @@ docker compose -f docker-compose.prod.yml up -d
 
 ## Stack IA
 
-El sistema integra un asistente in-app sobre la misma base Symfony. No hay MCP.
+El sistema integra un asistente in-app sobre la misma base Symfony. No hay endpoint MCP en este repositorio.
 
 | Componente | Detalle |
 |---|---|

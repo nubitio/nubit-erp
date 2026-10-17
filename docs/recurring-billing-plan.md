@@ -1,5 +1,7 @@
 # Recurring Billing Plan
 
+> **Estado al 2026-10-16:** este documento empezó como propuesta; la funcionalidad principal está implementada en `src/Billing/Recurring/` y `assets/features/subscriptions/`. El sistema tiene planes de suscripción, suscripciones y líneas, historial de ejecuciones, generación manual/programada de ventas y notificación de ventas recurrentes próximas. El acceso comercial usa entitlement `recurring_billing` y capability `billing.recurring`; la UI/API usan permisos `subscriptions.*`, no el flag/permission set propuesto más abajo. No tomar las secciones de diseño como descripción exacta del API/UI actual ni asumir que las preguntas diferidas siguen abiertas; contrastar con clases y rutas antes de modificar.
+
 ## Goal
 
 Add an optional recurring billing module for tenants that sell periodic services, such as hosting, support, maintenance, or subscriptions. The module should generate sales and electronic documents from customer subscriptions without relying on the existing sale duplication flow.

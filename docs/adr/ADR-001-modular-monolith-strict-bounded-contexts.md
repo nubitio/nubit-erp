@@ -32,20 +32,23 @@ Adopt a **modular monolith** with **strict bounded contexts**. Each context is a
 | `Billing` | Tax documents (boletas, facturas), SUNAT/Lycet submissions — immutable |
 | `CashRegister` | Sessions, cash movements, reconciliations |
 | `Reporting` | Read models and projections only — no writes to source-of-truth tables |
+| `Accounting` | Economic-event posting, journal entries, ledger/trial-balance queries and accounting exports; not yet a complete financial suite |
 | `Purchasing` | Purchase orders, supplier receipts, cost updates into Inventory |
-| `AccountsPayable` | Supplier invoices/bills and payment tracking — not double-entry accounting (see Non-Goals in `PRD.md`) |
+| `AccountsPayable` | Supplier invoices/bills and payment tracking |
 | `BankReconciliation` | Bank account statement import and matching against cash/sales movements |
 | `FixedAssets` | Owned equipment tracking and straight-line depreciation |
 | `Payroll` | Employees, monthly/gratificación/CTS/liquidación runs, PLAME export |
 | `ExpenseReports` | Employee expense submission and approval |
+| `Pharmacy` | Pharmacy product profiles, batches, prescriptions, expiry rules and sale reactions |
+| `Restaurant` | Areas/tables, open orders and kitchen lifecycle; order closure links an already-created sale by ID |
 | `Taxes` | Shared fiscal utilities (rates, rules) consumed by Billing/Payroll — thin, not a full domain context |
 | `Identity` | Authentication, users, roles/permissions (tenant-scoped) |
 | `Organization` | Company, branch, and organizational structure records |
 | `Setup` | Initial tenant setup wizard and seed orchestration |
-| `AI` | AI assistant, MCP tools (`SaleTools`, `ProductTools`, `CashRegisterTools`, `DocumentationTools`), RAG knowledge index |
+| `AI` | In-app assistant tools (`SaleTools`, `ProductTools`, `CashRegisterTools`, `DocumentationTools`), RAG knowledge index; no MCP endpoint |
 | `Core` / `Efact` | Cross-cutting framework glue (tenant connection, mercure, filesystem, validation) — deliberately outside the bounded-context rule below; see Amendment 2026-08-19 |
 
-*(This table was last reconciled against `src/` on 2026-08-19 — see `PRD.md` for feature-completeness detail on the newer modules, several of which predate their own documentation.)*
+*(This is a summary, not the full inventory. `architecture/contexts.yaml` is the canonical context/layer/dependency/table manifest. Summary reconciled against it and `src/` on 2026-10-16; functional completeness remains module-specific.)*
 
 ### Event bus
 

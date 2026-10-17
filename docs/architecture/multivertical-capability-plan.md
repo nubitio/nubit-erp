@@ -1,10 +1,12 @@
 # Plan de arquitectura multivertical
 
-**Estado:** propuesto para implementacion incremental  
-**Fecha:** 2026-06-15  
+**Estado:** propuesta inicial (2026-06-15), parcialmente implementada y supersedida en decisiones objetivo por ADR-018. No usar los ejemplos/roadmap abajo como descripción literal del comportamiento actual.
+**Última revisión de estado:** 2026-10-16. Ver [`CONTEXT.md`](../../CONTEXT.md) y [`nubit-erp-target-architecture.md`](nubit-erp-target-architecture.md) para la implementación presente.
 **Alcance:** backend `efact`, web POS, Android POS y control plane SaaS
 
 ## Resumen ejecutivo
+
+> **Estado de implementación:** existen `CapabilityCatalog`, `TenantCapabilityResolver`, estado tenant-local (`tenant_capabilities`/`tenant_profile`), sincronización temporal de settings, runtime config y presets `retail`, `pharmacy` y `restaurant`. Los presets aplican settings/capabilities; el contrato aún no empaqueta declarativamente todos los menús, seeds y UI defaults contemplados en la propuesta. La selección de vertical describe onboarding/metadata; el comportamiento se resuelve con capabilities, no con ramas `if vertical` en el core. Las verticales Pharmacy y Restaurant tienen contextos propios; no hay `Hospitality` implementado.
 
 eFact debe evolucionar de un POS/facturacion con verticales iniciales a una plataforma multivertical mantenible. La decision central es separar dos conceptos que suelen mezclarse:
 

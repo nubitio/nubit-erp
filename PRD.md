@@ -1,6 +1,6 @@
 # efact — Product Requirements Document
 
-> **Status:** active
+> **Status:** product direction / requirements baseline. Current repository implementation is indexed in `docs/PRD.md` and `architecture/contexts.yaml`; do not treat every requirement below as shipped functionality.
 > _North-star document for all agents and contributors. Every spec must align with the Vision, Goals, and Architecture Principles below._
 
 ## Vision
@@ -40,7 +40,7 @@ The eFact platform consists of three interconnected products:
 
 - **Non-Peruvian tax regimes** — eFact is purpose-built for SUNAT (Peru). Support for other countries' tax authorities (SAT Mexico, DIAN Colombia, SII Chile, etc.) is explicitly out of scope.
 - **Physical hardware manufacturing** — eFact integrates with standard ESC/POS thermal printers and QZ Tray but does not manufacture or certify hardware.
-- **Full ERP accounting module** — eFact covers purchasing, inventory, and sales but does not include double-entry accounting, general ledger, or financial statement generation.
+- **Complete accounting/finance suite** — initial accounting, payroll, fixed-assets and bank-reconciliation capabilities exist in this repository, but the full accounting and financial-statement scope is not yet established as complete.
 - **Multi-country currency arbitrage / FX trading** — Exchange rate sync is provided for display purposes only, not for speculative or multi-currency accounting.
 
 ---
@@ -100,9 +100,8 @@ The eFact platform consists of three interconnected products:
 | Server | FrankenPHP (`runtime/frankenphp-symfony`; worker mode disabled in dev compose) |
 | Async messaging | Symfony Messenger 7.4 (Redis transport) |
 | Auth | Custom JWT (`firebase/php-jwt`) + HttpOnly cookie + refresh tokens |
-| E-invoicing | `greenter/core` 5.x (UBL 2.1 XML, SUNAT web services), `greenter/consulta-cpe` |
-| AI / LLM | `symfony/ai-bundle` + OpenAI GPT-4o-mini |
-| MCP | `symfony/mcp-bundle` — MCP endpoint at `/mcp` |
+| E-invoicing | Greenter typed fiscal models and `greenter/consulta-cpe` validation; Bill/Lycet HTTP service handles UBL generation/signing and SUNAT submission |
+| AI / LLM | `symfony/ai-bundle`; xAI `grok-4.3` default, configurable OpenAI `gpt-4o-mini` fallback |
 | File storage | Flysystem + AWS S3 (`league/flysystem-aws-s3-v3`, `oneup/flysystem-bundle`) |
 | Exports | PHPSpreadsheet, WeasyPrint (PDF), Nubit Platform export helpers |
 | Printing | `mike42/escpos-php` (ESC/POS thermal), QZ Tray (browser bridge) |
@@ -116,7 +115,7 @@ The eFact platform consists of three interconnected products:
 |-------|-----------|
 | Language | TypeScript (strict) |
 | Framework | React 19 |
-| UI components | Native React components (in-repo Nubit CRUD engine: grids, forms) |
+| UI components | React feature components plus published `@nubitio/*` admin/CRUD/UI packages |
 | Styling | TailwindCSS 4 |
 | Build | Vite 7 + Symfony Reprise (`@symfony/reprise`) |
 | PWA | `vite-plugin-pwa` (Workbox service worker) |
@@ -150,7 +149,7 @@ The eFact platform consists of three interconnected products:
 | Language | PHP 8.2 |
 | Framework | Symfony 7.4 |
 | API | API Platform 4.2 |
-| Admin | EasyAdmin 4 |
+| Admin | Marketing-site implementation is in a separate repository and is not verified here |
 | Templates | Twig |
 | Auth | LexikJWT + form login |
 | File uploads | VichUploader |
@@ -187,7 +186,7 @@ The eFact platform consists of three interconnected products:
 
 8. **Observability is mandatory** — All significant operations must emit OpenTelemetry spans/logs. Specs adding new background jobs, external calls, or critical paths must include instrumentation requirements.
 
-9. **GrumPHP quality gate is non-negotiable** — Every backend commit must pass php-cs-fixer, phpcs, phpmd, phpstan, and PHPUnit. Frontend commits must pass ESLint, `tsc --noEmit`, and Vitest coverage thresholds. PRs failing these gates must not be merged.
+9. **Quality gates are non-negotiable** — CI runs Mago lint/analyze/format, architecture and contract checks, PHPStan, Pest/PHPUnit and backend coverage; frontend changes run ESLint, TypeScript and Vitest. See `.github/workflows/ci-main.yml` for path-filtering and exact gates. GrumPHP/PHPCS are not the current CI contract.
 
 10. **Control-plane separation** — Tenant lifecycle management (provisioning, billing, quotas, backups) lives in a separate control-plane database and admin surface (`/admin`). Specs must not mix tenant business logic with control-plane concerns.
 
@@ -200,7 +199,7 @@ The eFact platform consists of three interconnected products:
 - **JWT authentication** — Custom JWT stored in HttpOnly cookies; access token TTL configurable; refresh token flow at `POST /api/auth/refresh`.
 - **Roles** — `ROLE_USER`, `ROLE_CASHIER`, `ROLE_ADMIN`, `ROLE_SUPER_ADMIN`, `ROLE_CP_VIEWER`.
 - **Branch context** — After login, users select a branch; the selected branch is encoded in the JWT and determines data scope for subsequent requests (`POST /api/auth/select-branch`).
-- **Control plane auth** — Separate `http_basic` firewall at `/admin` for platform operators.
+- **Control plane auth** — Separate form-login firewall at `/admin`, with CSRF, throttling, remember-me and session logout for platform operators.
 - **Android auth** — Same JWT API; tenant base URL configured via tenant setup screen at app startup.
 
 ### 2. Point of Sale (POS)
@@ -251,10 +250,10 @@ The eFact platform consists of three interconnected products:
 | RC | Comunicación de baja |
 
 **Flow:**
-1. `POST /api/sales/{id}/invoice` → `InvoiceCreationService` creates `TaxDocument` + `TaxDocumentLine` records; auto-selects series from `VoucherSeries` by branch + document type; generates sequential number with `FOR UPDATE` lock.
-2. `POST /api/tax-documents/{id}/validate` → `VoucherHydrator` builds UBL 2.1 XML via `greenter/core`, signs with tenant digital certificate.
-3. `POST /api/tax-documents/{id}/send` → async dispatch via Symfony Messenger; sends signed XML to SUNAT web service; stores CDR in S3.
-4. `GET /api/tax-documents/{id}/consult` → CDR consult via `greenter/consulta-cpe`; updates `sunatStatus` and `sunatMessage`.
+1. `POST /api/sales/{id}/invoice` → creates `TaxDocument` + lines, selects a branch/document-type series and allocates a sequential number.
+2. Validation builds/validates the typed Greenter document model and performs applicable SUNAT CPE checks; this app does not generate/sign the submitted UBL itself.
+3. `POST /api/tax-documents/{id}/send` → dispatches the existing billing flow through Symfony Messenger to the external Bill/Lycet HTTP service, which performs XML generation/signing and SUNAT submission; returned artifacts/status are persisted by the app.
+4. `GET /api/tax-documents/{id}/consult` → consults/reconciles status through the configured external billing provider; Greenter's `consulta-cpe` package is used for validation checks, not as the submission adapter.
 5. `POST /api/tax-documents/{id}/email` → sends receipt PDF + XML to customer.
 
 **Safety mechanisms:**
@@ -271,8 +270,8 @@ The eFact platform consists of three interconnected products:
 
 - **Cash registers** — Per-branch, multiple registers supported.
 - **Cash sessions** — `CashSession` entity; states: OPEN / RECONCILING / CLOSED; tracks `openingAmount`, `expectedAmount` (computed from sales), `countedAmount` (physical count), `differenceAmount`.
-- **Cash movements** — `CashMovement` entity; categorized (CashMovementCategory); income/expense entries within a session.
-- **Cash shifts** — Legacy `CashShift` entity maintained for backward compatibility.
+- **Cash movements** — plural `cash_movements` ledger; DBAL writes/read providers hydrate a `CashMovement` DTO and attach categories. It is not a Doctrine entity mapped to the v2 ledger.
+- **Legacy tables** — singular `cash_shift` and `cash_movement` were dropped; current POS uses `CashSession` and plural `cash_movements`.
 
 ### 6. Customers
 
@@ -284,7 +283,7 @@ The eFact platform consists of three interconnected products:
 
 - **Dashboard** — Real-time KPIs via `GET /api/bi/{type}`: daily sales total, top products, hourly sales distribution, pending invoices count, stock alerts. Data pushed via Mercure SSE.
 - **Excel exports** — `GET /api/sales/report?report={type}&date-from=&date-to=`: 7 report types exported via PHPSpreadsheet.
-- **AI assistant** — `POST /api/assistant`: GPT-4o-mini agent with 8 tools:
+- **AI assistant** — `POST /api/assistant` and `/api/assistant/stream`; model is configurable (xAI default), with tools including:
   - `SaleTools` — query sales data
   - `ProductTools` — query product catalog
   - `CashRegisterTools` — query cash session data
@@ -302,14 +301,14 @@ The eFact platform consists of three interconnected products:
   3. `GET /register/new-tenant` → company setup wizard (RUC, fiscal address, SUNAT credentials)
 - **Tenant provisioning** — `TenantProvisioningService` creates isolated MariaDB database, runs tenant migrations, seeds default data (admin user, default branch, warehouse, voucher series, payment methods, SUNAT catalogs).
 - **Subscription billing** — PayPal and MercadoPago gateways; webhook handlers at `/webhook/paypal` and `/webhook/mercadopago`; `SubscriptionManager` tracks billing cycle and plan limits.
-- **Control plane** — `/admin` EasyAdmin panel for operators: tenant list, domain management, provisioning status, subscription management, backup management, audit log.
+- **Control plane** — `/admin` custom operator panel for tenant list, domain management, provisioning status, subscription management, backup management and audit log.
 
 ### 9. Marketing Site (`nubit-erp-site`)
 
 - CMS-managed landing page content: hero, CTA, plans, benefits, FAQs, how-it-works steps, stats, modules.
 - Plan catalog with monthly/annual pricing, feature lists, and CTA URLs.
 - Public API for plan/feature data consumed by the registration flow.
-- EasyAdmin at `/admin` for content editors.
+- CMS and public-site administration belong to the separate marketing-site repository and are not verifiable here.
 
 ### 10. Real-Time Push
 
@@ -317,11 +316,9 @@ The eFact platform consists of three interconnected products:
 - Resources with `mercure: true`: Products, Sales, TaxDocuments, CashSessions, UserNotifications, VoucherSeries, Categories, PaymentMethods, and more.
 - User notifications: `UserNotification` entity; types (stock alert, invoice status, etc.), severity levels; `GET /api/user-notifications`, `PATCH /api/user-notifications/{id}/read`, `POST /api/user-notifications/read-all`.
 
-### 11. MCP (Model Context Protocol)
+### 11. External AI protocol integrations
 
-- MCP endpoint at `/mcp` via `symfony/mcp-bundle`.
-- HTTP transport is configured in `config/packages/mcp.yaml`; route wiring lives in `config/routes/mcp.yaml`.
-- Exposes the same AI tools as the assistant endpoint to external MCP clients.
+- No MCP endpoint is currently shipped. The former `/mcp` route, bundle configuration and `ai_mcp` feature were removed; do not document `/mcp` as an available API.
 
 ---
 
@@ -418,9 +415,9 @@ A spec is **done** when all of the following are true:
 
 - [ ] **AC coverage** — All acceptance criteria listed in the slice spec are verified (manual or automated).
 - [ ] **Backend tests pass** — `php bin/phpunit` exits 0; no regressions in existing test suite; new code has unit/integration tests for non-trivial logic.
-- [ ] **Frontend tests pass** — `yarn vitest run --coverage` exits 0; coverage thresholds (85 % lines/functions/statements, 80 % branches on covered files) are maintained.
+- [ ] **Frontend tests pass** — `yarn test` exits 0 and produces coverage for the configured Vitest test suite. There is no global frontend coverage threshold configured today.
 - [ ] **Type safety** — `yarn tsc --noEmit` exits 0 (no TypeScript errors).
-- [ ] **GrumPHP gate** — `vendor/bin/grumphp run` passes all checks (cs-fixer, phpcs, phpmd, phpstan, phpunit).
+- [ ] **CI quality gate** — applicable backend/frontend jobs in `.github/workflows/ci-main.yml` pass (Mago, PHPStan, architecture/contracts, Pest/PHPUnit/coverage, ESLint, TypeScript, Vitest as selected by path filters).
 - [ ] **E2E smoke** — The Playwright happy-path spec (`e2e/happy-path.spec.ts`) passes without regression.
 - [ ] **No offline regression** — If the spec touches POS or sale creation, the offline outbox flow must still work end-to-end.
 - [ ] **SUNAT compliance preserved** — If the spec touches e-invoicing, the circuit-breaker, retry, and CDR-consult recovery mechanisms must be intact and tested.
@@ -431,7 +428,7 @@ A spec is **done** when all of the following are true:
 
 ## Open Questions
 
-1. **PHP coverage target** — `COVERAGE_MIN_PHP` in CI is currently `8.0` (8 %), which functions only as a regression floor. Should this be raised to a meaningful target (e.g., 60 %)? Who owns this decision?
+1. **PHP coverage target** — CI currently enforces a 40% PHP line-coverage floor (`COVERAGE_MIN_PHP` in `.github/workflows/ci-main.yml`). This is a regression floor, not a complete measure of behavior coverage; raising it remains an engineering decision.
 
 2. ~~**PayPal vs MercadoPago gateways**~~ — **Resolved:** MercadoPago is the primary gateway for Peruvian tenants (`PaymentGatewayInterface` aliased to `MercadoPagoGateway` in `config/services.yaml`; onboarding/plan-change endpoints default the `gateway` field to `mercadopago`). PayPal stays implemented and tagged `app.payment_gateway` as a selectable fallback, not because both are equally primary.
 
@@ -441,7 +438,7 @@ A spec is **done** when all of the following are true:
 
 5. **Lot/expiry tracking for pharmacies** — `StockLot` and `LotDeductionService` implement FIFO/FEFO deduction. Is this used in production pharmacies today, or should it remain experimental/gated?
 
-6. **Frontend coverage scope** — Vitest coverage currently targets only 2 files (`posHelpers.ts`, `offline/api.ts`). Should coverage be expanded to the full `assets/features/` surface area? What is the timeline?
+6. **Frontend coverage scope** — CI runs Vitest coverage over the configured frontend test suite. It is not a coverage guarantee for every screen or feature; continue expanding meaningful feature-level tests.
 
 7. **Scheduler operational ownership** — Scheduler wiring now exists through `#[AsCronTask]` commands and `src/Schedule.php` provider tasks. Who owns production monitoring, missed-run alerting, and runbook maintenance for these jobs?
 
@@ -449,4 +446,4 @@ A spec is **done** when all of the following are true:
 
 - **Plan configuration source** — Current `config/services.yaml` no longer references `config/tenant_plans.php`; plan/features are represented in ControlPlane repositories and managers.
 - **Scheduler wiring** — `src/Schedule.php` now schedules AI daily briefing and stock notification generation; recurring operational commands also use `#[AsCronTask]`.
-- **`symfony/mcp-bundle` configuration** — `McpBundle` is registered and route wiring exists at `config/routes/mcp.yaml` with `type: mcp`.
+- **MCP endpoint** — removed; `tests/AI/McpRemovedTest.php` guards against its route/configuration returning unintentionally.

@@ -19,7 +19,7 @@ Projection is **batch, not event-driven**: `StockRebuilderJob::rebuild()` (`src/
 
 ### Legacy mirror kept alongside, explicitly deprecated
 
-`ProductStock` (`src/Inventory/Entity/ProductStock.php`) is the pre-existing read model this one replaces. It carries `deprecationReason: 'Legacy stock mirror. Use stock_items via InventoryService/ProductStockService as the source of truth.'` — but it is not dead code. `ProductStockService::updateStockForProductInWarehouse()` still actively writes to it (`persist()`+`flush()`), and it has two confirmed live consumers: `src/Catalog/State/ProductStockController.php` and `src/AI/Tool/ProductTools.php` (an MCP tool the AI assistant calls). Commit `ab52766c` ("chore(stock): strengthen canonical stock_items path; deprecate legacy mirror") is the point this migration started.
+`ProductStock` (`src/Inventory/Entity/ProductStock.php`) is the pre-existing read model this one replaces. It carries a deprecation reason but is not dead code: `ProductStockService::updateStockForProductInWarehouse()` still writes to it, and `src/Catalog/State/ProductStockController.php` plus `src/AI/Tool/ProductTools.php` still consume it. `ProductTools` is an in-app assistant tool, not an MCP tool; the MCP endpoint has been removed. Commit `ab52766c` ("chore(stock): strengthen canonical stock_items path; deprecate legacy mirror") is the point this migration started.
 
 ## Consequences
 

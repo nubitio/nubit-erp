@@ -54,8 +54,7 @@ Extensión de comportamiento por composición: el módulo genérico define la ca
 (`Inventory.StockMovement`, `DefaultStockPolicy`), la vertical define la especialización
 (`Pharmacy.BatchStockMovement`, `PharmacyStockPolicy`) vía entidades propias, contratos y eventos.
 
-Persistencia: BD compartida inicial, cada módulo dueño lógico de sus tablas con prefijo
-(`inventory_*`, `sales_*`, `pharmacy_*`, …). Multi-tenant: todo lleva `tenantId`.
+Persistencia y tenancy aprobadas: database-per-tenant con BD de control plane separada (ADR-007); las tablas tenant no requieren `tenant_id`. Cada contexto es dueño lógico de sus tablas según `architecture/contexts.yaml`; las tablas nuevas usan prefijo `<context>_*` y los nombres legacy se congelan según ADR-018 D4.
 
 Autorización: permisos por capacidad (`inventory.read`, `pharmacy.batch.manage`), roles agrupan permisos.
 
@@ -64,7 +63,7 @@ Observabilidad: cada operación relevante emite log estructurado con
 
 ---
 
-## 2. Estado actual de efact (revisado 2026-09-24)
+## 2. Estado actual de efact (revisado 2026-10-16)
 
 ### 2.1 Ya alineado con el destino
 
@@ -72,25 +71,26 @@ Observabilidad: cada operación relevante emite log estructurado con
 |---|---|
 | Monolito modular + bounded contexts | Contextos bajo `src/<Context>`; inventario vigente en `architecture/contexts.yaml` y ADR-001 |
 | Comunicación entre contextos | Symfony Messenger domain events + **una** excepción síncrona documentada (Sales↔Billing↔Inventory↔CashRegister para el camino venta→stock→CPE→caja) |
-| Platform Core portable | Extraído a Composer: `nubitio/platform`, `nubitio/api-platform`, `nubitio/admin-bundle` (v0.15); contratos de tenant, feature gates, quotas en `Nubit\Platform\` |
+| Platform Core portable | Extraído a Composer: `nubitio/platform`, `nubitio/api-platform`, `nubitio/admin-bundle`; contratos de tenant, feature gates y quotas en `Nubit\Platform\` |
 | Multi-tenancy | Database-per-tenant + BD de control plane separada (ADR-007); `TenantConnection` conmuta por subdominio |
 | Entitlements vs Capabilities | ADR-013/018; catálogo versionado, `TenantCapabilityResolver`, estado por tenant y sincronización de compatibilidad bajo `src/Settings/Capability/` |
 | RBAC por capacidad | `PermissionCatalog` en código + `role_permission`; voter prefijo `perm:`, super admin `*` |
-| Ledgers append-only / CPE inmutables | ADR-003 (`stock_movements` verificado; `cash_movements` con guard DB desde #318) |
+| Ledgers append-only / CPE inmutables | `stock_movements` es inmutable en su API de aplicación. `cash_movements` tiene escritura por inserción en la aplicación, pero sus migraciones de triggers están retiradas/no-op; no se puede afirmar protección DB general. Triggers antiguos podrían permanecer en algunas BD según su historial de migración. CPE: correcciones por documentos relacionados/estados, véase ADR-003. |
 | API pública de integración + webhooks | ADR-017 (`integration_*`) |
 | Guard de fronteras | Guard Platform/Core en CI + pre-push; PHPArkitect deriva reglas de capa del manifiesto y hay pruebas en `tests/Architecture/` |
-| Verticales | `src/Pharmacy` implementa perfiles/productos, lotes, recetas, política de stock y reacción a ventas. Restaurant incluye mesas/áreas/pedidos, flujos de cocina y UI de salón/cocina con Mercure; revisar aún su madurez y cobertura de pruebas |
+| Verticales | `src/Pharmacy` implementa perfiles/productos, lotes, recetas, política de stock y reacción a ventas. `src/Restaurant` implementa áreas/mesas/pedidos y flujo de cocina; cerrar pedido enlaza un `saleId` existente, no crea/cobra una venta por sí mismo. Las pruebas Restaurant son acotadas. Hospitality no tiene contexto en `src/`. |
+| Módulos financieros adicionales | `Accounting`, `Payroll`, `FixedAssets`, `BankReconciliation`, `AccountsPayable` y `ExpenseReports` están presentes con flujos funcionales iniciales; su presencia no significa cobertura integral ni certifica cumplimiento regulatorio completo. `Billing/Recurring` tiene planes, suscripciones y generación de ventas recurrentes. |
 | Propiedad de datos | `architecture/contexts.yaml` registra `ownsTables` y `externalTables`; hay pruebas de consistencia, ownership, naming y escrituras cruzadas |
 
 ### 2.2 Brechas frente al destino
 
 | # | Brecha | Evidencia | Impacto |
 |---|---|---|---|
-| G1 | **Cobertura de verticales incompleta.** Pharmacy ya es un bounded context con perfiles, lotes, recetas, vencimiento y reacción a ventas. Restaurant ya incluye áreas/mesas, pedidos, estados de cocina, endpoints/procesadores y UI de salón/cocina con actualizaciones Mercure; falta validar y ampliar pruebas funcionales y confirmar alcance del cierre/cobro contra Sales. Hospitality no figura aún en el manifiesto. | `src/Pharmacy`, `src/Restaurant`, `assets/features/restaurant`, `architecture/contexts.yaml`; NB-18/19 | Alto — falta madurez verificada y completar verticales objetivo |
+| G1 | **Cobertura de verticales incompleta.** Pharmacy tiene perfiles, lotes, recetas, vencimiento y reacción a ventas. Restaurant tiene áreas/mesas, pedidos, estados de cocina y UI; `CloseOrderProcessor` enlaza el `saleId` recibido y libera la mesa, no ejecuta la venta/cobro. Las pruebas actuales (`tests/Restaurant`) son acotadas. Hospitality no figura en el manifiesto ni bajo `src/`. | `src/Pharmacy`, `src/Restaurant`, `assets/features/restaurant`, `tests/Restaurant`, `architecture/contexts.yaml`; NB-17…NB-19 | Alto — falta madurez verificada y completar verticales objetivo |
 | G2 | **Reglas arquitectónicas con cobertura parcial.** PHPArkitect deriva capas del manifiesto y aplica restricciones con baseline; hay pruebas dedicadas de límites, ownership, escrituras cruzadas y contratos. Esto mejora sustancialmente el enforcement, pero no demuestra que las diez reglas AR-001…AR-010 estén verificadas de extremo a extremo ni elimina las violaciones preexistentes del baseline. | `phparkitect.php`, `phparkitect-baseline.json`, `tests/Architecture/` | Alto — mantener CI y reducir baseline |
 | G3 | **Capabilities operativas implementadas; presets aún no totalmente declarativos.** Existen catálogo, enum, resolver fail-closed, estado por tenant y sincronización con settings de compatibilidad. El contrato de preset sigue centrado en settings y capabilities; menús, seeds y UI defaults declarativos continúan como seguimiento. | `src/Settings/Capability/`, `VerticalPresetInterface`; NB-8 | Medio — completar el empaquetado declarativo y retirar compatibilidad gradualmente |
 | G4 | **Sin separación física `apps/` · `modules/` · `verticals/`.** Los contextos siguen bajo `src/`; es intencional según D1, no una reorganización pendiente. | ADR-018 D1 | Cerrado por decisión |
-| G5 | **Propiedad de datos inventariada y escrituras raw-SQL cruzadas comprobadas.** El manifiesto enumera tablas tenant y externas; hay pruebas de ownership, naming y escrituras cruzadas raw-SQL (con excepciones explícitas). El guard no pretende detectar lecturas cruzadas ni reemplaza la revisión de acceso ORM. Los nombres legacy en español se congelan por D4; tablas nuevas usan `<context>_*`. | `architecture/contexts.yaml`, `tests/Architecture/{TableOwnershipTest,CrossContextTableWriteTest,NewTableNamingConventionTest}.php` | Medio — mantener inventario y ampliar cobertura si aparecen escrituras ORM cruzadas |
+| G5 | **Propiedad de datos inventariada y escrituras raw-SQL cruzadas comprobadas.** El manifiesto enumera tablas tenant y externas; las pruebas comprueban ownership, naming y escrituras SQL cruzadas con excepciones. El guard no detecta lecturas cruzadas ni reemplaza revisión ORM. Nombres legacy españoles congelados; tablas nuevas `<context>_*`. No fijar un total de tablas aquí: el manifiesto evoluciona con las migraciones. | `architecture/contexts.yaml`, `tests/Architecture/{TableOwnershipTest,CrossContextTableWriteTest,NewTableNamingConventionTest}.php` | Medio — mantener inventario y ampliar cobertura si aparecen escrituras ORM cruzadas |
 | G6 | **Dependencias de contexto declaradas.** El manifiesto y sus pruebas de consistencia están implementados; las dependencias registradas reflejan referencias observadas y no constituyen por sí mismas aprobación del acoplamiento. | `architecture/contexts.yaml`, `ContextManifestCodeTest` | Cerrado como inventario; racionalizar acoplamientos sigue siendo trabajo continuo |
 | G7 | **API namespaced de Pharmacy y Restaurant implementada.** Pharmacy tiene rutas `/api/pharmacy/...`; Restaurant declara recursos y procesadores para mesas, áreas, pedidos e ítems. Conviene mantener contrato/documentación API y pruebas alineados con las rutas disponibles. | `src/Pharmacy`, `src/Restaurant`, `assets/features/restaurant/api/` | Bajo — fortalecer contrato y pruebas |
 | G8 | **Catálogo de extension points y prueba de consistencia implementados; cobertura funcional sigue evolucionando.** `ExtensionPointCatalogTest` comprueba interfaces marcadas, implementación default, estrategia de resolución y presencia en la documentación. La cobertura depende de qué seams del core se hayan registrado en ese catálogo. | `src/Efact/Extension/`, `docs/architecture/extension-points.md`, `tests/Architecture/ExtensionPointCatalogTest.php` | Medio |
@@ -193,8 +193,8 @@ Criterio: `PharmacyBoundaryTest` — nada fuera de `src/Pharmacy` importa `App\P
 
 ### Fase 4 — Propiedad de datos (AR-005)
 
-**NB-13 · Inventario de propiedad de tablas** — hecho (#339)
-Entregable: `architecture/contexts.yaml` `ownsTables` completo (121 tablas de dominio, cada una con un único dueño) + bloque top-level `externalTables` para las tablas de paquetes vendor/framework (`nubit_*`, `messenger_messages`, `doctrine_migration_versions`); tablas legacy sin código vivo marcadas `# dead`, pendientes de una migración DROP.
+**NB-13 · Inventario de propiedad de tablas** — hecho (#339), inventario evolutivo
+Entregable: `architecture/contexts.yaml` `ownsTables` y `externalTables` cubren las tablas del esquema tenant con ownership único; tablas legacy sin código vivo se anotan `# dead` mientras se decide/ejecuta su retiro. El número de tablas cambia con migraciones y no se fija aquí.
 Criterio: `tests/Architecture/TableOwnershipTest.php` (KernelTestCase) cruza el esquema vivo del tenant (`information_schema`, tras aplicar `migrations/`) contra el manifiesto — falla ante una tabla sin dueño, una tabla con dos dueños, o una entrada de `ownsTables`/`externalTables` sin tabla viva; se salta si no hay DB de tenant accesible.
 
 **NB-14 · Naming de tablas (según D4)** — decisión implementada; verificador presente
@@ -213,7 +213,7 @@ Criterio: añadir una regla de vertical = registrar una implementación, cero ca
 ### Fase 6 — Completar verticales existentes y añadir verticales siguientes
 
 **NB-17 · Completar capacidades verticales** — Pharmacy ya cubre lotes, vencimiento y FEFO inicial; quedan capacidades de ferretería y extensiones de farmacia, como dividir una línea de venta entre varios lotes.
-**NB-18 · `src/Restaurant` bounded context** — implementación inicial presente: áreas/mesas, pedidos e ítems, estados de preparación/entrega, enviar a cocina, solicitar cuenta/cerrar pedido y UI de salón/cocina con Mercure. Pendiente: verificar cobertura de pruebas, alcance de modificadores y que el cierre/cobro integre con `Sales` según la regla prevista, sin contaminar `SaleProcessor`.
+**NB-18 · `src/Restaurant` bounded context** — implementación inicial presente: áreas/mesas, pedidos e ítems, estados de preparación/entrega, envío a cocina, solicitud de cuenta/cierre y UI salón/cocina con Mercure. `CloseOrderProcessor` cierra el pedido con un `saleId` ya proporcionado y libera la mesa; no crea ni liquida la venta. Cobertura de pruebas limitada a entidad/procesador de cierre; falta validar recorridos integrales, modificadores y contrato de integración con Sales.
 **NB-19 · `src/Hospitality` bounded context** — habitaciones, tarifas, reservas, huésped, estancia, check-in/out; integra con `Billing`.
 
 ### Fase 7 — Observabilidad y contratos
@@ -241,3 +241,4 @@ Criterio: añadir una regla de vertical = registrar una implementación, cero ca
 |---|---|
 | 2026-09-05 | Documento creado: destino multivertical Nubit + análisis de estado efact + backlog NB-1…NB-21 |
 | 2026-09-24 | Estado revisado contra `src/`, `architecture/contexts.yaml` y `tests/Architecture/`; se actualizaron brechas y estado de NB-1…NB-18. |
+| 2026-10-16 | Estado contrastado con código y pruebas: se corrige inmutabilidad `cash_movements`, se aclara el límite del cierre Restaurant, se registran módulos financieros presentes y se elimina el total fijo de tablas. |

@@ -18,11 +18,11 @@ eFact is a **modular monolith with strict bounded contexts** (see [ADR-001](docs
 
 ### Module Responsibilities
 
-The full, current module map lives in [ADR-001](docs/adr/ADR-001-modular-monolith-strict-bounded-contexts.md) — it now covers all ~20 contexts under `src/`, not just the original 9. Duplicating it here went stale once; linking instead of copying.
+The current module summary lives in [ADR-001](docs/adr/ADR-001-modular-monolith-strict-bounded-contexts.md); the canonical, complete context inventory is [`architecture/contexts.yaml`](architecture/contexts.yaml). Do not rely on a fixed context count.
 
 ### Layer Structure per Module — ADR-002 (superseded)
 
-~~Each module follows a four-layer structure (see [ADR-002](docs/adr/ADR-002-domain-application-infrastructure-api-layers.md)):~~ **ADR-002 is superseded by [ADR-006](docs/adr/ADR-006-pragmatic-per-context-layout.md).** No context — not even the CashRegister pilot — actually uses the DAIA layering below, except `ControlPlane/Tenant` under its own dedicated rewrite (ADR-005). The layout every other context actually uses is `Entity/`, `Repository/`, `Service/`, `State/`, `Dto/`, `Controller/`, `Enum/` — see ADR-006. The structure below is kept only as historical context for reading ADR-002 itself:
+~~Each module follows a four-layer structure (see [ADR-002](docs/adr/ADR-002-domain-application-infrastructure-api-layers.md)):~~ **ADR-002 is superseded by [ADR-006](docs/adr/ADR-006-pragmatic-per-context-layout.md).** No context — not even the CashRegister pilot — actually uses the DAIA layering below, except `ControlPlane/Tenant` under its own dedicated rewrite (ADR-005). Most contexts use the pragmatic `Entity/`, `Repository/`, `Service/`, `State/`, `Dto/`, `Controller/`, `Enum/` layout; check each context rather than assuming a universal tree — see ADR-006. The structure below is kept only as historical context for reading ADR-002 itself:
 
 ```
 src/<Context>/
@@ -39,9 +39,9 @@ Dependency rule: `Api → Application → Domain`; `Infrastructure → Domain` (
 
 See [ADR-003](docs/adr/ADR-003-append-only-ledgers-immutable-fiscal-documents.md).
 
-- `stock_movements` and `cash_movements` are **intended to be append-only** ledger tables — no UPDATE/DELETE after insert. Corrections are new rows with a `corrects_movement_id` reference. **Verified enforced for `stock_movements`** (no setters on the entity). **Not currently enforced for `cash_movements`** — `CashMovement` has public setters; see ADR-004's 2026-08-19 amendment before relying on this invariant for that table.
+- `stock_movements` and `cash_movements` are intended to be append-only ledgers — production code appends rows and has no update/delete workflow. Corrections should be represented by new rows referencing the original where supported. `stock_movements` is represented by an immutable API resource. `cash_movements` is written/read through DBAL and hydrated into a DTO; this is an application-path invariant, not a guaranteed database invariant. The trigger migration is retired/no-op and deliberately does not create or remove triggers; databases that applied an earlier trigger implementation may still have those triggers. See ADR-003 and ADR-004 for the distinction between the plural v2 ledger and the legacy singular table.
 - Tax documents are **immutable after issuance**. Corrections use `credit_note` / `debit_note` documents linked via `references_document_id` (SUNAT CPE model). Voiding is a status transition, never a delete.
-- Reporting aggregates live in separate read-model tables (Reporting context) rebuilt from domain events — they are not source-of-truth.
+- Reporting aggregates/read models are not source-of-truth, but update/rebuild mechanisms vary; verify the specific projection before assuming it is rebuilt from events or can be regenerated on demand.
 
 ### Stack (confirmed, no changes)
 
