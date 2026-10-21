@@ -48,6 +48,12 @@ final readonly class StatementRepository
      * $dateTo. `balance_due` comes from the joined sale — the authoritative
      * current snapshot the aging needs.
      *
+     * Charges of voided sales are left out: a voided sale must not show on the
+     * statement at all. Its CHARGE_REVERSAL (if any) is never read either, as
+     * {@see payments()} does not select that type, so the two stay balanced —
+     * and a sale voided by an annulling credit note, which writes no reversal,
+     * is covered too.
+     *
      * @return list<array{sale_id: string, date: string, document: string, amount: string, balance_due: string}>
      *
      * @throws Exception
@@ -69,6 +75,7 @@ final readonly class StatementRepository
                 LEFT JOIN sales s ON s.id = e.sale_id
                 WHERE e.customer_id = :customer
                   AND e.entry_type = 'charge'
+                  AND (s.status IS NULL OR s.status <> 'VOIDED')
                   AND e.occurred_on <= :date_to
                 ORDER BY e.id
                 SQL,
@@ -106,13 +113,12 @@ final readonly class StatementRepository
                     CASE e.entry_type
                         WHEN 'credit_note' THEN 'Nota de crédito'
                         WHEN 'advance' THEN 'Anticipo recibido'
-                        WHEN 'charge_reversal' THEN 'Anulación de venta'
                         ELSE ''
                     END AS detail
                 FROM customer_account_entries e
                 LEFT JOIN sales s ON s.id = e.sale_id
                 WHERE e.customer_id = :customer
-                  AND e.entry_type IN ('payment', 'credit_note', 'advance', 'charge_reversal')
+                  AND e.entry_type IN ('payment', 'credit_note', 'advance')
                   AND e.occurred_on <= :date_to
                 ORDER BY e.id
                 SQL,

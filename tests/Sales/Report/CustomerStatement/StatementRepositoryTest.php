@@ -10,33 +10,43 @@ use PHPUnit\Framework\TestCase;
 
 final class StatementRepositoryTest extends TestCase
 {
-    public function testPaymentsQueryIncludesAndLabelsVoidedSaleChargeReversal(): void
+    public function testChargesQueryExcludesVoidedSales(): void
     {
         $connection = $this->createMock(Connection::class);
         $connection
             ->expects(self::once())
             ->method('fetchAllAssociative')
             ->with(
-                self::callback(static fn(string $sql): bool =>
-                    str_contains($sql, "'charge_reversal'")
-                    && str_contains($sql, "WHEN 'charge_reversal' THEN 'Anulación de venta'")
+                self::callback(
+                    static fn(string $sql): bool => str_contains(
+                        $sql,
+                        "AND (s.status IS NULL OR s.status <> 'VOIDED')",
+                    ),
                 ),
                 ['customer' => 55, 'date_to' => '2026-05-31'],
             )
-            ->willReturn([[
-                'date' => '2026-05-12',
-                'document' => 'B001-7',
-                'amount' => '100.00',
-                'detail' => 'Anulación de venta',
-            ]]);
+            ->willReturn([]);
 
-        $payments = (new StatementRepository($connection))->payments(55, '2026-05-31');
+        self::assertSame([], new StatementRepository($connection)->charges(55, '2026-05-31'));
+    }
 
-        self::assertSame([[
-            'date' => '2026-05-12',
-            'document' => 'B001-7',
-            'amount' => '100.00',
-            'detail' => 'Anulación de venta',
-        ]], $payments);
+    public function testPaymentsQueryLeavesOutVoidedSaleChargeReversal(): void
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection
+            ->expects(self::once())
+            ->method('fetchAllAssociative')
+            ->with(
+                self::callback(
+                    static fn(string $sql): bool => (
+                        str_contains($sql, "e.entry_type IN ('payment', 'credit_note', 'advance')")
+                        && !str_contains($sql, "'charge_reversal'")
+                    ),
+                ),
+                ['customer' => 55, 'date_to' => '2026-05-31'],
+            )
+            ->willReturn([]);
+
+        self::assertSame([], new StatementRepository($connection)->payments(55, '2026-05-31'));
     }
 }
