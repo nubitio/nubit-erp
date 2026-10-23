@@ -5,8 +5,15 @@
 # -----------------------------------------------------------------------------
 # Build arguments for customization
 # -----------------------------------------------------------------------------
-ARG PHP_VERSION=8.5
-ARG FRANKENPHP_VERSION=1.10
+# FrankenPHP 1.13.2 / PHP 8.5.12 is the 2026-10-21 security image for
+# CVE-2026-109618 and CVE-2026-109619. Minor tags 1.10 and 1.12 are frozen
+# and will never receive that PHP; the floating `1` and `1.13` tags move on
+# later releases and daily rebuilds. Pin the patch tag so a rebuild stays on
+# the fixed PHP. Debian trixie is the variant behind today's unsuffixed
+# `1.10-php8.5` tag (same digest as `1.10-php8.5-trixie`, not bookworm).
+ARG PHP_VERSION=8.5.12
+ARG FRANKENPHP_VERSION=1.13.2
+ARG FRANKENPHP_DEBIAN=trixie
 ARG NODE_VERSION=24.14.1
 # Semver tag of the build; promoted to ENV in the stg/prod stages and read by
 # Symfony as %env(APP_VERSION)% (surfaced in the UI: login + app footer).
@@ -22,7 +29,7 @@ FROM ghcr.io/carthage-software/mago:1.40.0 AS mago
 # -----------------------------------------------------------------------------
 # Base image with FrankenPHP
 # -----------------------------------------------------------------------------
-FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-php${PHP_VERSION} AS base
+FROM dunglas/frankenphp:${FRANKENPHP_VERSION}-php${PHP_VERSION}-${FRANKENPHP_DEBIAN} AS base
 
 # Set environment variables
 ENV COMPOSER_ALLOW_SUPERUSER=1

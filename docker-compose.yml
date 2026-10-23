@@ -8,7 +8,9 @@ services:
       context: .
       target: dev
       args:
-        PHP_VERSION: 8.5
+        PHP_VERSION: 8.5.12
+        FRANKENPHP_VERSION: 1.13.2
+        FRANKENPHP_DEBIAN: trixie
     ports:
       - '8080:80'
       - '8444:443'
@@ -126,7 +128,9 @@ services:
       context: .
       target: dev
       args:
-        PHP_VERSION: 8.5
+        PHP_VERSION: 8.5.12
+        FRANKENPHP_VERSION: 1.13.2
+        FRANKENPHP_DEBIAN: trixie
     volumes:
       - '.:/app'
       - 'app-var:/app/var'

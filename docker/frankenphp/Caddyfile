@@ -42,8 +42,11 @@ route {
         Permissions-Policy         "camera=(), microphone=(), geolocation=()"
     }
 
-    # Encode responses
-    encode gzip zstd
+    # Encode responses. Exclude the Mercure hub: Caddy 2.11.7 (FrankenPHP
+    # 1.13) compresses server-sent events, so each subscriber would hold an
+    # encoder and private updates become exposed to BREACH-style attacks.
+    @compressible not path /.well-known/mercure*
+    encode @compressible gzip zstd
 
     # The service worker is the mutable pointer to hashed assets. It must be
     # revalidated on every visit; caching it as immutable can pin clients to a

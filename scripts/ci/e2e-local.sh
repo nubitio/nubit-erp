@@ -70,7 +70,7 @@ step "Resetting any previous e2e stack"
 docker compose down -v >/dev/null 2>&1 || true
 
 step "Building web image (CI target)"
-docker compose build web
+docker compose build --pull web
 
 step "Starting database redis mercure web"
 docker compose up -d --no-build database redis mercure web
