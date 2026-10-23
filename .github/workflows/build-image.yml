@@ -27,7 +27,9 @@ permissions:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  PHP_VERSION: "8.5"
+  PHP_VERSION: "8.5.12"
+  FRANKENPHP_VERSION: "1.13.2"
+  FRANKENPHP_DEBIAN: "trixie"
   NODE_VERSION: "24.14.1"
 
 jobs:
@@ -95,10 +97,13 @@ jobs:
           context: .
           target: prod
           push: true
+          pull: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             PHP_VERSION=${{ env.PHP_VERSION }}
+            FRANKENPHP_VERSION=${{ env.FRANKENPHP_VERSION }}
+            FRANKENPHP_DEBIAN=${{ env.FRANKENPHP_DEBIAN }}
             NODE_VERSION=${{ env.NODE_VERSION }}
             APP_VERSION=${{ steps.appver.outputs.version }}
           provenance: false
@@ -111,12 +116,15 @@ jobs:
           context: .
           target: prod
           push: true
+          pull: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=nubit-erp-prod
           cache-to: type=gha,mode=min,scope=nubit-erp-prod
           build-args: |
             PHP_VERSION=${{ env.PHP_VERSION }}
+            FRANKENPHP_VERSION=${{ env.FRANKENPHP_VERSION }}
+            FRANKENPHP_DEBIAN=${{ env.FRANKENPHP_DEBIAN }}
             NODE_VERSION=${{ env.NODE_VERSION }}
             APP_VERSION=${{ steps.appver.outputs.version }}
           provenance: false

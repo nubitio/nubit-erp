@@ -36,7 +36,7 @@ runs:
     - name: Build web image (Blacksmith)
       if: inputs.use_blacksmith_docker == 'true'
       shell: bash
-      run: docker compose build web
+      run: docker compose build --pull web
 
     - name: Build web image (GitHub cache)
       if: inputs.use_blacksmith_docker != 'true'
@@ -46,11 +46,14 @@ runs:
         target: dev
         load: true
         push: false
+        pull: true
         tags: nubit-erp-ci-web:local
         cache-from: type=gha,scope=nubit-erp-web-dev
         cache-to: type=gha,mode=min,scope=nubit-erp-web-dev
         build-args: |
-          PHP_VERSION=8.5
+          PHP_VERSION=8.5.12
+          FRANKENPHP_VERSION=1.13.2
+          FRANKENPHP_DEBIAN=trixie
 
     - name: Start stack
       shell: bash
