@@ -68,6 +68,10 @@
   }
 }
 
+.supplier-bill-group.is-overdue {
+  color: var(--error-color);
+}
+
 .supplier-bill-card {
   display: flex;
   width: 100%;

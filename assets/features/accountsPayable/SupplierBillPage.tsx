@@ -85,6 +85,24 @@ const statusPatch = toPatch(
     .build(),
 );
 
+const DEFAULT_SUBTITLE = 'Vencimientos de proveedores y registro de pagos.';
+
+/** One clause per currency; amounts are never summed across currencies. */
+function payableSubtitle(
+  currencies: ReadonlyArray<{ currency: string; balanceDue: string; supplierCount: number }> = [],
+) {
+  if (currencies.length === 0) return DEFAULT_SUBTITLE;
+
+  return currencies
+    .map(
+      ({ currency, balanceDue, supplierCount }) =>
+        `${formatMoney(balanceDue, currency)} por pagar a ${supplierCount} ${
+          supplierCount === 1 ? 'proveedor' : 'proveedores'
+        }`,
+    )
+    .join(' · ');
+}
+
 export const SupplierBillPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -102,7 +120,13 @@ export const SupplierBillPage = () => {
       gridAppearance: 'page',
       cardView: {
         defaultView: 'cards',
-        groupBy: (row) => payableDueGroup(row.dueDate, asOf),
+        groupBy: (row) => {
+          const { key, label, overdue } = payableDueGroup(row.dueDate, asOf);
+          return {
+            key,
+            label: overdue ? <span className="supplier-bill-group is-overdue">{label}</span> : label,
+          };
+        },
         primaryActionKey: 'pay',
         renderContent: ({ row }) => {
           const group = payableDueGroup(row.dueDate, asOf);
@@ -142,7 +166,7 @@ export const SupplierBillPage = () => {
         <>
           <PageHeader
             title="Cuentas por pagar"
-            subtitle="Vencimientos de proveedores y registro de pagos."
+            subtitle={payableSubtitle(summary?.currencies)}
           />
           <FinanceNavigation />
           <SupplierBillSummary />
