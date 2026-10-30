@@ -1,0 +1,90 @@
+.supplier-payment-page {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 24px 32px;
+  max-width: 1280px;
+  margin: 0 auto;
+  .nb-page-header {
+    margin-bottom: 24px;
+  }
+  .nb-detail-layout {
+    grid-template-columns: minmax(0, 1.5fr) minmax(280px, 1fr);
+  }
+  .nb-section--panel {
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--surface-1);
+  }
+  .nb-badge {
+    align-self: flex-start;
+  }
+  form {
+    display: grid;
+    gap: 20px;
+  }
+  &__supplier {
+    display: block;
+    font-size: 18px;
+    margin-bottom: 4px;
+    overflow-wrap: anywhere;
+  }
+  &__document {
+    margin: 0 0 12px;
+    color: var(--text-secondary);
+  }
+  .nb-description-list {
+    margin-top: 20px;
+  }
+  &__hint {
+    margin: 8px 0 0;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  &__error {
+    margin: 8px 0 0;
+    color: var(--error-color);
+    font-size: 13px;
+  }
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-top: 8px;
+  }
+  &__history {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+    li:last-child {
+      border-bottom: 0;
+    }
+    p {
+      margin: 4px 0 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+  }
+  @media (max-width: 900px) {
+    padding: 20px 16px;
+    .nb-detail-layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .nb-detail-layout__aside {
+      grid-row: 1;
+    }
+    &__actions > button {
+      flex: 1;
+    }
+  }
+}

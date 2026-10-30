@@ -1,0 +1,146 @@
+.accounts-payable-page {
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+
+  // The summary can exceed a short viewport. Let the page scroll rather than
+  // compressing the table to zero height beneath its filters and pager.
+  .view.datagrid-list,
+  .view-wrapper.view-wrapper-datagrid-list,
+  .nb-datagrid {
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .nb-datagrid__table-wrap {
+    flex: 0 0 auto;
+    min-height: 280px;
+    max-height: 60dvh;
+    overflow: auto;
+  }
+}
+
+.accounts-payable-page .nb-datagrid--cards {
+  .nb-datagrid__table-wrap {
+    max-height: none;
+    min-height: 0;
+    overflow: visible;
+  }
+  .nb-datagrid__cards {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding: 16px 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--surface-1);
+  }
+  .nb-datagrid__card {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .nb-datagrid__card:last-child {
+    border-bottom: 0;
+  }
+  .nb-datagrid__card-body {
+    align-items: center;
+    padding: 16px 0;
+    gap: 16px;
+  }
+  .nb-datagrid__card-copy {
+    display: block;
+    width: 100%;
+    padding: 0;
+  }
+  .nb-datagrid__card-side {
+    flex-direction: row;
+    gap: 8px;
+  }
+  .nb-datagrid__card-group {
+    padding: 16px 0 0;
+  }
+  .nb-datagrid__card-group:first-child {
+    padding-top: 0;
+  }
+}
+
+.supplier-bill-card {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 36px;
+    flex: 0 0 auto;
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    border-radius: 6px;
+  }
+  &__body {
+    min-width: 0;
+    flex: 1;
+    strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+    }
+  }
+  &__document,
+  &__due {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    overflow-wrap: anywhere;
+  }
+  &__amount {
+    flex: 0 0 auto;
+    font-size: 15px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .is-overdue {
+    color: var(--error-color);
+  }
+  &__icon.is-overdue {
+    background: var(--status-danger-bg);
+  }
+}
+
+@media (max-width: 600px) {
+  .accounts-payable-page .nb-datagrid--cards {
+    .nb-datagrid__cards {
+      padding: 16px;
+    }
+    .nb-datagrid__card-body {
+      flex-wrap: wrap;
+    }
+    .nb-datagrid__card-content {
+      flex-basis: 100%;
+    }
+    .nb-datagrid__card-side {
+      margin-left: 46px;
+    }
+  }
+  .supplier-bill-card {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 8px 14px;
+    &__icon {
+      align-self: start;
+    }
+    &__amount {
+      grid-column: 2;
+    }
+  }
+}

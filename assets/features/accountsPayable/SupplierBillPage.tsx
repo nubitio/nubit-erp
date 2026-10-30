@@ -10,14 +10,21 @@ import {
   type SmartCrudFieldPatch,
 } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
+import { useQueryClient } from '@tanstack/react-query';
+import { FinanceNavigation } from '@shared/ui/finance/FinanceNavigation';
+import { SupplierBillSummary } from './SupplierBillSummary';
+import './SupplierBillPage.scss';
+import { DateTime } from 'luxon';
+import { payableDueGroup } from './model/payableDueGroup';
+import { useSupplierBillSummary } from './useSupplierBillSummary';
 
 const API = getCoreApiBaseUrl();
 import { supplierBillApiUrl, supplierBillEvents, supplierBillFormLayout } from './model/constants';
-import { Badge } from '@nubitio/ui';
+import { Badge, PageHeader } from '@nubitio/ui';
 import { useNavigate } from 'react-router-dom';
 import { dateCell, entityNameCell, moneyCell, payableStatusCell } from '@shared/ui/crudFormatters';
 import { OwnerRowButtons } from '@shared/ui/OwnerRowButtons';
-import { payableStatus } from '@shared/lib/displayFormat';
+import { payableStatus, entityLabel, formatDate, formatMoney } from '@shared/lib/displayFormat';
 import { hasPermission } from '@shared/permissions';
 
 interface SupplierBillRecord extends DataRecord {
@@ -80,13 +87,69 @@ const statusPatch = toPatch(
 
 export const SupplierBillPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const refreshSummary = () => {
+    void queryClient.invalidateQueries({ queryKey: ['accounts-payable'] });
+  };
+  const { data: summary } = useSupplierBillSummary();
+  const asOf = summary?.asOf ?? DateTime.now().setZone('America/Lima').toISODate()!;
   const canPay = hasPermission('accounts_payable.pay');
 
   const resource = {
     ...defineResource<SupplierBillRecord>(supplierBillApiUrl, {
       id: 'supplier-bill-actions',
-      title: 'Cuentas por pagar',
+      title: 'Facturas pendientes',
+      gridAppearance: 'page',
+      cardView: {
+        defaultView: 'cards',
+        groupBy: (row) => payableDueGroup(row.dueDate, asOf),
+        primaryActionKey: 'pay',
+        renderContent: ({ row }) => {
+          const group = payableDueGroup(row.dueDate, asOf);
+          return (
+            <span className="supplier-bill-card">
+              <span
+                className={`supplier-bill-card__icon${group.overdue ? ' is-overdue' : ''}`}
+                aria-hidden="true"
+              >
+                <i className="ph ph-file-text" />
+              </span>
+              <span className="supplier-bill-card__body">
+                <strong>{entityLabel(row.supplier) || 'Proveedor'}</strong>
+                <span className="supplier-bill-card__document">
+                  {[row.series, row.number].filter(Boolean).join('-') || 'Sin número'}
+                  {row.note ? ` · ${String(row.note)}` : ''}
+                </span>
+                <span
+                  className={
+                    group.overdue ? 'supplier-bill-card__due is-overdue' : 'supplier-bill-card__due'
+                  }
+                >
+                  Vence el {formatDate(row.dueDate)}
+                </span>
+              </span>
+              <strong className="supplier-bill-card__amount">
+                {formatMoney(row.balanceDue, String(row.currency ?? 'PEN'))}
+              </strong>
+            </span>
+          );
+        },
+      },
+      filterRow: false,
+      filterToolbarFields: ['supplier', 'dueDate', 'status'],
       events: supplierBillEvents,
+      aboveGrid: (
+        <>
+          <PageHeader
+            title="Cuentas por pagar"
+            subtitle="Vencimientos de proveedores y registro de pagos."
+          />
+          <FinanceNavigation />
+          <SupplierBillSummary />
+        </>
+      ),
+      onSaveSuccess: refreshSummary,
+      onDeleteSuccess: refreshSummary,
       viewMode: { mode: 'drawer', drawerSize: 'md' },
       formLayout: supplierBillFormLayout,
       sort: [{ selector: 'dueDate', desc: false }],
@@ -113,6 +176,7 @@ export const SupplierBillPage = () => {
               textField: 'businessName',
               layoutHint: 'lookup',
               label: 'Proveedor',
+              cardRole: 'title',
               formatter: entityNameCell,
             },
           },
@@ -281,6 +345,11 @@ export const SupplierBillPage = () => {
               visibleOnForm: true,
             },
           },
+          {
+            kind: 'override',
+            key: 'payments',
+            patch: { label: 'Pagos', visible: false, visibleOnForm: false, filterable: false },
+          },
           { kind: 'override', key: 'id', patch: { visible: false, visibleOnForm: false } },
           { kind: 'override', key: 'createdAt', patch: { visibleOnForm: false, visible: false } },
           {
@@ -296,7 +365,12 @@ export const SupplierBillPage = () => {
               sortable: false,
               visibleOnForm: false,
               formatter: (cell: GridCellContext) => {
-                if (!canPay || payableStatus(cell.data ?? {}) === 'paid') return null;
+                if (
+                  !canPay ||
+                  cell.data?.status === 'VOID' ||
+                  payableStatus(cell.data ?? {}) === 'paid'
+                )
+                  return null;
                 const id = String(cell.data?.id ?? '');
                 if (!id) return null;
                 return (
@@ -329,7 +403,11 @@ export const SupplierBillPage = () => {
     },
   };
 
-  return <SchemaCrudPage resource={resource} />;
+  return (
+    <div className="accounts-payable-page">
+      <SchemaCrudPage resource={resource} />
+    </div>
+  );
 };
 
 SupplierBillPage.EVENTS = supplierBillEvents;

@@ -1,0 +1,34 @@
+.supplier-bill-summary {
+  margin-bottom: 24px;
+  &__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  &__heading p,
+  &__currency > p {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin: 0 0 12px;
+  }
+  &__currency {
+    margin-top: 12px;
+  }
+  &__hint {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin: 12px 0 0;
+    max-width: 800px;
+  }
+  .nb-kpi-metric-card__label {
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  @media (min-width: 1000px) {
+    .nb-kpi-metric-row {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+}
