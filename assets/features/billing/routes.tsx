@@ -10,6 +10,10 @@ const SaleDetailPage = lazyNamed(
 const SalePage = lazyNamed(() => import('@features/sales/SalePage'), 'SalePage');
 const InvoicePage = lazyNamed(() => import('@features/sales/InvoicePage'), 'InvoicePage');
 const CreditNotePage = lazyNamed(() => import('@features/sales/CreditNotePage'), 'CreditNotePage');
+const CreditNoteIssuePage = lazyNamed(
+  () => import('@features/sales/creditNote/CreditNoteIssuePage'),
+  'CreditNoteIssuePage',
+);
 const SaleConsultPage = lazyNamed(
   () => import('@features/sales/SaleConsultPage'),
   'SaleConsultPage',
@@ -47,6 +51,7 @@ export const billingRoutes: AppRouteDefinition[] = [
       { path: 'consult', element: SaleConsultPage },
       { path: 'documents', element: InvoicePage },
       { path: 'documents/:id?', element: InvoicePage },
+      { path: 'credit-notes/new/:documentId', element: CreditNoteIssuePage },
       { path: 'credit-notes', element: CreditNotePage },
       { path: 'credit-notes/:id?', element: CreditNotePage },
     ],

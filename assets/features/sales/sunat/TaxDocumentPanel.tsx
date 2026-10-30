@@ -159,7 +159,10 @@ export function TaxDocumentPanel({ sale }: { sale: SaleDetail }) {
               </Button>
             )}
             {status.stage === 'accepted' && active && hasPermission('sales.void') && (
-              <Link to="/billing/credit-notes">Gestionar notas de crédito</Link>
+              <>
+                <Link to={`/billing/credit-notes/new/${id}`}>Emitir nota de crédito</Link>
+                <Link to="/billing/credit-notes">Gestionar notas de crédito</Link>
+              </>
             )}
           </div>
           {links && (
