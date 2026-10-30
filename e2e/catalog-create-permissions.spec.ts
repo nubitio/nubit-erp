@@ -21,7 +21,10 @@ test('administrator can start product and customer creation from their grids', a
     if (route === 'catalog/products') {
       const form = page.locator('.nb-crud-page-shell');
       await expect(form).toBeVisible();
-      await form.getByRole('button', { name: /cancelar/i, exact: true }).last().click();
+      await form
+        .getByRole('button', { name: /cancelar/i, exact: true })
+        .last()
+        .click();
       await expect(form).toHaveCount(0);
     } else {
       await expect(page.getByRole('dialog').last()).toBeVisible();

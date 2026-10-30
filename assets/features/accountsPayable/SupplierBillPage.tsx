@@ -124,7 +124,11 @@ export const SupplierBillPage = () => {
           const { key, label, overdue } = payableDueGroup(row.dueDate, asOf);
           return {
             key,
-            label: overdue ? <span className="supplier-bill-group is-overdue">{label}</span> : label,
+            label: overdue ? (
+              <span className="supplier-bill-group is-overdue">{label}</span>
+            ) : (
+              label
+            ),
           };
         },
         primaryActionKey: 'pay',
@@ -164,10 +168,7 @@ export const SupplierBillPage = () => {
       events: supplierBillEvents,
       aboveGrid: (
         <>
-          <PageHeader
-            title="Cuentas por pagar"
-            subtitle={payableSubtitle(summary?.currencies)}
-          />
+          <PageHeader title="Cuentas por pagar" subtitle={payableSubtitle(summary?.currencies)} />
           <FinanceNavigation />
           <SupplierBillSummary />
         </>
