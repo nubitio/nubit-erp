@@ -10,6 +10,8 @@ export interface XReportDto {
   cashOut: string;
   currentBalance: string;
   shiftDurationMinutes: number;
+  cashSalesNet?: string | null;
+  cashAdjustmentsOut?: string | null;
   salesByPaymentMethod: Array<{
     paymentMethodId: number;
     paymentMethod: string;
@@ -21,7 +23,7 @@ export interface CashRegisterClosureItem {
   cashSession: string;
   paymentMethod: string;
   expectedAmount: number;
-  countedAmount: number | undefined;
+  countedAmount: number | string | undefined;
   difference: number | undefined;
   note: unknown;
 }
@@ -38,9 +40,13 @@ const cashRegisterService = () => {
   };
 
   const closeCashRegister = (id: string, closureData: CashRegisterClosureItem[]) => {
-    return httpClient.post<CashRegisterMutationResponse>(API + `cash-sessions/${id}/close`, {
-      closureItems: closureData,
-    });
+    return httpClient.post<CashRegisterMutationResponse>(
+      API + `cash-sessions/${id}/close`,
+      {
+        closureItems: closureData,
+      },
+      { errorPresentation: 'inline' },
+    );
   };
 
   const getMovements = (id: string) => {
@@ -48,7 +54,9 @@ const cashRegisterService = () => {
   };
 
   const getXReport = (sessionId: string | number) => {
-    return httpClient.get<XReportDto>(API + `cash-sessions/${sessionId}/x-report`);
+    return httpClient.get<XReportDto>(API + `cash-sessions/${sessionId}/x-report`, {
+      errorPresentation: 'inline',
+    });
   };
 
   return {

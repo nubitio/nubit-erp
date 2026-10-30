@@ -39,5 +39,9 @@ final readonly class CashSessionXReportDto
             ],
         ])]
         public array $salesByPaymentMethod,
+        #[Groups(['cash_x_report:read'])]
+        public ?string $cashSalesNet = null,
+        #[Groups(['cash_x_report:read'])]
+        public ?string $cashAdjustmentsOut = null,
     ) {}
 }

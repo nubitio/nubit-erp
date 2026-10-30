@@ -6,8 +6,10 @@ namespace App\Tests\CashRegister\State;
 
 use ApiPlatform\Metadata\Get;
 use App\CashRegister\Dto\CashSessionXReportDto;
+use App\CashRegister\State\CashSessionClosureSummaryProvider;
 use App\CashRegister\State\CashSessionXReportProvider;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -95,5 +97,62 @@ final class CashSessionXReportProviderTest extends TestCase
         $this->assertSame(2, $result->salesByPaymentMethod[1]->paymentMethodId);
         $this->assertSame('Tarjeta', $result->salesByPaymentMethod[1]->paymentMethod);
         $this->assertSame('200.00', $result->salesByPaymentMethod[1]->amount);
+    }
+
+    public function testCashBreakdownMatchesClosureWhenCashAndDigitalRefundsCoexist(): void
+    {
+        $db = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
+        $db->executeStatement('CREATE TABLE cash_sessions (id INTEGER, opening_amount NUMERIC, opened_at TEXT)');
+        $db->executeStatement(
+            'CREATE TABLE cash_movements (cash_session_id INTEGER, payment_method_id INTEGER, movement_type TEXT, amount NUMERIC)',
+        );
+        $db->executeStatement('CREATE TABLE payment_method (id INTEGER, name TEXT)');
+        $db->executeStatement("INSERT INTO cash_sessions VALUES (1, 200.00, '2026-10-29 08:00:00')");
+        $db->executeStatement("INSERT INTO payment_method VALUES (1, 'Efectivo'), (2, 'Tarjeta')");
+        foreach ([
+            [1, 'SALE_IN',    '300.00'],
+            [2, 'SALE_IN',    '200.00'],
+            [1, 'CASH_IN',    '50.00'],
+            [1, 'CASH_OUT',   '20.00'],
+            [1, 'REFUND_OUT', '10.00'],
+            [2, 'REFUND_OUT', '30.00'],
+        ] as [$method, $type, $amount]) {
+            $db->insert('cash_movements', [
+                'cash_session_id' => 1,
+                'payment_method_id' => $method,
+                'movement_type' => $type,
+                'amount' => $amount,
+            ]);
+        }
+        $connection = $this->createMock(Connection::class);
+        $connection
+            ->method('fetchAssociative')
+            ->willReturnCallback(fn(string $sql, array $params) => $db->fetchAssociative($sql, $params));
+        $connection
+            ->method('fetchAllAssociative')
+            ->willReturnCallback(fn(string $sql, array $params) => $db->fetchAllAssociative($sql, $params));
+        $connection->method('fetchOne')->willReturnCallback(fn(string $sql, array $params) => str_contains(
+            $sql,
+            'TIMESTAMPDIFF',
+        )
+                ? 60
+                : $db->fetchOne($sql, $params));
+        $report = new CashSessionXReportProvider($connection)->provide(new Get(), ['id' => 1]);
+        $closure = new CashSessionClosureSummaryProvider($connection)->provide(new Get(), ['id' => 1]);
+        self::assertSame('290.00', $report->cashSalesNet);
+        self::assertSame('20.00', $report->cashAdjustmentsOut);
+        self::assertSame('60.00', $report->cashOut);
+        self::assertSame('520.00', $closure[0]->expectedAmount);
+        self::assertSame(
+            $closure[0]->expectedAmount,
+            \Brick\Math\BigDecimal::of($report->openingBalance)
+                ->plus($report->cashSalesNet)
+                ->plus($report->cashIn)
+                ->minus($report->cashAdjustmentsOut)
+                ->toScale(2)
+                ->__toString(),
+        );
+        self::assertSame('170.00', $closure[1]->expectedAmount);
+        $db->close();
     }
 }

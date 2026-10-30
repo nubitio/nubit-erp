@@ -3,9 +3,11 @@ import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import toast from '@shared/lib/SharedUtils';
-import cashRegisterService from './services/cashRegisterService';
+import cashRegisterService, { type XReportDto } from './services/cashRegisterService';
+import { useSessionInfo } from '@shared/sessionInfo';
+import { hasPermission } from '@shared/permissions';
 import { cashboxService } from './services/cashboxService';
-import { ConfirmDialog } from '@nubitio/ui';
+import { Alert, ConfirmDialog } from '@nubitio/ui';
 import {
   CashClosureGrid,
   type CashClosureGridHandle,
@@ -27,6 +29,15 @@ export const CashRegisterClose = () => {
   const [isClosing, setIsClosing] = useState(false);
   const [cashSessionId, setCashSessionId] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { currentUserId, currentBranchId, currentBranchName } = useSessionInfo();
+  const [report, setReport] = useState<XReportDto | null>(null);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [closeError, setCloseError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const [sessionContext, setSessionContext] = useState('');
+  const draftKey = cashSessionId
+    ? `nubit:cash-count:${currentUserId}:${currentBranchId}:${cashSessionId}`
+    : undefined;
   const isLegacyCashRegisterRoute = location.pathname.startsWith('/cash-register/');
 
   const closeCashRegister = () => {
@@ -58,11 +69,19 @@ export const CashRegisterClose = () => {
     setIsClosing(true);
     cashRegisterService()
       .closeCashRegister(cashSessionId, data)
-      .then(() => {
+      .then((response) => {
+        const result = response.data as { success?: boolean; message?: string };
+        if (result?.success === false)
+          throw new Error(result.message || 'No se pudo cerrar la caja.');
+        gridRef.current?.clearDraft();
         toast('Caja cerrada correctamente', 'success');
-        navigate('/cashbox');
+        navigate('/cashbox/dashboard');
       })
-      .catch(() => toast('No se pudo cerrar la caja', 'error'))
+      .catch(() =>
+        setCloseError(
+          'No se pudo cerrar la caja. El conteo se conserva para que puedas reintentar.',
+        ),
+      )
       .finally(() => setIsClosing(false));
   };
 
@@ -78,18 +97,40 @@ export const CashRegisterClose = () => {
       summaryRequested = true;
       setCashSessionId(sessionId);
       gridRef.current?.showLoading('Cargando datos...');
-      httpClient
-        .get<CashClosureRow[]>(API + 'cash-sessions/' + sessionId + '/summary')
-        .then((response) => {
-          if (!cancelled) {
-            gridRef.current?.setRows(response.data);
+      setSummaryError(null);
+      setReport(null);
+      Promise.allSettled([
+        httpClient.get<CashClosureRow[]>(API + 'cash-sessions/' + sessionId + '/summary', {
+          errorPresentation: 'inline',
+        }),
+        cashRegisterService().getXReport(sessionId),
+        cashboxService.getDashboard(),
+      ])
+        .then(([summary, xReport, dashboard]) => {
+          if (cancelled) return;
+          if (summary.status === 'fulfilled') gridRef.current?.setRows(summary.value.data);
+          else setSummaryError('No se pudo cargar el resumen de cierre.');
+          if (xReport.status === 'fulfilled') setReport(xReport.value.data);
+          if (dashboard.status === 'fulfilled') {
+            const session = dashboard.value.data.find(
+              (item) => String(item.cashSessionId ?? item.cashShiftId) === sessionId,
+            );
+            setSessionContext(
+              [
+                session?.name,
+                currentBranchName,
+                session?.cashier,
+                session?.openedAt
+                  ? `Abierta ${new Date(session.openedAt).toLocaleString('es-PE')}`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · '),
+            );
           }
         })
-        .catch(() => toast('No se pudo cargar el resumen de la caja', 'error'))
         .finally(() => {
-          if (!cancelled) {
-            gridRef.current?.hideLoading();
-          }
+          if (!cancelled) gridRef.current?.hideLoading();
         });
     };
 
@@ -131,14 +172,25 @@ export const CashRegisterClose = () => {
     return () => {
       cancelled = true;
     };
-  }, [id, isLegacyCashRegisterRoute, navigate]);
+  }, [id, isLegacyCashRegisterRoute, navigate, attempt, currentBranchName]);
 
   return (
     <div className="cash-close-page">
+      {closeError && <Alert tone="danger">{closeError}</Alert>}
       <CashClosureGrid
         ref={gridRef}
+        report={report}
+        context={sessionContext}
+        draftKey={draftKey}
+        canClose={hasPermission('cash.close')}
+        error={summaryError}
+        onRetry={() => setAttempt((value) => value + 1)}
+        onContinue={() => navigate('/pos')}
         closing={isClosing}
-        onCloseRequest={() => setShowCloseConfirm(true)}
+        onCloseRequest={() => {
+          setCloseError(null);
+          setShowCloseConfirm(true);
+        }}
       />
       <ConfirmDialog
         open={showCloseConfirm}

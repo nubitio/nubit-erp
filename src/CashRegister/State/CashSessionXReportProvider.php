@@ -80,6 +80,19 @@ readonly class CashSessionXReportProvider implements ProviderInterface
             ]) ?: 0
         );
 
+        // Cash-only reconciliation mirrors the closure summary. Digital refunds
+        // belong in the overall report, but must not reduce physical cash.
+        $cashBreakdown = $this->connection->fetchAssociative(
+            "SELECT
+                COALESCE(SUM(CASE
+                    WHEN payment_method_id = 1 AND movement_type = 'SALE_IN' THEN amount
+                    WHEN payment_method_id = 1 AND movement_type = 'REFUND_OUT' THEN -amount
+                    ELSE 0 END), 0) AS cash_sales_net,
+                COALESCE(SUM(CASE WHEN movement_type = 'CASH_OUT' THEN amount ELSE 0 END), 0) AS cash_adjustments_out
+             FROM cash_movements WHERE cash_session_id = ?",
+            [$sessionId],
+        );
+
         $currentBalance = $openingBalance->plus($totalSales)->plus($cashIn)->minus($cashOut);
 
         $salesByPaymentMethod = array_map(
@@ -99,6 +112,14 @@ readonly class CashSessionXReportProvider implements ProviderInterface
             currentBalance: $currentBalance->toScale(2, RoundingMode::HALF_UP)->__toString(),
             shiftDurationMinutes: $shiftDurationMinutes,
             salesByPaymentMethod: $salesByPaymentMethod,
+            cashSalesNet: BigDecimal::of((string) ($cashBreakdown['cash_sales_net'] ?? '0'))->toScale(
+                2,
+                RoundingMode::HALF_UP,
+            )->__toString(),
+            cashAdjustmentsOut: BigDecimal::of((string) ($cashBreakdown['cash_adjustments_out'] ?? '0'))->toScale(
+                2,
+                RoundingMode::HALF_UP,
+            )->__toString(),
         );
     }
 }
