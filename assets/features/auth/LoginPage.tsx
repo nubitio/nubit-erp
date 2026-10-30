@@ -7,6 +7,24 @@ import { LoginForm } from './LoginForm';
 
 const NUBIT_ICON = '/assets/images/nubit-icon.png';
 
+const BRAND_FEATURES = [
+  {
+    icon: 'ph-shopping-cart',
+    title: 'POS y facturación electrónica',
+    description: 'Ventas, comprobantes SUNAT y cobranzas',
+  },
+  {
+    icon: 'ph-package',
+    title: 'Inventario, compras y tesorería',
+    description: 'Stock, proveedores, caja y bancos',
+  },
+  {
+    icon: 'ph-calculator',
+    title: 'Contabilidad y planilla',
+    description: 'Libros contables y pagos al personal',
+  },
+] as const;
+
 export const LoginPage = () => {
   const [brandLogoFailed, setBrandLogoFailed] = useState(false);
   const [mobileLogoFailed, setMobileLogoFailed] = useState(false);
@@ -25,12 +43,6 @@ export const LoginPage = () => {
     <div id="login-root">
       {/* ── Brand panel ──────────────────────────────── */}
       <aside className="login-brand" aria-hidden="true">
-        <div className="brand-blobs">
-          <span className="blob blob-1" />
-          <span className="blob blob-2" />
-          <span className="blob blob-3" />
-        </div>
-
         <div className="brand-content">
           <div className="brand-logo-wrap">
             {hasCustomLogo ? (
@@ -48,40 +60,42 @@ export const LoginPage = () => {
             )}
           </div>
 
-          <div className="brand-illustration">
-            <img src="/assets/images/illustration.svg" alt="" />
+          <div className="brand-main">
+            <div className="brand-text">
+              <h1>Gestiona tu negocio en un solo lugar.</h1>
+              <p>
+                Vende, factura a SUNAT, controla stock, compras, finanzas y planilla en un solo
+                sistema.
+              </p>
+            </div>
+
+            <ul className="brand-features">
+              {BRAND_FEATURES.map((feature) => (
+                <li key={feature.title}>
+                  <span className="brand-features__icon">
+                    <i className={`ph ${feature.icon}`} aria-hidden="true" />
+                  </span>
+                  <span>
+                    <strong>{feature.title}</strong>
+                    <small>{feature.description}</small>
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div className="brand-text">
-            <h1>
-              Gestiona tu negocio
-              <br />
-              en un solo lugar.
-            </h1>
-            <p>
-              Vende, factura a SUNAT, controla stock, compras, finanzas y planilla en un solo
-              sistema.
+          <div className="brand-footer">
+            <p className="brand-note">
+              <i className="ph ph-shield-check" aria-hidden="true" />
+              Nunca te pediremos tu contraseña ni códigos por WhatsApp o teléfono.
+            </p>
+            <p className="brand-legal">
+              <span>Nubit Labs · Arequipa, Perú</span>
+              {window.app_version && window.app_version !== 'dev' && (
+                <span className="brand-version">{window.app_version}</span>
+              )}
             </p>
           </div>
-
-          <ul className="brand-features">
-            <li>
-              <i className="ph ph-check-circle" aria-hidden="true" />
-              POS y facturación electrónica SUNAT
-            </li>
-            <li>
-              <i className="ph ph-check-circle" aria-hidden="true" />
-              Inventario, compras y tesorería
-            </li>
-            <li>
-              <i className="ph ph-check-circle" aria-hidden="true" />
-              Contabilidad y planilla
-            </li>
-          </ul>
-
-          {window.app_version && window.app_version !== 'dev' && (
-            <span className="brand-version">{window.app_version}</span>
-          )}
         </div>
       </aside>
 
@@ -99,10 +113,10 @@ export const LoginPage = () => {
           )}
         </div>
 
-        <div className="form-card">
+        <div className="form-card form-card--plain">
           <header className="form-header">
-            <h2>Bienvenido de nuevo</h2>
-            <p>Ingresa tus credenciales para continuar</p>
+            <h2>Ingresa a tu cuenta</h2>
+            <p>Usa tu usuario y contraseña del ERP.</p>
           </header>
 
           <LoginForm />

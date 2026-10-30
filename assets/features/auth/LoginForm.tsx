@@ -155,12 +155,14 @@ export const LoginForm = () => {
     <form className="login-form" onSubmit={onSubmit} noValidate>
       {/* Username */}
       <div className={`login-field${usernameError ? ' login-field--error' : ''}`}>
+        <label className="login-label" htmlFor="login-username">
+          Usuario
+        </label>
         <TextField
           ref={usernameRef}
           id="login-username"
           className="login-input"
           type="text"
-          placeholder="Usuario"
           autoComplete="username"
           aria-label="Usuario"
           invalid={!!usernameError}
@@ -182,12 +184,14 @@ export const LoginForm = () => {
 
       {/* Password */}
       <div className={`login-field${passwordError ? ' login-field--error' : ''}`}>
+        <label className="login-label" htmlFor="login-password">
+          Contraseña
+        </label>
         <div className="login-input-wrapper">
           <TextField
             id="login-password"
             className="login-input"
             type={showPassword ? 'text' : 'password'}
-            placeholder="Contraseña"
             autoComplete="current-password"
             aria-label="Contraseña"
             invalid={!!passwordError}

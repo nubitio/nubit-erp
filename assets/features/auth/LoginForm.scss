@@ -24,6 +24,14 @@
     }
   }
 
+  .login-label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+  }
+
   // ── Password input wrapper (input + toggle) ──────────────────────────────
   .login-input-wrapper {
     position: relative;

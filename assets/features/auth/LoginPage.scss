@@ -24,134 +24,34 @@ body {
 
 // ─── Brand panel (left) ──────────────────────────────────────────────────────
 .login-brand {
-  position: relative;
-  flex: 0 0 48%;
+  flex: 0 0 36%;
+  max-width: 520px;
+  min-width: 360px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  // The brand panel always has a dark gradient background regardless of app theme.
-  // Override --on-accent-color locally so all color-mix() references use light text.
-  --on-accent-color: #ffffff;
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--accent-color) 18%, #000) 0%,
-    color-mix(in srgb, var(--accent-color) 28%, #000) 50%,
-    color-mix(in srgb, var(--accent-color) 42%, #000) 100%
-  );
-
-  // dot-grid texture overlay
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(
-      circle,
-      color-mix(in srgb, var(--on-accent-color) 7%, transparent) 1px,
-      transparent 1px
-    );
-    background-size: 24px 24px;
-    pointer-events: none;
-  }
+  // The brand panel is always dark, whatever the app theme.
+  --login-brand-bg: #0b0d11;
+  --login-brand-text: #ffffff;
+  --login-brand-muted: color-mix(in srgb, var(--login-brand-text) 62%, transparent);
+  background: var(--login-brand-bg);
+  color: var(--login-brand-text);
 
   @media (max-width: 860px) {
     display: none;
   }
 }
 
-// animated blobs
-.brand-blobs {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.25;
-  animation: float 12s ease-in-out infinite;
-}
-
-// blobs: tinted variants of --accent-color against the dark background
-.blob-1 {
-  width: 520px;
-  height: 520px;
-  top: -140px;
-  left: -120px;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--accent-color) 70%, #fff),
-    color-mix(in srgb, var(--accent-color) 55%, #000)
-  );
-  animation-duration: 14s;
-}
-
-.blob-2 {
-  width: 360px;
-  height: 360px;
-  bottom: -80px;
-  right: -60px;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--accent-color) 80%, #fff),
-    color-mix(in srgb, var(--accent-color) 40%, #000)
-  );
-  animation-duration: 10s;
-  animation-delay: -4s;
-}
-
-.blob-3 {
-  width: 240px;
-  height: 240px;
-  top: 40%;
-  left: 40%;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--accent-color) 90%, #fff),
-    color-mix(in srgb, var(--accent-color) 65%, #fff)
-  );
-  animation-duration: 16s;
-  animation-delay: -8s;
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  33% {
-    transform: translate(20px, -30px) scale(1.04);
-  }
-  66% {
-    transform: translate(-15px, 20px) scale(0.97);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .blob {
-    animation: none;
-    opacity: 0.16;
-  }
-}
-
-// content inside brand panel
 .brand-content {
-  position: relative;
-  z-index: 1;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding: 48px 56px;
-  gap: 28px;
-  max-width: 520px;
+  justify-content: space-between;
+  gap: var(--space-8);
   width: 100%;
+  padding: 3.5rem 3.5rem 2.5rem;
 }
 
 .brand-logo-wrap {
   .brand-logo {
-    height: 44px;
+    height: 40px;
     width: auto;
     object-fit: contain;
   }
@@ -166,87 +66,126 @@ body {
 .nubit-brand {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
-  color: var(--on-accent-color);
-  font-size: 28px;
+  gap: 12px;
+  color: var(--login-brand-text, var(--text-primary));
+  font-size: 24px;
   font-weight: 700;
   letter-spacing: -0.5px;
   line-height: 1;
 
   img {
     display: block;
-    width: 64px;
+    width: 48px;
     height: auto;
   }
 }
 
-.nubit-brand--on-dark img {
-  filter: drop-shadow(0 8px 18px rgb(0 0 0 / 18%));
-}
-
-.brand-illustration {
-  img {
-    width: 100%;
-    max-width: 300px;
-    height: auto;
-    filter: drop-shadow(0 20px 40px color-mix(in srgb, var(--text-primary) 30%, transparent))
-      brightness(1.1);
-  }
+.brand-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
 }
 
 .brand-text {
-  // text inside the brand panel is always on a dark accent bg — use Fluent on-accent token
-  color: var(--on-accent-color);
-
   h1 {
-    margin: 0 0 14px;
-    font-size: clamp(26px, 2.8vw, 36px);
+    margin: 0 0 var(--space-3);
+    font-size: clamp(26px, 2.4vw, 32px);
     font-weight: 700;
     line-height: 1.2;
-    letter-spacing: -0.6px;
+    letter-spacing: -0.4px;
   }
 
   p {
     margin: 0;
     font-size: 15px;
-    color: color-mix(in srgb, var(--on-accent-color) 55%, transparent);
-    line-height: 1.65;
-    max-width: 360px;
+    line-height: 1.6;
+    color: var(--login-brand-muted);
+    max-width: 380px;
   }
 }
 
-// feature bullet list
 .brand-features {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  border-top: 1px solid color-mix(in srgb, var(--on-accent-color) 10%, transparent);
-  padding-top: 24px;
+  gap: var(--space-4);
 
   li {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    color: color-mix(in srgb, var(--on-accent-color) 75%, transparent);
-    font-weight: 500;
+    gap: var(--space-3);
+
+    strong {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    small {
+      display: block;
+      margin-top: 2px;
+      font-size: 13px;
+      color: var(--login-brand-muted);
+    }
+  }
+
+  &__icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent-color) 22%, var(--login-brand-bg));
+    color: color-mix(in srgb, var(--accent-color) 70%, #fff);
 
     i {
-      font-size: 18px;
-      color: color-mix(in srgb, var(--accent-color) 70%, #fff);
-      flex-shrink: 0;
+      font-size: 20px;
     }
   }
 }
 
+.brand-footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.brand-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--login-brand-text) 6%, transparent);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--login-brand-muted);
+
+  i {
+    flex: 0 0 auto;
+    margin-top: 1px;
+    font-size: 16px;
+    color: color-mix(in srgb, var(--accent-color) 70%, #fff);
+  }
+}
+
+.brand-legal {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: 12px;
+  color: var(--login-brand-muted);
+}
+
 .brand-version {
-  font-size: 11px;
-  color: color-mix(in srgb, var(--on-accent-color) 30%, transparent);
-  letter-spacing: 0.5px;
   font-family: var(--font-family-mono, monospace);
+  letter-spacing: 0.5px;
 }
 
 // ─── Form panel (right) ──────────────────────────────────────────────────────
@@ -301,6 +240,21 @@ body {
   @media (max-width: 480px) {
     padding: var(--space-7) var(--space-6) var(--space-6);
     border-radius: var(--radius-lg);
+  }
+}
+
+.form-card--plain {
+  max-width: 400px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+
+  .form-header {
+    margin-bottom: var(--space-6);
+    padding-bottom: 0;
+    border-bottom: 0;
   }
 }
 
