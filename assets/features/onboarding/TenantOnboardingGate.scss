@@ -2,105 +2,198 @@
   min-height: 100dvh;
   width: 100%;
   display: grid;
-  place-items: center;
-  padding: var(--space-6, 32px);
-  background: var(--page-background, var(--surface-0, #f6f7fb));
+  grid-template-columns: 440px minmax(0, 1fr);
+  background: var(--surface-0, #f6f7fb);
   color: var(--text-primary, #202124);
+}
+
+// ── Left rail (always dark, whatever the app theme) ─────────────────────────
+.tenant-onboarding__rail {
+  --rail-bg: #0b0d11;
+  --rail-text: #ffffff;
+  --rail-muted: color-mix(in srgb, var(--rail-text) 62%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6, 32px);
+  min-height: 0;
+  padding: 3rem;
+  overflow-y: auto;
+  background: var(--rail-bg);
+  color: var(--rail-text);
+}
+
+.tenant-onboarding__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+
+  img {
+    width: 40px;
+    height: auto;
+  }
+}
+
+.tenant-onboarding__intro {
+  h2 {
+    margin: 0 0 var(--space-2, 8px);
+    font-size: 28px;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--rail-muted);
+  }
+}
+
+.tenant-onboarding__stepper {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tenant-onboarding__stepper-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3, 12px);
+  padding-bottom: var(--space-5, 20px);
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+
+  // connector between marks
+  &:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 34px;
+    bottom: 2px;
+    width: 2px;
+    background: color-mix(in srgb, var(--rail-text) 18%, transparent);
+  }
+
+  &.is-complete:not(:last-child)::before {
+    background: var(--accent-color);
+  }
+
+  strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  small {
+    display: block;
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--rail-muted);
+  }
+
+  &.is-pending strong {
+    color: var(--rail-muted);
+  }
+}
+
+.tenant-onboarding__stepper-mark {
+  display: inline-grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid color-mix(in srgb, var(--rail-text) 30%, transparent);
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 600;
+
+  .is-current & {
+    border-color: var(--accent-color);
+    color: #fff;
+    background: color-mix(in srgb, var(--accent-color) 25%, transparent);
+  }
+
+  .is-complete & {
+    border-color: var(--accent-color);
+    background: var(--accent-color);
+    color: #fff;
+  }
 }
 
 .tenant-onboarding__aside {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: auto;
 }
 
 .tenant-onboarding__assistant {
   height: 360px;
   min-height: 280px;
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
+  border: 1px solid color-mix(in srgb, var(--rail-text) 16%, transparent);
   border-radius: 12px;
   overflow: hidden;
 }
 
-@media (max-width: 860px) {
-  .tenant-onboarding__body {
-    grid-template-columns: 1fr;
-  }
-}
-
-.tenant-onboarding__card {
-  width: min(100%, 1180px);
-  min-height: 620px;
-  max-height: calc(100dvh - (var(--space-6, 32px) * 2));
-  background: var(--surface-card, var(--surface-1, #fff));
-  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.12));
-  border-radius: var(--radius-lg, 14px);
-  box-shadow: var(--shadow-md, 0 12px 34px rgba(0, 0, 0, 0.12));
-  padding: var(--space-6, 32px);
+// ── Right panel ──────────────────────────────────────────────────────────────
+.tenant-onboarding__panel {
+  width: 100%;
+  max-width: 700px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 3rem 2rem 2.5rem;
   display: flex;
   flex-direction: column;
-  gap: var(--space-5, 24px);
-  overflow: auto;
+  gap: var(--space-6, 32px);
 }
 
-.tenant-onboarding__header,
-.tenant-onboarding__footer {
+.tenant-onboarding__progress {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4, 16px);
-  flex: 0 0 auto;
-}
-
-.tenant-onboarding__brand {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3, 12px);
-  font-size: var(--font-size-xl, 24px);
-  font-weight: var(--font-weight-bold, 700);
-  letter-spacing: -0.02em;
-}
-
-.tenant-onboarding__logo {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md, 10px);
-  display: grid;
-  place-items: center;
-  background: var(--primary-color, #356ed3);
-  color: var(--primary-contrast, #fff);
-  font-weight: var(--font-weight-bold, 700);
+  flex-direction: column;
+  gap: var(--space-2, 8px);
 }
 
 .tenant-onboarding__step-count {
   color: var(--text-secondary, #71717a);
-  font-size: var(--font-size-sm, 14px);
+  font-size: var(--font-size-xs, 12px);
   font-weight: var(--font-weight-semibold, 600);
 }
 
-.tenant-onboarding__steps {
-  flex: 0 0 auto;
-}
+.tenant-onboarding__segments {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
 
-.tenant-onboarding__steps .nb-timeline {
-  width: 100%;
-}
+  span {
+    height: 4px;
+    border-radius: 999px;
+    background: var(--border-color, #e0e0e0);
 
-.tenant-onboarding__steps .nb-timeline--horizontal {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-}
-
-.tenant-onboarding__steps .nb-timeline__heading {
-  font-size: var(--font-size-xs, 12px);
+    &.is-filled {
+      background: var(--accent-color, #1a6fd4);
+    }
+  }
 }
 
 .tenant-onboarding__body {
   flex: 1 1 auto;
   min-height: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
-  gap: var(--space-5, 24px);
-  align-items: start;
+}
+
+.tenant-onboarding__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4, 16px);
+  margin-top: auto;
 }
 
 .tenant-onboarding__main h1,
@@ -222,25 +315,24 @@
 .tenant-onboarding__done {
   flex: 1;
   display: grid;
-  align-content: center;
-  justify-items: center;
-  text-align: center;
+  align-content: start;
+  justify-items: start;
 }
 
 .tenant-onboarding__check {
-  width: 88px;
-  height: 88px;
-  margin-bottom: var(--space-5, 24px);
+  width: 64px;
+  height: 64px;
+  margin-bottom: var(--space-4, 16px);
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: var(--status-success-bg, #e9f5e7);
   color: var(--success-color, #2d7d30);
-  font-size: 48px;
+  font-size: 32px;
 }
 
 .tenant-onboarding__done ul {
-  width: min(640px, 100%);
+  width: 100%;
   margin: var(--space-4, 16px) 0;
   padding: var(--space-4, 16px);
   text-align: left;
@@ -261,26 +353,64 @@
   font-weight: 900;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 960px) {
   .tenant-onboarding {
-    padding: var(--space-3, 12px);
-    place-items: stretch;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
   }
 
-  .tenant-onboarding__card {
-    width: 100%;
-    min-height: calc(100dvh - (var(--space-3, 12px) * 2));
-    max-height: none;
-    padding: var(--space-4, 16px);
+  .tenant-onboarding__rail {
+    padding: var(--space-5, 20px);
+    gap: var(--space-4, 16px);
   }
 
-  .tenant-onboarding__steps .nb-timeline__heading {
+  .tenant-onboarding__intro p,
+  .tenant-onboarding__stepper small,
+  .tenant-onboarding__aside {
     display: none;
+  }
+
+  // On small screens the rail is a compact horizontal progress strip.
+  .tenant-onboarding__stepper {
+    flex-direction: row;
+    gap: var(--space-2, 8px);
+  }
+
+  .tenant-onboarding__stepper-item {
+    padding-bottom: 0;
+
+    &::before {
+      display: none;
+    }
+
+    strong {
+      display: none;
+    }
+
+    &.is-current strong {
+      display: block;
+    }
+  }
+
+  .tenant-onboarding__panel {
+    min-height: 0;
+    padding: var(--space-5, 20px) var(--space-4, 16px) var(--space-6, 32px);
   }
 
   .tenant-onboarding__grid,
   .tenant-onboarding__preset-grid,
   .tenant-onboarding__field--with-button > div {
     grid-template-columns: 1fr;
+  }
+}
+
+// The help card lives on the always-dark rail.
+.tenant-onboarding__rail .onboarding-help {
+  border-color: color-mix(in srgb, var(--rail-text) 16%, transparent);
+  background: color-mix(in srgb, var(--rail-text) 6%, transparent);
+  color: var(--rail-text);
+
+  .onboarding-help__item p {
+    color: var(--rail-muted);
   }
 }

@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Button, FileDropzone, FormField, TextField, Timeline, TimelineItem } from '@nubitio/ui';
+import { Button, FileDropzone, FormField, TextField } from '@nubitio/ui';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import {
   useApplyTenantPreset,
@@ -34,6 +34,17 @@ const STEP_LABEL: Record<StepKey, string> = {
   Warehouse: 'Almacén',
   Done: 'Listo',
 };
+
+const STEP_HINT: Record<StepKey, string> = {
+  Welcome: 'Tipo de negocio',
+  Company: 'RUC y datos fiscales',
+  SUNAT: 'Certificado digital y usuario SOL',
+  Branch: 'Local y series de comprobantes',
+  Warehouse: 'Dónde vive tu stock',
+  Done: 'Resumen de tu configuración',
+};
+
+const NUBIT_ICON = '/assets/images/nubit-icon.png';
 
 const STEP_META: Record<StepKey, { title: string; subtitle: string }> = {
   Welcome: {
@@ -290,26 +301,63 @@ export function TenantOnboardingGate() {
 
   return (
     <main className="tenant-onboarding">
-      <section className="tenant-onboarding__card" aria-label="Configuración inicial del mini ERP">
-        <header className="tenant-onboarding__header">
-          <div className="tenant-onboarding__brand">
-            <span className="tenant-onboarding__logo">e</span>
-            <strong>Efact</strong>
-          </div>
-          <span className="tenant-onboarding__step-count">Paso {step + 1} de 6</span>
-        </header>
+      <aside className="tenant-onboarding__rail">
+        <div className="tenant-onboarding__brand">
+          <img src={NUBIT_ICON} alt="" />
+          <strong>Nubit ERP</strong>
+        </div>
+        <div className="tenant-onboarding__intro">
+          <h2>Configura tu empresa</h2>
+          <p>Puedes pausar y seguir después; guardamos tu avance.</p>
+        </div>
 
-        <nav className="tenant-onboarding__steps" aria-label="Pasos de onboarding">
-          <Timeline variant="stepper" orientation="horizontal" aria-label="Pasos de onboarding">
-            {STEPS.map((label, index) => (
-              <TimelineItem
-                key={label}
-                status={index < step ? 'complete' : index === step ? 'current' : 'pending'}
-                title={STEP_LABEL[label]}
-              />
+        <ol className="tenant-onboarding__stepper" aria-label="Pasos de onboarding">
+          {STEPS.map((key, index) => {
+            const state = index < step ? 'complete' : index === step ? 'current' : 'pending';
+            return (
+              <li
+                key={key}
+                className={`tenant-onboarding__stepper-item is-${state}`}
+                aria-current={state === 'current' ? 'step' : undefined}
+              >
+                <span className="tenant-onboarding__stepper-mark" aria-hidden="true">
+                  {state === 'complete' ? <i className="ph ph-check" /> : index + 1}
+                </span>
+                <span>
+                  <strong>{STEP_LABEL[key]}</strong>
+                  <small>{STEP_HINT[key]}</small>
+                </span>
+              </li>
+            );
+          })}
+        </ol>
+
+        <div className="tenant-onboarding__aside">
+          <OnboardingHelp step={currentStep} />
+          {assistantEnabled ? (
+            <div className="tenant-onboarding__assistant">
+              <Suspense fallback={null}>
+                <Assistant
+                  showToolbar={false}
+                  screen="onboarding"
+                  entityType="onboarding"
+                  entityId={currentStep}
+                />
+              </Suspense>
+            </div>
+          ) : null}
+        </div>
+      </aside>
+
+      <section className="tenant-onboarding__panel" aria-label="Configuración inicial del mini ERP">
+        <div className="tenant-onboarding__progress">
+          <span className="tenant-onboarding__step-count">Paso {step + 1} de 6</span>
+          <div className="tenant-onboarding__segments" aria-hidden="true">
+            {STEPS.map((key, index) => (
+              <span key={key} className={index <= step ? 'is-filled' : undefined} />
             ))}
-          </Timeline>
-        </nav>
+          </div>
+        </div>
 
         <div
           className={`tenant-onboarding__body tenant-onboarding__body--${currentStep.toLowerCase()}`}
@@ -535,21 +583,6 @@ export function TenantOnboardingGate() {
                 </ul>
               </div>
             )}
-          </div>
-          <div className="tenant-onboarding__aside">
-            <OnboardingHelp step={currentStep} />
-            {assistantEnabled ? (
-              <div className="tenant-onboarding__assistant">
-                <Suspense fallback={null}>
-                  <Assistant
-                    showToolbar={false}
-                    screen="onboarding"
-                    entityType="onboarding"
-                    entityId={currentStep}
-                  />
-                </Suspense>
-              </div>
-            ) : null}
           </div>
         </div>
 
