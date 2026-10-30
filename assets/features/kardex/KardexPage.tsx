@@ -435,8 +435,8 @@ export const KardexPage = () => {
       {productId && (
         <p className="kardex-note" data-testid="kardex-note">
           <i className="ph ph-shield-check" aria-hidden="true" />
-          Los movimientos no se editan: para corregir uno, registra un ajuste y queda en el registro
-          de actividad.
+          Los movimientos no se editan: para corregir uno, registra un ajuste y queda como un
+          movimiento más del kardex.
         </p>
       )}
     </div>
