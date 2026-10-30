@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Badge, Button, Drawer, EmptyState, Text } from '@nubitio/ui';
+import { Alert, Badge, Button, Drawer, EmptyState, Text } from '@nubitio/ui';
 import {
   RECEIVABLE_STATUS_LABEL,
   formatDate,
@@ -47,6 +47,8 @@ interface FlatPayment {
 function CustomerReceivableDetail({ customer }: { customer: ReceivableCustomer }) {
   const [invoices, setInvoices] = useState<ReceivableInvoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -55,14 +57,14 @@ function CustomerReceivableDetail({ customer }: { customer: ReceivableCustomer }
         if (!controller.signal.aborted) setInvoices(rows);
       })
       .catch(() => {
-        if (!controller.signal.aborted) setInvoices([]);
+        if (!controller.signal.aborted) setError(true);
       })
       .finally(() => {
         if (!controller.signal.aborted) setIsLoading(false);
       });
 
     return () => controller.abort();
-  }, [customer.id]);
+  }, [customer.id, attempt]);
 
   const payments = useMemo<FlatPayment[]>(() => {
     const flat = invoices.flatMap((invoice) =>
@@ -89,13 +91,32 @@ function CustomerReceivableDetail({ customer }: { customer: ReceivableCustomer }
         </Text>
         <strong>{formatMoney(customer.totalBalance, customer.currency)}</strong>
         <Text tone="muted" as="p">
-          {invoices.length} comprobante{invoices.length === 1 ? '' : 's'} por cobrar
+          {isLoading
+            ? 'Cargando comprobantes…'
+            : error
+              ? 'Comprobantes no disponibles'
+              : `${invoices.length} comprobante${invoices.length === 1 ? '' : 's'} por cobrar`}
         </Text>
       </div>
 
       <section className="receivable-drawer__section">
         <h4 className="receivable-drawer__section-title">Comprobantes</h4>
-        {isLoading ? (
+        {error ? (
+          <Alert tone="danger">
+            No se pudieron cargar los comprobantes.{' '}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                setIsLoading(true);
+                setError(false);
+                setAttempt((value) => value + 1);
+              }}
+            >
+              Reintentar comprobantes
+            </Button>
+          </Alert>
+        ) : isLoading ? (
           <Text tone="muted" as="p">
             Cargando comprobantes...
           </Text>
@@ -135,7 +156,7 @@ function CustomerReceivableDetail({ customer }: { customer: ReceivableCustomer }
         )}
       </section>
 
-      {payments.length > 0 && (
+      {!isLoading && !error && payments.length > 0 && (
         <section className="receivable-drawer__section">
           <h4 className="receivable-drawer__section-title">Abonos recientes</h4>
           <ul className="receivable-drawer__payments">

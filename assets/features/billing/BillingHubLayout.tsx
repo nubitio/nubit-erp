@@ -1,3 +1,4 @@
+import { Outlet, useMatch } from 'react-router-dom';
 import { FeatureHubLayout } from '@nubitio/admin';
 import { useTenantRuntimeConfig } from '@shared/hooks';
 
@@ -5,6 +6,9 @@ export const BillingHubLayout = () => {
   const { data: runtimeConfig } = useTenantRuntimeConfig();
   const navigationTier = runtimeConfig?.profile.navigationTier ?? 'basic';
   const showOperationalReviewTabs = navigationTier === 'standard' || navigationTier === 'advanced';
+
+  const saleDetail = useMatch('/billing/sales/:id');
+  if (saleDetail) return <Outlet />;
 
   return (
     <FeatureHubLayout

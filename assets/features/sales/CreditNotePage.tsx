@@ -77,6 +77,9 @@ export const CreditNotePage = () => {
       defineResource(API_URL + '?type=note', {
         id: 'creditNote',
         title: 'Notas de crédito',
+        gridAppearance: 'page',
+        filterRow: false,
+        filterToolbarFields: ['issueDate', 'customer', 'sunatStatus'],
         fields,
         defaultPreset: 'basic',
         columnPresets: CREDIT_NOTE_COLUMN_PRESETS,

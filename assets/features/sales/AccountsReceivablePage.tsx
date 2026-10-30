@@ -1,6 +1,7 @@
 import './AccountsReceivablePage.scss';
 import { useCallback, useState } from 'react';
 import { PageHeader } from '@nubitio/ui';
+import { FinanceNavigation } from '@shared/ui/finance/FinanceNavigation';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { httpClient } from '@shared/api/HttpClient';
 import { hasPermission } from '@shared/permissions';
@@ -54,6 +55,7 @@ export const AccountsReceivablePage = () => {
         title="Cuentas por cobrar"
         subtitle="Saldo pendiente de tus clientes y registro de pagos."
       />
+      <FinanceNavigation />
       <ReceivableSummaryKpis refreshKey={version} />
       <CustomerReceivablesGrid
         refreshKey={version}

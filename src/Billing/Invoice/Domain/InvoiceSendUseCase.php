@@ -108,8 +108,6 @@ readonly class InvoiceSendUseCase
             $taxDocument->setSunatMessage($sunatMessage);
             $taxDocument->setDigest($response->hash);
             $taxDocument->setUpdatedAt(new \DateTime());
-            $this->doctrine->getManager()->flush();
-
             $this->taxDocumentEventRepository->recordEvent(
                 taxDocument: $taxDocument,
                 eventType: 'sunat_send',
@@ -121,6 +119,7 @@ readonly class InvoiceSendUseCase
                     'recovered_by_consult' => $recoveredByConsult,
                 ],
             );
+            $this->doctrine->getManager()->flush();
 
             $this->auditLogger->log('invoice.send', [
                 'tax_document_id' => $taxDocumentId,

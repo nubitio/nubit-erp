@@ -52,6 +52,9 @@ export const PurchasesPage = () => {
     return defineResource(API + 'purchases', {
       id: 'purchases',
       title: 'Recepción de mercadería',
+      gridAppearance: 'page',
+      filterRow: false,
+      filterToolbarFields: ['issuedAt', 'supplier'],
       fields: PurchasesFields(currentBranchId, runtimeConfig),
       gridDetail: { url: detailUrl, fields: detailFields },
       formDetail: {

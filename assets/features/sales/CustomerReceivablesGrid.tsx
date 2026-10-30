@@ -178,7 +178,9 @@ export const CustomerReceivablesGrid = ({ refreshKey = 0, onOpenDetail, onCollec
       url={saleEndpoints.receivableCustomers()}
       fields={fields}
       adapter={HydraAdapter}
-      filterRow
+      appearance="page"
+      filterRow={false}
+      filterToolbarFields={['customerName']}
       allowAdd={false}
       allowEdit={false}
       allowDelete={false}

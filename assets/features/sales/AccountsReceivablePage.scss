@@ -26,3 +26,94 @@
     }
   }
 }
+
+html[data-visual-style='nubit'] .accounts-receivable-page {
+  &__balance {
+    margin: 0 0 16px;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  .nb-kpi-metric-card {
+    padding: 16px;
+    border-radius: 10px;
+    background: var(--nb-surface-panel, var(--surface-1));
+  }
+
+  .nb-kpi-metric-card__label {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success-color);
+    }
+  }
+
+  .nb-kpi-metric-card--warning .nb-kpi-metric-card__label::before {
+    background: var(--warning-color);
+  }
+
+  .nb-kpi-metric-card--danger .nb-kpi-metric-card__label::before {
+    background: var(--error-color);
+  }
+
+  .nb-kpi-metric-card:nth-child(3) .nb-kpi-metric-card__label::before {
+    opacity: 0.65;
+  }
+
+  &__aging-bar {
+    display: flex;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 16px;
+
+    span {
+      min-width: 0;
+      background: var(--success-color);
+    }
+    [data-bucket='1'] {
+      background: var(--warning-color);
+    }
+    [data-bucket='2'] {
+      background: color-mix(in srgb, var(--error-color) 65%, var(--surface-1));
+    }
+    [data-bucket='3'] {
+      background: var(--error-color);
+    }
+  }
+
+  @media (min-width: 1000px) {
+    .nb-kpi-metric-row {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+}
+
+html[data-visual-style='nubit'] .accounts-receivable-page {
+  .nb-kpi-metric-card__value {
+    color: var(--text-primary);
+  }
+
+  .nb-datagrid__filter-editors {
+    grid-template-columns: minmax(180px, 320px);
+  }
+
+  .nb-datagrid__filter-editor {
+    border: 0;
+    padding: 0;
+    background: transparent;
+  }
+
+  td .nb-badge {
+    align-self: flex-start;
+  }
+}

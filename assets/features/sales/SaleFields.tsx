@@ -13,6 +13,7 @@ import {
   numberField,
   switchField,
   selectField,
+  enumField,
   textField,
   textareaField,
   noneField,
@@ -187,6 +188,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
   fields.push(
     dateField()
       .name('issuedDate')
+      .cardRole('primary')
       .label('Fecha')
       .required(true)
       .formatter((cell: GridCellContext) =>
@@ -221,6 +223,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
   fields.push(
     activeEntityField(API + 'customers', 'id', 'businessName')
       .name('customer')
+      .cardRole('title')
       .label('Cliente')
       .width(240)
       .defaultValue(1)
@@ -309,6 +312,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
   fields.push(
     entityField(API + 'payment-methods', 'id', 'name')
       .name('paymentMethod')
+      .cardRole('primary')
       .label('Método de pago')
       .valueType('number')
       .defaultValue(1)
@@ -406,6 +410,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
   fields.push(
     noneField()
       .name('invoiceFullNumber')
+      .cardRole('primary')
       .label('Comprobante')
       .visibleOnForm(false)
       .formatter((cell: GridCellContext) => {
@@ -447,6 +452,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
     currencyField()
       .col(6)
       .name('grandTotal')
+      .cardRole('primary')
       .label('Total')
       .formatter((cell: GridCellContext) =>
         NumberUtils.formatCurrency(cell.value as number, (cell.data.currency as string) ?? 'PEN'),
@@ -480,6 +486,7 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
   fields.push(
     noneField()
       .name('status')
+      .cardRole('secondary')
       .label('Estado')
       .visibleOnForm(false)
       .align('center')
@@ -495,6 +502,38 @@ export const SaleFields = (form: FormHandle | null, callbacks?: SaleFieldCallbac
       .build(),
   );
 
+  fields.push(
+    {
+      ...enumField([
+        { value: 'paid', text: 'Cobrada' },
+        { value: 'due', text: 'Por cobrar' },
+        { value: 'voided', text: 'Anulada' },
+      ])
+        .name('paymentState')
+        .label('Pago')
+        .visibleOnForm(false)
+        .sortable(false)
+        .cardRole('primary')
+        .build(),
+      presentation: 'badge',
+      toneByValue: { paid: 'success', due: 'warning', voided: 'danger' },
+    },
+    {
+      ...enumField([
+        { value: 'accepted', text: 'Aceptada' },
+        { value: 'pending', text: 'Pendiente de atención' },
+        { value: 'not_applicable', text: 'No aplica' },
+      ])
+        .name('sunatState')
+        .label('SUNAT')
+        .visibleOnForm(false)
+        .sortable(false)
+        .cardRole('primary')
+        .build(),
+      presentation: 'badge',
+      toneByValue: { accepted: 'success', pending: 'warning', not_applicable: 'secondary' },
+    },
+  );
   return fields;
 };
 

@@ -1082,6 +1082,22 @@ class SaleRecord
         return $this;
     }
 
+    #[Groups(['sale_record:read'])]
+    public function getPaymentState(): string
+    {
+        return (
+            $this->status === 'VOIDED'
+                ? 'voided'
+                : (\App\Efact\Domain\Money::of($this->balanceDue)->isPositive() ? 'due' : 'paid')
+        );
+    }
+
+    #[Groups(['sale_record:read'])]
+    public function getSunatState(): string
+    {
+        return !$this->hasInvoice ? 'not_applicable' : ($this->sunatStatus === '0' ? 'accepted' : 'pending');
+    }
+
     public function getSunatStatus(): ?string
     {
         return $this->sunatStatus;

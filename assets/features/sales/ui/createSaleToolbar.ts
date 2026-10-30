@@ -15,6 +15,7 @@ type CreateSaleToolbarParams = {
   cloneEnabled: boolean;
   replaceEnabled: boolean;
   documentsEnabled: boolean;
+  canCreate?: boolean;
 };
 
 const requireSelectedSale = (
@@ -38,10 +39,12 @@ export const createSaleToolbar = ({
   onExplainWithAi,
   replaceEnabled,
   documentsEnabled,
+  canCreate = true,
 }: CreateSaleToolbarParams): ResourceToolbarItems => ({
   selection: [
     {
       text: 'Generar comprobante',
+      visible: canCreate,
       type: 'warning',
       group: 'documents',
       groupLabel: 'Comprobantes',
@@ -57,6 +60,7 @@ export const createSaleToolbar = ({
     },
     {
       text: 'Reemitir',
+      visible: canCreate,
       type: 'warning',
       group: 'edit',
       groupLabel: 'Edición',

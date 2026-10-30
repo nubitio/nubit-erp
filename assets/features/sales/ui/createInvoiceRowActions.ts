@@ -1,3 +1,5 @@
+import { hasPermission } from '@shared/permissions';
+import { sunatStatus } from '../sunat/sunatStatus';
 import type { DataRecord } from '@nubitio/crud';
 import type { InvoiceActionHandlers, InvoiceRow } from '../lib/invoiceActions';
 import {
@@ -28,6 +30,7 @@ export const createInvoiceRowActions = (handlers: InvoiceActionHandlers) => (row
     },
     {
       text: 'Consulta CPE',
+      visible: hasPermission('sales.create'),
       icon: 'ph-seal-check',
       onClick: () => consultInvoiceCpe(invoiceRow, handlers),
     },
@@ -38,6 +41,7 @@ export const createInvoiceRowActions = (handlers: InvoiceActionHandlers) => (row
     },
     {
       text: 'Enviar a SUNAT',
+      visible: hasPermission('sales.create') && sunatStatus(invoiceRow.sunatStatus).canSend,
       icon: 'ph-cloud-arrow-up',
       onClick: () => sendInvoiceToSunat(invoiceRow, handlers),
     },

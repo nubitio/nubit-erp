@@ -5,6 +5,7 @@ const sales = createEndpoints('sales');
 
 export const saleEndpoints = {
   ...sales,
+  monthlySummary: () => `${sales.list()}/reports/monthly-summary`,
   items: (id: string | number) => `${sales.list()}/${id}/items`,
   receivableCustomers: () => `${sales.list()}/reports/receivable-customers`,
   receivableSummary: () => `${sales.list()}/reports/receivable-summary`,

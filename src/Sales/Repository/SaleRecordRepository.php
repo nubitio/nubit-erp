@@ -270,7 +270,7 @@ class SaleRecordRepository extends ServiceEntityRepository
                 FROM tax_document td
                 WHERE (td.movimiento_id IN (%s) OR td.sale_id IN (%s))
                   AND td.reason_code IS NULL
-                ORDER BY td.created_at DESC
+                ORDER BY td.created_at DESC, td.tax_document_id DESC
                 SQL, $placeholders, $placeholders), array_merge($ids, $ids));
 
         // Index by movimiento_id (legacy path) and by sale_id (V2 path)

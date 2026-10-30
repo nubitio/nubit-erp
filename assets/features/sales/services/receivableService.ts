@@ -45,6 +45,7 @@ export async function listOpenInvoices(
 ): Promise<ReceivableInvoice[]> {
   const response = await httpClient.get<unknown>(`${API}sales`, {
     signal,
+    errorPresentation: 'inline',
     params: {
       filter: [
         ['receivableAccount', '=', 1],

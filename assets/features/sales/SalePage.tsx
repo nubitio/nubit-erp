@@ -1,5 +1,14 @@
 /* eslint-disable react-hooks/refs -- CRUD action adapters intentionally read Grid/Form refs inside callbacks, not during render. */
 import './SalePage.scss';
+import { useScreenSize } from '@nubitio/admin';
+import { CollapsibleSection } from '@nubitio/ui';
+import { hasPermission } from '@shared/permissions';
+import './detail/SaleDetailPage.scss';
+import { useNavigate } from 'react-router-dom';
+import { SaleCardContent } from './detail/SaleCardContent';
+import { useQueryClient } from '@tanstack/react-query';
+import { saleFilterPresets } from './model/saleFilterPresets';
+import { MonthlySalesKpis } from './MonthlySalesKpis';
 import {
   ColumnChooserButton,
   DataGridView,
@@ -54,7 +63,8 @@ const SALE_COLUMN_PRESETS = [
       'customer',
       'paymentMethod',
       'grandTotal',
-      'status',
+      'paymentState',
+      'sunatState',
     ],
   },
   {
@@ -67,13 +77,22 @@ const SALE_COLUMN_PRESETS = [
       'invoiceFullNumber',
       'discountPercent',
       'grandTotal',
-      'status',
+      'paymentState',
+      'sunatState',
     ],
   },
   {
     key: 'receivable',
     label: 'Por cobrar',
-    columns: ['issuedDate', 'customer', 'dueDate', 'grandTotal', 'balanceDue', 'status'],
+    columns: [
+      'issuedDate',
+      'customer',
+      'dueDate',
+      'grandTotal',
+      'balanceDue',
+      'paymentState',
+      'sunatState',
+    ],
   },
 ];
 
@@ -107,6 +126,10 @@ const SALE_FORM_LAYOUT = {
 
 export const SalePage = () => {
   const { t } = useCoreTranslation();
+  const navigate = useNavigate();
+  const { isXSmall } = useScreenSize();
+  const [summaryExpanded, setSummaryExpanded] = useState(false);
+  const queryClient = useQueryClient();
   const [on, emit] = useEvents();
   const gridRef = useRef<GridHandle>(null);
   const formRef = useRef<FormHandle>(null);
@@ -312,11 +335,16 @@ export const SalePage = () => {
     setupPrinterRef.current();
   }, []);
 
+  const refreshSales = () => {
+    gridRef.current?.refresh();
+    void queryClient.invalidateQueries({ queryKey: ['sales', 'monthly-summary'] });
+  };
+
   const voidSale = async (saleId: string) => {
     await runVoidSaleAction(saleId, {
       showLoading: (message) => gridRef.current?.showLoading(message),
       hideLoading: () => gridRef.current?.hideLoading(),
-      refreshGrid: () => gridRef.current?.refresh(),
+      refreshGrid: refreshSales,
       notify: (message, type) => toast(message, type),
     });
   };
@@ -325,7 +353,7 @@ export const SalePage = () => {
     runMakeInvoiceAction(saleId, {
       showLoading: (message) => gridRef.current?.showLoading(message),
       hideLoading: () => gridRef.current?.hideLoading(),
-      refreshGrid: () => gridRef.current?.refresh(),
+      refreshGrid: refreshSales,
       notify: (message, type) => toast(message, type),
       printSale: print,
     });
@@ -335,7 +363,7 @@ export const SalePage = () => {
     runReplaceRejectedAction(saleId, {
       showLoading: (message) => gridRef.current?.showLoading(message),
       hideLoading: () => gridRef.current?.hideLoading(),
-      refreshGrid: () => gridRef.current?.refresh(),
+      refreshGrid: refreshSales,
       notify: (message, type) => toast(message, type),
     });
   };
@@ -375,6 +403,7 @@ export const SalePage = () => {
     cloneEnabled,
     replaceEnabled,
     documentsEnabled,
+    canCreate: hasPermission('sales.create'),
   });
 
   const rowActions = (row: DataRecord) => {
@@ -388,6 +417,11 @@ export const SalePage = () => {
 
     return [
       {
+        text: 'Ver detalle',
+        icon: 'ph-eye',
+        onClick: () => navigate(`/billing/sales/${encodeURIComponent(saleId)}`),
+      },
+      {
         text: 'Vista previa',
         icon: 'ph-eye',
         onClick: () => salePrintPreview.openPreview(taxDocumentId),
@@ -399,6 +433,7 @@ export const SalePage = () => {
       },
       {
         text: 'Duplicar',
+        visible: hasPermission('sales.create'),
         icon: 'ph-copy',
         onClick: () =>
           cloneSaleToForm({
@@ -410,6 +445,7 @@ export const SalePage = () => {
       },
       {
         text: 'Anular',
+        visible: hasPermission('sales.void') && row.status !== 'VOIDED' && !row.hasInvoice,
         icon: 'ph-x-circle',
         type: 'danger',
         onClick: () => voidSale(saleId),
@@ -430,29 +466,54 @@ export const SalePage = () => {
   );
 
   return (
-    <div id={container} className={saleFormOpen ? 'wrapper--with-page' : undefined}>
+    <div id={container} className={`sale-page${saleFormOpen ? ' wrapper--with-page' : ''}`}>
       {!saleFormOpen && (
-        <DataGridView
-          id={'sales'}
-          ref={gridRef}
-          title={'Ventas'}
-          url={API_URL}
-          fields={fields}
-          allowAdd={true}
-          toolbar={toolbar}
-          rowActions={rowActions}
-          detailUrl={saleEndpoints.items('{id}')}
-          detailFields={gridDetailFields}
-          events={saleEvents}
-          sort={[{ selector: 'createdAt', desc: true }]}
-          visibleColumns={columnChooserState.visibleColumns}
-          beforeToolbar={renderColumnChooser}
-          emptyState={{
-            title: 'Sin ventas registradas',
-            description: 'Crea una venta con el botón Nuevo.',
-            icon: 'receipt',
-          }}
-        />
+        <>
+          {isXSmall ? (
+            <div className="sale-page__summary-toggle">
+              <CollapsibleSection
+                label="Resumen mensual"
+                open={summaryExpanded}
+                onToggle={() => setSummaryExpanded((open) => !open)}
+              >
+                <MonthlySalesKpis branchId={currentBranchId} />
+              </CollapsibleSection>
+            </div>
+          ) : (
+            <MonthlySalesKpis branchId={currentBranchId} />
+          )}
+          <DataGridView
+            id={'sales'}
+            ref={gridRef}
+            title={'Ventas'}
+            appearance="page"
+            cardView={{
+              defaultView: 'table',
+              renderContent: (context) => <SaleCardContent {...context} />,
+            }}
+            allowView
+            onView={(row) => navigate(`/billing/sales/${encodeURIComponent(String(row.id))}`)}
+            filterRow={false}
+            filterToolbarFields={['issuedDate', 'paymentState', 'sunatState', 'paymentMethod']}
+            filterPresets={saleFilterPresets()}
+            url={API_URL}
+            fields={fields}
+            allowAdd={hasPermission('sales.create')}
+            toolbar={toolbar}
+            rowActions={rowActions}
+            detailUrl={saleEndpoints.items('{id}')}
+            detailFields={gridDetailFields}
+            events={saleEvents}
+            sort={[{ selector: 'createdAt', desc: true }]}
+            visibleColumns={columnChooserState.visibleColumns}
+            beforeToolbar={renderColumnChooser}
+            emptyState={{
+              title: 'Sin ventas registradas',
+              description: 'Crea una venta con el botón Nuevo.',
+              icon: 'receipt',
+            }}
+          />
+        </>
       )}
       <PageView events={saleEvents} onClose={() => setSaleFormOpen(false)}>
         <FormView

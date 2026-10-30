@@ -58,6 +58,12 @@ use Symfony\Component\Serializer\Attribute\Groups;
             normalizationContext: ['groups' => ['invoice:read']],
             security: "is_granted('perm:sales.view')",
         ),
+        new Get(
+            uriTemplate: '/tax-documents/{id}/events',
+            uriVariables: ['id' => new Link(fromClass: TaxDocument::class, identifiers: ['id'])],
+            controller: \App\Billing\Controller\TaxDocumentEventsController::class,
+            security: "is_granted('perm:sales.view')",
+        ),
         new Post(
             processor: TaxDocumentProcessor::class,
             security: "is_granted('perm:sales.create')",
@@ -113,6 +119,17 @@ class TaxDocument
     #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
     #[Groups(['invoice:read', 'creditnote:read'])]
     private ?string $id = null;
+
+    /** Read-only legacy link, retained for grid queries over migrated sales. */
+    #[ORM\Column(
+        name: 'movimiento_id',
+        type: Types::STRING,
+        length: 255,
+        nullable: true,
+        insertable: false,
+        updatable: false,
+    )]
+    private ?string $legacyMovementId = null;
 
     /**
      * V2 relation to the sales table. Populated when sale_id column is set.

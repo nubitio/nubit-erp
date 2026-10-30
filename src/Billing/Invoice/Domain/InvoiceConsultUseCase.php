@@ -68,14 +68,13 @@ readonly class InvoiceConsultUseCase
             $taxDocument->setSunatStatus($sunatStatus);
             $taxDocument->setSunatMessage($sunatMessage);
             $taxDocument->setUpdatedAt(new \DateTime());
-            $this->doctrine->getManager()->flush();
-
             $this->taxDocumentEventRepository->recordEvent(
                 taxDocument: $taxDocument,
                 eventType: 'sunat_consult',
                 statusCode: $sunatStatus,
                 statusMessage: $sunatMessage,
             );
+            $this->doctrine->getManager()->flush();
         }
 
         return $consultResponse;

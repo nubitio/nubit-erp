@@ -3,6 +3,10 @@ import { lazyNamed } from '@app/router/lazy';
 import type { AppRouteDefinition } from '@app/router/types';
 import { BillingHubLayout } from './BillingHubLayout';
 
+const SaleDetailPage = lazyNamed(
+  () => import('@features/sales/detail/SaleDetailPage'),
+  'SaleDetailPage',
+);
 const SalePage = lazyNamed(() => import('@features/sales/SalePage'), 'SalePage');
 const InvoicePage = lazyNamed(() => import('@features/sales/InvoicePage'), 'InvoicePage');
 const CreditNotePage = lazyNamed(() => import('@features/sales/CreditNotePage'), 'CreditNotePage');
@@ -39,6 +43,7 @@ export const billingRoutes: AppRouteDefinition[] = [
     element: BillingHubLayout,
     children: [
       { path: 'sales', element: SalePage },
+      { path: 'sales/:id', element: SaleDetailPage },
       { path: 'consult', element: SaleConsultPage },
       { path: 'documents', element: InvoicePage },
       { path: 'documents/:id?', element: InvoicePage },
