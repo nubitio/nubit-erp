@@ -167,6 +167,39 @@ test.describe('Golden path fiscal — POS a SUNAT y PDF', () => {
       expect(document.sunatStatus, 'SUNAT status debe ser código de aceptación').toBe('0');
       expect(document.cdrPath, 'cdr_path debe persistirse en tax_document').toBeTruthy();
       expect(String(document.cdrPath)).toContain('R-');
+      const events = await request.get(`${BASE_URL}/api/tax-documents/${taxDocumentId}/events`, {
+        headers: auth.headers,
+      });
+      expect(events.status()).toBe(200);
+      const history = await events.json();
+      expect(history).toEqual(
+        expect.arrayContaining([expect.objectContaining({ eventType: 'sunat_send', code: '0' })]),
+      );
+      expect(history.every((event: Record<string, unknown>) => !('payloadJson' in event))).toBe(
+        true,
+      );
+      const consult = await request.get(`${BASE_URL}/api/tax-documents/${taxDocumentId}/consult`, {
+        headers: auth.headers,
+      });
+      expect(consult.status()).toBe(200);
+      const updatedEvents = await request.get(
+        `${BASE_URL}/api/tax-documents/${taxDocumentId}/events`,
+        { headers: auth.headers },
+      );
+      expect(await updatedEvents.json()).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ eventType: 'sunat_consult', code: '0' }),
+        ]),
+      );
+      const pdfUrl = buildReceiptPdfUrl(BASE_URL, document.documentType ?? '03', taxDocumentId);
+      for (const kind of ['xml', 'cdr']) {
+        const file = await request.get(pdfUrl.replace(/\/pdf$/, `/${kind}`));
+        expect(file.status()).toBe(200);
+        const bytes = await file.body();
+        expect(bytes.length).toBeGreaterThan(0);
+        if (kind === 'cdr') expect(bytes.subarray(0, 2).toString()).toBe('PK');
+        else expect(bytes.toString()).toMatch(/^\s*<\?xml/);
+      }
     });
 
     await test.step('Descargar PDF del comprobante', async () => {

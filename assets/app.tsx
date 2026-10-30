@@ -3,6 +3,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UiStringsProvider, ES_UI_STRINGS } from '@nubitio/ui';
+import '@fontsource/lexend/latin-400.css';
+import '@fontsource/lexend/latin-500.css';
+import '@fontsource/lexend/latin-600.css';
+import '@fontsource/lexend/latin-700.css';
 // Vendor styles first so app-owned SCSS (styles.scss, custom.scss) reliably
 // cascades after them — lets eFact override design tokens and shell chrome.
 import '@nubitio/react-admin/style.css';

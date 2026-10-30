@@ -26,6 +26,9 @@ const USER_COLUMN_PRESETS = [
 export const userResource = defineResource<UserRecord>(userEndpoints.list(), {
   id: 'user',
   title: 'Usuarios',
+  gridAppearance: 'page',
+  filterRow: false,
+  filterToolbarFields: ['username', 'role'],
   viewMode: 'dialog',
   defaultPreset: 'basic',
   columnPresets: USER_COLUMN_PRESETS,

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import { Button, Drawer } from '@nubitio/ui';
 import {
   createSinglePaymentLine,
@@ -11,6 +11,11 @@ import {
 } from '@shared/lib/salePayments';
 import type { PaymentMethodOption } from '@shared/pos/types';
 import { SplitPaymentsEditor } from './SplitPaymentsEditor';
+import {
+  compactPaymentMethodName,
+  paymentMethodIcon,
+  primaryPaymentMethods,
+} from './paymentMethodPresentation';
 import './SplitPaymentsField.scss';
 import './SplitPaymentsEditor.scss';
 
@@ -25,6 +30,8 @@ export interface SplitPaymentsFieldProps {
   layout?: 'inline' | 'drawer';
   /** "Venta a crédito": accepts a sum below total instead of requiring an exact match. */
   allowPartial?: boolean;
+  /** Limit the first row; the remaining API methods stay available via an explicit expansion. */
+  quickMethodsLimit?: number;
 }
 
 export function SplitPaymentsField({
@@ -36,7 +43,10 @@ export function SplitPaymentsField({
   variant = 'admin',
   layout = 'inline',
   allowPartial = false,
+  quickMethodsLimit,
 }: SplitPaymentsFieldProps) {
+  const quickGroupName = useId();
+  const [moreMethods, setMoreMethods] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const summary = useMemo(
     () => summarizePaymentLines(value, paymentMethods),
@@ -47,6 +57,17 @@ export function SplitPaymentsField({
     ? paymentsWithinTotal(value, total)
     : paymentsMatchTotal(value, total);
   const remaining = remainingPaymentAmount(value, total);
+
+  const compactMethods = quickMethodsLimit
+    ? primaryPaymentMethods(paymentMethods, quickMethodsLimit)
+    : paymentMethods;
+  const selectedMethod = paymentMethods.find((method) => method.id === primaryLine?.methodId);
+  const quickMethods =
+    moreMethods || !quickMethodsLimit
+      ? paymentMethods
+      : selectedMethod && !compactMethods.some((method) => method.id === selectedMethod.id)
+        ? [...compactMethods.slice(0, Math.max(0, quickMethodsLimit - 1)), selectedMethod]
+        : compactMethods;
 
   const handleQuickMethod = (methodId: number) => {
     if (value.length <= 1) {
@@ -74,12 +95,26 @@ export function SplitPaymentsField({
   return (
     <>
       <div className={`split-payments-field split-payments-field--${variant}`}>
+        {variant === 'pos' && (
+          <div className="split-payments-field__heading">
+            <h3>Método de pago</h3>
+            {quickMethodsLimit && paymentMethods.length > quickMethodsLimit && (
+              <button
+                type="button"
+                onClick={() => setMoreMethods((open) => !open)}
+                aria-expanded={moreMethods}
+              >
+                {moreMethods ? 'Menos métodos' : 'Otros métodos'}
+              </button>
+            )}
+          </div>
+        )}
         <div
           className="split-payments-field__methods"
           role="radiogroup"
           aria-label="Método de pago rápido"
         >
-          {paymentMethods.map((method) => (
+          {quickMethods.map((method) => (
             <label
               key={method.id}
               className={`split-payments-field__method ${
@@ -88,11 +123,17 @@ export function SplitPaymentsField({
             >
               <input
                 type="radio"
-                name="split-payments-quick"
+                aria-label={method.name}
+                name={quickGroupName}
                 checked={primaryLine?.methodId === method.id}
                 onChange={() => handleQuickMethod(method.id)}
               />
-              <span>{method.name}</span>
+              {variant === 'pos' && (
+                <i className={`ph ${paymentMethodIcon(method)}`} aria-hidden="true" />
+              )}
+              <span>
+                {quickMethodsLimit && !moreMethods ? compactPaymentMethodName(method) : method.name}
+              </span>
             </label>
           ))}
         </div>

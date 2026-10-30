@@ -1,0 +1,28 @@
+.finance-navigation {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border-color);
+  margin: 0 0 20px;
+  a {
+    flex: 0 0 auto;
+    padding: 12px 0;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13px;
+    border-bottom: 2px solid transparent;
+    &.active {
+      color: var(--accent-color);
+      border-bottom-color: var(--accent-color);
+      font-weight: 600;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--accent-color);
+      outline-offset: -2px;
+    }
+  }
+}
+.accounts-receivable-page > .finance-navigation {
+  margin-left: var(--page-padding);
+  margin-right: var(--page-padding);
+}

@@ -32,6 +32,9 @@ const ROLE_COLUMN_PRESETS = [
 const baseResource = defineResource(roleEndpoints.list(), {
   id: 'roles',
   title: 'Roles',
+  gridAppearance: 'page',
+  filterRow: false,
+  filterToolbarFields: ['name'],
   fields: RoleFields(),
   viewMode: 'dialog',
   defaultPreset: 'basic',

@@ -399,6 +399,7 @@ export const KardexPage = () => {
       <DataGridView
         key={gridKey}
         id="kardex"
+        appearance="page"
         title={inInventoryHub ? '' : 'Kardex'}
         mode={inInventoryHub ? 'normal' : undefined}
         url={gridUrl}

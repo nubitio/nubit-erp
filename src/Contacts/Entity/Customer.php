@@ -60,6 +60,7 @@ class Customer implements ActivatableInterface
     private string $businessName;
 
     #[ORM\Column(name: 'domicilio_fiscal', nullable: true)]
+    #[Groups(['sale_record:read'])]
     #[ApiProperty(description: 'customer.fiscal_address.label')]
     private ?string $fiscalAddress = null;
 
@@ -70,6 +71,7 @@ class Customer implements ActivatableInterface
     private ?string $phone = null;
 
     #[Assert\Email]
+    #[Groups(['sale_record:read'])]
     #[ApiProperty(description: 'customer.email.label')]
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $email = null;

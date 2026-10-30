@@ -167,11 +167,15 @@ test('María: crédito 13.88, abono 3.88, Excel y cierre coinciden sin sumar deu
   expect(Number(paidRow['Total comprobante'])).toBe(13.88);
 
   await page.goto(`${BASE_URL}/#/cash-session/${sessionId}/close`);
-  const cashRow = page.getByRole('row').filter({ hasText: 'Efectivo' });
   const expectedAmount = (openingExpected + 3.88).toFixed(2);
-  await expect(cashRow).toBeVisible();
-  await expect(cashRow.getByRole('cell').nth(1)).toContainText(expectedAmount);
-  await cashRow.locator('input[type="number"]').fill(expectedAmount);
+  const cashPanel = page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: 'Cuadre de efectivo', exact: true }) })
+    .last();
+  await expect(cashPanel).toContainText(expectedAmount);
+  await page
+    .getByRole('spinbutton', { name: 'Monto contado de Efectivo', exact: true })
+    .fill(expectedAmount);
   const closeResponsePromise = page.waitForResponse(
     (response) =>
       response.url().endsWith(`/api/cash-sessions/${sessionId}/close`) &&

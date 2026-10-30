@@ -30,6 +30,7 @@ test('Crédito en el POS crea automáticamente una cuenta por cobrar', async ({ 
     await product.click();
   }
 
+  await page.getByRole('button', { name: 'Otros métodos', exact: true }).click();
   await page
     .locator('label.split-payments-field__method')
     .filter({ hasText: /^Credito$/i })

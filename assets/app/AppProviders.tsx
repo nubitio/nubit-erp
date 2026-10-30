@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { HashRouter as Router } from 'react-router-dom';
 
 import { ThemeProvider, DensityProvider, useAccentColor } from '@nubitio/ui';
@@ -28,14 +28,9 @@ function notifyServerError(error: unknown) {
   }
 }
 
-// Applies the persisted accent (or eFact azure default) on every page load.
+// Apply persisted choices only; otherwise preserve the Nubit theme's own accent.
 const AccentColorApplier = () => {
-  const { accent } = useAccentColor();
-
-  useEffect(() => {
-    document.documentElement.style.setProperty('--accent-color', accent);
-  }, [accent]);
-
+  useAccentColor();
   return null;
 };
 
@@ -70,7 +65,12 @@ export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => 
   );
 
   return (
-    <ThemeProvider storageKey="app-theme" themePrefix="app-theme-" basePath="/themes/">
+    <ThemeProvider
+      storageKey="app-theme"
+      themePrefix="app-theme-"
+      basePath="/themes/"
+      visualStyle="nubit"
+    >
       <DensityProvider>
         <AccentColorApplier />
         <Router>

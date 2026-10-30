@@ -15,10 +15,10 @@ import { httpTransport } from './httpTransport';
 export const HTTP_ERROR_EVENT = 'http-error';
 
 /**
- * Per-request options. Alias of the library's `CoreRequestConfig` — kept as a
- * named export so existing call-sites keep importing it from here.
+ * Per-request transport options plus the app's error presentation preference.
+ * Inline callers render their own feedback; session expiry is always handled.
  */
-export type RequestConfig = CoreRequestConfig;
+export type RequestConfig = CoreRequestConfig & { errorPresentation?: 'toast' | 'inline' };
 
 const DEFAULT_MESSAGES = {
   error: 'Ocurrió un error',
@@ -69,7 +69,7 @@ function isAbortError(error: unknown): boolean {
   );
 }
 
-function toAppError(error: unknown, url: string): unknown {
+function toAppError(error: unknown, url: string, config?: RequestConfig): unknown {
   // A request cancelled on purpose (superseded poll, unmounted view) is not a
   // failure the user needs to hear about; callers already ignore it.
   if (isAbortError(error)) {
@@ -103,6 +103,8 @@ function toAppError(error: unknown, url: string): unknown {
     return error;
   }
 
+  if (config?.errorPresentation === 'inline') return error;
+
   const detail = coreError.data?.detail ?? coreError.data?.message;
   const message =
     detail || (status ? MESSAGE_BY_STATUS[status] : undefined) || DEFAULT_MESSAGES.error;
@@ -122,33 +124,34 @@ class HttpClient {
   private async run<T>(
     request: Promise<CoreHttpResponse<T>>,
     url: string,
+    config?: RequestConfig,
   ): Promise<ApiResponse<T>> {
     try {
       const response = await request;
       return new ApiResponse<T>(response.response, response.data);
     } catch (error) {
-      throw toAppError(error, url);
+      throw toAppError(error, url, config);
     }
   }
 
   get<T>(url: string, config?: RequestConfig): Promise<ApiResponse<T>> {
-    return this.run(coreHttpClient.get<T>(url, config), url);
+    return this.run(coreHttpClient.get<T>(url, config), url, config);
   }
 
   post<T>(url: string, data?: unknown, config?: RequestConfig): Promise<ApiResponse<T>> {
-    return this.run(coreHttpClient.post<T>(url, data, config), url);
+    return this.run(coreHttpClient.post<T>(url, data, config), url, config);
   }
 
   put<T>(url: string, data?: unknown, config?: RequestConfig): Promise<ApiResponse<T>> {
-    return this.run(coreHttpClient.put<T>(url, data, config), url);
+    return this.run(coreHttpClient.put<T>(url, data, config), url, config);
   }
 
   patch<T>(url: string, data?: unknown, config?: RequestConfig): Promise<ApiResponse<T>> {
-    return this.run(coreHttpClient.patch<T>(url, data, config), url);
+    return this.run(coreHttpClient.patch<T>(url, data, config), url, config);
   }
 
   delete<T>(url: string, config?: RequestConfig): Promise<ApiResponse<T>> {
-    return this.run(coreHttpClient.delete<T>(url, config), url);
+    return this.run(coreHttpClient.delete<T>(url, config), url, config);
   }
 }
 

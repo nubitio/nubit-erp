@@ -1,16 +1,16 @@
 import { ConsultInfoDto } from '@shared/api/consult.info.dto';
-import { httpClient } from '@shared/api/HttpClient';
+import { httpClient, type RequestConfig } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 
 class ConsultService {
-  consultRuc(ruc: string) {
-    return httpClient.get<ConsultInfoDto>(`${API}consults/ruc/${ruc}`);
+  consultRuc(ruc: string, config?: RequestConfig) {
+    return httpClient.get<ConsultInfoDto>(`${API}consults/ruc/${ruc}`, config);
   }
 
-  consultDni(dni: string) {
-    return httpClient.get<ConsultInfoDto>(`${API}consults/dni/${dni}`);
+  consultDni(dni: string, config?: RequestConfig) {
+    return httpClient.get<ConsultInfoDto>(`${API}consults/dni/${dni}`, config);
   }
 }
 

@@ -189,3 +189,24 @@ describe('other failures', () => {
     expect(dispatchedEvents()).not.toContain(SESSION_EXPIRED_EVENT);
   });
 });
+
+describe('inline error presentation', () => {
+  it('returns the error to the caller without a duplicate global toast', async () => {
+    core.get.mockReturnValueOnce(rejectWith(503, { detail: 'Provider unavailable' }));
+    await expect(
+      httpClient.get('/api/consults/ruc/20100000009', { errorPresentation: 'inline' }),
+    ).rejects.toMatchObject({ status: 503 });
+    expect(toasts()).toHaveLength(0);
+    expect(dispatchedEvents()).not.toContain(HTTP_ERROR_EVENT);
+  });
+  it('still handles session expiry for inline callers', async () => {
+    const onExpired = vi.fn();
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired);
+    core.get.mockReturnValueOnce(rejectWith(401));
+    await expect(
+      httpClient.get('/api/consults/ruc/20100000009', { errorPresentation: 'inline' }),
+    ).rejects.toMatchObject({ status: 401 });
+    expect(onExpired).toHaveBeenCalledTimes(1);
+    window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired);
+  });
+});

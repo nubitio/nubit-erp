@@ -25,7 +25,11 @@
     color 0.15s ease;
 
   input {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    clip-path: inset(50%);
   }
 
   &:hover:not(.is-active) {
@@ -378,5 +382,76 @@
   .split-payments-drawer__status.is-pending {
     background: var(--pos-warning-soft, color-mix(in srgb, #d97706 14%, transparent));
     color: var(--pos-warning, #b45309);
+  }
+}
+
+html[data-visual-style='nubit'] .split-payments-field--pos {
+  border: 1px solid var(--nb-color-border-default);
+  border-radius: 12px;
+  padding: 12px;
+  background: var(--nb-color-bg-surface);
+  gap: 12px;
+  .split-payments-field__heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .split-payments-field__heading h3 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .split-payments-field__heading button {
+    border: 0;
+    background: transparent;
+    padding: 4px 0;
+    color: var(--nb-color-text-brand);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .split-payments-field__methods {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .split-payments-field__method {
+    min-width: 0;
+    min-height: 64px;
+    padding: 8px 4px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    font-size: 12px;
+    line-height: 16px;
+    text-align: center;
+    border-radius: 8px;
+    overflow-wrap: anywhere;
+    background: var(--nb-color-bg-surface);
+  }
+  .split-payments-field__method i {
+    font-size: 22px;
+  }
+  .split-payments-field__method.is-active {
+    border-color: var(--nb-color-border-focus);
+    background: var(--nb-color-bg-brand-subtle);
+    color: var(--nb-color-text-brand);
+    box-shadow: inset 0 0 0 1px var(--nb-color-border-focus);
+  }
+  .split-payments-field__method:focus-within {
+    outline: 2px solid var(--nb-color-border-focus);
+    outline-offset: 2px;
+  }
+  .split-payments-field__trigger {
+    border-radius: 8px;
+    background: var(--nb-color-bg-subtle);
+    padding: 10px;
+  }
+  .split-payments-field__trigger-label {
+    font-size: 11px;
+  }
+  .split-payments-field__trigger-value {
+    font-size: 14px;
   }
 }

@@ -8,7 +8,8 @@
  * eFact domain concerns. Keep business logic out of @nubitio/admin and in here.
  */
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { AdminShell, type AdminMenuItem } from '@nubitio/admin';
+import { useLocation } from 'react-router-dom';
+import { AdminShell, AdminBottomNavigation, type AdminMenuItem } from '@nubitio/admin';
 import { userInformation } from '@app/userInformation';
 import { menuService } from '@features/navigation';
 import { useNotifications } from '@features/notifications';
@@ -19,6 +20,14 @@ import { NotificationPanel } from './components/NotificationPanel';
 import { BranchPicker } from './components/BranchPicker';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
 import { useFeature, useTenantRuntimeConfig } from '@shared/hooks';
+import { useAuth } from '@app/contexts/auth';
+import { WorkspaceSearch } from './components/WorkspaceSearch';
+import { WorkspaceBrand } from './components/WorkspaceBrand';
+import {
+  mobileWorkspaceDestinations,
+  workspaceSectionTitle,
+} from './components/workspaceNavigation';
+import './workspace.scss';
 
 // Lazy-load the chat panel so it doesn't bloat the initial bundle
 const Assistant = lazy(() => import('@features/assistant/Assistant'));
@@ -29,6 +38,8 @@ interface EfactAdminShellProps {
 }
 
 export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShellProps) => {
+  // Committed branch changes also refresh the auth context.
+  useAuth();
   const [menuItems, setMenuItems] = useState<AdminMenuItem[]>([]);
   const [showBranchPicker, setShowBranchPicker] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
@@ -42,6 +53,23 @@ export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShe
   const { unreadCount, notifications, loading, markRead, markAllRead } = useNotifications();
   const { data: runtimeConfig, isError: runtimeConfigError } = useTenantRuntimeConfig();
   const assistantEnabled = useFeature('ai_assistant');
+  const branchName =
+    userInformation().currentBranchName ||
+    runtimeConfig?.defaults.branch?.name ||
+    'Sin sucursal seleccionada';
+  const canChangeBranch = runtimeConfig?.ui.shell.showBranchPicker === true || runtimeConfigError;
+  const mobileDestinations = mobileWorkspaceDestinations(menuItems);
+  const { pathname } = useLocation();
+  const sectionTitle = workspaceSectionTitle(pathname, menuItems, title);
+  const branchContent = (
+    <>
+      <i className="ph ph-building" aria-hidden="true" />
+      <span>
+        <strong>Sucursal actual</strong>
+        <small>{branchName}</small>
+      </span>
+    </>
+  );
 
   useEffect(() => {
     const onOpen = () => {
@@ -70,7 +98,30 @@ export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShe
   return (
     <>
       <AdminShell
-        title={title}
+        variant="workspace"
+        brand={<WorkspaceBrand />}
+        headerContent={<WorkspaceSearch menu={menuItems} />}
+        sidebarContext={
+          canChangeBranch ? (
+            <button
+              className="erp-workspace-context"
+              type="button"
+              aria-label={`Cambiar sucursal: ${branchName}`}
+              onClick={() => setShowBranchPicker(true)}
+            >
+              {branchContent}
+              <i className="ph ph-caret-down" aria-hidden="true" />
+            </button>
+          ) : (
+            <div className="erp-workspace-context">{branchContent}</div>
+          )
+        }
+        bottomNavigation={
+          mobileDestinations.length > 0 ? (
+            <AdminBottomNavigation label="Accesos principales" items={mobileDestinations} />
+          ) : undefined
+        }
+        title={sectionTitle}
         menuItems={menuItems}
         headerActions={[
           ...(assistantEnabled

@@ -30,10 +30,7 @@ export async function selectPosCustomer(page: Page, opts: SelectPosCustomerOptio
   await searchInput.fill(searchTerm);
   await responsePromise;
 
-  const option = page
-    .locator('.nb-form__lookup-menu button[role="option"]')
-    .filter({ hasText: opts.name })
-    .first();
+  const option = page.getByRole('option').filter({ hasText: opts.name }).first();
   await expect(option).toBeVisible({ timeout: 15000 });
   await option.click();
 

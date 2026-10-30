@@ -1,0 +1,45 @@
+.erp-workspace-brand {
+  display: block;
+  width: 146px;
+  max-width: 100%;
+  height: 28px;
+  object-fit: contain;
+}
+
+.erp-workspace-context {
+  align-items: center;
+  background: var(--surface-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  display: flex;
+  font: inherit;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  text-align: left;
+  width: 100%;
+
+  > span {
+    flex: 1;
+    min-width: 0;
+  }
+  strong,
+  small {
+    display: block;
+    overflow-wrap: anywhere;
+  }
+  strong {
+    font-size: var(--font-size-xs);
+  }
+  small {
+    color: var(--text-secondary);
+  }
+}
+
+button.erp-workspace-context {
+  cursor: pointer;
+  &:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
+  }
+}

@@ -48,6 +48,21 @@ make migrate
 
 ## Variables de entorno críticas
 
+### Integración local del Design System
+
+Esta rama consume las mejoras de `nubit-react` mediante resoluciones Yarn `portal:`
+en `package.json`, desde `../../nubit-dev/nubit-react/packages/*`. Son enlaces de
+desarrollo, no una publicación nueva de npm. Antes de instalar el ERP, ejecutar
+`corepack pnpm build` en ese monorepo; después, `corepack yarn install` aquí.
+El servicio Docker `vite` monta la misma ruta para resolver los paquetes locales.
+
+El tema Nubit se activa en `AppProviders`; los componentes, tokens y layouts se
+mantienen en las librerías base. La búsqueda del header busca secciones del menú
+autorizado, no documentos ni clientes. El catálogo reutiliza el grid y el
+formulario compartidos, sin cambiar reglas de stock, precios o facturación.
+Antes de desplegar fuera de este workspace, publicar una versión compatible de
+las librerías y sustituir estas resoluciones locales por versiones de npm.
+
 Configurar al menos estas variables en `.env.local` para desarrollo real:
 
 - `APP_SECRET`

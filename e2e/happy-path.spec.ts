@@ -1063,43 +1063,18 @@ test.describe('Happy Path — flujo completo de venta', () => {
       expect(openedCashSessionId, 'cashSessionId debe estar disponible del paso 4').not.toBeNull();
       await page.goto(`${BASE_URL}/#/cash-session/${openedCashSessionId}/close`);
       // CashRegisterClose renders an h1.cash-close__title (custom component, not a CRUD grid)
-      await expect(page.locator('h1.cash-close__title')).toBeVisible({ timeout: 20000 });
+      await expect(page.getByRole('heading', { name: 'Cierre de caja', exact: true })).toBeVisible({
+        timeout: 20000,
+      });
     });
 
-    await test.step('Ingresar montos contados en el grid editable', async () => {
-      // CashClosureGrid es un componente nativo (tabla HTML estándar).
-      // Las columnas son: Forma de pago(0), Monto esperado(1), Monto contado(2), Diferencia(3), Nota(4)
-      // La celda de "Monto contado" tiene class="col-counted-amount" con un input[type="number"] siempre visible.
-
-      // Esperamos a que se carguen los datos del summary
-      await waitForGridLoad(page);
-
-      // Columnas: Forma de pago(0), Monto esperado(1), Monto contado(2), Diferencia(3), Nota(4)
-      const firstDataRow = page.locator('table tbody tr').first();
-      await firstDataRow.waitFor({ state: 'visible', timeout: 15000 });
-
-      // El input de "Monto contado" tiene class cash-close__input--num (siempre visible, no click-to-edit).
-      const cellEditor = firstDataRow.locator('input.cash-close__input--num').first();
-      await cellEditor.waitFor({ state: 'visible', timeout: 8000 });
-      await cellEditor.fill('0'); // monto contado = 0 (suficiente para el test)
-      await page.keyboard.press('Tab'); // trigger onBlur → updateRow → React re-render
-      // Esperar a que la celda de Diferencia tenga valor (onBlur actualiza el estado React)
-      await page
-        .waitForFunction(
-          () => {
-            const row = document.querySelector('table tbody tr');
-            const cells = row?.querySelectorAll('td');
-            // Diferencia is column index 3 (0=paymentMethod, 1=expected, 2=counted, 3=difference, 4=note)
-            const diffCell = cells?.[3];
-            return diffCell && diffCell.textContent?.trim() !== '';
-          },
-          undefined,
-          { timeout: 8000 },
-        )
-        .catch(() => {
-          // If we can't confirm differenceData loaded, wait a fixed amount as fallback
-        });
-      await page.waitForTimeout(500);
+    await test.step('Ingresar montos contados y justificar diferencias', async () => {
+      const counts = page.locator('input.cash-close__input--num');
+      await expect(counts.first()).toBeVisible();
+      for (const input of await counts.all()) await input.fill('0');
+      for (const reason of await page.getByPlaceholder('Explica el sobrante o faltante').all())
+        await reason.fill('Diferencia de prueba E2E');
+      await expect(page.getByTestId('cash-close-btn')).toBeEnabled();
     });
 
     await test.step('Hacer click en "Cerrar caja"', async () => {
