@@ -51,7 +51,7 @@ export const catalogRoutes: AppRouteDefinition[] = [
     path: '/catalog',
     element: CatalogHubLayout,
     children: [
-      { path: 'products', element: ProductPage },
+      ...crudRoute('products', ProductPage),
       { path: 'categories', element: CategoryPage },
       { path: 'units', element: UnitOfMeasurePage },
       { path: 'prices', element: PriceListPage },

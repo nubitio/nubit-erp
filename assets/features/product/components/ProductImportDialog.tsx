@@ -4,6 +4,7 @@ import { useScreenSize } from '@nubitio/admin';
 import { MercureManager, useMercureHub } from '@nubitio/core';
 import { AppDialog, Button } from '@nubitio/ui';
 import { httpClient } from '@shared/api/HttpClient';
+import { downloadProductImportTemplate } from '../model/downloadProductImportTemplate';
 
 import './ProductImportDialog.scss';
 
@@ -187,7 +188,7 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => window.open('/api/v1/products/import/template', '_blank')}
+            onClick={() => void downloadProductImportTemplate().catch(() => undefined)}
           >
             Descargar plantilla .xlsx
           </Button>

@@ -7,12 +7,15 @@ import {
   type DataRecord,
   type Field,
   type SmartCrudFieldPatch,
+  type GridHandle,
 } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
 import React, { useCallback, useRef, useState } from 'react';
 import { ProductImportDialog } from './components/ProductImportDialog';
+import { ProductCatalogEmptyState } from './components/ProductCatalogEmptyState';
+import { ProductCardContent, ProductCardMedia } from './components/ProductCardContent';
 import './ProductPage.scss';
 import { moneyCell } from '@shared/ui/crudFormatters';
 import { hasPermission } from '@shared/permissions';
@@ -195,7 +198,10 @@ const PRODUCT_COLUMN_PRESETS = [
 const productResource = defineResource<ProductRecord>(API + 'products', {
   id: 'product',
   title: 'Productos',
+  gridAppearance: 'page',
+  quickFilterFields: ['category'],
   permissions: {
+    canView: () => hasPermission('catalog.view'),
     canAdd: () => hasPermission('catalog.create'),
     canEdit: () => hasPermission('catalog.edit'),
     canDelete: () => hasPermission('catalog.delete'),
@@ -206,31 +212,49 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
     label: preset.label,
     columns: [...preset.columns],
   })),
-  viewMode: { mode: 'drawer', drawerSize: 'lg' },
+  viewMode: 'page',
+  routing: { routeParam: 'id' },
+  cardView: {
+    defaultView: 'cards',
+    renderMedia: (context) => <ProductCardMedia {...context} />,
+    renderContent: (context) => <ProductCardContent {...context} />,
+  },
+  formPage: {
+    titles: { add: 'Nuevo producto', edit: 'Editar producto', view: 'Consultar producto' },
+    subtitle: 'Catálogo · Información del producto',
+    saveLabel: 'Guardar producto',
+    footerContent:
+      'Los cambios se guardan al confirmar. Las existencias se gestionan desde Inventario.',
+  },
   formLayout: {
-    type: 'tabs',
-    tabs: [
+    type: 'columns',
+    main: [
       {
         label: 'General',
-        icon: 'ph-package',
-        fields: ['name', 'code', 'category', 'productKind', 'salePrice', 'photo'],
+        description: 'Datos del producto que se usan en el catálogo y el punto de venta.',
+        fields: ['name', 'category', 'unitOfMeasure', 'sku', 'barcode', 'code', 'productKind'],
+      },
+      {
+        label: 'Precio de venta',
+        description: 'Precio usado al agregar el producto a una venta.',
+        fields: ['salePrice'],
       },
       {
         label: 'Inventario',
-        icon: 'ph-warehouse',
-        fields: [
-          'inventoryBehavior',
-          'sku',
-          'barcode',
-          'unitOfMeasure',
-          'lotTrackingStrategy',
-          'minStock',
-        ],
+        description:
+          'Configura el control de inventario. Las entradas y ajustes se registran desde Inventario.',
+        fields: ['inventoryBehavior', 'lotTrackingStrategy', 'minStock'],
       },
       {
         label: 'SUNAT',
-        icon: 'ph-scales',
         fields: ['detractionCatalog'],
+      },
+    ],
+    aside: [
+      {
+        label: 'Imagen',
+        description: 'Se muestra en el catálogo y en el punto de venta.',
+        fields: ['photo'],
       },
     ],
   },
@@ -241,7 +265,12 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
       {
         kind: 'override',
         key: 'name',
-        patch: { order: 0, layoutHint: 'fullWidth', label: 'Nombre' },
+        patch: {
+          order: 0,
+          layoutHint: 'fullWidth',
+          label: 'Nombre del producto',
+          cardRole: 'title',
+        },
       },
       { kind: 'override', key: 'code', patch: { order: 1, layoutHint: 'short', label: 'Código' } },
       {
@@ -295,11 +324,25 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
           visibleWhen: (formData) => formData.productKind === 'GOOD',
         },
       },
-      { kind: 'override', key: 'sku', patch: { order: 11, layoutHint: 'short', label: 'SKU' } },
+      {
+        kind: 'override',
+        key: 'sku',
+        patch: {
+          order: 11,
+          layoutHint: 'short',
+          label: 'Código interno (SKU)',
+          helpText: 'Referencia interna para identificar el producto.',
+        },
+      },
       {
         kind: 'override',
         key: 'barcode',
-        patch: { order: 12, layoutHint: 'short', label: 'Código de barras' },
+        patch: {
+          order: 12,
+          layoutHint: 'short',
+          label: 'Código de barras',
+          helpText: 'Puedes ingresarlo con un lector de códigos.',
+        },
       },
       {
         kind: 'override',
@@ -333,6 +376,7 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
           layoutHint: 'short',
           align: 'right',
           label: 'Stock mínimo',
+          helpText: 'Nivel de referencia para detectar existencias bajas.',
           filterable: false,
           visibleWhen: (formData) => formData.inventoryBehavior === 'TRACKED',
         },
@@ -380,16 +424,24 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
 
 export function ProductPage() {
   const [importOpen, setImportOpen] = useState(false);
-  const gridRefreshRef = useRef<(() => void) | null>(null);
+  const gridRef = useRef<GridHandle | null>(null);
 
   const handleImportDone = useCallback(() => {
     // Refresh the grid after a successful import so new products are visible.
-    gridRefreshRef.current?.();
+    gridRef.current?.refresh();
   }, []);
 
   const productResourceWithImport = React.useMemo(
     () => ({
       ...productResource,
+      emptyState: {
+        render: ({ onAdd }: { onAdd?: () => void }) => (
+          <ProductCatalogEmptyState
+            onCreate={onAdd}
+            onImport={hasPermission('catalog.create') ? () => setImportOpen(true) : undefined}
+          />
+        ),
+      },
       auditTrail: {
         enabled: true,
         apiUrl: (id: string | number) => `/api/audit-trail/product/${id}`,
@@ -410,6 +462,7 @@ export function ProductPage() {
           },
           {
             text: 'Importar productos',
+            visible: hasPermission('catalog.create'),
             icon: 'ph-upload-simple',
             hint: 'Importar productos',
             onClick: () => setImportOpen(true),
@@ -422,7 +475,7 @@ export function ProductPage() {
 
   return (
     <>
-      <SchemaCrudPage resource={productResourceWithImport} />
+      <SchemaCrudPage resource={productResourceWithImport} gridRef={gridRef} />
       <ProductImportDialog
         isOpen={importOpen}
         onClose={() => setImportOpen(false)}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { PosItem } from './types';
-import { formatStockCount, productNameInitials } from './posPresentation';
+import { formatStockCount } from './posPresentation';
 import './POSPage.scss';
 
 interface POSItemProps {
@@ -32,6 +32,7 @@ export function POSItem({
       ? item.salePrice
       : Number.parseFloat(String(item.salePrice ?? 0)) || 0;
 
+  const [failedPhoto, setFailedPhoto] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [editingPrice, setEditingPrice] = useState(false);
   const [editingPriceValue, setEditingPriceValue] = useState('');
@@ -68,95 +69,98 @@ export function POSItem({
   return (
     <article
       className={`pos-product-card${isOutOfStock ? ' is-disabled' : ''}${quantity > 0 ? ' is-in-cart' : ''}${isAdding ? ' is-adding' : ''}`}
-      onClick={triggerAdd}
-      role="button"
-      tabIndex={isOutOfStock ? -1 : 0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          triggerAdd();
-        }
-      }}
-      aria-label={`${item.name} — S/${unitPrice.toFixed(2)}${quantity > 0 ? ` (${quantity} en carrito)` : ''}`}
-      aria-pressed={quantity > 0}
       data-testid="pos-product-card"
       data-product-id={item.id}
     >
-      {/* Top row: thumbnail + stock / qty */}
-      <div className="pos-product-card__top">
-        <div className="pos-product-card__thumb" aria-hidden="true">
-          {item.photo?.path ? (
-            <img src={item.photo.path} alt="" className="pos-product-card__image" loading="lazy" />
-          ) : (
-            <span>{productNameInitials(item.name)}</span>
-          )}
-        </div>
-        {quantity > 0 ? (
-          <div className="pos-product-card__qty-badge" aria-label={`${quantity} en la orden`}>
-            {quantity}
-          </div>
-        ) : isOutOfStock ? (
-          <div className="pos-product-card__out-pill">Sin stock</div>
-        ) : (
-          tracksInventory &&
-          stockValue !== null &&
-          stockValue > 0 && (
-            <div className="pos-product-card__stock-corner">{formatStockCount(stockValue)}</div>
-          )
-        )}
-      </div>
-
-      <div className="pos-product-card__title" title={item.name}>
-        {item.name}
-      </div>
-      {item.sku ? <div className="pos-product-card__sku">{item.sku}</div> : null}
-
-      {/* Price */}
-      <div className="pos-product-card__price-row" onClick={(event) => event.stopPropagation()}>
-        {editingPrice ? (
-          <div className="pos-product-card__price-edit">
-            <input
-              type="number"
-              min={0}
-              step="0.10"
-              value={editingPriceValue}
-              autoFocus
-              disabled={isCatalogPriceUpdating}
-              onChange={(event) => setEditingPriceValue(event.target.value)}
-              onFocus={(event) => event.currentTarget.select()}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') void savePriceEdit();
-                if (event.key === 'Escape') cancelPriceEditor();
-              }}
-              aria-label={`Nuevo precio de ${item.name}`}
+      <button
+        type="button"
+        className="pos-product-card__select"
+        onClick={triggerAdd}
+        disabled={isOutOfStock || editingPrice}
+        aria-label={`Agregar ${item.name} — S/ ${unitPrice.toFixed(2)}${quantity > 0 ? ` (${quantity} en carrito)` : ''}`}
+        aria-pressed={quantity > 0}
+        data-testid="pos-product-card-add"
+      >
+        <span className="pos-product-card__thumb" aria-hidden="true">
+          {item.photo?.path && failedPhoto !== item.photo.path ? (
+            <img
+              src={item.photo.path}
+              alt=""
+              className="pos-product-card__image"
+              loading="lazy"
+              onError={() => setFailedPhoto(item.photo!.path)}
             />
-            <button
-              type="button"
-              onClick={() => void savePriceEdit()}
-              disabled={isCatalogPriceUpdating}
-              aria-label="Guardar precio"
-            >
-              <i className="ph ph-check" aria-hidden="true" />
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="pos-product-card__price">S/{unitPrice.toFixed(2)}</div>
-            {onCatalogPriceEdit && (
-              <button
-                type="button"
-                className="pos-product-card__edit-price"
-                onClick={openPriceEditor}
-                disabled={isCatalogPriceUpdating}
-                aria-label={`Editar precio maestro de ${item.name}`}
-                title="Editar precio del catálogo"
-              >
-                <i className="ph ph-pencil-simple" aria-hidden="true" />
-              </button>
-            )}
-          </>
-        )}
-      </div>
+          ) : (
+            <i className="ph ph-cube" />
+          )}
+        </span>
+        <span className="pos-product-card__title">{item.name}</span>
+        {item.sku && <span className="pos-product-card__sku">{item.sku}</span>}
+        <span className="pos-product-card__price-row">
+          <span className="pos-product-card__price">S/ {unitPrice.toFixed(2)}</span>
+          {quantity > 0 ? (
+            <span className="pos-product-card__qty-badge" aria-label={`${quantity} en la orden`}>
+              {quantity}
+            </span>
+          ) : (
+            !isOutOfStock && (
+              <span className="pos-product-card__add-affordance" aria-hidden="true">
+                <i className="ph ph-plus" />
+              </span>
+            )
+          )}
+        </span>
+        {isOutOfStock ? (
+          <span className="pos-product-card__stock-note">Sin stock</span>
+        ) : tracksInventory && stockValue !== null && stockValue > 0 && stockValue <= 5 ? (
+          <span className="pos-product-card__stock-note">
+            Quedan {formatStockCount(stockValue)}
+          </span>
+        ) : null}
+      </button>
+      {editingPrice ? (
+        <div className="pos-product-card__price-edit">
+          <input
+            type="number"
+            min={0}
+            step="0.10"
+            value={editingPriceValue}
+            autoFocus
+            disabled={isCatalogPriceUpdating}
+            onChange={(event) => setEditingPriceValue(event.target.value)}
+            onFocus={(event) => event.currentTarget.select()}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter') void savePriceEdit();
+              if (event.key === 'Escape') cancelPriceEditor();
+            }}
+            aria-label={`Nuevo precio de ${item.name}`}
+          />
+          <button
+            type="button"
+            onClick={() => void savePriceEdit()}
+            disabled={isCatalogPriceUpdating}
+            aria-label="Guardar precio"
+          >
+            <i className="ph ph-check" aria-hidden="true" />
+          </button>
+          <button type="button" onClick={cancelPriceEditor} aria-label="Cancelar cambio de precio">
+            <i className="ph ph-x" aria-hidden="true" />
+          </button>
+        </div>
+      ) : (
+        onCatalogPriceEdit && (
+          <button
+            type="button"
+            className="pos-product-card__edit-price"
+            onClick={openPriceEditor}
+            disabled={isCatalogPriceUpdating}
+            aria-label={`Editar precio maestro de ${item.name}`}
+            title="Editar precio del catálogo"
+          >
+            <i className="ph ph-pencil-simple" aria-hidden="true" />
+          </button>
+        )
+      )}
     </article>
   );
 }

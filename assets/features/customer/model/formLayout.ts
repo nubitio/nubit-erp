@@ -8,8 +8,12 @@ export const customerFormLayout: FormLayout = {
       fields: ['ruc', 'businessName', 'fiscalAddress'],
     },
     {
-      label: 'Contacto y condiciones',
-      fields: ['phone', 'email', 'priceList', 'isActive'],
+      label: 'Contacto',
+      fields: ['email', 'phone'],
+    },
+    {
+      label: 'Condiciones',
+      fields: ['priceList', 'isActive'],
     },
   ],
 };

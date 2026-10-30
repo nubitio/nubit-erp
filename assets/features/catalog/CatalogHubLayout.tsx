@@ -1,10 +1,14 @@
 import { FeatureHubLayout } from '@nubitio/admin';
 import { useTenantRuntimeConfig } from '@shared/hooks';
+import { Outlet, useMatch } from 'react-router-dom';
 
 export const CatalogHubLayout = () => {
   const { data: runtimeConfig } = useTenantRuntimeConfig();
   const navigationTier = runtimeConfig?.profile.navigationTier ?? 'basic';
   const showConfigurationTabs = navigationTier === 'standard' || navigationTier === 'advanced';
+  const productForm = useMatch('/catalog/products/:id');
+
+  if (productForm) return <Outlet />;
 
   return (
     <FeatureHubLayout

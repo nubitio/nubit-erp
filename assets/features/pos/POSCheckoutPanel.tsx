@@ -153,7 +153,7 @@ export function POSCheckoutPanel({
     // TextAreaField finishes its layout after the open-state paint. Waiting a
     // moment prevents scrolling to the former, shorter note height.
     const timer = window.setTimeout(() => {
-      const cartBody = cartBodyRef.current;
+      const cartBody = cartBodyRef.current?.closest<HTMLElement>('.pos-cart-panel');
       cartBody?.scrollTo({ top: cartBody.scrollHeight, behavior: 'smooth' });
     }, 100);
 
@@ -711,6 +711,7 @@ export function POSCheckoutPanel({
           onChange={setPaymentLines}
           variant="pos"
           layout="drawer"
+          quickMethodsLimit={4}
         />
 
         {creditSale && (
@@ -766,7 +767,7 @@ export function POSCheckoutPanel({
           <div className="pos-postsale__card">
             <div className="pos-postsale__check">✓</div>
             <h2 className="pos-postsale__title" data-testid="pos-postsale-title">
-              ¡Venta cobrada!
+              Venta registrada
             </h2>
             {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
             {successTotalRef.current != null && successTotalRef.current > 0 && (

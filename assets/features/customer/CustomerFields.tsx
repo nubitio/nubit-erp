@@ -5,14 +5,16 @@ const API = getCoreApiBaseUrl();
 import type { FormHandle, GridCellContext } from '@nubitio/crud';
 import { Field } from '@nubitio/crud';
 import { entityField, switchField, textField, textareaField } from '@nubitio/crud';
-import { consultService } from '@features/consult';
-import toast, { SharedUtils } from '@shared/lib/SharedUtils';
+import { SharedUtils } from '@shared/lib/SharedUtils';
+import { lookupCustomerDocument } from './model/lookupCustomerDocument';
 
 type ValidationEvent = {
   value?: unknown;
 };
 
-type FieldButtonForm = Pick<FormHandle, 'getFieldValue' | 'setFieldValue'>;
+type FieldButtonForm = Pick<FormHandle, 'getFieldValue' | 'setFieldValue'> & {
+  isCurrent?: () => boolean;
+};
 
 export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
   const fields: Field[] = [];
@@ -59,38 +61,20 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
       ])
       .required(true)
       .sortable(true)
-      .layoutHint('identity')
+      .layoutHint('fullWidth')
+      .helpText('Ingresa 8 dígitos para DNI u 11 para RUC. Puedes consultar sus datos.')
       .buttons([
         {
           name: 'search',
           location: 'after',
           options: {
             icon: 'search',
+            text: 'Consultar',
+            ariaLabel: 'Consultar RUC o DNI',
             stylingMode: 'text',
-            onClick: (_event: unknown, form: FieldButtonForm) => {
-              const activeForm = form ?? formRef.current;
-              const doc = String(activeForm?.getFieldValue('ruc') ?? '').trim();
-              if (doc.length === 8) {
-                consultService
-                  .consultDni(doc)
-                  .then((response) => {
-                    activeForm?.setFieldValue('businessName', response.data.name);
-                  })
-                  .catch(() => toast('No se pudo consultar el DNI', 'error'));
-              } else if (doc.length === 11) {
-                consultService
-                  .consultRuc(doc)
-                  .then((response) => {
-                    if (!response.data.active) {
-                      toast('El RUC ingresado no se encuentra activo', 'error');
-                      return;
-                    }
-                    activeForm?.setFieldValue('businessName', response.data.name);
-                    activeForm?.setFieldValue('fiscalAddress', response.data.address);
-                  })
-                  .catch(() => toast('No se pudo consultar el RUC', 'error'));
-              }
-            },
+            loadingText: 'Consultando…',
+            onClick: (_event: unknown, form: FieldButtonForm) =>
+              lookupCustomerDocument(form ?? formRef.current),
           },
         },
       ])
@@ -98,7 +82,7 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
       .build(),
   );
   fields.push(
-    textareaField()
+    textField()
       .name('businessName')
       .label('Razón social')
       .layoutHint('fullWidth')
@@ -106,7 +90,9 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
       .sortable(true)
       .build(),
   );
-  fields.push(textareaField().name('fiscalAddress').label('Domicilio').layoutHint('long').build());
+  fields.push(
+    textareaField().name('fiscalAddress').label('Dirección fiscal').layoutHint('long').build(),
+  );
   fields.push(
     textField()
       .name('phone')
@@ -126,7 +112,8 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
   fields.push(
     textField()
       .name('email')
-      .label('Email')
+      .label('Correo')
+      .helpText('Correo de contacto del cliente.')
       .layoutHint('short')
       .validators([
         {
@@ -139,7 +126,7 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
   fields.push(
     entityField(API + 'price-lists', 'id', 'name')
       .name('priceList')
-      .label('Tarifa')
+      .label('Lista de precios')
       .layoutHint('lookup')
       .formatter((cell: GridCellContext) => (cell.value as { name?: string } | undefined)?.name)
       .valueType('number')
@@ -148,7 +135,9 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
   fields.push(
     switchField()
       .name('isActive')
-      .label('Activo')
+      .label('Cliente activo')
+      .defaultValue(true)
+      .helpText('Disponible para seleccionarlo en ventas.')
       .layoutHint('short')
       .formatter((cell: GridCellContext) => SharedUtils.booleanFormatter(Boolean(cell.value)))
       .build(),

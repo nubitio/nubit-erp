@@ -47,6 +47,20 @@ export function POSCatalogPanel({
   // F2 or '/' to focus search; Escape to clear
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
+      const target = e.target as HTMLElement;
+      if (
+        e.defaultPrevented ||
+        e
+          .composedPath()
+          .some(
+            (node) =>
+              node instanceof HTMLElement &&
+              ['dialog', 'alertdialog'].includes(node.getAttribute('role') ?? ''),
+          )
+      )
+        return;
+      if (e.key === '/' && target.closest('input, textarea, select, [contenteditable="true"]'))
+        return;
       if ((e.key === 'F2' || e.key === '/') && document.activeElement !== searchInputRef.current) {
         e.preventDefault();
         searchInputRef.current?.focus();
@@ -69,7 +83,7 @@ export function POSCatalogPanel({
           <input
             ref={searchInputRef}
             type="search"
-            placeholder="Buscar producto…"
+            placeholder="Buscar producto o código"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -78,6 +92,7 @@ export function POSCatalogPanel({
                 void onAddToCart(filteredMenu[0]);
               }
             }}
+            aria-label="Buscar producto o código"
             autoComplete="off"
             autoFocus
             data-testid="pos-product-search"
@@ -93,6 +108,15 @@ export function POSCatalogPanel({
             </button>
           )}
         </div>
+        <button
+          type="button"
+          className="pos-toolbar__barcode"
+          aria-label="Buscar por código de barras"
+          title="Usa un lector o escribe el código de barras"
+          onClick={() => searchInputRef.current?.focus()}
+        >
+          <i className="ph ph-barcode" aria-hidden="true" />
+        </button>
       </header>
 
       {/* Category bar — fixed outside scroll, single-row, horizontally scrollable */}

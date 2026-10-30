@@ -1,0 +1,513 @@
+// Figma ERP POS: semantic surfaces, clear card geometry and a continuous mobile checkout.
+// Scoped to POS so adopting these patterns does not change dashboard composition.
+html[data-visual-style='nubit'] .pos-shell {
+  --pos-bg: var(--nb-color-bg-canvas);
+  --pos-card: var(--nb-color-bg-surface);
+  --pos-card-alt: var(--nb-color-bg-subtle);
+  --pos-border: var(--nb-color-border-default);
+  --pos-text: var(--nb-color-text-primary);
+  --pos-muted: var(--nb-color-text-secondary);
+  --pos-text-soft: var(--nb-color-text-secondary);
+  --pos-primary: var(--nb-color-bg-brand);
+  --pos-primary-soft: var(--nb-color-bg-brand-subtle);
+  --pos-danger: var(--nb-color-text-danger);
+  --pos-danger-soft: var(--nb-color-bg-danger-subtle);
+  --pos-radius: var(--nb-radius-md, 12px);
+  --pos-radius-lg: var(--nb-radius-md, 12px);
+  --pos-radius-sm: var(--nb-radius-sm, 8px);
+  gap: 16px;
+  padding: 16px;
+
+  .pos-desktop-context {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-width: 0;
+  }
+  .pos-mobile-heading,
+  .pos-mobile-cart-summary {
+    display: none;
+  }
+  .pos-toolbar {
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+  .pos-toolbar__search {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    border-radius: var(--pos-radius-sm);
+    background: var(--pos-card-alt);
+  }
+  .pos-toolbar__search input {
+    min-width: 0;
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    font-size: 16px;
+  }
+  .pos-toolbar__search-clear {
+    width: 32px;
+    height: 32px;
+    font-size: 24px;
+  }
+  .pos-toolbar__barcode {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+    border: 0;
+    border-radius: var(--pos-radius-sm);
+    background: var(--pos-primary);
+    color: var(--nb-color-text-on-brand);
+    cursor: pointer;
+    font-size: 22px;
+  }
+  .pos-categories {
+    padding: 0 0 12px;
+    gap: 8px;
+  }
+  .pos-categories .nb-chip {
+    min-height: 36px;
+    padding: 6px 14px;
+    font-size: 14px;
+    background: var(--pos-card-alt);
+    border-color: transparent;
+    color: var(--pos-muted);
+  }
+  .pos-categories .nb-chip.is-active,
+  .pos-categories .nb-chip[aria-checked='true'] {
+    background: var(--pos-primary);
+    color: var(--nb-color-text-on-brand);
+  }
+  .pos-grid,
+  .pos-skeleton-grid {
+    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+    gap: 12px;
+    padding: 1px;
+  }
+  .pos-product-card {
+    padding: 0;
+    border-radius: 12px;
+    background: var(--pos-card);
+  }
+  .pos-product-card__select {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 10px;
+    min-width: 0;
+    width: 100%;
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
+    color: var(--pos-text);
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+  }
+  .pos-product-card__select:disabled {
+    cursor: default;
+  }
+  .pos-product-card__select:focus-visible {
+    outline: 2px solid var(--nb-color-border-focus);
+    outline-offset: -3px;
+  }
+  .pos-product-card.is-in-cart {
+    border-color: var(--nb-color-border-focus);
+    box-shadow: 0 0 0 1px var(--nb-color-border-focus);
+  }
+  .pos-product-card__thumb {
+    width: 100%;
+    height: 84px;
+    flex: 0 0 84px;
+    margin: 0;
+    border-radius: 8px;
+    background: var(--pos-card-alt);
+    font-size: 24px;
+    color: var(--pos-muted);
+  }
+  .pos-product-card__image {
+    object-fit: contain;
+  }
+  .pos-product-card__title {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    height: 40px;
+    margin: 0;
+  }
+  .pos-product-card__sku {
+    font-size: 12px;
+    line-height: 16px;
+    margin: 0;
+  }
+  .pos-product-card__price-row {
+    gap: 8px;
+    padding-right: 24px;
+  }
+  .pos-product-card__price {
+    font-size: 16px;
+    line-height: 24px;
+    font-weight: 600;
+  }
+  .pos-product-card__qty-badge,
+  .pos-product-card__add-affordance {
+    display: inline-grid;
+    place-items: center;
+    min-width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    padding: 0 4px;
+    font-size: 14px;
+  }
+  .pos-product-card__add-affordance {
+    background: var(--pos-primary-soft);
+    color: var(--nb-color-text-brand);
+  }
+  .pos-product-card__stock-note {
+    min-height: 16px;
+    color: var(--nb-color-text-warning);
+    font-size: 12px;
+    line-height: 16px;
+  }
+  .pos-product-card__edit-price {
+    position: absolute;
+    bottom: 10px;
+    right: 4px;
+    width: 24px;
+    height: 28px;
+    border: 0;
+    background: transparent;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  .pos-product-card__price-edit {
+    padding: 8px;
+  }
+  .pos-product-card__price-edit input {
+    min-width: 0;
+  }
+  .pos-panel__header {
+    padding: 16px;
+  }
+  .pos-panel__title {
+    font-size: 16px;
+  }
+  .pos-cart-panel {
+    border-radius: 12px;
+  }
+  .pos-line__name {
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .pos-line__unit {
+    font-size: 12px;
+  }
+  .pos-line__total {
+    font-size: 14px;
+  }
+  .pos-checkout {
+    min-height: 48px;
+    border-radius: 8px;
+    background: var(--pos-primary);
+    color: var(--nb-color-text-on-brand);
+    font-size: 16px;
+  }
+  .pos-total-hero strong {
+    font-size: 24px;
+    line-height: 32px;
+  }
+  .pos-postsale {
+    background: var(--pos-bg);
+  }
+  .pos-postsale__card {
+    border-radius: 12px;
+  }
+  .pos-postsale__check {
+    background: var(--nb-color-bg-success-subtle);
+    color: var(--nb-color-text-success);
+    box-shadow: none;
+  }
+  .pos-postsale__title {
+    font-size: 24px;
+    line-height: 32px;
+  }
+  .pos-postsale__total {
+    font-size: 40px;
+    line-height: 48px;
+  }
+  .pos-postsale__btn {
+    min-height: 48px;
+    border-radius: 8px;
+  }
+  .pos-postsale__btn--primary {
+    background: var(--pos-primary);
+    color: var(--nb-color-text-on-brand);
+  }
+}
+
+.pos-context-dialog .pos-operator-header {
+  height: auto;
+  padding: 16px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 20px;
+  overflow: visible;
+  border: 0;
+  box-shadow: none;
+}
+.pos-context-dialog .pos-operator-header__left,
+.pos-context-dialog .pos-operator-header__right {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.pos-context-dialog .pos-operator-header__label {
+  display: inline;
+}
+.pos-context-dialog .pos-operator-header__ctx strong {
+  max-width: 220px;
+}
+
+@media (max-width: 860px) {
+  html[data-visual-style='nubit'] .pos-shell {
+    height: 100%;
+    min-height: 0;
+    padding: 16px;
+    gap: 16px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    &[data-active-panel='cart'] {
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+    .pos-desktop-context {
+      display: none;
+    }
+    .pos-mobile-heading {
+      grid-row: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-width: 0;
+    }
+    .pos-mobile-heading > div:first-child {
+      min-width: 0;
+    }
+    .pos-mobile-heading__status {
+      margin: 0 0 4px;
+      font-size: 12px;
+      color: var(--pos-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .pos-mobile-heading__dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin-right: 6px;
+      border-radius: 50%;
+      background: var(--nb-color-text-success);
+    }
+    .pos-mobile-heading__dot.is-offline {
+      background: var(--nb-color-text-warning);
+    }
+    .pos-mobile-heading__title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .pos-mobile-heading h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 32px;
+      color: var(--pos-text);
+      outline: none;
+    }
+    .pos-mobile-heading button {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 auto;
+      border: 0;
+      border-radius: 8px;
+      background: var(--pos-card-alt);
+      color: var(--pos-text);
+      cursor: pointer;
+      font: inherit;
+      font-size: 20px;
+    }
+    .pos-mobile-heading__actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .pos-mobile-heading .pos-mobile-heading__clear {
+      font-size: 14px;
+      width: auto;
+      background: transparent;
+      color: var(--nb-color-text-danger);
+    }
+    .pos-catalog,
+    .pos-cart-panel {
+      grid-row: 2;
+      min-height: 0;
+      max-height: none;
+    }
+    .pos-grid,
+    .pos-skeleton-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .pos-mobile-cart-summary {
+      grid-row: 3;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+      padding: 12px;
+      margin-bottom: env(safe-area-inset-bottom, 0px);
+      min-height: 64px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--pos-primary);
+      color: var(--nb-color-text-on-brand);
+      font: inherit;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: var(--shadow-md);
+    }
+    .pos-mobile-cart-summary__icon {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      background: rgb(255 255 255 / 12%);
+      border-radius: 8px;
+      font-size: 24px;
+    }
+    .pos-mobile-cart-summary__amount {
+      display: flex;
+      flex: 1;
+      min-width: 0;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .pos-mobile-cart-summary__amount small {
+      font-size: 12px;
+      font-weight: 400;
+    }
+    .pos-mobile-cart-summary__amount strong {
+      font-size: 24px;
+      line-height: 28px;
+    }
+    .pos-cart-panel {
+      border: 0;
+      background: transparent;
+      overflow-y: auto;
+    }
+    .pos-cart-body {
+      flex: 0 0 auto;
+    }
+    .pos-cart-lines {
+      background: var(--pos-card);
+      border: 1px solid var(--pos-border);
+      border-radius: 12px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+    }
+    .pos-customer-section {
+      border: 1px solid var(--pos-border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+    .pos-cart-panel > .pos-panel__header {
+      padding: 0 0 12px;
+      border: 0;
+      background: transparent;
+    }
+    .pos-checkout-footer {
+      position: static;
+      flex: 0 0 auto;
+      gap: 12px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+    .pos-summary,
+    .pos-total-hero {
+      padding: 12px;
+      background: var(--pos-card);
+      border: 1px solid var(--pos-border);
+      border-radius: 12px;
+    }
+    .pos-postsale {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      padding: 24px 16px;
+    }
+    .pos-postsale__card {
+      width: 100%;
+      max-width: none;
+      padding: 24px 0;
+      border: 0;
+      background: transparent;
+      box-shadow: none;
+    }
+  }
+}
+
+@media (max-width: 860px) {
+  html[data-visual-style='nubit'] .pos-shell {
+    .pos-summary {
+      margin-bottom: -12px;
+      border-bottom: 0;
+      border-radius: 12px 12px 0 0;
+    }
+    .pos-total-hero {
+      border-top: 0;
+      border-radius: 0 0 12px 12px;
+    }
+  }
+}
+
+// Long options/notes must remain reachable; the submit action stays inside the scrollport.
+html[data-visual-style='nubit'] .pos-shell {
+  .pos-cart-panel {
+    overflow-y: auto;
+    gap: 12px;
+    padding-bottom: 4px;
+  }
+  .pos-cart-panel > * {
+    flex-shrink: 0;
+  }
+  .pos-cart-body {
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+  .pos-checkout-footer {
+    display: contents;
+  }
+  .pos-checkout-footer > * {
+    flex-shrink: 0;
+  }
+  .pos-checkout {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+  }
+  .pos-postsale {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    overflow: auto;
+  }
+}

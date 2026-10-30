@@ -42,8 +42,12 @@ const customerResource = defineResource<CustomerRecord>(customerApiUrl, {
   events: customerEvents,
   defaultPreset: 'basic',
   columnPresets: CUSTOMER_COLUMN_PRESETS,
-  viewMode: { mode: 'drawer', drawerSize: 'md' },
+  viewMode: { mode: 'drawer', drawerSize: 'sm' },
   formLayout: customerFormLayout,
+  formPage: {
+    titles: { add: 'Nuevo cliente', edit: 'Editar cliente', view: 'Consultar cliente' },
+    saveLabel: 'Guardar cliente',
+  },
   emptyState: {
     title: 'Sin clientes',
     description: 'Crea un cliente o impórtalos desde Inicio → Importar Excel.',

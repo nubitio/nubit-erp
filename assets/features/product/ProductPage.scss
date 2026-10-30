@@ -4,6 +4,57 @@
   width: 100%;
 }
 
+.product-catalog-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  color: var(--text-primary);
+  gap: var(--space-2);
+
+  &__category,
+  &__code {
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+  }
+
+  &__category {
+    background: var(--surface-2);
+    border-radius: var(--radius-pill);
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--font-size-xs);
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  &__name {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-normal);
+    overflow-wrap: anywhere;
+  }
+  &__price {
+    font-size: var(--font-size-xl);
+    line-height: var(--line-height-normal);
+  }
+
+  &__stock {
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+  }
+  &__stock--danger {
+    color: var(--status-danger-text);
+  }
+  &__stock--warning {
+    color: var(--status-warning-text);
+  }
+
+  &__placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
 .product-photo-cell__image,
 .product-photo-cell__fallback {
   border-radius: 50%;

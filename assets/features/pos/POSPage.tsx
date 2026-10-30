@@ -10,6 +10,7 @@ import React, {
   useState,
 } from 'react';
 import './POSPage.scss';
+import './POSDesign.scss';
 import './HardwareAgentDialog.scss';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
@@ -26,7 +27,7 @@ import { usePosCatalogData } from './usePosCatalogData';
 import { normalizeText, toMoneyString, toNumber } from './posHelpers';
 import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { useOutboxSync } from '@offline/hooks/useOutboxSync';
-import { ConfirmDialog } from '@nubitio/ui';
+import { AppDialog, ConfirmDialog } from '@nubitio/ui';
 import { useFeature, useTenantRuntimeConfig } from '@shared/hooks';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
@@ -61,9 +62,20 @@ const POSPage = () => {
   const [openCajaDialogOpen, setOpenCajaDialogOpen] = useState(false);
   const [quickMode, setQuickMode] = useState(false);
   const [focusCustomerTrigger, setFocusCustomerTrigger] = useState(0);
+  const [contextOpen, setContextOpen] = useState(false);
+  const mobileHeading = useRef<HTMLHeadingElement>(null);
+  const previousPanel = useRef<'catalog' | 'cart'>('catalog');
   const [activePanel, setActivePanel] = useState<'catalog' | 'cart'>('catalog');
   const [confirmClearCartOpen, setConfirmClearCartOpen] = useState(false);
   const [catalogPriceUpdatingId, setCatalogPriceUpdatingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (previousPanel.current !== activePanel) {
+      if (activePanel === 'cart') mobileHeading.current?.focus();
+      else searchInputRef.current?.focus();
+    }
+    previousPanel.current = activePanel;
+  }, [activePanel]);
 
   const invoicePrinterRef = useRef<InvoicePrinter>(createInvoicePrinter());
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -354,11 +366,41 @@ const POSPage = () => {
   // ── Global keyboard shortcuts ─────────────────────────────────────────────────────────────
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      const tag = (e.target as HTMLElement).tagName;
-      const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+      if (e.defaultPrevented) return;
+      const target = e.target as HTMLElement;
+      if (
+        Array.from(
+          document.querySelectorAll<HTMLElement>('[role="dialog"], [role="alertdialog"]'),
+        ).some(
+          (dialog) =>
+            dialog.getClientRects().length > 0 && getComputedStyle(dialog).visibility !== 'hidden',
+        )
+      )
+        return;
+      if (
+        e
+          .composedPath()
+          .some(
+            (node) =>
+              node instanceof HTMLElement &&
+              ['dialog', 'alertdialog'].includes(node.getAttribute('role') ?? ''),
+          )
+      )
+        return;
+      const isInput = Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+      const isInteractive = Boolean(
+        target.closest('button, a, [role="button"], [role="option"], [role="radio"]'),
+      );
 
       // Barcode scanner: single printable char arriving fast → buffer; Enter → resolve
-      if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey && !isInput) {
+      if (
+        e.key.length === 1 &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        !e.metaKey &&
+        !isInput &&
+        !isInteractive
+      ) {
         const now = Date.now();
         if (now - barcodeLastKeyRef.current > 100) barcodeBufferRef.current = '';
         barcodeBufferRef.current += e.key;
@@ -376,6 +418,7 @@ const POSPage = () => {
       // F3 → open & focus customer field
       if (e.key === 'F3') {
         e.preventDefault();
+        setActivePanel('cart');
         setQuickMode(false); // ensure customer section is visible
         setFocusCustomerTrigger((n) => n + 1);
         return;
@@ -396,7 +439,14 @@ const POSPage = () => {
             void addToCart(match);
             return;
           }
+          // An unknown scan must never activate the focused product or charge an order.
+          e.preventDefault();
+          setSearchQuery(scanned);
+          setActivePanel('catalog');
+          searchInputRef.current?.focus();
+          return;
         }
+        if (isInteractive) return;
         if (!checkoutDisabled && cajaAbierta && cart.length > 0) {
           e.preventDefault();
           handleCheckout();
@@ -423,8 +473,8 @@ const POSPage = () => {
         setAssistantOpen((open) => !open);
       }
     }
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    document.addEventListener('keydown', onKey, true);
+    return () => document.removeEventListener('keydown', onKey, true);
   }, [
     checkoutDisabled,
     cajaAbierta,
@@ -454,59 +504,84 @@ const POSPage = () => {
     [cart.length, cartItemsCount, total, customersState.selectedCustomer, cajaAbierta],
   );
 
+  const operatorHeader = (
+    <POSOperatorHeader
+      branchName={currentBranchName}
+      userName={currentUserName}
+      warehouses={warehouses}
+      selectedWarehouseId={selectedWarehouseId}
+      setSelectedWarehouseId={setSelectedWarehouseId}
+      cajaAbierta={cajaAbierta}
+      setCajaAbierta={setCajaAbierta}
+      cajaOpenedAt={cajaOpenedAt}
+      cartItemsCount={cartItemsCount}
+      hasCartItems={cart.length > 0}
+      isOnline={isOnline}
+      isSyncing={isSyncing}
+      pendingSalesCount={pendingSalesCount}
+      outboxSales={recentSales}
+      onRetrySale={(saleId) => {
+        void retrySale(saleId);
+      }}
+      showWarehouseSelector={
+        runtimeConfig?.ui.inventory.showWarehouseSelector ?? warehouses.length > 1
+      }
+      onOpenCaja={() => setOpenCajaDialogOpen(true)}
+      assistantEnabled={assistantEnabled}
+      onAssistantClick={() => setAssistantOpen((open) => !open)}
+    />
+  );
+
   return (
     <div className="pos-shell" data-theme={resolvedTheme} data-active-panel={activePanel}>
       {/* ── Operational context header ── */}
-      <POSOperatorHeader
-        branchName={currentBranchName}
-        userName={currentUserName}
-        warehouses={warehouses}
-        selectedWarehouseId={selectedWarehouseId}
-        setSelectedWarehouseId={setSelectedWarehouseId}
-        cajaAbierta={cajaAbierta}
-        setCajaAbierta={setCajaAbierta}
-        cajaOpenedAt={cajaOpenedAt}
-        cartItemsCount={cartItemsCount}
-        hasCartItems={cart.length > 0}
-        isOnline={isOnline}
-        isSyncing={isSyncing}
-        pendingSalesCount={pendingSalesCount}
-        outboxSales={recentSales}
-        onRetrySale={(saleId) => {
-          void retrySale(saleId);
-        }}
-        showWarehouseSelector={
-          runtimeConfig?.ui.inventory.showWarehouseSelector ?? warehouses.length > 1
-        }
-        onOpenCaja={() => setOpenCajaDialogOpen(true)}
-        assistantEnabled={assistantEnabled}
-        onAssistantClick={() => setAssistantOpen((open) => !open)}
-      />
+      <div className="pos-desktop-context">{operatorHeader}</div>
+      <AppDialog
+        open={contextOpen}
+        title="Opciones del punto de venta"
+        onClose={() => setContextOpen(false)}
+        className="pos-context-dialog"
+      >
+        {operatorHeader}
+      </AppDialog>
 
-      {/* ── Mobile tab bar (hidden on desktop via CSS) ── */}
-      <div className="pos-mobile-tabs" role="tablist">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activePanel === 'catalog'}
-          className={`pos-mobile-tabs__btn${activePanel === 'catalog' ? ' is-active' : ''}`}
-          onClick={() => setActivePanel('catalog')}
-        >
-          <i className="ph ph-grid-four" aria-hidden="true" />
-          <span>Productos</span>
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={activePanel === 'cart'}
-          className={`pos-mobile-tabs__btn${activePanel === 'cart' ? ' is-active' : ''}`}
-          onClick={() => setActivePanel('cart')}
-        >
-          <i className="ph ph-shopping-cart" aria-hidden="true" />
-          <span>Carrito</span>
-          {cartItemsCount > 0 && <span className="pos-mobile-tabs__badge">{cartItemsCount}</span>}
-        </button>
-      </div>
+      <header className="pos-mobile-heading">
+        <div>
+          <p className="pos-mobile-heading__status">
+            <span className={`pos-mobile-heading__dot${!isOnline ? ' is-offline' : ''}`} />
+            {isOnline ? (cajaAbierta ? 'Turno abierto' : 'Caja cerrada') : 'Sin conexión'} ·{' '}
+            {currentBranchName || 'Sucursal'}
+          </p>
+          <div className="pos-mobile-heading__title">
+            {activePanel === 'cart' && (
+              <button
+                type="button"
+                onClick={() => setActivePanel('catalog')}
+                aria-label="Volver a productos"
+              >
+                <i className="ph ph-arrow-left" aria-hidden="true" />
+              </button>
+            )}
+            <h1 ref={mobileHeading} tabIndex={-1}>
+              {activePanel === 'cart' ? 'Cobrar' : 'Nueva venta'}
+            </h1>
+          </div>
+        </div>
+        <div className="pos-mobile-heading__actions">
+          {activePanel === 'cart' && cart.length > 0 && (
+            <button type="button" className="pos-mobile-heading__clear" onClick={clearCart}>
+              Vaciar
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setContextOpen(true)}
+            aria-label="Opciones del punto de venta"
+          >
+            <i className="ph ph-dots-three" aria-hidden="true" />
+          </button>
+        </div>
+      </header>
 
       {/* ── Left: catalogue ── */}
       <POSCatalogPanel
@@ -529,6 +604,29 @@ const POSPage = () => {
         usingOfflineCatalog={usingOfflineCatalog}
         lastCatalogSyncAt={lastUpdatedAt}
       />
+
+      {cart.length > 0 && activePanel === 'catalog' && (
+        <button
+          type="button"
+          className="pos-mobile-cart-summary"
+          onClick={() => setActivePanel('cart')}
+          aria-label={`Revisar orden y cobrar ${formatMoney(payableTotal)}`}
+          data-testid="pos-review-order"
+        >
+          <span className="pos-mobile-cart-summary__icon">
+            <i className="ph ph-shopping-cart" aria-hidden="true" />
+          </span>
+          <span className="pos-mobile-cart-summary__amount">
+            <small>
+              {cartItemsCount} ítems · {cart.length} {cart.length === 1 ? 'producto' : 'productos'}
+            </small>
+            <strong>{formatMoney(payableTotal)}</strong>
+          </span>
+          <span>
+            Cobrar <i className="ph ph-arrow-right" aria-hidden="true" />
+          </span>
+        </button>
+      )}
 
       {/* ── Right: checkout ── */}
       <POSCheckoutPanel
