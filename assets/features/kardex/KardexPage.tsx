@@ -38,8 +38,8 @@ const BASE_URL = API + 'stock-movements';
 
 const KARDEX_COLUMN_GROUP_DEFS: ColumnGroupDef[] = [
   { key: 'document', label: 'DOCUMENTO', align: 'left' },
-  { key: 'entries', label: 'ENTRADAS' },
-  { key: 'exits', label: 'SALIDAS' },
+  { key: 'entries', label: 'ENTRADAS', className: 'kardex-group--in' },
+  { key: 'exits', label: 'SALIDAS', className: 'kardex-group--out' },
   { key: 'balance', label: 'SALDO' },
 ];
 
@@ -50,7 +50,6 @@ const KARDEX_COLUMN_PRESETS = [
     columns: [
       'occurredAt',
       'movementType',
-      'sourceId',
       'qtyIn',
       'unitCost',
       'lineValue',
@@ -64,7 +63,7 @@ const KARDEX_COLUMN_PRESETS = [
   {
     key: 'ledger',
     label: 'Cantidades',
-    columns: ['occurredAt', 'movementType', 'sourceId', 'qtyIn', 'qtyOut', 'runningBalance'],
+    columns: ['occurredAt', 'movementType', 'qtyIn', 'qtyOut', 'runningBalance'],
   },
   {
     key: 'full',
@@ -74,7 +73,6 @@ const KARDEX_COLUMN_PRESETS = [
       'warehouse',
       'product',
       'movementType',
-      'sourceId',
       'qtyIn',
       'qtyOut',
       'runningBalance',
@@ -133,18 +131,21 @@ const buildFields = (scoped: boolean, showValuation: boolean): Field[] => [
   {
     ...enumField(MOVEMENT_TYPES.map(({ value, text }) => ({ value, text })))
       .name('movementType')
-      .label('Tipo')
+      .label('Movimiento')
       .build(),
     columnGroup: 'document',
     order: 1,
-    width: 170,
-    formatter: (e: FormatterEvent) => <KardexMovementTypeCell value={e.value} />,
+    width: 250,
+    formatter: (e: FormatterEvent) => (
+      <KardexMovementTypeCell value={e.value} reference={formatReference(rowOf(e))} />
+    ),
   },
   {
     ...textField().name('sourceId').label('Referencia').build(),
-    columnGroup: 'document',
     order: 2,
     width: 150,
+    visible: false,
+    visibleOnForm: false,
     formatter: (e: FormatterEvent) => formatReference(e.data as StockMovementRecord),
   },
   {
@@ -183,7 +184,7 @@ const buildFields = (scoped: boolean, showValuation: boolean): Field[] => [
     ...textField().name('qtyIn').label('Cant.').build(),
     columnGroup: 'entries',
     order: 5,
-    width: 90,
+    width: 80,
     align: 'right',
     filterable: false,
     formatter: (e: FormatterEvent) => formatQty(e.value),
@@ -192,7 +193,7 @@ const buildFields = (scoped: boolean, showValuation: boolean): Field[] => [
     ...textField().name('unitCost').label('Costo unit.').build(),
     columnGroup: 'entries',
     order: 6,
-    width: 100,
+    width: 95,
     align: 'right',
     filterable: false,
     visible: showValuation,
@@ -202,7 +203,7 @@ const buildFields = (scoped: boolean, showValuation: boolean): Field[] => [
     ...textField().name('lineValue').label('Total').build(),
     columnGroup: 'entries',
     order: 7,
-    width: 100,
+    width: 95,
     align: 'right',
     filterable: false,
     visible: showValuation,
@@ -212,7 +213,7 @@ const buildFields = (scoped: boolean, showValuation: boolean): Field[] => [
     ...textField().name('qtyOut').label('Cant.').build(),
     columnGroup: 'exits',
     order: 8,
-    width: 90,
+    width: 80,
     align: 'right',
     filterable: false,
     formatter: (e: FormatterEvent) => formatQty(e.value),
@@ -221,7 +222,7 @@ const buildFields = (scoped: boolean, showValuation: boolean): Field[] => [
     ...textField().name('_unitCostExit').label('Costo unit.').build(),
     columnGroup: 'exits',
     order: 9,
-    width: 100,
+    width: 95,
     align: 'right',
     filterable: false,
     visible: showValuation,
@@ -231,7 +232,7 @@ const buildFields = (scoped: boolean, showValuation: boolean): Field[] => [
     ...textField().name('_lineValueExit').label('Total').build(),
     columnGroup: 'exits',
     order: 10,
-    width: 100,
+    width: 95,
     align: 'right',
     filterable: false,
     visible: showValuation,
@@ -241,7 +242,7 @@ const buildFields = (scoped: boolean, showValuation: boolean): Field[] => [
     ...textField().name('runningBalance').label('Stock').build(),
     columnGroup: 'balance',
     order: 11,
-    width: 100,
+    width: 85,
     align: 'right',
     filterable: false,
     formatter: (e: FormatterEvent) => formatQty(e.value),
@@ -250,7 +251,7 @@ const buildFields = (scoped: boolean, showValuation: boolean): Field[] => [
     ...textField().name('runningValue').label('Valor').build(),
     columnGroup: 'balance',
     order: 12,
-    width: 110,
+    width: 105,
     align: 'right',
     filterable: false,
     visible: showValuation,
@@ -431,6 +432,13 @@ export const KardexPage = () => {
               }
         }
       />
+      {productId && (
+        <p className="kardex-note" data-testid="kardex-note">
+          <i className="ph ph-shield-check" aria-hidden="true" />
+          Los movimientos no se editan: para corregir uno, registra un ajuste y queda en el registro
+          de actividad.
+        </p>
+      )}
     </div>
   );
 };

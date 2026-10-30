@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { EntityDropdown } from '@nubitio/crud';
 import {
+  Button,
   DateRangePicker,
   HubPanel,
   KpiMetricRow,
@@ -50,6 +52,7 @@ export function KardexDashboard({
   onToChange,
   onValuationChange,
 }: KardexDashboardProps) {
+  const navigate = useNavigate();
   const { data: summary, isLoading } = useKardexSummary(
     productId,
     warehouseId,
@@ -114,6 +117,32 @@ export function KardexDashboard({
 
   return (
     <HubPanel variant="flush">
+      {productId && summary && (
+        <header className="kardex-product-header" data-testid="kardex-product-card">
+          <div className="kardex-product-header__icon" aria-hidden="true">
+            <i className="ph ph-cube" />
+          </div>
+          <div className="kardex-product-header__body">
+            <nav aria-label="Ruta" className="kardex-product-header__crumbs">
+              <Link to="/inventory/stock">Inventario</Link>
+              <span aria-hidden="true"> / </span>
+              <span>Kardex</span>
+            </nav>
+            <h2 className="kardex-product-header__name">{summary.product.name}</h2>
+            <p className="kardex-product-header__meta">
+              {[
+                summary.product.code,
+                summary.product.categoryName,
+                summary.product.unitName ? `unidad ${summary.product.unitName}` : null,
+                valuationMethodLabel(valuation),
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+          </div>
+          <Button onClick={() => navigate('/stock-adjustment/new')}>Ajustar stock</Button>
+        </header>
+      )}
       <div className="kardex-context-bar" data-testid="kardex-context-bar">
         <div className="kardex-context-bar__field">
           <span className="kardex-context-bar__label">Producto</span>
@@ -163,34 +192,9 @@ export function KardexDashboard({
         </div>
       </div>
 
-      {productId && summary && (
-        <div className="kardex-product-card" data-testid="kardex-product-card">
-          <div className="kardex-product-card__icon" aria-hidden="true">
-            <i className="ph ph-cube" />
-          </div>
-          <div className="kardex-product-card__body">
-            <h3 className="kardex-product-card__name">{summary.product.name}</h3>
-            <p className="kardex-product-card__meta">
-              {[
-                summary.product.code,
-                summary.product.categoryName,
-                summary.product.unitName ? `Unidad: ${summary.product.unitName}` : null,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-            </p>
-          </div>
-          <div className="kardex-product-card__aside">
-            <span>Método: {valuationMethodLabel(valuation)}</span>
-            <span>Período: {summary.periodLabel}</span>
-          </div>
-        </div>
-      )}
-
       {productId ? (
         <KpiMetricRow
-          layout="strip"
-          density="compact"
+          layout="cards"
           className="kardex-summary-kpis"
           items={kpiItems}
           loading={isLoading}
