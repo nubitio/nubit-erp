@@ -107,8 +107,9 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
   await test.step('filtrar por cliente y registrar un pago parcial', async () => {
     await page.goto(`${BASE_URL}/#/accounts-receivable`);
 
-    const table = page.getByRole('table', { name: 'Deudores' });
-    await table.locator('.nb-datagrid__filter-input').first().fill(E2E_SEED.customerName);
+    await expect(page.getByRole('table', { name: 'Deudores' })).toBeVisible();
+    // Filters live in the toolbar above the grid, not inside the table header.
+    await page.getByRole('textbox', { name: 'Filtrar Cliente' }).fill(E2E_SEED.customerName);
 
     const row = page.getByRole('row').filter({ hasText: E2E_SEED.customerName }).first();
     await expect(row).toContainText(/9[.,]00/, { timeout: 15000 });
