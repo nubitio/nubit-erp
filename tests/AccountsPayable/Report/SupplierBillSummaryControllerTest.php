@@ -17,7 +17,10 @@ final class SupplierBillSummaryControllerTest extends TestCase
     {
         $branch = $this->createMock(BranchContextServiceInterface::class);
         $branch->expects(self::once())->method('getCurrentBranchId')->willReturn(null);
-        $query = new SupplierBillSummaryQuery(DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]));
+        $query = new SupplierBillSummaryQuery(DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+            'memory' => true,
+        ]));
         $controller = new SupplierBillSummaryController($query, $branch);
         $this->expectException(BadRequestHttpException::class);
         $this->expectExceptionMessage('Selecciona una sucursal');

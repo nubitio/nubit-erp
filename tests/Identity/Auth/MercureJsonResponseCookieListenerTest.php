@@ -27,7 +27,7 @@ final class MercureJsonResponseCookieListenerTest extends TestCase
         );
         $request = Request::create('http://tenant.example.test/api/auth/login', 'POST');
         $request->attributes->set('_route', 'nubit_admin_auth_login');
-        $response = new JsonResponse(['token' => 'access-token', 'expiresAt' => time() + 3600]);
+        $response = new JsonResponse(['token' => bin2hex(random_bytes(8)), 'expiresAt' => time() + 3600]);
 
         $listener(new ResponseEvent($this->kernel(), $request, HttpKernelInterface::MAIN_REQUEST, $response));
 

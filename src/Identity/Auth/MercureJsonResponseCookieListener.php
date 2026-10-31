@@ -32,11 +32,14 @@ final readonly class MercureJsonResponseCookieListener
         $request = $event->getRequest();
         $response = $event->getResponse();
 
-        if (!$response instanceof JsonResponse || !in_array(
-            $request->attributes->get('_route'),
-            ['nubit_admin_auth_login', 'nubit_admin_auth_refresh'],
-            true,
-        )) {
+        if (
+            !$response instanceof JsonResponse
+            || !in_array(
+                $request->attributes->get('_route'),
+                ['nubit_admin_auth_login', 'nubit_admin_auth_refresh'],
+                true,
+            )
+        ) {
             return;
         }
 
@@ -45,9 +48,7 @@ final readonly class MercureJsonResponseCookieListener
             return;
         }
 
-        $tenantOrigin = null !== $this->tenantContext->getTenantDomain()
-            ? $request->getSchemeAndHttpHost()
-            : '';
+        $tenantOrigin = null !== $this->tenantContext->getTenantDomain() ? $request->getSchemeAndHttpHost() : '';
         $audience = $request->getSchemeAndHttpHost() . '/.well-known/mercure';
 
         $response->headers->setCookie($this->cookieFactory->createSecureCookie(
