@@ -115,7 +115,7 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
       const customerInput = body.getByLabel(/Cliente/i).first();
       await customerInput.fill(E2E_SEED.customerName);
       await page
-        .locator('.nb-form__lookup-menu button[role="option"]')
+        .locator('[role="option"]')
         .filter({ hasText: E2E_SEED.customerName })
         .first()
         .click();
@@ -139,7 +139,7 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
       await productInput.click();
       await productInput.pressSequentially(E2E_SEED.productName, { delay: 30 });
       await page
-        .locator('.nb-form__lookup-menu button[role="option"]')
+        .locator('[role="option"]')
         .filter({ hasText: E2E_SEED.productName })
         .first()
         .click();

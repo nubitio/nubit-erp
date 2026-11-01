@@ -41,11 +41,7 @@ test('Crédito en el módulo Ventas crea una cuenta por cobrar con el contrato c
   const productInput = productCell.locator('input[role="combobox"], input').first();
   await productInput.click();
   await productInput.pressSequentially(E2E_SEED.productName, { delay: 30 });
-  await page
-    .locator('.nb-form__lookup-menu button[role="option"]')
-    .filter({ hasText: E2E_SEED.productName })
-    .first()
-    .click();
+  await page.locator('[role="option"]').filter({ hasText: E2E_SEED.productName }).first().click();
   await expect(row.locator('td').nth(2).locator('input').first()).not.toHaveValue('0', {
     timeout: 10_000,
   });
@@ -74,11 +70,7 @@ test('Crédito en el módulo Ventas crea una cuenta por cobrar con el contrato c
 
   const customerInput = body.getByLabel(/Cliente/i).first();
   await customerInput.fill(E2E_SEED.customerName);
-  await page
-    .locator('.nb-form__lookup-menu button[role="option"]')
-    .filter({ hasText: E2E_SEED.customerName })
-    .first()
-    .click();
+  await page.locator('[role="option"]').filter({ hasText: E2E_SEED.customerName }).first().click();
   await expect(page.getByTestId('sales-credit-notice')).toContainText('Cuentas por cobrar');
 
   const responsePromise = page.waitForResponse(

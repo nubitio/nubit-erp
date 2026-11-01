@@ -783,9 +783,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         if (currentVal.trim().length === 0) {
           await almacenInput.click();
           await page.waitForTimeout(300);
-          const firstWarehouse = page
-            .locator('.nb-form__lookup-menu button[role="option"]')
-            .first();
+          const firstWarehouse = page.locator('[role="option"]').first();
           await firstWarehouse.waitFor({ state: 'visible', timeout: 8000 });
           await firstWarehouse.click();
           await page.waitForTimeout(300);
@@ -819,7 +817,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
 
       // NativeEntitySelect dropdown
       const seedProductOption = page
-        .locator('.nb-form__lookup-menu button[role="option"]')
+        .locator('[role="option"]')
         .filter({ hasText: SEED_PRODUCT_NAME });
       await seedProductOption.first().waitFor({ state: 'visible', timeout: 15000 });
       await seedProductOption.first().click();
@@ -976,7 +974,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await categoryInput.click();
 
         // NativeEntitySelect dropdown — wait for options to load
-        const firstOption = page.locator('.nb-form__lookup-menu button[role="option"]').first();
+        const firstOption = page.locator('[role="option"]').first();
         await firstOption.waitFor({ state: 'visible', timeout: 8000 });
         await firstOption.click();
       });
