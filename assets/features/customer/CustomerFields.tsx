@@ -126,7 +126,7 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
   fields.push(
     entityField(API + 'price-lists', 'id', 'name')
       .name('priceList')
-      .label('Lista de precios')
+      .label('Tarifa')
       .layoutHint('lookup')
       .formatter((cell: GridCellContext) => (cell.value as { name?: string } | undefined)?.name)
       .valueType('number')

@@ -94,7 +94,7 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
         .filter({ hasText: E2E_SEED.productName })
         .filter({ hasNotText: E2E_SEED.product2Name })
         .first();
-      await expect(card).toContainText('S/5.00', { timeout: 15000 });
+      await expect(card).toContainText(/S\/\s?5\.00/, { timeout: 15000 });
       const addButton = card.getByTestId('pos-product-card-add');
       if (await addButton.isVisible({ timeout: 1500 }).catch(() => false)) {
         await addButton.click();
@@ -121,20 +121,12 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
         .click();
 
       await page.locator('button[aria-label="Agregar detalle"]').first().click();
-      const row = page
-        .getByRole('row')
-        .filter({
-          has: page.getByRole('button', { name: 'Abrir Producto' }),
-        })
-        .last();
-      const productCell = row.getByRole('cell').nth(0);
-      const cellButton = productCell.getByRole('button');
-      if (await cellButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-        await cellButton.click();
-      } else {
-        await productCell.click();
+      // Resolve the product combobox directly: opening its list changes the accessible
+      // name of the row's open button, so a locator built from that button stops matching.
+      const productInput = page.getByRole('combobox', { name: 'Producto' }).last();
+      if (!(await productInput.isVisible({ timeout: 3000 }).catch(() => false))) {
+        await page.getByRole('button', { name: 'Abrir Producto' }).last().click();
       }
-      const productInput = productCell.getByRole('combobox');
       await productInput.waitFor({ state: 'visible' });
       await productInput.click();
       await productInput.pressSequentially(E2E_SEED.productName, { delay: 30 });
@@ -144,6 +136,10 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
         .first()
         .click();
 
+      const row = page
+        .getByRole('row')
+        .filter({ has: page.getByRole('spinbutton') })
+        .last();
       await expect(row.getByRole('cell').nth(2).getByRole('spinbutton')).toHaveValue('5', {
         timeout: 10000,
       });
