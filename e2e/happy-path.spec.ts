@@ -725,10 +725,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await page.getByTestId('pos-checkout-btn').click();
     });
 
-    await test.step('Verificar confirmación "¡Venta cobrada!"', async () => {
+    await test.step('Verificar confirmación "Venta registrada"', async () => {
       // POSCheckoutPanel renderiza .pos-postsale con role="status" y aria-live="assertive".
       await expect(
-        page.getByTestId('pos-postsale-title').filter({ hasText: /¡Venta cobrada!/i }),
+        page.getByTestId('pos-postsale-title').filter({ hasText: /Venta registrada/i }),
       ).toBeVisible({ timeout: 20000 });
 
       // Cerrar el overlay (botón "Nueva venta")
@@ -779,7 +779,18 @@ test.describe('Happy Path — flujo completo de venta', () => {
       const almacenVisible = await almacenInput.isVisible({ timeout: 5000 }).catch(() => false);
 
       if (almacenVisible) {
-        const currentVal = await almacenInput.inputValue().catch(() => '');
+        // The form auto-selects the only active warehouse once its options load, so
+        // give that a moment before opening the list by hand.
+        const autoSelected = await expect
+          .poll(async () => (await almacenInput.inputValue().catch(() => '')).trim(), {
+            timeout: 5000,
+          })
+          .not.toBe('')
+          .then(
+            () => true,
+            () => false,
+          );
+        const currentVal = autoSelected ? 'selected' : '';
         if (currentVal.trim().length === 0) {
           await almacenInput.click();
           await page.waitForTimeout(300);
