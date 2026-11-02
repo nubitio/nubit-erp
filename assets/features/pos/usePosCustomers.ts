@@ -7,6 +7,11 @@ import { mapPosCustomer } from './lib/mapPosCustomer';
 const customerEndpoints = createEndpoints('customers');
 const ANONYMOUS_CUSTOMER_RUC = '00000000';
 
+/** True while the cashier is interacting with the customer selector. */
+export const isCustomerFieldFocused = (): boolean =>
+  typeof document !== 'undefined' &&
+  Boolean(document.activeElement?.closest?.('.pos-customer-section'));
+
 export const usePosCustomers = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerOption | null>(null);
@@ -43,7 +48,9 @@ export const usePosCustomers = () => {
         signal: controller.signal,
       })
       .then(({ data }) => {
-        if (cancelled) return;
+        // The walk-in default is only a convenience. If the cashier already cleared the
+        // field or is typing in it, applying it now would replace what they typed.
+        if (cancelled || clearedRef.current || isCustomerFieldFocused()) return;
         const raw = data as { member?: unknown[]; 'hydra:member'?: unknown[] };
         const first =
           raw.member?.[0] ?? raw['hydra:member']?.[0] ?? (Array.isArray(data) ? data[0] : data);
