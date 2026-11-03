@@ -43,7 +43,7 @@ readonly class InvoiceEmailUseCase
      * @throws LoaderError
      * @throws Exception
      */
-    public function __invoke(string $taxDocumentId): void
+    public function __invoke(string $taxDocumentId, ?string $recipient = null): void
     {
         $voucher = $this->taxDocumentRepository->getVoucherByTaxDocumentId($taxDocumentId);
 
@@ -90,7 +90,7 @@ readonly class InvoiceEmailUseCase
 
         $email = new Email()
             ->from($this->mailerFrom)
-            ->to($voucher->customer_email ?: 'johangm90@gmail.com')
+            ->to($recipient ?: $voucher->customer_email ?: 'johangm90@gmail.com')
             ->cc(strval($this->settings->get('email_accounting') ?: 'johangm90@gmail.com'))
             ->bcc(strval($this->settings->get('app_alert_recipients') ?: 'johangm90@gmail.com'))
             ->subject($subject)

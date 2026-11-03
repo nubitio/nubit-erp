@@ -195,6 +195,8 @@ const POSPage = () => {
     lastSaleTotal,
     lastSaleId,
     lastSaleReceiptUrl,
+    lastSaleTaxDocumentId,
+    lastSaleCustomerEmail,
     emitInvoice,
     setEmitInvoice,
     requestedVoucherType,
@@ -720,6 +722,8 @@ const POSPage = () => {
         lastSaleDocumentType={lastSaleDocumentType}
         lastSaleTotal={lastSaleTotal}
         lastSaleReceiptUrl={lastSaleReceiptUrl}
+        lastSaleTaxDocumentId={lastSaleTaxDocumentId}
+        lastSaleCustomerEmail={lastSaleCustomerEmail}
         onPrintLastSale={() => {
           if (lastSaleId) {
             void invoicePrinterRef.current.printSaleInvoice(lastSaleId);

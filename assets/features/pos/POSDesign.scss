@@ -876,3 +876,17 @@ html[data-visual-style='nubit'] .pos-shell .pos-postsale {
   justify-content: space-between;
   width: 100%;
 }
+
+html[data-visual-style='nubit'] .pos-shell .pos-postsale .pos-postsale__email {
+  align-items: start;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr auto;
+  width: 100%;
+
+  .pos-postsale__email-error {
+    color: var(--nb-color-text-danger);
+    font-size: 13px;
+    grid-column: 1 / -1;
+  }
+}

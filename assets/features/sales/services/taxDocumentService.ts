@@ -17,8 +17,12 @@ class TaxDocumentService {
     return httpClient.post<AppResponse>(`${API}tax-documents/${documentId}/validate`);
   }
 
-  sendEmail(documentId: string) {
-    return httpClient.post<unknown>(`${API}tax-documents/${documentId}/email`);
+  /** `email` overrides the customer's address, e.g. one the cashier just collected. */
+  sendEmail(documentId: string, email?: string) {
+    return httpClient.post<AppResponse>(
+      `${API}tax-documents/${documentId}/email`,
+      email ? { email } : undefined,
+    );
   }
 }
 

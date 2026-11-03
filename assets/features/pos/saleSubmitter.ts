@@ -15,6 +15,7 @@ export type SaleSubmitterResult =
       invoiceFullNumber: string | null;
       publicReceiptUrl: string | null;
       documentType: string | null;
+      taxDocumentId: string | null;
     }
   | {
       mode: 'queued';
@@ -102,6 +103,7 @@ export async function submitSale(input: SubmitSaleInput): Promise<SaleSubmitterR
           invoiceFullNumber: asTrimmedString(response.data.invoiceFullNumber),
           publicReceiptUrl: asTrimmedString(response.data.publicReceiptUrl),
           documentType: asTrimmedString(response.data.documentType),
+          taxDocumentId: asTrimmedString(response.data.taxDocumentId),
         };
       }
 

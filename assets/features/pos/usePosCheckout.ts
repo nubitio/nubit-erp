@@ -122,6 +122,8 @@ export const usePosCheckout = ({
   const [lastSaleTotal, setLastSaleTotal] = useState<number | null>(null);
   const [lastSaleId, setLastSaleId] = useState<string | null>(null);
   const [lastSaleReceiptUrl, setLastSaleReceiptUrl] = useState<string | null>(null);
+  const [lastSaleTaxDocumentId, setLastSaleTaxDocumentId] = useState<string | null>(null);
+  const [lastSaleCustomerEmail, setLastSaleCustomerEmail] = useState<string | null>(null);
   const [emitInvoice, setEmitInvoice] = useState(autoInvoice);
   const [requestedVoucherType, setRequestedVoucherType] = useState<'AUTO' | 'FACTURA' | 'BOLETA'>(
     'AUTO',
@@ -619,6 +621,8 @@ export const usePosCheckout = ({
         setLastSaleDocumentType(submitResult.documentType);
         setLastSaleTotal(total);
         setLastSaleReceiptUrl(submitResult.publicReceiptUrl);
+        setLastSaleTaxDocumentId(submitResult.taxDocumentId);
+        setLastSaleCustomerEmail(selectedCustomer?.email ?? null);
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
         resetForNextSale();
@@ -641,6 +645,7 @@ export const usePosCheckout = ({
         setLastSaleDocumentType(null);
         setLastSaleTotal(total);
         setLastSaleReceiptUrl(null);
+        setLastSaleTaxDocumentId(null);
         setLastCheckoutSucceeded(true);
         posCheckoutAttemptKey = null;
         resetForNextSale();
@@ -711,6 +716,8 @@ export const usePosCheckout = ({
     lastSaleTotal,
     lastSaleId,
     lastSaleReceiptUrl,
+    lastSaleTaxDocumentId,
+    lastSaleCustomerEmail,
     emitInvoice,
     setEmitInvoice,
     requestedVoucherType,

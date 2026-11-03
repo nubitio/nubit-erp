@@ -20,6 +20,7 @@ import { activeOnlyFilter } from '@shared/lib/activeEntityField';
 
 const API = getCoreApiBaseUrl();
 const ENTITY_DROPDOWN_FILTERS = activeOnlyFilter();
+import { taxDocumentService } from '../sales/services/taxDocumentService';
 import { formatPosQuantity, isWeightUnitCode, toNumber } from './posHelpers';
 import { formatPosReceiptLabel } from './posPresentation';
 import type { LocalSale } from '@offline/types';
@@ -78,6 +79,9 @@ interface POSCheckoutPanelProps {
   lastSaleDocumentType?: string | null;
   lastSaleTotal?: number | null;
   lastSaleReceiptUrl?: string | null;
+  /** Tax document of the last sale; the e-mail action needs it. */
+  lastSaleTaxDocumentId?: string | null;
+  lastSaleCustomerEmail?: string | null;
   onPrintLastSale?: () => void;
   syncSales?: LocalSale[];
   onRetrySale?: (saleId: string) => void;
@@ -144,6 +148,8 @@ export function POSCheckoutPanel({
   lastSaleDocumentType = null,
   lastSaleTotal = null,
   lastSaleReceiptUrl = null,
+  lastSaleTaxDocumentId = null,
+  lastSaleCustomerEmail = null,
   onPrintLastSale,
   syncSales: _syncSales = [],
   onRetrySale: _onRetrySale,
@@ -222,6 +228,11 @@ export function POSCheckoutPanel({
   const successEmitInvoiceRef = useRef(false);
   const successReceiptUrlRef = useRef<string | null>(null);
   const liveChangeRef = useRef(0);
+  const successTaxDocumentIdRef = useRef<string | null>(null);
+  const [emailOpen, setEmailOpen] = useState(false);
+  const [emailValue, setEmailValue] = useState('');
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [emailError, setEmailError] = useState<string | null>(null);
   const successDismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Success overlay: fires when isProcessingSale goes true → false AND sale succeeded
@@ -236,6 +247,11 @@ export function POSCheckoutPanel({
         successTotalRef.current = lastSaleTotal;
         successEmitInvoiceRef.current = emitInvoice;
         successReceiptUrlRef.current = lastSaleReceiptUrl;
+        successTaxDocumentIdRef.current = lastSaleTaxDocumentId;
+        setEmailValue(lastSaleCustomerEmail ?? '');
+        setEmailOpen(false);
+        setEmailStatus('idle');
+        setEmailError(null);
         setShowSuccess(true);
         setPaymentOpen(false);
         if (successDismissTimer.current) clearTimeout(successDismissTimer.current);
@@ -252,6 +268,8 @@ export function POSCheckoutPanel({
     lastSaleTotal,
     emitInvoice,
     lastSaleReceiptUrl,
+    lastSaleTaxDocumentId,
+    lastSaleCustomerEmail,
   ]);
 
   // Declared after the success effect on purpose: that effect must read the previous value.
@@ -305,6 +323,27 @@ export function POSCheckoutPanel({
       input?.focus();
     });
   }, [focusCustomerTrigger, clearSelectedCustomer]);
+
+  const sendReceiptEmail = async () => {
+    const documentId = successTaxDocumentIdRef.current;
+    const address = emailValue.trim();
+    if (!documentId) return;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) {
+      setEmailStatus('error');
+      setEmailError('Ingresa un correo válido.');
+      return;
+    }
+    setEmailStatus('sending');
+    setEmailError(null);
+    try {
+      const response = await taxDocumentService.sendEmail(documentId, address);
+      if (response.data?.success === false) throw new Error(response.data.message);
+      setEmailStatus('sent');
+    } catch (error) {
+      setEmailStatus('error');
+      setEmailError(error instanceof Error ? error.message : 'No se pudo enviar el correo.');
+    }
+  };
 
   // eslint-disable-next-line react-hooks/refs -- snapshot captured when the sale completed
   const receiptLabel = showSuccess
@@ -926,7 +965,52 @@ export function POSCheckoutPanel({
                   WhatsApp <i className="ph ph-chat-circle" aria-hidden="true" />
                 </button>
               )}
+              {successTaxDocumentIdRef.current && (
+                <button
+                  type="button"
+                  className="pos-postsale__btn pos-postsale__btn--secondary"
+                  aria-expanded={emailOpen}
+                  onClick={() => setEmailOpen((open) => !open)}
+                  data-testid="pos-postsale-email-btn"
+                >
+                  Correo <i className="ph ph-envelope-simple" aria-hidden="true" />
+                </button>
+              )}
             </div>
+            {emailOpen && (
+              <form
+                className="pos-postsale__email"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void sendReceiptEmail();
+                }}
+              >
+                <TextField
+                  type="email"
+                  value={emailValue}
+                  onChange={(event) => setEmailValue(event.target.value)}
+                  placeholder="correo@cliente.com"
+                  aria-label="Correo del cliente"
+                  autoFocus
+                />
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={emailStatus === 'sending' || emailStatus === 'sent'}
+                >
+                  {emailStatus === 'sending'
+                    ? 'Enviando…'
+                    : emailStatus === 'sent'
+                      ? 'Enviado'
+                      : 'Enviar'}
+                </Button>
+                {emailError && (
+                  <span className="pos-postsale__email-error" role="alert">
+                    {emailError}
+                  </span>
+                )}
+              </form>
+            )}
             <button
               type="button"
               className="pos-postsale__btn pos-postsale__btn--primary"

@@ -29,6 +29,7 @@ export interface CustomerOption {
   id: number;
   businessName: string;
   doc?: string;
+  email?: string;
   /** ID of the price list assigned to this customer, if any. */
   priceListId?: number;
 }

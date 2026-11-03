@@ -62,6 +62,7 @@ export const mapPosCustomer = (item: unknown): CustomerOption | null => {
     id,
     businessName: String(row.businessName ?? row.name ?? `Cliente ${id}`),
     doc: (row.ruc ?? row.dni ?? row.doc) as string | undefined,
+    email: typeof row.email === 'string' && row.email.trim() !== '' ? row.email.trim() : undefined,
     priceListId: extractPriceListId(row),
   };
 };
