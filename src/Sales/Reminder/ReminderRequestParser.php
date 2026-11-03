@@ -35,7 +35,7 @@ final class ReminderRequestParser
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<array-key, mixed>
      */
     private function decode(string $json): array
     {
@@ -49,7 +49,7 @@ final class ReminderRequestParser
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param array<array-key, mixed> $payload
      */
     private function saleId(array $payload): string
     {

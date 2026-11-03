@@ -54,7 +54,7 @@ final readonly class MonthlySalesSummary
             'periodStart' => $start,
             'periodEnd' => $end,
             'currencies' => array_map(static fn(array $row): array => [
-                'currency' => $row['currency'],
+                'currency' => (string) $row['currency'],
                 'sold' => Money::toString(Money::of($row['sold'])),
                 'balanceDue' => Money::toString(Money::of($row['balance_due'])),
                 'saleCount' => (int) $row['sale_count'],

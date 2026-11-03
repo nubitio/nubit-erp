@@ -127,16 +127,19 @@ final class CashSessionXReportProviderTest extends TestCase
         $connection = $this->createMock(Connection::class);
         $connection
             ->method('fetchAssociative')
-            ->willReturnCallback(fn(string $sql, array $params) => $db->fetchAssociative($sql, $params));
+            ->willReturnCallback(fn(string $sql, array $params) => $db->fetchAssociative($sql, self::named($params)));
         $connection
             ->method('fetchAllAssociative')
-            ->willReturnCallback(fn(string $sql, array $params) => $db->fetchAllAssociative($sql, $params));
+            ->willReturnCallback(fn(string $sql, array $params) => $db->fetchAllAssociative(
+                $sql,
+                self::named($params),
+            ));
         $connection->method('fetchOne')->willReturnCallback(fn(string $sql, array $params) => str_contains(
             $sql,
             'TIMESTAMPDIFF',
         )
                 ? 60
-                : $db->fetchOne($sql, $params));
+                : $db->fetchOne($sql, self::named($params)));
         $report = new CashSessionXReportProvider($connection)->provide(new Get(), ['id' => 1]);
         $closure = new CashSessionClosureSummaryProvider($connection)->provide(new Get(), ['id' => 1]);
         self::assertSame('290.00', $report->cashSalesNet);
@@ -154,5 +157,20 @@ final class CashSessionXReportProviderTest extends TestCase
         );
         self::assertSame('170.00', $closure[1]->expectedAmount);
         $db->close();
+    }
+
+    /**
+     * @param array<array-key, mixed> $params
+     *
+     * @return array<string, mixed>
+     */
+    private static function named(array $params): array
+    {
+        $named = [];
+        foreach ($params as $key => $value) {
+            $named[(string) $key] = $value;
+        }
+
+        return $named;
     }
 }

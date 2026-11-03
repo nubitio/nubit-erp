@@ -30,10 +30,12 @@ final class TaxDocumentEventsControllerTest extends TestCase
             ->with(['taxDocument' => $document], ['createdAt' => 'DESC', 'id' => 'DESC'], 50)
             ->willReturn([$event]);
         $response = (new TaxDocumentEventsController($repository))($document);
-        $data = json_decode($response->getContent(), true, flags: JSON_THROW_ON_ERROR);
+        $content = (string) $response->getContent();
+        /** @var list<array<string, mixed>> $data */
+        $data = json_decode($content, true, flags: JSON_THROW_ON_ERROR);
         self::assertSame('0', $data[0]['code']);
         self::assertSame('2026-10-29T12:00:00-05:00', $data[0]['createdAt']);
         self::assertArrayNotHasKey('payloadJson', $data[0]);
-        self::assertStringNotContainsString('private', $response->getContent());
+        self::assertStringNotContainsString('private', $content);
     }
 }

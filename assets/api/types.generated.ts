@@ -1952,6 +1952,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sales/reports/monthly-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a MonthlySalesSummary resource.
+         * @description Retrieves a MonthlySalesSummary resource.
+         */
+        get: operations["api_salesreportsmonthly-summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/payment-methods": {
         parameters: {
             query?: never;
@@ -3801,6 +3821,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/supplier-bills-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a SupplierBillSummary resource.
+         * @description Retrieves a SupplierBillSummary resource.
+         */
+        get: operations["api_supplier-bills-summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sales/{saleId}/tax-documents": {
         parameters: {
             query?: never;
@@ -3899,6 +3939,26 @@ export interface paths {
          * @description Creates a TaxDocument resource.
          */
         post: operations["api_tax-documents_idemail_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/tax-documents/{id}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a TaxDocument resource.
+         * @description Retrieves a TaxDocument resource.
+         */
+        get: operations["api_tax-documents_idevents_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5541,6 +5601,8 @@ export interface components {
                 paymentMethod: string;
                 amount: string;
             }[];
+            cashSalesNet?: string | null;
+            cashAdjustmentsOut?: string | null;
         };
         "CashSession.CashSessionXReportDto.jsonld-cash_x_report.read": components["schemas"]["HydraItemBaseSchema"] & {
             openingBalance?: string;
@@ -5554,6 +5616,8 @@ export interface components {
                 paymentMethod: string;
                 amount: string;
             }[];
+            cashSalesNet?: string | null;
+            cashAdjustmentsOut?: string | null;
         };
         "CashSession.jsonld-cash_session.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
@@ -6008,6 +6072,8 @@ export interface components {
              * @description customer.email.label
              */
             email?: string | null;
+            /** @description customer.collection_contact_name.label */
+            collectionContactName?: string | null;
             /**
              * Format: iri-reference
              * @description customer.price_list.label
@@ -6049,8 +6115,17 @@ export interface components {
             ruc: string;
             /** @description customer.business_name.label */
             businessName: string;
+            /** @description customer.fiscal_address.label */
+            fiscalAddress?: string | null;
             /** @description customer.phone.label */
             phone?: string | null;
+            /**
+             * Format: email
+             * @description customer.email.label
+             */
+            email?: string | null;
+            /** @description customer.collection_contact_name.label */
+            collectionContactName?: string | null;
         };
         "Customer.jsonMergePatch": {
             readonly id?: number;
@@ -6067,6 +6142,8 @@ export interface components {
              * @description customer.email.label
              */
             email?: string | null;
+            /** @description customer.collection_contact_name.label */
+            collectionContactName?: string | null;
             /**
              * Format: iri-reference
              * @description customer.price_list.label
@@ -6094,6 +6171,8 @@ export interface components {
              * @description customer.email.label
              */
             email?: string | null;
+            /** @description customer.collection_contact_name.label */
+            collectionContactName?: string | null;
             /**
              * Format: iri-reference
              * @description customer.price_list.label
@@ -6135,8 +6214,17 @@ export interface components {
             ruc: string;
             /** @description customer.business_name.label */
             businessName: string;
+            /** @description customer.fiscal_address.label */
+            fiscalAddress?: string | null;
             /** @description customer.phone.label */
             phone?: string | null;
+            /**
+             * Format: email
+             * @description customer.email.label
+             */
+            email?: string | null;
+            /** @description customer.collection_contact_name.label */
+            collectionContactName?: string | null;
         };
         "Customer.xlsx": {
             readonly id?: number;
@@ -6153,6 +6241,8 @@ export interface components {
              * @description customer.email.label
              */
             email?: string | null;
+            /** @description customer.collection_contact_name.label */
+            collectionContactName?: string | null;
             /**
              * Format: iri-reference
              * @description customer.price_list.label
@@ -8270,6 +8360,8 @@ export interface components {
         "Media.jsonld-product.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         Menu: Record<string, never>;
         "Menu.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        MonthlySalesSummary: Record<string, never>;
+        "MonthlySalesSummary.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         PaymentMethod: {
             readonly id?: number;
             /** @description payment_method.name.label */
@@ -11068,6 +11160,8 @@ export interface components {
             payments?: {
                 [key: string]: string | null;
             }[];
+            readonly paymentState?: string;
+            readonly sunatState?: string;
         };
         "Sale-sale_record.write": {
             /**
@@ -11316,6 +11410,8 @@ export interface components {
             payments?: {
                 [key: string]: string | null;
             }[];
+            readonly paymentState?: string;
+            readonly sunatState?: string;
         };
         "SaleItemRecord-sale_item_record.read": {
             readonly id?: number;
@@ -11730,6 +11826,8 @@ export interface components {
             payments?: {
                 [key: string]: string | null;
             }[];
+            readonly paymentState?: string;
+            readonly sunatState?: string;
         };
         /**
          * @description Pre-sale quote: same shape as SaleRecord but with no SUNAT emission and
@@ -11882,6 +11980,8 @@ export interface components {
             payments?: {
                 [key: string]: string | null;
             }[];
+            readonly paymentState?: string;
+            readonly sunatState?: string;
         };
         /**
          * @description Pre-sale quote: same shape as SaleRecord but with no SUNAT emission and
@@ -13396,6 +13496,8 @@ export interface components {
             /** Format: date-time */
             readonly createdAt?: string;
         };
+        SupplierBillSummary: Record<string, never>;
+        "SupplierBillSummary.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         "SupplierPayment-supplier_bill.read": {
             readonly id?: number;
             /**
@@ -20991,6 +21093,49 @@ export interface operations {
             };
         };
     };
+    "api_salesreportsmonthly-summary_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description MonthlySalesSummary resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MonthlySalesSummary"];
+                    "application/ld+json": components["schemas"]["MonthlySalesSummary.jsonld"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     "api_payment-methods_get_collection": {
         parameters: {
             query?: {
@@ -27372,6 +27517,49 @@ export interface operations {
             };
         };
     };
+    "api_supplier-bills-summary_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SupplierBillSummary resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierBillSummary"];
+                    "application/ld+json": components["schemas"]["SupplierBillSummary.jsonld"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     "api_sales_saleIdtax-documents_get_collection": {
         parameters: {
             query?: {
@@ -27682,6 +27870,52 @@ export interface operations {
                     "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
                     "application/problem+json": components["schemas"]["ConstraintViolation"];
                     "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_tax-documents_idevents_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description TaxDocument identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description TaxDocument resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxDocument-invoice.read_creditnote.read"];
+                    "application/ld+json": components["schemas"]["TaxDocument.jsonld-invoice.read_creditnote.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };

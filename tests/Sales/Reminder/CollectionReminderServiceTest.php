@@ -157,8 +157,10 @@ final class CollectionReminderServiceTest extends TestCase
 
         $preview = $this->service()->preview(self::SALE_ID, ReminderChannel::Whatsapp, ReminderTone::Direct);
 
-        self::assertSame('Rosa Quispe', $preview['recipient']['name']);
-        self::assertSame('51954321678', $preview['recipient']['phone']);
+        /** @var array<string, mixed> $recipient */
+        $recipient = $preview['recipient'];
+        self::assertSame('Rosa Quispe', $recipient['name']);
+        self::assertSame('51954321678', $recipient['phone']);
         self::assertSame(58, $preview['daysOverdue']);
         self::assertStringStartsWith('https://wa.me/51954321678?text=', (string) $preview['whatsappUrl']);
         self::assertStringContainsString('S%2F%20845.00', (string) $preview['whatsappUrl']);
@@ -175,7 +177,9 @@ final class CollectionReminderServiceTest extends TestCase
 
         self::assertSame('Recordatorio de pago: F001-00000262', $preview['subject']);
         self::assertNull($preview['whatsappUrl']);
-        self::assertSame('whatsapp', $preview['lastReminder']['channel']);
+        /** @var array<string, mixed> $last */
+        $last = $preview['lastReminder'];
+        self::assertSame('whatsapp', $last['channel']);
     }
 
     public function testFallsBackToTheBusinessNameWithoutAContactPerson(): void
@@ -185,7 +189,9 @@ final class CollectionReminderServiceTest extends TestCase
 
         $preview = $this->service()->preview(self::SALE_ID, ReminderChannel::Whatsapp, ReminderTone::Direct);
 
-        self::assertSame('Bodega San José', $preview['recipient']['name']);
+        /** @var array<string, mixed> $recipient */
+        $recipient = $preview['recipient'];
+        self::assertSame('Bodega San José', $recipient['name']);
     }
 
     public function testMissingChannelDataIsAnUnprocessableRequest(): void
@@ -354,6 +360,6 @@ final class CollectionReminderServiceTest extends TestCase
         $preview = $this->service()->preview(self::SALE_ID, ReminderChannel::Whatsapp, ReminderTone::Direct);
 
         self::assertSame('https://erp.test/receipt/abc', $preview['documentUrl']);
-        self::assertStringContainsString('https://erp.test/receipt/abc', $preview['body']);
+        self::assertStringContainsString('https://erp.test/receipt/abc', (string) $preview['body']);
     }
 }

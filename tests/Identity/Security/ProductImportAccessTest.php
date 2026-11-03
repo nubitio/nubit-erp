@@ -23,6 +23,7 @@ final class ProductImportAccessTest extends TestCase
 
     private function requiredRole(string $path): mixed
     {
+        /** @var array{security: array{access_control: list<array{path: string, roles: mixed}>}} $config */
         $config = Yaml::parseFile(__DIR__ . '/../../../config/packages/security.yaml');
         foreach ($config['security']['access_control'] as $rule) {
             if (preg_match('#' . $rule['path'] . '#', $path) === 1) {
