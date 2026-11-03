@@ -694,7 +694,8 @@ html[data-visual-style='nubit'] .pos-shell {
 // "Cobrar venta": payment methods as a card grid (Figma POS/Payment method).
 // The dialog is portaled outside `.pos-shell`, so it maps the editor's legacy
 // tokens to the semantic ones itself; otherwise dark mode falls back to light colors.
-.pos-payment-dialog {
+.pos-payment-dialog,
+.pos-split-dialog {
   --surface-0: var(--nb-color-bg-canvas);
   --surface-1: var(--nb-color-bg-surface);
   --surface-2: var(--nb-color-bg-subtle);
@@ -776,4 +777,102 @@ html[data-visual-style='nubit'] .pos-shell {
     display: block;
     font-size: 13px;
   }
+}
+
+// Post-sale confirmation as a centered card over a scrim (Figma "POS · 3 Comprobante emitido").
+html[data-visual-style='nubit'] .pos-shell .pos-postsale {
+  align-items: center;
+  animation: none;
+  background: rgb(10 12 18 / 55%);
+  border-radius: 0;
+  inset: 0;
+  justify-content: center;
+  padding: 16px;
+  position: fixed;
+  z-index: 100;
+
+  .pos-postsale__card {
+    background: var(--pos-card);
+    border: 0;
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgb(0 0 0 / 28%);
+    color: var(--pos-text);
+    gap: 16px;
+    max-width: 640px;
+    padding: 32px;
+    width: 100%;
+  }
+  .pos-postsale__check {
+    align-items: center;
+    background: var(--nb-color-bg-success-subtle);
+    border-radius: 50%;
+    color: var(--nb-color-text-success);
+    display: flex;
+    font-size: 32px;
+    height: 72px;
+    justify-content: center;
+    width: 72px;
+  }
+  .pos-postsale__title {
+    color: var(--pos-text);
+    font-size: 24px;
+    line-height: 32px;
+    text-align: center;
+  }
+  .pos-postsale__summary {
+    background: var(--pos-card-alt);
+    border-radius: 12px;
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 16px 20px;
+    text-align: left;
+    width: 100%;
+
+    > div {
+      color: var(--pos-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+    dt,
+    dd {
+      margin: 0;
+    }
+    .is-strong {
+      color: var(--pos-text);
+      font-weight: 700;
+    }
+  }
+  .pos-postsale__actions {
+    display: grid;
+    gap: 12px;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    width: 100%;
+  }
+  .pos-postsale__btn {
+    align-items: center;
+    display: inline-flex;
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+  }
+  .pos-postsale__btn--secondary {
+    background: var(--pos-card);
+    border: 1px solid var(--pos-border);
+    color: var(--pos-text);
+    font-weight: 600;
+  }
+}
+@media (max-width: 860px) {
+  html[data-visual-style='nubit'] .pos-shell .pos-postsale .pos-postsale__card {
+    padding: 24px 16px;
+  }
+}
+
+.pos-split-dialog__footer {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  width: 100%;
 }

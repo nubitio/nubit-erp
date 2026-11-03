@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect -- externally supplied splits enable split mode */
 import React, { useEffect, useMemo, useState } from 'react';
+import { AppDialog, Button } from '@nubitio/ui';
 import NumberUtils from '@shared/lib/NumberUtils';
 import {
   addPaymentLine,
@@ -65,6 +66,7 @@ export function SplitPaymentsEditor({
   allowPartial = false,
 }: SplitPaymentsEditorProps) {
   const [splitEnabled, setSplitEnabled] = useState(value.length > 1);
+  const [splitDialogOpen, setSplitDialogOpen] = useState(false);
 
   useEffect(() => {
     if (value.length > 1) {
@@ -139,11 +141,20 @@ export function SplitPaymentsEditor({
     return <p className="split-payments__empty">No hay métodos de pago configurados.</p>;
   }
 
-  const toggleSplit = () => (splitEnabled ? disableSplitPayment() : enableSplitPayment());
+  const toggleSplit = () => {
+    if (variant === 'pos') {
+      // The POS edits the split lines in their own dialog instead of growing this one.
+      if (!splitEnabled) enableSplitPayment();
+      setSplitDialogOpen(true);
+      return;
+    }
+    if (splitEnabled) disableSplitPayment();
+    else enableSplitPayment();
+  };
 
   return (
     <div className={`split-payments split-payments--${variant}`}>
-      {showMethodPicker && (
+      {showMethodPicker && !(variant === 'pos' && splitEnabled) && (
         <div
           className="split-payments__methods"
           role="radiogroup"
@@ -173,16 +184,22 @@ export function SplitPaymentsEditor({
         type="button"
         className={`split-payments__split-card${splitEnabled ? ' is-active' : ''}`}
         onClick={toggleSplit}
-        role="switch"
-        aria-checked={splitEnabled}
-        aria-label="Pago dividido"
+        role={variant === 'pos' ? undefined : 'switch'}
+        aria-checked={variant === 'pos' ? undefined : splitEnabled}
+        aria-label={variant === 'pos' ? 'Dividir pago' : 'Pago dividido'}
       >
         <span className="split-payments__split-card-icon" aria-hidden="true">
           <i className="ph ph-arrows-split" />
         </span>
         <span className="split-payments__split-card-copy">
           <strong>Pago dividido</strong>
-          <span>{splitEnabled ? 'Varios métodos en una venta' : 'Un solo método de pago'}</span>
+          <span>
+            {splitEnabled
+              ? variant === 'pos'
+                ? `${lines.length} métodos · tocar para editar`
+                : 'Varios métodos en una venta'
+              : 'Un solo método de pago'}
+          </span>
         </span>
         <span
           className={`split-payments__split-switch${splitEnabled ? ' is-on' : ''}`}
@@ -192,8 +209,180 @@ export function SplitPaymentsEditor({
         </span>
       </button>
 
-      {/* The POS shows a single method inline; the line table only matters when splitting. */}
-      {(variant !== 'pos' || splitEnabled) && (
+      {variant === 'pos' ? (
+        <AppDialog
+          open={splitDialogOpen}
+          title="Dividir pago"
+          onClose={() => setSplitDialogOpen(false)}
+          className="pos-split-dialog"
+          width={560}
+          footer={
+            <div className="pos-split-dialog__footer">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  disableSplitPayment();
+                  setSplitDialogOpen(false);
+                }}
+              >
+                Quitar división
+              </Button>
+              <Button
+                variant="primary"
+                disabled={!isBalanced}
+                onClick={() => setSplitDialogOpen(false)}
+              >
+                Listo
+              </Button>
+            </div>
+          }
+        >
+          <div className="split-payments split-payments--pos">
+            <div className="split-payments__sheet-header">
+              <span className="split-payments__sheet-title">Detalle</span>
+              {splitEnabled && (
+                <span className="split-payments__sheet-meta">
+                  {lines.length} {lines.length === 1 ? 'línea' : 'líneas'}
+                </span>
+              )}
+            </div>
+
+            <div className="split-payments__sheet" role="region" aria-label="Líneas de pago">
+              <table className="split-payments__table">
+                <thead>
+                  <tr>
+                    <th scope="col">Método</th>
+                    <th scope="col" className="split-payments__col-money">
+                      Monto
+                    </th>
+                    {showActions && <th scope="col" className="split-payments__col-action" />}
+                  </tr>
+                </thead>
+                <tbody>
+                  {lines.map((line, index) => {
+                    const method = paymentMethods.find((item) => item.id === line.methodId) ?? null;
+                    const isLastSplitLine =
+                      splitEnabled && index === lines.length - 1 && lines.length > 1;
+                    const options = methodOptionsForLine(index);
+                    const amountValue =
+                      splitEnabled || allowPartial ? line.amount : roundMoney(total).toFixed(2);
+
+                    return (
+                      <tr key={`payment-line-${index}`}>
+                        <td>
+                          {splitEnabled ? (
+                            <select
+                              className="split-payments__cell-input split-payments__cell-select"
+                              value={line.methodId ?? ''}
+                              onChange={(event) =>
+                                onChange(
+                                  updatePaymentLineMethod(value, index, Number(event.target.value)),
+                                )
+                              }
+                              aria-label={`Método de pago ${index + 1}`}
+                            >
+                              <option value="" disabled>
+                                Seleccionar
+                              </option>
+                              {options.map((option) => (
+                                <option key={option.id} value={option.id}>
+                                  {option.name}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span className="split-payments__cell-text">{method?.name ?? '—'}</span>
+                          )}
+                        </td>
+                        <td className="split-payments__col-money">
+                          {isLastSplitLine ? (
+                            <span
+                              className="split-payments__cell-amount is-computed"
+                              title="Calculado automáticamente"
+                            >
+                              {formatMoney(parseMoneyInput(line.amount), currency)}
+                            </span>
+                          ) : (
+                            <input
+                              type="number"
+                              className="split-payments__cell-input split-payments__cell-amount"
+                              min={0.01}
+                              max={total}
+                              step="0.01"
+                              value={amountValue}
+                              readOnly={!splitEnabled && !allowPartial}
+                              onChange={(event) =>
+                                onChange(
+                                  updatePaymentLineAmount(value, index, event.target.value, total),
+                                )
+                              }
+                              aria-label={`Monto ${method?.name ?? `pago ${index + 1}`}`}
+                            />
+                          )}
+                        </td>
+                        {showActions && (
+                          <td className="split-payments__col-action">
+                            {lines.length > 2 && (
+                              <button
+                                type="button"
+                                className="split-payments__row-remove"
+                                onClick={() => onChange(removePaymentLine(value, index, total))}
+                                aria-label={`Quitar pago ${index + 1}`}
+                              >
+                                <i className="ph ph-trash" aria-hidden="true" />
+                              </button>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+                <tfoot>
+                  {splitEnabled && !isBalanced && (
+                    <tr>
+                      <td className="split-payments__footer-label">Asignado</td>
+                      <td className="split-payments__col-money split-payments__footer-value">
+                        {formatMoney(assigned, currency)}
+                      </td>
+                      {showActions && <td />}
+                    </tr>
+                  )}
+                  <tr>
+                    <td className="split-payments__footer-label is-strong">Total venta</td>
+                    <td className="split-payments__col-money split-payments__footer-value is-strong">
+                      {formatMoney(total, currency)}
+                    </td>
+                    {showActions && <td />}
+                  </tr>
+                  {splitEnabled && !isBalanced && (
+                    <tr className="is-warning">
+                      <td className="split-payments__footer-label">
+                        {remaining > 0 ? 'Falta asignar' : 'Sobra'}
+                      </td>
+                      <td className="split-payments__col-money split-payments__footer-value">
+                        {formatMoney(remaining > 0 ? remaining : overAssigned, currency)}
+                      </td>
+                      {showActions && <td />}
+                    </tr>
+                  )}
+                </tfoot>
+              </table>
+            </div>
+
+            {canAddLine && (
+              <button
+                type="button"
+                className="split-payments__add-btn"
+                onClick={() => onChange(addPaymentLine(value, paymentMethods, total))}
+              >
+                <i className="ph ph-plus" aria-hidden="true" />
+                Agregar fila
+              </button>
+            )}
+          </div>
+        </AppDialog>
+      ) : (
         <>
           <div className="split-payments__sheet-header">
             <span className="split-payments__sheet-title">Detalle</span>
@@ -326,18 +515,18 @@ export function SplitPaymentsEditor({
               </tfoot>
             </table>
           </div>
-        </>
-      )}
 
-      {canAddLine && (
-        <button
-          type="button"
-          className="split-payments__add-btn"
-          onClick={() => onChange(addPaymentLine(value, paymentMethods, total))}
-        >
-          <i className="ph ph-plus" aria-hidden="true" />
-          Agregar fila
-        </button>
+          {canAddLine && (
+            <button
+              type="button"
+              className="split-payments__add-btn"
+              onClick={() => onChange(addPaymentLine(value, paymentMethods, total))}
+            >
+              <i className="ph ph-plus" aria-hidden="true" />
+              Agregar fila
+            </button>
+          )}
+        </>
       )}
 
       {cashEntries.map(({ line, index }) => {

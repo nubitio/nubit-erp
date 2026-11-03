@@ -728,7 +728,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
     await test.step('Verificar confirmación "Venta registrada"', async () => {
       // POSCheckoutPanel renderiza .pos-postsale con role="status" y aria-live="assertive".
       await expect(
-        page.getByTestId('pos-postsale-title').filter({ hasText: /Venta registrada/i }),
+        page.getByTestId('pos-postsale-title').filter({ hasText: /Venta registrada|emitida/i }),
       ).toBeVisible({ timeout: 20000 });
 
       // Cerrar el overlay (botón "Nueva venta")

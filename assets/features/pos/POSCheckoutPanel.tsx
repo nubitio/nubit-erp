@@ -221,14 +221,16 @@ export function POSCheckoutPanel({
   const successTotalRef = useRef<number | null>(null);
   const successEmitInvoiceRef = useRef(false);
   const successReceiptUrlRef = useRef<string | null>(null);
+  const liveChangeRef = useRef(0);
   const successDismissTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Success overlay: fires when isProcessingSale goes true → false AND sale succeeded
   useEffect(() => {
     if (prevProcessing.current && !isProcessingSale) {
       if (lastCheckoutSucceeded) {
-        successChangeRef.current = changeAmount;
-        successWasCashRef.current = changeAmount > 0;
+        // The tender is cleared as soon as the sale completes, so read the last live value.
+        successChangeRef.current = liveChangeRef.current;
+        successWasCashRef.current = liveChangeRef.current > 0;
         successCodeRef.current = lastSaleCode ?? null;
         successDocumentTypeRef.current = lastSaleDocumentType;
         successTotalRef.current = lastSaleTotal;
@@ -251,6 +253,11 @@ export function POSCheckoutPanel({
     emitInvoice,
     lastSaleReceiptUrl,
   ]);
+
+  // Declared after the success effect on purpose: that effect must read the previous value.
+  useEffect(() => {
+    if (!isProcessingSale) liveChangeRef.current = changeAmount;
+  }, [changeAmount, isProcessingSale]);
 
   // New line entrance animation
   useEffect(() => {
@@ -298,6 +305,11 @@ export function POSCheckoutPanel({
       input?.focus();
     });
   }, [focusCustomerTrigger, clearSelectedCustomer]);
+
+  // eslint-disable-next-line react-hooks/refs -- snapshot captured when the sale completed
+  const receiptLabel = showSuccess
+    ? formatPosReceiptLabel(successCodeRef.current, successDocumentTypeRef.current)
+    : null;
 
   return (
     <aside className="pos-cart-panel">
@@ -837,7 +849,7 @@ export function POSCheckoutPanel({
         </div>
       </AppDialog>
 
-      {/* ── Post-sale overlay ── */}
+      {/* ── Post-sale confirmation (Figma "POS · 3 Comprobante emitido") ── */}
       {showSuccess && (
         <div
           className="pos-postsale"
@@ -845,33 +857,45 @@ export function POSCheckoutPanel({
           role="status"
           data-testid="pos-postsale"
         >
+          {/* eslint-disable react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
           <div className="pos-postsale__card">
-            <div className="pos-postsale__check">✓</div>
-            <h2 className="pos-postsale__title" data-testid="pos-postsale-title">
-              Venta registrada
-            </h2>
-            {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
-            {successTotalRef.current != null && successTotalRef.current > 0 && (
-              // eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set
-              <p className="pos-postsale__total">{formatMoney(successTotalRef.current)}</p>
+            <div className="pos-postsale__check" aria-hidden="true">
+              <i className="ph ph-check" />
+            </div>
+            {receiptLabel ? (
+              <h2 className="pos-postsale__title" data-testid="pos-postsale-title">
+                {receiptLabel} emitida
+              </h2>
+            ) : (
+              <h2 className="pos-postsale__title" data-testid="pos-postsale-title">
+                Venta registrada
+              </h2>
             )}
-            {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
-            {formatPosReceiptLabel(successCodeRef.current, successDocumentTypeRef.current) ? (
-              // eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set
-              <p className="pos-postsale__code" data-testid="pos-postsale-code">
-                {formatPosReceiptLabel(successCodeRef.current, successDocumentTypeRef.current)}
-              </p>
-            ) : successEmitInvoiceRef.current ? (
-              <p className="pos-postsale__hint">Comprobante en proceso de envío a SUNAT</p>
-            ) : null}
-            {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
-            {successWasCashRef.current && successChangeRef.current > 0 && (
-              <div className="pos-postsale__change">
-                <span>Vuelto</span>
-                {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
-                <strong>{formatMoney(successChangeRef.current)}</strong>
+            {successEmitInvoiceRef.current && (
+              <Badge variant="success" size="sm" pill>
+                {receiptLabel ? 'Enviando a SUNAT' : 'Comprobante en proceso de envío a SUNAT'}
+              </Badge>
+            )}
+            <dl className="pos-postsale__summary">
+              <div className="is-strong">
+                <dt>Total</dt>
+                <dd>{formatMoney(successTotalRef.current ?? 0)}</dd>
               </div>
-            )}
+              {successWasCashRef.current && successChangeRef.current > 0 && (
+                <>
+                  <div>
+                    <dt>Pagado en efectivo</dt>
+                    <dd>
+                      {formatMoney((successTotalRef.current ?? 0) + successChangeRef.current)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Vuelto</dt>
+                    <dd>{formatMoney(successChangeRef.current)}</dd>
+                  </div>
+                </>
+              )}
+            </dl>
             <div className="pos-postsale__actions">
               {onPrintLastSale && (
                 <button
@@ -879,45 +903,44 @@ export function POSCheckoutPanel({
                   className="pos-postsale__btn pos-postsale__btn--secondary"
                   onClick={onPrintLastSale}
                 >
-                  Imprimir ticket
+                  Imprimir ticket <i className="ph ph-printer" aria-hidden="true" />
                 </button>
               )}
-              {/* eslint-disable-next-line react-hooks/refs -- refs hold post-sale snapshot values captured at sale completion; read after showSuccess is set */}
               {successReceiptUrlRef.current && (
                 <button
                   type="button"
                   className="pos-postsale__btn pos-postsale__btn--secondary"
                   onClick={() => {
                     const receiptUrl = successReceiptUrlRef.current;
-                    const code = successCodeRef.current;
                     if (!receiptUrl) {
                       return;
                     }
                     const text = encodeURIComponent(
-                      formatPosReceiptLabel(code, successDocumentTypeRef.current)
-                        ? `Tu ${formatPosReceiptLabel(code, successDocumentTypeRef.current)}: ${receiptUrl}`
+                      receiptLabel
+                        ? `Tu ${receiptLabel}: ${receiptUrl}`
                         : `Tu comprobante: ${receiptUrl}`,
                     );
                     window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener,noreferrer');
                   }}
                 >
-                  Enviar por WhatsApp
+                  WhatsApp <i className="ph ph-chat-circle" aria-hidden="true" />
                 </button>
               )}
-              <button
-                type="button"
-                className="pos-postsale__btn pos-postsale__btn--primary"
-                onClick={() => {
-                  if (successDismissTimer.current) clearTimeout(successDismissTimer.current);
-                  setShowSuccess(false);
-                }}
-                autoFocus
-                data-testid="pos-postsale-new-sale"
-              >
-                Nueva venta
-              </button>
             </div>
+            <button
+              type="button"
+              className="pos-postsale__btn pos-postsale__btn--primary"
+              onClick={() => {
+                if (successDismissTimer.current) clearTimeout(successDismissTimer.current);
+                setShowSuccess(false);
+              }}
+              autoFocus
+              data-testid="pos-postsale-new-sale"
+            >
+              Nueva venta · Enter
+            </button>
           </div>
+          {/* eslint-enable react-hooks/refs */}
         </div>
       )}
     </aside>
