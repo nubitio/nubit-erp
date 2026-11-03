@@ -659,13 +659,13 @@ html[data-visual-style='nubit'] .pos-shell {
   border-radius: 12px;
   display: flex;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 10px 20px;
 
   span {
     font-weight: 500;
   }
   strong {
-    font-size: 2rem;
+    font-size: 1.75rem;
     line-height: 1.2;
   }
 }
@@ -692,31 +692,57 @@ html[data-visual-style='nubit'] .pos-shell {
 }
 
 // "Cobrar venta": payment methods as a card grid (Figma POS/Payment method).
+// The dialog is portaled outside `.pos-shell`, so it maps the editor's legacy
+// tokens to the semantic ones itself; otherwise dark mode falls back to light colors.
+.pos-payment-dialog {
+  --surface-0: var(--nb-color-bg-canvas);
+  --surface-1: var(--nb-color-bg-surface);
+  --surface-2: var(--nb-color-bg-subtle);
+  --border-color: var(--nb-color-border-default);
+  --text-primary: var(--nb-color-text-primary);
+  --text-secondary: var(--nb-color-text-secondary);
+  --surface-3: var(--nb-color-bg-subtle);
+  --text-tertiary: var(--nb-color-text-secondary);
+  --primary: var(--nb-color-bg-brand);
+  --pos-card: var(--nb-color-bg-surface);
+  --pos-card-alt: var(--nb-color-bg-subtle);
+  --pos-border: var(--nb-color-border-default);
+  --pos-text: var(--nb-color-text-primary);
+  --pos-text-soft: var(--nb-color-text-secondary);
+  --pos-muted: var(--nb-color-text-secondary);
+  --pos-primary: var(--nb-color-bg-brand);
+  --pos-primary-soft: var(--nb-color-bg-brand-subtle);
+}
 .pos-payment-dialog .split-payments--pos {
+  gap: 12px;
+
   .split-payments__methods {
     display: grid;
-    gap: 12px;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   .split-payments__method {
-    border-radius: 12px;
+    border-radius: 10px;
     flex-direction: column;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
-    gap: 8px;
+    gap: 4px;
     justify-content: center;
-    min-height: 88px;
-    padding: 12px 8px;
+    min-height: 64px;
+    padding: 8px 6px;
     text-align: center;
 
     i {
-      font-size: 24px;
+      font-size: 20px;
     }
     &.is-active {
       border-color: var(--nb-color-border-focus);
       box-shadow: 0 0 0 1px var(--nb-color-border-focus);
     }
   }
+}
+.pos-payment-dialog__body {
+  gap: 12px;
 }
 
 .pos-checkout__key {
