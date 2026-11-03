@@ -241,6 +241,7 @@ export function POSCheckoutPanel({
     }
     prevProcessing.current = isProcessingSale;
   }, [
+    setPaymentOpen,
     isProcessingSale,
     lastCheckoutSucceeded,
     changeAmount,
