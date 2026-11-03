@@ -44,12 +44,14 @@ for (const theme of ['light', 'dark'] as const) {
     const amount = await review.locator('strong').innerText();
     await review.click();
     await expect(page.getByRole('heading', { name: 'Cobrar', exact: true })).toBeFocused();
+    await expect(page.getByTestId('pos-open-payment-btn')).toContainText(amount);
+    await expect(page.getByTestId('pos-open-payment-btn')).toBeInViewport({ ratio: 1 });
+    await page.getByTestId('pos-open-payment-btn').click();
+    const paymentDialog = page.getByRole('dialog', { name: 'Cobrar venta' });
+    await expect(paymentDialog).toBeVisible();
     await expect(page.getByTestId('pos-checkout-btn')).toContainText(amount);
     await expect(page.getByTestId('pos-checkout-btn')).toBeInViewport({ ratio: 1 });
-    const methods = page.getByRole('radiogroup', { name: 'Método de pago rápido' });
-    await expect(methods.getByRole('radio')).toHaveCount(4);
-    await page.getByRole('button', { name: 'Otros métodos', exact: true }).click();
-    await expect(methods.getByRole('radio')).not.toHaveCount(4);
+    const methods = paymentDialog.getByRole('radiogroup', { name: 'Método de pago principal' });
     const credit = methods.locator('label').filter({ hasText: /^Cr[eé]dito$/i });
     if (await credit.count()) {
       await credit.click();
@@ -59,16 +61,12 @@ for (const theme of ['light', 'dark'] as const) {
       .locator('label')
       .filter({ hasText: /^Efectivo$/i })
       .click();
-    await page.getByRole('button', { name: 'Menos métodos', exact: true }).click();
-    await page.getByTestId('pos-payments-trigger').click();
-    const paymentDialog = page.getByRole('dialog', { name: /Pagos|pago/i });
-    await expect(paymentDialog).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(paymentDialog).toBeHidden();
     await page.screenshot({
       path: info.outputPath(`pos-checkout-${theme}.png`),
       animations: 'disabled',
     });
+    await page.keyboard.press('Escape');
+    await expect(paymentDialog).toBeHidden();
     await page.getByRole('button', { name: 'Volver a productos', exact: true }).click();
     await expect(page.getByTestId('pos-product-search')).toBeFocused();
     await page.getByRole('button', { name: 'Opciones del punto de venta', exact: true }).click();

@@ -1,0 +1,6 @@
+// The top bar already names the module, so the hub keeps only its tabs.
+.billing-hub.nb-feature-hub--compact {
+  .nb-feature-hub__title {
+    display: none;
+  }
+}

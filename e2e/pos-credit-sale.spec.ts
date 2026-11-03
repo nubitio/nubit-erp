@@ -2,7 +2,12 @@ import { expect, test } from '@playwright/test';
 import { login } from './helpers/auth';
 import { customerReceivableBalance } from './helpers/receivables';
 import { ensureOpenCashSession } from './helpers/cashbox';
-import { selectPosCustomer, waitForPosCheckoutReady } from './helpers/pos';
+import {
+  openPosPayment,
+  selectPosCustomer,
+  selectPosPaymentMethod,
+  waitForPosCheckoutReady,
+} from './helpers/pos';
 import { E2E_SEED } from './support/seedConstants';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
@@ -30,21 +35,22 @@ test('Crédito en el POS crea automáticamente una cuenta por cobrar', async ({ 
     await product.click();
   }
 
-  await page.getByRole('button', { name: 'Otros métodos', exact: true }).click();
-  await page
-    .locator('label.split-payments-field__method')
-    .filter({ hasText: /^Credito$/i })
-    .click();
+  await selectPosPaymentMethod(page, /^Credito$/i);
 
   await expect(page.getByLabel('Venta a crédito')).toHaveCount(0);
   await expect(page.getByTestId('pos-credit-notice')).toContainText('Selecciona un cliente');
   await expect(page.getByTestId('pos-checkout-btn')).toBeDisabled();
+  await page.getByRole('button', { name: 'Volver', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Cobrar venta' })).toBeHidden();
+  // The dialog hands focus back to the charge button; wait so it cannot steal it from the customer field.
+  await expect(page.getByTestId('pos-open-payment-btn')).toBeFocused();
 
   await selectPosCustomer(page, {
     name: E2E_SEED.customerName,
     search: E2E_SEED.customerName,
   });
 
+  await openPosPayment(page);
   await expect(page.getByTestId('pos-credit-notice')).toContainText('Cuentas por cobrar');
   await expect(page.getByTestId('pos-checkout-btn')).toContainText('Registrar crédito');
   await waitForPosCheckoutReady(page);

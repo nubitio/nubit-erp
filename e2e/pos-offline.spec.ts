@@ -357,7 +357,7 @@ test('La actualización espera al cobro en curso y una versión obligatoria bloq
     finishPayment();
     await expect(updateButton).toBeEnabled({ timeout: 20_000 });
     await page.getByTestId('pos-postsale-new-sale').click();
-    await expect(page.getByTestId('pos-checkout-btn')).toBeDisabled();
+    await expect(page.getByTestId('pos-open-payment-btn')).toBeDisabled();
     await product.click();
     await completePosCashPayment(page);
     await expect(page.getByTestId('pos-checkout-btn')).toBeDisabled();

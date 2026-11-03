@@ -417,13 +417,8 @@ export const SalePage = () => {
 
     return [
       {
-        text: 'Ver detalle',
-        icon: 'ph-eye',
-        onClick: () => navigate(`/billing/sales/${encodeURIComponent(saleId)}`),
-      },
-      {
         text: 'Vista previa',
-        icon: 'ph-eye',
+        icon: 'ph-file-text',
         onClick: () => salePrintPreview.openPreview(taxDocumentId),
       },
       {

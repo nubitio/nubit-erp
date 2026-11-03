@@ -94,16 +94,9 @@ async function sellToSeedCustomer(page: import('@playwright/test').Page): Promis
   // synchronously — which would make our later explicit POST /invoice call
   // fail with "ya tiene un comprobante emitido". Turn it OFF so we control
   // invoice creation explicitly below, exactly like golden-path-fiscal does.
-  await page.locator('.pos-footer-options__toggle').click();
-  const emitInvoiceToggle = page.getByLabel('Emitir boleta o factura SUNAT');
-  if (await emitInvoiceToggle.isChecked()) {
-    await page
-      .locator('.pos-footer-option-row')
-      .filter({ hasText: 'Emitir boleta/factura SUNAT' })
-      .locator('label')
-      .click();
-  }
-  await expect(emitInvoiceToggle).not.toBeChecked();
+  const salesNote = page.getByRole('radio', { name: 'Nota de venta' });
+  await salesNote.click();
+  await expect(salesNote).toBeChecked();
 
   await completePosCashPayment(page);
   await waitForPosCheckoutReady(page);

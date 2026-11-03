@@ -26,26 +26,34 @@ export const MonthlySalesKpis = ({ branchId }: { branchId?: string | null }) => 
   });
 
   if (!branchId) return null;
+  const period = data
+    ? new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric' }).format(
+        new Date(`${data.periodStart}T12:00:00`),
+      )
+    : 'Mes actual';
   return (
     <section className="sales-monthly-summary" aria-label="Resumen mensual de ventas">
       <div className="sales-monthly-summary__heading">
-        <div>
-          <h3>Resumen del mes</h3>
-          <p>
-            {data
-              ? new Intl.DateTimeFormat('es-PE', { month: 'long', year: 'numeric' }).format(
-                  new Date(`${data.periodStart}T12:00:00`),
-                )
-              : 'Mes actual'}
-            {' · Sucursal actual · Ventas no anuladas. Independiente de los filtros de la lista.'}
-          </p>
-        </div>
-        <Button size="sm" variant="ghost" onClick={() => void refetch()} disabled={isLoading}>
-          Actualizar resumen
+        <h3 title="Sucursal actual · Ventas no anuladas. Independiente de los filtros de la lista.">
+          Resumen de {period}
+        </h3>
+        {data?.currencies.length === 0 && (
+          <span className="sales-monthly-summary__empty">
+            Sin ventas este mes en esta sucursal.
+          </span>
+        )}
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => void refetch()}
+          disabled={isLoading}
+          aria-label="Actualizar resumen"
+        >
+          Actualizar
         </Button>
       </div>
       {isError ? (
-        <p role="alert">No se pudo cargar el resumen. Usa «Actualizar resumen» para reintentar.</p>
+        <p role="alert">No se pudo cargar el resumen. Usa «Actualizar» para reintentar.</p>
       ) : isLoading ? (
         <KpiMetricRow
           loading
@@ -55,8 +63,6 @@ export const MonthlySalesKpis = ({ branchId }: { branchId?: string | null }) => 
             { label: 'Ventas', value: '—' },
           ]}
         />
-      ) : data?.currencies.length === 0 ? (
-        <p>No hay ventas registradas este mes en esta sucursal.</p>
       ) : (
         data?.currencies.map((item) => (
           <div key={item.currency} className="sales-monthly-summary__currency">

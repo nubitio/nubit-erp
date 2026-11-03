@@ -2,7 +2,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { EntityDropdown } from '@nubitio/crud';
-import { Badge, Chip, EmptyState, IconButton, TextAreaField, TextField, Toggle } from '@nubitio/ui';
+import {
+  AppDialog,
+  Badge,
+  Button,
+  Chip,
+  EmptyState,
+  IconButton,
+  TextAreaField,
+  TextField,
+} from '@nubitio/ui';
 import type { SalePaymentLineDraft } from '@shared/lib/salePayments';
 import { SplitPaymentsField } from '@shared/ui/split-payments/SplitPaymentsField';
 import { formatPosCustomerLabel } from './lib/mapPosCustomer';
@@ -143,6 +152,8 @@ export function POSCheckoutPanel({
   // Notes are exceptional in the checkout flow. Keep their editor out of the
   // way, except when restoring a draft that already contains one.
   const [noteOpen, setNoteOpen] = useState(Boolean(note.trim()));
+  // Payment lives in a dialog (Figma "Cobrar venta"); the panel keeps only the order.
+  const [paymentOpen, setPaymentOpen] = useState(false);
 
   // The payment footer is fixed while the cart scrolls. When the note opens,
   // bring the whole editor above that footer instead of leaving its lower half
@@ -159,6 +170,27 @@ export function POSCheckoutPanel({
 
     return () => window.clearTimeout(timer);
   }, [noteOpen]);
+  const voucherOptions = [
+    { value: 'BOLETA', label: 'Boleta' },
+    { value: 'FACTURA', label: 'Factura' },
+    { value: 'NOTA', label: 'Nota de venta' },
+  ] as const;
+  type VoucherChoice = (typeof voucherOptions)[number]['value'];
+  const voucherChoice: VoucherChoice = !emitInvoice
+    ? 'NOTA'
+    : requestedVoucherType === 'AUTO'
+      ? canRequestFactura
+        ? 'FACTURA'
+        : 'BOLETA'
+      : requestedVoucherType;
+  const chooseVoucher = (choice: VoucherChoice) => {
+    if (choice === 'NOTA') {
+      setEmitInvoice(false);
+      return;
+    }
+    setEmitInvoice(true);
+    setRequestedVoucherType(choice);
+  };
   // Inline quantity editing
   const [editingQtyId, setEditingQtyId] = useState<string | null>(null);
   const [editingQtyVal, setEditingQtyVal] = useState<string>('');
@@ -195,6 +227,7 @@ export function POSCheckoutPanel({
         successEmitInvoiceRef.current = emitInvoice;
         successReceiptUrlRef.current = lastSaleReceiptUrl;
         setShowSuccess(true);
+        setPaymentOpen(false);
         if (successDismissTimer.current) clearTimeout(successDismissTimer.current);
       }
     }
@@ -300,6 +333,33 @@ export function POSCheckoutPanel({
               filters={ENTITY_DROPDOWN_FILTERS}
             />
           </div>
+        </div>
+      )}
+
+      {/* ── Comprobante: one choice instead of a toggle plus a hidden chip group ── */}
+      {!quickMode && (
+        <div className="pos-voucher-section" data-testid="pos-voucher">
+          <span className="pos-customer-section__label">Comprobante</span>
+          <div className="pos-segmented" role="radiogroup" aria-label="Comprobante">
+            {voucherOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={voucherChoice === option.value}
+                className={`pos-segmented__option${voucherChoice === option.value ? ' is-active' : ''}`}
+                disabled={option.value === 'FACTURA' && !canRequestFactura}
+                onClick={() => chooseVoucher(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          {!canRequestFactura && (
+            <span className="pos-voucher-section__hint">
+              Factura se activa al elegir un cliente con RUC.
+            </span>
+          )}
         </div>
       )}
 
@@ -573,59 +633,15 @@ export function POSCheckoutPanel({
             onClick={() => setOptionsOpen((open) => !open)}
             aria-expanded={optionsOpen}
           >
-            <span>Opciones</span>
-            {!optionsOpen && (
-              <span className={`pos-footer-options__badge${emitInvoice ? ' is-sunat' : ''}`}>
-                {emitInvoice ? 'Boleta / Factura' : 'Sin comprobante'}
-                {discountPercent > 0 ? ` · -${discountPercent}%` : ''}
-              </span>
+            <span>Descuento y opciones</span>
+            {!optionsOpen && discountPercent > 0 && (
+              <span className="pos-footer-options__badge">-{discountPercent}%</span>
             )}
             <i className={`ph ph-caret-${optionsOpen ? 'up' : 'down'}`} aria-hidden="true" />
           </button>
 
           {optionsOpen && (
             <div className="pos-footer-options__body">
-              <div className="pos-footer-option-row">
-                <span className="pos-discount-label">Emitir boleta/factura SUNAT</span>
-                <Toggle
-                  checked={emitInvoice}
-                  onChange={setEmitInvoice}
-                  aria-label="Emitir boleta o factura SUNAT"
-                />
-              </div>
-
-              {emitInvoice && (
-                <div className="pos-footer-option-row">
-                  <span className="pos-discount-label">Tipo de comprobante</span>
-                  <div
-                    className="pos-discount-presets"
-                    role="group"
-                    aria-label="Tipo de comprobante"
-                  >
-                    <Chip
-                      label="Automático"
-                      active={requestedVoucherType === 'AUTO'}
-                      size="sm"
-                      onClick={() => setRequestedVoucherType('AUTO')}
-                    />
-                    <Chip
-                      label="Boleta"
-                      active={requestedVoucherType === 'BOLETA'}
-                      size="sm"
-                      onClick={() => setRequestedVoucherType('BOLETA')}
-                    />
-                    {canRequestFactura && (
-                      <Chip
-                        label="Factura"
-                        active={requestedVoucherType === 'FACTURA'}
-                        size="sm"
-                        onClick={() => setRequestedVoucherType('FACTURA')}
-                      />
-                    )}
-                  </div>
-                </div>
-              )}
-
               {allowDiscount && (
                 <div className="pos-footer-option-row">
                   <span className="pos-discount-label">Descuento</span>
@@ -671,7 +687,7 @@ export function POSCheckoutPanel({
         {/* Summary rows */}
         <div className="pos-summary">
           <div className="pos-summary__row">
-            <span>Base imponible</span>
+            <span>Op. gravada</span>
             <span>{formatMoney(total - includedTax)}</span>
           </div>
           {discountAmount > 0 && (
@@ -692,56 +708,17 @@ export function POSCheckoutPanel({
 
         {/* Total hero */}
         <div className={`pos-total-hero${totalUpdated ? ' is-updated' : ''}`}>
-          <span>TOTAL</span>
+          <span>Total</span>
           <strong>{formatMoney(total)}</strong>
         </div>
 
-        {cashRoundingAdjustment > 0 && (
-          <div className="pos-change-row pos-cash-rounding" data-testid="pos-cash-rounding">
-            <span>Redondeo en efectivo</span>
-            <strong>− {formatMoney(cashRoundingAdjustment)}</strong>
-          </div>
-        )}
-
-        <SplitPaymentsField
-          paymentMethods={paymentMethods}
-          total={payableTotal}
-          currency={currency}
-          value={paymentLines}
-          onChange={setPaymentLines}
-          variant="pos"
-          layout="drawer"
-          quickMethodsLimit={4}
-        />
-
-        {creditSale && (
-          <div className="pos-credit-notice" data-testid="pos-credit-notice" role="status">
-            <i className="ph ph-hand-coins" aria-hidden="true" />
-            <span>
-              <strong>Venta a crédito · {formatMoney(creditAmount)}</strong>
-              <small>
-                {selectedCustomerId == null || selectedCustomer?.doc === '00000000'
-                  ? 'Selecciona un cliente para registrar la cuenta por cobrar.'
-                  : 'Este saldo se registrará automáticamente en Cuentas por cobrar.'}
-              </small>
-            </span>
-          </div>
-        )}
-
-        {changeAmount > 0 && (
-          <div className="pos-change-row is-change">
-            <span>Vuelto</span>
-            <strong>{formatMoney(changeAmount)}</strong>
-          </div>
-        )}
-
-        {/* Checkout CTA */}
+        {/* Checkout CTA — opens the payment dialog */}
         <button
           type="button"
           className="pos-checkout"
-          onClick={handleCheckout}
-          disabled={checkoutDisabled || !cajaAbierta}
-          data-testid="pos-checkout-btn"
+          onClick={() => setPaymentOpen(true)}
+          disabled={cart.length === 0 || total <= 0 || isProcessingSale || !cajaAbierta}
+          data-testid="pos-open-payment-btn"
         >
           {isProcessingSale ? (
             <span className="pos-checkout__processing">Procesando...</span>
@@ -749,12 +726,94 @@ export function POSCheckoutPanel({
             <span className="pos-checkout__processing">Caja cerrada</span>
           ) : (
             <>
-              <span>{creditSale ? 'Registrar crédito' : 'Cobrar'}</span>
+              <span>Cobrar</span>
               <strong>{formatMoney(payableTotal)}</strong>
             </>
           )}
         </button>
       </div>
+
+      {/* ── Payment dialog ── */}
+      <AppDialog
+        open={paymentOpen}
+        title="Cobrar venta"
+        onClose={() => setPaymentOpen(false)}
+        className="pos-payment-dialog"
+        width={640}
+        footer={
+          <div className="pos-payment-dialog__footer">
+            <Button variant="secondary" onClick={() => setPaymentOpen(false)}>
+              Volver
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleCheckout}
+              disabled={checkoutDisabled || !cajaAbierta}
+              data-testid="pos-checkout-btn"
+            >
+              {isProcessingSale
+                ? 'Procesando...'
+                : `${
+                    creditSale
+                      ? 'Registrar crédito'
+                      : emitInvoice
+                        ? `Cobrar y emitir ${voucherChoice === 'FACTURA' ? 'factura' : 'boleta'}`
+                        : 'Cobrar'
+                  } · ${formatMoney(payableTotal)}`}
+            </Button>
+          </div>
+        }
+      >
+        <div className="pos-payment-dialog__body">
+          {checkoutError && (
+            <div className="pos-checkout-error-banner" role="alert">
+              {checkoutError}
+            </div>
+          )}
+          {cashRoundingAdjustment > 0 && (
+            <div className="pos-change-row pos-cash-rounding" data-testid="pos-cash-rounding">
+              <span>Redondeo en efectivo</span>
+              <strong>− {formatMoney(cashRoundingAdjustment)}</strong>
+            </div>
+          )}
+
+          <div className="pos-payment-dialog__total">
+            <span>Total a cobrar</span>
+            <strong>{formatMoney(payableTotal)}</strong>
+          </div>
+          <SplitPaymentsField
+            paymentMethods={paymentMethods}
+            total={payableTotal}
+            currency={currency}
+            value={paymentLines}
+            onChange={setPaymentLines}
+            variant="pos"
+            layout="inline"
+            quickMethodsLimit={4}
+          />
+
+          {creditSale && (
+            <div className="pos-credit-notice" data-testid="pos-credit-notice" role="status">
+              <i className="ph ph-hand-coins" aria-hidden="true" />
+              <span>
+                <strong>Venta a crédito · {formatMoney(creditAmount)}</strong>
+                <small>
+                  {selectedCustomerId == null || selectedCustomer?.doc === '00000000'
+                    ? 'Selecciona un cliente para registrar la cuenta por cobrar.'
+                    : 'Este saldo se registrará automáticamente en Cuentas por cobrar.'}
+                </small>
+              </span>
+            </div>
+          )}
+
+          {changeAmount > 0 && (
+            <div className="pos-change-row is-change">
+              <span>Vuelto</span>
+              <strong>{formatMoney(changeAmount)}</strong>
+            </div>
+          )}
+        </div>
+      </AppDialog>
 
       {/* ── Post-sale overlay ── */}
       {showSuccess && (

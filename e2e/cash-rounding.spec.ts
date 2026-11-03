@@ -3,7 +3,7 @@ import { login } from './helpers/auth';
 import { parseApiCollection } from './helpers/api';
 import { ensureOpenCashSession } from './helpers/cashbox';
 import { loginViaApi } from './helpers/fiscal';
-import { selectPosCustomer, waitForPosCheckoutReady } from './helpers/pos';
+import { selectPosCustomer, selectPosPaymentMethod, waitForPosCheckoutReady } from './helpers/pos';
 import { E2E_SEED } from './support/seedConstants';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
@@ -56,24 +56,12 @@ test('POS redondea efectivo S/10.63 a S/10.60 y persiste el ajuste', async ({ pa
     if (await add.isVisible({ timeout: 2000 }).catch(() => false)) await add.click();
     else await card.click();
     await selectPosCustomer(page, { name: E2E_SEED.customerName });
-    await page
-      .locator('[role="radiogroup"][aria-label="Método de pago rápido"]')
-      .locator('label.split-payments-field__method')
-      .filter({ hasText: /efectivo/i })
-      .first()
-      .click();
+    const paymentDialog = await selectPosPaymentMethod(page, /efectivo/i);
     await expect(page.getByTestId('pos-cash-rounding')).toContainText('0.03');
     await expect(page.getByTestId('pos-checkout-btn')).toContainText('10.60');
-    await page.getByTestId('pos-payments-trigger').click();
-    await expect(
-      page.getByRole('dialog', { name: 'Configurar pagos' }).getByText('S/ 10.60').first(),
-    ).toBeVisible();
-    await page.getByRole('button', { name: 'S/ 20.00' }).click();
-    await expect(page.getByText('Vuelto S/ 9.40')).toBeVisible();
-    await page
-      .getByRole('dialog', { name: 'Configurar pagos' })
-      .getByRole('button', { name: 'Cerrar' })
-      .click();
+    await expect(paymentDialog.getByText('S/ 10.60').first()).toBeVisible();
+    await paymentDialog.getByRole('button', { name: 'S/ 20.00' }).click();
+    await expect(paymentDialog.getByText('Vuelto S/ 9.40')).toBeVisible();
     await waitForPosCheckoutReady(page);
 
     const saleResponsePromise = page.waitForResponse(

@@ -511,3 +511,182 @@ html[data-visual-style='nubit'] .pos-shell {
     overflow: auto;
   }
 }
+
+// ─── Figma "POS · 1 Venta en curso" alignment (second pass) ───────────────────
+html[data-visual-style='nubit'] .pos-shell {
+  // Product card: price and stock share one row; no add "+" affordance.
+  .pos-product-card__price-row {
+    align-items: center;
+    justify-content: space-between;
+    padding-right: 0;
+  }
+  .pos-product-card__stock {
+    color: var(--pos-muted);
+    font-size: 12px;
+    line-height: 16px;
+    white-space: nowrap;
+  }
+  .pos-product-card__stock-note {
+    background: var(--nb-color-bg-warning, #fef3c7);
+    border-radius: 999px;
+    color: var(--nb-color-text-warning);
+    font-weight: 500;
+    padding: 2px 8px;
+    white-space: nowrap;
+
+    &.is-out {
+      background: var(--pos-card-alt);
+      color: var(--pos-muted);
+    }
+  }
+  .pos-product-card.is-disabled .pos-product-card__title,
+  .pos-product-card.is-disabled .pos-product-card__price {
+    color: var(--pos-muted);
+  }
+  // The catalog price editor is an exception, not part of the selling path.
+  .pos-product-card__edit-price {
+    opacity: 0;
+    top: 6px;
+    bottom: auto;
+    right: 6px;
+    transition: opacity 120ms ease;
+  }
+  .pos-product-card:hover .pos-product-card__edit-price,
+  .pos-product-card__edit-price:focus-visible {
+    opacity: 1;
+  }
+
+  // Comprobante: segmented control (Boleta · Factura · Nota de venta).
+  .pos-voucher-section {
+    display: grid;
+    gap: 6px;
+    padding: 0 16px;
+  }
+  .pos-voucher-section__hint {
+    color: var(--pos-muted);
+    font-size: 12px;
+    line-height: 16px;
+  }
+  .pos-segmented {
+    background: var(--pos-card-alt);
+    border-radius: 10px;
+    display: grid;
+    gap: 4px;
+    grid-template-columns: repeat(3, 1fr);
+    padding: 4px;
+  }
+  .pos-segmented__option {
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    color: var(--pos-muted);
+    cursor: pointer;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    min-height: 36px;
+    padding: 0 8px;
+
+    &.is-active {
+      background: var(--pos-card);
+      box-shadow: 0 1px 2px rgb(0 0 0 / 12%);
+      color: var(--pos-text);
+    }
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+    &:focus-visible {
+      outline: 2px solid var(--nb-color-border-focus);
+      outline-offset: 1px;
+    }
+  }
+
+  // The footer is `display: contents` in this style, so its children need their own gutter.
+  .pos-cart-panel > .pos-footer-options,
+  .pos-cart-panel > .pos-summary,
+  .pos-cart-panel > .pos-total-hero,
+  .pos-cart-panel > .pos-change-row,
+  .pos-cart-panel > .pos-credit-notice,
+  .pos-cart-panel > .pos-checkout {
+    margin-inline: 16px;
+  }
+  .pos-cart-panel > .pos-checkout {
+    margin-bottom: 16px;
+  }
+}
+
+// Order panel: lines scroll, the summary and the charge button stay pinned.
+@media (min-width: 861px) {
+  html[data-visual-style='nubit'] .pos-shell {
+    .pos-cart-panel {
+      overflow: hidden;
+      padding-bottom: 0;
+    }
+    .pos-cart-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+    }
+    .pos-checkout-footer {
+      background: var(--pos-card);
+      border-top: 1px solid var(--pos-border);
+      display: flex;
+      flex: 0 0 auto;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 16px 16px;
+    }
+    .pos-cart-panel > .pos-footer-options,
+    .pos-cart-panel > .pos-summary,
+    .pos-cart-panel > .pos-total-hero,
+    .pos-cart-panel > .pos-checkout {
+      margin-inline: 0;
+    }
+    .pos-checkout {
+      position: static;
+    }
+  }
+}
+
+.pos-payment-dialog__body {
+  display: grid;
+  gap: 16px;
+}
+.pos-payment-dialog__total {
+  align-items: center;
+  background: var(--nb-color-bg-subtle, #f4f6fa);
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 20px;
+
+  span {
+    font-weight: 500;
+  }
+  strong {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
+}
+.pos-payment-dialog__footer {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  width: 100%;
+
+  > :last-child {
+    flex: 1 1 auto;
+  }
+}
+
+html[data-visual-style='nubit'] .pos-shell {
+  .pos-toolbar__barcode {
+    background: var(--pos-card);
+    border: 1px solid var(--pos-border);
+    color: var(--pos-muted);
+  }
+  .pos-total-hero span {
+    text-transform: none;
+  }
+}

@@ -38,67 +38,48 @@ export async function selectPosCustomer(page: Page, opts: SelectPosCustomerOptio
   await expect(searchInput).toHaveValue(new RegExp(expectedName, 'i'), { timeout: 8000 });
 }
 
+/** Open the "Cobrar venta" dialog from the order panel (idempotent). */
+export async function openPosPayment(page: Page) {
+  const dialog = page.getByRole('dialog', { name: 'Cobrar venta' });
+  if (await dialog.isVisible({ timeout: 500 }).catch(() => false)) return dialog;
+  const open = page.getByTestId('pos-open-payment-btn');
+  await expect(open).toBeEnabled({ timeout: 15000 });
+  await open.click();
+  await dialog.waitFor({ state: 'visible', timeout: 8000 });
+  return dialog;
+}
+
+/** Pick a payment method in the "Cobrar venta" dialog. */
+export async function selectPosPaymentMethod(page: Page, name: RegExp) {
+  const dialog = await openPosPayment(page);
+  await dialog
+    .getByRole('radiogroup', { name: 'Método de pago principal' })
+    .locator('label')
+    .filter({ hasText: name })
+    .first()
+    .click();
+  return dialog;
+}
+
 /**
- * Select cash payment via the split-payments quick method picker.
+ * Select cash payment in the dialog. The tendered amount defaults to the exact total,
+ * so no further input is needed.
  */
 export async function completePosCashPayment(page: Page) {
-  const methodsGroup = page.locator('[role="radiogroup"][aria-label="Método de pago rápido"]');
-  await methodsGroup.waitFor({ state: 'visible', timeout: 15000 });
-
-  const cashMethod = methodsGroup
-    .locator('label.split-payments-field__method')
+  const dialog = await openPosPayment(page);
+  const group = dialog.getByRole('radiogroup', { name: 'Método de pago principal' });
+  await group.waitFor({ state: 'visible', timeout: 15000 });
+  const cash = group
+    .locator('label')
     .filter({ hasText: /efectivo/i })
     .first();
-  const hasCash = await cashMethod.isVisible({ timeout: 3000 }).catch(() => false);
-  if (hasCash) {
-    await cashMethod.click();
-  } else {
-    await methodsGroup.locator('label.split-payments-field__method').first().click();
-  }
-
-  // Cash with exact total is auto-balanced; open drawer only if tendered amount is required.
-  const paymentsTrigger = page.getByTestId('pos-payments-trigger');
-  const triggerVisible = await paymentsTrigger.isVisible({ timeout: 2000 }).catch(() => false);
-  if (!triggerVisible) {
-    return;
-  }
-
-  const warningBadge = paymentsTrigger.locator('.split-payments-field__trigger-badge.is-warning');
-  const needsDrawer = await warningBadge.isVisible({ timeout: 1000 }).catch(() => false);
-  if (!needsDrawer) {
-    return;
-  }
-
-  await paymentsTrigger.click();
-
-  const exactoChip = page
-    .locator('.split-payments-drawer .nb-chip')
-    .filter({ hasText: /^Exacto$/ })
-    .first();
-  if (await exactoChip.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await exactoChip.click();
-  } else {
-    const amountInput = page.getByLabel('Monto recibido').first();
-    if (await amountInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-      const totalText = await page.getByTestId('pos-checkout-btn').locator('strong').textContent();
-      const match = totalText?.match(/[\d.]+/);
-      await amountInput.fill(match?.[0] ?? '100');
-    }
-  }
-
-  const doneBtn = page
-    .locator('.split-payments-drawer__actions button')
-    .filter({ hasText: /listo|cerrar|guardar/i })
-    .first();
-  if (await doneBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await doneBtn.click();
-  } else {
-    await page.keyboard.press('Escape');
-  }
+  if (await cash.isVisible({ timeout: 3000 }).catch(() => false)) await cash.click();
+  else await group.locator('label').first().click();
 }
 
 /** Wait until the POS checkout button is enabled. */
 export async function waitForPosCheckoutReady(page: Page) {
+  await openPosPayment(page);
   const cobrarBtn = page.getByTestId('pos-checkout-btn');
   await cobrarBtn.waitFor({ state: 'visible', timeout: 8000 });
   await expect(cobrarBtn).not.toBeDisabled({ timeout: 15000 });

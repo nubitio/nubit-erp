@@ -102,21 +102,16 @@ export function POSItem({
             <span className="pos-product-card__qty-badge" aria-label={`${quantity} en la orden`}>
               {quantity}
             </span>
-          ) : (
-            !isOutOfStock && (
-              <span className="pos-product-card__add-affordance" aria-hidden="true">
-                <i className="ph ph-plus" />
-              </span>
-            )
-          )}
+          ) : isOutOfStock ? (
+            <span className="pos-product-card__stock-note is-out">Agotado</span>
+          ) : tracksInventory && stockValue !== null && stockValue > 0 && stockValue <= 5 ? (
+            <span className="pos-product-card__stock-note">
+              Quedan {formatStockCount(stockValue)}
+            </span>
+          ) : tracksInventory && stockValue !== null ? (
+            <span className="pos-product-card__stock">{formatStockCount(stockValue)} en stock</span>
+          ) : null}
         </span>
-        {isOutOfStock ? (
-          <span className="pos-product-card__stock-note">Sin stock</span>
-        ) : tracksInventory && stockValue !== null && stockValue > 0 && stockValue <= 5 ? (
-          <span className="pos-product-card__stock-note">
-            Quedan {formatStockCount(stockValue)}
-          </span>
-        ) : null}
       </button>
       {editingPrice ? (
         <div className="pos-product-card__price-edit">

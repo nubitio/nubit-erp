@@ -31,7 +31,7 @@ test('sales shares its real records between table and responsive cards', async (
     await expect(summary.getByTestId(`sales-kpis-${item.currency}`)).toContainText(item.currency);
   }
   if (summaryData.currencies.length === 0) {
-    await expect(summary).toContainText('No hay ventas registradas este mes');
+    await expect(summary).toContainText('Sin ventas este mes');
   }
   const grid = page.locator('.nb-datagrid').first();
   await expect(grid).toHaveAttribute('aria-busy', 'false', { timeout: 30000 });
