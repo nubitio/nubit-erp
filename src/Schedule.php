@@ -51,6 +51,13 @@ readonly class Schedule implements ScheduleProviderInterface
                 new RunCommandMessage('app:billing:notify-due-sales', throwOnFailure: false),
                 'America/Lima',
             ))
+            // Collection reminders keep customer phones, e-mails and message text, so they
+            // are deleted after twelve months — runs daily at 03:30 America/Lima.
+            ->add(RecurringMessage::cron(
+                '30 3 * * *',
+                new RunCommandMessage('app:receivables:purge-reminders', throwOnFailure: false),
+                'America/Lima',
+            ))
             // Fixed-asset depreciation — generates due straight-line entries,
             // runs monthly on day 1 at 06:00 America/Lima.
             ->add(RecurringMessage::cron(

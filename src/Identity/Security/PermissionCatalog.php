@@ -129,6 +129,12 @@ final class PermissionCatalog
                     'subscriptions.cancel' => 'Cancelar suscripciones',
                 ],
             ],
+            'receivables' => [
+                'label' => 'Cuentas por cobrar',
+                'permissions' => [
+                    'receivables.remind' => 'Enviar recordatorios de cobro',
+                ],
+            ],
             'accounts_payable' => [
                 'label' => 'Cuentas por pagar',
                 'permissions' => [

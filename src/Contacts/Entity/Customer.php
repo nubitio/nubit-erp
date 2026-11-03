@@ -76,6 +76,13 @@ class Customer implements ActivatableInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $email = null;
 
+    /** Person to address in payment reminders (e.g. the purchasing contact); falls back to the business name. */
+    #[Assert\Length(max: 120)]
+    #[Groups(['sale_record:read'])]
+    #[ApiProperty(description: 'customer.collection_contact_name.label')]
+    #[ORM\Column(name: 'collection_contact_name', length: 120, nullable: true)]
+    private ?string $collectionContactName = null;
+
     #[ORM\ManyToOne]
     #[ApiProperty(description: 'customer.price_list.label')]
     #[ORM\JoinColumn(name: 'price_list_id', referencedColumnName: 'id', nullable: true)]
@@ -146,6 +153,18 @@ class Customer implements ActivatableInterface
     public function setEmail(?string $email): static
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getCollectionContactName(): ?string
+    {
+        return $this->collectionContactName;
+    }
+
+    public function setCollectionContactName(?string $collectionContactName): static
+    {
+        $this->collectionContactName = $collectionContactName;
 
         return $this;
     }

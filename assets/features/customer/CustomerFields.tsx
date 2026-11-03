@@ -124,6 +124,14 @@ export const CustomerFields = (formRef: RefObject<FormHandle | null>) => {
       .build(),
   );
   fields.push(
+    textField()
+      .name('collectionContactName')
+      .label('Contacto de cobranza')
+      .helpText('Persona a quien se dirige el recordatorio de pago. Opcional.')
+      .layoutHint('short')
+      .build(),
+  );
+  fields.push(
     entityField(API + 'price-lists', 'id', 'name')
       .name('priceList')
       .label('Tarifa')

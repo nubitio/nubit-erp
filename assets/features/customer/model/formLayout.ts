@@ -9,7 +9,7 @@ export const customerFormLayout: FormLayout = {
     },
     {
       label: 'Contacto',
-      fields: ['email', 'phone'],
+      fields: ['email', 'phone', 'collectionContactName'],
     },
     {
       label: 'Condiciones',

@@ -10,6 +10,7 @@ import {
 } from '@shared/lib/displayFormat';
 import { hasPermission } from '@shared/permissions';
 import { listOpenInvoices, type ReceivableInvoice } from './services/receivableService';
+import { CollectionReminderDialog } from './reminders/CollectionReminderDialog';
 import './CustomerReceivableDrawer.scss';
 
 export interface ReceivableCustomer {
@@ -49,6 +50,8 @@ function CustomerReceivableDetail({ customer }: { customer: ReceivableCustomer }
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [reminding, setReminding] = useState<ReceivableInvoice | null>(null);
+  const canRemind = hasPermission('receivables.remind');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -148,6 +151,16 @@ function CustomerReceivableDetail({ customer }: { customer: ReceivableCustomer }
                   </div>
                   <div className="receivable-drawer__invoice-balance">
                     Saldo {formatMoney(invoice.balanceDue, invoice.currency)}
+                    {canRemind && status !== 'paid' && Number(invoice.balanceDue) > 0 && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => setReminding(invoice)}
+                        data-testid="receivable-remind"
+                      >
+                        Recordar
+                      </Button>
+                    )}
                   </div>
                 </li>
               );
@@ -155,6 +168,17 @@ function CustomerReceivableDetail({ customer }: { customer: ReceivableCustomer }
           </ul>
         )}
       </section>
+
+      {reminding && (
+        <CollectionReminderDialog
+          saleId={reminding.id}
+          documentNumber={reminding.invoiceFullNumber}
+          balanceDue={reminding.balanceDue}
+          currency={reminding.currency}
+          customerName={customer.name}
+          onClose={() => setReminding(null)}
+        />
+      )}
 
       {!isLoading && !error && payments.length > 0 && (
         <section className="receivable-drawer__section">

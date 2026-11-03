@@ -162,6 +162,7 @@ contexts:
       - App\Sales\Port\SaleInvoicePrinterInterface
       - App\Sales\Port\SaleVoiderInterface
       - App\Sales\Port\RejectedDocumentReplacerInterface
+      - App\Sales\Port\SaleDocumentLinkInterface
       - App\Sales\State\CashSessionResolverInterface
       - App\Sales\State\DetractionCalculatorInterface
     ownsTables:
@@ -183,6 +184,7 @@ contexts:
       - sales_daily_summary # dead
       - customer_account_entries # customer current account (#367)
       - customer_payment_applications # abono <-> venta (#367)
+      - sales_collection_reminder # manual payment reminders log
 
   Billing:
     namespace: App\Billing

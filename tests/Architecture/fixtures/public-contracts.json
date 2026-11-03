@@ -35,6 +35,9 @@
     "App\\Sales\\Port\\RejectedDocumentReplacerInterface": [
         "replaceRejectedDocument(string $saleId): App\\Sales\\Port\\Result\\RejectedDocumentReplacementResult"
     ],
+    "App\\Sales\\Port\\SaleDocumentLinkInterface": [
+        "publicUrl(App\\Sales\\Entity\\SaleRecord $sale): ?string"
+    ],
     "App\\Sales\\Port\\SaleInvoicePrinterInterface": [
         "printSaleInvoice(string $saleId, Symfony\\Component\\HttpFoundation\\Request $request): Symfony\\Component\\HttpFoundation\\Response"
     ],
