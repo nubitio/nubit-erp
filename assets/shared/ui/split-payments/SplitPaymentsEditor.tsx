@@ -18,6 +18,7 @@ import {
 } from '@shared/lib/salePayments';
 import { isCashPaymentMethod } from '@shared/pos/helpers';
 import type { PaymentMethodOption } from '@shared/pos/types';
+import { paymentMethodIcon } from './paymentMethodPresentation';
 import './SplitPaymentsEditor.scss';
 
 export interface SplitPaymentsEditorProps {
@@ -159,6 +160,9 @@ export function SplitPaymentsEditor({
                 checked={primaryLine.methodId === method.id}
                 onChange={() => updatePrimaryMethod(method.id)}
               />
+              {variant === 'pos' && (
+                <i className={`ph ${paymentMethodIcon(method)}`} aria-hidden="true" />
+              )}
               <span>{method.name}</span>
             </label>
           ))}

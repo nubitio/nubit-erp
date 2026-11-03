@@ -28,6 +28,8 @@ interface POSOperatorHeaderProps {
   onOpenCaja?: () => void;
   assistantEnabled?: boolean;
   onAssistantClick?: () => void;
+  heldSalesCount?: number;
+  onOpenHeldSales?: () => void;
 }
 
 export function POSOperatorHeader({
@@ -50,6 +52,8 @@ export function POSOperatorHeader({
   onOpenCaja,
   assistantEnabled = false,
   onAssistantClick,
+  heldSalesCount = 0,
+  onOpenHeldSales,
 }: POSOperatorHeaderProps) {
   const navigate = useNavigate();
   const [showShortcuts, setShowShortcuts] = useState(false);
@@ -175,6 +179,18 @@ export function POSOperatorHeader({
           sales={outboxSales}
           onRetrySale={onRetrySale}
         />
+
+        {onOpenHeldSales && (
+          <button
+            type="button"
+            className="pos-caja-action-btn"
+            onClick={onOpenHeldSales}
+            data-testid="pos-held-sales-btn"
+          >
+            <i className="ph ph-pause-circle" aria-hidden="true" /> Ventas en espera (
+            {heldSalesCount})
+          </button>
+        )}
 
         <div className="pos-operator-header__sep" />
 

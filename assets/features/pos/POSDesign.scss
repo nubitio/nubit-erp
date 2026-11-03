@@ -690,3 +690,64 @@ html[data-visual-style='nubit'] .pos-shell {
     text-transform: none;
   }
 }
+
+// "Cobrar venta": payment methods as a card grid (Figma POS/Payment method).
+.pos-payment-dialog .split-payments--pos {
+  .split-payments__methods {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .split-payments__method {
+    border-radius: 12px;
+    flex-direction: column;
+    font-size: 14px;
+    font-weight: 500;
+    gap: 8px;
+    justify-content: center;
+    min-height: 88px;
+    padding: 12px 8px;
+    text-align: center;
+
+    i {
+      font-size: 24px;
+    }
+    &.is-active {
+      border-color: var(--nb-color-border-focus);
+      box-shadow: 0 0 0 1px var(--nb-color-border-focus);
+    }
+  }
+}
+
+.pos-checkout__key {
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 11px;
+  margin-left: 8px;
+  opacity: 0.75;
+  padding: 0 4px;
+}
+
+.pos-held-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pos-held-list__item {
+  align-items: center;
+  border: 1px solid var(--pos-border, var(--border-color));
+  border-radius: 12px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr auto auto auto;
+  padding: 12px 16px;
+
+  span {
+    color: var(--pos-muted, var(--text-secondary));
+    display: block;
+    font-size: 13px;
+  }
+}

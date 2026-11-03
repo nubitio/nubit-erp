@@ -83,6 +83,12 @@ interface POSCheckoutPanelProps {
   onRetrySale?: (saleId: string) => void;
   onReadScaleWeight?: (itemId: string) => void;
   scaleReady?: boolean;
+  /** Local order reference shown in the header, e.g. "#00483". */
+  ticketLabel?: string;
+  /** Parks the order so another customer can be served; omitted when unsupported. */
+  onHold?: () => void;
+  paymentOpen: boolean;
+  setPaymentOpen: (open: boolean) => void;
 }
 
 export function POSCheckoutPanel({
@@ -143,6 +149,10 @@ export function POSCheckoutPanel({
   onRetrySale: _onRetrySale,
   onReadScaleWeight,
   scaleReady = false,
+  ticketLabel,
+  onHold,
+  paymentOpen,
+  setPaymentOpen,
 }: POSCheckoutPanelProps) {
   const customerDropdownRef = useRef<HTMLDivElement>(null);
   const cartBodyRef = useRef<HTMLDivElement>(null);
@@ -152,8 +162,6 @@ export function POSCheckoutPanel({
   // Notes are exceptional in the checkout flow. Keep their editor out of the
   // way, except when restoring a draft that already contains one.
   const [noteOpen, setNoteOpen] = useState(Boolean(note.trim()));
-  // Payment lives in a dialog (Figma "Cobrar venta"); the panel keeps only the order.
-  const [paymentOpen, setPaymentOpen] = useState(false);
 
   // The payment footer is fixed while the cart scrolls. When the note opens,
   // bring the whole editor above that footer instead of leaving its lower half
@@ -295,7 +303,7 @@ export function POSCheckoutPanel({
       {/* ── Panel header ── */}
       <div className="pos-panel__header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-          <h2>Orden</h2>
+          <h2>{ticketLabel ? `Venta ${ticketLabel}` : 'Orden'}</h2>
           {cart.length > 0 && (
             <Badge
               variant="primary"
@@ -307,6 +315,17 @@ export function POSCheckoutPanel({
             </Badge>
           )}
         </div>
+        {onHold && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onHold}
+            disabled={cart.length === 0}
+            data-testid="pos-hold-btn"
+          >
+            <i className="ph ph-pause" aria-hidden="true" /> En espera
+          </Button>
+        )}
         <IconButton
           icon="ph ph-trash"
           label="Vaciar carrito"
@@ -726,7 +745,9 @@ export function POSCheckoutPanel({
             <span className="pos-checkout__processing">Caja cerrada</span>
           ) : (
             <>
-              <span>Cobrar</span>
+              <span>
+                Cobrar <kbd className="pos-checkout__key">F9</kbd>
+              </span>
               <strong>{formatMoney(payableTotal)}</strong>
             </>
           )}

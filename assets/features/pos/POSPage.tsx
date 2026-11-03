@@ -27,7 +27,15 @@ import { usePosCatalogData } from './usePosCatalogData';
 import { normalizeText, toMoneyString, toNumber } from './posHelpers';
 import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { useOutboxSync } from '@offline/hooks/useOutboxSync';
-import { AppDialog, ConfirmDialog } from '@nubitio/ui';
+import { AppDialog, Button, ConfirmDialog } from '@nubitio/ui';
+import {
+  buildHeldSale,
+  formatTicketNumber,
+  nextTicketNumber,
+  readHeldSales,
+  writeHeldSales,
+  type HeldSale,
+} from './lib/heldSales';
 import { useFeature, useTenantRuntimeConfig } from '@shared/hooks';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
@@ -67,6 +75,11 @@ const POSPage = () => {
   const previousPanel = useRef<'catalog' | 'cart'>('catalog');
   const [activePanel, setActivePanel] = useState<'catalog' | 'cart'>('catalog');
   const [confirmClearCartOpen, setConfirmClearCartOpen] = useState(false);
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [heldOpen, setHeldOpen] = useState(false);
+  const heldStoreId = branchId || 'default-store';
+  const [heldSales, setHeldSales] = useState<HeldSale[]>(() => readHeldSales(heldStoreId));
+  const [ticketNumber, setTicketNumber] = useState(() => nextTicketNumber(heldStoreId));
   const [catalogPriceUpdatingId, setCatalogPriceUpdatingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -199,6 +212,7 @@ const POSPage = () => {
     updateLinePrice,
     updateLineDescription,
     clearCart,
+    restoreOrder,
     cartItemsCount,
     subtotal,
     discountAmount,
@@ -238,8 +252,54 @@ const POSPage = () => {
     autoInvoice: runtimeConfig?.settings.autoInvoice !== false,
     autoPrint: runtimeConfig?.settings.autoPrint !== false,
     cashRoundingEnabled: runtimeConfig?.settings.cashRoundingEnabled === true,
-    onSaleCompleted: customersState.resetSelectedCustomer,
+    onSaleCompleted: () => {
+      customersState.resetSelectedCustomer();
+      setTicketNumber(nextTicketNumber(heldStoreId));
+    },
   });
+
+  const updateHeldSales = (next: HeldSale[]) => {
+    setHeldSales(next);
+    writeHeldSales(heldStoreId, next);
+  };
+
+  const snapshotCurrentOrder = (): HeldSale =>
+    buildHeldSale({
+      number: ticketNumber,
+      cart: cart.map(({ photo: _photo, ...rest }) => rest),
+      discountPercent,
+      note,
+      customerId: customersState.selectedCustomerId,
+      customerName: customersState.selectedCustomer?.businessName ?? null,
+      total,
+    });
+
+  const holdCurrentOrder = () => {
+    if (cart.length === 0) return;
+    updateHeldSales([...heldSales, snapshotCurrentOrder()]);
+    clearCart();
+    customersState.resetSelectedCustomer();
+    setTicketNumber(nextTicketNumber(heldStoreId));
+    toast(`Venta ${formatTicketNumber(ticketNumber)} en espera`, 'success');
+  };
+
+  const resumeHeldSale = (id: string) => {
+    const target = heldSales.find((sale) => sale.id === id);
+    if (!target) return;
+    // Resuming never loses the order in progress: it takes the vacated place in the queue.
+    const rest = heldSales.filter((sale) => sale.id !== id);
+    updateHeldSales(cart.length > 0 ? [...rest, snapshotCurrentOrder()] : rest);
+    restoreOrder({
+      cart: target.cart as typeof cart,
+      discountPercent: target.discountPercent,
+      note: target.note,
+    });
+    if (target.customerId != null) customersState.selectCustomer(String(target.customerId));
+    else customersState.resetSelectedCustomer();
+    setTicketNumber(target.number);
+    setHeldOpen(false);
+    setActivePanel('cart');
+  };
 
   useEffect(() => {
     syncCartPricesFromCatalog();
@@ -447,10 +507,23 @@ const POSPage = () => {
           return;
         }
         if (isInteractive) return;
-        if (!checkoutDisabled && cajaAbierta && cart.length > 0) {
+        if (paymentOpen) {
+          // Second Enter inside the payment dialog confirms the charge.
+          if (!checkoutDisabled && cajaAbierta) {
+            e.preventDefault();
+            handleCheckout();
+          }
+        } else if (cajaAbierta && cart.length > 0) {
           e.preventDefault();
-          handleCheckout();
+          setPaymentOpen(true);
         }
+        return;
+      }
+
+      // F9 → charge (opens the payment dialog)
+      if (e.key === 'F9') {
+        e.preventDefault();
+        if (!paymentOpen && cajaAbierta && cart.length > 0) setPaymentOpen(true);
         return;
       }
 
@@ -480,6 +553,7 @@ const POSPage = () => {
     cajaAbierta,
     cart.length,
     handleCheckout,
+    paymentOpen,
     clearCart,
     menuData,
     addToCart,
@@ -529,6 +603,8 @@ const POSPage = () => {
       onOpenCaja={() => setOpenCajaDialogOpen(true)}
       assistantEnabled={assistantEnabled}
       onAssistantClick={() => setAssistantOpen((open) => !open)}
+      heldSalesCount={heldSales.length}
+      onOpenHeldSales={() => setHeldOpen(true)}
     />
   );
 
@@ -696,7 +772,51 @@ const POSPage = () => {
           void readScaleForLine(id);
         }}
         scaleReady={scaleReady}
+        ticketLabel={formatTicketNumber(ticketNumber)}
+        onHold={holdCurrentOrder}
+        paymentOpen={paymentOpen}
+        setPaymentOpen={setPaymentOpen}
       />
+
+      <AppDialog
+        open={heldOpen}
+        title="Ventas en espera"
+        onClose={() => setHeldOpen(false)}
+        className="pos-held-dialog"
+      >
+        {heldSales.length === 0 ? (
+          <p>No hay ventas en espera.</p>
+        ) : (
+          <ul className="pos-held-list">
+            {heldSales.map((sale) => (
+              <li key={sale.id} className="pos-held-list__item" data-testid="pos-held-sale">
+                <div>
+                  <strong>Venta {formatTicketNumber(sale.number)}</strong>
+                  <span>
+                    {sale.customerName ?? 'Sin cliente'} · {sale.cart.length}{' '}
+                    {sale.cart.length === 1 ? 'producto' : 'productos'} ·{' '}
+                    {new Date(sale.heldAt).toLocaleTimeString('es-PE', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                </div>
+                <strong>{formatMoney(sale.total)}</strong>
+                <Button size="sm" variant="primary" onClick={() => resumeHeldSale(sale.id)}>
+                  Retomar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => updateHeldSales(heldSales.filter((item) => item.id !== sale.id))}
+                >
+                  Descartar
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </AppDialog>
 
       {assistantEnabled && assistantOpen ? (
         <div className="pos-assistant-overlay" role="dialog" aria-label="Asistente de IA">

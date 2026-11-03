@@ -414,6 +414,13 @@ export const usePosCheckout = ({
     localStorage.removeItem(storageKey);
   };
 
+  /** Replaces the order in progress, e.g. when resuming a parked sale. */
+  const restoreOrder = (order: { cart: CartItem[]; discountPercent: number; note: string }) => {
+    setCart(order.cart);
+    setDiscountPercent(order.discountPercent);
+    setNote(order.note);
+  };
+
   // A new sale should always start from the safest, most common tender type.
   // Keep this separate from clearCart so manually emptying a cart does not
   // unexpectedly change an in-progress payment choice.
@@ -721,6 +728,7 @@ export const usePosCheckout = ({
     updateLinePrice,
     updateLineDescription,
     clearCart,
+    restoreOrder,
     cartItemsCount,
     subtotal,
     discountAmount,
