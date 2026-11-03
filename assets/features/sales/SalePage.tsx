@@ -488,8 +488,8 @@ export const SalePage = () => {
             }}
             allowView
             onView={(row) => navigate(`/billing/sales/${encodeURIComponent(String(row.id))}`)}
-            filterRow={false}
-            filterToolbarFields={['issuedDate', 'paymentState', 'sunatState', 'paymentMethod']}
+            filterRow
+            filterToolbarFields={[]}
             filterPresets={saleFilterPresets()}
             url={API_URL}
             fields={fields}

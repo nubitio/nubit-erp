@@ -62,9 +62,7 @@ test('sales shortcuts compose server filters and stay synchronized with mobile',
   const range = grid.locator('.nb-date-range-picker');
   await expect(range).toBeVisible();
   await expect(range.locator('.nb-date-range-picker__clear')).toHaveCount(0);
-  const clearDate = grid
-    .locator('.nb-datagrid__filter-editor')
-    .getByRole('button', { name: 'Limpiar filtro', exact: true });
+  const clearDate = grid.getByRole('button', { name: 'Limpiar filtro', exact: true }).first();
   const calendarBox = (await range.locator('.nb-date-range-picker__calendar-btn').boundingBox())!;
   const clearDateBox = (await clearDate.boundingBox())!;
   expect(calendarBox.x + calendarBox.width).toBeLessThanOrEqual(clearDateBox.x);
