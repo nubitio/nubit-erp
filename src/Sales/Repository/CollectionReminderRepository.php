@@ -41,7 +41,7 @@ class CollectionReminderRepository extends ServiceEntityRepository
             static fn(mixed $value): bool => $value !== null,
         );
 
-        return array_values($this->findBy($criteria, ['createdAt' => 'DESC', 'id' => 'DESC'], $limit));
+        return $this->findBy($criteria, ['createdAt' => 'DESC', 'id' => 'DESC'], $limit);
     }
 
     /** Deletes reminders created before the cutoff; returns how many were removed. */
