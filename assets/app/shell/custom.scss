@@ -168,8 +168,9 @@ html:not([data-visual-style='nubit']) .nb-admin-menu:not(.compact) {
   display: none;
 }
 
-// Bottom navigation: never split a word ("Facturació/n") on narrow screens.
-.nb-admin-bottom-nav__label {
+// Bottom navigation: never split a word ("Facturació/n") on narrow screens. The selector is
+// doubled so it outranks the shared stylesheet regardless of load order.
+.nb-admin-bottom-nav .nb-admin-bottom-nav__label {
   font-size: 11px;
   overflow: hidden;
   overflow-wrap: normal;
@@ -182,4 +183,30 @@ html:not([data-visual-style='nubit']) .nb-admin-menu:not(.compact) {
   align-items: center;
   display: inline-flex;
   min-height: 24px;
+}
+
+// The dashboard nests two gutters (outer scroller + inner view wrapper); keep one so its
+// content aligns with every other page.
+.view-wrapper-scroll.efact-dashboard .view-wrapper-dashboard {
+  padding-inline: 0;
+}
+
+// Phones: a 32px page gutter leaves ~326px of a 390px screen. The visual style sets the
+// gutter with a long selector (and loads after this file), so out-rank it with one more :not.
+@media (max-width: 767px) {
+  html[data-visual-style='nubit']:not([data-density='compact']):not(
+      [data-density='comfortable']
+    ):not(.nb-keep-page-gutter) {
+    --page-padding: 16px;
+  }
+}
+
+// Pages that bring their own wrapper padding on top of the page gutter, or none at all, so
+// their content lines up with every other page.
+.view-wrapper-scroll .acc-page,
+.view-wrapper-scroll .fr-page {
+  padding-inline: 0;
+}
+.bank-reconciliation-page {
+  padding-inline: var(--page-padding);
 }
