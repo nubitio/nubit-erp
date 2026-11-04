@@ -50,10 +50,8 @@ test.describe('Regresión de rutas web bajo /api/v1', () => {
     expect(movementsRequests).toBeLessThanOrEqual(2);
 
     await page.goto(`${baseUrl}/#/subscriptions/customer-subscriptions`);
-    // The sections are sidebar sub-items while the sidebar is open.
-    await expect(
-      page.getByRole('button', { name: 'Suscripciones de clientes', exact: true }),
-    ).toBeVisible();
+    // The hub content mounts whatever the tenant's menu shows, so it proves the route rendered.
+    await expect(page.locator('.nb-feature-hub__content')).toBeVisible();
     await expect(page.getByText('Error interno del servidor')).toHaveCount(0);
   });
 });

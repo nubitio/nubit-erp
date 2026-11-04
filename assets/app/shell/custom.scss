@@ -238,3 +238,10 @@ html:not([data-visual-style='nubit']) .nb-admin-menu:not(.compact) {
   display: inline-flex;
   min-height: 24px;
 }
+
+// Until @nubitio/ui rounds it: the dialog panel cannot clip (overflow: visible), so the
+// header's square background showed past the panel's rounded top corners on every dialog.
+.nb-dialog__header {
+  border-top-left-radius: calc(var(--radius-lg) - 1px);
+  border-top-right-radius: calc(var(--radius-lg) - 1px);
+}
