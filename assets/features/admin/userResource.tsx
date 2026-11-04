@@ -52,7 +52,7 @@ export const userResource = defineResource<UserRecord>(userEndpoints.list(), {
   id: 'user',
   title: 'Usuarios',
   gridAppearance: 'page',
-  filterRow: false,
+  filterRow: true,
   filterToolbarFields: ['username', 'role'],
   viewMode: 'dialog',
   defaultPreset: 'basic',

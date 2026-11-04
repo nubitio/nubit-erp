@@ -163,7 +163,7 @@ export const SupplierBillPage = () => {
           );
         },
       },
-      filterRow: false,
+      filterRow: true,
       filterToolbarFields: ['supplier', 'dueDate', 'status'],
       events: supplierBillEvents,
       aboveGrid: (

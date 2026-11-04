@@ -78,7 +78,7 @@ export const CreditNotePage = () => {
         id: 'creditNote',
         title: 'Notas de crédito',
         gridAppearance: 'page',
-        filterRow: false,
+        filterRow: true,
         filterToolbarFields: ['issueDate', 'customer', 'sunatStatus'],
         fields,
         defaultPreset: 'basic',

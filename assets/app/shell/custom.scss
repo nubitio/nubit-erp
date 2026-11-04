@@ -169,52 +169,6 @@ html:not([data-visual-style='nubit']) .nb-admin-menu:not(.compact) {
   }
 }
 
-// Field filters above a grid share one row instead of a tall block of boxed fields.
-.nb-datagrid__filter-tools {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-3);
-  margin-bottom: var(--space-2);
-
-  .nb-datagrid__filter-editors {
-    align-items: center;
-    display: flex;
-    flex: 1 1 auto;
-    flex-wrap: wrap;
-    gap: var(--space-2) var(--space-4);
-    justify-content: flex-end;
-  }
-  .nb-datagrid__filter-editor {
-    align-items: center;
-    background: transparent;
-    border: 0;
-    display: flex;
-    gap: var(--space-2);
-    padding: 0;
-    width: auto;
-
-    .nb-datagrid__sheet-label {
-      color: var(--text-secondary);
-      flex: 0 0 auto;
-      margin: 0;
-    }
-    > :not(.nb-datagrid__sheet-label) {
-      min-width: 7.5rem;
-      width: 11rem;
-    }
-  }
-  .nb-datagrid__active-filters {
-    flex: 1 0 100%;
-  }
-}
-
-// The dashboard nests two gutters (outer scroller + inner view wrapper); keep one so its
-// content aligns with every other page.
-.view-wrapper-scroll.efact-dashboard {
-  padding-inline: 0;
-}
-
 // Hubs whose sections are sidebar sub-items: with the sidebar open on desktop the tab row
 // would only repeat them. It stays for the collapsed sidebar and for tablet/mobile.
 .nb-admin-shell__body.is-open.is-large
@@ -237,11 +191,4 @@ html:not([data-visual-style='nubit']) .nb-admin-menu:not(.compact) {
   align-items: center;
   display: inline-flex;
   min-height: 24px;
-}
-
-// Until @nubitio/ui rounds it: the dialog panel cannot clip (overflow: visible), so the
-// header's square background showed past the panel's rounded top corners on every dialog.
-.nb-dialog__header {
-  border-top-left-radius: calc(var(--radius-lg) - 1px);
-  border-top-right-radius: calc(var(--radius-lg) - 1px);
 }

@@ -53,7 +53,7 @@ export const PurchasesPage = () => {
       id: 'purchases',
       title: 'Recepción de mercadería',
       gridAppearance: 'page',
-      filterRow: false,
+      filterRow: true,
       filterToolbarFields: ['issuedAt', 'supplier'],
       fields: PurchasesFields(currentBranchId, runtimeConfig),
       gridDetail: { url: detailUrl, fields: detailFields },

@@ -179,7 +179,7 @@ export const CustomerReceivablesGrid = ({ refreshKey = 0, onOpenDetail, onCollec
       fields={fields}
       adapter={HydraAdapter}
       appearance="page"
-      filterRow={false}
+      filterRow
       filterToolbarFields={['customerName']}
       allowAdd={false}
       allowEdit={false}
