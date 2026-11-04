@@ -214,3 +214,20 @@ html:not([data-visual-style='nubit']) .nb-admin-menu:not(.compact) {
 .view-wrapper-scroll.efact-dashboard {
   padding-inline: 0;
 }
+
+// Hubs whose sections are sidebar sub-items: with the sidebar open on desktop the tab row
+// would only repeat them. It stays for the collapsed sidebar and for tablet/mobile.
+.nb-admin-shell__body.is-open.is-large
+  .hub-in-sidebar.nb-feature-hub--compact
+  .nb-feature-hub__header {
+  display: none;
+}
+
+// Bottom navigation: never split a word ("Facturació/n") on narrow screens.
+.nb-admin-bottom-nav__label {
+  font-size: 11px;
+  overflow: hidden;
+  overflow-wrap: normal;
+  text-overflow: ellipsis;
+  word-break: normal;
+}

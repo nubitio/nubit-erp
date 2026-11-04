@@ -110,22 +110,59 @@ function menuItemSortIndex(item: AdminMenuItem): number {
 
 // Hub sections shown as sidebar sub-items. The hub pages stay routable, so bookmarks and
 // RBAC are unchanged; the in-page tab row is hidden on desktop while the sidebar is open.
-const HUB_SUBMENUS: Record<
-  string,
-  { text: string; path: string; minTier?: TenantRuntimeConfig['profile']['navigationTier'] }[]
-> = {
+// `when` mirrors the visibility rule of the matching tab in each *HubLayout.
+type HubSubmenuEntry = {
+  text: string;
+  path: string;
+  when?: (runtimeConfig: TenantRuntimeConfig) => boolean;
+};
+
+const atLeastStandard = (runtimeConfig: TenantRuntimeConfig) =>
+  NAVIGATION_TIER_RANK[runtimeConfig.profile.navigationTier ?? 'basic'] >=
+  NAVIGATION_TIER_RANK.standard;
+
+const HUB_SUBMENUS: Record<string, HubSubmenuEntry[]> = {
   billing: [
     { text: 'Ventas', path: '/billing/sales' },
-    { text: 'Consultas', path: '/billing/consult', minTier: 'standard' },
+    { text: 'Consultas', path: '/billing/consult', when: atLeastStandard },
     { text: 'Comprobantes', path: '/billing/documents' },
-    { text: 'Notas de crédito', path: '/billing/credit-notes', minTier: 'standard' },
+    { text: 'Notas de crédito', path: '/billing/credit-notes', when: atLeastStandard },
+  ],
+  catalog: [
+    { text: 'Productos', path: '/catalog/products' },
+    { text: 'Categorías', path: '/catalog/categories', when: atLeastStandard },
+    { text: 'Unidades', path: '/catalog/units', when: atLeastStandard },
+    { text: 'Precios', path: '/catalog/prices', when: atLeastStandard },
+    { text: 'Proveedores', path: '/catalog/suppliers', when: atLeastStandard },
+    { text: 'Métodos de pago', path: '/catalog/payment-methods', when: atLeastStandard },
+  ],
+  cashbox: [
+    { text: 'Cajas', path: '/cashbox/dashboard' },
+    { text: 'Registros', path: '/cashbox/registers' },
+    { text: 'Categorías', path: '/cashbox/categories' },
+  ],
+  inventory: [
+    { text: 'Existencias', path: '/inventory/stock' },
+    { text: 'Movimientos', path: '/inventory/movements', when: atLeastStandard },
+    { text: 'Operaciones', path: '/inventory/operations' },
+    { text: 'Reorden', path: '/inventory/reorder' },
+    {
+      text: 'Almacenes',
+      path: '/inventory/warehouses',
+      when: (runtimeConfig) => runtimeConfig.ui.inventory.showWarehouseManagement === true,
+    },
+  ],
+  subscriptions: [
+    { text: 'Planes', path: '/subscriptions/plans' },
+    { text: 'Suscripciones de clientes', path: '/subscriptions/customer-subscriptions' },
+    { text: 'Emisiones', path: '/subscriptions/runs' },
+    { text: 'Líneas', path: '/subscriptions/lines' },
   ],
 };
 
 function hubSubItems(path: string, runtimeConfig: TenantRuntimeConfig): AdminMenuSubItem[] {
-  const tier = NAVIGATION_TIER_RANK[runtimeConfig.profile.navigationTier ?? 'basic'];
   return (HUB_SUBMENUS[path] ?? [])
-    .filter((entry) => !entry.minTier || tier >= NAVIGATION_TIER_RANK[entry.minTier])
+    .filter((entry) => !entry.when || entry.when(runtimeConfig))
     .map(({ text, path: childPath }) => ({ text, path: childPath }));
 }
 

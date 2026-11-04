@@ -12,6 +12,7 @@ export const InventoryHubLayout = () => {
   return (
     <FeatureHubLayout
       density="compact"
+      className="hub-in-sidebar"
       title="Inventario"
       subtitle="Qué hay, qué falta y qué se movió. El kardex es la fuente de verdad."
       basePath="/inventory"

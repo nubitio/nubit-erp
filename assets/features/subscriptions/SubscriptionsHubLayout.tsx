@@ -5,6 +5,7 @@ export const SubscriptionsHubLayout = () => {
   return (
     <FeatureHubLayout
       density="compact"
+      className="hub-in-sidebar"
       title="Suscripciones"
       subtitle="Planes recurrentes y suscripciones de clientes (hosting, correo, etc.)."
       basePath="/subscriptions"

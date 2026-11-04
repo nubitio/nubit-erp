@@ -8,6 +8,14 @@ export function WorkspaceSearch({ menu }: { menu: AdminMenuItem[] }) {
   const navigate = useNavigate();
   const input = useRef<HTMLInputElement>(null);
   const [selected, setSelected] = useState<string | null>(null);
+  // The keyboard hint only makes sense (and fits) where a keyboard is likely.
+  const [wide, setWide] = useState(() => window.matchMedia('(min-width: 768px)').matches);
+  useEffect(() => {
+    const query = window.matchMedia('(min-width: 768px)');
+    const update = () => setWide(query.matches);
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
   const options = useMemo(
     () => workspaceDestinations(menu).map((item) => ({ value: item.path, label: item.text })),
     [menu],
@@ -28,7 +36,7 @@ export function WorkspaceSearch({ menu }: { menu: AdminMenuItem[] }) {
     <Combobox
       ref={input}
       aria-label="Buscar secciones del ERP"
-      placeholder="Buscar sección · Ctrl K"
+      placeholder={wide ? 'Buscar sección · Ctrl K' : 'Buscar…'}
       options={options}
       value={selected}
       onChange={(path) => {

@@ -1,7 +1,6 @@
 import { Outlet, useMatch } from 'react-router-dom';
 import { FeatureHubLayout } from '@nubitio/admin';
 import { useTenantRuntimeConfig } from '@shared/hooks';
-import './BillingHubLayout.scss';
 
 export const BillingHubLayout = () => {
   const { data: runtimeConfig } = useTenantRuntimeConfig();
@@ -14,7 +13,7 @@ export const BillingHubLayout = () => {
   return (
     <FeatureHubLayout
       density="compact"
-      className="billing-hub"
+      className="hub-in-sidebar"
       title="Facturación"
       subtitle="Ventas, consultas, comprobantes y notas de crédito en un solo flujo."
       basePath="/billing"

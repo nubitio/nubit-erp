@@ -204,4 +204,38 @@ describe('filterMenuByRuntimeConfig', () => {
       '/billing/credit-notes',
     ]);
   });
+
+  it('lists the other hubs as sub-items and follows the tab visibility rules', () => {
+    const menu: AdminMenuItem[] = [
+      { text: 'Catálogo', path: 'catalog', items: [] },
+      { text: 'Inventario', path: 'inventory', items: [] },
+      { text: 'Caja', path: 'cashbox', items: [] },
+    ];
+
+    const basic = filterMenuByRuntimeConfig(menu, runtimeConfig('basic'));
+    const paths = (key: string) =>
+      basic.find((item) => item.path === key)?.items?.map((child) => child.path);
+    expect(paths('catalog')).toEqual(['/catalog/products']);
+    // Inventory itself needs the standard tier, so basic tenants never see it.
+    expect(paths('inventory')).toBeUndefined();
+    expect(paths('cashbox')).toHaveLength(3);
+
+    const standard = filterMenuByRuntimeConfig(menu, runtimeConfig('standard'));
+    expect(
+      standard.find((item) => item.path === 'inventory')?.items?.map((child) => child.path),
+    ).toEqual([
+      '/inventory/stock',
+      '/inventory/movements',
+      '/inventory/operations',
+      '/inventory/reorder',
+    ]);
+
+    const withWarehouses = filterMenuByRuntimeConfig(
+      menu,
+      runtimeConfig('standard', { showWarehouseManagement: true }),
+    );
+    expect(
+      withWarehouses.find((item) => item.path === 'inventory')?.items?.map((child) => child.path),
+    ).toContain('/inventory/warehouses');
+  });
 });

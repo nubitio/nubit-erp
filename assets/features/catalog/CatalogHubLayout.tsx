@@ -13,6 +13,7 @@ export const CatalogHubLayout = () => {
   return (
     <FeatureHubLayout
       density="compact"
+      className="hub-in-sidebar"
       title="Catálogo"
       subtitle="Productos, categorías, unidades, precios y proveedores."
       basePath="/catalog"

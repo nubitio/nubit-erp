@@ -4,6 +4,7 @@ export const CashRegisterHubLayout = () => {
   return (
     <FeatureHubLayout
       density="compact"
+      className="hub-in-sidebar"
       title="Caja"
       subtitle="Abre el turno, cobra y cierra con arqueo. Si el efectivo no cuadra, se ve aquí."
       basePath="/cashbox"
