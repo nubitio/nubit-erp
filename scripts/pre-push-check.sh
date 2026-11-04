@@ -19,7 +19,7 @@ while read -r local_ref local_sha remote_ref remote_sha; do
         *) base_sha="$(git hash-object -t tree /dev/null)" ;;
     esac
 
-    files="$(git diff --name-only "$base_sha" "$local_sha" -- \
+    files="$(git diff --name-only --diff-filter=d "$base_sha" "$local_sha" -- \
         '*.js' '*.jsx' '*.ts' '*.tsx' '*.json' '*.css' '*.scss' '*.md')"
     if [ -n "$files" ]; then
         changed_frontend_files="${changed_frontend_files}${files}\n"
