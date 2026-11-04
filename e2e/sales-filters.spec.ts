@@ -43,7 +43,7 @@ test('sales filter operators fit their cells and remain usable by keyboard', asy
   await expect(clearCustomer).toHaveCount(0);
   const emptyOpenBox = (await openCustomer.boundingBox())!;
   expect(emptyOpenBox.x).toBe(openBox.x);
-  const operator = page.locator('#nb-datagrid-filter-op-grandTotal');
+  const operator = filters.locator('#nb-datagrid-filter-op-grandTotal');
   await expect(operator).toHaveAccessibleName('Filtrar Total: Igual');
   const box = (await operator.boundingBox())!;
   expect(box.width).toBeLessThanOrEqual(32);

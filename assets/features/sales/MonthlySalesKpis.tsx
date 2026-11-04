@@ -67,6 +67,8 @@ export const MonthlySalesKpis = ({ branchId }: { branchId?: string | null }) => 
         data?.currencies.map((item) => (
           <div key={item.currency} className="sales-monthly-summary__currency">
             <KpiMetricRow
+              layout="strip"
+              density="compact"
               testId={`sales-kpis-${item.currency}`}
               items={[
                 {

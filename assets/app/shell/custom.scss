@@ -126,3 +126,91 @@ html:not([data-visual-style='nubit']) .nb-admin-menu:not(.compact) {
   font-family: var(--font-family-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
   font-size: 0.9em;
 }
+
+// Every list page: title and record count share a line instead of stacking, which
+// returns ~25px of height to the table on all grid screens.
+.nb-datagrid--page .nb-datagrid__heading {
+  align-items: baseline;
+  column-gap: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+
+  h1 {
+    font-size: var(--font-size-xl);
+  }
+  p {
+    margin: 0;
+  }
+}
+
+// ── Cross-app consistency pass ───────────────────────────────────────────────
+
+// The top bar already names the module, so hubs only need their tabs.
+.nb-feature-hub--compact .nb-feature-hub__title {
+  display: none;
+}
+
+// Grids on the default "panel" appearance read like page headers (same type scale and
+// no card around the title), so list pages look alike whether or not they opted in.
+// Scoped to the page content: dialogs and embedded grids keep their panel look.
+.nb-admin-shell__content .nb-datagrid:not(.nb-datagrid--page) {
+  .nb-datagrid__toolbar {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding: 0;
+  }
+  .grid-header {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+}
+
+// Field filters above a grid share one row instead of a tall block of boxed fields.
+.nb-datagrid__filter-tools {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-2);
+
+  .nb-datagrid__filter-editors {
+    align-items: center;
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-4);
+    justify-content: flex-end;
+  }
+  .nb-datagrid__filter-editor {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    display: flex;
+    gap: var(--space-2);
+    padding: 0;
+    width: auto;
+
+    .nb-datagrid__sheet-label {
+      color: var(--text-secondary);
+      flex: 0 0 auto;
+      margin: 0;
+    }
+    > :not(.nb-datagrid__sheet-label) {
+      min-width: 7.5rem;
+      width: 11rem;
+    }
+  }
+  .nb-datagrid__active-filters {
+    flex: 1 0 100%;
+  }
+}
+
+// The dashboard nests two gutters (outer scroller + inner view wrapper); keep one so its
+// content aligns with every other page.
+.view-wrapper-scroll.efact-dashboard {
+  padding-inline: 0;
+}

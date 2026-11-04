@@ -117,3 +117,8 @@ html[data-visual-style='nubit'] .accounts-receivable-page {
     align-self: flex-start;
   }
 }
+
+// Keep the page title clear of the top bar and put the subtitle on the title's line.
+.accounts-receivable-page > .nb-page-header {
+  padding-top: var(--space-3);
+}

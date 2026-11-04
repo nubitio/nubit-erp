@@ -186,4 +186,22 @@ describe('filterMenuByRuntimeConfig', () => {
 
     expect(visiblePaths(filtered)).toEqual(['accounts-receivable']);
   });
+
+  it('turns Facturación into a group with its hub sections, gated by tier', () => {
+    const billing: AdminMenuItem[] = [{ text: 'Facturación', path: 'billing', items: [] }];
+
+    const basic = filterMenuByRuntimeConfig(billing, runtimeConfig('basic'));
+    expect(basic[0].items?.map((item) => item.path)).toEqual([
+      '/billing/sales',
+      '/billing/documents',
+    ]);
+
+    const standard = filterMenuByRuntimeConfig(billing, runtimeConfig('standard'));
+    expect(standard[0].items?.map((item) => item.path)).toEqual([
+      '/billing/sales',
+      '/billing/consult',
+      '/billing/documents',
+      '/billing/credit-notes',
+    ]);
+  });
 });

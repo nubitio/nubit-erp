@@ -4,3 +4,11 @@
     display: none;
   }
 }
+
+// With the sidebar open the sections live there as sub-items; keep the tabs when the
+// sidebar is collapsed or an overlay (tablet/mobile) so navigation never disappears.
+.nb-admin-shell__body.is-open.is-large .billing-hub.nb-feature-hub--compact {
+  .nb-feature-hub__header {
+    display: none;
+  }
+}

@@ -26,3 +26,9 @@
   margin-left: var(--page-padding);
   margin-right: var(--page-padding);
 }
+
+// With the sidebar open, "Cuentas por pagar/cobrar" are sidebar items: this tab row would
+// only repeat them. It stays for the collapsed sidebar and for tablet/mobile.
+.nb-admin-shell__body.is-open.is-large .finance-navigation {
+  display: none;
+}

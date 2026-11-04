@@ -53,10 +53,12 @@ for (const mobile of [false, true])
     await expect(summary.locator('.nb-kpi-metric-row').nth(0)).toContainText('5,915.08');
     await expect(summary.locator('.nb-kpi-metric-row').nth(1)).toContainText('100.50');
     const navigation = page.getByRole('navigation', { name: 'Secciones de finanzas' });
-    await expect(navigation.getByRole('link', { name: 'Por pagar' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    // The tab row is hidden while the sidebar is open; the sidebar item marks the page then.
+    await expect(
+      mobile
+        ? navigation.getByRole('link', { name: 'Por pagar' })
+        : page.getByRole('button', { name: 'Cuentas por pagar', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       mobile ? 390 : 1440,
     );
@@ -66,10 +68,16 @@ for (const mobile of [false, true])
       fullPage: true,
       animations: 'disabled',
     });
-    await navigation.getByRole('link', { name: 'Por cobrar' }).click();
+    // With the sidebar open the tab row is hidden and the sidebar carries the navigation.
+    if (mobile) {
+      await navigation.getByRole('link', { name: 'Por cobrar' }).click();
+    } else {
+      await page.getByRole('button', { name: 'Cuentas por cobrar', exact: true }).click();
+    }
     await expect(page).toHaveURL(/#\/accounts-receivable$/);
-    await expect(navigation.getByRole('link', { name: 'Por cobrar' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    await expect(
+      mobile
+        ? navigation.getByRole('link', { name: 'Por cobrar' })
+        : page.getByRole('button', { name: 'Cuentas por cobrar', exact: true }),
+    ).toHaveAttribute('aria-current', 'page');
   });

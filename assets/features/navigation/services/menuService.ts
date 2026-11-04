@@ -108,6 +108,27 @@ function menuItemSortIndex(item: AdminMenuItem): number {
   );
 }
 
+// Hub sections shown as sidebar sub-items. The hub pages stay routable, so bookmarks and
+// RBAC are unchanged; the in-page tab row is hidden on desktop while the sidebar is open.
+const HUB_SUBMENUS: Record<
+  string,
+  { text: string; path: string; minTier?: TenantRuntimeConfig['profile']['navigationTier'] }[]
+> = {
+  billing: [
+    { text: 'Ventas', path: '/billing/sales' },
+    { text: 'Consultas', path: '/billing/consult', minTier: 'standard' },
+    { text: 'Comprobantes', path: '/billing/documents' },
+    { text: 'Notas de crédito', path: '/billing/credit-notes', minTier: 'standard' },
+  ],
+};
+
+function hubSubItems(path: string, runtimeConfig: TenantRuntimeConfig): AdminMenuSubItem[] {
+  const tier = NAVIGATION_TIER_RANK[runtimeConfig.profile.navigationTier ?? 'basic'];
+  return (HUB_SUBMENUS[path] ?? [])
+    .filter((entry) => !entry.minTier || tier >= NAVIGATION_TIER_RANK[entry.minTier])
+    .map(({ text, path: childPath }) => ({ text, path: childPath }));
+}
+
 function normalizePath(path: unknown): string {
   return String(path ?? '')
     .replace(/^\/+/, '')
@@ -177,7 +198,13 @@ export function filterMenuByRuntimeConfig(
       return [];
     }
 
-    return [{ ...item, items: filteredChildren } satisfies AdminMenuItem];
+    const hubChildren = filteredChildren.length === 0 ? hubSubItems(path, runtimeConfig) : [];
+    return [
+      {
+        ...item,
+        items: hubChildren.length > 0 ? hubChildren : filteredChildren,
+      } satisfies AdminMenuItem,
+    ];
   });
 
   return filtered.sort((a, b) => {
