@@ -111,15 +111,6 @@ html:not([data-visual-style='nubit']) .nb-admin-menu:not(.compact) {
   }
 }
 
-// Grid filter-row operator selector (~ / = / …): @nubitio/crud renders it as an
-// accent-tinted pill, which reads as noise on every data grid. Neutralise it so
-// the filter row stays calm — same selector as the vendor rule, loaded after it.
-.nb-datagrid__filter-wrap > .nb-datagrid__filter-operator.nb-dropdown .nb-dropdown__trigger {
-  background: var(--surface-2);
-  border-color: var(--border-color);
-  color: var(--text-secondary);
-}
-
 // Build version next to the footer copyright — quiet, monospaced.
 .nb-admin-footer-version {
   color: var(--text-disabled);
