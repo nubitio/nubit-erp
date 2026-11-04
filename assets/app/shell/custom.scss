@@ -231,3 +231,10 @@ html:not([data-visual-style='nubit']) .nb-admin-menu:not(.compact) {
   text-overflow: ellipsis;
   word-break: normal;
 }
+
+// Inline links on dashboard cards: keep the target at the 24px WCAG minimum.
+.efact-dash-card__link {
+  align-items: center;
+  display: inline-flex;
+  min-height: 24px;
+}
