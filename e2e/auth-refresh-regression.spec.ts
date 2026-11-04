@@ -50,7 +50,9 @@ test.describe('Regresión de rutas web bajo /api/v1', () => {
     expect(movementsRequests).toBeLessThanOrEqual(2);
 
     await page.goto(`${baseUrl}/#/subscriptions/customer-subscriptions`);
-    await expect(page.getByText('Suscripciones', { exact: true }).first()).toBeVisible();
+    await expect(
+      page.getByRole('navigation', { name: 'Secciones de suscripciones' }).first(),
+    ).toBeVisible();
     await expect(page.getByText('Error interno del servidor')).toHaveCount(0);
   });
 });
