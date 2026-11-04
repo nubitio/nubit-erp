@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Billing\Controller\Api;
 
+use App\Billing\Invoice\Domain\InvoiceEmailException;
 use App\Billing\Invoice\Domain\InvoiceEmailUseCase;
 use Exception;
-use InvalidArgumentException;
 use League\Flysystem\FilesystemException;
 use Nubit\Platform\Http\ApiResponse;
 use Psr\Log\LoggerInterface;
@@ -38,7 +38,7 @@ class SendInvoiceEmail extends AbstractController
 
         $email = is_string($email) ? trim($email) : '';
         if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            throw new InvalidArgumentException('El correo indicado no es válido.');
+            throw InvoiceEmailException::invalidRecipient();
         }
 
         return $email;
@@ -51,6 +51,8 @@ class SendInvoiceEmail extends AbstractController
             $this->emailUseCase->__invoke($id, $this->recipient($request));
 
             return new ApiResponse(true, 'Email enviado');
+        } catch (InvoiceEmailException $e) {
+            return new ApiResponse(false, $e->getMessage());
         } catch (Exception|FilesystemException|TransportExceptionInterface $e) {
             $this->logger->error($e->getMessage(), ['exception' => $e]);
 

@@ -341,7 +341,14 @@ export function POSCheckoutPanel({
       setEmailStatus('sent');
     } catch (error) {
       setEmailStatus('error');
-      setEmailError(error instanceof Error ? error.message : 'No se pudo enviar el correo.');
+      const apiMessage = (error as { data?: { message?: unknown } } | null)?.data?.message;
+      setEmailError(
+        typeof apiMessage === 'string' && apiMessage !== ''
+          ? apiMessage
+          : error instanceof Error
+            ? error.message
+            : 'No se pudo enviar el correo.',
+      );
     }
   };
 

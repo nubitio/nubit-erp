@@ -56,6 +56,8 @@ services:
       APP_COOKIE_SECURE: 'false'
       DECOLECTA_TOKEN: '${DECOLECTA_TOKEN:-}'
       MAILER_FROM: '${MAILER_FROM:-noreply@nubit.pe}'
+      # Dev mail goes to Mailpit (UI on MAILPIT_UI_PORT); .env keeps a placeholder SMTP for other envs.
+      MAILER_DSN: '${DEV_MAILER_DSN:-smtp://mailpit:1025}'
       ONBOARDING_DOMAIN: '${ONBOARDING_DOMAIN:-localhost}'
       DEFAULT_URI: '${DEFAULT_URI:-http://localhost:8080}'
       PAYPAL_CLIENT_ID: '${PAYPAL_CLIENT_ID:-}'
@@ -144,6 +146,7 @@ services:
       MESSENGER_TRANSPORT_DSN: '${MESSENGER_TRANSPORT_DSN:-doctrine://control_plane?queue_name=default}'
       NUBIT_WORKER_HEARTBEAT_FILE: '/app/var/worker-async.heartbeat'
       MAILER_FROM: '${MAILER_FROM:-noreply@nubit.pe}'
+      MAILER_DSN: '${DEV_MAILER_DSN:-smtp://mailpit:1025}'
       OTEL_PHP_AUTOLOAD_ENABLED: 'false'
       E2E_SEED_ENABLED: '1'
       S3_ENDPOINT: '${S3_ENDPOINT:-http://object-storage:9000}'
@@ -164,6 +167,16 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
+
+  # Local mail catcher: every e-mail the app sends in dev lands here instead of a real inbox.
+  # Mail is queued on the `async` transport, so `messenger_worker` must be running to deliver it.
+  mailpit:
+    image: axllent/mailpit:v1.31.2
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:${MAILPIT_UI_PORT:-8026}:8025'
+    environment:
+      MP_MAX_MESSAGES: '500'
 
   vite:
     image: node:24.14.1

@@ -18,6 +18,10 @@ services:
       OTEL_SDK_DISABLED: 'true'
       OTEL_PHP_AUTOLOAD_ENABLED: 'false'
 
+  # Dev-only mail catcher; CI never sends real mail.
+  mailpit:
+    profiles: ['dev-mail']
+
   vite:
     ports: !reset []
     volumes: !override

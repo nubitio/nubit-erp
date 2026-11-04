@@ -45,6 +45,7 @@ make migrate
 - API docs: http://localhost:8080/api/docs
 - Vite dev server: http://localhost:5174 (puerto del host; Vite escucha en 5173 dentro del contenedor)
 - Health: http://localhost:8080/health
+- Mailpit (correo de desarrollo): http://localhost:8026 (`MAILPIT_UI_PORT` para cambiarlo). El correo sale por la cola `async`: levanta `docker compose up -d messenger_worker` para que se entregue.
 
 ## Variables de entorno críticas
 

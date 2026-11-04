@@ -47,6 +47,11 @@ readonly class InvoiceEmailUseCase
     {
         $voucher = $this->taxDocumentRepository->getVoucherByTaxDocumentId($taxDocumentId);
 
+        $to = $recipient ?: $voucher->customer_email;
+        if (!$to) {
+            throw InvoiceEmailException::missingRecipient();
+        }
+
         $type = match ($voucher->voucher_type) {
             '01' => 'FACTURA',
             '03' => 'BOLETA',
@@ -73,7 +78,11 @@ readonly class InvoiceEmailUseCase
 
         $subject = $companyName . ': Tu comprobante de pago electrónico - ' . $docName;
         $xmlPath = Constants::INVOICE_DIR . '/' . $docFullName . '/' . $docFullName . '.xml';
-        $xmlContent = $this->fileManager->read($xmlPath);
+        try {
+            $xmlContent = $this->fileManager->read($xmlPath);
+        } catch (FilesystemException $e) {
+            throw InvoiceEmailException::xmlNotReady($docName, $e);
+        }
         $pdfResponse = $this->billPdfUseCase->__invoke($taxDocumentId);
         $pdfContent = $pdfResponse->file;
 
@@ -90,13 +99,22 @@ readonly class InvoiceEmailUseCase
 
         $email = new Email()
             ->from($this->mailerFrom)
-            ->to($recipient ?: $voucher->customer_email ?: 'johangm90@gmail.com')
-            ->cc(strval($this->settings->get('email_accounting') ?: 'johangm90@gmail.com'))
-            ->bcc(strval($this->settings->get('app_alert_recipients') ?: 'johangm90@gmail.com'))
+            ->to($to)
             ->subject($subject)
             ->html($content)
             ->attach($xmlContent, $docFullName . '.xml')
             ->attach($pdfContent, $docFullName . '.pdf');
+
+        // Copies only go to addresses the tenant configured; there is no built-in fallback inbox.
+        $accounting = strval($this->settings->get('email_accounting') ?: '');
+        if ($accounting !== '') {
+            $email->cc($accounting);
+        }
+        $alerts = strval($this->settings->get('app_alert_recipients') ?: '');
+        if ($alerts !== '') {
+            $email->bcc($alerts);
+        }
+
         $this->mailer->send($email);
     }
 }

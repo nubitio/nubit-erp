@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Billing\Controller;
 
 use App\Billing\Controller\Api\SendInvoiceEmail;
+use App\Billing\Invoice\Domain\InvoiceEmailException;
 use App\Billing\Invoice\Domain\InvoiceEmailUseCase;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -46,6 +47,17 @@ final class SendInvoiceEmailTest extends TestCase
         ));
 
         self::assertSame(400, $response->getStatusCode());
+    }
+
+    public function testReportsActionableErrorsInsteadOfAGenericOne(): void
+    {
+        $useCase = $this->createMock(InvoiceEmailUseCase::class);
+        $useCase->method('__invoke')->willThrowException(InvoiceEmailException::missingRecipient());
+
+        $response = (new SendInvoiceEmail($useCase, new NullLogger()))($this->request('doc-1', ''));
+
+        self::assertSame(400, $response->getStatusCode());
+        self::assertStringContainsString('no tiene correo', (string) $response->getContent());
     }
 
     private function request(string $id, string $body): Request
