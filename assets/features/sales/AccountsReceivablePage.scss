@@ -122,3 +122,8 @@ html[data-visual-style='nubit'] .accounts-receivable-page {
 .accounts-receivable-page > .nb-page-header {
   padding-top: var(--space-3);
 }
+
+// The balance line sits right under the header divider; give it room.
+html[data-visual-style='nubit'] .accounts-receivable-page__balance {
+  margin: var(--space-3) 0 16px;
+}
