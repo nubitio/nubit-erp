@@ -6,6 +6,7 @@ namespace App\Billing\Despatch\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Billing\Despatch\Domain\DespatchGuideValidator;
 use App\Billing\Despatch\Entity\DespatchGuide;
 use App\Billing\Despatch\Repository\DespatchGuideRepository;
 use App\Identity\Auth\BranchContextService;
@@ -30,6 +31,7 @@ readonly class DespatchGuideProcessor implements ProcessorInterface
         private BranchContextService $branchContextService,
         private BranchRepository $branchRepository,
         private DespatchGuideRepository $guideRepository,
+        private DespatchGuideValidator $validator = new DespatchGuideValidator(),
     ) {}
 
     /**
@@ -50,6 +52,11 @@ readonly class DespatchGuideProcessor implements ProcessorInterface
                 throw new ServiceException('La guía de remisión debe tener al menos un ítem.');
             }
 
+            $errors = $this->validator->validate($data);
+            if ($errors !== []) {
+                throw new ServiceException(implode(' ', $errors));
+            }
+
             $branchId = $this->branchContextService->getCurrentBranchId();
             if ($branchId !== null) {
                 $data->setBranch($this->branchRepository->find($branchId));
@@ -58,8 +65,8 @@ readonly class DespatchGuideProcessor implements ProcessorInterface
             $next = $this->guideRepository->allocateNextNumber($data->getSeries());
             $data->setNumber((string) $next);
         } else {
-            if ($data->isProcessed()) {
-                throw new ServiceException('No se puede modificar una guía ya enviada a SUNAT.');
+            if ($data->isAccepted()) {
+                throw new ServiceException('No se puede modificar una guía aceptada por SUNAT.');
             }
             $data->setUpdatedAt(new \DateTime());
         }

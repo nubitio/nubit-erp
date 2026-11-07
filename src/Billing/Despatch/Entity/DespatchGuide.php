@@ -704,4 +704,20 @@ class DespatchGuide
     {
         return $this->sunatStatus !== null;
     }
+
+    /**
+     * SUNAT accepted the guide: CDR code 0 (accepted) or 4000+ (accepted with
+     * observations). Codes 0100–3999 are exceptions/rejections and leave the
+     * guide unregistered, so it may be sent again.
+     */
+    public function isAccepted(): bool
+    {
+        if ($this->sunatStatus === null || !ctype_digit($this->sunatStatus)) {
+            return false;
+        }
+
+        $code = (int) $this->sunatStatus;
+
+        return $code === 0 || $code >= 4000;
+    }
 }
