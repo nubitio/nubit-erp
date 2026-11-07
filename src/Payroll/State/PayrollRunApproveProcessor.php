@@ -9,6 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Identity\Security\Security;
 use App\Payroll\Dto\PayrollRunApproveDto;
 use App\Payroll\Entity\PayrollRun;
+use App\Payroll\Service\PayrollAccountingService;
 use App\Payroll\Service\PayrollRunService;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,6 +26,7 @@ readonly class PayrollRunApproveProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private Security $security,
         private PayrollRunService $payrollRunService,
+        private ?PayrollAccountingService $payrollAccounting = null,
     ) {}
 
     /**
@@ -50,6 +52,10 @@ readonly class PayrollRunApproveProcessor implements ProcessorInterface
 
         $this->payrollRunService->transitionTo($payrollRun, PayrollRun::APPROVED);
         $payrollRun->setApprovedAt(new DateTimeImmutable());
+
+        // Posts synchronously before our flush: if the ledger rejects the entry
+        // the approval is never committed.
+        $this->payrollAccounting?->postAccrual($payrollRun);
 
         $this->entityManager->flush();
 

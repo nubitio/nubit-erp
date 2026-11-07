@@ -7,6 +7,7 @@ namespace App\Billing\Despatch\Domain;
 use App\Billing\Despatch\Builder\DespatchBuilder;
 use App\Billing\Despatch\Entity\DespatchGuide;
 use App\Billing\Despatch\Repository\DespatchGuideRepository;
+use App\Billing\Entity\TaxDocument;
 use App\Billing\Sunat\Model\Response\DocumentResponse;
 use App\Efact\Config\EfactConstants as Constants;
 use Doctrine\ORM\EntityManagerInterface;
@@ -36,13 +37,41 @@ readonly class DespatchSendUseCase
             throw new NotFoundException('Guía de remisión no encontrada.');
         }
 
-        $despatch = $this->builder->build($guide);
+        $despatch = $this->builder->build($guide, $this->relatedDocument($guide));
         $response = $this->despatchRepository->sendDespatch($despatch);
         $response->name = $despatch->getName();
 
         $this->persistResponse($guide, $response);
 
         return $response;
+    }
+
+    /**
+     * Factura o boleta de la venta que origina el traslado, si la guía está ligada a una.
+     *
+     * @return array{type: string, number: string}|null
+     */
+    private function relatedDocument(DespatchGuide $guide): ?array
+    {
+        $sale = $guide->getSaleRecord();
+        if ($sale === null) {
+            return null;
+        }
+
+        $documents = $this->entityManager->getRepository(TaxDocument::class)->findBy(
+            ['saleRecord' => $sale, 'documentType' => ['01', '03']],
+            ['issueDate' => 'DESC'],
+            1,
+        );
+        $document = $documents[0] ?? null;
+        if (!$document instanceof TaxDocument) {
+            return null;
+        }
+
+        return [
+            'type' => $document->getDocumentType(),
+            'number' => $document->getSeries() . '-' . $document->getNumber(),
+        ];
     }
 
     private function persistResponse(DespatchGuide $guide, DocumentResponse $response): void

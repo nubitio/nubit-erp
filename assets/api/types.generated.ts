@@ -3821,6 +3821,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/supplier-bills-aging": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a SupplierBillAging resource.
+         * @description Retrieves a SupplierBillAging resource.
+         */
+        get: operations["api_supplier-bills-aging_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/supplier-bills-aging/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a SupplierBillAging resource.
+         * @description Retrieves a SupplierBillAging resource.
+         */
+        get: operations["supplier_bills_aging_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/supplier-bills-summary": {
         parameters: {
             query?: never;
@@ -8576,6 +8616,7 @@ export interface components {
          */
         "PayrollRun.PayrollRunPayDto": {
             id?: string;
+            paymentMethodId?: number | null;
         };
         /**
          * @description A payroll processing batch for one Company and period. `type` decides
@@ -13496,6 +13537,8 @@ export interface components {
             /** Format: date-time */
             readonly createdAt?: string;
         };
+        SupplierBillAging: Record<string, never>;
+        "SupplierBillAging.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         SupplierBillSummary: Record<string, never>;
         "SupplierBillSummary.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         "SupplierPayment-supplier_bill.read": {
@@ -27513,6 +27556,86 @@ export interface operations {
                     "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
                     "application/problem+json": components["schemas"]["ConstraintViolation"];
                     "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_supplier-bills-aging_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierBillAging"];
+                    "application/ld+json": components["schemas"]["SupplierBillAging.jsonld"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    supplier_bills_aging_export: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierBillAging"];
+                    "application/ld+json": components["schemas"]["SupplierBillAging.jsonld"];
+                };
+            };
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };

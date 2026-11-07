@@ -52,6 +52,8 @@ it('keeps the versioned public contract complete and explicit', function (): voi
             '/api/v1/ple/purchases',
             '/api/v1/ple/diary',
             '/api/v1/ple/ledger',
+            '/api/v1/sire/rvie',
+            '/api/v1/sire/rvie/preview',
             '/api/v1/payroll/{payrollRunId}/plame',
             '/api/v1/exchange-rate',
             '/api/v1/exchange-rate/sync',

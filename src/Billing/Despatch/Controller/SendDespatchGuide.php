@@ -37,8 +37,8 @@ final class SendDespatchGuide extends AbstractController
             throw new ServiceException('Guía de remisión no encontrada.');
         }
 
-        if ($guide->isProcessed()) {
-            throw new ServiceException('La guía de remisión ya fue enviada a SUNAT.');
+        if ($guide->isAccepted()) {
+            throw new ServiceException('La guía de remisión ya fue aceptada por SUNAT.');
         }
 
         $this->messageBus->dispatch(

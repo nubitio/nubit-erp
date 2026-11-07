@@ -15,6 +15,7 @@ use Greenter\Model\Despatch\Driver;
 use Greenter\Model\Despatch\Shipment;
 use Greenter\Model\Despatch\Transportist;
 use Greenter\Model\Despatch\Vehicle;
+use Greenter\Model\Sale\Document;
 
 /**
  * Construye el modelo Greenter {@see Despatch} (Guía de Remisión Remitente) a
@@ -30,7 +31,10 @@ final readonly class DespatchBuilder
         private BillUtilsInterface $billUtils,
     ) {}
 
-    public function build(DespatchGuide $guide): Despatch
+    /**
+     * @param array{type: string, number: string}|null $relatedDocument Comprobante de venta que origina el traslado (tipo SUNAT, serie-número)
+     */
+    public function build(DespatchGuide $guide, ?array $relatedDocument = null): Despatch
     {
         $recipientAddress = new Address();
         $recipientAddress->setDireccion($guide->getDestinationAddress());
@@ -54,6 +58,12 @@ final readonly class DespatchBuilder
             ->setEnvio($this->buildShipment($guide))
             ->setDetails($this->buildDetails($guide));
 
+        if ($relatedDocument !== null) {
+            $related = new Document();
+            $related->setTipoDoc($relatedDocument['type'])->setNroDoc($relatedDocument['number']);
+            $despatch->setRelDoc($related);
+        }
+
         return $despatch;
     }
 
@@ -65,6 +75,7 @@ final readonly class DespatchBuilder
         $shipment = new Shipment();
         $shipment
             ->setCodTraslado($guide->getTransferReason())
+            ->setDesTraslado($guide->getTransferReasonDescription())
             ->setModTraslado($guide->getTransportMode())
             ->setFecTraslado($this->toDateTime($guide->getTransferDate()))
             ->setPesoTotal((float) $guide->getTotalWeight())
