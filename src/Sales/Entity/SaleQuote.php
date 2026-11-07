@@ -45,14 +45,15 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
-        new GetCollection(),
-        new Get(),
-        new Post(),
-        new Patch(),
-        new Delete(),
+        new GetCollection(security: "is_granted('perm:sale_quotes.view')"),
+        new Get(security: "is_granted('perm:sale_quotes.view')"),
+        new Post(security: "is_granted('perm:sale_quotes.create')"),
+        new Patch(security: "is_granted('perm:sale_quotes.edit')"),
+        new Delete(security: "is_granted('perm:sale_quotes.void')"),
         new Post(
             uriTemplate: '/sale-quotes/{id}/convert',
             normalizationContext: ['groups' => ['sale_record:read']],
+            security: "is_granted('perm:sale_quotes.convert') and is_granted('perm:sales.create')",
             // SaleQuoteConvertDto has no serialization groups of its own —
             // without this override, the class-level denormalizationContext
             // below (sale_quote:write group) strips every property before
@@ -68,6 +69,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Post(
             uriTemplate: '/sale-quotes/{id}/send',
             denormalizationContext: [],
+            security: "is_granted('perm:sale_quotes.send')",
             input: SaleQuoteSendDto::class,
             output: SaleQuote::class,
             processor: SaleQuoteSendProcessor::class,

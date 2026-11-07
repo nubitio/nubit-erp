@@ -11,8 +11,10 @@ use App\Identity\Security\Security;
 use App\Sales\Entity\SaleQuote;
 use App\Sales\Service\SaleQuoteService;
 use Doctrine\ORM\EntityManagerInterface;
+use Nubit\Platform\Exception\ValidationException;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 /**
@@ -60,6 +62,7 @@ readonly class SaleQuoteProcessor implements ProcessorInterface
         if ($isNew) {
             $data->setCreatedBy($user->userId);
             $data->setSellerUserId($user->userId);
+            $this->assertCreatableStatus($data);
         } else {
             $data->setUpdatedBy($user->userId);
 
@@ -73,6 +76,7 @@ readonly class SaleQuoteProcessor implements ProcessorInterface
             if ($originalStatus !== $requestedStatus) {
                 $data->setStatus($originalStatus);
                 $this->saleQuoteService->transitionTo($data, $requestedStatus);
+                $this->assertSendPermission($data, $originalStatus);
             }
         }
 
@@ -86,5 +90,39 @@ readonly class SaleQuoteProcessor implements ProcessorInterface
         $this->saleQuoteService->recomputeTotals($data);
 
         return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
+    }
+
+    /**
+     * Creation stays on the transition graph: draft, or sent when the caller
+     * also holds sale_quotes.send. converted/accepted/expired are not
+     * client-writable here — conversion is the convert operation.
+     */
+    private function assertCreatableStatus(SaleQuote $quote): void
+    {
+        $status = $quote->getStatus();
+        if ($status === SaleQuote::STATUS_DRAFT) {
+            return;
+        }
+
+        if ($status === SaleQuote::STATUS_SENT) {
+            $this->assertSendPermission($quote, SaleQuote::STATUS_DRAFT);
+
+            return;
+        }
+
+        throw ValidationException::withErrors([
+            'status' => ['Una cotización nueva solo puede empezar en borrador o enviada.'],
+        ]);
+    }
+
+    private function assertSendPermission(SaleQuote $quote, string $revertStatus): void
+    {
+        if ($quote->getStatus() !== SaleQuote::STATUS_SENT || $this->security->hasPermission('sale_quotes.send')) {
+            return;
+        }
+
+        $quote->setStatus($revertStatus);
+
+        throw new AccessDeniedHttpException('No tienes permiso para enviar cotizaciones.');
     }
 }
