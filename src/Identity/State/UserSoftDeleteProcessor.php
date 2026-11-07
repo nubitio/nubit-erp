@@ -32,6 +32,8 @@ final readonly class UserSoftDeleteProcessor implements ProcessorInterface
     {
         if ($data->getDeletedAt() === null) {
             $data->setDeletedAt(new DateTimeImmutable());
+            // Release the e-mail: the unique index also covers soft-deleted rows.
+            $data->setEmail(null);
         }
 
         $this->persistProcessor->process($data, $operation, $uriVariables, $context);

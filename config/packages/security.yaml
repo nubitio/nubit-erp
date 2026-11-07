@@ -111,6 +111,10 @@ security:
         - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/refresh, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/impersonate/consume, roles: PUBLIC_ACCESS }
+        # Identity module (see config/packages/nubit_admin_identity.php): whoever needs these cannot sign in.
+        # `/api/invitations/<token>` (preview/accept) is public; POST /api/invitations (no segment) is not.
+        - { path: '^/api/auth/password/(forgot|reset)$', roles: PUBLIC_ACCESS }
+        - { path: '^/api/invitations/[^/]+(/accept)?$', roles: PUBLIC_ACCESS }
         # E2E seed/reset routes — only registered in dev/test (config/routes/e2e.yaml),
         # so this rule is a no-op in prod (routes 404 before access_control is checked).
         - { path: '^/api/test/e2e/(seed|reset)', roles: PUBLIC_ACCESS }

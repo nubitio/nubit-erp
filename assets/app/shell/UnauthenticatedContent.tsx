@@ -4,6 +4,18 @@ import { lazyNamed } from '@app/router/lazy';
 import { buildLoginRedirectSearch } from '@shared/lib/authRedirect';
 
 const LoginPage = lazyNamed(() => import('@features/auth/LoginPage'), 'LoginPage');
+const ForgotPasswordPage = lazyNamed(
+  () => import('@features/auth/IdentityPages'),
+  'ForgotPasswordPage',
+);
+const ResetPasswordPage = lazyNamed(
+  () => import('@features/auth/IdentityPages'),
+  'ResetPasswordPage',
+);
+const AcceptInvitationPage = lazyNamed(
+  () => import('@features/auth/IdentityPages'),
+  'AcceptInvitationPage',
+);
 const ImpersonateBridgePage = lazyNamed(
   () => import('@features/auth/ImpersonateBridgePage'),
   'ImpersonateBridgePage',
@@ -34,6 +46,30 @@ export const UnauthenticatedContent = () => {
         element={
           <Suspense fallback={<AuthRouteLoading />}>
             <ImpersonateBridgePage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/forgot-password"
+        element={
+          <Suspense fallback={<AuthRouteLoading />}>
+            <ForgotPasswordPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          <Suspense fallback={<AuthRouteLoading />}>
+            <ResetPasswordPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/accept-invitation"
+        element={
+          <Suspense fallback={<AuthRouteLoading />}>
+            <AcceptInvitationPage />
           </Suspense>
         }
       />

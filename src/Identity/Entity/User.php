@@ -12,6 +12,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use App\Efact\Validator as AppAssert;
 use App\Identity\Entity\Role;
 use App\Identity\Repository\UserRepository;
 use App\Identity\State\UserPasswordHasher;
@@ -28,6 +29,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
+#[AppAssert\UniqueEntity(fields: ['email'], message: 'Ya existe un usuario con este correo.')]
 #[SoftDeletable]
 #[QuotaResource('users')]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -109,6 +111,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'rol_id', referencedColumnName: 'rol_id', nullable: false)]
     private Role $role;
+
+    #[Assert\Email]
+    #[Assert\Length(max: 180)]
+    #[Groups(['user:read', 'user:create', 'user:update'])]
+    #[ApiProperty(description: 'user.email.label')]
+    #[ORM\Column(length: 180, nullable: true)]
+    private ?string $email = null;
+
+    #[Groups(['user:read'])]
+    #[ApiProperty(description: 'user.last_login_at.label', writable: false)]
+    #[ORM\Column(name: 'last_login_at', type: 'datetime_immutable', nullable: true)]
+    private ?DateTimeImmutable $lastLoginAt = null;
 
     #[ORM\Column(name: 'deleted_at', type: 'datetime_immutable', nullable: true, options: ['default' => null])]
     private ?DateTimeImmutable $deletedAt = null;
@@ -200,6 +214,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         $this->role = $role;
 
         return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): static
+    {
+        $email = $email === null ? null : trim($email);
+        $this->email = $email === '' ? null : $email;
+
+        return $this;
+    }
+
+    public function getLastLoginAt(): ?DateTimeImmutable
+    {
+        return $this->lastLoginAt;
     }
 
     public function getDeletedAt(): ?DateTimeImmutable

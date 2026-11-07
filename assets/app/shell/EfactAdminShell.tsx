@@ -19,6 +19,7 @@ import { UserMenuSection } from './components/UserMenuSection';
 import { NotificationPanel } from './components/NotificationPanel';
 import { BranchPicker } from './components/BranchPicker';
 import { ChangePasswordModal } from './components/ChangePasswordModal';
+import { TwoFactorModal } from './components/TwoFactorModal';
 import { useFeature, useTenantRuntimeConfig } from '@shared/hooks';
 import { useAuth } from '@app/contexts/auth';
 import { WorkspaceSearch } from './components/WorkspaceSearch';
@@ -43,6 +44,7 @@ export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShe
   const [menuItems, setMenuItems] = useState<AdminMenuItem[]>([]);
   const [showBranchPicker, setShowBranchPicker] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
   // Track whether the drawer has ever been opened so the Assistant component
@@ -154,6 +156,7 @@ export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShe
             onAction={close}
             onChangeBranch={() => setShowBranchPicker(true)}
             onChangePassword={() => setShowChangePassword(true)}
+            onTwoFactor={() => setShowTwoFactor(true)}
           />
         )}
         renderThemeSwitcher={() => <ThemeSwitcher />}
@@ -206,6 +209,9 @@ export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShe
         visible={showChangePassword}
         onClose={() => setShowChangePassword(false)}
       />
+      {window.app_identity && (
+        <TwoFactorModal visible={showTwoFactor} onClose={() => setShowTwoFactor(false)} />
+      )}
     </>
   );
 };
