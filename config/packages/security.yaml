@@ -118,6 +118,7 @@ security:
         # integrations. They must be evaluated before the integration-only
         # catch-all below.
         - { path: ^/api/v1/ple, roles: ROLE_ADMIN }
+        - { path: ^/api/v1/sire, roles: ROLE_ADMIN }
         - { path: ^/api/v1/bank-reconciliation, roles: ROLE_USER }
         - { path: ^/api/v1/bank-statement-imports, roles: ROLE_USER }
         - { path: ^/api/v1/onboarding, roles: ROLE_USER }
