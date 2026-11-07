@@ -63,14 +63,3 @@ jobs:
             '{schema_version: 1, tag: $tag, commit: $commit, image_ref: $image_ref}' \
             > deployment.json
           gh release upload "$RELEASE_TAG" deployment.json
-
-  deploy:
-    needs: [version, build, manifest]
-    uses: ./.github/workflows/deploy.yml
-    permissions:
-      contents: read
-    with:
-      environment: prod
-      image_ref: ${{ needs.build.outputs.image_ref }}
-      ref: ${{ needs.version.outputs.commit }}
-    secrets: inherit

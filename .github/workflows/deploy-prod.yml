@@ -4,21 +4,26 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Published release to promote (v1.2.3); uses its existing image
+        description: Published release to promote (v1.2.3). Uses the digest already recorded in that release's deployment.json. Does not rebuild.
         required: true
         type: string
-  release:
-    types: [published]
+      run_migrations:
+        description: >-
+          Apply forward database migrations with this promotion. Default false.
+          Turn on only after a backup exists and the schema change still works
+          with the previous image. Restoring an older image does not undo DDL.
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 jobs:
   resolve:
-    if: github.event_name == 'workflow_dispatch' || !github.event.release.prerelease
     uses: ./.github/workflows/resolve-release.yml
     with:
-      release_tag: ${{ inputs.release_tag || github.event.release.tag_name }}
+      release_tag: ${{ inputs.release_tag }}
     secrets: inherit
 
   deploy-production:
@@ -29,4 +34,6 @@ jobs:
       # APP_URL is the required smoke target configured in the prod environment.
       image_ref: ${{ needs.resolve.outputs.image_ref }}
       ref: ${{ needs.resolve.outputs.commit }}
+      # Boolean, not the string "false". Omission on the reusable workflow stays false.
+      prod_migrations: ${{ inputs.run_migrations == true }}
     secrets: inherit
