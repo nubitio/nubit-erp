@@ -4,21 +4,18 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Published release to promote (v1.2.3); uses its existing image
+        description: Published release to promote (v1.2.3). Uses the digest already recorded in that release's deployment.json. Does not rebuild.
         required: true
         type: string
-  release:
-    types: [published]
 
 permissions:
   contents: read
 
 jobs:
   resolve:
-    if: github.event_name == 'workflow_dispatch' || !github.event.release.prerelease
     uses: ./.github/workflows/resolve-release.yml
     with:
-      release_tag: ${{ inputs.release_tag || github.event.release.tag_name }}
+      release_tag: ${{ inputs.release_tag }}
     secrets: inherit
 
   deploy-production:
