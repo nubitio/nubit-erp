@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Reporting\Sire;
 
-/** Cliente del comprobante: tipo (Tabla 2), número de documento y nombre. */
-final readonly class RvieCustomer
+/** Cliente (RVIE) o proveedor (RCE) del comprobante: tipo de documento (Tabla 2), número y nombre. */
+final readonly class SireParty
 {
     public function __construct(
         public string $docType,
@@ -15,7 +15,7 @@ final readonly class RvieCustomer
 
     /**
      * Deriva el tipo del número: 11 dígitos RUC (6), 8 dígitos DNI (1), otro sin documento (0).
-     * Sin documento se informa como consumidor «VARIOS».
+     * Sin documento se informa como «VARIOS» (consumidor o proveedor sin datos).
      */
     public static function fromStored(?string $document, ?string $name): self
     {

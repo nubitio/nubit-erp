@@ -223,6 +223,20 @@ paths:
       security: [{ TenantJwt: [] }]
       x-required-role: ROLE_ADMIN
       responses: { '200': { $ref: '#/components/responses/Zip' }, '400': { $ref: '#/components/responses/BadRequest' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /api/v1/sire/rce/preview:
+    get:
+      operationId: previewSireRce
+      tags: [Reporting]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_ADMIN
+      responses: { '200': { $ref: '#/components/responses/Json' }, '400': { $ref: '#/components/responses/BadRequest' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /api/v1/sire/rce:
+    get:
+      operationId: downloadSireRce
+      tags: [Reporting]
+      security: [{ TenantJwt: [] }]
+      x-required-role: ROLE_ADMIN
+      responses: { '200': { $ref: '#/components/responses/Zip' }, '400': { $ref: '#/components/responses/BadRequest' }, '401': { $ref: '#/components/responses/Unauthenticated' }, '403': { $ref: '#/components/responses/Forbidden' } }
   /api/v1/payroll/{payrollRunId}/plame:
     get:
       operationId: downloadPayrollPlame

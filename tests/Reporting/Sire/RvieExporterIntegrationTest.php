@@ -62,10 +62,10 @@ final class RvieExporterIntegrationTest extends KernelTestCase
 
         $result = new RvieExporter($db, $company)->export('202610');
 
-        self::assertSame(4, $result['recordCount']);
-        self::assertSame([['document' => 'B001-00000004 03', 'reason' => 'Dado de baja']], $result['excluded']);
+        self::assertSame(4, $result->recordCount);
+        self::assertSame([['document' => 'B001-00000004 03', 'reason' => 'Dado de baja']], $result->excluded);
 
-        $lines = explode("\r\n", rtrim($result['content'], "\r\n"));
+        $lines = explode("\r\n", rtrim($result->content, "\r\n"));
         self::assertCount(4, $lines);
         $f = array_map(static fn(string $l): array => explode('|', substr($l, 0, -1)), $lines);
         foreach ($f as $fields) {
@@ -98,18 +98,18 @@ final class RvieExporterIntegrationTest extends KernelTestCase
         ]);
         self::assertSame('20.00', $f[3][14]);
 
-        self::assertSame(['B001-00000005 03: sin líneas: la base se informó como gravada.'], $result['warnings']);
+        self::assertSame(['B001-00000005 03: sin líneas: la base se informó como gravada.'], $result->warnings);
 
         $zipPath = tempnam(sys_get_temp_dir(), 'rvie_test_');
         self::assertIsString($zipPath);
-        file_put_contents($zipPath, $result['zip']);
+        file_put_contents($zipPath, $result->zip);
         $zip = new ZipArchive();
         self::assertTrue($zip->open($zipPath));
-        self::assertSame($result['txtName'], $zip->getNameIndex(0));
-        self::assertSame($result['content'], $zip->getFromIndex(0));
+        self::assertSame($result->txtName, $zip->getNameIndex(0));
+        self::assertSame($result->content, $zip->getFromIndex(0));
         $zip->close();
         unlink($zipPath);
-        self::assertSame('LE2060123456720261000140400021112.zip', $result['zipName']);
+        self::assertSame('LE2060123456720261000140400021112.zip', $result->zipName);
     }
 
     private function connection(): Connection
@@ -170,10 +170,10 @@ final class RvieExporterIntegrationTest extends KernelTestCase
 
         $result = new RvieExporter($this->connection(), $company)->export('199001');
 
-        self::assertSame(0, $result['recordCount']);
-        self::assertSame('', $result['content']);
-        self::assertSame('', $result['zip']);
-        self::assertSame([], $result['excluded']);
-        self::assertStringEndsWith('2060123456719900100140400021112.zip', $result['zipName']);
+        self::assertSame(0, $result->recordCount);
+        self::assertSame('', $result->content);
+        self::assertSame('', $result->zip);
+        self::assertSame([], $result->excluded);
+        self::assertStringEndsWith('2060123456719900100140400021112.zip', $result->zipName);
     }
 }

@@ -7,7 +7,7 @@ namespace App\Reporting\Sire;
 use Brick\Math\BigDecimal;
 
 /** Lectura tipada de una fila de base de datos (todo llega como texto o nulo). */
-final readonly class RvieRow
+final readonly class SireRow
 {
     /**
      * @param array<string, mixed> $data
