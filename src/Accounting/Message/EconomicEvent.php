@@ -76,6 +76,22 @@ final readonly class EconomicEvent
     /** Void of a direct supplier expense bill: debit payables, credit expense. */
     public const string SUPPLIER_BILL_REVERSE = 'SUPPLIER_BILL_REVERSE';
 
+    public const string SOURCE_PAYROLL_ACCRUAL = 'payroll_accrual';
+
+    public const string SOURCE_PAYROLL_PAYMENT = 'payroll_payment';
+
+    /**
+     * Payroll run approved: expense and employer/employee liabilities.
+     * Needs `components` (see DefaultPostingService::payrollAccrualLines()).
+     */
+    public const string PAYROLL_ACCRUAL = 'PAYROLL_ACCRUAL';
+
+    /** Payroll run paid from cash: debit remuneraciones por pagar, credit caja. */
+    public const string PAYROLL_PAYMENT_CASH = 'PAYROLL_PAYMENT_CASH';
+
+    /** Payroll run paid from bank: debit remuneraciones por pagar, credit banco. */
+    public const string PAYROLL_PAYMENT_BANK = 'PAYROLL_PAYMENT_BANK';
+
     public function __construct(
         public string $source,
         public string $sourceId,
@@ -86,5 +102,7 @@ final readonly class EconomicEvent
         public string $tax = '0.00',
         public string $cogs = '0.00',
         public string $currency = 'PEN',
+        /** @var array<string, string> Named amounts for events that need more than total/tax/cogs. */
+        public array $components = [],
     ) {}
 }

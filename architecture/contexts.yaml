@@ -265,7 +265,7 @@ contexts:
   Payroll:
     namespace: App\Payroll
     layer: ErpCore
-    dependsOn: [Efact, Identity, Organization, Reporting]
+    dependsOn: [Accounting, Catalog, Efact, Identity, Organization, Reporting]
     publicContracts: []
     ownsTables: [employee, payroll_run, payslip_entry, afp_rate]
 

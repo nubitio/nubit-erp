@@ -39,6 +39,36 @@ readonly class DefaultPostingService
 
     public const string OPENING_EQUITY = '591';
 
+    public const string PAYROLL_SALARY_EXPENSE = '621';
+
+    public const string PAYROLL_OTHER_PAY_EXPENSE = '622';
+
+    public const string PAYROLL_SOCIAL_SECURITY_EXPENSE = '627';
+
+    public const string INCOME_TAX_5TH_CATEGORY = '4017';
+
+    public const string ESSALUD_PAYABLE = '4031';
+
+    public const string ONP_PAYABLE = '4032';
+
+    public const string AFP_PAYABLE = '407';
+
+    public const string SALARIES_PAYABLE = '411';
+
+    public const string PAYROLL_GROSS = 'gross';
+
+    public const string PAYROLL_BONUS = 'bonus';
+
+    public const string PAYROLL_ESSALUD_EMPLOYER = 'essalud_employer';
+
+    public const string PAYROLL_AFP = 'afp';
+
+    public const string PAYROLL_ONP = 'onp';
+
+    public const string PAYROLL_INCOME_TAX = 'income_tax_5th';
+
+    public const string PAYROLL_NET = 'net';
+
     public function __construct(
         private JournalPoster $journalPoster,
         private LoggerInterface $logger,
@@ -188,11 +218,80 @@ readonly class DefaultPostingService
                     'memo' => 'Reversión del gasto de proveedor',
                 ],
             ],
+            EconomicEvent::PAYROLL_ACCRUAL => $this->payrollAccrualLines($event->components),
+            EconomicEvent::PAYROLL_PAYMENT_CASH => $this->payrollPaymentLines(self::CASH, $total),
+            EconomicEvent::PAYROLL_PAYMENT_BANK => $this->payrollPaymentLines(self::BANK, $total),
             default => throw new InvalidArgumentException(sprintf(
                 'Tipo de hecho económico no soportado: %s',
                 $event->kind,
             )),
         };
+    }
+
+    /**
+     * Devengo de planilla: gasto de personal contra obligaciones con el
+     * trabajador (411), AFP (407), ONP (4032), quinta categoría (4017) y
+     * EsSalud del empleador (4031).
+     *
+     * @param array<string, string> $components
+     *
+     * @return list<array{code: string, debit?: string, credit?: string, memo?: string}>
+     */
+    private function payrollAccrualLines(array $components): array
+    {
+        $amount = static fn(string $key): BigDecimal => Money::money($components[$key] ?? '0');
+
+        return [
+            [
+                'code' => self::PAYROLL_SALARY_EXPENSE,
+                'debit' => Money::toString($amount(self::PAYROLL_GROSS)),
+                'memo' => 'Remuneraciones del periodo',
+            ],
+            [
+                'code' => self::PAYROLL_OTHER_PAY_EXPENSE,
+                'debit' => Money::toString($amount(self::PAYROLL_BONUS)),
+                'memo' => 'Bonificación extraordinaria',
+            ],
+            [
+                'code' => self::PAYROLL_SOCIAL_SECURITY_EXPENSE,
+                'debit' => Money::toString($amount(self::PAYROLL_ESSALUD_EMPLOYER)),
+                'memo' => 'EsSalud a cargo del empleador',
+            ],
+            [
+                'code' => self::AFP_PAYABLE,
+                'credit' => Money::toString($amount(self::PAYROLL_AFP)),
+                'memo' => 'Aportes AFP retenidos',
+            ],
+            [
+                'code' => self::ONP_PAYABLE,
+                'credit' => Money::toString($amount(self::PAYROLL_ONP)),
+                'memo' => 'Aportes ONP retenidos',
+            ],
+            [
+                'code' => self::INCOME_TAX_5TH_CATEGORY,
+                'credit' => Money::toString($amount(self::PAYROLL_INCOME_TAX)),
+                'memo' => 'Retención de renta de quinta categoría',
+            ],
+            [
+                'code' => self::ESSALUD_PAYABLE,
+                'credit' => Money::toString($amount(self::PAYROLL_ESSALUD_EMPLOYER)),
+                'memo' => 'EsSalud por pagar',
+            ],
+            [
+                'code' => self::SALARIES_PAYABLE,
+                'credit' => Money::toString($amount(self::PAYROLL_NET)),
+                'memo' => 'Remuneraciones por pagar',
+            ],
+        ];
+    }
+
+    /** @return list<array{code: string, debit?: string, credit?: string, memo?: string}> */
+    private function payrollPaymentLines(string $cashAccount, BigDecimal $total): array
+    {
+        return [
+            ['code' => self::SALARIES_PAYABLE, 'debit' => Money::toString($total), 'memo' => 'Pago de planilla'],
+            ['code' => $cashAccount, 'credit' => Money::toString($total), 'memo' => 'Salida por pago de planilla'],
+        ];
     }
 
     /** @return list<array{code: string, debit?: string, credit?: string, memo?: string}> */

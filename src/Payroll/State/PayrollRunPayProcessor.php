@@ -9,6 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Identity\Security\Security;
 use App\Payroll\Dto\PayrollRunPayDto;
 use App\Payroll\Entity\PayrollRun;
+use App\Payroll\Service\PayrollAccountingService;
 use App\Payroll\Service\PayrollRunService;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,6 +26,7 @@ readonly class PayrollRunPayProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private Security $security,
         private PayrollRunService $payrollRunService,
+        private ?PayrollAccountingService $payrollAccounting = null,
     ) {}
 
     /**
@@ -50,6 +52,8 @@ readonly class PayrollRunPayProcessor implements ProcessorInterface
 
         $this->payrollRunService->transitionTo($payrollRun, PayrollRun::PAID);
         $payrollRun->setPaidAt(new DateTimeImmutable());
+
+        $this->payrollAccounting?->postPayment($payrollRun, $data->paymentMethodId);
 
         $this->entityManager->flush();
 
