@@ -189,7 +189,11 @@ jobs:
     name: Backend Quality & Coverage
     needs: changes
     runs-on: ${{ needs.changes.outputs.backend == 'true' && needs.changes.outputs.runner || needs.changes.outputs.runner_light }}
-    timeout-minutes: 30
+    # Normal runs take 1-7 minutes. A run once hung ~29 minutes in the post-step
+    # BuildKit cleanup (buildkitd killed with SIGKILL) after every test had
+    # passed, and was billed until the old 30-minute limit cut it. Keep this
+    # tight so a hung cleanup costs minutes, not half an hour.
+    timeout-minutes: 15
     env:
       DATABASE_URL: mysql://root:changeme@database:3306/demo_test?serverVersion=10.7.1-MariaDB&charset=utf8mb4
 
