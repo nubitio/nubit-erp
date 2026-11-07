@@ -40,3 +40,9 @@ cd ~/Projects/efact-project/efact && yarn install
 ```
 
 Remove the resolutions and `yarn install` again before committing.
+
+The `vite` container runs `yarn install --immutable` every time it starts, so it follows
+`yarn.lock` on its own. When you switch portals on or off, run `yarn install` on the host first
+(so `yarn.lock` matches) and then `docker compose restart vite`. If Vite ever fails with
+`Failed to resolve import "@nubitio/…"`, the `vite-node-modules` volume is stale:
+`docker compose run --rm --no-deps vite sh -lc 'corepack enable && yarn install --immutable'`.
