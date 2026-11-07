@@ -35,8 +35,11 @@ final class IdentityPreflightCommand extends PerTenantCommand
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $existing = $this->connection->createSchemaManager()->listTableNames();
-        $missing = array_values(array_diff(self::REQUIRED_TABLES, $existing));
+        $schemaManager = $this->connection->createSchemaManager();
+        $missing = array_values(array_filter(
+            self::REQUIRED_TABLES,
+            static fn(string $table): bool => !$schemaManager->tablesExist([$table]),
+        ));
 
         if ($missing !== []) {
             $io->error(sprintf(

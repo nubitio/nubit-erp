@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\User\InMemoryUser;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Http\Authenticator\AuthenticatorInterface;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
@@ -64,7 +65,7 @@ final class LastLoginSubscriberTest extends TestCase
         return $user;
     }
 
-    private function event(object $user, string $route): LoginSuccessEvent
+    private function event(UserInterface $user, string $route): LoginSuccessEvent
     {
         $request = new Request();
         $request->attributes->set('_route', $route);

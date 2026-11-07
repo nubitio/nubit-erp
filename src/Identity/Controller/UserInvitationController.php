@@ -55,11 +55,13 @@ final class UserInvitationController extends AbstractController
             ], Response::HTTP_FORBIDDEN);
         }
 
+        $caller = $this->getUser();
+
         try {
             $issued = $this->invitations->invite(
                 (string) ($payload['email'] ?? ''),
-                ['role:' . $role->getId()],
-                $this->getUser() instanceof User ? $this->getUser()->getUserIdentifier() : null,
+                ['role:' . (int) $role->getId()],
+                $caller instanceof User ? $caller->getUserIdentifier() : null,
             );
         } catch (IdentityException $exception) {
             return $this->json(['message' => $this->translate($exception->getMessage())], Response::HTTP_CONFLICT);

@@ -57,12 +57,16 @@ final readonly class IdentityMailSubscriber implements EventSubscriberInterface
         $user = $this->entityManager
             ->getRepository(User::class)
             ->findOneBy(['username' => $event->userIdentifier, 'deletedAt' => null]);
-        if (!$user instanceof User || $user->getEmail() === null) {
+        if (!$user instanceof User) {
+            return;
+        }
+        $email = $user->getEmail();
+        if ($email === null) {
             return;
         }
         $link = $this->baseUrl() . '/#/reset-password?token=' . $event->token;
         $this->send(
-            $user->getEmail(),
+            $email,
             'Restablece tu contraseña de Nubit ERP',
             sprintf(
                 "Hola %s,\n\nPara elegir una nueva contraseña usa este enlace:\n\n%s\n\nVence a las %s y solo se puede usar una vez.\nSi no lo pediste tú, ignora este correo: tu contraseña actual sigue funcionando.\n",

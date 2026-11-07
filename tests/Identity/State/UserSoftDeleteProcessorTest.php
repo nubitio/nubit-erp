@@ -43,16 +43,6 @@ final class UserSoftDeleteProcessorTest extends TestCase
         self::assertInstanceOf(DateTimeImmutable::class, $user->getDeletedAt());
     }
 
-    public function testSoftDeleteReleasesTheEmailSoItCanBeReused(): void
-    {
-        $this->persistProcessor = $this->createMock(ProcessorInterface::class);
-        $user = $this->createUser()->setEmail('ana@example.test');
-
-        new UserSoftDeleteProcessor($this->persistProcessor)->process($user, new Delete(), [], []);
-
-        self::assertNull($user->getEmail());
-    }
-
     public function testSoftDeleteKeepsExistingDeletedAtTimestamp(): void
     {
         $this->persistProcessor = $this->createMock(ProcessorInterface::class);
@@ -118,5 +108,14 @@ final class UserSoftDeleteProcessorTest extends TestCase
         $user->setRole($role);
 
         return $user;
+    }
+
+    public function testSoftDeleteReleasesTheEmailSoItCanBeReused(): void
+    {
+        $user = $this->createUser()->setEmail('ana@example.test');
+
+        new UserSoftDeleteProcessor($this->createStub(ProcessorInterface::class))->process($user, new Delete(), [], []);
+
+        self::assertNull($user->getEmail());
     }
 }
