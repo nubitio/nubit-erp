@@ -12,6 +12,13 @@
   --radius-md: 8px;
   --radius-lg: 10px;
   --radius-xl: 14px;
+
+  // Legacy names that a few screens still read (onboarding, bank reconciliation, credit-note
+  // issue, financial reports) but that no theme defines. Without these, `var(--primary-color)`
+  // with no fallback invalidates the whole declaration (the accent border / colour vanishes)
+  // and with a fallback it paints the old #356ed3 blue instead of the brand blue.
+  --primary-color: var(--accent-color);
+  --primary-contrast: var(--on-accent-color, #fff);
 }
 
 html,
