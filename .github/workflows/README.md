@@ -9,7 +9,7 @@
 | **build-image.yml** | Manual, reusable | Build and push image to GHCR, output immutable `image_ref` |
 | **deploy-dev.yml** | Push to `main`, manual | Build image and deploy to `dev` |
 | **deploy-staging.yml** | Manual, tag `v*.*.*-rc*` | Promote immutable image to `stg` (auto on pre-release tags) |
-| **deploy-prod.yml** | Manual `release_tag` only | Promote that release's recorded digest to `prod`. Does not rebuild. Migrations default off |
+| **deploy-prod.yml** | Manual `release_tag` only | Promote that release's recorded digest to `prod`. Does not rebuild. Runs forward migrations, as other normal deploys do |
 | **deploy.yml** | Reusable | Deploy a provided immutable image via Portainer |
 | **resolve-release.yml** | Reusable | Validate release manifest against its tag, commit and GHCR repository |
 | **rollback-prod.yml** | Manual | Restore a release or emergency digest without running migrations |
@@ -78,11 +78,13 @@ not start that workflow. Release builds stay serialized on `semver-release-main`
 Production deployments and rollbacks still share `deploy-prod` and do not cancel
 an active deployment. Push CI does not cancel an in-progress run; PR CI does.
 
-`run_migrations` on that manual promotion defaults to false. Leave it false
-unless a backup of the control-plane and tenant databases already exists and
-the schema change still runs under the previous image. Restoring an older image
-does not undo DDL. Dev and staging keep migrating when their callers omit the
-flag; production does not inherit that default.
+A manual production promotion uses the same reusable deploy as dev and
+staging, so forward migrations stay on unless a caller passes
+`run_migrations: false`. Rollback is that caller: it restores an image and
+does not run migrations, and it does not undo DDL already applied. Take a
+backup and keep schema changes compatible with the previous image before
+promoting one that migrates. This workflow does not add a backup step or a
+new approval gate.
 
 Configure Actions to allow the release workflow's `contents`, `packages`,
 `issues`, and `pull-requests` write permissions. Tag rules must permit the

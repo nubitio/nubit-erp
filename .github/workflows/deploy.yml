@@ -16,19 +16,9 @@ on:
         type: string
         default: ''
       run_migrations:
-        description: >-
-          Run forward migrations for dev and staging. Ignored when environment
-          is prod. Default true, so existing dev/staging callers keep migrating.
+        description: Run forward migrations (disabled for rollback)
         type: boolean
         default: true
-      prod_migrations:
-        description: >-
-          Run forward migrations only when environment is prod. Default false.
-          A caller that omits this input does not migrate production, even if
-          run_migrations is true. Requires a prior backup and DDL the previous
-          image can still run. An image rollback does not undo the database.
-        type: boolean
-        default: false
 permissions:
   contents: read
 
@@ -60,14 +50,6 @@ jobs:
         run: |
           bash scripts/ci/validate-image-ref.sh "${IMAGE_REF}"
 
-      - name: Resolve migration flag
-        id: migrations
-        env:
-          DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
-          RUN_MIGRATIONS_INPUT: ${{ inputs.run_migrations == true && 'true' || 'false' }}
-          PROD_MIGRATIONS_INPUT: ${{ inputs.prod_migrations == true && 'true' || 'false' }}
-        run: python3 scripts/ci/resolve-migrations.py
-
       - name: Deploy stack in Portainer
         env:
           PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
@@ -76,7 +58,7 @@ jobs:
           ENDPOINT_ID: ${{ secrets.PORTAINER_ENDPOINT_ID }}
           COMPOSE_FILE: docker-compose.prod.yml
           IMAGE: ${{ inputs.image_ref }}
-          RUN_MIGRATIONS: ${{ steps.migrations.outputs.run }}
+          RUN_MIGRATIONS: ${{ inputs.run_migrations && 'true' || 'false' }}
         run: |
           set -euo pipefail
           bash scripts/portainer-deploy.sh

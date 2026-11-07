@@ -5,23 +5,22 @@ Loads the workflow YAML. Does not call GitHub, GHCR, or Portainer.
 
 from __future__ import annotations
 
-from importlib.util import module_from_spec, spec_from_file_location
 from pathlib import Path
-import sys
 import unittest
 
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOWS = ROOT / '.github' / 'workflows'
-_spec = spec_from_file_location(
-    'resolve_migrations',
-    ROOT / 'scripts' / 'ci' / 'resolve-migrations.py',
-)
-_module = module_from_spec(_spec)
-assert _spec.loader is not None
-_spec.loader.exec_module(_module)
-resolve_migrations = _module.resolve_migrations
+
+
+def workflow_run_migrations(explicit: bool | None) -> str:
+    """Mirror ``${{ inputs.run_migrations && 'true' || 'false' }}``.
+
+    An omitted boolean input uses the workflow default, which is true.
+    """
+    value = True if explicit is None else explicit
+    return 'true' if value else 'false'
 
 
 def triggers(document: dict) -> dict:
@@ -45,44 +44,12 @@ def workflow_files() -> list[Path]:
 
 
 class MigrationFlagTest(unittest.TestCase):
-    def test_production_omission_does_not_migrate(self):
-        self.assertEqual(resolve_migrations('prod', 'true', ''), 'false')
-        self.assertEqual(resolve_migrations('prod', 'true', 'false'), 'false')
-        self.assertEqual(resolve_migrations('prod', 'false', 'false'), 'false')
+    def test_omitted_flag_keeps_forward_migrations(self):
+        self.assertEqual(workflow_run_migrations(None), 'true')
+        self.assertEqual(workflow_run_migrations(True), 'true')
 
-    def test_production_migrates_only_for_exact_true(self):
-        self.assertEqual(resolve_migrations('prod', 'false', 'true'), 'true')
-        self.assertEqual(resolve_migrations('prod', 'true', 'True'), 'false')
-        self.assertEqual(resolve_migrations('prod', 'true', '1'), 'false')
-
-    def test_dev_and_staging_keep_their_historical_default(self):
-        for environment in ('dev', 'stg'):
-            self.assertEqual(resolve_migrations(environment, 'true', 'false'), 'true')
-            self.assertEqual(resolve_migrations(environment, 'true', ''), 'true')
-            self.assertEqual(resolve_migrations(environment, 'false', 'true'), 'false')
-
-    def test_script_writes_github_output(self):
-        import os
-        import subprocess
-        import tempfile
-
-        with tempfile.TemporaryDirectory() as directory:
-            output = Path(directory) / 'github-output.txt'
-            result = subprocess.run(
-                [sys.executable, str(ROOT / 'scripts' / 'ci' / 'resolve-migrations.py')],
-                env={
-                    **os.environ,
-                    'DEPLOY_ENVIRONMENT': 'prod',
-                    'RUN_MIGRATIONS_INPUT': 'true',
-                    'PROD_MIGRATIONS_INPUT': 'false',
-                    'GITHUB_OUTPUT': str(output),
-                },
-                capture_output=True,
-                text=True,
-                check=False,
-            )
-            self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(output.read_text(encoding='utf-8'), 'run=false\n')
+    def test_explicit_false_skips_forward_migrations(self):
+        self.assertEqual(workflow_run_migrations(False), 'false')
 
 
 class ReleaseWorkflowTest(unittest.TestCase):
@@ -135,39 +102,33 @@ class ProductionPromotionTest(unittest.TestCase):
         self.assertNotIn('release', prod_triggers)
         tag = prod_triggers['workflow_dispatch']['inputs']['release_tag']
         self.assertIs(tag['required'], True)
-        migrations = prod_triggers['workflow_dispatch']['inputs']['run_migrations']
-        self.assertEqual(migrations['type'], 'boolean')
-        self.assertIs(migrations['default'], False)
+        self.assertNotIn('run_migrations', prod_triggers['workflow_dispatch']['inputs'])
         job = prod['jobs']['deploy-production']
         self.assertEqual(job['uses'], './.github/workflows/deploy.yml')
         self.assertEqual(job['with']['environment'], 'prod')
         self.assertEqual(job['with']['image_ref'], '${{ needs.resolve.outputs.image_ref }}')
         self.assertEqual(job['with']['ref'], '${{ needs.resolve.outputs.commit }}')
-        self.assertEqual(job['with']['prod_migrations'], '${{ inputs.run_migrations == true }}')
+        self.assertNotIn('run_migrations', job['with'])
+        self.assertNotIn('prod_migrations', job['with'])
         self.assertNotIn('build-image.yml', yaml.safe_dump(prod))
 
-    def test_reusable_deploy_splits_prod_migrations_from_the_dev_default(self):
+    def test_reusable_deploy_still_migrates_unless_the_caller_says_false(self):
         deploy = load('deploy.yml')
         inputs = triggers(deploy)['workflow_call']['inputs']
+        self.assertEqual(set(inputs), {'environment', 'image_ref', 'ref', 'run_migrations'})
         self.assertIs(inputs['run_migrations']['default'], True)
-        self.assertIs(inputs['prod_migrations']['default'], False)
+        self.assertNotIn('prod_migrations', inputs)
         self.assertEqual(deploy['concurrency']['group'], 'deploy-${{ inputs.environment }}')
         self.assertIs(deploy['concurrency']['cancel-in-progress'], False)
-        resolve = next(step for step in deploy['jobs']['deploy']['steps'] if step.get('id') == 'migrations')
-        self.assertEqual(resolve['env']['DEPLOY_ENVIRONMENT'], '${{ inputs.environment }}')
-        self.assertEqual(
-            resolve['env']['RUN_MIGRATIONS_INPUT'],
-            "${{ inputs.run_migrations == true && 'true' || 'false' }}",
-        )
-        self.assertEqual(
-            resolve['env']['PROD_MIGRATIONS_INPUT'],
-            "${{ inputs.prod_migrations == true && 'true' || 'false' }}",
-        )
         portainer = next(
             step for step in deploy['jobs']['deploy']['steps']
             if step.get('name') == 'Deploy stack in Portainer'
         )
-        self.assertEqual(portainer['env']['RUN_MIGRATIONS'], '${{ steps.migrations.outputs.run }}')
+        self.assertEqual(
+            portainer['env']['RUN_MIGRATIONS'],
+            "${{ inputs.run_migrations && 'true' || 'false' }}",
+        )
+        self.assertEqual(workflow_run_migrations(None), 'true')
 
     def test_only_manual_prod_callers_remain(self):
         prod_callers = []
@@ -182,6 +143,23 @@ class ProductionPromotionTest(unittest.TestCase):
                 if environment == 'prod':
                     prod_callers.append(path.name)
         self.assertEqual(sorted(prod_callers), ['deploy-prod.yml', 'rollback-prod.yml'])
+        for path in workflow_files():
+            document = load(path.name)
+            event = triggers(document)
+            self.assertNotIn('release', event, path.name)
+            self.assertNotIn('prod_migrations', yaml.safe_dump(document))
+            if 'push' not in event:
+                continue
+            for job in document.get('jobs', {}).values():
+                if not isinstance(job, dict):
+                    continue
+                if job.get('uses') != './.github/workflows/deploy.yml':
+                    continue
+                self.assertNotEqual(
+                    (job.get('with') or {}).get('environment'),
+                    'prod',
+                    path.name,
+                )
 
     def test_rollback_still_skips_migrations(self):
         rollback = load('rollback-prod.yml')
@@ -189,11 +167,7 @@ class ProductionPromotionTest(unittest.TestCase):
         job = rollback['jobs']['rollback']
         self.assertEqual(job['with']['environment'], 'prod')
         self.assertIs(job['with']['run_migrations'], False)
-        self.assertNotIn('prod_migrations', job['with'])
-        self.assertEqual(
-            resolve_migrations('prod', 'false', ''),
-            'false',
-        )
+        self.assertEqual(workflow_run_migrations(False), 'false')
 
     def test_dev_and_staging_callers_are_unchanged(self):
         dev = load('deploy-dev.yml')
@@ -203,7 +177,6 @@ class ProductionPromotionTest(unittest.TestCase):
         dev_job = dev['jobs']['deploy-dev']
         self.assertEqual(dev_job['with']['environment'], 'dev')
         self.assertNotIn('run_migrations', dev_job['with'])
-        self.assertNotIn('prod_migrations', dev_job['with'])
         self.assertEqual(dev['jobs']['build-image']['uses'], './.github/workflows/build-image.yml')
 
         staging = load('deploy-staging.yml')
@@ -211,7 +184,6 @@ class ProductionPromotionTest(unittest.TestCase):
         staging_job = staging['jobs']['deploy-staging']
         self.assertEqual(staging_job['with']['environment'], 'stg')
         self.assertNotIn('run_migrations', staging_job['with'])
-        self.assertNotIn('prod_migrations', staging_job['with'])
         self.assertNotIn('build-image.yml', yaml.safe_dump(staging))
 
     def test_release_manifest_still_requires_an_immutable_digest(self):

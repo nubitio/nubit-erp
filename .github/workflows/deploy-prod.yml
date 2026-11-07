@@ -7,14 +7,6 @@ on:
         description: Published release to promote (v1.2.3). Uses the digest already recorded in that release's deployment.json. Does not rebuild.
         required: true
         type: string
-      run_migrations:
-        description: >-
-          Apply forward database migrations with this promotion. Default false.
-          Turn on only after a backup exists and the schema change still works
-          with the previous image. Restoring an older image does not undo DDL.
-        required: false
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -34,6 +26,4 @@ jobs:
       # APP_URL is the required smoke target configured in the prod environment.
       image_ref: ${{ needs.resolve.outputs.image_ref }}
       ref: ${{ needs.resolve.outputs.commit }}
-      # Boolean, not the string "false". Omission on the reusable workflow stays false.
-      prod_migrations: ${{ inputs.run_migrations == true }}
     secrets: inherit
