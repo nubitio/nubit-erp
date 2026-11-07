@@ -8,7 +8,6 @@ use App\Organization\Service\CompanyContext;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use RuntimeException;
-use ZipArchive;
 
 /**
  * Genera el archivo «Reemplazar propuesta» del RVIE (SIRE ventas) a partir de
@@ -43,13 +42,7 @@ final readonly class RvieExporter
         private RvieReviewer $reviewer = new RvieReviewer(),
     ) {}
 
-    /**
-     * @return array{
-     *     txtName: string, zipName: string, content: string, zip: string,
-     *     recordCount: int, excluded: list<array<string, string>>, warnings: list<string>
-     * }
-     */
-    public function export(string $period): array
+    public function export(string $period): SireExportResult
     {
         $rows = $this->fetchRows($period);
         $builder = new RvieRecordBuilder($this->companyContext->getId(), $this->companyContext->getName(), $period);
@@ -60,7 +53,7 @@ final readonly class RvieExporter
         $warnings = [];
 
         foreach ($rows as $data) {
-            $row = new RvieRow($data);
+            $row = new SireRow($data);
             $label = sprintf('%s-%s %s', $row->text('series'), $row->text('number'), $row->text('document_type'));
             if (!$row->isNull('void_ticket') || !$row->isNull('void_correlation')) {
                 $excluded[] = ['document' => $label, 'reason' => 'Dado de baja'];
@@ -80,15 +73,15 @@ final readonly class RvieExporter
         $txtName = $this->fileName($period, '.TXT');
         $zipName = $this->fileName($period, '.zip');
 
-        return [
-            'txtName' => $txtName,
-            'zipName' => $zipName,
-            'content' => $content,
-            'zip' => $count > 0 ? $this->zip($txtName, $content) : '',
-            'recordCount' => $count,
-            'excluded' => $excluded,
-            'warnings' => $warnings,
-        ];
+        return new SireExportResult(
+            txtName: $txtName,
+            zipName: $zipName,
+            content: $content,
+            zip: $count > 0 ? SireZip::create($txtName, $content) : '',
+            recordCount: $count,
+            excluded: $excluded,
+            warnings: $warnings,
+        );
     }
 
     private function fileName(string $period, string $extension): string
@@ -154,33 +147,5 @@ final readonly class RvieExporter
         ]);
 
         return $rows;
-    }
-
-    private function zip(string $entryName, string $content): string
-    {
-        $tmp = tempnam(sys_get_temp_dir(), 'rvie_');
-        if ($tmp === false) {
-            throw new RuntimeException('No se pudo crear el archivo temporal del ZIP.');
-        }
-
-        try {
-            $zip = new ZipArchive();
-            if ($zip->open($tmp, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-                throw new RuntimeException('No se pudo abrir el archivo ZIP.');
-            }
-            $zip->addFromString($entryName, $content);
-            $zip->close();
-
-            $bytes = file_get_contents($tmp);
-            if ($bytes === false) {
-                throw new RuntimeException('No se pudo leer el archivo ZIP generado.');
-            }
-
-            return $bytes;
-        } finally {
-            if (is_file($tmp)) {
-                unlink($tmp);
-            }
-        }
     }
 }

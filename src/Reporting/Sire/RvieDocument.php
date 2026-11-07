@@ -17,7 +17,7 @@ final readonly class RvieDocument
         public string $series,
         public string $number,
         public DateTimeImmutable $issueDate,
-        public RvieCustomer $customer,
+        public SireParty $customer,
         public RvieAmounts $amounts,
         public string $currency = 'PEN',
         public ?string $exchangeRate = null,

@@ -16,14 +16,14 @@ use DateTimeImmutable;
  */
 final readonly class RvieRowMapper
 {
-    public function toDocument(RvieRow $row): RvieDocument
+    public function toDocument(SireRow $row): RvieDocument
     {
         return new RvieDocument(
             type: $row->text('document_type'),
             series: $row->text('series'),
             number: $row->text('number'),
             issueDate: new DateTimeImmutable($row->text('issue_date')),
-            customer: RvieCustomer::fromStored($row->nullable('customer_doc'), $row->nullable('customer_name')),
+            customer: SireParty::fromStored($row->nullable('customer_doc'), $row->nullable('customer_name')),
             amounts: $this->amounts($row),
             currency: $row->text('currency') ?: 'PEN',
             exchangeRate: $row->nullable('exchange_rate'),
@@ -31,12 +31,12 @@ final readonly class RvieRowMapper
         );
     }
 
-    public function hasLines(RvieRow $row): bool
+    public function hasLines(SireRow $row): bool
     {
         return $row->int('line_count') > 0;
     }
 
-    private function amounts(RvieRow $row): RvieAmounts
+    private function amounts(SireRow $row): RvieAmounts
     {
         $lines = RvieAmounts::of(
             total: (string) $row->money('total'),
@@ -64,7 +64,7 @@ final readonly class RvieRowMapper
         );
     }
 
-    private function modified(RvieRow $row): ?RvieModifiedDocument
+    private function modified(SireRow $row): ?RvieModifiedDocument
     {
         $type = $row->nullable('modified_doc_type');
         $number = $row->nullable('modified_number');

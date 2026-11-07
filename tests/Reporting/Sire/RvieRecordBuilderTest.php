@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Reporting\Sire;
 
 use App\Reporting\Sire\RvieAmounts;
-use App\Reporting\Sire\RvieCustomer;
 use App\Reporting\Sire\RvieDocument;
 use App\Reporting\Sire\RvieModifiedDocument;
 use App\Reporting\Sire\RvieRecordBuilder;
+use App\Reporting\Sire\SireParty;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -146,11 +146,7 @@ final class RvieRecordBuilderTest extends TestCase
             series: $overrides['series'] ?? 'F001',
             number: $overrides['number'] ?? '1001',
             issueDate: new DateTimeImmutable('2025-12-02'),
-            customer: new RvieCustomer(
-                '6',
-                '20609999999',
-                $overrides['name'] ?? 'DISTRIBUIDORA COMERCIAL DEL NORTE SAC',
-            ),
+            customer: new SireParty('6', '20609999999', $overrides['name'] ?? 'DISTRIBUIDORA COMERCIAL DEL NORTE SAC'),
             amounts: RvieAmounts::of(
                 total: $overrides['total'] ?? '118',
                 taxable: $overrides['taxable'] ?? '100',
