@@ -16,6 +16,7 @@ use App\Catalog\Entity\Product;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use App\Purchasing\Entity\Purchase;
+use App\Sales\Entity\SaleQuote;
 use App\Sales\Entity\SaleRecord;
 use PHPUnit\Framework\TestCase;
 
@@ -30,6 +31,23 @@ final class CriticalApiPermissionsTest extends TestCase
         static::assertContains("is_granted('perm:sales.void')", $securities);
         static::assertContains("is_granted('perm:sales.collect')", $securities);
         static::assertNotContains(null, $securities);
+    }
+
+    public function testSaleQuoteOperationsEnforceGranularPermissions(): void
+    {
+        $securities = $this->operationSecurities(SaleQuote::class);
+
+        static::assertCount(7, $securities);
+        static::assertNotContains(null, $securities);
+        static::assertContains("is_granted('perm:sale_quotes.view')", $securities);
+        static::assertContains("is_granted('perm:sale_quotes.create')", $securities);
+        static::assertContains("is_granted('perm:sale_quotes.edit')", $securities);
+        static::assertContains("is_granted('perm:sale_quotes.void')", $securities);
+        static::assertContains("is_granted('perm:sale_quotes.send')", $securities);
+        static::assertContains(
+            "is_granted('perm:sale_quotes.convert') and is_granted('perm:sales.create')",
+            $securities,
+        );
     }
 
     public function testCashSessionsCannotBypassOpenAndCloseProcessors(): void
