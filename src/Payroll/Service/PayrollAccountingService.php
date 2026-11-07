@@ -29,10 +29,16 @@ readonly class PayrollAccountingService
 
     public function postAccrual(PayrollRun $run): void
     {
+        $this->messageBus?->dispatch($this->accrualEvent($run));
+    }
+
+    /** Accrual event for an approved run, dated on its approval. */
+    public function accrualEvent(PayrollRun $run): EconomicEvent
+    {
         $totals = $this->totals($run);
         $expense = Money::add(Money::add($totals['gross'], $totals['bonus']), $totals['essalud']);
 
-        $this->messageBus?->dispatch(new EconomicEvent(
+        return new EconomicEvent(
             source: EconomicEvent::SOURCE_PAYROLL_ACCRUAL,
             sourceId: (string) $run->getId(),
             kind: EconomicEvent::PAYROLL_ACCRUAL,
@@ -48,17 +54,24 @@ readonly class PayrollAccountingService
                 DefaultPostingService::PAYROLL_INCOME_TAX => Money::toString($totals['income_tax']),
                 DefaultPostingService::PAYROLL_NET => Money::toString($totals['net']),
             ],
-        ));
+        );
+    }
+
+    public function postPayment(PayrollRun $run, ?int $paymentMethodId = null): void
+    {
+        $this->messageBus?->dispatch($this->paymentEvent($run, $paymentMethodId));
     }
 
     /**
+     * Settlement event for a paid run, dated on its payment.
+     *
      * @param int|null $paymentMethodId PaymentMethod::CASH pays from caja; anything else (or null) from banco
      */
-    public function postPayment(PayrollRun $run, ?int $paymentMethodId = null): void
+    public function paymentEvent(PayrollRun $run, ?int $paymentMethodId = null): EconomicEvent
     {
         $totals = $this->totals($run);
 
-        $this->messageBus?->dispatch(new EconomicEvent(
+        return new EconomicEvent(
             source: EconomicEvent::SOURCE_PAYROLL_PAYMENT,
             sourceId: (string) $run->getId(),
             kind: $paymentMethodId === PaymentMethod::CASH
@@ -67,7 +80,7 @@ readonly class PayrollAccountingService
             occurredOn: ($run->getPaidAt() ?? new DateTimeImmutable())->format('Y-m-d'),
             description: sprintf('Pago de planilla %s %s', $run->getType(), $run->getPeriod()->format('Y-m')),
             total: Money::toString($totals['net']),
-        ));
+        );
     }
 
     /**
