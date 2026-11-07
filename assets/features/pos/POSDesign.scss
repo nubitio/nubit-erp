@@ -653,6 +653,27 @@ html[data-visual-style='nubit'] .pos-shell {
   display: grid;
   gap: 16px;
 }
+.pos-payment-dialog__subtitle {
+  color: var(--nb-color-text-secondary);
+  font-size: 0.875rem;
+  margin: -8px 0 0;
+}
+// Figma "Vuelto a entregar": large green banner inside the payment dialog.
+.pos-payment-dialog .pos-change-row.is-change {
+  background: var(--nb-color-bg-success-subtle);
+  border-radius: 12px;
+  color: var(--nb-color-text-success);
+  padding: 16px 20px;
+
+  span {
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  strong {
+    font-size: 1.75rem;
+    line-height: 1.2;
+  }
+}
 .pos-payment-dialog__total {
   align-items: center;
   background: var(--nb-color-bg-subtle, #f4f6fa);

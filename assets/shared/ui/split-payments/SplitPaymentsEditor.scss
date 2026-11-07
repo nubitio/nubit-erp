@@ -1,3 +1,10 @@
+/* Aliases to the Nubit design tokens so the component looks the same outside
+   the POS dialog (sales, etc.) instead of falling back to the legacy #2563eb blue. */
+:where(.split-payments, .split-payments-field, .split-payments-drawer) {
+  --primary: var(--nb-color-bg-brand, var(--accent-color));
+  --text-muted: var(--nb-color-text-secondary, var(--text-secondary));
+}
+
 .split-payments {
   display: grid;
   gap: 0.75rem;
@@ -136,7 +143,7 @@
   width: 1.05rem;
   height: 1.05rem;
   border-radius: 50%;
-  background: #fff;
+  background: var(--nb-color-bg-surface, #fff);
   box-shadow: 0 1px 2px rgb(15 23 42 / 18%);
   transition: transform 0.2s ease;
 
@@ -229,8 +236,8 @@
   }
 
   tfoot tr.is-warning td {
-    background: color-mix(in srgb, var(--warning-color, #d97706) 10%, #fff);
-    color: #b45309;
+    background: color-mix(in srgb, var(--warning-color, #d97706) 10%, var(--surface-1, #fff));
+    color: var(--nb-color-text-warning, #b45309);
     font-weight: 600;
   }
 }
