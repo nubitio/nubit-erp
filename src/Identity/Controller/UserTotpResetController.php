@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Identity\Controller;
 
 use App\Efact\Audit\AuditLogger;
+use App\Identity\Activity\ActivityRecorderInterface;
+use App\Identity\Activity\ActivityType;
 use App\Identity\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Nubit\AdminBundle\Identity\TotpManager;
@@ -24,6 +26,7 @@ final class UserTotpResetController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly AuditLogger $audit,
+        private readonly ActivityRecorderInterface $activity,
         // Only a service while nubit_admin.identity is enabled; optional so the container compiles with it off.
         private readonly ?TotpManager $totp = null,
     ) {}
@@ -51,6 +54,16 @@ final class UserTotpResetController extends AbstractController
 
         $this->totp->disable($user->getUserIdentifier());
         $this->audit->log('auth.totp_reset', ['target' => $user->getUserIdentifier()]);
+        $caller = $this->getUser();
+        $this->activity->record(
+            ActivityType::TOTP_RESET,
+            sprintf(
+                '%s restableció la verificación en dos pasos de %s',
+                $caller instanceof User ? $caller->getUsername() : 'Un administrador',
+                $user->getUsername(),
+            ),
+            subject: $user->getUsername(),
+        );
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }

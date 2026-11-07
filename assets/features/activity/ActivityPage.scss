@@ -1,0 +1,152 @@
+.activity-page {
+  display: grid;
+  gap: 16px;
+}
+
+.activity-filters {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+
+  @media (min-width: 900px) {
+    grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)) auto;
+  }
+}
+
+.activity-layout {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr);
+
+  @media (min-width: 1000px) {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
+  }
+}
+
+.activity-feed,
+.activity-side {
+  background: var(--nb-color-bg-surface, var(--surface-1));
+  border: 1px solid var(--nb-color-border-default, var(--border-color));
+  border-radius: var(--nb-radius-lg, 16px);
+  padding: 20px;
+}
+
+.activity-day + .activity-day {
+  margin-top: 8px;
+}
+
+.activity-day__heading {
+  color: var(--nb-color-text-secondary, var(--text-secondary));
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  margin: 16px 0 4px;
+}
+
+.activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.activity-row {
+  align-items: center;
+  border-bottom: 1px solid var(--nb-color-border-default, var(--border-color));
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 48px 32px minmax(0, 1fr) auto;
+  padding: 12px 0;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &__time {
+    color: var(--nb-color-text-secondary, var(--text-secondary));
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__body {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+
+    strong {
+      color: var(--nb-color-text-primary, var(--text-primary));
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }
+    small {
+      color: var(--nb-color-text-secondary, var(--text-secondary));
+      overflow-wrap: anywhere;
+    }
+  }
+}
+
+.activity-empty {
+  color: var(--nb-color-text-secondary, var(--text-secondary));
+  margin: 8px 0;
+}
+
+.activity-more {
+  display: flex;
+  justify-content: center;
+  margin: 16px 0 4px;
+}
+
+.activity-note {
+  align-items: center;
+  border-top: 1px solid var(--nb-color-border-default, var(--border-color));
+  color: var(--nb-color-text-secondary, var(--text-secondary));
+  display: flex;
+  font-size: 0.8125rem;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding-top: 12px;
+}
+
+.activity-side {
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 12px;
+  }
+
+  dl {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+  }
+
+  dl > div {
+    align-items: baseline;
+    display: flex;
+    gap: 12px;
+    justify-content: space-between;
+  }
+
+  dt {
+    color: var(--nb-color-text-primary, var(--text-primary));
+    font-weight: 400;
+  }
+
+  dd {
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    margin: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .activity-row {
+    grid-template-columns: 44px 32px minmax(0, 1fr);
+
+    > :last-child:not(.activity-row__body) {
+      grid-column: 3;
+      justify-self: start;
+    }
+  }
+}

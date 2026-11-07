@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\Validator\Exception\ValidationException;
+use App\Identity\Activity\ActivityRecorderInterface;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use App\Identity\State\UserPasswordHasher;
@@ -145,7 +146,7 @@ final class UserPasswordHasherTest extends TestCase
 
     private function createUser(): User
     {
-        $role = new Role();
+        $role = new Role()->setName('Cajero');
         $user = new User();
         $user->setUsername('secure-user');
         $user->setPassword('existing-password-hash');
@@ -164,6 +165,14 @@ final class UserPasswordHasherTest extends TestCase
         /** @var UserPasswordHasherInterface&MockObject $passwordHasher */
         $passwordHasher = $this->createMock(UserPasswordHasherInterface::class);
 
-        return [new UserPasswordHasher($persistProcessor, $passwordHasher), $persistProcessor, $passwordHasher];
+        return [
+            new UserPasswordHasher(
+                $persistProcessor,
+                $passwordHasher,
+                $this->createStub(ActivityRecorderInterface::class),
+            ),
+            $persistProcessor,
+            $passwordHasher,
+        ];
     }
 }

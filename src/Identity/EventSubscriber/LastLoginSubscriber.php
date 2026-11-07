@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Identity\EventSubscriber;
 
+use App\Identity\Activity\ActivityRecorderInterface;
+use App\Identity\Activity\ActivityType;
+use App\Identity\Activity\UserAgentSummary;
 use App\Identity\Entity\User;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
+use Nubit\AdminBundle\Identity\TotpManager;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 
@@ -15,6 +19,9 @@ final readonly class LastLoginSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private Connection $connection,
+        private ActivityRecorderInterface $activity,
+        // Only a service while the identity module is on.
+        private ?TotpManager $totp = null,
     ) {}
 
     public static function getSubscribedEvents(): array
@@ -37,5 +44,16 @@ final readonly class LastLoginSubscriber implements EventSubscriberInterface
             'now' => new DateTimeImmutable()->format('Y-m-d H:i:s'),
             'id' => $user->getId(),
         ]);
+
+        $detail = implode(' · ', array_filter([
+            UserAgentSummary::describe($event->getRequest()->headers->get('User-Agent')),
+            $this->totp?->isEnrolled($user->getUserIdentifier()) === true ? 'con verificación en dos pasos' : null,
+        ]));
+        $this->activity->record(
+            ActivityType::LOGIN,
+            sprintf('%s inició sesión', $user->getUsername()),
+            $detail === '' ? null : $detail,
+            actor: $user,
+        );
     }
 }

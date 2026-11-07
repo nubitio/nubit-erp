@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Identity\Invitation;
 
+use App\Identity\Activity\ActivityRecorderInterface;
+use App\Identity\Activity\ActivityType;
 use App\Identity\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Nubit\AdminBundle\Identity\Event\PasswordResetRequested;
@@ -24,6 +26,7 @@ final readonly class IdentityMailSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private MailerInterface $mailer,
+        private ActivityRecorderInterface $activity,
         private RequestStack $requests,
         private EntityManagerInterface $entityManager,
         private LoggerInterface $logger,
@@ -60,6 +63,11 @@ final readonly class IdentityMailSubscriber implements EventSubscriberInterface
         if (!$user instanceof User) {
             return;
         }
+        $this->activity->record(
+            ActivityType::PASSWORD_RESET_REQUESTED,
+            sprintf('%s pidió restablecer su contraseña', $user->getUsername()),
+            actor: $user,
+        );
         $email = $user->getEmail();
         if ($email === null) {
             return;

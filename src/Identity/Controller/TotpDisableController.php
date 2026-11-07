@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Identity\Controller;
 
+use App\Identity\Activity\ActivityRecorderInterface;
+use App\Identity\Activity\ActivityType;
 use Nubit\AdminBundle\Identity\Exception\TotpException;
 use Nubit\AdminBundle\Identity\TotpManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -20,6 +22,7 @@ use Symfony\Component\Routing\Attribute\Route;
 final class TotpDisableController extends AbstractController
 {
     public function __construct(
+        private readonly ActivityRecorderInterface $activity,
         // Only a service while nubit_admin.identity is enabled; optional so the container compiles with it off.
         private readonly ?TotpManager $totp = null,
     ) {}
@@ -48,6 +51,10 @@ final class TotpDisableController extends AbstractController
             }
         }
         $this->totp->disable($identifier);
+        $this->activity->record(ActivityType::TOTP_DISABLED, sprintf(
+            '%s desactivó la verificación en dos pasos',
+            $identifier,
+        ));
 
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }

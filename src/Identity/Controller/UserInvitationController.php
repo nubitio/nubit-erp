@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Identity\Controller;
 
+use App\Identity\Activity\ActivityRecorderInterface;
+use App\Identity\Activity\ActivityType;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,6 +31,7 @@ final class UserInvitationController extends AbstractController
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly ActivityRecorderInterface $activity,
         // Only a service while nubit_admin.identity is enabled; must stay optional or the
         // container would fail to compile with the module off.
         private readonly ?InvitationService $invitations = null,
@@ -66,6 +69,17 @@ final class UserInvitationController extends AbstractController
         } catch (IdentityException $exception) {
             return $this->json(['message' => $this->translate($exception->getMessage())], Response::HTTP_CONFLICT);
         }
+
+        $this->activity->record(
+            ActivityType::USER_INVITED,
+            sprintf(
+                '%s invitó a %s como %s',
+                $caller instanceof User ? $caller->getUsername() : 'Un administrador',
+                $issued['record']->getSubject(),
+                $role->getName(),
+            ),
+            subject: $issued['record']->getSubject(),
+        );
 
         return $this->json([
             'email' => $issued['record']->getSubject(),

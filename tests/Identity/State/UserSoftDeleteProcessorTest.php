@@ -7,6 +7,7 @@ namespace App\Tests\Identity\State;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\State\ProcessorInterface;
+use App\Identity\Activity\ActivityRecorderInterface;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use App\Identity\State\UserSoftDeleteProcessor;
@@ -37,7 +38,10 @@ final class UserSoftDeleteProcessorTest extends TestCase
                 ['request_uri' => '/api/users/99'],
             );
 
-        $processor = new UserSoftDeleteProcessor($this->persistProcessor);
+        $processor = new UserSoftDeleteProcessor(
+            $this->persistProcessor,
+            $this->createStub(ActivityRecorderInterface::class),
+        );
 
         $processor->process($user, new Delete(), ['id' => 99], ['request_uri' => '/api/users/99']);
         self::assertInstanceOf(DateTimeImmutable::class, $user->getDeletedAt());
@@ -54,7 +58,10 @@ final class UserSoftDeleteProcessorTest extends TestCase
             ->method('process')
             ->with($user, self::isInstanceOf(Delete::class), [], []);
 
-        $processor = new UserSoftDeleteProcessor($this->persistProcessor);
+        $processor = new UserSoftDeleteProcessor(
+            $this->persistProcessor,
+            $this->createStub(ActivityRecorderInterface::class),
+        );
 
         $processor->process($user, new Delete(), [], []);
 
@@ -71,7 +78,10 @@ final class UserSoftDeleteProcessorTest extends TestCase
             ->method('process')
             ->with($user, self::isInstanceOf(Delete::class), ['id' => 99], []);
 
-        $processor = new UserSoftDeleteProcessor($this->persistProcessor);
+        $processor = new UserSoftDeleteProcessor(
+            $this->persistProcessor,
+            $this->createStub(ActivityRecorderInterface::class),
+        );
 
         $processor->process($user, new Delete(), ['id' => 99], []);
         $firstDeletedAt = $user->getDeletedAt();
@@ -114,7 +124,10 @@ final class UserSoftDeleteProcessorTest extends TestCase
     {
         $user = $this->createUser()->setEmail('ana@example.test');
 
-        new UserSoftDeleteProcessor($this->createStub(ProcessorInterface::class))->process($user, new Delete(), [], []);
+        new UserSoftDeleteProcessor(
+            $this->createStub(ProcessorInterface::class),
+            $this->createStub(ActivityRecorderInterface::class),
+        )->process($user, new Delete(), [], []);
 
         self::assertNull($user->getEmail());
     }
