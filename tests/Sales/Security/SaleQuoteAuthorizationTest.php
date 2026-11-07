@@ -26,11 +26,11 @@ use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authentication\AuthenticationTrustResolver;
-use Symfony\Component\Security\Core\Authorization\ExpressionLanguage;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Authorization\AccessDecisionManager;
 use Symfony\Component\Security\Core\Authorization\AuthorizationChecker;
+use Symfony\Component\Security\Core\Authorization\ExpressionLanguage;
 
 /**
  * Evaluates every SaleQuote operation through API Platform's ResourceAccessChecker
@@ -55,26 +55,29 @@ final class SaleQuoteAuthorizationTest extends TestCase
             $actual[$this->operationKey($operation)] = $operation->getSecurity();
         }
 
-        self::assertSame([
-            'view-collection' => "is_granted('perm:sale_quotes.view')",
-            'view' => "is_granted('perm:sale_quotes.view')",
-            'create' => "is_granted('perm:sale_quotes.create')",
-            'edit' => "is_granted('perm:sale_quotes.edit')",
-            'void' => "is_granted('perm:sale_quotes.void')",
-            'convert' => "is_granted('perm:sale_quotes.convert') and is_granted('perm:sales.create')",
-            'send' => "is_granted('perm:sale_quotes.send')",
-        ], $actual);
+        self::assertSame(
+            [
+                'view-collection' => "is_granted('perm:sale_quotes.view')",
+                'view' => "is_granted('perm:sale_quotes.view')",
+                'create' => "is_granted('perm:sale_quotes.create')",
+                'edit' => "is_granted('perm:sale_quotes.edit')",
+                'void' => "is_granted('perm:sale_quotes.void')",
+                'convert' => "is_granted('perm:sale_quotes.convert') and is_granted('perm:sales.create')",
+                'send' => "is_granted('perm:sale_quotes.send')",
+            ],
+            $actual,
+        );
     }
 
     public function testQuoteItemsAreNotAnApiResourceAndBranchFilteringStillApplies(): void
     {
-        self::assertSame([], (new \ReflectionClass(SaleQuoteItem::class))->getAttributes(ApiResource::class));
+        self::assertSame([], new \ReflectionClass(SaleQuoteItem::class)->getAttributes(ApiResource::class));
 
         $branch = new \ReflectionProperty(SaleQuote::class, 'branch');
         self::assertNotSame([], $branch->getAttributes(ManyToOne::class));
         $join = $branch->getAttributes(JoinColumn::class)[0]->newInstance();
         self::assertSame('branch_id', $join->name);
-        self::assertNotSame([], (new \ReflectionClass(SaleQuote::class))->getAttributes(ApiResource::class));
+        self::assertNotSame([], new \ReflectionClass(SaleQuote::class)->getAttributes(ApiResource::class));
     }
 
     /**
@@ -116,9 +119,18 @@ final class SaleQuoteAuthorizationTest extends TestCase
             'sale_quotes.void',
         ];
         $cashier = [
-            'sales.view', 'sales.create', 'sales.collect', 'pos.access', 'pos.offline_sale',
-            'cash.view', 'cash.open', 'cash.close', 'inventory.view',
-            'catalog.view', 'customers.view', 'customers.create',
+            'sales.view',
+            'sales.create',
+            'sales.collect',
+            'pos.access',
+            'pos.offline_sale',
+            'cash.view',
+            'cash.open',
+            'cash.close',
+            'inventory.view',
+            'catalog.view',
+            'customers.view',
+            'customers.create',
         ];
 
         yield 'anonymous' => [null, [], self::ALL_DENIED];
@@ -176,31 +188,29 @@ final class SaleQuoteAuthorizationTest extends TestCase
         $repository = $this->createStub(RolePermissionRepository::class);
         $repository->method('findPermissionKeysByRoleId')->willReturn($grants);
 
-        $permissionChecker = new PermissionChecker(
-            new Security(new class($tokenStorage) implements ContainerInterface {
-                public function __construct(private TokenStorage $tokenStorage) {}
+        $permissionChecker = new PermissionChecker(new Security(new class($tokenStorage) implements ContainerInterface {
+            public function __construct(
+                private TokenStorage $tokenStorage,
+            ) {}
 
-                public function get(string $id): TokenStorage
-                {
-                    if ($id !== 'security.token_storage') {
-                        throw new \RuntimeException($id);
-                    }
-
-                    return $this->tokenStorage;
+            public function get(string $id): TokenStorage
+            {
+                if ($id !== 'security.token_storage') {
+                    throw new \RuntimeException($id);
                 }
 
-                public function has(string $id): bool
-                {
-                    return $id === 'security.token_storage';
-                }
-            }),
-            $repository,
-        );
+                return $this->tokenStorage;
+            }
 
-        $authorizationChecker = new AuthorizationChecker(
-            $tokenStorage,
-            new AccessDecisionManager([new PermissionVoter($permissionChecker)]),
-        );
+            public function has(string $id): bool
+            {
+                return $id === 'security.token_storage';
+            }
+        }), $repository);
+
+        $authorizationChecker = new AuthorizationChecker($tokenStorage, new AccessDecisionManager([new PermissionVoter(
+            $permissionChecker,
+        )]));
 
         return new ResourceAccessChecker(
             new ExpressionLanguage(),
@@ -217,7 +227,10 @@ final class SaleQuoteAuthorizationTest extends TestCase
         new \ReflectionProperty(Role::class, 'id')->setValue($role, $roleId);
         $role->setName('role-' . $roleId);
 
-        return new User()->setUsername('user-' . $roleId)->setPassword('unused')->setRole($role);
+        return new User()
+            ->setUsername('user-' . $roleId)
+            ->setPassword('unused')
+            ->setRole($role);
     }
 
     /**
@@ -225,7 +238,7 @@ final class SaleQuoteAuthorizationTest extends TestCase
      */
     private function operations(): array
     {
-        $apiResource = (new \ReflectionClass(SaleQuote::class))->getAttributes(ApiResource::class)[0]->newInstance();
+        $apiResource = new \ReflectionClass(SaleQuote::class)->getAttributes(ApiResource::class)[0]->newInstance();
         $operations = [];
         foreach ($apiResource->getOperations() ?? [] as $operation) {
             self::assertInstanceOf(Operation::class, $operation);

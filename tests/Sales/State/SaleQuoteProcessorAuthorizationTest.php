@@ -98,8 +98,10 @@ final class SaleQuoteProcessorAuthorizationTest extends TestCase
 
         $this->expectException(AccessDeniedHttpException::class);
         try {
-            $this->processor($persist, $this->security(canSend: false), SaleQuote::STATUS_DRAFT)
-                ->process($quote, new Patch());
+            $this->processor($persist, $this->security(canSend: false), SaleQuote::STATUS_DRAFT)->process(
+                $quote,
+                new Patch(),
+            );
         } finally {
             self::assertSame(SaleQuote::STATUS_DRAFT, $quote->getStatus());
         }
@@ -112,8 +114,10 @@ final class SaleQuoteProcessorAuthorizationTest extends TestCase
         $persist->expects(self::never())->method('process');
 
         $this->expectException(ValidationException::class);
-        $this->processor($persist, $this->security(canSend: true), SaleQuote::STATUS_CONVERTED)
-            ->process($quote, new Patch());
+        $this->processor($persist, $this->security(canSend: true), SaleQuote::STATUS_CONVERTED)->process(
+            $quote,
+            new Patch(),
+        );
     }
 
     public function testPatchToAcceptedDoesNotRequireSendPermission(): void
@@ -122,8 +126,10 @@ final class SaleQuoteProcessorAuthorizationTest extends TestCase
         $persist = $this->createMock(ProcessorInterface::class);
         $persist->expects(self::once())->method('process')->willReturnArgument(0);
 
-        $saved = $this->processor($persist, $this->security(canSend: false), SaleQuote::STATUS_SENT)
-            ->process($quote, new Patch());
+        $saved = $this->processor($persist, $this->security(canSend: false), SaleQuote::STATUS_SENT)->process(
+            $quote,
+            new Patch(),
+        );
 
         self::assertInstanceOf(SaleQuote::class, $saved);
         self::assertSame(SaleQuote::STATUS_ACCEPTED, $saved->getStatus());
@@ -133,9 +139,9 @@ final class SaleQuoteProcessorAuthorizationTest extends TestCase
     {
         $security = $this->createStub(Security::class);
         $security->method('connectedUser')->willReturn(new AuthUserDto(9, 'vendedor', 4, ['ROLE_USER']));
-        $security->method('hasPermission')->willReturnCallback(
-            static fn(string $permission): bool => $canSend && $permission === 'sale_quotes.send',
-        );
+        $security
+            ->method('hasPermission')
+            ->willReturnCallback(static fn(string $permission): bool => $canSend && $permission === 'sale_quotes.send');
 
         return $security;
     }
