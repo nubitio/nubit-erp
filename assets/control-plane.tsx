@@ -7,6 +7,7 @@ import { CpToastProvider } from '@features/control-plane/providers/CpToastProvid
 import '@nubitio/admin/style.css';
 import '@nubitio/ui/style.css';
 import '@phosphor-icons/web/regular';
+import './legacy-tokens.scss';
 import '@features/control-plane/styles/control-plane.scss';
 
 const queryClient = new QueryClient({

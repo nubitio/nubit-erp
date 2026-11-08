@@ -14,6 +14,7 @@
 
   // Accent — follows the app's primary colour
   --pos-primary: var(--accent-color);
+  --pos-primary-contrast: var(--on-accent-color);
   --pos-primary-hover: color-mix(in srgb, var(--accent-color) 80%, black 20%);
   --pos-primary-soft: color-mix(in srgb, var(--accent-color) 12%, transparent);
   --pos-primary-border: color-mix(in srgb, var(--accent-color) 28%, transparent);

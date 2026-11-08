@@ -7,6 +7,7 @@ import { ApToastProvider } from '@features/account-portal/providers/ApToastProvi
 import '@nubitio/admin/style.css';
 import '@nubitio/ui/style.css';
 import '@phosphor-icons/web/regular';
+import './legacy-tokens.scss';
 import '@features/account-portal/styles/account-portal.scss';
 
 const queryClient = new QueryClient({
