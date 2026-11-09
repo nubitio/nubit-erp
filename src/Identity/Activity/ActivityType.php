@@ -16,6 +16,8 @@ final class ActivityType
     public const string TOTP_RESET = 'auth.totp_reset';
     public const string USER_INVITED = 'user.invited';
     public const string INVITATION_ACCEPTED = 'user.invitation_accepted';
+    public const string INVITATION_RESENT = 'user.invitation_resent';
+    public const string INVITATION_REVOKED = 'user.invitation_revoked';
     public const string USER_CREATED = 'user.created';
     public const string USER_DELETED = 'user.deleted';
     public const string ROLE_PERMISSIONS_CHANGED = 'role.permissions_changed';
@@ -39,6 +41,8 @@ final class ActivityType
             self::TOTP_RESET,
             self::USER_INVITED,
             self::INVITATION_ACCEPTED,
+            self::INVITATION_RESENT,
+            self::INVITATION_REVOKED,
             self::USER_CREATED,
             self::USER_DELETED,
             self::ROLE_PERMISSIONS_CHANGED,
@@ -67,6 +71,8 @@ final class ActivityType
             self::TOTP_RESET => 'Verificación en dos pasos restablecida',
             self::USER_INVITED => 'Invitaciones enviadas',
             self::INVITATION_ACCEPTED => 'Invitaciones aceptadas',
+            self::INVITATION_RESENT => 'Invitaciones reenviadas',
+            self::INVITATION_REVOKED => 'Invitaciones revocadas',
             self::USER_CREATED => 'Usuarios creados',
             self::USER_DELETED => 'Usuarios eliminados',
             self::ROLE_PERMISSIONS_CHANGED => 'Cambios de permisos de rol',

@@ -7,6 +7,7 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 import { hasPermission } from '@shared/permissions';
 import toast from '@shared/lib/SharedUtils';
 import { roleEndpoints } from '../api/roleEndpoints';
+import { PENDING_INVITATIONS_QUERY_KEY } from './PendingInvitations';
 
 import './InviteUserDialog.scss';
 
@@ -53,6 +54,7 @@ const InviteForm = ({ onClose }: { onClose: () => void }) => {
       });
       toast(`Invitación enviada a ${email.trim()}.`, 'success');
       void queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      void queryClient.invalidateQueries({ queryKey: PENDING_INVITATIONS_QUERY_KEY });
       onClose();
     } catch (err) {
       setError(inviteErrorMessage(err));

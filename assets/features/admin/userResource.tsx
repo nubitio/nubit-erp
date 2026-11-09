@@ -10,6 +10,7 @@ import { DateTime } from 'luxon';
 import { entityLabel } from '@shared/lib/displayFormat';
 import { userEndpoints } from './api/adminEndpoints';
 import { InviteUserBar } from './components/InviteUserDialog';
+import { PendingInvitations } from './components/PendingInvitations';
 import { RoleUserSummary } from './components/RoleUserSummary';
 
 interface UserRecord extends DataRecord {
@@ -83,6 +84,7 @@ export const userResource = defineResource<UserRecord>(userEndpoints.list(), {
   aboveGrid: (
     <>
       <InviteUserBar />
+      <PendingInvitations />
       <RoleUserSummary />
     </>
   ),
