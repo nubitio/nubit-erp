@@ -9,6 +9,7 @@ html[data-visual-style='nubit'] .pos-shell {
   --pos-muted: var(--nb-color-text-secondary);
   --pos-text-soft: var(--nb-color-text-secondary);
   --pos-primary: var(--nb-color-bg-brand);
+  --pos-primary-contrast: var(--nb-color-text-on-brand);
   --pos-primary-soft: var(--nb-color-bg-brand-subtle);
   --pos-danger: var(--nb-color-text-danger);
   --pos-danger-soft: var(--nb-color-bg-danger-subtle);
@@ -733,6 +734,7 @@ html[data-visual-style='nubit'] .pos-shell {
   --pos-text-soft: var(--nb-color-text-secondary);
   --pos-muted: var(--nb-color-text-secondary);
   --pos-primary: var(--nb-color-bg-brand);
+  --pos-primary-contrast: var(--nb-color-text-on-brand);
   --pos-primary-soft: var(--nb-color-bg-brand-subtle);
 }
 .pos-payment-dialog .split-payments--pos {

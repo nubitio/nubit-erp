@@ -1,0 +1,41 @@
+// Names that stylesheets use but that no theme or library defines. Each is aliased to the canonical
+// Nubit token it was meant to be, so those screens follow the theme (and dark mode) instead of
+// either painting a hard-coded fallback or, with no fallback, losing the declaration entirely
+// (an undefined `var()` makes the property invalid, e.g. `color` falls back to the inherited one).
+//
+// Prefer the canonical token in new code. assets/theme/undefinedTokens.test.ts fails if a stylesheet
+// reads a name that is neither defined nor listed here.
+:root {
+  // Text
+  --color-text-muted: var(--text-secondary);
+  --text-muted: var(--text-secondary);
+  --nb-text-primary: var(--nb-color-text-primary);
+  --nb-text-secondary: var(--nb-color-text-secondary);
+
+  // Accent and semantic colours
+  --color-primary: var(--accent-color);
+  --nb-primary: var(--accent-color);
+  --primary-bg: var(--accent-subtle);
+  --danger-color: var(--error-color);
+  --color-danger: var(--error-color);
+  --color-warning: var(--warning-color);
+  --color-warning-fg: var(--warning-color);
+  --nb-color-success: var(--nb-color-text-success);
+  --nb-color-success-dark: var(--nb-color-text-success);
+  --nb-color-warning: var(--nb-color-text-warning);
+  --nb-color-warning-dark: var(--nb-color-text-warning);
+  --nb-color-bg-warning: var(--nb-color-bg-warning-subtle);
+
+  // Surfaces and borders
+  --surface-muted: var(--surface-2);
+  --surface-secondary: var(--surface-2);
+  --color-surface-subtle: var(--surface-2);
+  --nb-surface: var(--nb-color-bg-surface);
+  --nb-bg-surface: var(--nb-color-bg-surface);
+  --nb-surface-panel: var(--nb-color-bg-surface);
+  --nb-border: var(--nb-color-border-default);
+
+  // Typography and shape
+  --font-mono: var(--font-family-mono);
+  --border-radius-md: var(--radius-md);
+}
