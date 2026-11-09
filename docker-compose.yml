@@ -187,11 +187,20 @@ services:
       COREPACK_ENABLE_DOWNLOAD_PROMPT: '0'
       # Required for yarn portal deps (@nubitio/crud → ../../nubit-react/...).
       NODE_OPTIONS: '--preserve-symlinks'
+      # Keep the Linux install state in the container: the project directory is shared with the host,
+      # and a Linux .yarn/install-state.gz would make the host's yarn reinstall everything.
+      YARN_INSTALL_STATE_PATH: '/tmp/yarn-install-state.gz'
       # Host-visible Vite URL (mapped port below). Keeps efact off localhost:5173.
       VITE_DEV_SERVER_ORIGIN: 'http://localhost:5174'
     working_dir: /home/node/app
+    # Sync the node_modules volume with yarn.lock on every start. Without this a volume created for an
+    # older dependency layout (e.g. portal links to a sibling repo) is reused as-is and Vite fails with
+    # "Failed to resolve import @nubitio/ui". --immutable never rewrites yarn.lock on the host; if the
+    # install cannot run (say yarn.lock is out of sync) it warns and starts with what is there.
     command: >
-      sh -lc "corepack enable && yarn dev --host 0.0.0.0"
+      sh -lc "corepack enable &&
+      (yarn install --immutable || echo 'WARNING: yarn install failed; starting Vite with the existing node_modules volume') &&
+      yarn dev --host 0.0.0.0"
     volumes:
       - '.:/home/node/app'
       # Linux-native deps — host node_modules (darwin) breaks Rollup inside the container.
