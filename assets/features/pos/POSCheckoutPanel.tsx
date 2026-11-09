@@ -190,6 +190,7 @@ export function POSCheckoutPanel({
     { value: 'NOTA', label: 'Nota de venta' },
   ] as const;
   type VoucherChoice = (typeof voucherOptions)[number]['value'];
+  const paymentUnits = Number(cart.reduce((sum, item) => sum + item.quantity, 0).toFixed(3));
   const voucherChoice: VoucherChoice = !emitInvoice
     ? 'NOTA'
     : requestedVoucherType === 'AUTO'
@@ -823,7 +824,10 @@ export function POSCheckoutPanel({
         footer={
           <div className="pos-payment-dialog__footer">
             <Button variant="secondary" onClick={() => setPaymentOpen(false)}>
-              Volver
+              Volver{' '}
+              <kbd className="pos-checkout__key" aria-hidden="true">
+                Esc
+              </kbd>
             </Button>
             <Button
               variant="primary"
@@ -840,11 +844,23 @@ export function POSCheckoutPanel({
                         ? `Cobrar y emitir ${voucherChoice === 'FACTURA' ? 'factura' : 'boleta'}`
                         : 'Cobrar'
                   } · ${formatMoney(payableTotal)}`}
+              {!isProcessingSale && (
+                <kbd className="pos-checkout__key" aria-hidden="true">
+                  F9
+                </kbd>
+              )}
             </Button>
           </div>
         }
       >
         <div className="pos-payment-dialog__body">
+          <p className="pos-payment-dialog__subtitle" data-testid="pos-payment-subtitle">
+            {[
+              voucherOptions.find((option) => option.value === voucherChoice)?.label,
+              selectedCustomer?.businessName ?? 'Cliente General',
+              `${cart.length} ${cart.length === 1 ? 'producto' : 'productos'}, ${paymentUnits} ${paymentUnits === 1 ? 'unidad' : 'unidades'}`,
+            ].join(' · ')}
+          </p>
           {checkoutError && (
             <div className="pos-checkout-error-banner" role="alert">
               {checkoutError}

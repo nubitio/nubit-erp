@@ -9,6 +9,9 @@ export function FinanceNavigation() {
       {hasPermission('accounts_payable.view') && (
         <NavLink to="/accounts-payable">Por pagar</NavLink>
       )}
+      {hasPermission('bank_reconciliation.view') && (
+        <NavLink to="/bank-reconciliation">Movimientos de caja y bancos</NavLink>
+      )}
     </nav>
   );
 }

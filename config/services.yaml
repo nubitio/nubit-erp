@@ -45,6 +45,10 @@ services:
   App\:
     resource: '../src/'
 
+  # Identity module (nubit_admin.identity): the bundle's default gateway assumes e-mail identifiers and
+  # string roles; this ERP has usernames and Role entities. Harmless while the module is off.
+  Nubit\AdminBundle\Identity\IdentityUserGatewayInterface: '@App\Identity\Auth\ErpIdentityUserGateway'
+
   # Platform library services (vendor classes are not autodiscovered).
   # Opt-in 0.13 modules (analytics, feature flags, OTEL tracing/metrics) are
   # registered by nubit_admin.* when enabled — do not autowire them here.

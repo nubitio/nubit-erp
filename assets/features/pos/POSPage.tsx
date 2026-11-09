@@ -525,7 +525,11 @@ const POSPage = () => {
       // F9 → charge (opens the payment dialog)
       if (e.key === 'F9') {
         e.preventDefault();
-        if (!paymentOpen && cajaAbierta && cart.length > 0) setPaymentOpen(true);
+        if (!paymentOpen) {
+          if (cajaAbierta && cart.length > 0) setPaymentOpen(true);
+        } else if (!checkoutDisabled && cajaAbierta) {
+          handleCheckout();
+        }
         return;
       }
 

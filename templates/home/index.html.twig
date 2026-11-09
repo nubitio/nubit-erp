@@ -24,6 +24,7 @@
 {% endblock %}
 <script nonce="{{ csp_nonce() }}">
     window.app_version = '{{ setting('version') }}';
+    window.app_identity = {{ identity_enabled ? 'true' : 'false' }};
 </script>
 </body>
 </html>

@@ -109,4 +109,13 @@ final class UserSoftDeleteProcessorTest extends TestCase
 
         return $user;
     }
+
+    public function testSoftDeleteReleasesTheEmailSoItCanBeReused(): void
+    {
+        $user = $this->createUser()->setEmail('ana@example.test');
+
+        new UserSoftDeleteProcessor($this->createStub(ProcessorInterface::class))->process($user, new Delete(), [], []);
+
+        self::assertNull($user->getEmail());
+    }
 }

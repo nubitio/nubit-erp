@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, IconButton, TextField } from '@nubitio/ui';
 
 import './LoginForm.scss';
@@ -10,6 +10,7 @@ import { BranchPicker } from '@app/shell/components/BranchPicker';
 import { resolveLoginRedirect, resolvePostLoginRedirect } from '@shared/lib/authRedirect';
 import { requestAuthSessionSync } from '@shared/lib/authSessionSync';
 import { StorageUtils } from '@shared/lib/StorageUtils';
+import { classifyLoginError } from './loginErrors';
 
 interface BranchOption {
   id: string;
@@ -23,10 +24,18 @@ function extractApiError(err: unknown, fallback: string): string {
   return anyErr?.data?.detail ?? anyErr?.data?.message ?? fallback;
 }
 
+/** The raw server message key, which is what the second-factor step branches on. */
+function rawApiMessage(err: unknown): string | undefined {
+  return (err as { data?: { message?: string } })?.data?.message;
+}
+
 export const LoginForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const usernameRef = useRef<HTMLInputElement>(null);
+  const totpRef = useRef<HTMLInputElement>(null);
+  const [needsCode, setNeedsCode] = useState(false);
+  const [totpCode, setTotpCode] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -84,6 +93,10 @@ export const LoginForm = () => {
         setPasswordError('Contraseña es requerida');
         valid = false;
       }
+      if (needsCode && !totpCode.trim()) {
+        setSubmitError('Ingresa el código de verificación para continuar.');
+        return;
+      }
       if (!valid) {
         setSubmitError('Completa los campos requeridos para continuar.');
         return;
@@ -96,7 +109,11 @@ export const LoginForm = () => {
       setLoading(true);
 
       try {
-        const response = await authService.login(username.trim(), password);
+        const response = await authService.login(
+          username.trim(),
+          password,
+          needsCode ? totpCode.trim() : undefined,
+        );
 
         if (response.data.user) {
           StorageUtils.setItem('user', response.data.user);
@@ -139,16 +156,27 @@ export const LoginForm = () => {
           setLoading(false);
         }
       } catch (err) {
-        setSubmitError(
-          extractApiError(
-            err,
-            'No se pudo iniciar sesión. Verifica tus credenciales e inténtalo de nuevo.',
-          ),
-        );
+        const classified = classifyLoginError(rawApiMessage(err));
+        if (classified.kind === 'needs-code') {
+          // Password was right; ask for the second factor instead of reporting a failure.
+          setNeedsCode(true);
+          setSubmitError(null);
+          setTimeout(() => totpRef.current?.focus(), 0);
+        } else if (classified.text) {
+          if (classified.kind === 'bad-code') setTotpCode('');
+          setSubmitError(classified.text);
+        } else {
+          setSubmitError(
+            extractApiError(
+              err,
+              'No se pudo iniciar sesión. Verifica tus credenciales e inténtalo de nuevo.',
+            ),
+          );
+        }
         setLoading(false);
       }
     },
-    [loading, username, password, applyBranchAndRedirect],
+    [loading, username, password, needsCode, totpCode, applyBranchAndRedirect],
   );
 
   return (
@@ -168,7 +196,7 @@ export const LoginForm = () => {
           invalid={!!usernameError}
           aria-invalid={!!usernameError}
           aria-describedby={usernameError ? 'login-username-error' : undefined}
-          disabled={loading}
+          disabled={loading || needsCode}
           value={username}
           onChange={(e) => {
             setUsername(e.target.value);
@@ -197,7 +225,7 @@ export const LoginForm = () => {
             invalid={!!passwordError}
             aria-invalid={!!passwordError}
             aria-describedby={passwordError ? 'login-password-error' : undefined}
-            disabled={loading}
+            disabled={loading || needsCode}
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
@@ -219,9 +247,47 @@ export const LoginForm = () => {
         )}
       </div>
 
+      {/* Second factor (only after the server asked for it) */}
+      {needsCode && (
+        <div className="login-field">
+          <label className="login-label" htmlFor="login-totp">
+            Código de verificación
+          </label>
+          <TextField
+            ref={totpRef}
+            id="login-totp"
+            className="login-input"
+            type="text"
+            inputMode="text"
+            autoComplete="one-time-code"
+            aria-label="Código de verificación"
+            disabled={loading}
+            value={totpCode}
+            onChange={(e) => {
+              setTotpCode(e.target.value);
+              if (submitError) setSubmitError(null);
+            }}
+          />
+          <span className="login-field__hint">
+            Ingresa el código de 6 dígitos de tu app de autenticación, o un código de recuperación.
+          </span>
+          <button
+            type="button"
+            className="login-link"
+            onClick={() => {
+              setNeedsCode(false);
+              setTotpCode('');
+              setSubmitError(null);
+            }}
+          >
+            Usar otra cuenta
+          </button>
+        </div>
+      )}
+
       {/* Submit */}
       <Button type="submit" className="login-submit" variant="primary" fullWidth loading={loading}>
-        Ingresar
+        {needsCode ? 'Verificar' : 'Ingresar'}
       </Button>
 
       {/* General error */}
@@ -229,6 +295,12 @@ export const LoginForm = () => {
         <div className="login-error" role="alert" aria-live="assertive">
           {submitError}
         </div>
+      )}
+
+      {window.app_identity && !needsCode && (
+        <Link className="login-link" to="/forgot-password">
+          ¿Olvidaste tu contraseña?
+        </Link>
       )}
 
       <BranchPicker

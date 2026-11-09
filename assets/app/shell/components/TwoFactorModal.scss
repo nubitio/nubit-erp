@@ -1,0 +1,51 @@
+.two-factor {
+  display: grid;
+  gap: 12px;
+
+  p {
+    margin: 0;
+  }
+
+  &__steps {
+    display: grid;
+    gap: 16px;
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  &__secret {
+    background: var(--nb-color-bg-subtle, var(--surface-2));
+    border-radius: 8px;
+    display: block;
+    font-family: var(--font-family-mono, ui-monospace, monospace);
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+    margin-top: 8px;
+    padding: 10px 12px;
+    user-select: all;
+    word-break: break-all;
+  }
+
+  &__codes {
+    display: grid;
+    font-family: var(--font-family-mono, ui-monospace, monospace);
+    gap: 4px 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    list-style: none;
+    margin: 8px 0;
+    padding: 0;
+  }
+
+  &__field {
+    display: grid;
+    font-weight: 500;
+    gap: 4px;
+  }
+
+  &__error {
+    background: var(--nb-color-bg-danger-subtle, var(--status-danger-bg));
+    border-radius: 8px;
+    color: var(--nb-color-text-danger, var(--status-danger-text));
+    padding: 10px 12px;
+  }
+}

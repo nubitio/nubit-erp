@@ -18,6 +18,7 @@ export const UserMenuSection = ({
   onAction,
   onChangeBranch,
   onChangePassword,
+  onTwoFactor,
 }: UserMenuSectionProps) => {
   const { user, signOut } = useAuth();
   const { data: runtimeConfig, isError: runtimeConfigError } = useTenantRuntimeConfig();
@@ -53,6 +54,16 @@ export const UserMenuSection = ({
           onChangePassword?.();
         },
       },
+      ...(window.app_identity && onTwoFactor
+        ? [
+            {
+              text: 'Verificación en dos pasos',
+              icon: 'ph ph-shield-check',
+              closeAfterAction: true,
+              onClick: onTwoFactor,
+            },
+          ]
+        : []),
       {
         text: 'Cerrar sesión',
         icon: 'ph ph-sign-out',
@@ -62,7 +73,7 @@ export const UserMenuSection = ({
     );
 
     return items;
-  }, [canChangeBranch, onChangeBranch, onChangePassword, signOut]);
+  }, [canChangeBranch, onChangeBranch, onChangePassword, onTwoFactor, signOut]);
 
   return (
     <>

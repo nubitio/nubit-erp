@@ -3861,6 +3861,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/supplier-bills-forecast": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a SupplierBillForecast resource.
+         * @description Retrieves a SupplierBillForecast resource.
+         */
+        get: operations["api_supplier-bills-forecast_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/supplier-bills-summary": {
         parameters: {
             query?: never;
@@ -8616,6 +8636,7 @@ export interface components {
          */
         "PayrollRun.PayrollRunPayDto": {
             id?: string;
+            /** @description PaymentMethod id; CASH pays from caja, anything else from banco. */
             paymentMethodId?: number | null;
         };
         /**
@@ -13539,6 +13560,8 @@ export interface components {
         };
         SupplierBillAging: Record<string, never>;
         "SupplierBillAging.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        SupplierBillForecast: Record<string, never>;
+        "SupplierBillForecast.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         SupplierBillSummary: Record<string, never>;
         "SupplierBillSummary.jsonld": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         "SupplierPayment-supplier_bill.read": {
@@ -14220,6 +14243,11 @@ export interface components {
              * @example https://example.com/
              */
             role?: string;
+            /**
+             * Format: email
+             * @description user.email.label
+             */
+            email?: string | null;
         };
         "User-user.create_user.update.jsonMergePatch": {
             /** @description user.username.label */
@@ -14232,6 +14260,11 @@ export interface components {
              * @example https://example.com/
              */
             role?: string;
+            /**
+             * Format: email
+             * @description user.email.label
+             */
+            email?: string | null;
         };
         "User-user.read": {
             readonly id?: number;
@@ -14239,6 +14272,16 @@ export interface components {
             username: string;
             /** @description user.role.label */
             role?: components["schemas"]["Role-user.read"];
+            /**
+             * Format: email
+             * @description user.email.label
+             */
+            email?: string | null;
+            /**
+             * Format: date-time
+             * @description user.last_login_at.label
+             */
+            readonly lastLoginAt?: string | null;
         };
         "User.jsonld-employee.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
         "User.jsonld-expense_report.read": components["schemas"]["HydraItemBaseSchema"] & {
@@ -14252,6 +14295,16 @@ export interface components {
             username: string;
             /** @description user.role.label */
             role?: components["schemas"]["Role.jsonld-user.read"];
+            /**
+             * Format: email
+             * @description user.email.label
+             */
+            email?: string | null;
+            /**
+             * Format: date-time
+             * @description user.last_login_at.label
+             */
+            readonly lastLoginAt?: string | null;
         };
         "UserNotification-user_notification.read": {
             readonly id?: number | string;
@@ -27646,6 +27699,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description SupplierBillAging resource */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -27655,6 +27709,7 @@ export interface operations {
                     "application/ld+json": components["schemas"]["SupplierBillAging.jsonld"];
                 };
             };
+            /** @description Forbidden */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -27665,6 +27720,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Not found */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -27686,6 +27742,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description SupplierBillAging resource */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -27695,6 +27752,7 @@ export interface operations {
                     "application/ld+json": components["schemas"]["SupplierBillAging.jsonld"];
                 };
             };
+            /** @description Forbidden */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -27705,6 +27763,50 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_supplier-bills-forecast_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SupplierBillForecast resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SupplierBillForecast"];
+                    "application/ld+json": components["schemas"]["SupplierBillForecast.jsonld"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
             404: {
                 headers: {
                     [name: string]: unknown;

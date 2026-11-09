@@ -13,6 +13,7 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 import { useQueryClient } from '@tanstack/react-query';
 import { FinanceNavigation } from '@shared/ui/finance/FinanceNavigation';
 import { SupplierBillSummary } from './SupplierBillSummary';
+import { SupplierBillForecast } from './SupplierBillForecast';
 import './SupplierBillPage.scss';
 import { DateTime } from 'luxon';
 import { payableDueGroup } from './model/payableDueGroup';
@@ -171,6 +172,7 @@ export const SupplierBillPage = () => {
           <PageHeader title="Cuentas por pagar" subtitle={payableSubtitle(summary?.currencies)} />
           <FinanceNavigation />
           <SupplierBillSummary />
+          <SupplierBillForecast />
         </>
       ),
       onSaveSuccess: refreshSummary,

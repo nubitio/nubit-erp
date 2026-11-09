@@ -42,9 +42,12 @@ layers:
 externalTables:
   doctrine_migration_versions: doctrine/migrations
   messenger_messages: symfony/messenger
+  nubit_api_key: nubitio/admin-bundle
   nubit_audit_log: nubitio/admin-bundle
+  nubit_identity_token: nubitio/admin-bundle
   nubit_media: nubitio/admin-bundle
   nubit_refresh_token: nubitio/admin-bundle
+  nubit_totp_credential: nubitio/admin-bundle
 
 contexts:
   Core:

@@ -1,0 +1,27 @@
+.invite-user-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.invite-user {
+  display: grid;
+  gap: 12px;
+
+  p {
+    margin: 0;
+  }
+
+  &__field {
+    display: grid;
+    font-weight: 500;
+    gap: 4px;
+  }
+
+  &__error {
+    background: var(--nb-color-bg-danger-subtle, var(--status-danger-bg));
+    border-radius: 8px;
+    color: var(--nb-color-text-danger, var(--status-danger-text));
+    padding: 10px 12px;
+  }
+}

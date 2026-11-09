@@ -7,6 +7,8 @@ export interface UserMenuSectionProps {
   onAction?: () => void;
   onChangeBranch?: () => void;
   onChangePassword?: () => void;
+  /** Offered only when the identity module is enabled server-side. */
+  onTwoFactor?: () => void;
 }
 
 export interface User {
