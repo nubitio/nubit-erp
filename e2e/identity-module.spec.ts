@@ -522,6 +522,293 @@ test.describe('invite dialog (browser)', () => {
   });
 });
 
+test.describe('pending invitations and second-factor visibility', () => {
+  const pendingEmail = `pend.${stamp}@example.test`;
+  const superEmail = `pend.super.${stamp}@example.test`;
+
+  test('a pending invitation is listed with its role, never with its token', async () => {
+    expect(
+      (await post(admin, '/api/user-invitations', { email: pendingEmail, roleId: 3 })).status(),
+    ).toBe(201);
+    const response = await admin.get('/api/user-invitations');
+    expect(response.status()).toBe(200);
+    const body = await response.json();
+    const mine = (
+      body.member as {
+        email: string;
+        role: { name: string } | null;
+        invitedBy: string;
+        expiresAt: string;
+      }[]
+    ).find((item) => item.email === pendingEmail);
+    expect(mine?.role?.name).toBe('Cajero');
+    expect(mine?.invitedBy).toBeTruthy();
+    expect(Date.parse(mine?.expiresAt ?? '')).toBeGreaterThan(Date.now());
+    expect(JSON.stringify(body)).not.toMatch(/[a-f0-9]{64}/);
+  });
+
+  test('resending issues a new link and the old one stops working', async () => {
+    const firstToken = tokenFrom(await mailTo(pendingEmail, 'invitaron'));
+    const resent = await post(admin, '/api/user-invitations/resend', { email: pendingEmail });
+    expect(resent.status()).toBe(200);
+    expect(JSON.stringify(await resent.json())).not.toMatch(/token/i);
+
+    // the newest mail is the second one; tokens are 64 hex chars, so compare to find the new one
+    let secondToken = '';
+    for (let attempt = 0; attempt < 30 && !secondToken; attempt += 1) {
+      const list = (await (
+        await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:${pendingEmail}`)}`)
+      ).json()) as {
+        messages: { ID: string }[];
+      };
+      for (const message of list.messages) {
+        const text = (
+          (await (await fetch(`${MAILPIT}/api/v1/message/${message.ID}`)).json()) as {
+            Text: string;
+          }
+        ).Text;
+        const candidate = tokenFrom(text);
+        if (candidate && candidate !== firstToken) secondToken = candidate;
+      }
+      if (!secondToken) await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    expect(secondToken, 'a second, different link was mailed').toHaveLength(64);
+
+    const anon = await newApi();
+    expect((await anon.get(`/api/invitations/${firstToken}`)).status(), 'old link').toBe(404);
+    expect((await anon.get(`/api/invitations/${secondToken}`)).status(), 'new link').toBe(200);
+    await anon.dispose();
+  });
+
+  test('revoking kills the link, removes it from the list, and cannot be repeated', async () => {
+    const revoked = await post(admin, '/api/user-invitations/revoke', { email: pendingEmail });
+    expect(revoked.status()).toBe(204);
+
+    const list = (await (await admin.get('/api/user-invitations')).json()) as {
+      member: { email: string }[];
+    };
+    expect(list.member.map((item) => item.email)).not.toContain(pendingEmail);
+    expect(
+      (await post(admin, '/api/user-invitations/revoke', { email: pendingEmail })).status(),
+    ).toBe(404);
+    expect(
+      (await post(admin, '/api/user-invitations/resend', { email: pendingEmail })).status(),
+    ).toBe(404);
+    expect(
+      (
+        await post(admin, '/api/user-invitations/revoke', { email: 'nobody@example.test' })
+      ).status(),
+    ).toBe(404);
+  });
+
+  test('only a super administrator can handle an invitation that creates one', async () => {
+    expect(
+      (await post(admin, '/api/user-invitations', { email: superEmail, roleId: 1 })).status(),
+    ).toBe(201);
+
+    const lowerAdmin = await newApi();
+    expect((await login(lowerAdmin, `ui.${stamp}`, UI_NEW_PASSWORD)).status()).toBe(200);
+    expect(
+      (await post(lowerAdmin, '/api/user-invitations/resend', { email: superEmail })).status(),
+    ).toBe(403);
+    expect(
+      (await post(lowerAdmin, '/api/user-invitations/revoke', { email: superEmail })).status(),
+    ).toBe(403);
+    await lowerAdmin.dispose();
+
+    expect(
+      (await post(admin, '/api/user-invitations/revoke', { email: superEmail })).status(),
+    ).toBe(204);
+  });
+
+  test('a cashier cannot list or manage invitations or see who has a second factor; anonymous gets 401', async () => {
+    // a real cashier: invited, accepted, signed in
+    const cashEmail = `pend.cash.${stamp}@example.test`;
+    expect(
+      (await post(admin, '/api/user-invitations', { email: cashEmail, roleId: 3 })).status(),
+    ).toBe(201);
+    const token = tokenFrom(await mailTo(cashEmail, 'invitaron'));
+    const anon = await newApi();
+    const accepted = await anon.post(`/api/invitations/${token}/accept`, {
+      data: { password: PASSWORD },
+    });
+    expect(accepted.status()).toBe(201);
+    const cashierName = ((await accepted.json()) as { username: string }).username;
+
+    const cashier = await newApi();
+    expect((await login(cashier, cashierName, PASSWORD)).status()).toBe(200);
+    expect((await cashier.get('/api/user-invitations')).status()).toBe(403);
+    expect((await cashier.get('/api/user-security')).status()).toBe(403);
+    expect(
+      (await post(cashier, '/api/user-invitations/resend', { email: pendingEmail })).status(),
+    ).toBe(403);
+    expect(
+      (await post(cashier, '/api/user-invitations/revoke', { email: pendingEmail })).status(),
+    ).toBe(403);
+    await cashier.dispose();
+
+    expect((await anon.get('/api/user-invitations')).status()).toBe(401);
+    expect(
+      (await anon.post('/api/user-invitations/revoke', { data: { email: pendingEmail } })).status(),
+    ).toBe(401);
+    expect((await anon.get('/api/user-security')).status()).toBe(401);
+    await anon.dispose();
+
+    const users = (await (await admin.get('/api/users?itemsPerPage=200')).json()) as {
+      id: number;
+      username: string;
+    }[];
+    const created = users.find((user) => user.username === cashierName);
+    if (created) await admin.delete(`/api/users/${created.id}`, { headers: await csrf(admin) });
+  });
+
+  test('user-security lists only users with a CONFIRMED second factor', async () => {
+    const enrolled = async () =>
+      (
+        (await (await admin.get('/api/user-security')).json()) as {
+          enabled: boolean;
+          withSecondFactor: string[];
+        }
+      ).withSecondFactor;
+
+    // `username` confirmed a second factor in the sign-in form test earlier
+    expect(await enrolled()).toContain(username);
+
+    // an enrolment that was begun but not confirmed must not appear
+    const api = await newApi();
+    await login(api, `ui.${stamp}`, UI_NEW_PASSWORD);
+    expect((await post(api, '/api/auth/totp')).status()).toBe(201);
+    expect(await enrolled()).not.toContain(`ui.${stamp}`);
+    await api.delete('/api/auth/totp', { headers: await csrf(api), data: {} });
+    await api.dispose();
+  });
+
+  test('the actions leave entries in the activity record', async () => {
+    const entries = (
+      (await (
+        await admin.get(
+          `/api/activity-events?type=user&limit=100&q=${encodeURIComponent(pendingEmail)}`,
+        )
+      ).json()) as {
+        items: { type: string; summary: string }[];
+      }
+    ).items;
+    const types = entries.map((entry) => entry.type);
+    expect(types).toContain('user.invitation_resent');
+    expect(types).toContain('user.invitation_revoked');
+    expect(entries.find((entry) => entry.type === 'user.invitation_revoked')?.summary).toContain(
+      pendingEmail,
+    );
+  });
+});
+
+test.describe('pending invitations and 2FA reset on the users screen (browser)', () => {
+  test('the Invitaciones tab lists an invitation, resends it, and revokes it after confirming', async ({
+    page,
+  }) => {
+    const seed = await getE2ESeed();
+    const email = `ui.pend.${stamp}@example.test`;
+    expect((await post(admin, '/api/user-invitations', { email, roleId: 3 })).status()).toBe(201);
+    await mailTo(email, 'invitaron');
+
+    await uiLogin(page, seed.username, seed.password);
+    await page.goto(`${BASE}/#/config/invitations`);
+    await expect(page.getByTestId('invitations-page')).toBeVisible({ timeout: 25_000 });
+    const row = page.locator('tbody tr').filter({ hasText: email });
+    await expect(row).toBeVisible({ timeout: 25_000 });
+    await expect(row).toContainText('Cajero');
+    await expect(row).toContainText('vence en 7 días');
+
+    await row.getByRole('button').last().click();
+    await page.getByRole('menuitem', { name: 'Reenviar' }).click();
+    await expect(page.getByText(`Enviamos un nuevo enlace a ${email}`)).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect
+      .poll(
+        async () => {
+          const list = (await (
+            await fetch(`${MAILPIT}/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`)
+          ).json()) as {
+            messages_count: number;
+          };
+          return list.messages_count;
+        },
+        { timeout: 20_000 },
+      )
+      .toBe(2);
+
+    await row.getByRole('button').last().click();
+    await page.getByRole('menuitem', { name: 'Revocar' }).click();
+    await expect(page.getByText('Revocar invitación', { exact: true })).toBeVisible();
+    await expect(
+      page.getByText(`El enlace enviado a ${email} dejará de funcionar de inmediato.`),
+    ).toBeVisible();
+    // the confirm button of the modal is the last "Revocar" in the DOM (it is portalled to the end)
+    await page.getByRole('button', { name: 'Revocar', exact: true }).last().click();
+    await expect(row).toHaveCount(0, { timeout: 15_000 });
+
+    const list = (await (await admin.get('/api/user-invitations')).json()) as {
+      member: { email: string }[];
+    };
+    expect(list.member.map((item) => item.email)).not.toContain(email);
+
+    for (const extra of ['a', 'b', 'c', 'd']) {
+      await post(admin, '/api/user-invitations/revoke', {
+        email: `ui.pend.${extra}.${stamp}@example.test`,
+      });
+    }
+  });
+
+  test("an administrator resets a colleague's second factor from the row menu", async ({
+    page,
+  }) => {
+    const seed = await getE2ESeed();
+    const enrolled = async () =>
+      ((await (await admin.get('/api/user-security')).json()) as { withSecondFactor: string[] })
+        .withSecondFactor;
+
+    // this user confirmed a second factor in the sign-in form test earlier
+    expect(await enrolled()).toContain(username);
+    expect(
+      (await login(await newApi(), username, NEW_PASSWORD)).status(),
+      'needs the code right now',
+    ).toBe(401);
+
+    await uiLogin(page, seed.username, seed.password);
+    await page.goto(`${BASE}/#/config/users`);
+    const row = page.locator('tbody tr').filter({ hasText: username });
+    await expect(row.first()).toBeVisible({ timeout: 25_000 });
+    // only users that have a second factor offer the action
+    const others = page.locator('tbody tr').filter({ hasText: seed.username });
+    // The grid has a sticky header and toolbar: centre the row so they do not cover its menu button.
+    const openRowMenu = async (target: typeof row) => {
+      await target.first().evaluate((element) => element.scrollIntoView({ block: 'center' }));
+      await target.first().getByRole('button', { name: 'Acciones' }).click();
+    };
+    await openRowMenu(others);
+    await expect(page.getByRole('menuitem', { name: 'Restablecer 2FA' })).toHaveCount(0);
+    await page.keyboard.press('Escape');
+
+    await openRowMenu(row);
+    await page.getByRole('menuitem', { name: 'Restablecer 2FA' }).click();
+    await expect(
+      page.getByText('Restablecer verificación en dos pasos', { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText(`${username} podrá entrar solo con su contraseña`)).toBeVisible();
+    await page.getByRole('button', { name: 'Restablecer', exact: true }).last().click();
+    await expect(page.getByText(`${username} puede entrar solo con su contraseña`)).toBeVisible({
+      timeout: 15_000,
+    });
+
+    expect(await enrolled()).not.toContain(username);
+    expect(
+      (await login(await newApi(), username, NEW_PASSWORD)).status(),
+      'password alone works again',
+    ).toBe(200);
+  });
+});
+
 test.describe('activity record of the identity flows', () => {
   test('invitations, second factor and password recovery all leave an entry, without secrets', async () => {
     const q = encodeURIComponent(`qa.${stamp}`);

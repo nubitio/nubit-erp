@@ -8,6 +8,7 @@ use App\Identity\Activity\ActivityRecorderInterface;
 use App\Identity\Activity\ActivityType;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
+use App\Identity\Invitation\InvitationMessages;
 use Doctrine\ORM\EntityManagerInterface;
 use Nubit\AdminBundle\Identity\Exception\IdentityException;
 use Nubit\AdminBundle\Identity\InvitationService;
@@ -67,7 +68,9 @@ final class UserInvitationController extends AbstractController
                 $caller instanceof User ? $caller->getUserIdentifier() : null,
             );
         } catch (IdentityException $exception) {
-            return $this->json(['message' => $this->translate($exception->getMessage())], Response::HTTP_CONFLICT);
+            return $this->json([
+                'message' => InvitationMessages::translate($exception->getMessage()),
+            ], Response::HTTP_CONFLICT);
         }
 
         $this->activity->record(
@@ -86,14 +89,5 @@ final class UserInvitationController extends AbstractController
             'role' => $role->getName(),
             'expiresAt' => $issued['record']->getExpiresAt()->format(\DATE_ATOM),
         ], Response::HTTP_CREATED);
-    }
-
-    private function translate(string $message): string
-    {
-        return match (true) {
-            str_contains($message, 'valid email') => 'Escribe un correo válido.',
-            str_contains($message, 'already has an account') => 'Ese correo ya tiene una cuenta.',
-            default => $message,
-        };
     }
 }

@@ -1,0 +1,15 @@
+// The settings panel is a flex row: without this the grid shrinks to its content, in width and height.
+.invitations-page {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+
+  > .nb-datagrid,
+  > .nb-datagrid-view,
+  > :first-child {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}

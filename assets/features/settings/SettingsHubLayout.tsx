@@ -40,6 +40,13 @@ export const SettingsHubLayout = () => {
           visible: showAdminTabs,
         },
         {
+          key: 'invitations',
+          label: 'Invitaciones',
+          path: '/config/invitations',
+          icon: 'ph-envelope-simple',
+          visible: showAdminTabs && Boolean(window.app_identity) && hasPermission('users.view'),
+        },
+        {
           key: 'roles',
           label: 'Roles',
           path: '/config/roles',
