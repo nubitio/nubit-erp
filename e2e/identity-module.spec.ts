@@ -521,3 +521,55 @@ test.describe('invite dialog (browser)', () => {
     expect(mail).toContain('#/accept-invitation?token=');
   });
 });
+
+test.describe('activity record of the identity flows', () => {
+  test('invitations, second factor and password recovery all leave an entry, without secrets', async () => {
+    const q = encodeURIComponent(`qa.${stamp}`);
+    const response = await admin.get(`/api/activity-events?type=all&limit=100&q=${q}`);
+    expect(response.status()).toBe(200);
+    const entries = (
+      (await response.json()) as {
+        items: { type: string; summary: string; detail: string | null; sensitive: boolean }[];
+      }
+    ).items;
+    const types = new Set(entries.map((entry) => entry.type));
+
+    for (const expected of [
+      'user.invited',
+      'user.invitation_accepted',
+      'auth.totp_enabled',
+      'auth.totp_disabled',
+      'auth.totp_reset',
+      'auth.password_reset_requested',
+      'auth.password_reset',
+      'auth.login',
+    ]) {
+      expect(types, `missing ${expected}`).toContain(expected);
+    }
+
+    // sign-ins made with a second factor say so
+    expect(
+      entries.some(
+        (entry) =>
+          entry.type === 'auth.login' && entry.detail?.includes('con verificación en dos pasos'),
+      ),
+    ).toBe(true);
+    // Exactly the deliberate failures of this spec: a wrong code, a wrong password with a valid code,
+    // a replayed code, a replayed recovery code, the old password after a reset, and the browser's wrong
+    // code. The many "Second factor required" first steps of a 2FA sign-in must NOT be counted.
+    const failed = entries.filter(
+      (entry) => entry.type === 'auth.login_failed' && entry.summary.includes('qa.'),
+    );
+    expect(failed).toHaveLength(6);
+
+    // nothing secret is ever stored: no invitation/reset token, password or TOTP secret
+    const everything = JSON.stringify(entries);
+    expect(everything).not.toMatch(/[a-f0-9]{64}/);
+    expect(everything).not.toContain(PASSWORD);
+    expect(everything).not.toContain(NEW_PASSWORD);
+
+    // the sensitive ones are flagged, the routine ones are not
+    expect(entries.find((entry) => entry.type === 'auth.totp_reset')?.sensitive).toBe(true);
+    expect(entries.find((entry) => entry.type === 'auth.login')?.sensitive).toBe(false);
+  });
+});

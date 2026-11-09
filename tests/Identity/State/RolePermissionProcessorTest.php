@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Identity\State;
 
 use ApiPlatform\Metadata\Post;
+use App\Identity\Activity\ActivityRecorderInterface;
 use App\Identity\ApiResource\RolePermissionResource;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\RolePermission;
@@ -42,7 +43,7 @@ final class RolePermissionProcessorTest extends TestCase
             ->with(static::callback(static fn(RolePermission $permission): bool => $permission->getRole() === $role));
         $entityManager->expects(self::once())->method('flush');
 
-        $processor = new RolePermissionProcessor($entityManager);
+        $processor = new RolePermissionProcessor($entityManager, $this->createStub(ActivityRecorderInterface::class));
         $response = $processor->process(new RolePermissionResource(5, [
             'sales.view',
             'sales.view',
@@ -69,7 +70,7 @@ final class RolePermissionProcessorTest extends TestCase
         $entityManager->method('createQuery')->willReturn($delete);
         $entityManager->expects(self::never())->method('persist');
 
-        $processor = new RolePermissionProcessor($entityManager);
+        $processor = new RolePermissionProcessor($entityManager, $this->createStub(ActivityRecorderInterface::class));
         $response = $processor->process(new RolePermissionResource(5, ['sales.view']), new Post());
 
         static::assertFalse($response->success);

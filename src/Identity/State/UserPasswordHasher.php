@@ -8,6 +8,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use ApiPlatform\Validator\Exception\ValidationException;
+use App\Identity\Activity\ActivityRecorderInterface;
+use App\Identity\Activity\ActivityType;
 use App\Identity\Entity\User;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -27,6 +29,7 @@ final readonly class UserPasswordHasher implements ProcessorInterface
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $processor,
         private UserPasswordHasherInterface $passwordHasher,
+        private ActivityRecorderInterface $activity,
     ) {}
 
     /**
@@ -52,6 +55,17 @@ final readonly class UserPasswordHasher implements ProcessorInterface
         $data->setPassword($hashedPassword);
         $data->eraseCredentials();
 
-        return $this->processor->process($data, $operation, $uriVariables, $context);
+        $result = $this->processor->process($data, $operation, $uriVariables, $context);
+        if ($operation instanceof Post) {
+            $role = $data->getRole();
+            $this->activity->record(
+                ActivityType::USER_CREATED,
+                sprintf('Se creó el usuario %s', $data->getUsername()),
+                $role === null ? null : sprintf('Rol: %s', $role->getName()),
+                $data->getUsername(),
+            );
+        }
+
+        return $result;
     }
 }

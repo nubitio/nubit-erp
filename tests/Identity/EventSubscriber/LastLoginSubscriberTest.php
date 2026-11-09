@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Identity\EventSubscriber;
 
+use App\Identity\Activity\ActivityRecorderInterface;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use App\Identity\EventSubscriber\LastLoginSubscriber;
@@ -25,7 +26,7 @@ final class LastLoginSubscriberTest extends TestCase
     public function testStampsLastLoginOnTheLoginRouteOnly(): void
     {
         $db = $this->database();
-        $subscriber = new LastLoginSubscriber($db);
+        $subscriber = new LastLoginSubscriber($db, $this->createStub(ActivityRecorderInterface::class));
         $user = $this->user(7);
 
         $subscriber->onLoginSuccess($this->event($user, 'nubit_admin_auth_refresh'));
@@ -39,7 +40,7 @@ final class LastLoginSubscriberTest extends TestCase
     public function testIgnoresNonUserPrincipals(): void
     {
         $db = $this->database();
-        $subscriber = new LastLoginSubscriber($db);
+        $subscriber = new LastLoginSubscriber($db, $this->createStub(ActivityRecorderInterface::class));
 
         $subscriber->onLoginSuccess($this->event(new InMemoryUser('svc', null), 'nubit_admin_auth_login'));
 

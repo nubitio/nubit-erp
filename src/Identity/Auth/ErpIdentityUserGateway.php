@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Identity\Auth;
 
+use App\Identity\Activity\ActivityRecorderInterface;
+use App\Identity\Activity\ActivityType;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -32,6 +34,7 @@ final readonly class ErpIdentityUserGateway implements IdentityUserGatewayInterf
     public function __construct(
         private EntityManagerInterface $entityManager,
         private UserPasswordHasherInterface $passwordHasher,
+        private ActivityRecorderInterface $activity,
     ) {}
 
     #[Override]
@@ -61,6 +64,12 @@ final readonly class ErpIdentityUserGateway implements IdentityUserGatewayInterf
         PasswordPolicy::assertAcceptable($plainPassword);
         $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
         $this->entityManager->flush();
+
+        $this->activity->record(
+            ActivityType::PASSWORD_RESET,
+            sprintf('%s cambió su contraseña con el enlace de recuperación', $user->getUsername()),
+            actor: $user,
+        );
     }
 
     #[Override]
@@ -80,6 +89,13 @@ final readonly class ErpIdentityUserGateway implements IdentityUserGatewayInterf
         $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
         $this->entityManager->persist($user);
         $this->entityManager->flush();
+
+        $this->activity->record(
+            ActivityType::INVITATION_ACCEPTED,
+            sprintf('%s aceptó su invitación y creó su cuenta', $user->getUsername()),
+            sprintf('Rol: %s · %s', $role->getName(), $identifier),
+            actor: $user,
+        );
 
         return $user;
     }

@@ -111,6 +111,12 @@ final class PermissionCatalog
                     'users.delete' => 'Eliminar usuarios',
                 ],
             ],
+            'activity' => [
+                'label' => 'Registro de actividad',
+                'permissions' => [
+                    'activity.view' => 'Ver el registro de actividad',
+                ],
+            ],
             'roles' => [
                 'label' => 'Roles y permisos',
                 'permissions' => [
@@ -235,6 +241,18 @@ final class PermissionCatalog
         }
 
         return $keys;
+    }
+
+    /** Human label of a permission key; falls back to the key itself. */
+    public static function label(string $permission): string
+    {
+        foreach (self::modules() as $module) {
+            if (isset($module['permissions'][$permission])) {
+                return $module['permissions'][$permission];
+            }
+        }
+
+        return $permission;
     }
 
     public static function isValid(string $permission): bool

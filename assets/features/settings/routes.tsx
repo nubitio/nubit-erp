@@ -35,6 +35,14 @@ const SettingsRolesTab = () => (
   </SettingsCrudPanel>
 );
 
+const ActivityPage = lazyNamed(() => import('@features/activity/ActivityPage'), 'ActivityPage');
+
+const SettingsActivityTab = () => (
+  <SettingsCrudPanel>
+    <ActivityPage />
+  </SettingsCrudPanel>
+);
+
 const SettingsBranchesTab = () => (
   <SettingsCrudPanel>
     <BranchPage />
@@ -64,6 +72,7 @@ export const settingsRoutes: AppRouteDefinition[] = [
       { path: 'series', element: SettingsSeriesTab },
       { path: 'users', element: SettingsUsersTab },
       { path: 'roles', element: SettingsRolesTab },
+      { path: 'activity', element: SettingsActivityTab },
       { path: 'branches', element: SettingsBranchesTab },
       { path: 'general', element: SettingsGeneralTab },
       { path: 'integrations', element: SettingsIntegrationsTab },

@@ -81,7 +81,7 @@ contexts:
     publicContracts:
       - App\Identity\Auth\BranchContextServiceInterface
       - App\Identity\Notification\UserNotificationServiceInterface
-    ownsTables: [usuario, rol, role_permission, user_notification]
+    ownsTables: [usuario, rol, role_permission, user_notification, identity_activity_event]
 
   Organization:
     namespace: App\Organization

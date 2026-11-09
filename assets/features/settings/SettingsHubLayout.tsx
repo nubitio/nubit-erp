@@ -1,5 +1,6 @@
 import { FeatureHubLayout } from '@nubitio/admin';
 import { useTenantRuntimeConfig } from '@shared/hooks';
+import { hasPermission } from '@shared/permissions';
 import './settingsHub.scss';
 
 export const SettingsHubLayout = () => {
@@ -44,6 +45,13 @@ export const SettingsHubLayout = () => {
           path: '/config/roles',
           icon: 'ph-user-gear',
           visible: showAdminTabs,
+        },
+        {
+          key: 'activity',
+          label: 'Actividad',
+          path: '/config/activity',
+          icon: 'ph-clock-counter-clockwise',
+          visible: showAdminTabs && hasPermission('activity.view'),
         },
         {
           key: 'branches',

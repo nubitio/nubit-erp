@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Identity\EventSubscriber;
 
 use App\Efact\Audit\AuditLogger;
+use App\Identity\Activity\ActivityRecorderInterface;
+use App\Identity\Activity\ActivityType;
+use Nubit\AdminBundle\Identity\Exception\TotpRequiredException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
 
@@ -17,6 +20,7 @@ final readonly class LoginAuditSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private AuditLogger $auditLogger,
+        private ActivityRecorderInterface $activity,
     ) {}
 
     public static function getSubscribedEvents(): array
@@ -43,5 +47,15 @@ final readonly class LoginAuditSubscriber implements EventSubscriberInterface
             'ip' => $request->getClientIp() ?? 'unknown',
             'error' => $event->getException()->getMessage(),
         ]);
+
+        // "Second factor required" is the normal first step of a 2FA sign-in, not a failure.
+        if ($event->getException() instanceof TotpRequiredException) {
+            return;
+        }
+        $this->activity->record(
+            ActivityType::LOGIN_FAILED,
+            $username === '' ? 'Intento de ingreso fallido' : sprintf('Intento de ingreso fallido de «%s»', $username),
+            subject: $username === '' ? null : $username,
+        );
     }
 }
