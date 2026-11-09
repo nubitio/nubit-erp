@@ -6,7 +6,7 @@ import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import toast from '@shared/lib/SharedUtils';
 import { roleEndpoints } from '../api/roleEndpoints';
-import { PENDING_INVITATIONS_QUERY_KEY } from './PendingInvitations';
+import { PENDING_INVITATIONS_QUERY_KEY } from '../usePendingInvitations';
 
 import './InviteUserDialog.scss';
 

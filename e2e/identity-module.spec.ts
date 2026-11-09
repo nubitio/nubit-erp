@@ -534,7 +534,7 @@ test.describe('pending invitations and second-factor visibility', () => {
     expect(response.status()).toBe(200);
     const body = await response.json();
     const mine = (
-      body.items as {
+      body.member as {
         email: string;
         role: { name: string } | null;
         invitedBy: string;
@@ -585,9 +585,9 @@ test.describe('pending invitations and second-factor visibility', () => {
     expect(revoked.status()).toBe(204);
 
     const list = (await (await admin.get('/api/user-invitations')).json()) as {
-      items: { email: string }[];
+      member: { email: string }[];
     };
-    expect(list.items.map((item) => item.email)).not.toContain(pendingEmail);
+    expect(list.member.map((item) => item.email)).not.toContain(pendingEmail);
     expect(
       (await post(admin, '/api/user-invitations/revoke', { email: pendingEmail })).status(),
     ).toBe(404);
@@ -703,7 +703,7 @@ test.describe('pending invitations and second-factor visibility', () => {
 });
 
 test.describe('pending invitations and 2FA reset on the users screen (browser)', () => {
-  test('the pending panel lists an invitation, resends it, and revokes it after confirming', async ({
+  test('the Invitaciones tab lists an invitation, resends it, and revokes it after confirming', async ({
     page,
   }) => {
     const seed = await getE2ESeed();
@@ -711,32 +711,16 @@ test.describe('pending invitations and 2FA reset on the users screen (browser)',
     expect((await post(admin, '/api/user-invitations', { email, roleId: 3 })).status()).toBe(201);
     await mailTo(email, 'invitaron');
 
-    // enough pending invitations to force the collapse
-    for (const extra of ['a', 'b', 'c', 'd']) {
-      expect(
-        (
-          await post(admin, '/api/user-invitations', {
-            email: `ui.pend.${extra}.${stamp}@example.test`,
-            roleId: 3,
-          })
-        ).status(),
-      ).toBe(201);
-    }
-
     await uiLogin(page, seed.username, seed.password);
-    await page.goto(`${BASE}/#/config/users`);
-    await expect(page.getByTestId('pending-invitation')).toHaveCount(3, { timeout: 25_000 });
-    const toggle = page.getByTestId('pending-invitations-toggle');
-    await expect(toggle).toContainText(/Ver las \d+ restantes/);
-    await toggle.click();
-    expect(await page.getByTestId('pending-invitation').count()).toBeGreaterThan(3);
-    await expect(toggle).toHaveText('Mostrar menos');
-    const row = page.getByTestId('pending-invitation').filter({ hasText: email });
+    await page.goto(`${BASE}/#/config/invitations`);
+    await expect(page.getByTestId('invitations-page')).toBeVisible({ timeout: 25_000 });
+    const row = page.locator('tbody tr').filter({ hasText: email });
     await expect(row).toBeVisible({ timeout: 25_000 });
     await expect(row).toContainText('Cajero');
     await expect(row).toContainText('vence en 7 días');
 
-    await row.getByRole('button', { name: 'Reenviar' }).click();
+    await row.getByRole('button').last().click();
+    await page.getByRole('menuitem', { name: 'Reenviar' }).click();
     await expect(page.getByText(`Enviamos un nuevo enlace a ${email}`)).toBeVisible({
       timeout: 15_000,
     });
@@ -754,7 +738,8 @@ test.describe('pending invitations and 2FA reset on the users screen (browser)',
       )
       .toBe(2);
 
-    await row.getByRole('button', { name: 'Revocar' }).click();
+    await row.getByRole('button').last().click();
+    await page.getByRole('menuitem', { name: 'Revocar' }).click();
     await expect(page.getByText('Revocar invitación', { exact: true })).toBeVisible();
     await expect(
       page.getByText(`El enlace enviado a ${email} dejará de funcionar de inmediato.`),
@@ -764,9 +749,9 @@ test.describe('pending invitations and 2FA reset on the users screen (browser)',
     await expect(row).toHaveCount(0, { timeout: 15_000 });
 
     const list = (await (await admin.get('/api/user-invitations')).json()) as {
-      items: { email: string }[];
+      member: { email: string }[];
     };
-    expect(list.items.map((item) => item.email)).not.toContain(email);
+    expect(list.member.map((item) => item.email)).not.toContain(email);
 
     for (const extra of ['a', 'b', 'c', 'd']) {
       await post(admin, '/api/user-invitations/revoke', {

@@ -36,10 +36,13 @@ final class PendingInvitationController extends AbstractController
             return $this->disabled();
         }
 
-        return $this->json(['items' => array_map(
+        $members = array_map(
             static fn(PendingInvitation $invitation): array => $invitation->toArray(),
             $this->pending->all(),
-        )]);
+        );
+
+        // `member` / `totalItems` is the collection shape the datagrid's Hydra adapter reads.
+        return $this->json(['member' => $members, 'totalItems' => count($members)]);
     }
 
     #[Route('/api/user-invitations/resend', name: 'api_user_invitation_resend', methods: ['POST'])]

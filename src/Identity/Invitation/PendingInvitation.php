@@ -32,6 +32,7 @@ final readonly class PendingInvitation
     public function toArray(): array
     {
         return [
+            'id' => $this->email(),
             'email' => $this->email(),
             'role' => $this->role === null ? null : ['id' => $this->role->getId(), 'name' => $this->role->getName()],
             'invitedBy' => $this->record->getCreatedBy(),

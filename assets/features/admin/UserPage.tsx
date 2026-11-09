@@ -8,7 +8,7 @@ import { httpClient } from '@shared/api/HttpClient';
 import { hasPermission } from '@shared/permissions';
 import toast from '@shared/lib/SharedUtils';
 import { InviteUserDialog } from './components/InviteUserDialog';
-import { invitationErrorMessage } from './components/PendingInvitations';
+import { invitationErrorMessage } from './usePendingInvitations';
 import { userResource } from './userResource';
 
 const SECURITY_QUERY_KEY = ['admin', 'user-security'] as const;

@@ -1,11 +1,6 @@
 import { DateTime } from 'luxon';
 import { describe, expect, it } from 'vitest';
-import {
-  COLLAPSED_COUNT,
-  expiryLabel,
-  invitationErrorMessage,
-  visibleInvitations,
-} from './PendingInvitations';
+import { expiryLabel, invitationErrorMessage } from './usePendingInvitations';
 
 const now = DateTime.fromISO('2026-11-07T12:00:00Z', { zone: 'utc' });
 
@@ -35,20 +30,5 @@ describe('invitationErrorMessage', () => {
       invitationErrorMessage({ data: { message: 'Internal Server Error' } }, 'No se pudo.'),
     ).toBe('No se pudo.');
     expect(invitationErrorMessage(undefined, 'No se pudo.')).toBe('No se pudo.');
-  });
-});
-
-describe('visibleInvitations', () => {
-  const items = Array.from({ length: 7 }, (_, index) => index);
-
-  it('shows only the first few until expanded', () => {
-    expect(visibleInvitations(items, false)).toHaveLength(COLLAPSED_COUNT);
-    expect(visibleInvitations(items, false)).toEqual(items.slice(0, COLLAPSED_COUNT));
-    expect(visibleInvitations(items, true)).toEqual(items);
-  });
-
-  it('leaves short lists alone', () => {
-    expect(visibleInvitations([1, 2], false)).toEqual([1, 2]);
-    expect(visibleInvitations([], false)).toEqual([]);
   });
 });

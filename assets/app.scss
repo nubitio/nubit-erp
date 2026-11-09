@@ -12,3 +12,11 @@
 
 // Syne — brand/display font (header title, logo text)
 @import '@fontsource/syne/latin-700.css';
+
+// The datagrid renders every toolbar action that is not "primary" / "danger" as a secondary `sm`
+// button, and @nubitio/react-admin only raises primary / success / danger `sm` buttons to the
+// control height (--control-height). The result is a 40px "Nuevo" next to a 24px secondary action.
+// Give secondary toolbar actions the same height so they read as a set.
+.nb-datagrid__toolbar .nb-button--secondary.nb-button--sm {
+  min-height: var(--control-height);
+}
