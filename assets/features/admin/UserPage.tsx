@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { SchemaCrudPage } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
@@ -7,6 +7,7 @@ import { useConfirm } from '@nubitio/ui';
 import { httpClient } from '@shared/api/HttpClient';
 import { hasPermission } from '@shared/permissions';
 import toast from '@shared/lib/SharedUtils';
+import { InviteUserDialog } from './components/InviteUserDialog';
 import { invitationErrorMessage } from './components/PendingInvitations';
 import { userResource } from './userResource';
 
@@ -22,6 +23,8 @@ export const UserPage = () => {
   const queryClient = useQueryClient();
   const { ask, ConfirmHost } = useConfirm();
   const canReset = Boolean(window.app_identity) && hasPermission('users.edit');
+  const canInvite = Boolean(window.app_identity) && hasPermission('users.create');
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   const security = useQuery({
     queryKey: SECURITY_QUERY_KEY,
@@ -50,6 +53,20 @@ export const UserPage = () => {
   const resource = useMemo(
     () => ({
       ...userResource,
+      // "Invitar usuario" sits in the grid's own toolbar, next to "Nuevo".
+      toolbar: canInvite
+        ? {
+            primary: [
+              {
+                key: 'invite',
+                text: 'Invitar usuario',
+                icon: 'ph-envelope-simple',
+                type: 'secondary',
+                onClick: () => setInviteOpen(true),
+              },
+            ],
+          }
+        : undefined,
       rowActions: (row: UserRow) =>
         canReset && row.username && withSecondFactor?.includes(row.username)
           ? [
@@ -70,13 +87,14 @@ export const UserPage = () => {
             ]
           : [],
     }),
-    [canReset, withSecondFactor, ask, reset],
+    [canReset, canInvite, withSecondFactor, ask, reset],
   );
 
   return (
     <>
       <SchemaCrudPage resource={resource} />
       <ConfirmHost />
+      {inviteOpen && <InviteUserDialog onClose={() => setInviteOpen(false)} />}
     </>
   );
 };

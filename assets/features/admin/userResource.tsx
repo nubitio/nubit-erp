@@ -9,7 +9,6 @@ import { Avatar, Badge } from '@nubitio/ui';
 import { DateTime } from 'luxon';
 import { entityLabel } from '@shared/lib/displayFormat';
 import { userEndpoints } from './api/adminEndpoints';
-import { InviteUserBar } from './components/InviteUserDialog';
 import { PendingInvitations } from './components/PendingInvitations';
 import { RoleUserSummary } from './components/RoleUserSummary';
 
@@ -83,7 +82,6 @@ export const userResource = defineResource<UserRecord>(userEndpoints.list(), {
   columnPresets: USER_COLUMN_PRESETS,
   aboveGrid: (
     <>
-      <InviteUserBar />
       <PendingInvitations />
       <RoleUserSummary />
     </>

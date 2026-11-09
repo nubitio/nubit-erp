@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppDialog, Button, SelectField, TextField } from '@nubitio/ui';
 
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
-import { hasPermission } from '@shared/permissions';
 import toast from '@shared/lib/SharedUtils';
 import { roleEndpoints } from '../api/roleEndpoints';
 import { PENDING_INVITATIONS_QUERY_KEY } from './PendingInvitations';
@@ -27,7 +26,8 @@ export function inviteErrorMessage(err: unknown): string {
     : 'No se pudo enviar la invitación. Inténtalo de nuevo.';
 }
 
-const InviteForm = ({ onClose }: { onClose: () => void }) => {
+/** Dialog to invite a user by e-mail. Opened from the users grid toolbar (see UserPage). */
+export const InviteUserDialog = ({ onClose }: { onClose: () => void }) => {
   const queryClient = useQueryClient();
   const roles = useQuery({
     queryKey: ['admin', 'roles', 'invite'],
@@ -129,18 +129,3 @@ const InviteForm = ({ onClose }: { onClose: () => void }) => {
     </AppDialog>
   );
 };
-
-/** Toolbar above the users grid. Rendered only when invitations exist and the user may create users. */
-export function InviteUserBar() {
-  const [open, setOpen] = useState(false);
-  if (!window.app_identity || !hasPermission('users.create')) return null;
-
-  return (
-    <div className="invite-user-bar">
-      <Button variant="secondary" onClick={() => setOpen(true)}>
-        <i className="ph ph-envelope-simple" aria-hidden="true" /> Invitar usuario
-      </Button>
-      {open && <InviteForm onClose={() => setOpen(false)} />}
-    </div>
-  );
-}

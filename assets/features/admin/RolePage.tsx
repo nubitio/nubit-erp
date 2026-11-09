@@ -34,7 +34,6 @@ const baseResource = defineResource(roleEndpoints.list(), {
   title: 'Roles',
   gridAppearance: 'page',
   filterRow: true,
-  filterToolbarFields: ['name'],
   fields: RoleFields(),
   viewMode: 'dialog',
   defaultPreset: 'basic',
