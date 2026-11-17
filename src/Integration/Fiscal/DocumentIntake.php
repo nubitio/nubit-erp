@@ -168,6 +168,7 @@ final readonly class DocumentIntake
             $input->customerDocType,
             $input->customerDocNumber,
             $input->customerName,
+            array_map(static fn (DocumentLine $l): array => [$l->description, $l->quantity, $l->subtotalMinor, $l->taxMinor, $l->totalMinor], $input->lines),
         ], JSON_THROW_ON_ERROR));
     }
 

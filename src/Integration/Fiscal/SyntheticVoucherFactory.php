@@ -11,9 +11,9 @@ use App\Billing\Invoice\Domain\VoucherItem;
  * Builds the {@see Voucher} the SUNAT pipeline needs from an integration
  * request, without a backing Sale.
  *
- * A hosting charge is one line, taxed at 18% IGV, cash payment, no detraction,
- * no discount, no ISC. Anything more than that is out of scope for this channel
- * (see the integration design doc).
+ * Without `lines[]` a document is one line (`line_description`); with it, one
+ * item per line. Every line is taxed at 18% IGV, cash payment, no detraction,
+ * no discount, no ISC; anything more is out of scope for this channel.
  */
 final class SyntheticVoucherFactory
 {
@@ -35,21 +35,10 @@ final class SyntheticVoucherFactory
         $tax = self::minor($input->taxMinor);
         $total = self::minor($input->totalMinor);
 
-        $item = new VoucherItem(
-            product_code: self::ITEM_CODE,
-            product_uom: self::UOM_UNIT,
-            product_name: $input->lineDescription,
-            quantity: '1',
-            unit_value: $subtotal,
-            unit_price: $total,
-            discount_amount: '0.00',
-            discount_percentage: null,
-            taxed_amount: $subtotal,
-            tax_amount: $tax,
-            tax_percentage: self::IGV_PERCENT,
-            tax_type: self::TAX_TYPE_GRAVADO,
-            total: $total,
-        );
+        $lines = [] !== $input->lines
+            ? $input->lines
+            : [new DocumentLine($input->lineDescription, 1, $input->subtotalMinor, $input->taxMinor, $input->totalMinor)];
+        $items = array_map(self::item(...), $lines);
 
         return new Voucher(
             sale_id: null,
@@ -80,7 +69,29 @@ final class SyntheticVoucherFactory
             voucher_operation_type: self::OPERATION_TYPE_INTERNAL,
             voucher_note: $input->orderReference !== null ? 'Ref: ' . $input->orderReference : null,
             voucher_status: null,
-            voucher_items: [$item],
+            voucher_items: $items,
+        );
+    }
+
+    private static function item(DocumentLine $line): VoucherItem
+    {
+        $net = self::minor($line->subtotalMinor);
+        $gross = self::minor($line->totalMinor);
+
+        return new VoucherItem(
+            product_code: self::ITEM_CODE,
+            product_uom: self::UOM_UNIT,
+            product_name: $line->description,
+            quantity: (string) $line->quantity,
+            unit_value: 1 === $line->quantity ? $net : number_format($line->subtotalMinor / 100 / $line->quantity, 6, '.', ''),
+            unit_price: 1 === $line->quantity ? $gross : number_format($line->totalMinor / 100 / $line->quantity, 6, '.', ''),
+            discount_amount: '0.00',
+            discount_percentage: null,
+            taxed_amount: $net,
+            tax_amount: self::minor($line->taxMinor),
+            tax_percentage: self::IGV_PERCENT,
+            tax_type: self::TAX_TYPE_GRAVADO,
+            total: $gross,
         );
     }
 

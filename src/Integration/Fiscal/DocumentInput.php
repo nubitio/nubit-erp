@@ -9,6 +9,7 @@ use App\Integration\Fiscal\Validation\CustomerRule;
 use App\Integration\Fiscal\Validation\DocumentRule;
 use App\Integration\Fiscal\Validation\FieldReader;
 use App\Integration\Fiscal\Validation\IdentityRule;
+use App\Integration\Fiscal\Validation\LinesRule;
 
 /**
  * The validated body of `POST /api/v1/documents`.
@@ -38,6 +39,8 @@ final readonly class DocumentInput
         public ?string $customerAddress,
         public string $lineDescription,
         public ?string $orderReference,
+        /** @var list<DocumentLine> empty = one synthetic line from `lineDescription` */
+        public array $lines = [],
     ) {}
 
     /**
@@ -48,7 +51,7 @@ final readonly class DocumentInput
     public static function fromArray(array $body): self
     {
         /** @var list<DocumentRule> $rules */
-        $rules = [new IdentityRule(), new AmountRule(), new CustomerRule()];
+        $rules = [new IdentityRule(), new AmountRule(), new CustomerRule(), new LinesRule()];
 
         $errors = [];
         foreach ($rules as $rule) {
@@ -94,6 +97,29 @@ final readonly class DocumentInput
             customerAddress: FieldReader::str($customer, 'address'),
             lineDescription: FieldReader::str($body, 'line_description') ?? 'Servicio',
             orderReference: FieldReader::str($body, 'order_reference'),
+            lines: self::readLines($body),
         );
+    }
+
+    /**
+     * @param array<array-key, mixed> $body already validated by {@see LinesRule}
+     *
+     * @return list<DocumentLine>
+     */
+    private static function readLines(array $body): array
+    {
+        $lines = [];
+        foreach (FieldReader::arr($body, 'lines') as $line) {
+            $line = is_array($line) ? $line : [];
+            $lines[] = new DocumentLine(
+                description: (string) FieldReader::str($line, 'description'),
+                quantity: (int) FieldReader::int($line, 'quantity'),
+                subtotalMinor: (int) FieldReader::int($line, 'subtotal_minor'),
+                taxMinor: (int) FieldReader::int($line, 'tax_minor'),
+                totalMinor: (int) FieldReader::int($line, 'total_minor'),
+            );
+        }
+
+        return $lines;
     }
 }

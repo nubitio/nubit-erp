@@ -329,6 +329,15 @@ components:
         name: { type: string }
         email: { type: [string, 'null'], format: email }
         address: { type: [string, 'null'] }
+    DocumentLine:
+      type: object
+      required: [description, quantity, subtotal_minor, tax_minor, total_minor]
+      properties:
+        description: { type: string, maxLength: 250 }
+        quantity: { type: integer, minimum: 1 }
+        subtotal_minor: { type: integer, minimum: 0, description: Net amount of the whole line. }
+        tax_minor: { type: integer, minimum: 0 }
+        total_minor: { type: integer, minimum: 0, description: Must equal subtotal_minor + tax_minor. }
     DocumentRequest:
       type: object
       required: [external_id, document_type, series, number, subtotal_minor, tax_minor, total_minor, customer, line_description]
@@ -343,6 +352,12 @@ components:
         total_minor: { type: integer, minimum: 0 }
         customer: { $ref: '#/components/schemas/Customer' }
         line_description: { type: string }
+        lines:
+          type: array
+          minItems: 1
+          maxItems: 100
+          description: Optional. One voucher item per line; must sum to subtotal_minor, tax_minor and total_minor. Without it the document has a single line from line_description.
+          items: { $ref: '#/components/schemas/DocumentLine' }
         order_reference: { type: [string, 'null'] }
     DocumentAccepted:
       type: object
