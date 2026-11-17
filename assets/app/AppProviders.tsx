@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { HashRouter as Router } from 'react-router-dom';
+import { RouterRoot } from './RouterRoot';
 
 import { ThemeProvider, DensityProvider, useAccentColor } from '@nubitio/ui';
 import { AuthProvider } from '@app/contexts/auth';
@@ -73,7 +73,7 @@ export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => 
     >
       <DensityProvider>
         <AccentColorApplier />
-        <Router>
+        <RouterRoot>
           <CoreProvider http={httpConfig} runtime={runtimeConfig}>
             <CoreConfigProvider
               locale={EFACT_BUSINESS_LOCALE}
@@ -92,7 +92,7 @@ export const AppProviders = ({ children, mercureHubUrl }: AppProvidersProps) => 
               </AuthProvider>
             </CoreConfigProvider>
           </CoreProvider>
-        </Router>
+        </RouterRoot>
       </DensityProvider>
     </ThemeProvider>
   );

@@ -63,7 +63,7 @@ for (const mobile of [false, true]) {
         json: failDetail ? {} : { 'hydra:member': [], 'hydra:totalItems': 0 },
       }),
     );
-    await page.goto(`${getE2EBaseUrl()}/#/accounts-receivable`);
+    await page.goto(`${getE2EBaseUrl()}/accounts-receivable`);
     const summary = page.getByRole('region', { name: 'Resumen de cuentas por cobrar' });
     await expect(summary).toContainText('101.80 pendientes de 1 cliente');
     const cards = summary.locator('.nb-kpi-metric-card');

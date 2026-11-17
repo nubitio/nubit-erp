@@ -78,7 +78,9 @@ export default defineConfig({
         theme_color: '#1463ff',
         background_color: '#ffffff',
         display: 'standalone',
-        start_url: '/#/pos',
+        // Real path since ADR-020. Installed PWAs keep the old `/#/pos` until they update;
+        // the legacy-hash normaliser in assets/app.tsx maps it.
+        start_url: '/pos',
       },
       workbox: {
         globPatterns: ['build/**/*.{js,css,woff,woff2,png,ico,svg}'],

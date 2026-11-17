@@ -41,13 +41,13 @@ test.describe('Compras — crear compra e incremento de stock', () => {
   test('01 - Login', async () => {
     await login(page, credentials.username, credentials.password);
     await expect(page.locator('form.login-form')).toBeHidden({ timeout: 10000 });
-    expect(page.url()).toMatch(/\/#\//);
+    expect(new URL(page.url()).pathname).not.toBe('/login');
   });
 
   test('02 - Navegar a Compras y capturar stock inicial del producto seed', async ({ request }) => {
     await gotoProtectedRoute(page, 'purchases', credentials);
     await waitForGridLoad(page);
-    await expect(page).toHaveURL(/\/#\/purchases/);
+    await expect(page).toHaveURL(/\/purchases/);
 
     const auth = await loginViaApi(request, BASE_URL, credentials.username, credentials.password);
     const warehousesResponse = await request.get(

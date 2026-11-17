@@ -17,7 +17,7 @@ test('sales shares its real records between table and responsive cards', async (
       await route.continue();
     }
   });
-  await page.goto(`${getE2EBaseUrl()}/#/billing/sales`);
+  await page.goto(`${getE2EBaseUrl()}/billing/sales`);
   const summary = page.getByRole('region', { name: 'Resumen mensual de ventas' });
   await expect(summary.getByRole('alert')).toContainText('No se pudo cargar');
   const summaryResponse = page.waitForResponse(
@@ -70,7 +70,7 @@ test('monthly KPI cards keep currencies separate on mobile', async ({ page }, te
     }),
   );
   await page.setViewportSize({ width: 1440, height: 960 });
-  await page.goto(`${getE2EBaseUrl()}/#/billing/sales`);
+  await page.goto(`${getE2EBaseUrl()}/billing/sales`);
   const pen = page.getByTestId('sales-kpis-PEN');
   const usd = page.getByTestId('sales-kpis-USD');
   await expect(pen).toContainText('150.30');

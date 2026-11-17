@@ -64,7 +64,7 @@ export const BranchPicker = ({
         close();
         const nextPath = redirectPath
           ? resolvePostLoginRedirect(redirectPath)
-          : resolveBranchSelectionRedirect(undefined, window.location.search, window.location.hash);
+          : resolveBranchSelectionRedirect(undefined, window.location.search);
 
         requestAuthSessionSync();
         navigate(nextPath, { replace: true });

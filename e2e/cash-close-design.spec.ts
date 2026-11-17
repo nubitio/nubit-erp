@@ -49,7 +49,7 @@ for (const mobile of [false, true])
     await page.setViewportSize(mobile ? { width: 390, height: 844 } : { width: 1440, height: 960 });
     await page.emulateMedia({ colorScheme: mobile ? 'dark' : 'light' });
     await login(page, seed.username, seed.password);
-    const url = `${getE2EBaseUrl()}/#/cash-session/${id}/close`;
+    const url = `${getE2EBaseUrl()}/cash-session/${id}/close`;
     await page.goto(url);
     await expect(page.getByRole('heading', { name: 'Cierre de caja', exact: true })).toBeVisible();
     const close = page.getByTestId('cash-close-btn');
@@ -78,7 +78,7 @@ for (const mobile of [false, true])
     await page
       .getByRole('button', { name: 'Guardar conteo y seguir vendiendo', exact: true })
       .click();
-    await expect(page).toHaveURL(/#\/pos$/);
+    await expect(page).toHaveURL(/\/pos$/);
     await page.goto(url);
     await expect(
       page.getByText('Conteo recuperado de este equipo.', { exact: true }),
@@ -106,7 +106,7 @@ for (const mobile of [false, true])
         { paymentMethod: '/api/payment-methods/7', countedAmount: '23.50' },
       ],
     });
-    await expect(page).toHaveURL(/#\/cashbox\/dashboard$/);
+    await expect(page).toHaveURL(/\/cashbox\/dashboard$/);
     summaryStatus = 503;
     await page.goto(url);
     await expect(

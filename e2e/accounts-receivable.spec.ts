@@ -105,7 +105,7 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
   });
 
   await test.step('filtrar por cliente y registrar un pago parcial', async () => {
-    await page.goto(`${BASE_URL}/#/accounts-receivable`);
+    await page.goto(`${BASE_URL}/accounts-receivable`);
 
     await expect(page.getByRole('table', { name: 'Deudores' })).toBeVisible();
     // Filters live in the toolbar above the grid, not inside the table header.

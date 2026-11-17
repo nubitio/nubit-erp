@@ -4,17 +4,17 @@ import { login } from './auth';
 
 const BASE_URL = getE2EBaseUrl();
 
-/** Navigate to a hash route, re-authenticating if the session expired. */
+/** Navigate to an app route, re-authenticating if the session expired. */
 export async function gotoProtectedRoute(
   page: Page,
-  hashPath: string,
+  routePath: string,
   credentials: { username: string; password: string },
 ) {
-  const targetHash = `/#/${hashPath}`;
-  const escaped = targetHash.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const targetPath = `/${routePath}`;
+  const escaped = targetPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
   const navigate = async () => {
-    await page.goto(`${BASE_URL}${targetHash}`);
+    await page.goto(`${BASE_URL}${targetPath}`);
     await page.waitForLoadState('domcontentloaded', { timeout: 10000 }).catch(() => {});
   };
 
@@ -22,8 +22,7 @@ export async function gotoProtectedRoute(
 
   const loginForm = page.locator('form.login-form');
   const onLogin =
-    page.url().includes('/#/login') ||
-    page.url().includes('#/login') ||
+    new URL(page.url()).pathname === '/login' ||
     (await loginForm.isVisible({ timeout: 2000 }).catch(() => false));
 
   if (onLogin) {

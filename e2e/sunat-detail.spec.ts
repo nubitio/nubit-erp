@@ -81,7 +81,7 @@ test('fiscal detail gates actions, preserves rejection history and validates dow
     route.fulfill({ contentType: 'application/zip', body: Buffer.from([80, 75, 3, 4, 0, 0]) }),
   );
   await login(page, seed.username, seed.password);
-  await page.goto(`${getE2EBaseUrl()}/#/billing/sales/${seed.saleId}`);
+  await page.goto(`${getE2EBaseUrl()}/billing/sales/${seed.saleId}`);
   await expect(page.getByRole('button', { name: 'Consultar CDR', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Enviar a SUNAT', exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Reemplazar rechazado', exact: true })).toHaveCount(

@@ -349,7 +349,7 @@ test.describe('login form (browser)', () => {
     await post(api, '/api/auth/totp/confirm', { code: totp(begin.secret) });
     await api.dispose();
 
-    await page.goto(`${BASE}/#/login`);
+    await page.goto(`${BASE}/login`);
     await expect(page.locator('form.login-form')).toBeVisible({ timeout: 25_000 });
     await page.locator('#login-username').fill(username);
     await page.locator('#login-password').fill(NEW_PASSWORD);
@@ -384,7 +384,7 @@ test.describe('invitation and recovery pages (browser)', () => {
     ).toBe(201);
     const token = tokenFrom(await mailTo(uiEmail, 'invitaron'));
 
-    await page.goto(`${BASE}/#/accept-invitation?token=${token}`);
+    await page.goto(`${BASE}/accept-invitation#token=${token}`);
     await expect(page.getByText(`Crea tu contraseña para ${uiEmail}`)).toBeVisible({
       timeout: 25_000,
     });
@@ -400,7 +400,7 @@ test.describe('invitation and recovery pages (browser)', () => {
     await expect(page.locator('strong', { hasText: uiUsername })).toBeVisible();
 
     // the link is single use
-    await page.goto(`${BASE}/#/accept-invitation?token=${token}`);
+    await page.goto(`${BASE}/accept-invitation#token=${token}`);
     await page.reload(); // a fresh load, as when opening the e-mail link again
     await expect(page.getByText('Invitación no válida')).toBeVisible({ timeout: 15_000 });
 
@@ -413,7 +413,7 @@ test.describe('invitation and recovery pages (browser)', () => {
   });
 
   test('a broken invitation link says so instead of showing a form', async ({ page }) => {
-    await page.goto(`${BASE}/#/accept-invitation?token=${'e'.repeat(64)}`);
+    await page.goto(`${BASE}/accept-invitation#token=${'e'.repeat(64)}`);
     await expect(page.getByText('Invitación no válida')).toBeVisible({ timeout: 25_000 });
     await expect(page.getByLabel('Nueva contraseña')).toHaveCount(0);
   });
@@ -421,14 +421,14 @@ test.describe('invitation and recovery pages (browser)', () => {
   test('"forgot password" from the login page ends with a working new password', async ({
     page,
   }) => {
-    await page.goto(`${BASE}/#/login`);
+    await page.goto(`${BASE}/login`);
     await page.getByRole('link', { name: '¿Olvidaste tu contraseña?' }).click();
     await page.getByLabel('Usuario o correo').fill(uiUsername);
     await page.getByRole('button', { name: 'Enviar enlace' }).click();
     await expect(page.getByText('Si la cuenta existe')).toBeVisible({ timeout: 15_000 });
 
     const token = tokenFrom(await mailTo(uiEmail, 'Restablece'));
-    await page.goto(`${BASE}/#/reset-password?token=${token}`);
+    await page.goto(`${BASE}/reset-password#token=${token}`);
     await page.getByLabel('Nueva contraseña').fill('short');
     await page.getByLabel('Repite la contraseña').fill('short');
     await page.getByRole('button', { name: 'Guardar contraseña' }).click();
@@ -451,7 +451,7 @@ test.describe('two-factor settings (browser)', () => {
     page,
   }) => {
     await uiLogin(page, uiUsername, UI_NEW_PASSWORD);
-    await page.goto(`${BASE}/#/dashboard`); // the user menu lives in the admin shell, not the full-screen POS
+    await page.goto(`${BASE}/dashboard`); // the user menu lives in the admin shell, not the full-screen POS
     await page.getByRole('button', { name: 'Menú de usuario' }).click();
     await page.getByText('Verificación en dos pasos').click();
     const dialog = page.getByRole('dialog', { name: 'Verificación en dos pasos' });
@@ -499,7 +499,7 @@ test.describe('invite dialog (browser)', () => {
     const seed = await getE2ESeed();
     const target = `dlg.${stamp}@example.test`;
     await uiLogin(page, seed.username, seed.password);
-    await page.goto(`${BASE}/#/config/users`);
+    await page.goto(`${BASE}/config/users`);
     await page.getByRole('button', { name: 'Invitar usuario' }).click();
     const dialog = page.getByRole('dialog', { name: 'Invitar usuario' });
     await expect(dialog).toBeVisible();
@@ -712,7 +712,7 @@ test.describe('pending invitations and 2FA reset on the users screen (browser)',
     await mailTo(email, 'invitaron');
 
     await uiLogin(page, seed.username, seed.password);
-    await page.goto(`${BASE}/#/config/invitations`);
+    await page.goto(`${BASE}/config/invitations`);
     await expect(page.getByTestId('invitations-page')).toBeVisible({ timeout: 25_000 });
     const row = page.locator('tbody tr').filter({ hasText: email });
     await expect(row).toBeVisible({ timeout: 25_000 });
@@ -776,7 +776,7 @@ test.describe('pending invitations and 2FA reset on the users screen (browser)',
     ).toBe(401);
 
     await uiLogin(page, seed.username, seed.password);
-    await page.goto(`${BASE}/#/config/users`);
+    await page.goto(`${BASE}/config/users`);
     const row = page.locator('tbody tr').filter({ hasText: username });
     await expect(row.first()).toBeVisible({ timeout: 25_000 });
     // only users that have a second factor offer the action

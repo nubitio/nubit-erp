@@ -8,7 +8,7 @@ test('ERP consumes the shared workspace and catalog layouts without changing pro
   const seed = await getE2ESeed();
   await page.setViewportSize({ width: 1440, height: 960 });
   await login(page, seed.username, seed.password);
-  await page.goto(`${getE2EBaseUrl()}/#/catalog/products`);
+  await page.goto(`${getE2EBaseUrl()}/catalog/products`);
   await expect(page.locator('html')).toHaveAttribute('data-visual-style', 'nubit');
   await expect(page.locator('.nb-admin-shell')).toHaveClass(/workspace/);
   const productCards = page.locator('.product-catalog-card');
@@ -63,7 +63,7 @@ test('ERP consumes the shared workspace and catalog layouts without changing pro
     .getByRole('option', { name: /clientes/i })
     .first()
     .click();
-  await expect(page).toHaveURL(/#\/customer/);
+  await expect(page).toHaveURL(/\/customer/);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByRole('navigation', { name: 'Accesos principales' })).toBeVisible();
@@ -81,7 +81,7 @@ test('catalog and product form remain usable on mobile in dark mode', async ({
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page, seed.username, seed.password);
-  await page.goto(`${getE2EBaseUrl()}/#/catalog/products`);
+  await page.goto(`${getE2EBaseUrl()}/catalog/products`);
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(page.locator('.product-catalog-card').first()).toBeVisible({ timeout: 30000 });
   await expect(page.locator('.nb-datagrid')).toHaveAttribute('aria-busy', 'false');

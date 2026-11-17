@@ -74,7 +74,7 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
     await login(page, seed.username, seed.password);
 
     await test.step('POS usa el precio preferencial', async () => {
-      await page.goto(`${BASE_URL}/#/pos`);
+      await page.goto(`${BASE_URL}/pos`);
       await expect(page.getByTestId('pos-product-search')).toBeVisible({ timeout: 25000 });
       const applyResponsePromise = page.waitForResponse(
         (response) => response.url().includes(`/api/price-lists/${createdList.id}/apply`),
@@ -105,7 +105,7 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
     });
 
     await test.step('Ventas usa el mismo precio preferencial', async () => {
-      await page.goto(`${BASE_URL}/#/billing/sales`);
+      await page.goto(`${BASE_URL}/billing/sales`);
       await dismissDevToolbar(page);
       await waitForGridLoad(page);
       await clickGridToolbarButton(page, 'Nuevo');
@@ -190,7 +190,7 @@ test('la tarifa es un selector en clientes y permite asignar varios desde listas
     await login(page, seed.username, seed.password);
 
     await test.step('el formulario de cliente muestra Tarifa como selector', async () => {
-      await page.goto(`${BASE_URL}/#/customer`);
+      await page.goto(`${BASE_URL}/customer`);
       await waitForGridLoad(page);
       const row = page.getByRole('row').filter({ hasText: targets[0].businessName }).first();
       await row.getByRole('button', { name: 'Acciones' }).click();
@@ -199,7 +199,7 @@ test('la tarifa es un selector en clientes y permite asignar varios desde listas
       await expect(body.getByRole('combobox', { name: 'Tarifa' })).toBeVisible();
     });
 
-    await page.goto(`${BASE_URL}/#/catalog/prices`);
+    await page.goto(`${BASE_URL}/catalog/prices`);
     await waitForGridLoad(page);
     const priceListRow = page.getByRole('row').filter({ hasText: listName }).first();
     await expect(priceListRow).toBeVisible({ timeout: 15000 });

@@ -28,7 +28,7 @@ async function setup(page: Page, mobile = false) {
   await page.emulateMedia({ colorScheme: mobile ? 'dark' : 'light' });
   const seed = await getE2ESeed();
   await login(page, seed.username, seed.password);
-  await page.goto(`${getE2EBaseUrl()}/#/customer`);
+  await page.goto(`${getE2EBaseUrl()}/customer`);
   const add = mobile
     ? page.locator('.nb-datagrid__fab')
     : page

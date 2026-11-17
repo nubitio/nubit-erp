@@ -166,7 +166,7 @@ test('María: crédito 13.88, abono 3.88, Excel y cierre coinciden sin sumar deu
   expect(Number(paidRow['Total pagado'])).toBe(3.88);
   expect(Number(paidRow['Total comprobante'])).toBe(13.88);
 
-  await page.goto(`${BASE_URL}/#/cash-session/${sessionId}/close`);
+  await page.goto(`${BASE_URL}/cash-session/${sessionId}/close`);
   const expectedAmount = (openingExpected + 3.88).toFixed(2);
   const cashPanel = page
     .locator('section')

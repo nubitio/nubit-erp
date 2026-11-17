@@ -5,6 +5,7 @@ import {
   type DataRecord,
   type GridCellContext,
 } from '@nubitio/crud';
+import { Link } from 'react-router-dom';
 import { customerSubscriptionRunApiUrl } from './model/constants';
 
 interface SubscriptionRunRecord extends DataRecord {
@@ -59,7 +60,9 @@ const resource = defineResource<SubscriptionRunRecord>(customerSubscriptionRunAp
           label: 'Venta',
           order: 5,
           formatter: (cell: GridCellContext) => (
-            <a href={'#/billing/sales?highlight=' + String(cell.value)}>Ver venta</a>
+            <Link to={'/billing/sales?highlight=' + encodeURIComponent(String(cell.value))}>
+              Ver venta
+            </Link>
           ),
         },
       },

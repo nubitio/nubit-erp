@@ -29,7 +29,7 @@ test('catalog first-use actions and transient failures are recoverable', async (
     });
   });
   await page.setViewportSize({ width: 1440, height: 960 });
-  await page.goto(`${getE2EBaseUrl()}/#/catalog/products`);
+  await page.goto(`${getE2EBaseUrl()}/catalog/products`);
   await expect(
     page.getByText('Agrega tus productos para empezar a vender', { exact: true }),
   ).toBeVisible();
@@ -119,7 +119,7 @@ test('read-only catalog permissions allow consultation and block create deep lin
     )
       writes.push(request.url());
   });
-  await page.goto(`${getE2EBaseUrl()}/#/catalog/products`);
+  await page.goto(`${getE2EBaseUrl()}/catalog/products`);
   await expect(page.locator('.product-catalog-card').first()).toBeVisible({ timeout: 30000 });
   await expect(page.getByRole('button', { name: 'Importar productos', exact: true })).toHaveCount(
     0,
@@ -137,7 +137,7 @@ test('read-only catalog permissions allow consultation and block create deep lin
   await expect(form.locator('input[type="file"]')).toHaveCount(0);
   await expect(form.getByText('Sin imagen', { exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('erp-product-readonly.png') });
-  await page.goto(`${getE2EBaseUrl()}/#/catalog/products/new`);
+  await page.goto(`${getE2EBaseUrl()}/catalog/products/new`);
   await expect(page.getByText('Acceso denegado', { exact: true })).toBeVisible();
   await expect(page.locator('.nb-crud-page-shell')).toHaveCount(0);
   expect(writes).toEqual([]);

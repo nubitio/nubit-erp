@@ -73,7 +73,7 @@ test('compact sales cards open the real detail and preview on desktop and mobile
   const seed = await getE2ESeed();
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page, seed.username, seed.password);
-  await page.goto(`${getE2EBaseUrl()}/#/billing/sales`);
+  await page.goto(`${getE2EBaseUrl()}/billing/sales`);
   const card = page.locator('.sale-summary-card').first();
   await expect(card).toBeVisible({ timeout: 30000 });
   await expect(card.locator('.sale-summary-card__badges')).toBeInViewport({ ratio: 1 });
@@ -178,7 +178,7 @@ test('collecting from detail targets only that sale and refreshes its balance', 
     if (request.url().includes('collect-on-account')) fifoCalls.push(request.url());
   });
   await login(page, seed.username, seed.password);
-  await page.goto(`${getE2EBaseUrl()}/#/billing/sales/${seed.saleId}`);
+  await page.goto(`${getE2EBaseUrl()}/billing/sales/${seed.saleId}`);
   await expect(page.getByRole('button', { name: 'Registrar pago', exact: true })).toBeVisible();
   const designIcons = page.locator('.sale-detail img');
   await expect(designIcons).toHaveCount(3);
@@ -236,7 +236,7 @@ test('view-only details hide mutations and handle missing or inaccessible sales'
   );
   await mockItems(page, seed.saleId);
   await login(page, seed.username, seed.password);
-  await page.goto(`${getE2EBaseUrl()}/#/billing/sales/${seed.saleId}`);
+  await page.goto(`${getE2EBaseUrl()}/billing/sales/${seed.saleId}`);
   await expect(page.getByRole('heading', { name: 'Cliente', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Registrar pago', exact: true })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Anular venta', exact: true })).toHaveCount(0);

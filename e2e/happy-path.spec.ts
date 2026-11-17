@@ -15,7 +15,7 @@
  *  9. Editar movimiento de caja
  * 10. Cerrar sesión de caja
  *
- * Stack: React 19 + HashRouter (/#/ruta)
+ * Stack: React 19 + react-router with real paths (/ruta, ADR-020)
  *
  * ── Selectores ──────────────────────────────────────────────────────────────
  * Todos los selectores frágiles han sido migrados a data-testid locators (T001-5).
@@ -168,17 +168,15 @@ function crudDialogBody(page: Page, name?: RegExp) {
  * buscando la celda de filtro que está debajo del columnheader "Columna Nombre".
  */
 /**
- * Espera a que la URL del hash coincida con el patrón dado.
- * Playwright no tiene soporte nativo para hash routing; lo hacemos con waitForURL
- * usando el patrón completo (baseURL + /#/ + path).
+ * Espera a salir de la pantalla de login (la ruta ya no es /login y no hay formulario).
  */
 async function waitForPostLoginLanding(page: Page) {
   await page
     .waitForFunction(
       () => {
-        const hash = window.location.hash ?? '';
+        const onLogin = window.location.pathname === '/login';
         const loginForm = document.querySelector('form.login-form');
-        return !hash.includes('/login') && !loginForm;
+        return !onLogin && !loginForm;
       },
       undefined,
       { timeout: 20000 },
@@ -188,14 +186,14 @@ async function waitForPostLoginLanding(page: Page) {
   await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
 }
 
-async function gotoProtectedRoute(page: Page, hashPath: string) {
-  await page.goto(`${BASE_URL}/#/${hashPath}`);
+async function gotoProtectedRoute(page: Page, routePath: string) {
+  await page.goto(`${BASE_URL}/${routePath}`);
   await page.waitForLoadState('domcontentloaded', { timeout: 10000 }).catch(() => {});
   await ensureLoggedIn(page);
   await waitForPostLoginLanding(page);
 
-  if (!page.url().includes(`/#/${hashPath}`)) {
-    await page.goto(`${BASE_URL}/#/${hashPath}`);
+  if (new URL(page.url()).pathname !== `/${routePath}`) {
+    await page.goto(`${BASE_URL}/${routePath}`);
     await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
     await ensureLoggedIn(page);
     await waitForPostLoginLanding(page);
@@ -214,9 +212,8 @@ async function ensureLoggedIn(page: Page) {
     /* ignore */
   }
 
-  // Check the URL — if we are on /#/login, we definitely need to log in
-  const currentUrl = page.url();
-  const isLoginUrl = currentUrl.includes('/#/login') || currentUrl.includes('#/login');
+  // Check the URL — if we are on /login, we definitely need to log in
+  const isLoginUrl = new URL(page.url()).pathname === '/login';
 
   // Also wait for the login form — give more time for SPA to initialize and redirect
   const loginForm = page.locator('form.login-form');
@@ -261,16 +258,16 @@ async function ensureLoggedIn(page: Page) {
  */
 async function recoverCashSessionId(page: Page): Promise<string | null> {
   // Navigate to cashbox and wait for SPA to fully settle BEFORE checking auth.
-  // The SPA needs networkidle to complete the auth redirect (/#/login if not authenticated).
-  await page.goto(`${BASE_URL}/#/cashbox`);
+  // The SPA needs networkidle to complete the auth redirect (/login if not authenticated).
+  await page.goto(`${BASE_URL}/cashbox`);
   await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-  // Now the SPA has had time to redirect to /#/login if not authenticated
+  // Now the SPA has had time to redirect to /login if not authenticated
   await ensureLoggedIn(page);
   // After ensureLoggedIn, wait for all auth API calls to settle
   await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-  if (!page.url().includes('/#/cashbox')) {
+  if (new URL(page.url()).pathname !== '/cashbox') {
     // Re-navigate to cashbox — at this point the JWT cookie is established
-    await page.goto(`${BASE_URL}/#/cashbox`);
+    await page.goto(`${BASE_URL}/cashbox`);
     // Wait for the React SPA to boot and render the cashbox grid
     await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
   }
@@ -287,7 +284,7 @@ async function recoverCashSessionId(page: Page): Promise<string | null> {
     let navigated = false;
     try {
       await Promise.all([
-        page.waitForURL(/\/#\/cash-session\/\d+\/movements/, { timeout: 8000 }),
+        page.waitForURL(/\/cash-session\/\d+\/movements/, { timeout: 8000 }),
         movementsBtn.click(),
       ]);
       navigated = true;
@@ -308,7 +305,7 @@ async function recoverCashSessionId(page: Page): Promise<string | null> {
         : null;
       const cashSessionId = openReg?.cashSessionId ?? openReg?.cashShiftId;
       if (cashSessionId) {
-        await page.goto(`${BASE_URL}/#/cash-session/${cashSessionId}/movements`);
+        await page.goto(`${BASE_URL}/cash-session/${cashSessionId}/movements`);
       }
     }
 
@@ -329,14 +326,14 @@ async function recoverCashSessionId(page: Page): Promise<string | null> {
       : null;
     if (!closedReg?.id) return null;
 
-    await page.goto(`${BASE_URL}/#/cash-register/${closedReg.id}/open`);
+    await page.goto(`${BASE_URL}/cash-register/${closedReg.id}/open`);
     await page.locator('text=Apertura de caja').waitFor({ state: 'visible', timeout: 10000 });
     await page.getByLabel('Saldo inicial').fill('100');
     const abrirCajaBtn = page.getByTestId('cash-open-submit-btn').first();
 
     await abrirCajaBtn.click();
 
-    await page.waitForURL(/\/#\/cash-session\/\d+\/movements/, { timeout: 15000 });
+    await page.waitForURL(/\/cash-session\/\d+\/movements/, { timeout: 15000 });
     await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
 
     const url = page.url();
@@ -407,7 +404,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // ───────────────────────────────────────────────────────────────────────────
   test('01 - Login y redirección al dashboard', async () => {
     await test.step('Navegar a /login', async () => {
-      await page.goto(`${BASE_URL}/#/login`);
+      await page.goto(`${BASE_URL}/login`);
       // El título de la página o el formulario de login debe ser visible
       // LoginForm renderiza un <form class="login-form">
       await expect(page.locator('form.login-form')).toBeVisible({ timeout: 15000 });
@@ -457,11 +454,10 @@ test.describe('Happy Path — flujo completo de venta', () => {
     });
 
     await test.step('Verificar redirección a dashboard o POS', async () => {
-      // La app redirige a /#/dashboard o /#/pos (hash routing)
-      // waitForURL acepta glob patterns
-      await page.waitForURL(/\/#\/(dashboard|pos)/, { timeout: 20000 });
-      // Verificación adicional: la URL debe contener /#/
-      expect(page.url()).toMatch(/\/#\//);
+      // La app redirige a /dashboard o /pos (rutas reales, sin hash)
+      await page.waitForURL(/\/(dashboard|pos)(\?|#|$)/, { timeout: 20000 });
+      // Verificación adicional: ya no hay rutas con hash
+      expect(page.url()).not.toContain('/#/');
     });
   });
 
@@ -523,7 +519,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       let navigated = false;
       try {
         await Promise.all([
-          page.waitForURL(/\/#\/cash-session\/\d+\/movements/, { timeout: 8000 }),
+          page.waitForURL(/\/cash-session\/\d+\/movements/, { timeout: 8000 }),
           movementsBtn.click(),
         ]);
         navigated = true;
@@ -543,7 +539,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
           : null;
         const cashSessionId = openReg?.cashSessionId ?? openReg?.cashShiftId;
         if (cashSessionId) {
-          await page.goto(`${BASE_URL}/#/cash-session/${cashSessionId}/movements`);
+          await page.goto(`${BASE_URL}/cash-session/${cashSessionId}/movements`);
         }
       }
     } else {
@@ -556,7 +552,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         ? dashData.find((r: CashRegisterDashboardRow) => (r.cashSessionId ?? r.cashShiftId) == null)
         : null;
       if (closedReg?.id) {
-        await page.goto(`${BASE_URL}/#/cash-register/${closedReg.id}/open`);
+        await page.goto(`${BASE_URL}/cash-register/${closedReg.id}/open`);
       }
 
       // Fill the initial balance form
@@ -568,7 +564,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       await abrirCajaBtn.click();
 
       // Wait for redirect to movements page
-      await page.waitForURL(/\/#\/cash-session\/\d+\/movements/, { timeout: 15000 });
+      await page.waitForURL(/\/cash-session\/\d+\/movements/, { timeout: 15000 });
     }
 
     // Wait for the page to settle before reading URL
@@ -590,7 +586,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 5 — Registrar cliente nuevo
   // ───────────────────────────────────────────────────────────────────────────
   test('05 - Crear cliente nuevo', async () => {
-    await test.step('Navegar a /#/customer', async () => {
+    await test.step('Navegar a /customer', async () => {
       await gotoProtectedRoute(page, 'customer');
       await waitForGridLoad(page);
       // Check nb-datagrid toolbar for "Customers" / "Clientes" title
@@ -642,7 +638,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       expect(openedCashSessionId, 'debe haber una caja abierta para cobrar en POS').not.toBeNull();
     });
 
-    await test.step('Navegar a /#/pos', async () => {
+    await test.step('Navegar a /pos', async () => {
       await gotoProtectedRoute(page, 'pos');
 
       // .pos-shell is a real <div> with no display:contents — wait for a stable child element
@@ -752,7 +748,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
       ).not.toBeNull();
     });
 
-    await test.step('Navegar a /#/billing/sales', async () => {
+    await test.step('Navegar a /billing/sales', async () => {
       await gotoProtectedRoute(page, 'billing/sales');
       await dismissDevToolbar(page);
       await waitForGridLoad(page);
@@ -949,13 +945,13 @@ test.describe('Happy Path — flujo completo de venta', () => {
         openedCashSessionId = await recoverCashSessionId(page);
       }
       expect(openedCashSessionId, 'cashSessionId debe estar disponible del paso 4').not.toBeNull();
-      await page.goto(`${BASE_URL}/#/cash-session/${openedCashSessionId}/movements`);
+      await page.goto(`${BASE_URL}/cash-session/${openedCashSessionId}/movements`);
       // Re-authenticate if the session was lost (e.g. JWT refresh failed during test 06)
       await ensureLoggedIn(page);
       // Wait for auth to fully settle before checking URL or navigating
       await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
       if (!page.url().includes(`/cash-session/${openedCashSessionId}/movements`)) {
-        await page.goto(`${BASE_URL}/#/cash-session/${openedCashSessionId}/movements`);
+        await page.goto(`${BASE_URL}/cash-session/${openedCashSessionId}/movements`);
         await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
       }
       await waitForGridLoad(page);
@@ -1070,7 +1066,7 @@ test.describe('Happy Path — flujo completo de venta', () => {
         openedCashSessionId = await recoverCashSessionId(page);
       }
       expect(openedCashSessionId, 'cashSessionId debe estar disponible del paso 4').not.toBeNull();
-      await page.goto(`${BASE_URL}/#/cash-session/${openedCashSessionId}/close`);
+      await page.goto(`${BASE_URL}/cash-session/${openedCashSessionId}/close`);
       // CashRegisterClose renders an h1.cash-close__title (custom component, not a CRUD grid)
       await expect(page.getByRole('heading', { name: 'Cierre de caja', exact: true })).toBeVisible({
         timeout: 20000,
@@ -1119,10 +1115,11 @@ test.describe('Happy Path — flujo completo de venta', () => {
     });
 
     await test.step('Verificar redirección al dashboard de cajas', async () => {
-      // El navigate('/cashbox') puede competir con re-renders del grid; esperamos hash o dashboard visible.
+      // El navigate('/cashbox') puede competir con re-renders del grid; esperamos la ruta o el dashboard visible.
       await page
         .waitForFunction(
-          () => window.location.hash.includes('/cashbox') || !!document.querySelector('#cashbox'),
+          () =>
+            window.location.pathname.includes('/cashbox') || !!document.querySelector('#cashbox'),
           undefined,
           { timeout: 20000 },
         )

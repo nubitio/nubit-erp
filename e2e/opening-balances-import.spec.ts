@@ -36,7 +36,7 @@ test('previsualiza e importa saldos iniciales por cobrar y los contabiliza', asy
     );
   }
 
-  await page.goto(`${BASE_URL}/#/setup/import`);
+  await page.goto(`${BASE_URL}/setup/import`);
   await page.getByRole('button', { name: /Ya los tengo \/ Siguiente/ }).click();
   await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
 
@@ -73,7 +73,7 @@ test('previsualiza e importa saldos iniciales por cobrar y los contabiliza', asy
   expect(repeatResponse.ok(), await repeatResponse.text()).toBeTruthy();
   expect(await repeatResponse.json()).toMatchObject({ created: 0, skipped: 1, errors: [] });
 
-  await page.goto(`${BASE_URL}/#/accounts-receivable`);
+  await page.goto(`${BASE_URL}/accounts-receivable`);
   await expect(page.getByRole('table', { name: 'Deudores' })).toBeVisible();
   await expect(page.getByRole('row').filter({ hasText: customerName })).toContainText(/716[.,]30/);
 

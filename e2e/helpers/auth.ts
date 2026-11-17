@@ -23,9 +23,9 @@ async function waitForPostLoginLanding(page: Page) {
   await page
     .waitForFunction(
       () => {
-        const hash = window.location.hash ?? '';
+        const onLogin = window.location.pathname === '/login';
         const loginForm = document.querySelector('form.login-form');
-        return !hash.includes('/login') && !loginForm;
+        return !onLogin && !loginForm;
       },
       undefined,
       { timeout: 30000 },
@@ -39,7 +39,7 @@ async function waitForPostLoginLanding(page: Page) {
 export async function login(page: Page, username: string, password: string) {
   const baseUrl = getE2EBaseUrl();
 
-  await page.goto(`${baseUrl}/#/login`);
+  await page.goto(`${baseUrl}/login`);
   await page.waitForLoadState('domcontentloaded', { timeout: 15000 }).catch(() => {});
   await expect(page.locator('form.login-form')).toBeVisible({ timeout: 25000 });
 
@@ -84,11 +84,12 @@ export async function login(page: Page, username: string, password: string) {
 
   await waitForPostLoginLanding(page);
 
+  const landedPath = new URL(page.url()).pathname;
   const onAppRoute =
-    page.url().includes('/#/dashboard') ||
-    page.url().includes('/#/pos') ||
+    landedPath === '/dashboard' ||
+    landedPath === '/pos' ||
     !(
-      page.url().includes('/#/login') ||
+      landedPath === '/login' ||
       (await page
         .locator('form.login-form')
         .isVisible()

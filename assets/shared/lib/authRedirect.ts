@@ -12,7 +12,11 @@ function isLoginPath(pathname: string): boolean {
   return normalizedPath === LOGIN_PATH;
 }
 
-function stripHashRouterPrefix(value: string): string {
+/**
+ * Redirect targets captured while the app ran on a hash router look like `/#/billing/sales`;
+ * they may still sit in a stored `?redirect=` value, so they are read as the path they meant.
+ */
+function stripLegacyHashPrefix(value: string): string {
   if (value === '#' || value === '/#') {
     return DEFAULT_POST_LOGIN_ROUTE;
   }
@@ -33,7 +37,7 @@ export function normalizeInternalRedirectTarget(value: string | null | undefined
     return null;
   }
 
-  const trimmedValue = stripHashRouterPrefix(value.trim());
+  const trimmedValue = stripLegacyHashPrefix(value.trim());
 
   if (!trimmedValue) {
     return null;
@@ -88,79 +92,14 @@ export function getRedirectFromSearch(search: string): string | null {
   return normalizeInternalRedirectTarget(params.get('redirect'));
 }
 
-function getHashRouterLocationParts(hash: string): { pathname: string; search: string } | null {
-  if (!hash || hash === '#') {
-    return null;
-  }
-
-  const normalizedHash = hash.startsWith('#') ? hash.slice(1) : hash;
-  const internalPath = normalizedHash.startsWith('/') ? normalizedHash : `/${normalizedHash}`;
-
-  try {
-    const parsedHashLocation = new URL(internalPath, APP_ORIGIN_PLACEHOLDER);
-
-    if (parsedHashLocation.origin !== APP_ORIGIN_PLACEHOLDER) {
-      return null;
-    }
-
-    return {
-      pathname: parsedHashLocation.pathname || DEFAULT_POST_LOGIN_ROUTE,
-      search: parsedHashLocation.search,
-    };
-  } catch {
-    return null;
-  }
-}
-
-export function resolveLoginRedirect(search: string, hash = ''): string {
-  const redirectFromSearch = getRedirectFromSearch(search);
-
-  if (redirectFromSearch) {
-    return redirectFromSearch;
-  }
-
-  const hashLocation = getHashRouterLocationParts(hash);
-
-  if (!hashLocation || !isLoginPath(hashLocation.pathname)) {
-    return DEFAULT_POST_LOGIN_ROUTE;
-  }
-
-  return resolveRedirectFromSearch(hashLocation.search);
+/** Where to go after login: the `?redirect=` of the current URL, else the default route. */
+export function resolveLoginRedirect(search: string): string {
+  return getRedirectFromSearch(search) ?? DEFAULT_POST_LOGIN_ROUTE;
 }
 
 export function resolveBranchSelectionRedirect(
   preservedRedirect: string | null | undefined,
   search: string,
-  hash = '',
 ): string {
-  const preservedInternalRedirect = normalizeInternalRedirectTarget(preservedRedirect);
-
-  if (preservedInternalRedirect) {
-    return preservedInternalRedirect;
-  }
-
-  return resolveLoginRedirect(search, hash);
-}
-
-export function resolveRedirectFromSearch(search: string): string {
-  const params = new URLSearchParams(search);
-  return resolvePostLoginRedirect(params.get('redirect'));
-}
-
-export function getHashRouterPath(hash: string): string {
-  if (!hash || hash === '#') {
-    return DEFAULT_POST_LOGIN_ROUTE;
-  }
-
-  return resolvePostLoginRedirect(hash);
-}
-
-export function toHashHref(path: string): string {
-  const redirectPath = resolvePostLoginRedirect(path);
-
-  if (redirectPath === DEFAULT_POST_LOGIN_ROUTE) {
-    return '/';
-  }
-
-  return `/#${redirectPath}`;
+  return normalizeInternalRedirectTarget(preservedRedirect) ?? resolveLoginRedirect(search);
 }

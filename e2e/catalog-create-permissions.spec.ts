@@ -9,14 +9,14 @@ test('administrator can start product and customer creation from their grids', a
   await login(page, seed.username, seed.password);
 
   for (const route of ['catalog/products', 'customer']) {
-    await page.goto(`${BASE_URL}/#/${route}`);
+    await page.goto(`${BASE_URL}/${route}`);
     const toolbar = page.locator('.nb-datagrid__toolbar:visible').first();
     await expect(toolbar).toBeVisible({ timeout: 20_000 });
 
     const createButton = toolbar
       .getByRole('button', { name: /^(Nuevo|New|Agregar|Add)$/i })
       .first();
-    await expect(createButton, `create action must be visible on /#/${route}`).toBeVisible();
+    await expect(createButton, `create action must be visible on /${route}`).toBeVisible();
     await createButton.click();
     if (route === 'catalog/products') {
       const form = page.locator('.nb-crud-page-shell');

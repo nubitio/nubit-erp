@@ -19,7 +19,7 @@ test('Crédito en el POS crea automáticamente una cuenta por cobrar', async ({ 
   await ensureOpenCashSession(page, BASE_URL);
   const openingBalance = await customerReceivableBalance(page, E2E_SEED.customerName);
 
-  await page.goto(`${BASE_URL}/#/pos`);
+  await page.goto(`${BASE_URL}/pos`);
   await expect(page.getByTestId('pos-product-search')).toBeVisible({ timeout: 25_000 });
 
   const product = page
@@ -82,7 +82,7 @@ test('Crédito en el POS crea automáticamente una cuenta por cobrar', async ({ 
   expect(Number(sale.paidTotal)).toBe(0);
   expect(Number(sale.balanceDue)).toBe(Number(sale.grandTotal));
 
-  await page.goto(`${BASE_URL}/#/accounts-receivable`);
+  await page.goto(`${BASE_URL}/accounts-receivable`);
   const row = page.getByRole('row').filter({ hasText: E2E_SEED.customerName }).first();
   const [whole, cents] = (openingBalance + Number(sale.balanceDue)).toFixed(2).split('.');
   await expect(row.getByRole('cell').nth(1)).toContainText(new RegExp(`${whole}[.,]${cents}`), {

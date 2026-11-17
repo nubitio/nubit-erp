@@ -45,9 +45,7 @@ export const LoginForm = () => {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [redirectPath] = useState(() =>
-    resolveLoginRedirect(location.search, window.location.hash),
-  );
+  const [redirectPath] = useState(() => resolveLoginRedirect(location.search));
 
   useEffect(() => {
     usernameRef.current?.focus();

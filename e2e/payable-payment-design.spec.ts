@@ -67,7 +67,7 @@ for (const mobile of [false, true])
       }
       return route.abort();
     });
-    const url = `${getE2EBaseUrl()}/#/supplier-bill/design-bill/pay`;
+    const url = `${getE2EBaseUrl()}/supplier-bill/design-bill/pay`;
     await page.goto(url);
     await expect(page.getByRole('alert')).toContainText('No se pudo cargar el contexto');
     await expect(page.getByTestId('supplier-bill-pay-submit-btn')).toHaveCount(0);
@@ -118,7 +118,7 @@ for (const mobile of [false, true])
     ]);
     failPayment = false;
     await submit.click();
-    await expect(page).toHaveURL(/#\/accounts-payable$/);
+    await expect(page).toHaveURL(/\/accounts-payable$/);
     await page.goto(url);
     await page.getByRole('button', { name: 'Reversar', exact: true }).click();
     const dialog = page.getByRole('alertdialog', { name: 'Reversar pago', exact: true });
@@ -152,7 +152,7 @@ test('view-only supplier bill hides payment and reversal actions', async ({ page
   await page.route('**/api/supplier-bills/design-bill', (route) =>
     route.fulfill({ json: fixture() }),
   );
-  await page.goto(`${getE2EBaseUrl()}/#/supplier-bill/design-bill/pay`);
+  await page.goto(`${getE2EBaseUrl()}/supplier-bill/design-bill/pay`);
   await expect(page.getByText('Consulta de factura.', { exact: false })).toBeVisible();
   await expect(page.getByTestId('supplier-bill-pay-submit-btn')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Reversar', exact: true })).toHaveCount(0);

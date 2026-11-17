@@ -17,6 +17,7 @@ import { installPosBootstrapCache } from '@offline/posBootstrap';
 import { startAppUpdates } from '@offline/appUpdate';
 import { AppUpdateNotice } from '@app/shell/components/AppUpdateNotice';
 import { installAuthRecovery } from '@shared/api/authRecovery';
+import { normalizeLegacyHashUrl } from '@shared/lib/legacyHashRedirect';
 import './i18n';
 import './legacy-tokens.scss';
 import './app.scss';
@@ -34,6 +35,11 @@ const queryClient = new QueryClient({
 });
 
 installPosBootstrapCache(queryClient);
+
+// URLs from the hash-router era (`/#/billing/sales`) are mapped to real paths before
+// the router mounts, so e-mailed links, bookmarks and installed PWAs keep working
+// (ADR-020, D5). A no-op for every real-path URL.
+normalizeLegacyHashUrl();
 
 window.addEventListener('load', () => {
   installAuthRecovery();

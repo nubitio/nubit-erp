@@ -8,7 +8,7 @@ test('sales filter operators fit their cells and remain usable by keyboard', asy
   const seed = await getE2ESeed();
   await page.setViewportSize({ width: 1440, height: 960 });
   await login(page, seed.username, seed.password);
-  await page.goto(`${getE2EBaseUrl()}/#/billing/sales`);
+  await page.goto(`${getE2EBaseUrl()}/billing/sales`);
   const grid = page.locator('.nb-datagrid').first();
   await expect(grid).toHaveAttribute('aria-busy', 'false', { timeout: 30000 });
   await grid.getByRole('button', { name: 'Filtros', exact: true }).click();

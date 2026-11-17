@@ -23,7 +23,7 @@ test.describe('Regresión de rutas web bajo /api/v1', () => {
         movementsRequests += 1;
     });
 
-    await page.goto(`${baseUrl}/#/ple`);
+    await page.goto(`${baseUrl}/ple`);
     await expect(
       page.getByRole('heading', { name: 'SUNAT PLE — Libros electrónicos' }),
     ).toBeVisible();
@@ -35,7 +35,7 @@ test.describe('Regresión de rutas web bajo /api/v1', () => {
     await page.getByRole('tab', { name: /Diario \(/ }).click();
     await expect(page.getByText(/Diario y Mayor salen de los asientos operativos/)).toBeVisible();
 
-    await page.goto(`${baseUrl}/#/accounting`);
+    await page.goto(`${baseUrl}/accounting`);
     await expect(page.getByRole('heading', { name: 'Contabilidad' })).toBeVisible();
     const journalResponse = page.waitForResponse(
       (response) =>
@@ -44,12 +44,12 @@ test.describe('Regresión de rutas web bajo /api/v1', () => {
     await page.getByRole('tab', { name: 'Diario', exact: true }).click();
     expect((await journalResponse).status()).toBe(200);
 
-    await page.goto(`${baseUrl}/#/bank-reconciliation`);
+    await page.goto(`${baseUrl}/bank-reconciliation`);
     await expect(page.getByRole('heading', { name: 'Conciliación bancaria' })).toBeVisible();
     await page.waitForTimeout(1500);
     expect(movementsRequests).toBeLessThanOrEqual(2);
 
-    await page.goto(`${baseUrl}/#/subscriptions/customer-subscriptions`);
+    await page.goto(`${baseUrl}/subscriptions/customer-subscriptions`);
     // The hub content mounts whatever the tenant's menu shows, so it proves the route rendered.
     await expect(page.locator('.nb-feature-hub__content')).toBeVisible();
     await expect(page.getByText('Error interno del servidor')).toHaveCount(0);

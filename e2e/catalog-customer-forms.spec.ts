@@ -33,7 +33,7 @@ for (const mobile of [false, true]) {
       await route.fulfill({ status: 201, json: { ...payload, id: 'ui-test-customer' } });
     });
     await login(page, seed.username, seed.password);
-    await page.goto(`${getE2EBaseUrl()}/#/customer`);
+    await page.goto(`${getE2EBaseUrl()}/customer`);
     const newButton = mobile
       ? page.locator('.nb-datagrid__fab')
       : page
@@ -131,7 +131,7 @@ test('product page focuses errors and edits existing values without saving', asy
     return route.fallback();
   });
   await login(page, seed.username, seed.password);
-  await page.goto(`${getE2EBaseUrl()}/#/catalog/products/new`);
+  await page.goto(`${getE2EBaseUrl()}/catalog/products/new`);
   const form = page.locator('.nb-crud-page-shell');
   await expect(form.getByRole('heading', { name: 'Nuevo producto', exact: true })).toBeVisible();
   await form.getByRole('button', { name: 'Guardar producto', exact: true }).click();

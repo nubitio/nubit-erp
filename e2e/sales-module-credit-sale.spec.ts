@@ -22,7 +22,7 @@ test('Crédito en el módulo Ventas crea una cuenta por cobrar con el contrato c
   await login(page, seed.username, seed.password);
   const openingBalance = await customerReceivableBalance(page, E2E_SEED.customerName);
 
-  await page.goto(`${BASE_URL}/#/billing/sales`);
+  await page.goto(`${BASE_URL}/billing/sales`);
   await dismissDevToolbar(page);
   await waitForGridLoad(page);
   await clickGridToolbarButton(page, 'Nuevo');
@@ -106,7 +106,7 @@ test('Crédito en el módulo Ventas crea una cuenta por cobrar con el contrato c
   const saleRow = page.getByRole('row').filter({ hasText: E2E_SEED.customerName }).first();
   await expect(saleRow).toContainText(/Cr[eé]dito/, { timeout: 15_000 });
 
-  await page.goto(`${BASE_URL}/#/accounts-receivable`);
+  await page.goto(`${BASE_URL}/accounts-receivable`);
   const receivable = page.getByRole('row').filter({ hasText: E2E_SEED.customerName }).first();
   const [whole, cents] = (openingBalance + Number(sale.balanceDue)).toFixed(2).split('.');
   await expect(receivable.getByRole('cell').nth(1)).toContainText(

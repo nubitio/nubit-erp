@@ -36,7 +36,7 @@ test.describe('Golden path fiscal — POS a SUNAT y PDF', () => {
     let saleId = '';
 
     await test.step('Venta en POS', async () => {
-      await page.goto(`${BASE_URL}/#/pos`);
+      await page.goto(`${BASE_URL}/pos`);
       await expect(page.getByTestId('pos-product-search')).toBeVisible({ timeout: 25000 });
 
       const skeleton = page.locator('.pos-skeleton-grid');

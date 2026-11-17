@@ -249,7 +249,7 @@ test.describe('the Actividad tab (browser)', () => {
   test('lists entries by day, filters them, and shows the weekly summary', async ({ page }) => {
     const seed = await getE2ESeed();
     await uiLogin(page, seed.username, seed.password);
-    await page.goto(`${BASE}/#/config/activity`);
+    await page.goto(`${BASE}/config/activity`);
 
     const root = page.getByTestId('activity-page');
     await expect(root).toBeVisible({ timeout: 25_000 });

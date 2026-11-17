@@ -14,13 +14,13 @@ async function globalSetup(): Promise<void> {
   const page = await browser.newPage({ locale: 'es-PE' });
 
   try {
-    await page.goto(`${baseUrl}/#/login`, {
+    await page.goto(`${baseUrl}/login`, {
       waitUntil: 'domcontentloaded',
       timeout: 60_000,
     });
     await page.locator('form.login-form').waitFor({ state: 'visible', timeout: 60_000 });
     await page
-      .goto(`${baseUrl}/#/pos`, {
+      .goto(`${baseUrl}/pos`, {
         waitUntil: 'domcontentloaded',
         timeout: 30_000,
       })

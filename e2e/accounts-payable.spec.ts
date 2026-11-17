@@ -98,7 +98,7 @@ test('registra una factura por pagar, la paga, la reversa y conserva la auditor√
     2,
   );
 
-  await page.goto(`${BASE_URL}/#/accounts-payable`);
+  await page.goto(`${BASE_URL}/accounts-payable`);
   const billRow = page.locator('.nb-datagrid__card').filter({ hasText: number }).first();
   await expect(billRow).toBeVisible({ timeout: 15000 });
   await billRow.getByRole('button', { name: 'Pagar' }).click();
@@ -115,7 +115,7 @@ test('registra una factura por pagar, la paga, la reversa y conserva la auditor√
     .first()
     .click();
   await page.getByTestId('supplier-bill-pay-submit-btn').click();
-  await expect(page).toHaveURL(/#\/accounts-payable/);
+  await expect(page).toHaveURL(/\/accounts-payable/);
 
   const paidResponse = await request.get(`${BASE_URL}/api/supplier-bills/${created.id}`, {
     headers: auth.headers,
@@ -139,7 +139,7 @@ test('registra una factura por pagar, la paga, la reversa y conserva la auditor√
     ),
   ).toBeCloseTo(Number(baseline?.balanceDue ?? 0), 2);
 
-  await page.goto(`${BASE_URL}/#/supplier-bill/${created.id}/pay`);
+  await page.goto(`${BASE_URL}/supplier-bill/${created.id}/pay`);
   await expect(page.getByText(/Historial de pagos/)).toBeVisible();
   await page.getByRole('button', { name: 'Reversar', exact: true }).click();
   await page
@@ -192,7 +192,7 @@ test('registra una factura por pagar, la paga, la reversa y conserva la auditor√
   expect(trialResponse.ok()).toBeTruthy();
   expect((await trialResponse.json()).balanced).toBe(true);
 
-  await page.goto(`${BASE_URL}/#/accounting`);
+  await page.goto(`${BASE_URL}/accounting`);
   await page.getByRole('tab', { name: 'Diario', exact: true }).click();
   await expect(page.getByText(/Factura de proveedor/).first()).toBeVisible({ timeout: 15000 });
 });

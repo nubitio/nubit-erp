@@ -42,7 +42,7 @@ test('POS redondea efectivo S/10.63 a S/10.60 y persiste el ajuste', async ({ pa
 
     await login(page, seed.username, seed.password);
     await ensureOpenCashSession(page, BASE_URL);
-    await page.goto(`${BASE_URL}/#/pos`);
+    await page.goto(`${BASE_URL}/pos`);
     const search = page.getByTestId('pos-product-search');
     await search.waitFor({ state: 'visible', timeout: 25000 });
     await search.fill(E2E_SEED.productName);

@@ -34,7 +34,7 @@ function cashMovementsButton(page: Page) {
  * Ensures an open cash session exists and returns its ID.
  */
 export async function ensureOpenCashSession(page: Page, baseUrl: string): Promise<string> {
-  await page.goto(`${baseUrl}/#/cashbox`);
+  await page.goto(`${baseUrl}/cashbox`);
   await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
   await waitForCashboxGrid(page);
 
@@ -51,16 +51,16 @@ export async function ensureOpenCashSession(page: Page, baseUrl: string): Promis
       : null;
 
     if (closedReg?.id) {
-      await page.goto(`${baseUrl}/#/cash-register/${closedReg.id}/open`);
+      await page.goto(`${baseUrl}/cash-register/${closedReg.id}/open`);
     } else {
       await openBtn.click();
-      await page.waitForURL(/\/#\/cash-register\/\d+\/open/, { timeout: 10000 }).catch(() => {});
+      await page.waitForURL(/\/cash-register\/\d+\/open/, { timeout: 10000 }).catch(() => {});
     }
 
     await expect(page.locator('text=Apertura de caja')).toBeVisible({ timeout: 10000 });
     await page.getByLabel('Saldo inicial').fill('100');
     await page.getByTestId('cash-open-submit-btn').first().click();
-    await page.waitForURL(/\/#\/cash-session\/\d+\/movements/, { timeout: 15000 });
+    await page.waitForURL(/\/cash-session\/\d+\/movements/, { timeout: 15000 });
   } else {
     const movementsBtn = cashMovementsButton(page);
     let navigated = false;
@@ -68,7 +68,7 @@ export async function ensureOpenCashSession(page: Page, baseUrl: string): Promis
     if (await movementsBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
       try {
         await Promise.all([
-          page.waitForURL(/\/#\/cash-session\/\d+\/movements/, { timeout: 8000 }),
+          page.waitForURL(/\/cash-session\/\d+\/movements/, { timeout: 8000 }),
           movementsBtn.click(),
         ]);
         navigated = true;
@@ -90,7 +90,7 @@ export async function ensureOpenCashSession(page: Page, baseUrl: string): Promis
         : null;
       const cashSessionId = openReg?.cashSessionId ?? openReg?.cashShiftId;
       if (cashSessionId) {
-        await page.goto(`${baseUrl}/#/cash-session/${cashSessionId}/movements`);
+        await page.goto(`${baseUrl}/cash-session/${cashSessionId}/movements`);
       }
     }
   }

@@ -24,11 +24,11 @@ test('Un refresh real recupera peticiones concurrentes en dos pestañas sin perd
 }) => {
   const seed = await getE2ESeed();
   await login(page, seed.username, seed.password);
-  await page.goto(`${BASE_URL}/#/pos`);
+  await page.goto(`${BASE_URL}/pos`);
   await expect(page.getByTestId('pos-product-search')).toBeVisible();
   await page.waitForLoadState('networkidle');
   const second = await context.newPage();
-  await second.goto(`${BASE_URL}/#/pos`);
+  await second.goto(`${BASE_URL}/pos`);
   await expect(second.getByTestId('pos-product-search')).toBeVisible();
   await second.waitForLoadState('networkidle');
 
@@ -71,7 +71,7 @@ test('Un 503 de refresh conserva la sesión; un refresh inválido notifica una s
 }) => {
   const seed = await getE2ESeed();
   await login(page, seed.username, seed.password);
-  await page.goto(`${BASE_URL}/#/pos`);
+  await page.goto(`${BASE_URL}/pos`);
   await expect(page.getByTestId('pos-product-search')).toBeVisible();
   await page.waitForLoadState('networkidle');
   let renewals = 0;

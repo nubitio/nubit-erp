@@ -41,7 +41,7 @@ for (const mobile of [false, true])
             },
       }),
     );
-    await page.goto(`${getE2EBaseUrl()}/#/accounts-payable`);
+    await page.goto(`${getE2EBaseUrl()}/accounts-payable`);
     const summary = page.getByRole('region', { name: 'Resumen de cuentas por pagar' });
     await expect(summary.getByRole('alert')).toContainText('No se pudo cargar el resumen');
     await expect(summary.locator('.nb-kpi-metric-row')).toHaveCount(0);
@@ -74,7 +74,7 @@ for (const mobile of [false, true])
     } else {
       await page.getByRole('button', { name: 'Cuentas por cobrar', exact: true }).click();
     }
-    await expect(page).toHaveURL(/#\/accounts-receivable$/);
+    await expect(page).toHaveURL(/\/accounts-receivable$/);
     await expect(
       mobile
         ? navigation.getByRole('link', { name: 'Por cobrar' })

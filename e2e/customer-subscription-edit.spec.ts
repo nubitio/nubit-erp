@@ -127,6 +127,6 @@ test('editar una suscripción no devuelve 500', async ({ page }) => {
   });
   expect(updated.status).toBe(200);
 
-  await page.goto(`${getE2EBaseUrl()}/#/subscriptions/customer-subscriptions`);
+  await page.goto(`${getE2EBaseUrl()}/subscriptions/customer-subscriptions`);
   await expect(page.getByText('Suscripciones', { exact: true }).first()).toBeVisible();
 });

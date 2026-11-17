@@ -18,7 +18,7 @@ for (const theme of ['light', 'dark'] as const) {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ colorScheme: theme });
     await login(page, seed.username, seed.password);
-    await page.goto(`${getE2EBaseUrl()}/#/pos`);
+    await page.goto(`${getE2EBaseUrl()}/pos`);
     await expect(page.getByRole('heading', { name: 'Nueva venta', exact: true })).toBeVisible();
     const add = page.locator('.pos-product-card__select:not(:disabled)').first();
     await expect(add).toBeVisible({ timeout: 30000 });
@@ -87,7 +87,7 @@ test('POS desktop keeps product price editing separate from cart selection', asy
   );
   await login(page, seed.username, seed.password);
   await page.setViewportSize({ width: 1440, height: 960 });
-  await page.goto(`${getE2EBaseUrl()}/#/pos`);
+  await page.goto(`${getE2EBaseUrl()}/pos`);
   const card = page.getByTestId('pos-product-card').first();
   await expect(card).toBeVisible({ timeout: 30000 });
   const add = card.getByTestId('pos-product-card-add');

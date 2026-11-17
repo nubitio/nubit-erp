@@ -8,7 +8,7 @@ test('Configuración general muestra el redondeo de efectivo del POS', async ({ 
   const seed = await getE2ESeed();
 
   await login(page, seed.username, seed.password);
-  await page.goto(`${BASE_URL}/#/config/general`);
+  await page.goto(`${BASE_URL}/config/general`);
 
   await expect(page.getByTestId('settings-general-tab')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Punto de venta' })).toBeVisible();
@@ -23,7 +23,7 @@ test('Ajustes se adapta a móvil sin overflow horizontal', async ({ page }) => {
   await login(page, seed.username, seed.password);
 
   for (const route of ['company', 'sunat', 'general', 'integrations']) {
-    await page.goto(`${BASE_URL}/#/config/${route}`);
+    await page.goto(`${BASE_URL}/config/${route}`);
     await expect(page.getByRole('navigation', { name: 'Secciones de ajustes' })).toBeVisible();
     await expect
       .poll(() =>

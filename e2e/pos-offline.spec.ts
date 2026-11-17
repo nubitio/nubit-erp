@@ -85,14 +85,14 @@ test('Una venta offline sobrevive a recarga y actualización PWA y se sincroniza
   page.on('pageerror', (error) => errors.push(error.message));
 
   try {
-    await page.goto(`${BASE_URL}/#/login`);
+    await page.goto(`${BASE_URL}/login`);
     // waitForFunction survives the first controllerchange-triggered reload.
     await page.waitForFunction(() => !!navigator.serviceWorker?.controller, undefined, {
       timeout: 30_000,
     });
     await login(page, seed.username, seed.password);
     await ensureOpenCashSession(page, BASE_URL);
-    await page.goto(`${BASE_URL}/#/pos`);
+    await page.goto(`${BASE_URL}/pos`);
     await expect(page.getByTestId('pos-product-search')).toBeVisible({ timeout: 25_000 });
     // Fail clearly when someone runs this spec against Vite dev assets: the
     // actual production worker and its caches are part of the regression.
@@ -268,11 +268,11 @@ test('La actualización espera al cobro en curso y una versión obligatoria bloq
   const seed = await getE2ESeed();
   let finishPayment = () => {};
   try {
-    await page.goto(`${BASE_URL}/#/login`);
+    await page.goto(`${BASE_URL}/login`);
     await page.waitForFunction(() => !!navigator.serviceWorker?.controller);
     await login(page, seed.username, seed.password);
     await ensureOpenCashSession(page, BASE_URL);
-    await page.goto(`${BASE_URL}/#/pos`);
+    await page.goto(`${BASE_URL}/pos`);
     const product = page
       .getByTestId('pos-product-card')
       .filter({ hasText: E2E_SEED.productName })
