@@ -110,3 +110,29 @@ per-instance auto-refresh is disabled in `httpTransport`.
   independently of an expired access JWT. The global cookie CSRF protection
   still applies; a fabricated Bearer cannot bypass it. Refresh consumption and
   replacement issuance are committed together, or rolled back on failure.
+
+## Identity module
+
+`identity-module.spec.ts` (invitations, e-mailed links, second factor, password recovery) is
+skipped unless `IDENTITY_MODULE_ENABLED=1`, and it is not part of the CI list, so by default
+nothing exercises those flows. It passed 29/29 on 2026-11-17 against a stack prepared like this
+(on top of `E2E_SETUP_ONLY=1 KEEP_STACK=1 bash scripts/ci/e2e-local.sh`):
+
+- **Module on at the server.** The flag is compiled into the container: recreate `web` with
+  `IDENTITY_MODULE_ENABLED=1`, then `cache:clear` + `cache:warmup`. The tables come from
+  `Version20261107020000_identity_module_tables`, which the normal migration already runs.
+- **Mail delivered inline.** E-mail is queued on the `async` transport; set
+  `MESSENGER_TRANSPORT_DSN=sync://` on `web` (otherwise a messenger worker has to run).
+- **A mail catcher.** `mailpit` exists in `docker-compose.yml` but the CI overlay parks it behind
+  the `dev-mail` profile: `docker compose --profile dev-mail up -d mailpit`, and run the spec with
+  `MAILPIT_URL=http://mailpit:8025` (inside the compose network) and `IDENTITY_MODULE_ENABLED=1`.
+- **A tenant that can hold the users it creates.** The seeded `demo` tenant is on the `free`
+  plan (3 users). The spec exceeds that and every invitation accept then fails with HTTP 429
+  (`QuotaExceededException`, not rate limiting). Move the tenant to a plan with
+  `"users": -1` (`pro`): `update efact.tenants set plan='pro' where name='demo'`, then
+  `cache:pool:clear cache.app`, because the tenant record is cached.
+- **Attempt limiter.** `password_reset.max_attempts: 0` (disables the identity module's
+  per-IP/per-identity limiter) was set in the passing run. It was not isolated, so it may or may
+  not be needed.
+
+Run the spec once per fresh stack: it creates users and leaves them behind.

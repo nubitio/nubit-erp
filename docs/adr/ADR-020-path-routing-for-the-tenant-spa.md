@@ -172,10 +172,16 @@ Verified in a real browser against the dev stack (Playwright, 2026-11-17): a leg
 route renders the page; `/stock-receipt` renders; `/#/receipt` maps to it;
 `/reset-password#token=…` renders the form, removes the token from the address bar and
 the server log contains no trace of it; the legacy `/#/reset-password?token=…` and
-`/#/register` map correctly. **Not verified:** consuming a real token end to end. The
-identity module is off by default (`IDENTITY_MODULE_ENABLED=0`), so `identity-module.spec.ts`
-is skipped in CI; it needs the flag, the `nubit_*` tables and a mail catcher to run.
-Do that before relying on the e-mailed links in production.
+`/#/register` map correctly.
+
+The identity flows were also run end to end (`identity-module.spec.ts`, 29/29 passing: the
+invitation link in the browser, account creation, single-use link, password recovery by
+e-mailed link, second factor). That spec is off by default and cannot pass on the stock CI
+stack, so it was run on a disposable stack set up as described in `e2e/README.md`
+("Identity module"). Two things that run needed are worth knowing: the e2e tenant is on the
+`free` plan, which allows 3 users, and the spec creates more (the symptom is an HTTP 429 from
+`QuotaExceededException`, easy to mistake for rate limiting); and the identity attempt limiter
+was also disabled in the run that passed, without isolating whether it is required.
 
 Rolling back step 2 is a revert; steps 1 and 3 are harmless on their own.
 
