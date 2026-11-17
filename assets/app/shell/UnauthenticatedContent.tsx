@@ -1,3 +1,4 @@
+import { AUTH_ROUTE_PATHS } from './routePaths';
 import React, { Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { lazyNamed } from '@app/router/lazy';
@@ -34,7 +35,7 @@ export const UnauthenticatedContent = () => {
   return (
     <Routes>
       <Route
-        path="/login"
+        path={AUTH_ROUTE_PATHS.login}
         element={
           <Suspense fallback={<AuthRouteLoading />}>
             <LoginPage />
@@ -42,7 +43,7 @@ export const UnauthenticatedContent = () => {
         }
       />
       <Route
-        path="/impersonate"
+        path={AUTH_ROUTE_PATHS.impersonate}
         element={
           <Suspense fallback={<AuthRouteLoading />}>
             <ImpersonateBridgePage />
@@ -50,7 +51,7 @@ export const UnauthenticatedContent = () => {
         }
       />
       <Route
-        path="/forgot-password"
+        path={AUTH_ROUTE_PATHS.forgotPassword}
         element={
           <Suspense fallback={<AuthRouteLoading />}>
             <ForgotPasswordPage />
@@ -58,7 +59,7 @@ export const UnauthenticatedContent = () => {
         }
       />
       <Route
-        path="/reset-password"
+        path={AUTH_ROUTE_PATHS.resetPassword}
         element={
           <Suspense fallback={<AuthRouteLoading />}>
             <ResetPasswordPage />
@@ -66,7 +67,7 @@ export const UnauthenticatedContent = () => {
         }
       />
       <Route
-        path="/accept-invitation"
+        path={AUTH_ROUTE_PATHS.acceptInvitation}
         element={
           <Suspense fallback={<AuthRouteLoading />}>
             <AcceptInvitationPage />

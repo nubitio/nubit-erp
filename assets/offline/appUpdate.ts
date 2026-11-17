@@ -90,11 +90,13 @@ function reloadWhenSafe() {
 }
 
 async function warmAppShell(): Promise<boolean> {
-  // First installation claims an already-loaded page. HashRouter navigation
+  // First installation claims an already-loaded page. Client-side navigation
   // does not fetch HTML, so populate the shell without interrupting login/POS.
+  // The shell is cached under `/` regardless of the current route: the service
+  // worker answers every app navigation with that one copy (ADR-020, D4;
+  // see assets/offline/shellNavigation.js).
   try {
-    const url = new URL(window.location.href);
-    url.hash = '';
+    const url = new URL('/', window.location.origin);
     const response = await exceptionalFetch(
       url,
       { cache: 'no-store', credentials: 'same-origin' },

@@ -1,5 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { FULLSCREEN_ROUTE_PATHS } from './routePaths';
 import { RouteErrorBoundary } from '../../shared/components/RouteErrorBoundary';
 
 const POSPage = lazy(() => import('@features/pos/POSPage'));
@@ -14,7 +15,7 @@ export const FullScreenContent = () => {
   return (
     <Routes>
       <Route
-        path="/pos"
+        path={FULLSCREEN_ROUTE_PATHS.pos}
         element={
           <RouteErrorBoundary>
             <Suspense fallback={<FullScreenRouteLoading />}>

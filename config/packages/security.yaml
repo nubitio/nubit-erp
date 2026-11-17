@@ -103,8 +103,10 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/api/account, roles: PUBLIC_ACCESS }
-        - { path: ^/register, roles: PUBLIC_ACCESS }
-        - { path: ^/account, roles: PUBLIC_ACCESS }
+        - { path: '^/register(?:/|$)', roles: PUBLIC_ACCESS }
+        # Bounded on purpose: a bare ^/account would also match the SPA routes
+        # /accounting, /accounts-payable and /accounts-receivable (ADR-020).
+        - { path: '^/account(?:/|$)', roles: PUBLIC_ACCESS }
         - { path: ^/health, roles: PUBLIC_ACCESS }
         - { path: ^/webhook/paypal, roles: PUBLIC_ACCESS }
         - { path: ^/webhook/mercadopago, roles: PUBLIC_ACCESS }

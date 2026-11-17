@@ -3,6 +3,10 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import symfonyPlugin from '@symfony/reprise/vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import {
+  isTenantShellNavigation,
+  shellCacheKeyWillBeUsed,
+} from './assets/offline/shellNavigation.js';
 
 import react from '@vitejs/plugin-react';
 
@@ -96,11 +100,17 @@ export default defineConfig({
             // Cache the Symfony-rendered HTML shell. NetworkFirst ensures the SW
             // tries the network first (5 s timeout) and falls back to the cached
             // response when offline, enabling offline reloads after the first visit.
-            urlPattern: ({ request, url }) =>
-              request.mode === 'navigate' && !url.pathname.startsWith('/api/'),
+            //
+            // ADR-020 D4: the shell is ONE document for every client route, cached under
+            // the key `/`. Whatever URL was asked for, an offline reload is answered
+            // with that copy, so /billing/sales works offline without having been
+            // visited online. Server-owned and other-SPA namespaces (/admin, /account,
+            // /receipt…) are excluded so they can never overwrite the shell.
+            urlPattern: isTenantShellNavigation,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'app-shell',
+              plugins: [{ cacheKeyWillBeUsed: shellCacheKeyWillBeUsed }],
               networkTimeoutSeconds: 5,
               expiration: {
                 maxEntries: 10,
