@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import { authService } from '@features/auth';
 import { branchService } from '@features/branch';
 import { requestAuthSessionSync } from '@shared/lib/authSessionSync';
+import { useFragmentParams } from '@shared/lib/useFragmentParams';
 import { StorageUtils } from '@shared/lib/StorageUtils';
 // eslint-disable-next-line no-restricted-imports -- reuses the shared branch-selection modal, same boundary exception LoginForm takes for BranchPicker
 import { BranchPicker } from '@app/shell/components/BranchPicker';
 
 import './LoginPage.scss';
+
+/** The support token travels in the fragment, never the path or query (ADR-020, D3). */
+const TOKEN_PARAM = ['token'] as const;
 
 interface BranchOption {
   id: string;
@@ -23,7 +27,9 @@ function extractErrorMessage(err: unknown, fallback: string): string {
 
 export const ImpersonateBridgePage = () => {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  // Captured once; the hook also removes it from the URL so it never lingers in
+  // browser history or gets shared accidentally, even if consume fails.
+  const { token } = useFragmentParams(TOKEN_PARAM);
   const [error, setError] = useState<string | null>(null);
   const [showPicker, setShowPicker] = useState(false);
   const [branchOptions, setBranchOptions] = useState<BranchOption[]>([]);
@@ -46,12 +52,6 @@ export const ImpersonateBridgePage = () => {
   );
 
   useEffect(() => {
-    const token = searchParams.get('token');
-
-    // Strip the token from the URL immediately so it never lingers in
-    // browser history or gets shared accidentally, even if consume fails.
-    setSearchParams({}, { replace: true });
-
     if (!token) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- synchronous validation of a URL fragment read at mount, not a derived-state anti-pattern
       setError('Enlace de acceso inválido o incompleto.');
@@ -99,8 +99,7 @@ export const ImpersonateBridgePage = () => {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally read the token only once on mount, not on every searchParams identity change
-  }, [finishWithBranch]);
+  }, [finishWithBranch, token]);
 
   return (
     <div id="login-root" className="impersonate-bridge">

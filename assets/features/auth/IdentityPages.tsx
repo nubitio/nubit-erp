@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useFragmentParams } from '@shared/lib/useFragmentParams';
 import { Button, TextField } from '@nubitio/ui';
 
 import './LoginForm.scss';
@@ -16,7 +17,7 @@ const BackToLogin = () => (
   </p>
 );
 
-/** `#/forgot-password`: asks for the user name or e-mail. The answer never says if it exists. */
+/** `/forgot-password`: asks for the user name or e-mail. The answer never says if it exists. */
 export const ForgotPasswordPage = () => {
   const [value, setValue] = useState('');
   const [loading, setLoading] = useState(false);
@@ -86,9 +87,12 @@ export const ForgotPasswordPage = () => {
   );
 };
 
-/** `#/reset-password?token=…`: the link from the recovery e-mail. */
+/** The e-mailed secret travels in the fragment, never the path or query (ADR-020, D3). */
+const TOKEN_PARAM = ['token'] as const;
+
+/** `/reset-password#token=…`: the link from the recovery e-mail. */
 export const ResetPasswordPage = () => {
-  const token = useSearchParams()[0].get('token') ?? '';
+  const token = useFragmentParams(TOKEN_PARAM).token ?? '';
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -129,9 +133,9 @@ export const ResetPasswordPage = () => {
   );
 };
 
-/** `#/accept-invitation?token=…`: the invitee chooses their own password. */
+/** `/accept-invitation#token=…`: the invitee chooses their own password. */
 export const AcceptInvitationPage = () => {
-  const token = useSearchParams()[0].get('token') ?? '';
+  const token = useFragmentParams(TOKEN_PARAM).token ?? '';
   const [email, setEmail] = useState<string | null>(null);
   const [invalid, setInvalid] = useState<string | null>(
     token ? null : 'El enlace está incompleto.',
