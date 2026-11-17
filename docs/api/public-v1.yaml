@@ -72,6 +72,24 @@ paths:
         '401': { $ref: '#/components/responses/Unauthenticated' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/documents/{reference}/pdf:
+    get:
+      operationId: getDocumentPdf
+      tags: [Documents]
+      summary: Download the A4 PDF of an accepted document
+      security: [{ ApiKey: [] }]
+      x-required-scopes: [documents:read]
+      parameters:
+        - name: reference
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { $ref: '#/components/responses/Pdf' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/IdempotencyConflict' }
   /api/v1/webhook-endpoints:
     get:
       operationId: listWebhookEndpoints
@@ -435,5 +453,6 @@ components:
     NotFound: { description: Resource not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
     Json: { description: JSON response, content: { application/json: { schema: { $ref: '#/components/schemas/JsonObject' } } } }
     Spreadsheet: { description: XLSX download, content: { application/vnd.openxmlformats-officedocument.spreadsheetml.sheet: { schema: { type: string, format: binary } } } }
+    Pdf: { description: A4 PDF, content: { application/pdf: { schema: { type: string, format: binary } } } }
     Zip: { description: ZIP download, content: { application/zip: { schema: { type: string, format: binary } } } }
     TextFile: { description: Text file download, content: { text/plain: { schema: { type: string } } } }

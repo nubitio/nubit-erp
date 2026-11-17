@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Integration\Controller\Api\V1;
 
+use App\Billing\Sunat\Domain\BillPdfUseCase;
 use App\Integration\Entity\IntegrationDocument;
 use App\Integration\Fiscal\DocumentInput;
 use App\Integration\Fiscal\DocumentIntake;
@@ -66,6 +67,28 @@ final class DocumentsController extends AbstractController
         }
 
         return new JsonResponse($this->represent($document));
+    }
+
+    /** The printable A4 PDF of an accepted document, for the caller to deliver to its customer. */
+    #[Route('/api/v1/documents/{reference}/pdf', name: 'integration_v1_documents_pdf', methods: ['GET'])]
+    #[IsGranted('ROLE_SCOPE_DOCUMENTS_READ')]
+    public function pdf(string $reference, IntegrationDocumentRepository $documents, BillPdfUseCase $billPdf): Response
+    {
+        $document = $documents->findOneByReference($reference);
+        if (null === $document) {
+            return $this->error('not_found', 'No document with that reference.', Response::HTTP_NOT_FOUND);
+        }
+        $taxDocumentId = $document->getTaxDocumentId();
+        if (IntegrationDocument::STATUS_ACCEPTED !== $document->getStatus() || null === $taxDocumentId) {
+            return $this->error('document_not_accepted', 'The PDF is available once SUNAT has accepted the document.', Response::HTTP_CONFLICT);
+        }
+
+        $file = $billPdf($taxDocumentId);
+
+        return new Response($file->file, Response::HTTP_OK, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $file->name . '"',
+        ]);
     }
 
     /**
