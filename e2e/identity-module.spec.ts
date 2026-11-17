@@ -518,7 +518,8 @@ test.describe('invite dialog (browser)', () => {
     await expect(dialog).toBeHidden({ timeout: 15_000 });
 
     const mail = await mailTo(target, 'invitaron');
-    expect(mail).toContain('#/accept-invitation?token=');
+    expect(mail).toContain('/accept-invitation#token=');
+    expect(mail, 'the secret must not be in the path or query').not.toMatch(/[?&]token=|\/#\//);
   });
 });
 

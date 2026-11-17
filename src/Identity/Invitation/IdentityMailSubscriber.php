@@ -11,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Nubit\AdminBundle\Identity\Event\PasswordResetRequested;
 use Nubit\AdminBundle\Identity\Event\UserInvited;
 use Psr\Log\LoggerInterface;
+use SensitiveParameter;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -43,7 +44,7 @@ final readonly class IdentityMailSubscriber implements EventSubscriberInterface
 
     public function onUserInvited(UserInvited $event): void
     {
-        $link = $this->baseUrl() . '/#/accept-invitation?token=' . $event->token;
+        $link = $this->secretLink('/accept-invitation', $event->token);
         $this->send(
             $event->email,
             'Te invitaron a Nubit ERP',
@@ -72,7 +73,7 @@ final readonly class IdentityMailSubscriber implements EventSubscriberInterface
         if ($email === null) {
             return;
         }
-        $link = $this->baseUrl() . '/#/reset-password?token=' . $event->token;
+        $link = $this->secretLink('/reset-password', $event->token);
         $this->send(
             $email,
             'Restablece tu contraseña de Nubit ERP',
@@ -88,6 +89,16 @@ final readonly class IdentityMailSubscriber implements EventSubscriberInterface
     private function baseUrl(): string
     {
         return $this->requests->getCurrentRequest()?->getSchemeAndHttpHost() ?? '';
+    }
+
+    /**
+     * The token goes in the URL fragment, not the path or the query string (ADR-020, D3): a
+     * fragment is never sent to the server, so neither Caddy's access log nor any proxy in front
+     * of it records the secret. The page reads it once and removes it from the address bar.
+     */
+    private function secretLink(string $path, #[SensitiveParameter] string $token): string
+    {
+        return $this->baseUrl() . $path . '#token=' . rawurlencode($token);
     }
 
     private function send(string $to, string $subject, string $text): void

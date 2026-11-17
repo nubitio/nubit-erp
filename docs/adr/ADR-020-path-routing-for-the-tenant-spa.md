@@ -160,7 +160,22 @@ entry that fails when the debt is paid, so it can neither grow nor be forgotten.
    `skipWaiting: false` / idle reload (`appUpdate.ts`), old hash clients and new
    path clients coexist; step 1 guarantees both are served.
 3. **Flip emitters.** `IdentityMailSubscriber`, `account_reminder.html.twig`,
-   `ImpersonateModal` generate path + fragment URLs (D3).
+   `ImpersonateModal` generate path + fragment URLs (D3). Implemented 2026-11-17:
+   invitation and reset links are `/accept-invitation#token=…` and
+   `/reset-password#token=…`, the support bridge is `/impersonate#token=…`, and the
+   registration reminder points at `/register` (it used to point at `/#/register`,
+   which landed in the tenant SPA and bounced to login). Pinned by
+   `IdentityMailSubscriberTest` and `impersonationUrl.test.ts`.
+
+Verified in a real browser against the dev stack (Playwright, 2026-11-17): a legacy
+`/#/billing/sales` logs in and returns to `/billing/sales`; a hard reload on a deep
+route renders the page; `/stock-receipt` renders; `/#/receipt` maps to it;
+`/reset-password#token=…` renders the form, removes the token from the address bar and
+the server log contains no trace of it; the legacy `/#/reset-password?token=…` and
+`/#/register` map correctly. **Not verified:** consuming a real token end to end. The
+identity module is off by default (`IDENTITY_MODULE_ENABLED=0`), so `identity-module.spec.ts`
+is skipped in CI; it needs the flag, the `nubit_*` tables and a mail catcher to run.
+Do that before relying on the e-mailed links in production.
 
 Rolling back step 2 is a revert; steps 1 and 3 are harmless on their own.
 

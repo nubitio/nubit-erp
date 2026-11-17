@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { AppDialog, Button, FormField, TextField } from '@nubitio/ui';
 import { controlPlaneClient } from '../../api/controlPlaneClient';
 import { CP_STRINGS } from '../../i18n/es';
+import { buildImpersonationUrl } from './impersonationUrl';
 
 interface ImpersonateModalProps {
   visible: boolean;
@@ -25,10 +26,13 @@ export const ImpersonateModal = ({
   const impersonate = useMutation({
     mutationFn: () => controlPlaneClient.impersonateTenantUser(tenantId, username.trim()),
     onSuccess: (result) => {
-      const port = window.location.port ? `:${window.location.port}` : '';
-      // HashRouter app: everything after "#" is client-side routing, never sent
-      // to the server, so the token never appears in a real HTTP request.
-      const bridgeUrl = `${window.location.protocol}//${primaryDomain}${port}/#/impersonate?token=${encodeURIComponent(result.token)}`;
+      // The token rides in the URL fragment, which is never sent to the server, so it
+      // cannot appear in an access log (ADR-020, D3).
+      if (!primaryDomain) {
+        setError(CP_STRINGS.tenantDetail.impersonateNoDomain);
+        return;
+      }
+      const bridgeUrl = buildImpersonationUrl(window.location, primaryDomain, result.token);
       window.open(bridgeUrl, '_blank', 'noopener,noreferrer');
       handleClose();
     },

@@ -2,4 +2,4 @@
 <p>Tu cuenta de Nubit ERP todavía está pendiente de verificación.</p>
 <p>Vuelve al registro para solicitar un código nuevo y continuar donde lo dejaste.</p>
 {% if stage == 3 %}<p>La cuenta se eliminará automáticamente en {{ days_left }} días si no verificas tu correo.</p>{% endif %}
-<p><a href="{{ absolute_url('/#/register') }}">Continuar registro</a></p>
+<p><a href="{{ absolute_url('/register') }}">Continuar registro</a></p>
