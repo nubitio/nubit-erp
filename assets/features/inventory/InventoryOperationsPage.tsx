@@ -21,7 +21,7 @@ export const InventoryOperationsPage = () => {
             icon: 'ph-arrow-line-down',
             accent: 'in',
             testId: 'inventory-operation-receipt',
-            onClick: () => navigate('/receipt/new'),
+            onClick: () => navigate('/stock-receipt/new'),
           },
           {
             key: 'cycle-count',

@@ -25,19 +25,14 @@ final class SpaRoutingTest extends KernelTestCase
     private const string CATCH_ALL = 'spa_catch_all';
 
     /**
-     * Client paths that Symfony answers itself today, so a reload or an e-mailed
-     * link would reach the wrong page. Each entry is debt: the client route has to
-     * be renamed (ADR-020 step 2) and the entry deleted. This list is asserted to
-     * match exactly, so it can neither grow unnoticed nor linger after the fix.
-     *
-     * `/receipt/{payload}` is the PUBLIC voucher page (printed QR codes and e-mails
-     * already point at it, so it cannot move); the SPA's stock-receipt screen
-     * (`crudRoute('/receipt', …)`) is the one that must change.
+     * Client paths that Symfony answers itself, so a reload or an e-mailed link would
+     * reach the wrong page. Each entry is debt to be paid by renaming the client route,
+     * and the list is asserted to match exactly, so it can neither grow unnoticed nor
+     * linger after a fix. Empty since ADR-020 step 2, which renamed the stock-receipt
+     * screen from `/receipt` to `/stock-receipt` (`/receipt/{payload}` is the PUBLIC
+     * voucher page: printed QR codes and e-mails point at it, so it cannot move).
      */
-    private const array KNOWN_COLLISIONS = [
-        '/receipt',
-        '/receipt/spa-probe-id',
-    ];
+    private const array KNOWN_COLLISIONS = [];
 
     private RouterInterface $router;
 

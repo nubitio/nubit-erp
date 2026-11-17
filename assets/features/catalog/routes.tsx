@@ -63,7 +63,7 @@ export const catalogRoutes: AppRouteDefinition[] = [
   { path: '/kardex', element: KardexRedirect },
   { path: '/reorder', element: ReorderRedirect },
   ...crudRoute('/stock-adjustment', StockAdjustmentPage),
-  ...crudRoute('/receipt', ReceiptPage),
+  ...crudRoute('/stock-receipt', ReceiptPage),
   ...customerRoutes,
   { path: '/warehouse', element: WarehouseRedirect },
   { path: '/sunat-catalog', element: SunatCatalogPage },
