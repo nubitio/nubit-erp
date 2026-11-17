@@ -1,7 +1,15 @@
 # ADR-019: Composed UI over schema-driven CRUD for business screens
 
 Date: 2026-11-16
-Status: Proposed
+Status: Accepted, amended 2026-11-17
+
+> **Amendment 2026-11-17 — no new package.** The first version of this ADR put the new
+> components in a new published package (`@nubitio/views`) and justified it as shared with
+> Inbox and Billing. That justification was wrong: the `@nubitio/*` consumers are
+> `nubit-control`, `nubit-erp`, `nubit-erp-site` and `aqp-net`; Inbox and Billing do not use
+> them. The owner also does not want to maintain more libraries (`nubit-react` already
+> publishes nine packages). D2, D3 and the migration plan were rewritten accordingly: the
+> components live in this repo (`assets/shared/ui`). The spike results in D4 stand.
 
 ## Context
 
@@ -73,46 +81,57 @@ today need `replace`-strategy contracts, event wiring or ref access are rebuilt
 as composed screens. No big-bang: migration is per screen (strangler), mirroring
 ADR-001/006 on the backend.
 
-### D2 — New components live in nubit-react, not in the ERP
+### D2 — The components live in the ERP; no new package
 
-The `@nubitio/*` packages are the shared design system and engine for every
-Nubit product (ERP, Inbox, Billing). Generic building blocks belong there so
-they are reusable, versioned and tested once. ERP-specific composites
-(`CustomerPicker`, `SunatStatusBadge`, document totals, money/price cells) stay
-in `assets/shared/ui/`.
+Generic building blocks (`DataGrid`, `EntityForm`, `ListView`, `RecordView`) go in
+`assets/shared/ui/`; feature-specific composites (`CustomerPicker`, `SunatStatusBadge`,
+document totals, money/price cells) stay next to their feature. Nothing is added to
+`nubit-react`, and nothing new is published, versioned or released.
 
-Placement inside nubit-react:
+The ERP gains two **direct** dependencies it already has transitively through
+`@nubitio/ui`: `react-aria-components` (pinned to the version `ui` uses, so the bundle
+carries one copy) and `react-hook-form`. `@nubitio/ui` keeps providing the visual
+primitives and tokens.
 
-- **`@nubitio/ui`** keeps its "no heavy dependencies" rule. It receives only
-  presentational additions that need none (layout slots, `Toolbar`, `BulkBar`,
-  `SavedViews` shell, density tokens, `StatusBadge` variants).
-- **A new package** (working name `@nubitio/views`) holds the stateful,
-  dependency-bearing layer: `DataGrid`, `ListView`, `RecordView`, `EntityForm`.
-  It depends on `ui`, `core` and the headless parts of `crud`; it never imports
-  `hydra` (same boundary rule `check-package-boundaries.mjs` enforces for
-  `crud`).
+Why not a package, and what would change the answer:
 
-### D3 — Schema-aware, not schema-bound
+- Only the ERP needs these components today. `nubit-control` and `aqp-net` use the
+  schema-driven engine; nothing says they want composed screens.
+- Every component change in a package costs a cross-repo cycle (branch, PR on a protected
+  `main`, release, version bump in the ERP). Inside the ERP it is one commit.
+- **Promotion rule:** when a second app asks for the same component, move it to
+  `@nubitio/ui` (it already depends on `react-aria-components`, so a grid adds no
+  dependency; forms stay out of `ui` because of `react-hook-form`). Until a second consumer
+  exists, extracting would be speculative.
+- The cost is accepted: if that day comes, the extraction is real work. It is smaller than
+  maintaining an unused library meanwhile.
 
-The new components take **explicit column and field definitions** as the primary
-API, and may *optionally* derive defaults from the Hydra schema through the
-existing Field-Type registry (`useResourceSchema` → `Field[]` → column/control
-defaults). This keeps the one thing the engine does well — never re-declaring
-what the backend already states (types, required, enums, permissions, workflow
-transitions) — while handing layout and behaviour to the caller.
+### D3 — Explicit and typed; no runtime schema engine
 
-The grid reuses `useGridQueryState`, `buildFilterExpression`, `useColumnChooser`
-and the `ResourceStore`, so the server-side filter/sort/page semantics and the
-`x-grid-protocol` fixtures stay the single source of truth. It is not a second
-implementation of the query logic.
+Screens declare their columns and fields explicitly, typed from the generated OpenAPI
+types (`assets/api/types.generated.ts`), and talk to the API through `httpClient` and
+TanStack Query, as `SaleDetailPage` already does. The components do not resolve a Hydra
+schema at runtime; that is precisely the layer being moved away from for business screens.
 
-Correction after reading nubit-react v1.3.1 (2026-11-16): `useGridQueryState`,
-`buildFilterExpression`, `usePermissions` and `useGridExport` are **not exported**
-from `@nubitio/crud` today and must be exported first. `useGridDataLoader`
-(manual `useState`/`useEffect` fetching) and `useGridSelection` (array-of-keys,
-O(n²)) are deliberately **not** reused: the new grid loads through TanStack Query
-over `ResourceStore.load` and uses an id-based selection model that survives
-pagination. Details in `nubit-react/docs/architecture/views.md` §2.
+`@nubitio/crud`'s headless hooks (`useGridQueryState`, `useGridDataLoader`,
+`useGridSelection`, `usePermissions`) are **not** reused, and none has to be exported from
+`nubit-react`. The spike showed that the load-bearing invariants are small and are
+implemented here instead:
+
+- Narrowing the result set resets the page in the **same state transition** (never in an
+  effect after the fact, which issues a request for the new filter on the old page).
+- Requests carry the `AbortSignal` from TanStack Query, so a superseded request is
+  cancelled, not merely ignored.
+- Selection is by id and survives pagination, with a distinct "all rows matching the
+  filter" mode (an `allMatching` flag plus an exclusion set).
+- `ui/Pagination` is 1-based and the query is 0-based; the grid owns the conversion.
+- While previous-page data is shown during a refetch, interaction with those rows is
+  disabled.
+
+Filter parameters follow what each endpoint accepts. Where a list needs the
+`x-grid-protocol` tuple form, a thin builder mirrors its output and is checked against
+`contracts/x-grid-protocol.fixtures.json` so the two cannot drift. Whether any pilot screen
+needs it is decided when the Customers endpoint is read.
 
 ### D4 — Libraries (revised 2026-11-17 after a spike)
 
@@ -186,21 +205,14 @@ documented reason).
 
 ## Migration plan
 
-0. **Prerequisites (no product change).**
-   - Sync nubit-react: the local checkout is 55 commits behind `origin/main`
-     (v0.11.2 vs v1.3.1) and has uncommitted work in `NativeFormView` and core
-     translations that belongs to someone's in-flight change. Resolve that
-     before branching new work there.
-   - Pin the ERP and nubit-react to the same published version line.
-   - Component contracts (props, states, a11y, keyboard) are written in
-     nubit-react `docs/architecture/views.md` (drafted 2026-11-16) and reviewed
-     before implementing.
-   - Export the headless symbols `views` needs from `@nubitio/crud` (see
-     views.md §2).
-1. **Foundation in nubit-react**: `DataGrid`, `ListView`, `EntityForm`,
-   `RecordView`, density and layout tokens, Storybook-style demo in
-   `examples/admin-demo`, unit + interaction tests, `check` pipeline green.
-   Publish as a pre-release; ERP consumes it via the registry, not a link.
+0. **Prerequisites (no product change).** Add `react-aria-components` (same version as
+   `@nubitio/ui`) and `react-hook-form` to the ERP. Nothing to prepare in `nubit-react`.
+1. **No foundation phase.** Components are built **with** the pilot, not ahead of it:
+   each is extracted into `assets/shared/ui/` when the Customers screen needs it, so
+   nothing is designed speculatively. The contract notes in
+   `nubit-react/docs/architecture/views.md` (query invariants, accessibility,
+   keyboard) remain a useful checklist, but that document is archived: it described a
+   package that will not exist.
 2. **Pilot: Customers.** Small, but coupled to `SalePage`
    (`CustomerPage.EVENTS` / `API_URL`), which exercises the hard seam. Gate:
    `catalog-customer-forms`, `customer-document-lookup` e2e pass; D4 libraries
@@ -219,7 +231,7 @@ Positive:
 - Layout and behaviour are the screen's own; richer UI no longer fights the
   engine.
 - Typed end to end; logic lives in hooks and is unit-testable.
-- Components are shared across Nubit products and versioned once.
+- No new library to publish, version or release; a component change is one commit.
 - Backend and the `x-*` contracts do not change.
 
 Negative / costs:
@@ -228,22 +240,26 @@ Negative / costs:
   flat CRUD keeps using the schema engine indefinitely.
 - More code per screen than `defineResource`, in exchange for control. Mitigated
   by `ListView`/`RecordView`/`EntityForm` defaults and optional schema derivation.
-- Cross-repo coordination (nubit-react release → ERP bump) on every component
-  change; mitigated by pre-releases and the shared version line.
-- A new package to own, document and version.
+- If `nubit-control`, `aqp-net` or `erp-site` later want the same components they
+  cannot import them; the promotion rule in D2 covers it, at the price of an extraction.
+- The ERP owns accessibility, keyboard behaviour and tests of its own grid and form
+  (React Aria Components supplies the grid semantics; the layers above it are ours).
 
 ## Alternatives considered
 
 1. **Keep `@nubitio/crud` and add layout slots/extension points.** Cheapest, but
    it grows the DSL further and keeps control inverted; the 214 overrides and
    ref-based wiring suggest the extension surface is already the problem.
-2. **Build everything inside the ERP (`assets/shared/ui`).** Fastest to iterate,
-   but forks the design system from Inbox/Billing and duplicates what nubit-react
-   already ships.
-3. **Replace the stack with a third-party admin kit** (Refine, React-Admin,
+2. **Build everything inside the ERP (`assets/shared/ui`).** **Chosen (amendment).**
+   Fastest to iterate and nothing new to maintain. It does not duplicate what
+   `nubit-react` ships: the primitives and tokens still come from `@nubitio/ui`.
+3. **A new published package (`@nubitio/views`).** The first version of this ADR.
+   Rejected: only one app would consume it, every change would cost a release cycle, and
+   the owner does not want to maintain more libraries.
+4. **Replace the stack with a third-party admin kit** (Refine, React-Admin,
    MUI/Ant). Imposes a second visual system and data model against the existing
    Nubit design system alignment (v1.2.0) and Hydra contract.
-4. **Big-bang rewrite.** Rejected: ~92k LOC, fiscal correctness (SUNAT) on the
+5. **Big-bang rewrite.** Rejected: ~92k LOC, fiscal correctness (SUNAT) on the
    sales path, and an e2e suite that is only meaningful if screens migrate one
    at a time.
 
@@ -261,7 +277,7 @@ readers, dark-theme contrast.
 
 ## Open questions
 
-- Package name and whether `views` is one package or split (`grid`, `form`).
+- When to promote a component to `@nubitio/ui` (D2): the trigger is a second consumer asking, not a date.
 - Per-user saved views: stored server-side (needs a backend resource) or
   `localStorage` first?
 - Lines editor: build in-house vs. a headless spreadsheet-style grid; decide
