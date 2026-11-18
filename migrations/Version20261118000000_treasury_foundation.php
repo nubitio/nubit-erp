@@ -14,8 +14,8 @@ use Doctrine\Migrations\AbstractMigration;
  *   suspense account that catches movements whose payment method has no account yet.
  * - treasury_movement: append-only ledger of signed amounts. Nothing updates or deletes a row; a
  *   correction is a new row with the opposite sign pointing at the original (ADR-003).
- * - treasury_payment_method_account: default account per branch and payment method. Cash has no row,
- *   its account is the user's open cash session.
+ * - treasury_payment_method_account: default account per branch, payment method and currency (a Yape
+ *   payment in USD needs a USD account). Cash has no row, its account is the user's open cash session.
  *
  * Cash drawers keep their own ledger (cash_movements); see D-A of the PRD. Grants the new
  * treasury.* permissions to the administrator role only. The super administrator holds every
@@ -83,8 +83,9 @@ final class Version20261118000000_treasury_foundation extends AbstractMigration
             CREATE TABLE treasury_payment_method_account (
                 branch_id CHAR(36) NOT NULL,
                 payment_method_id INT NOT NULL,
+                currency CHAR(3) NOT NULL,
                 account_id CHAR(36) NOT NULL,
-                PRIMARY KEY(branch_id, payment_method_id),
+                PRIMARY KEY(branch_id, payment_method_id, currency),
                 INDEX idx_treasury_pma_account (account_id),
                 CONSTRAINT fk_treasury_pma_account FOREIGN KEY (account_id) REFERENCES treasury_account (id)
             ) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
