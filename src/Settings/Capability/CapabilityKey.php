@@ -31,6 +31,7 @@ enum CapabilityKey: string
     case ExportsExcel = 'exports.excel';
     case PayrollCore = 'payroll.core';
     case TreasuryBankReconciliation = 'treasury.bank_reconciliation';
+    case TreasuryAccounts = 'treasury.accounts';
     case FixedAssetsTracking = 'fixed_assets.tracking';
     case ExpenseReportsCore = 'expense_reports.core';
     case AccountingGeneralLedger = 'accounting.general_ledger';

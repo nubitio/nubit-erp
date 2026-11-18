@@ -176,6 +176,14 @@ final class PermissionCatalog
                     'bank_reconciliation.void' => 'Deshacer conciliaciones',
                 ],
             ],
+            'treasury' => [
+                'label' => 'Cuentas de dinero',
+                'permissions' => [
+                    'treasury.view' => 'Ver cuentas y movimientos de dinero',
+                    'treasury.manage' => 'Administrar cuentas y métodos de pago',
+                    'treasury.transfer' => 'Registrar transferencias entre cuentas',
+                ],
+            ],
             'sale_quotes' => [
                 'label' => 'Cotizaciones',
                 'permissions' => [

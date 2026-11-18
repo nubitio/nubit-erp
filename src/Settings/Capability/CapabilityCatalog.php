@@ -145,6 +145,11 @@ final class CapabilityCatalog
                 requiresEntitlement: 'bank_reconciliation',
             ),
             new CapabilityDefinition(
+                key: CapabilityKey::TreasuryAccounts,
+                label: 'Cuentas de dinero (caja, bancos y billeteras)',
+                ownerContext: 'Treasury',
+            ),
+            new CapabilityDefinition(
                 key: CapabilityKey::FixedAssetsTracking,
                 label: 'Activos fijos',
                 ownerContext: 'FixedAssets',

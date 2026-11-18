@@ -258,6 +258,13 @@ contexts:
     publicContracts: []
     ownsTables: [bank_account, bank_statement_import, bank_statement_line, bank_reconciliation_match]
 
+  Treasury:
+    namespace: App\Treasury
+    layer: ErpCore
+    dependsOn: [Efact]
+    publicContracts: []
+    ownsTables: [treasury_account, treasury_movement, treasury_payment_method_account]
+
   FixedAssets:
     namespace: App\FixedAssets
     layer: ErpCore

@@ -38,6 +38,19 @@ final class LedgerFiscalImmutabilityTest extends TestCase
         static::assertSame([], $violations, $this->formatViolations($violations));
     }
 
+    public function testApplicationCodeDoesNotMutateTreasuryMovementRows(): void
+    {
+        $violations = $this->findContentViolations(
+            __DIR__ . '/../../src',
+            '/\b(?:UPDATE|DELETE\s+FROM)\s+treasury_movement\b|->(?:update|delete)\(\s*[\'"]treasury_movement[\'"]/i',
+            [
+                'src/Setup/',
+            ],
+        );
+
+        static::assertSame([], $violations, $this->formatViolations($violations));
+    }
+
     public function testApplicationCodeDoesNotUpsertCashMovementRows(): void
     {
         $violations = $this->findContentViolations(

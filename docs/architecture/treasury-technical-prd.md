@@ -1,8 +1,8 @@
 # Treasury: technical PRD
 
 Date: 2026-11-18
-Status: Draft for review. Implements decision 1 and 4 of [ADR-021](../adr/ADR-021-finance-module-redesign.md)
-(waves 1 and 2). One point refines decision 1 and needs the owner's confirmation: see D-A.
+Status: Approved 2026-11-18 (D-A to D-D accepted as recommended). Implements decisions 1 and 4 of
+[ADR-021](../adr/ADR-021-finance-module-redesign.md) (waves 1 and 2). WP1 is in progress.
 
 ## 1. Goal and scope
 
@@ -27,7 +27,7 @@ changing `CashSession` or the POS offline protocol, the finance screens (waves 3
 | Fact | Where |
 | --- | --- |
 | Drawer ledger is `cash_movements` (plural), bound to a session (`cash_session_id NOT NULL`), carries `sale_id`, `payment_method_id`, `corrects_movement_id` and the POS offline fields (`idempotency_key`, `local_uuid`, `sync_status`, `device_id`) | live table |
-| `OPENING_BALANCE` is re-injected as a movement when each session opens, so **summing all movements of a register double counts**. A drawer's balance is the open session's `expected` amount | ADR-004, `CashSession` |
+| A session owns its `opening_amount`; the `OPENING` row is only an audit row and is not counted. Expected cash is `opening_amount + SALE_IN + CASH_IN - REFUND_OUT - CASH_OUT`, so a drawer's balance is read that way (open session) or as the counted amount (closed), never by summing every row | `CashRegisterCloseProcessor` |
 | Non-cash `SalePayment` (card, Yape, Plin, transfer) creates no movement anywhere; reconciliation reads the payment row directly | `SalePaymentService`, `BankReconciliationMatchingService` |
 | `SupplierPayment` writes no cash or bank movement, only an `EconomicEvent`; reversal mutates `reversed_at` | `SupplierPaymentService` |
 | `bank_account` is company wide (no branch); `cash_register` is per branch | entities |
@@ -87,7 +87,7 @@ Queries present one stream: `MovementsQuery` reads both stores and returns a com
 is read through an adapter (the open session's expected amount, or the last closed session's counted amount),
 never by summing.
 
-Why: summing drawer rows is wrong (opening balance re-injection), the session and offline semantics live in
+Why: summing drawer rows is wrong (the sign depends on the movement type, `OPENING` is audit-only and a closed session's balance is what was counted), the session and offline semantics live in
 `cash_movements`, and a mirror would create two copies that can drift. Cost: two physical stores behind one
 query service. Alternative (rejected): mirror every drawer movement into `treasury_movement` and treat
 `cash_movements` as the session detail; simpler reads, but double writes and a permanent consistency check.
