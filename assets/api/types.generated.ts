@@ -5849,6 +5849,8 @@ export interface components {
             applications?: {
                 [key: string]: number | string;
             }[];
+            /** @description Treasury account the money lands in (bank or wallet); omitted = the payment method's mapped account. */
+            moneyAccountId?: string | null;
         };
         "CollectOnAccountApplication-collect_on_account.read": {
             saleId?: string;
@@ -6383,6 +6385,8 @@ export interface components {
             paymentMethodId?: number;
             paidAt?: string | null;
             reference?: string | null;
+            /** @description Treasury account the money lands in (bank or wallet); omitted = the payment method's mapped account. */
+            moneyAccountId?: string | null;
         };
         /**
          * @description Read-only "Deudores" summary: one row per customer with an open credit-sale
@@ -11325,6 +11329,8 @@ export interface components {
             paymentMethodId?: number;
             paidAt?: string | null;
             reference?: string | null;
+            /** @description Treasury account the money lands in (bank or wallet); omitted = the payment method's mapped account. */
+            moneyAccountId?: string | null;
         };
         "Sale.VoidSaleDto-sale_record.write": Record<string, never>;
         "Sale.jsonld-sale_record.read": components["schemas"]["HydraItemBaseSchema"] & {
@@ -13501,6 +13507,8 @@ export interface components {
             paymentMethodId?: number;
             paidAt?: string | null;
             reference?: string | null;
+            /** @description Treasury account the money leaves (bank or wallet); optional, the payment method's mapping is the default. */
+            moneyAccountId?: string | null;
         };
         "SupplierBill.SupplierBillReversePaymentDto": {
             id?: string;
