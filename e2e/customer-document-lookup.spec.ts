@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { login } from './helpers/auth';
+import { newCustomerButton, themeColor, waitForCustomersGrid } from './helpers/customers';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
 type LookupResponse = {
@@ -29,12 +30,8 @@ async function setup(page: Page, mobile = false) {
   const seed = await getE2ESeed();
   await login(page, seed.username, seed.password);
   await page.goto(`${getE2EBaseUrl()}/customer`);
-  const add = mobile
-    ? page.locator('.nb-datagrid__fab')
-    : page
-        .locator('.nb-datagrid__toolbar')
-        .getByRole('button', { name: /^(Nuevo|New|Agregar|Add)$/i })
-        .first();
+  await waitForCustomersGrid(page);
+  const add = newCustomerButton(page, mobile);
   await expect(add).toBeVisible({ timeout: 30000 });
   await add.click();
   const form = page.getByRole('dialog', { name: 'Nuevo cliente', exact: true });
@@ -115,7 +112,10 @@ test('mobile dark lookup ignores late responses and earlier form sessions', asyn
   await expect(name).toHaveValue('Persona consultada');
   await expect(address).toHaveValue('Dirección manual');
   await expect(form.getByRole('status')).toContainText('DNI encontrado');
-  await expect(form.locator('.nb-form__action-feedback')).toHaveCSS('color', 'rgb(106, 216, 149)');
+  await expect(form.getByRole('status')).toHaveCSS(
+    'color',
+    await themeColor(page, '--success-color'),
+  );
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({
     path: testInfo.outputPath('customer-lookup-mobile-dark.png'),
@@ -135,6 +135,6 @@ test('mobile dark lookup ignores late responses and earlier form sessions', asyn
   pending[2].respond({ ...company, id: '12345678', name: 'Respuesta de la sesión anterior' });
   await (await obsolete).finished();
   await expect(name).toHaveValue('Otro cliente sin consultar');
-  await expect(form.locator('.nb-form__action-feedback')).toHaveCount(0);
+  await expect(form.getByRole('status')).toHaveCount(0);
   await expect(consult).toBeEnabled();
 });

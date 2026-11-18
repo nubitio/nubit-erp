@@ -1,5 +1,11 @@
 import { expect, test } from '@playwright/test';
 import { login } from './helpers/auth';
+import {
+  customersGrid,
+  newCustomerButton,
+  themeColor,
+  waitForCustomersGrid,
+} from './helpers/customers';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
 for (const mobile of [false, true]) {
@@ -34,12 +40,8 @@ for (const mobile of [false, true]) {
     });
     await login(page, seed.username, seed.password);
     await page.goto(`${getE2EBaseUrl()}/customer`);
-    const newButton = mobile
-      ? page.locator('.nb-datagrid__fab')
-      : page
-          .locator('.nb-datagrid__toolbar')
-          .getByRole('button', { name: /^(Nuevo|New|Agregar|Add)$/i })
-          .first();
+    await waitForCustomersGrid(page);
+    const newButton = newCustomerButton(page, mobile);
     await expect(newButton).toBeVisible({ timeout: 30000 });
     await newButton.click();
     const drawer = page.getByRole('dialog', { name: 'Nuevo cliente', exact: true });
@@ -65,7 +67,9 @@ for (const mobile of [false, true]) {
     await expect(drawer.getByLabel('Razón social', { exact: true })).toBeFocused();
     await expect(document).toHaveValue('20100000009');
     if (mobile)
-      await expect(drawer.locator('.nb-form__error')).toHaveCSS('color', 'rgb(255, 159, 149)');
+      await expect(
+        drawer.getByText('Ya existe un cliente con este nombre.', { exact: true }),
+      ).toHaveCSS('color', await themeColor(page, '--nb-color-text-danger'));
     const consult = drawer.getByRole('button', { name: 'Consultar RUC o DNI', exact: true });
     await consult.scrollIntoViewIfNeeded();
     const inputBox = (await document.boundingBox())!;
@@ -97,12 +101,12 @@ for (const mobile of [false, true]) {
     finish!();
     await expect(drawer).toBeHidden();
     await (await refreshed).finished();
-    await expect(page.locator('.nb-datagrid')).toHaveAttribute('aria-busy', 'false');
+    await expect(customersGrid(page)).toHaveAttribute('aria-busy', 'false');
     if (!mobile) {
-      const actions = page
-        .locator('.nb-datagrid__table tbody tr')
-        .getByRole('button', { name: /acciones/i })
-        .first();
+      const actions = customersGrid(page)
+        .getByRole('row')
+        .nth(1)
+        .getByRole('button', { name: /acciones/i });
       await expect(actions).toBeVisible({ timeout: 30000 });
       await actions.click();
       await page.getByRole('menuitem', { name: /editar/i }).click();

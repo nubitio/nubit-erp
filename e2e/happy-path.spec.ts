@@ -35,6 +35,7 @@ import {
   dismissDevToolbar,
   waitForSaleFormReady,
 } from './helpers/crud';
+import { customerRow, waitForCustomersGrid } from './helpers/customers';
 import { completePosCashPayment, selectPosCustomer, waitForPosCheckoutReady } from './helpers/pos';
 import { E2E_SEED } from './support/seedConstants';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
@@ -588,44 +589,17 @@ test.describe('Happy Path — flujo completo de venta', () => {
   test('05 - Crear cliente nuevo', async () => {
     await test.step('Navegar a /customer', async () => {
       await gotoProtectedRoute(page, 'customer');
-      await waitForGridLoad(page);
-      // Check nb-datagrid toolbar for "Customers" / "Clientes" title
-      await expect(
-        page
-          .locator('.nb-datagrid__toolbar')
-          .filter({ hasText: /cliente|customers?/i })
-          .first(),
-      ).toBeVisible({ timeout: 15000 });
+      // The customers screen is a composed page (ADR-019), addressed by test id.
+      await waitForCustomersGrid(page);
+      await expect(page.getByTestId('customers-toolbar')).toBeVisible({ timeout: 15000 });
     });
 
     await test.step('Filtrar y verificar el cliente seed del entorno E2E', async () => {
-      // NativeDataGridView: RUC/DNI is the first text filter input (nth(0))
-      const rucFilterInput = page
-        .locator('.nb-datagrid__filter-row input[type="text"]:visible')
-        .first();
-      try {
-        await rucFilterInput.waitFor({ state: 'visible', timeout: 5000 });
-        await rucFilterInput.click({ clickCount: 3 });
-        await rucFilterInput.fill(SEED_CUSTOMER_DNI);
-        await page.waitForTimeout(500);
-        await waitForGridLoad(page);
-      } catch {
-        // fallback: try any text filter input
-        const inputs = page.locator('.nb-datagrid__filter-row input[type="text"]:visible');
-        const count = await inputs.count();
-        if (count > 0) {
-          await inputs.nth(0).click({ clickCount: 3 });
-          await inputs.nth(0).fill(SEED_CUSTOMER_DNI);
-          await page.waitForTimeout(500);
-          await waitForGridLoad(page);
-        }
-      }
+      // Server-side search over RUC/DNI, razón social, teléfono and correo.
+      await page.getByLabel('Buscar clientes').fill(SEED_CUSTOMER_DNI);
+      await waitForCustomersGrid(page);
 
-      await expect(
-        page.locator('.nb-datagrid__row').filter({ hasText: SEED_CUSTOMER_NAME }),
-      ).toBeVisible({
-        timeout: 15000,
-      });
+      await expect(customerRow(page, SEED_CUSTOMER_NAME)).toBeVisible({ timeout: 15000 });
     });
   });
 
