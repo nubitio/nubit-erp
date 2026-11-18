@@ -43,7 +43,8 @@ readonly class PayrollRunPayProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = [],
     ): PayrollRun {
-        if ($this->security->connectedUser() === null) {
+        $user = $this->security->connectedUser();
+        if ($user === null) {
             throw new UnauthorizedHttpException('Bearer', 'Usuario no autenticado.');
         }
 
@@ -60,7 +61,7 @@ readonly class PayrollRunPayProcessor implements ProcessorInterface
                 $payrollRun,
                 $this->payrollAccounting->netPayable($payrollRun),
                 $data->paymentMethodId,
-                $this->security->connectedUser()->userId,
+                $user->userId,
                 $data->moneyAccountId,
             );
         }
