@@ -14,6 +14,7 @@ use App\CashRegister\Service\CashMovementHydrator;
 use App\Efact\Domain\Money;
 use App\Sales\Entity\SalePayment;
 use App\Sales\Entity\SaleRecord;
+use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -44,6 +45,7 @@ final readonly class BankReconciliationMatchingService
         private EntityManagerInterface $em,
         private Connection $connection,
         private CashMovementHydrator $cashMovementHydrator,
+        private ?TreasuryReconciliationSource $treasury = null,
     ) {}
 
     /**
@@ -92,15 +94,19 @@ final readonly class BankReconciliationMatchingService
         $from = $line->getTransactionDate()->modify('-' . self::DATE_WINDOW_DAYS . ' days');
         $to = $line->getTransactionDate()->modify('+' . self::DATE_WINDOW_DAYS . ' days');
 
-        $candidates = $isOutgoing
-            ? [
-                ...$this->supplierPaymentCandidates($absAmount, $from, $to),
-                ...$this->cashMovementCandidates($absAmount, $from, $to, CashMovementType::EXPENSE),
-            ]
-            : [
-                ...$this->salePaymentCandidates($absAmount, $from, $to),
-                ...$this->cashMovementCandidates($absAmount, $from, $to, CashMovementType::INCOME),
-            ];
+        $candidates =
+            $this->treasuryCandidates($line, $lineAmount, $from, $to)
+            ?? (
+                $isOutgoing
+                    ? [
+                        ...$this->supplierPaymentCandidates($absAmount, $from, $to),
+                        ...$this->cashMovementCandidates($absAmount, $from, $to, CashMovementType::EXPENSE),
+                    ]
+                    : [
+                        ...$this->salePaymentCandidates($absAmount, $from, $to),
+                        ...$this->cashMovementCandidates($absAmount, $from, $to, CashMovementType::INCOME),
+                    ]
+            );
 
         $suggestions = [];
         foreach ($candidates as $candidate) {
@@ -131,6 +137,34 @@ final readonly class BankReconciliationMatchingService
         );
 
         return $suggestions;
+    }
+
+    /**
+     * The candidates from the line's own Treasury account, or null when the old three sources must be used
+     * (Treasury off, or this bank account has no Treasury account yet).
+     *
+     * @return list<array{sourceType: string, sourceId: string, date: DateTimeImmutable, label: string}>|null
+     */
+    private function treasuryCandidates(
+        BankStatementLine $line,
+        BigDecimal $lineAmount,
+        DateTimeImmutable $from,
+        DateTimeImmutable $to,
+    ): ?array {
+        $bankAccountId = $line->getBankAccount()->getId();
+        if ($this->treasury === null || $bankAccountId === null || !$this->treasury->activeFor($bankAccountId)) {
+            return null;
+        }
+
+        return array_map(
+            static fn(array $row): array => [
+                'sourceType' => 'treasury_movement',
+                'sourceId' => $row['id'],
+                'date' => $row['date'],
+                'label' => $row['label'],
+            ],
+            $this->treasury->candidates($bankAccountId, $lineAmount, $from, $to),
+        );
     }
 
     /** @return list<SupplierPayment> */

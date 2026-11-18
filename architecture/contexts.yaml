@@ -254,7 +254,7 @@ contexts:
   BankReconciliation:
     namespace: App\BankReconciliation
     layer: ErpCore
-    dependsOn: [AccountsPayable, CashRegister, Catalog, Efact, Identity, Sales]
+    dependsOn: [AccountsPayable, CashRegister, Catalog, Efact, Identity, Sales, Settings]
     publicContracts: []
     ownsTables: [bank_account, bank_statement_import, bank_statement_line, bank_reconciliation_match]
 

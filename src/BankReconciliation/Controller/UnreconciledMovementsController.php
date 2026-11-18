@@ -6,6 +6,7 @@ namespace App\BankReconciliation\Controller;
 
 use App\AccountsPayable\Entity\SupplierPayment;
 use App\BankReconciliation\Service\BankReconciliationMatchingService;
+use App\BankReconciliation\Service\TreasuryReconciliationSource;
 use App\CashRegister\Entity\CashMovement;
 use App\Sales\Entity\SalePayment;
 use DateTimeImmutable;
@@ -32,12 +33,32 @@ final class UnreconciledMovementsController extends AbstractController
 {
     public function __construct(
         private readonly BankReconciliationMatchingService $matchingService,
+        private readonly TreasuryReconciliationSource $treasury,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
     {
         $from = $this->parseDate($request->query->get('from'));
         $to = $this->parseDate($request->query->get('to'));
+
+        // With Treasury on, one list replaces the three old sources: the movements of the bank account's own
+        // Treasury account. Without it (or before the account has one) the old lists are returned unchanged.
+        $bankAccountId = $request->query->get('bankAccountId');
+        $bankAccountId = is_string($bankAccountId) && $bankAccountId !== '' ? $bankAccountId : null;
+        $treasuryActive = $bankAccountId === null
+            ? $this->treasury->anyBankAccount()
+            : $this->treasury->activeFor($bankAccountId);
+        if ($treasuryActive) {
+            return $this->json([
+                'supplierPayments' => [],
+                'salePayments' => [],
+                'cashMovements' => [],
+                'treasury' => [
+                    'active' => true,
+                    'movements' => $this->treasury->unreconciled($bankAccountId, $from, $to, 100),
+                ],
+            ]);
+        }
 
         $supplierPayments = array_map(
             static fn(SupplierPayment $p): array => [
@@ -75,6 +96,7 @@ final class UnreconciledMovementsController extends AbstractController
             'supplierPayments' => $supplierPayments,
             'salePayments' => $salePayments,
             'cashMovements' => $cashMovements,
+            'treasury' => ['active' => false, 'movements' => []],
         ]);
     }
 

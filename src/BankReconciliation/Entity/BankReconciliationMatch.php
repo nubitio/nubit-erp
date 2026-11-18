@@ -52,6 +52,11 @@ class BankReconciliationMatch
     #[ORM\Column(name: 'cash_movement_id', type: Types::INTEGER, nullable: true)]
     private ?int $cashMovementId = null;
 
+    // The Treasury movement (ADR-021) this line was reconciled against; a uuid kept as a scalar, since the
+    // movement ledger belongs to another context.
+    #[ORM\Column(name: 'treasury_movement_id', length: 36, nullable: true)]
+    private ?string $treasuryMovementId = null;
+
     #[ORM\Column(name: 'match_type', length: 20)]
     private string $matchType;
 
@@ -104,6 +109,18 @@ class BankReconciliationMatch
     public function setSalePayment(?SalePayment $salePayment): static
     {
         $this->salePayment = $salePayment;
+
+        return $this;
+    }
+
+    public function getTreasuryMovementId(): ?string
+    {
+        return $this->treasuryMovementId;
+    }
+
+    public function setTreasuryMovementId(?string $treasuryMovementId): static
+    {
+        $this->treasuryMovementId = $treasuryMovementId;
 
         return $this;
     }

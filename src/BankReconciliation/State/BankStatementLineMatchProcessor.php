@@ -56,12 +56,22 @@ readonly class BankStatementLineMatchProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Línea de extracto no encontrada.');
         }
 
+        if ($data->sourceType === BankReconciliationMatchService::TREASURY_SOURCE_TYPE) {
+            $userRef = $this->entityManager->getReference(User::class, $user->userId);
+            if (!$userRef instanceof User) {
+                throw new NotFoundHttpException('Usuario no encontrado.');
+            }
+            $this->matchService->confirmTreasuryMatch($line, (string) $data->sourceId, $userRef, 'MANUAL');
+
+            return $line;
+        }
+
         $sourceClass = BankReconciliationMatchService::SOURCE_TYPES[$data->sourceType] ?? null;
         if ($sourceClass === null) {
-            throw new BadRequestHttpException(sprintf('sourceType debe ser uno de: %s.', implode(
-                ', ',
-                array_keys(BankReconciliationMatchService::SOURCE_TYPES),
-            )));
+            throw new BadRequestHttpException(sprintf('sourceType debe ser uno de: %s.', implode(', ', [
+                ...array_keys(BankReconciliationMatchService::SOURCE_TYPES),
+                BankReconciliationMatchService::TREASURY_SOURCE_TYPE,
+            ])));
         }
 
         // CashMovement is a DBAL-backed API model rather than a Doctrine

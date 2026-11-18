@@ -74,6 +74,11 @@ readonly class BankStatementImportAutoMatchProcessor implements ProcessorInterfa
                 continue;
             }
 
+            if ($top->sourceType === BankReconciliationMatchService::TREASURY_SOURCE_TYPE) {
+                $this->matchService->confirmTreasuryMatch($line, (string) $top->sourceId, $userRef, 'AUTO');
+                continue;
+            }
+
             $sourceClass = BankReconciliationMatchService::SOURCE_TYPES[$top->sourceType] ?? null;
             if ($sourceClass === null) {
                 continue;

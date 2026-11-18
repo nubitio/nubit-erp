@@ -60,6 +60,7 @@ final class TreasuryTestDatabase
         ?string $name = null,
         ?int $cashRegisterId = null,
         bool $active = true,
+        ?string $bankAccountId = null,
     ): TreasuryAccount {
         $account = new TreasuryAccount(
             $id,
@@ -68,7 +69,7 @@ final class TreasuryTestDatabase
             $currency,
             self::BRANCH,
             $cashRegisterId,
-            $kind === AccountKind::Bank ? 'bank-' . $id : null,
+            $bankAccountId ?? ($kind === AccountKind::Bank ? 'bank-' . $id : null),
             $active,
         );
         $this->accounts->add($account);

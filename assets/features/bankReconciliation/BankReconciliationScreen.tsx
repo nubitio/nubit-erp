@@ -37,20 +37,24 @@ interface BankStatementLine {
 type BankStatementLineCollection =
   BankStatementLine[] | { ['hydra:member']?: BankStatementLine[]; member?: BankStatementLine[] };
 
-type MovementGroup = 'supplierPayments' | 'salePayments' | 'cashMovements';
+type LegacyMovementGroup = 'supplierPayments' | 'salePayments' | 'cashMovements';
+type MovementGroup = LegacyMovementGroup | 'treasuryMovements';
 
 const MOVEMENT_GROUP_LABELS: Record<MovementGroup, string> = {
   supplierPayments: 'Pagos a proveedor',
   salePayments: 'Cobros',
   cashMovements: 'Movimientos de caja',
+  treasuryMovements: 'Movimientos de la cuenta',
 };
 
-const MOVEMENT_GROUPS = Object.keys(MOVEMENT_GROUP_LABELS) as MovementGroup[];
+/** The old three sources, used while Treasury is off or the bank account has no Treasury account yet. */
+const LEGACY_GROUPS: MovementGroup[] = ['supplierPayments', 'salePayments', 'cashMovements'];
 
 const sourceTypeByGroup: Record<MovementGroup, BankStatementLineSuggestion['sourceType']> = {
   supplierPayments: 'supplier_payment',
   salePayments: 'sale_payment',
   cashMovements: 'cash_movement',
+  treasuryMovements: 'treasury_movement',
 };
 
 const formatAmount = (value: string) => NumberUtils.formatCurrency(Number(value));
@@ -74,6 +78,7 @@ export const BankReconciliationScreen = () => {
     supplierPayments: true,
     salePayments: true,
     cashMovements: true,
+    treasuryMovements: true,
   });
 
   const loadLines = useCallback(() => {
@@ -100,9 +105,9 @@ export const BankReconciliationScreen = () => {
 
   const loadMovements = useCallback(() => {
     return bankReconciliationService()
-      .unreconciledMovements()
+      .unreconciledMovements(undefined, undefined, bankAccountId)
       .then((response) => setMovements(response.data));
-  }, []);
+  }, [bankAccountId]);
 
   const refetchAll = useCallback(() => {
     setLoading(true);
@@ -160,10 +165,11 @@ export const BankReconciliationScreen = () => {
     [lines, selectedLineId],
   );
 
-  const totalMovements =
-    movements.supplierPayments.length +
-    movements.salePayments.length +
-    movements.cashMovements.length;
+  const treasuryActive = movements.treasury?.active === true;
+  const visibleGroups: MovementGroup[] = treasuryActive ? ['treasuryMovements'] : LEGACY_GROUPS;
+  const itemsOf = (group: MovementGroup): UnreconciledMovement[] =>
+    group === 'treasuryMovements' ? (movements.treasury?.movements ?? []) : movements[group];
+  const totalMovements = visibleGroups.reduce((sum, group) => sum + itemsOf(group).length, 0);
 
   return (
     <div className="bank-reconciliation-page">
@@ -367,8 +373,8 @@ export const BankReconciliationScreen = () => {
 
           {!loading && totalMovements > 0 && (
             <div className="bank-reconciliation-page__groups">
-              {MOVEMENT_GROUPS.map((group) => {
-                const items = movements[group];
+              {visibleGroups.map((group) => {
+                const items = itemsOf(group);
 
                 return (
                   <CollapsibleSection
@@ -392,7 +398,10 @@ export const BankReconciliationScreen = () => {
                       items.map((m: UnreconciledMovement) => (
                         <div key={m.id} className="br-movement">
                           <div className="br-movement__info">
-                            <span className="br-movement__label">{m.label}</span>
+                            <span className="br-movement__label">
+                              {m.label}
+                              {m.account ? ` · ${m.account}` : ''}
+                            </span>
                             <span className="br-movement__date">
                               {m.date ? formatDate(m.date) : 'Sin fecha'}
                             </span>
