@@ -8642,6 +8642,8 @@ export interface components {
             id?: string;
             /** @description PaymentMethod id; CASH pays from caja, anything else from banco. */
             paymentMethodId?: number | null;
+            /** @description Treasury account the money leaves (bank or wallet); omitted = the payment method's mapped account. */
+            moneyAccountId?: string | null;
         };
         /**
          * @description A payroll processing batch for one Company and period. `type` decides

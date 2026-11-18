@@ -11,6 +11,7 @@ use App\Payroll\Dto\PayrollRunPayDto;
 use App\Payroll\Entity\PayrollRun;
 use App\Payroll\Service\PayrollAccountingService;
 use App\Payroll\Service\PayrollRunService;
+use App\Payroll\Service\PayrollTreasury;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
@@ -27,6 +28,7 @@ readonly class PayrollRunPayProcessor implements ProcessorInterface
         private Security $security,
         private PayrollRunService $payrollRunService,
         private ?PayrollAccountingService $payrollAccounting = null,
+        private ?PayrollTreasury $payrollTreasury = null,
     ) {}
 
     /**
@@ -52,6 +54,16 @@ readonly class PayrollRunPayProcessor implements ProcessorInterface
 
         $this->payrollRunService->transitionTo($payrollRun, PayrollRun::PAID);
         $payrollRun->setPaidAt(new DateTimeImmutable());
+        if ($this->payrollTreasury !== null && $this->payrollAccounting !== null) {
+            // Before the economic event and the flush: a Treasury refusal leaves the run unpaid.
+            $this->payrollTreasury->record(
+                $payrollRun,
+                $this->payrollAccounting->netPayable($payrollRun),
+                $data->paymentMethodId,
+                $this->security->connectedUser()->userId,
+                $data->moneyAccountId,
+            );
+        }
 
         $this->payrollAccounting?->postPayment($payrollRun, $data->paymentMethodId);
 

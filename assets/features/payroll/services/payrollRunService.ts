@@ -81,8 +81,12 @@ const payrollRunService = () => {
   const approve = (id: string) =>
     httpClient.post<PayrollRunActionResponse>(API + `payroll-runs/${id}/approve`, { id });
 
-  const pay = (id: string) =>
-    httpClient.post<PayrollRunActionResponse>(API + `payroll-runs/${id}/pay`, { id });
+  const pay = (id: string, input: { paymentMethodId?: number; moneyAccountId?: string } = {}) =>
+    httpClient.post<PayrollRunActionResponse>(API + `payroll-runs/${id}/pay`, {
+      id,
+      paymentMethodId: input.paymentMethodId,
+      moneyAccountId: input.moneyAccountId,
+    });
 
   const plameExportUrl = (id: string) => `${API}v1/payroll/${id}/plame`;
 

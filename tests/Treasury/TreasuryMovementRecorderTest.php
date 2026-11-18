@@ -219,6 +219,33 @@ final class TreasuryMovementRecorderTest extends TestCase
         );
     }
 
+    public function testAPayrollRunPaidInCashLeavesTheDrawerUnderItsOwnCategory(): void
+    {
+        $kit = TreasuryTestDatabase::create();
+        $kit->account('drawer', AccountKind::CashRegister, cashRegisterId: 3);
+        $kit->openSession(10, 3, 7, '5000.00');
+
+        $kit->recorder->record(new MoneyMovementRequest(
+            key: new MovementKey(MovementSource::PayrollPayment, 'run-1'),
+            direction: Direction::Out,
+            amount: '1200.00',
+            currency: 'PEN',
+            branchId: TreasuryTestDatabase::BRANCH,
+            occurredAt: new DateTimeImmutable('2026-11-18'),
+            isCash: true,
+            paymentMethodId: self::CASH,
+            userId: 7,
+        ));
+
+        self::assertSame('3800.00', $kit->drawers->balanceOf(3));
+        self::assertSame(
+            'payroll_payment',
+            $kit->db->fetchOne(
+                'SELECT c.code FROM cash_movements m JOIN cash_movement_category c ON c.id = m.category_id',
+            ),
+        );
+    }
+
     public function testReplayingACashPaymentDoesNotTakeMoneyOutTwice(): void
     {
         $kit = TreasuryTestDatabase::create();

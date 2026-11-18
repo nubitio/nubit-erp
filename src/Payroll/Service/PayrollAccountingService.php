@@ -83,6 +83,12 @@ readonly class PayrollAccountingService
         );
     }
 
+    /** What the run pays out: the sum of its employees' net pay, as a decimal string. */
+    public function netPayable(PayrollRun $run): string
+    {
+        return Money::toString($this->totals($run)['net']);
+    }
+
     /**
      * @return array{gross: BigDecimal, bonus: BigDecimal, essalud: BigDecimal, afp: BigDecimal, onp: BigDecimal, income_tax: BigDecimal, net: BigDecimal}
      */

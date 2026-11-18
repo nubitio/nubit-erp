@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Badge, Button, ConfirmDialog } from '@nubitio/ui';
 import toast from '@shared/lib/SharedUtils';
 import { formatMoney, formatMonthPeriod } from '@shared/lib/displayFormat';
+import { PayrollPayDialog } from './PayrollPayDialog';
 import payrollRunService, {
   type PayrollRunRecord,
   type PayslipEntryRecord,
@@ -218,8 +219,20 @@ export const PayrollRunDetailPage = () => {
         </table>
       </div>
 
+      {confirmAction === 'pay' && id && (
+        <PayrollPayDialog
+          runId={id}
+          netLabel={formatMoney(netTotal, 'PEN')}
+          onClose={() => setConfirmAction(null)}
+          onDone={() => {
+            setConfirmAction(null);
+            reload();
+          }}
+        />
+      )}
+
       <ConfirmDialog
-        open={confirmAction !== null}
+        open={confirmAction !== null && confirmAction !== 'pay'}
         title={
           confirmAction === 'calculate'
             ? 'Calcular planilla'

@@ -10,5 +10,7 @@ class PayrollRunPayDto
         public string $id,
         /** PaymentMethod id; CASH pays from caja, anything else from banco. */
         public ?int $paymentMethodId = null,
+        /** Treasury account the money leaves (bank or wallet); omitted = the payment method's mapped account. */
+        public ?string $moneyAccountId = null,
     ) {}
 }
