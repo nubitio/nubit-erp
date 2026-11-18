@@ -261,7 +261,7 @@ contexts:
   Treasury:
     namespace: App\Treasury
     layer: ErpCore
-    dependsOn: [Efact]
+    dependsOn: [Efact, Identity, Settings]
     publicContracts: []
     ownsTables: [treasury_account, treasury_movement, treasury_payment_method_account]
 

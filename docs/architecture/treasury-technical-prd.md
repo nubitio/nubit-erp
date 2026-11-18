@@ -68,7 +68,7 @@ Treasury query services, so `BankReconciliation` and the summary never join Trea
   Protected by the repository interface (append only) and `LedgerFiscalImmutabilityTest`.
 
 `treasury_payment_method_account`
-- `(branch_id, payment_method_id)` unique, `account_id`. `Efectivo` has no row: its account is resolved at
+- `(branch_id, payment_method_id, currency)` unique, `account_id` (a Yape payment in USD needs a USD account). `Efectivo` has no row: its account is resolved at
   runtime from the user's open cash session.
 
 `bank_reconciliation_match` gains a nullable `treasury_movement_id`; the three old columns stay until the old

@@ -100,10 +100,14 @@ final class TreasuryTestDatabase
             corrects_movement_id TEXT NULL, origin TEXT NOT NULL DEFAULT \'live\', created_by INTEGER NULL, created_at TEXT NOT NULL,
             UNIQUE (source_type, source_id, leg))',
         'CREATE TABLE treasury_payment_method_account (
-            branch_id TEXT NOT NULL, payment_method_id INTEGER NOT NULL, account_id TEXT NOT NULL, PRIMARY KEY (branch_id, payment_method_id))',
+            branch_id TEXT NOT NULL, payment_method_id INTEGER NOT NULL, currency TEXT NOT NULL, account_id TEXT NOT NULL, PRIMARY KEY (branch_id, payment_method_id, currency))',
         'CREATE TABLE cash_sessions (
             id INTEGER PRIMARY KEY, cash_register_id INTEGER NOT NULL, opened_by INTEGER NOT NULL, status TEXT NOT NULL,
             opening_amount NUMERIC NOT NULL DEFAULT 0, counted_amount NUMERIC NULL, expected_amount NUMERIC NULL, opened_at TEXT NOT NULL)',
+        'CREATE TABLE local (local_id TEXT PRIMARY KEY, descripcion TEXT NOT NULL, is_active INTEGER NOT NULL DEFAULT 1)',
+        'CREATE TABLE cash_register (id INTEGER PRIMARY KEY, branch_id TEXT NOT NULL, name TEXT NOT NULL, is_active INTEGER NOT NULL DEFAULT 1)',
+        'CREATE TABLE bank_account (id TEXT PRIMARY KEY, alias TEXT NOT NULL, currency TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL DEFAULT \'2026-01-01 00:00:00\')',
+        'CREATE TABLE payment_method (id INTEGER PRIMARY KEY, name TEXT NOT NULL, is_active INTEGER NOT NULL DEFAULT 1)',
         'CREATE TABLE cash_movements (
             id INTEGER PRIMARY KEY AUTOINCREMENT, cash_session_id INTEGER NOT NULL, movement_type TEXT NOT NULL, amount NUMERIC NOT NULL)',
     ];

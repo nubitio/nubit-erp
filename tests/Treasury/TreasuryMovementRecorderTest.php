@@ -24,7 +24,7 @@ final class TreasuryMovementRecorderTest extends TestCase
     {
         $kit = TreasuryTestDatabase::create();
         $kit->account('bank', AccountKind::Bank);
-        $kit->accounts->map(TreasuryTestDatabase::BRANCH, 5, 'bank');
+        $kit->accounts->map(TreasuryTestDatabase::BRANCH, 5, 'PEN', 'bank');
 
         $kit->recorder->record($this->request('S-1', Direction::Out, '118.00', method: 5));
         $kit->recorder->record($this->request('S-2', Direction::In, '50.50', method: 5));
@@ -44,7 +44,7 @@ final class TreasuryMovementRecorderTest extends TestCase
     {
         $kit = TreasuryTestDatabase::create();
         $kit->account('bank');
-        $kit->accounts->map(TreasuryTestDatabase::BRANCH, 5, 'bank');
+        $kit->accounts->map(TreasuryTestDatabase::BRANCH, 5, 'PEN', 'bank');
 
         $first = $kit->recorder->record($this->request('S-1', Direction::In, '10.00', method: 5));
         $replay = $kit->recorder->record($this->request('S-1', Direction::In, '10.00', method: 5));
@@ -78,7 +78,7 @@ final class TreasuryMovementRecorderTest extends TestCase
         $kit->account('mapped');
         $kit->account('picked');
         $kit->account('closed', active: false);
-        $kit->accounts->map(TreasuryTestDatabase::BRANCH, 5, 'mapped');
+        $kit->accounts->map(TreasuryTestDatabase::BRANCH, 5, 'PEN', 'mapped');
 
         $result = $kit->recorder->record($this->request(
             'S-1',
@@ -104,6 +104,36 @@ final class TreasuryMovementRecorderTest extends TestCase
         self::assertNotNull($result->warning);
         self::assertStringContainsString('suspenso', (string) $result->warning);
         self::assertSame('30.00', $kit->movements->balance('suspense'));
+    }
+
+    public function testAMappingOnlyAppliesToItsCurrency(): void
+    {
+        $kit = TreasuryTestDatabase::create();
+        $kit->account('yape-pen', AccountKind::Wallet, 'PEN');
+        $kit->account('yape-usd', AccountKind::Wallet, 'USD');
+        $kit->account('suspense-usd', AccountKind::Suspense, 'USD');
+        $kit->accounts->map(TreasuryTestDatabase::BRANCH, self::YAPE, 'PEN', 'yape-pen');
+
+        $pen = $kit->recorder->record($this->request('S-1', Direction::In, '10.00', method: self::YAPE));
+        $usd = $kit->recorder->record($this->request(
+            'S-2',
+            Direction::In,
+            '10.00',
+            method: self::YAPE,
+            currency: 'USD',
+        ));
+        self::assertSame('yape-pen', $pen->accountId);
+        self::assertSame('suspense-usd', $usd->accountId, 'no USD mapping, so it is not forced into the PEN account');
+
+        $kit->accounts->map(TreasuryTestDatabase::BRANCH, self::YAPE, 'USD', 'yape-usd');
+        $mapped = $kit->recorder->record($this->request(
+            'S-3',
+            Direction::In,
+            '10.00',
+            method: self::YAPE,
+            currency: 'USD',
+        ));
+        self::assertSame('yape-usd', $mapped->accountId);
     }
 
     public function testASuspenseAccountIsPerCurrency(): void

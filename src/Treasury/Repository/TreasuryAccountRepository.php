@@ -75,39 +75,36 @@ final readonly class TreasuryAccountRepository
         return array_map(self::hydrate(...), $rows);
     }
 
-    public function mappedAccountId(string $branchId, int $paymentMethodId): ?string
+    public function mappedAccountId(string $branchId, int $paymentMethodId, string $currency): ?string
     {
-        $id = $this->connection->fetchOne('SELECT account_id FROM treasury_payment_method_account WHERE branch_id = :branch AND payment_method_id = :method', [
-            'branch' => $branchId,
-            'method' => $paymentMethodId,
-        ]);
+        $id = $this->connection->fetchOne(
+            'SELECT account_id FROM treasury_payment_method_account WHERE branch_id = :branch AND payment_method_id = :method AND currency = :currency',
+            ['branch' => $branchId, 'method' => $paymentMethodId, 'currency' => $currency],
+        );
 
         return $id === false ? null : (string) $id;
     }
 
-    /** @return list<array{branchId: string, paymentMethodId: int, accountId: string}> */
+    /** @return list<array{branchId: string, paymentMethodId: int, currency: string, accountId: string}> */
     public function mappings(): array
     {
-        /** @var list<array{branch_id: string, payment_method_id: int|string, account_id: string}> $rows */
+        /** @var list<array{branch_id: string, payment_method_id: int|string, currency: string, account_id: string}> $rows */
         $rows = $this->connection->fetchAllAssociative(
-            'SELECT branch_id, payment_method_id, account_id FROM treasury_payment_method_account ORDER BY branch_id, payment_method_id',
+            'SELECT branch_id, payment_method_id, currency, account_id FROM treasury_payment_method_account ORDER BY branch_id, payment_method_id, currency',
         );
 
         return array_map(static fn(array $row): array => [
             'branchId' => $row['branch_id'],
             'paymentMethodId' => (int) $row['payment_method_id'],
+            'currency' => $row['currency'],
             'accountId' => $row['account_id'],
         ], $rows);
     }
 
-    public function map(string $branchId, int $paymentMethodId, string $accountId): void
+    public function map(string $branchId, int $paymentMethodId, string $currency, string $accountId): void
     {
-        $key = ['branch_id' => $branchId, 'payment_method_id' => $paymentMethodId];
-        $exists = $this->connection->fetchOne('SELECT 1 FROM treasury_payment_method_account WHERE branch_id = :branch AND payment_method_id = :method', [
-            'branch' => $branchId,
-            'method' => $paymentMethodId,
-        ]);
-        if ($exists === false) {
+        $key = ['branch_id' => $branchId, 'payment_method_id' => $paymentMethodId, 'currency' => $currency];
+        if ($this->mappedAccountId($branchId, $paymentMethodId, $currency) === null) {
             $this->connection->insert('treasury_payment_method_account', $key + ['account_id' => $accountId]);
 
             return;
@@ -115,11 +112,12 @@ final readonly class TreasuryAccountRepository
         $this->connection->update('treasury_payment_method_account', ['account_id' => $accountId], $key);
     }
 
-    public function unmap(string $branchId, int $paymentMethodId): void
+    public function unmap(string $branchId, int $paymentMethodId, string $currency): void
     {
         $this->connection->delete('treasury_payment_method_account', [
             'branch_id' => $branchId,
             'payment_method_id' => $paymentMethodId,
+            'currency' => $currency,
         ]);
     }
 

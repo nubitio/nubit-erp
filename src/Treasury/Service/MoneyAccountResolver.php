@@ -43,7 +43,11 @@ final readonly class MoneyAccountResolver
         }
 
         if ($request->paymentMethodId !== null) {
-            $mapped = $this->accounts->mappedAccountId($request->branchId, $request->paymentMethodId);
+            $mapped = $this->accounts->mappedAccountId(
+                $request->branchId,
+                $request->paymentMethodId,
+                $request->currency,
+            );
             $account = $mapped === null ? null : $this->accounts->find($mapped);
             if ($account !== null && $account->active) {
                 return ['account' => $account, 'warning' => null];
