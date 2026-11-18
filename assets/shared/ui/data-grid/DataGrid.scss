@@ -156,17 +156,25 @@
 }
 
 .erp-grid__footer {
+  // Compact bar: the buttons and the page-size select take their height from these tokens.
+  --control-height: 28px;
+  --control-height-form: 28px;
+
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3, 0.75rem);
-  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  padding: var(--space-1, 0.25rem) var(--space-3, 0.75rem);
   border: 1px solid var(--border-subtle, var(--border-color));
   border-radius: var(--radius-lg, 8px);
   background: var(--surface-1);
   font-size: var(--font-size-sm, 0.875rem);
   color: var(--text-secondary);
+}
+
+.erp-grid__footer .nb-pagination {
+  margin-top: 0;
 }
 
 .erp-grid__page-size {
@@ -176,6 +184,8 @@
 
   select {
     width: auto;
+    padding-block: 0;
+    font-size: var(--font-size-sm, 0.875rem);
   }
 }
 
