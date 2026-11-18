@@ -17,6 +17,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 /** Which account each payment method lands in, per branch and currency (decision 4). Cash is not mapped. */
 final class TreasuryMappingController extends TreasuryApiController
 {
+    /** Id of the cash payment method (Sales' PaymentMethod::CASH): cash lands in the open drawer, so it is never mapped. */
+    private const int CASH_METHOD_ID = 1;
+
     public function __construct(
         TenantCapabilityResolver $capabilities,
         private readonly TreasuryAccountRepository $accounts,
@@ -39,7 +42,9 @@ final class TreasuryMappingController extends TreasuryApiController
             'paymentMethods' => array_map(static fn(array $row): array => [
                 'id' => (int) $row['id'],
                 'name' => (string) $row['name'],
-            ], $this->connection->fetchAllAssociative('SELECT id, name FROM payment_method WHERE is_active = 1 ORDER BY id')),
+                'isCash' => (int) $row['id'] === self::CASH_METHOD_ID,
+                'settlesImmediately' => (string) $row['settlement_behavior'] === 'COLLECTED',
+            ], $this->connection->fetchAllAssociative('SELECT id, name, settlement_behavior FROM payment_method WHERE is_active = 1 ORDER BY id')),
             'mappings' => $this->accounts->mappings(),
         ]);
     }

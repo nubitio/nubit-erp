@@ -31,6 +31,7 @@ const MENU_VIEW_PERMISSION: Record<string, string> = {
   'accounts-payable': 'accounts_payable.view',
   // Receivables are outstanding customer sales, not supplier payables.
   'accounts-receivable': 'sales.view',
+  treasury: 'treasury.view',
   'bank-reconciliation': 'bank_reconciliation.view',
   'financial-reports': 'reports.view',
   accounting: 'accounting.view',
@@ -63,6 +64,7 @@ const MENU_REQUIRED_CAPABILITY: Record<string, string> = {
   employees: 'payroll.core',
   'payroll-runs': 'payroll.core',
   'afp-rates': 'payroll.core',
+  treasury: 'treasury.accounts',
   'bank-reconciliation': 'treasury.bank_reconciliation',
   'fixed-assets': 'fixed_assets.tracking',
   'expense-reports': 'expense_reports.core',

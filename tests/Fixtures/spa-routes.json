@@ -124,6 +124,7 @@
     "/taxes",
     "/transfer",
     "/transfer/:id?",
+    "/treasury",
     "/unit-of-measure",
     "/user",
     "/voucher-series",

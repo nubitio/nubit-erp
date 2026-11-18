@@ -6,12 +6,20 @@ namespace App\Treasury\Controller;
 
 use App\Settings\Capability\TenantCapabilityResolver;
 use App\Treasury\Domain\AccountKind;
+use App\Treasury\Domain\Direction;
+use App\Treasury\Domain\MovementKey;
+use App\Treasury\Domain\MovementSource;
 use App\Treasury\Domain\TreasuryAccount;
+use App\Treasury\Domain\TreasuryException;
+use App\Treasury\Port\MoneyMovementRequest;
+use App\Treasury\Port\RecordsMoneyMovement;
 use App\Treasury\Repository\TreasuryAccountRepository;
 use App\Treasury\Repository\TreasuryMovementRepository;
 use App\Treasury\Service\PositionQuery;
 use App\Treasury\Service\TreasuryAccountSeeder;
+use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
+use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,6 +38,7 @@ final class TreasuryAccountsController extends TreasuryApiController
         private readonly TreasuryMovementRepository $movements,
         private readonly PositionQuery $position,
         private readonly TreasuryAccountSeeder $seeder,
+        private readonly RecordsMoneyMovement $recorder,
         private readonly Connection $connection,
     ) {
         parent::__construct($capabilities);
@@ -100,6 +109,51 @@ final class TreasuryAccountsController extends TreasuryApiController
         $this->requireCapability();
 
         return $this->json($this->seeder->sync());
+    }
+
+    /** The balance an account starts with when the tenant begins using Treasury. It can be set once. */
+    #[Route('/api/treasury/accounts/{id}/opening-balance', name: 'treasury_opening_balance', methods: ['POST'])]
+    #[IsGranted('perm:treasury.manage')]
+    public function openingBalance(string $id, Request $request): JsonResponse
+    {
+        $this->requireCapability();
+        $body = $this->body($request);
+        $account = $this->accounts->find($id) ?? throw new NotFoundHttpException('La cuenta no existe.');
+        if (!in_array($account->kind, [AccountKind::Bank, AccountKind::Wallet], true)) {
+            throw new UnprocessableEntityHttpException(
+                'Solo las cuentas bancarias y billeteras tienen saldo inicial; las cajas usan su sesión.',
+            );
+        }
+
+        try {
+            $date = isset($body['date']) && $body['date'] !== ''
+                ? new DateTimeImmutable((string) $body['date'])
+                : new DateTimeImmutable();
+        } catch (Exception) {
+            throw new UnprocessableEntityHttpException('La fecha del saldo inicial no es válida.');
+        }
+
+        try {
+            $result = $this->recorder->record(new MoneyMovementRequest(
+                key: new MovementKey(MovementSource::OpeningBalance, $account->id),
+                direction: Direction::In,
+                amount: (string) ($body['amount'] ?? ''),
+                currency: $account->currency,
+                branchId: $account->branchId ?? '',
+                occurredAt: $date,
+                description: 'Saldo inicial',
+                accountId: $account->id,
+            ));
+        } catch (TreasuryException $e) {
+            throw new UnprocessableEntityHttpException($e->getMessage(), $e);
+        }
+        if ($result->duplicate) {
+            throw new UnprocessableEntityHttpException(
+                'Esta cuenta ya tiene un saldo inicial; para corregirlo registra un ajuste.',
+            );
+        }
+
+        return $this->json(['movementId' => $result->movementId], Response::HTTP_CREATED);
     }
 
     #[Route('/api/treasury/accounts/{id}/movements', name: 'treasury_account_movements', methods: ['GET'])]

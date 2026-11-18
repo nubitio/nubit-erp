@@ -163,8 +163,17 @@ class MenuSeedService
             'parent_id' => 790,
         ],
         [
-            'id' => 770,
+            'id' => 771,
             'order_index' => 2,
+            'key_name' => 'Cuentas de dinero',
+            'type' => 'route',
+            'route' => 'treasury',
+            'icon' => 'ph ph-bank',
+            'parent_id' => 790,
+        ],
+        [
+            'id' => 770,
+            'order_index' => 3,
             'key_name' => 'Conciliación bancaria',
             'type' => 'route',
             'route' => 'bank-reconciliation',
@@ -173,7 +182,7 @@ class MenuSeedService
         ],
         [
             'id' => 785,
-            'order_index' => 3,
+            'order_index' => 4,
             'key_name' => 'Reportes financieros',
             'type' => 'route',
             'route' => 'financial-reports',
@@ -182,7 +191,7 @@ class MenuSeedService
         ],
         [
             'id' => 799,
-            'order_index' => 4,
+            'order_index' => 5,
             'key_name' => 'Gastos de personal',
             'type' => 'route',
             'route' => 'expense-reports',
@@ -191,7 +200,7 @@ class MenuSeedService
         ],
         [
             'id' => 800,
-            'order_index' => 5,
+            'order_index' => 6,
             'key_name' => 'Activos fijos',
             'type' => 'route',
             'route' => 'fixed-assets',
@@ -200,7 +209,7 @@ class MenuSeedService
         ],
         [
             'id' => 788,
-            'order_index' => 6,
+            'order_index' => 7,
             'key_name' => 'Contabilidad',
             'type' => 'route',
             'route' => 'accounting',

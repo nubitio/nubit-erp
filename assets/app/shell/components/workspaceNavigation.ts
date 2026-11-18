@@ -44,6 +44,7 @@ export function workspaceSectionTitle(
     ['/accounts-receivable', 'Finanzas'],
     ['/supplier-bill', 'Finanzas'],
     ['/expense-category', 'Finanzas'],
+    ['/treasury', 'Finanzas'],
     ['/bank-reconciliation', 'Finanzas'],
     ['/bank-accounts', 'Finanzas'],
     ['/bank-statement-imports', 'Finanzas'],
