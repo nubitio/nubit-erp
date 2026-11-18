@@ -1,6 +1,7 @@
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { httpClient } from '@shared/api/HttpClient';
+import { TENANT_RUNTIME_CONFIG_QUERY_KEY } from '@shared/hooks/useTenantRuntimeConfig';
 
 const API = `${getCoreApiBaseUrl()}treasury`;
 
@@ -118,6 +119,28 @@ function useInvalidate() {
   const client = useQueryClient();
 
   return () => client.invalidateQueries({ queryKey: ['treasury'] });
+}
+
+/**
+ * Switches Treasury on (the accounts the tenant already has are created) or off (nothing is deleted).
+ * The runtime config is refreshed so menus and screens follow the new state at once.
+ */
+export function useSetTreasuryCapability() {
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (enabled: boolean) =>
+      (
+        await httpClient.put<{ enabled: boolean; created: string[]; mapped: number }>(
+          `${API}/capability`,
+          { enabled },
+        )
+      ).data,
+    onSuccess: () => {
+      void client.invalidateQueries({ queryKey: TENANT_RUNTIME_CONFIG_QUERY_KEY });
+      void client.invalidateQueries({ queryKey: ['treasury'] });
+    },
+  });
 }
 
 export function useSyncAccounts() {
