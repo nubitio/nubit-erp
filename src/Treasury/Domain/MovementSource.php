@@ -11,6 +11,7 @@ enum MovementSource: string
     case ReceivableCollection = 'receivable_collection';
     case CustomerAdvance = 'customer_advance';
     case SupplierPayment = 'supplier_payment';
+    case SupplierPaymentReversal = 'supplier_payment_reversal';
     case PayrollPayment = 'payroll_payment';
     case Transfer = 'transfer';
     case OpeningBalance = 'opening_balance';

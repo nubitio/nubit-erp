@@ -10,6 +10,14 @@ use App\AccountsPayable\Entity\SupplierPayment;
 use App\Catalog\Entity\PaymentMethod;
 use App\Efact\Domain\Money;
 use App\Identity\Entity\User;
+use App\Treasury\Domain\Direction;
+use App\Treasury\Domain\MovementKey;
+use App\Treasury\Domain\MovementSource;
+use App\Treasury\Domain\Party;
+use App\Treasury\Domain\TreasuryException;
+use App\Treasury\Port\MoneyMovementRequest;
+use App\Treasury\Port\RecordsMoneyMovement;
+use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -20,6 +28,7 @@ readonly class SupplierPaymentService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private ?MessageBusInterface $messageBus = null,
+        private ?RecordsMoneyMovement $treasury = null,
     ) {}
 
     /**
@@ -37,6 +46,7 @@ readonly class SupplierPaymentService
         DateTimeImmutable $paidAt,
         ?string $reference,
         User $createdBy,
+        ?string $moneyAccountId = null,
     ): SupplierPayment {
         if ($bill->getStatus() === SupplierBill::VOID) {
             throw new UnprocessableEntityHttpException('No se puede registrar un pago sobre una factura anulada.');
@@ -64,6 +74,7 @@ readonly class SupplierPaymentService
             $reference,
             $createdBy,
             $balanceDue,
+            $moneyAccountId,
         ): SupplierPayment {
             $payment = new SupplierPayment()
                 ->setSupplierBill($bill)
@@ -82,6 +93,16 @@ readonly class SupplierPaymentService
 
             $this->entityManager->persist($payment);
             $this->entityManager->flush();
+            $this->recordInTreasury(
+                $bill,
+                $payment,
+                $paymentMethod,
+                $amountMoney,
+                $paidAt,
+                $reference,
+                $createdBy,
+                $moneyAccountId,
+            );
 
             $this->messageBus?->dispatch(new EconomicEvent(
                 source: EconomicEvent::SOURCE_PAYABLE_PAYMENT,
@@ -107,7 +128,7 @@ readonly class SupplierPaymentService
      * Used to correct a misposted payment without having to void the
      * whole bill (voiding is blocked once any payment exists).
      */
-    public function reversePayment(SupplierBill $bill, SupplierPayment $payment): void
+    public function reversePayment(SupplierBill $bill, SupplierPayment $payment, ?int $userId = null): void
     {
         if ($payment->getSupplierBill()->getId() !== $bill->getId()) {
             throw new UnprocessableEntityHttpException('El pago no pertenece a esta factura.');
@@ -121,7 +142,7 @@ readonly class SupplierPaymentService
             throw new UnprocessableEntityHttpException('Este pago ya fue reversado.');
         }
 
-        $this->entityManager->wrapInTransaction(function () use ($bill, $payment): void {
+        $this->entityManager->wrapInTransaction(function () use ($bill, $payment, $userId): void {
             $amountMoney = Money::money($payment->getAmount());
             $newPaidTotal = Money::money($bill->getPaidTotal())->minus($amountMoney);
             $newBalanceDue = Money::money($bill->getBalanceDue())->plus($amountMoney);
@@ -134,6 +155,7 @@ readonly class SupplierPaymentService
             $paymentId = (string) $payment->getId();
             $payment->setReversedAt(new DateTimeImmutable());
             $this->entityManager->flush();
+            $this->reverseInTreasury($payment, $userId);
 
             $this->messageBus?->dispatch(new EconomicEvent(
                 source: EconomicEvent::SOURCE_PAYABLE_PAYMENT_REVERSAL,
@@ -147,5 +169,64 @@ readonly class SupplierPaymentService
                 currency: $bill->getCurrency(),
             ));
         });
+    }
+
+    /**
+     * Puts the payment into Treasury, in the same transaction: cash leaves the user's open drawer (so the
+     * arqueo sees it), anything else leaves the chosen or mapped bank or wallet account. A no-op when Treasury
+     * is off for the tenant.
+     */
+    private function recordInTreasury(
+        SupplierBill $bill,
+        SupplierPayment $payment,
+        PaymentMethod $paymentMethod,
+        BigDecimal $amount,
+        DateTimeImmutable $paidAt,
+        ?string $reference,
+        User $user,
+        ?string $moneyAccountId,
+    ): void {
+        if ($this->treasury === null) {
+            return;
+        }
+
+        try {
+            $this->treasury->record(new MoneyMovementRequest(
+                key: new MovementKey(MovementSource::SupplierPayment, (string) $payment->getId()),
+                direction: Direction::Out,
+                amount: Money::toString($amount),
+                currency: $bill->getCurrency(),
+                branchId: (string) $bill->getBranch()->getId(),
+                occurredAt: $paidAt,
+                isCash: $paymentMethod->getId() === PaymentMethod::CASH,
+                paymentMethodId: $paymentMethod->getId(),
+                userId: $user->getId(),
+                party: new Party('supplier', (string) $bill->getSupplier()->getId()),
+                reference: $reference,
+                description: trim(sprintf('Pago factura %s-%s', $bill->getSeries() ?? '', $bill->getNumber() ?? '')),
+                accountId: $moneyAccountId,
+            ));
+        } catch (TreasuryException $e) {
+            throw new UnprocessableEntityHttpException($e->getMessage(), $e);
+        }
+    }
+
+    private function reverseInTreasury(SupplierPayment $payment, ?int $userId): void
+    {
+        if ($this->treasury === null) {
+            return;
+        }
+
+        try {
+            $this->treasury->reverse(
+                new MovementKey(MovementSource::SupplierPayment, (string) $payment->getId()),
+                new MovementKey(MovementSource::SupplierPaymentReversal, (string) $payment->getId()),
+                new DateTimeImmutable(),
+                $userId,
+                'Reversión de pago a proveedor',
+            );
+        } catch (TreasuryException $e) {
+            throw new UnprocessableEntityHttpException($e->getMessage(), $e);
+        }
     }
 }

@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Tests\Treasury;
 
+use App\CashRegister\Service\CashMovementAppender;
 use App\Treasury\Domain\AccountKind;
 use App\Treasury\Domain\TreasuryAccount;
 use App\Treasury\Repository\TreasuryAccountRepository;
 use App\Treasury\Repository\TreasuryMovementRepository;
 use App\Treasury\Service\DrawerReader;
+use App\Treasury\Service\DrawerRecorder;
 use App\Treasury\Service\MoneyAccountResolver;
+use App\Treasury\Service\MovementReverser;
 use App\Treasury\Service\TreasuryMovementRecorder;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
@@ -24,6 +27,7 @@ final class TreasuryTestDatabase
     public TreasuryMovementRepository $movements;
     public DrawerReader $drawers;
     public TreasuryMovementRecorder $recorder;
+    public CashMovementAppender $cash;
 
     private function __construct()
     {
@@ -34,9 +38,13 @@ final class TreasuryTestDatabase
         $this->accounts = new TreasuryAccountRepository($this->db);
         $this->movements = new TreasuryMovementRepository($this->db);
         $this->drawers = new DrawerReader($this->db);
+        $this->cash = new CashMovementAppender($this->db);
+        $drawer = new DrawerRecorder($this->cash, $this->drawers);
         $this->recorder = new TreasuryMovementRecorder(
             new MoneyAccountResolver($this->accounts, $this->drawers),
             $this->movements,
+            $drawer,
+            new MovementReverser($this->movements, $this->accounts, $this->cash, $this->drawers),
         );
     }
 
@@ -108,7 +116,11 @@ final class TreasuryTestDatabase
         'CREATE TABLE cash_register (id INTEGER PRIMARY KEY, branch_id TEXT NOT NULL, name TEXT NOT NULL, is_active INTEGER NOT NULL DEFAULT 1)',
         'CREATE TABLE bank_account (id TEXT PRIMARY KEY, alias TEXT NOT NULL, currency TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL DEFAULT \'2026-01-01 00:00:00\')',
         'CREATE TABLE payment_method (id INTEGER PRIMARY KEY, name TEXT NOT NULL, is_active INTEGER NOT NULL DEFAULT 1)',
+        'CREATE TABLE cash_movement_category (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL UNIQUE, name TEXT NOT NULL, type TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1)',
+        "INSERT INTO cash_movement_category (code, name, type) VALUES ('supplier_payment', 'Pago a proveedor', 'expense'), ('supplier_payment_reversal', 'Reversión', 'income')",
         'CREATE TABLE cash_movements (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, cash_session_id INTEGER NOT NULL, movement_type TEXT NOT NULL, amount NUMERIC NOT NULL)',
+            id INTEGER PRIMARY KEY AUTOINCREMENT, cash_session_id INTEGER NOT NULL, movement_type TEXT NOT NULL, category_id INTEGER NULL,
+            payment_method_id INTEGER NULL, amount NUMERIC NOT NULL, description TEXT NULL, occurred_at TEXT NULL, created_by INTEGER NULL,
+            idempotency_key TEXT NULL UNIQUE, created_at TEXT NULL)',
     ];
 }

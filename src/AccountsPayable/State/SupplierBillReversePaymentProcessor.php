@@ -10,6 +10,7 @@ use App\AccountsPayable\Dto\SupplierBillReversePaymentDto;
 use App\AccountsPayable\Entity\SupplierBill;
 use App\AccountsPayable\Entity\SupplierPayment;
 use App\AccountsPayable\Service\SupplierPaymentService;
+use App\Identity\Security\Security;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -22,6 +23,7 @@ readonly class SupplierBillReversePaymentProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private SupplierPaymentService $supplierPaymentService,
+        private Security $security,
     ) {}
 
     /**
@@ -46,7 +48,7 @@ readonly class SupplierBillReversePaymentProcessor implements ProcessorInterface
             throw new NotFoundHttpException('Pago no encontrado.');
         }
 
-        $this->supplierPaymentService->reversePayment($bill, $payment);
+        $this->supplierPaymentService->reversePayment($bill, $payment, $this->security->connectedUser()?->userId);
 
         return $bill;
     }

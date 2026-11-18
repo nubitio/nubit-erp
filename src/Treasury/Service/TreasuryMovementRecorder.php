@@ -7,13 +7,14 @@ namespace App\Treasury\Service;
 use App\Efact\Domain\Money;
 use App\Treasury\Domain\AccountKind;
 use App\Treasury\Domain\CurrencyMismatch;
-use App\Treasury\Domain\DrawerWriteNotAvailable;
+use App\Treasury\Domain\MovementKey;
 use App\Treasury\Domain\TreasuryException;
 use App\Treasury\Domain\TreasuryMovement;
 use App\Treasury\Port\MoneyMovementRequest;
 use App\Treasury\Port\MoneyMovementResult;
 use App\Treasury\Port\RecordsMoneyMovement;
 use App\Treasury\Repository\TreasuryMovementRepository;
+use DateTimeImmutable;
 use Override;
 use Symfony\Component\Uid\Uuid;
 
@@ -22,6 +23,8 @@ final readonly class TreasuryMovementRecorder implements RecordsMoneyMovement
     public function __construct(
         private MoneyAccountResolver $resolver,
         private TreasuryMovementRepository $movements,
+        private DrawerRecorder $drawer,
+        private MovementReverser $reverser,
     ) {}
 
     #[Override]
@@ -38,9 +41,7 @@ final readonly class TreasuryMovementRecorder implements RecordsMoneyMovement
             throw CurrencyMismatch::between($account->currency, $request->currency);
         }
         if ($account->kind === AccountKind::CashRegister) {
-            throw new DrawerWriteNotAvailable(
-                'Registrar en una caja se habilita junto con los pagos a proveedores (WP2).',
-            );
+            return $this->drawer->record($request, $account, $warning);
         }
 
         $existing = $this->movements->findByKey($request->key);
@@ -73,5 +74,16 @@ final readonly class TreasuryMovementRecorder implements RecordsMoneyMovement
         }
 
         return new MoneyMovementResult($movement->id, $account->id, $account->kind, false, $warning);
+    }
+
+    #[Override]
+    public function reverse(
+        MovementKey $original,
+        MovementKey $reversal,
+        DateTimeImmutable $occurredAt,
+        ?int $userId,
+        ?string $description = null,
+    ): ?MoneyMovementResult {
+        return $this->reverser->reverse($original, $reversal, $occurredAt, $userId, $description);
     }
 }

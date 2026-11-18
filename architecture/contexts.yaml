@@ -247,7 +247,7 @@ contexts:
   AccountsPayable:
     namespace: App\AccountsPayable
     layer: ErpCore
-    dependsOn: [Accounting, Catalog, Contacts, Efact, Identity, Organization, Purchasing]
+    dependsOn: [Accounting, Catalog, Contacts, Efact, Identity, Organization, Purchasing, Treasury]
     publicContracts: []
     ownsTables: [supplier_bill, supplier_payment, expense_category]
 
@@ -261,7 +261,7 @@ contexts:
   Treasury:
     namespace: App\Treasury
     layer: ErpCore
-    dependsOn: [Efact, Identity, Settings]
+    dependsOn: [CashRegister, Efact, Identity, Settings]
     publicContracts: []
     ownsTables: [treasury_account, treasury_movement, treasury_payment_method_account]
 

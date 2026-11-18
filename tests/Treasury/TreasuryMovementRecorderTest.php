@@ -7,7 +7,6 @@ namespace App\Tests\Treasury;
 use App\Treasury\Domain\AccountKind;
 use App\Treasury\Domain\CurrencyMismatch;
 use App\Treasury\Domain\Direction;
-use App\Treasury\Domain\DrawerWriteNotAvailable;
 use App\Treasury\Domain\MovementKey;
 use App\Treasury\Domain\MovementSource;
 use App\Treasury\Domain\TreasuryException;
@@ -171,21 +170,187 @@ final class TreasuryMovementRecorderTest extends TestCase
         ));
     }
 
-    public function testCashWithAnOpenSessionReachesTheDrawerWhichIsNotWritableYet(): void
+    public function testACashPaymentLeavesTheOpenDrawerAndTheArqueoSeesIt(): void
     {
         $kit = TreasuryTestDatabase::create();
         $kit->account('drawer', AccountKind::CashRegister, cashRegisterId: 3);
         $kit->openSession(10, 3, 7, '200.00');
 
-        $this->expectException(DrawerWriteNotAvailable::class);
-        $kit->recorder->record($this->request(
-            'S-1',
+        $result = $kit->recorder->record($this->request(
+            'P-1',
             Direction::Out,
-            '10.00',
+            '45.50',
             method: self::CASH,
             isCash: true,
             userId: 7,
         ));
+
+        self::assertSame(AccountKind::CashRegister, $result->accountKind);
+        self::assertFalse($result->duplicate);
+        $row = $kit->db->fetchAssociative('SELECT movement_type, amount, cash_session_id FROM cash_movements');
+        self::assertIsArray($row);
+        self::assertSame('CASH_OUT', $row['movement_type']);
+        self::assertSame('45.50', number_format((float) $row['amount'], 2, '.', ''));
+        self::assertSame(10, (int) $row['cash_session_id']);
+        self::assertSame('154.50', $kit->drawers->balanceOf(3), 'the drawer shows 200.00 - 45.50');
+        self::assertSame(
+            0,
+            (int) $kit->db->fetchOne('SELECT COUNT(*) FROM treasury_movement'),
+            'drawers are not copied into the ledger',
+        );
+    }
+
+    public function testReplayingACashPaymentDoesNotTakeMoneyOutTwice(): void
+    {
+        $kit = TreasuryTestDatabase::create();
+        $kit->account('drawer', AccountKind::CashRegister, cashRegisterId: 3);
+        $kit->openSession(10, 3, 7, '200.00');
+
+        $first = $kit->recorder->record($this->request(
+            'P-1',
+            Direction::Out,
+            '45.50',
+            method: self::CASH,
+            isCash: true,
+            userId: 7,
+        ));
+        $replay = $kit->recorder->record($this->request(
+            'P-1',
+            Direction::Out,
+            '45.50',
+            method: self::CASH,
+            isCash: true,
+            userId: 7,
+        ));
+
+        self::assertTrue($replay->duplicate);
+        self::assertSame($first->movementId, $replay->movementId);
+        self::assertSame('154.50', $kit->drawers->balanceOf(3));
+    }
+
+    public function testACashPaymentOnAnotherRegistersSessionIsRefused(): void
+    {
+        $kit = TreasuryTestDatabase::create();
+        $kit->account('drawer-a', AccountKind::CashRegister, cashRegisterId: 3);
+        $kit->account('drawer-b', AccountKind::CashRegister, cashRegisterId: 4);
+        $kit->openSession(10, 3, 7, '200.00');
+
+        $this->expectException(TreasuryException::class);
+        $this->expectExceptionMessage('otra caja');
+        $kit->recorder->record($this->request('P-1', Direction::Out, '10.00', accountId: 'drawer-b', userId: 7));
+    }
+
+    public function testReversingABankPaymentWritesTheOppositeRowOnTheSameAccount(): void
+    {
+        $kit = TreasuryTestDatabase::create();
+        $kit->account('bcp');
+        $kit->account('other');
+        $kit->accounts->map(TreasuryTestDatabase::BRANCH, 5, 'PEN', 'bcp');
+        $paid = $kit->recorder->record($this->request('P-1', Direction::Out, '118.00', method: 5));
+        // The mapping changes after the payment; the reversal must still go back to where the money left.
+        $kit->accounts->map(TreasuryTestDatabase::BRANCH, 5, 'PEN', 'other');
+
+        $reversed = $kit->recorder->reverse(
+            new MovementKey(MovementSource::SupplierPayment, 'P-1'),
+            new MovementKey(MovementSource::SupplierPaymentReversal, 'P-1'),
+            new DateTimeImmutable('2026-11-19 09:00:00'),
+            7,
+        );
+
+        self::assertNotNull($reversed);
+        self::assertSame('bcp', $reversed->accountId);
+        self::assertSame('0.00', $kit->movements->balance('bcp'));
+        self::assertSame('0.00', $kit->movements->balance('other'));
+        $reversal = $kit->movements->findByKey(new MovementKey(MovementSource::SupplierPaymentReversal, 'P-1'));
+        self::assertNotNull($reversal);
+        self::assertSame($paid->movementId, $reversal->correctsMovementId);
+        self::assertSame('118.00', $reversal->signedAmount);
+    }
+
+    public function testReversingTwiceWritesOnlyOneCorrection(): void
+    {
+        $kit = TreasuryTestDatabase::create();
+        $kit->account('bcp');
+        $kit->accounts->map(TreasuryTestDatabase::BRANCH, 5, 'PEN', 'bcp');
+        $kit->recorder->record($this->request('P-1', Direction::Out, '50.00', method: 5));
+        $original = new MovementKey(MovementSource::SupplierPayment, 'P-1');
+        $reversal = new MovementKey(MovementSource::SupplierPaymentReversal, 'P-1');
+        $at = new DateTimeImmutable('2026-11-19');
+
+        $kit->recorder->reverse($original, $reversal, $at, 7);
+        $again = $kit->recorder->reverse($original, $reversal, $at, 7);
+
+        self::assertTrue($again?->duplicate);
+        self::assertSame('0.00', $kit->movements->balance('bcp'));
+        self::assertSame(2, (int) $kit->db->fetchOne('SELECT COUNT(*) FROM treasury_movement'));
+    }
+
+    public function testReversingACashPaymentPutsTheCashBackInTheOpenDrawer(): void
+    {
+        $kit = TreasuryTestDatabase::create();
+        $kit->account('drawer', AccountKind::CashRegister, cashRegisterId: 3);
+        $kit->openSession(10, 3, 7, '200.00');
+        $kit->recorder->record($this->request(
+            'P-1',
+            Direction::Out,
+            '45.50',
+            method: self::CASH,
+            isCash: true,
+            userId: 7,
+        ));
+
+        $result = $kit->recorder->reverse(
+            new MovementKey(MovementSource::SupplierPayment, 'P-1'),
+            new MovementKey(MovementSource::SupplierPaymentReversal, 'P-1'),
+            new DateTimeImmutable('2026-11-18 12:00:00'),
+            7,
+        );
+
+        self::assertSame(AccountKind::CashRegister, $result?->accountKind);
+        self::assertSame('200.00', $kit->drawers->balanceOf(3));
+        self::assertSame(
+            ['CASH_OUT', 'CASH_IN'],
+            $kit->db->fetchFirstColumn('SELECT movement_type FROM cash_movements ORDER BY id'),
+        );
+    }
+
+    public function testReversingACashPaymentNeedsAnOpenDrawer(): void
+    {
+        $kit = TreasuryTestDatabase::create();
+        $kit->account('drawer', AccountKind::CashRegister, cashRegisterId: 3);
+        $kit->openSession(10, 3, 7, '200.00');
+        $kit->recorder->record($this->request(
+            'P-1',
+            Direction::Out,
+            '45.50',
+            method: self::CASH,
+            isCash: true,
+            userId: 7,
+        ));
+        $kit->db->executeStatement("UPDATE cash_sessions SET status = 'CLOSED'");
+
+        $this->expectException(TreasuryException::class);
+        $this->expectExceptionMessage('caja abierta');
+        $kit->recorder->reverse(
+            new MovementKey(MovementSource::SupplierPayment, 'P-1'),
+            new MovementKey(MovementSource::SupplierPaymentReversal, 'P-1'),
+            new DateTimeImmutable('2026-11-19'),
+            7,
+        );
+    }
+
+    public function testReversingAPaymentTreasuryNeverSawDoesNothing(): void
+    {
+        $kit = TreasuryTestDatabase::create();
+
+        $result = $kit->recorder->reverse(
+            new MovementKey(MovementSource::SupplierPayment, 'old-payment'),
+            new MovementKey(MovementSource::SupplierPaymentReversal, 'old-payment'),
+            new DateTimeImmutable('2026-11-19'),
+            7,
+        );
+
+        self::assertNull($result, 'a payment made before Treasury has nothing to undo');
     }
 
     private function request(

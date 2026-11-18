@@ -70,6 +70,7 @@ readonly class SupplierBillPayProcessor implements ProcessorInterface
             $paidAt,
             $data->reference,
             $userRef,
+            $data->moneyAccountId,
         );
 
         return $bill;

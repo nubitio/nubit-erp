@@ -33,6 +33,8 @@ export interface PaySupplierBillInput {
   paymentMethodId: number;
   paidAt?: string;
   reference?: string;
+  /** Treasury account the money leaves; omitted = the payment method's mapped account. */
+  moneyAccountId?: string;
 }
 
 const supplierBillService = () => {
@@ -45,6 +47,7 @@ const supplierBillService = () => {
         paymentMethodId: input.paymentMethodId,
         paidAt: input.paidAt,
         reference: input.reference,
+        moneyAccountId: input.moneyAccountId || undefined,
       },
       { errorPresentation: 'inline' },
     );

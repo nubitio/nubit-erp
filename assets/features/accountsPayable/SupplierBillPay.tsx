@@ -23,6 +23,8 @@ import { supplierPaymentAmount } from './model/paymentAmount';
 import { hasPermission } from '@shared/permissions';
 import toast from '@shared/lib/SharedUtils';
 import { formatDate, formatMoney } from '@shared/lib/displayFormat';
+import { MoneyAccountPicker } from '../treasury/MoneyAccountPicker';
+import { treasuryErrorMessage } from '../treasury/api/treasuryApi';
 import './SupplierBillPay.scss';
 
 const API = getCoreApiBaseUrl();
@@ -46,6 +48,7 @@ function SupplierBillPaymentPage({ id }: { id?: string }) {
   const [amount, setAmount] = useState('');
   const [reference, setReference] = useState('');
   const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null);
+  const [moneyAccountId, setMoneyAccountId] = useState('');
   const [busy, setBusy] = useState(false);
   const [bill, setBill] = useState<SupplierBillSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -112,12 +115,17 @@ function SupplierBillPaymentPage({ id }: { id?: string }) {
         amount: canonical,
         paymentMethodId: Number(paymentMethodId),
         reference: reference.trim() || undefined,
+        moneyAccountId,
       });
       toast('Pago registrado', 'success');
       navigate('/accounts-payable');
-    } catch {
+    } catch (error) {
+      // The server says why (no open cash drawer, wrong currency, balance exceeded); show that, not a guess.
       setActionError(
-        'No se pudo registrar el pago. Revisa el saldo y el método seleccionado e inténtalo nuevamente.',
+        treasuryErrorMessage(
+          error,
+          'No se pudo registrar el pago. Revisa el saldo y el método seleccionado e inténtalo nuevamente.',
+        ),
       );
     } finally {
       inFlight.current = false;
@@ -293,6 +301,7 @@ function SupplierBillPaymentPage({ id }: { id?: string }) {
                       value={paymentMethodId}
                       onChange={(value) => {
                         setPaymentMethodId(value);
+                        setMoneyAccountId('');
                         setMethodError(false);
                       }}
                       disabled={busy}
@@ -310,6 +319,13 @@ function SupplierBillPaymentPage({ id }: { id?: string }) {
                     )}
                   </FormField>
                 </div>
+                <MoneyAccountPicker
+                  currency={currency}
+                  paymentMethodId={paymentMethodId}
+                  value={moneyAccountId}
+                  onChange={setMoneyAccountId}
+                  disabled={busy}
+                />
                 <FormField label="Referencia (opcional)" htmlFor="supplier-bill-pay-reference">
                   <TextField
                     id="supplier-bill-pay-reference"

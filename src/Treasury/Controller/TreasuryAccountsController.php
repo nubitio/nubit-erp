@@ -12,11 +12,11 @@ use App\Treasury\Domain\MovementSource;
 use App\Treasury\Domain\TreasuryAccount;
 use App\Treasury\Domain\TreasuryException;
 use App\Treasury\Port\MoneyMovementRequest;
-use App\Treasury\Port\RecordsMoneyMovement;
 use App\Treasury\Repository\TreasuryAccountRepository;
 use App\Treasury\Repository\TreasuryMovementRepository;
 use App\Treasury\Service\PositionQuery;
 use App\Treasury\Service\TreasuryAccountSeeder;
+use App\Treasury\Service\TreasuryMovementRecorder;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Exception;
@@ -38,7 +38,7 @@ final class TreasuryAccountsController extends TreasuryApiController
         private readonly TreasuryMovementRepository $movements,
         private readonly PositionQuery $position,
         private readonly TreasuryAccountSeeder $seeder,
-        private readonly RecordsMoneyMovement $recorder,
+        private readonly TreasuryMovementRecorder $recorder,
         private readonly Connection $connection,
     ) {
         parent::__construct($capabilities);

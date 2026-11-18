@@ -29,6 +29,19 @@ final readonly class DrawerReader
         return $id === false ? null : (int) $id;
     }
 
+    /** @return array{sessionId: int, registerId: int}|null the user's open session and the register it belongs to */
+    public function openSessionFor(int $userId): ?array
+    {
+        $row = $this->connection->fetchAssociative(
+            "SELECT id, cash_register_id FROM cash_sessions WHERE opened_by = :user AND status = 'OPEN' ORDER BY opened_at DESC LIMIT 1",
+            ['user' => $userId],
+        );
+
+        return (
+            $row === false ? null : ['sessionId' => (int) $row['id'], 'registerId' => (int) $row['cash_register_id']]
+        );
+    }
+
     /**
      * Cash in the drawer: the open session's expected amount; with no open session, what the last session
      * counted when it closed.
