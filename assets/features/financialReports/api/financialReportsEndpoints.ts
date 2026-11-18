@@ -12,6 +12,8 @@ export interface GastoPorCategoria {
 export interface ProfitAndLossResponse {
   period: string;
   periodLabel: string;
+  /** 'ledger' = libro mayor (contabilidad); 'estimate' = estimado operativo. Never mixed. */
+  source: 'ledger' | 'estimate';
   ingresos: {
     bruto: number;
     notasCredito: number;

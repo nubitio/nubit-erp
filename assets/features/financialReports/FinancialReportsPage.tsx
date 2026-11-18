@@ -252,8 +252,10 @@ export function FinancialReportsPage() {
           <div>
             <h1 className="fr-page__title">Resultado del negocio</h1>
             <p className="fr-page__subtitle">
-              {pnlLoading ? '…' : pnlData?.periodLabel} · Estimado operativo a partir de ventas,
-              compras y caja. No reemplaza la contabilidad formal.
+              {pnlLoading ? '…' : pnlData?.periodLabel} ·{' '}
+              {pnlData?.source === 'ledger'
+                ? 'Según el libro mayor (contabilidad).'
+                : 'Estimado operativo a partir de ventas, compras y caja. No reemplaza la contabilidad formal.'}
             </p>
           </div>
           <button type="button" className="fr-export-button" onClick={handleExport}>
@@ -263,8 +265,9 @@ export function FinancialReportsPage() {
         </div>
 
         <ErpModuleBanner>
-          Estas cifras salen de ventas, compras y caja. Sirven para decidir el día a día; el
-          contador sigue cerrando libros por su lado.
+          {pnlData?.source === 'ledger'
+            ? 'Estas cifras salen de los asientos contables, las mismas que ve el contador.'
+            : 'Estas cifras salen de ventas, compras y caja. Sirven para decidir el día a día; el contador sigue cerrando libros por su lado.'}
         </ErpModuleBanner>
 
         <div className="fr-kpi-grid">
@@ -280,7 +283,7 @@ export function FinancialReportsPage() {
             value={fmtMoney(pnlData?.costoVentas.monto ?? 0)}
             icon="ph-tag"
             loading={pnlLoading}
-            badge="Estimado"
+            badge={pnlData?.costoVentas.isEstimate === false ? undefined : 'Estimado'}
           />
           <KpiCard
             label="GASTOS OPERATIVOS"

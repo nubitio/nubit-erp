@@ -4,13 +4,25 @@ declare(strict_types=1);
 
 namespace App\Reporting\Financial\Application\Query;
 
+use App\Settings\Capability\CapabilityKey;
+use App\Settings\Capability\TenantCapabilityResolver;
 use Doctrine\DBAL\Connection;
 
 final readonly class ProfitAndLossQuery
 {
     public function __construct(
         private Connection $connection,
+        private ?TenantCapabilityResolver $capabilities = null,
     ) {}
+
+    /**
+     * Where the numbers come from. With the general ledger on, the P&L is the ledger's and is not an estimate;
+     * without it, it is the operational estimate and says so. The two are never shown under the same name.
+     */
+    public function usesLedger(): bool
+    {
+        return $this->capabilities?->isEnabled(CapabilityKey::AccountingGeneralLedger) === true;
+    }
 
     /** @return array<string, mixed> */
     public function compute(string $period = ''): array
@@ -51,6 +63,7 @@ final readonly class ProfitAndLossQuery
         return [
             'period' => $period,
             'periodLabel' => $this->formatPeriodLabel($period),
+            'source' => $this->usesLedger() ? 'ledger' : 'estimate',
             ...$current,
             'historial' => $historial,
         ];
@@ -59,6 +72,10 @@ final readonly class ProfitAndLossQuery
     /** @return array<string, mixed> */
     private function computePeriod(string $period): array
     {
+        if ($this->usesLedger()) {
+            return new LedgerProfitAndLoss($this->connection)->period($period);
+        }
+
         $ingresosRow = $this->connection->fetchAssociative("SELECT
                 COALESCE(SUM(CASE WHEN document_type IN ('01','03','08') THEN taxable_amount ELSE 0 END), 0) AS bruto,
                 COALESCE(SUM(CASE WHEN document_type = '07' THEN taxable_amount ELSE 0 END), 0) AS notas_credito

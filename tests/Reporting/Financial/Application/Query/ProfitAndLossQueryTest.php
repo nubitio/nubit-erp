@@ -5,10 +5,15 @@ declare(strict_types=1);
 namespace App\Tests\Reporting\Financial\Application\Query;
 
 use App\Reporting\Financial\Application\Query\ProfitAndLossQuery;
+use App\Settings\Capability\TenantCapabilityResolver;
+use App\Settings\Entity\TenantCapability;
+use App\Settings\Repository\TenantCapabilityRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
+use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use PHPUnit\Framework\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class ProfitAndLossQueryTest extends TestCase
 {
     private Connection $connection;
@@ -249,5 +254,93 @@ final class ProfitAndLossQueryTest extends TestCase
         static::assertSame(0.0, $result['costoVentas']['monto']);
         static::assertSame(0.0, $result['gastosOperativos']['total']);
         static::assertSame(0.0, $result['utilidadNeta']);
+    }
+
+    public function testWithoutTheLedgerTheResultIsLabelledAnEstimate(): void
+    {
+        $result = new ProfitAndLossQuery($this->connection)->compute('202606');
+
+        static::assertSame('estimate', $result['source']);
+    }
+
+    public function testWithTheLedgerOnTheResultComesFromJournalEntriesAndIsNotAnEstimate(): void
+    {
+        $this->seedJuneFixtures(); // operational data that must be ignored now
+        $this->createLedger();
+        $this->account('a-sales', '70111', 'Ventas', 'INCOME');
+        $this->account('a-cogs', '691', 'Costo de ventas', 'EXPENSE');
+        $this->account('a-rent', '6351', 'Alquileres', 'EXPENSE');
+        $this->account('a-bank', '1041', 'Banco', 'ASSET');
+        $this->entry('e1', '2026-06-10', [['a-bank', 1180, 0], ['a-sales', 0, 1180]]);
+        $this->entry('e2', '2026-06-12', [['a-sales', 100, 0], ['a-bank', 0, 100]]); // credit note
+        $this->entry('e3', '2026-06-15', [['a-cogs', 400, 0], ['a-bank', 0, 400]]);
+        $this->entry('e4', '2026-06-20', [['a-rent', 300, 0], ['a-bank', 0, 300]]);
+        $this->entry('e5', '2026-05-20', [['a-rent', 999, 0], ['a-bank', 0, 999]]); // another month
+
+        $repository = $this->createMock(TenantCapabilityRepository::class);
+        $repository
+            ->method('allByKey')
+            ->willReturn([
+                'accounting.general_ledger' => new TenantCapability('accounting.general_ledger')->setEnabled(true),
+            ]);
+        $features = $this->createStub(FeatureCheckerInterface::class);
+        $features->method('getEntitlements')->willReturn(['general_ledger' => ['enabled' => true]]);
+        $capabilities = new TenantCapabilityResolver($features, $repository);
+        /** @var array{source: string, ingresos: array{bruto: float, notasCredito: float, neto: float}, costoVentas: array{monto: float, isEstimate: bool}, utilidadBruta: float, gastosOperativos: array{total: float, porCategoria: list<array{categoria: string, monto: float}>}, utilidadNeta: float, historial: list<array{utilidadNeta: float}>} $result */
+        $result = new ProfitAndLossQuery($this->connection, $capabilities)->compute('202606');
+
+        static::assertSame('ledger', $result['source']);
+        static::assertSame(1180.0, $result['ingresos']['bruto']);
+        static::assertSame(100.0, $result['ingresos']['notasCredito']);
+        static::assertSame(1080.0, $result['ingresos']['neto']);
+        static::assertSame(400.0, $result['costoVentas']['monto']);
+        static::assertFalse($result['costoVentas']['isEstimate']);
+        static::assertSame(680.0, $result['utilidadBruta']);
+        static::assertSame(300.0, $result['gastosOperativos']['total']);
+        static::assertSame(
+            [['categoria' => 'Alquileres', 'monto' => 300.0]],
+            $result['gastosOperativos']['porCategoria'],
+        );
+        static::assertSame(380.0, $result['utilidadNeta']);
+        static::assertSame(
+            -999.0,
+            $result['historial'][1]['utilidadNeta'],
+            'the previous month is also from the ledger',
+        );
+    }
+
+    private function createLedger(): void
+    {
+        $this->connection->executeStatement(
+            'CREATE TABLE chart_of_accounts (id VARCHAR(36) PRIMARY KEY, code VARCHAR(16), name VARCHAR(255), type VARCHAR(20))',
+        );
+        $this->connection->executeStatement('CREATE TABLE journal_entry (id VARCHAR(36) PRIMARY KEY, entry_date DATE)');
+        $this->connection->executeStatement(
+            'CREATE TABLE journal_entry_line (id INTEGER PRIMARY KEY AUTOINCREMENT, journal_entry_id VARCHAR(36), account_id VARCHAR(36), debit DECIMAL(14,2), credit DECIMAL(14,2))',
+        );
+    }
+
+    private function account(string $id, string $code, string $name, string $type): void
+    {
+        $this->connection->insert('chart_of_accounts', [
+            'id' => $id,
+            'code' => $code,
+            'name' => $name,
+            'type' => $type,
+        ]);
+    }
+
+    /** @param list<array{string, int, int}> $lines */
+    private function entry(string $id, string $date, array $lines): void
+    {
+        $this->connection->insert('journal_entry', ['id' => $id, 'entry_date' => $date]);
+        foreach ($lines as [$account, $debit, $credit]) {
+            $this->connection->insert('journal_entry_line', [
+                'journal_entry_id' => $id,
+                'account_id' => $account,
+                'debit' => $debit,
+                'credit' => $credit,
+            ]);
+        }
     }
 }

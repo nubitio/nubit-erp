@@ -240,7 +240,7 @@ contexts:
   Reporting:
     namespace: App\Reporting
     layer: ErpCore
-    dependsOn: [Accounting, ControlPlane, Efact, Organization]
+    dependsOn: [Accounting, ControlPlane, Efact, Organization, Settings]
     publicContracts: []
     ownsTables: [summary, time_dimension]
 
