@@ -1,0 +1,90 @@
+.customers__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+}
+
+.customers__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3, 0.75rem);
+
+  > :first-child {
+    flex: 1 1 280px;
+    min-width: 0;
+  }
+}
+
+.customers__card-title {
+  display: block;
+  margin-bottom: var(--space-2, 0.5rem);
+  color: var(--text-primary);
+}
+
+.customers__card-list {
+  display: grid;
+  gap: var(--space-1, 0.25rem);
+  margin: 0;
+
+  > div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-3, 0.75rem);
+  }
+
+  dt {
+    color: var(--text-secondary);
+  }
+
+  dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+}
+
+.erp-link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent-color);
+  font: inherit;
+  font-weight: var(--font-weight-semibold, 600);
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm, 4px);
+  }
+}
+
+// Floating "new" action on small screens (the toolbar button is hidden there).
+.erp-fab {
+  position: fixed;
+  right: var(--space-4, 1rem);
+  bottom: calc(var(--space-6, 2rem) + 56px); // clear of the bottom navigation
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 1.5rem;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 25%);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 3px solid var(--accent-color);
+    outline-offset: 3px;
+  }
+}
