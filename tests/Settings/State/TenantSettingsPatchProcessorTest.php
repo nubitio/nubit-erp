@@ -57,4 +57,29 @@ final class TenantSettingsPatchProcessorTest extends TestCase
 
         self::assertSame(TaxRegime::NRUS, $existing->getTaxRegime());
     }
+
+    public function testProcessTurnsThePosPieceCounterOnAndOffWithoutTouchingOtherFlags(): void
+    {
+        $existing = new TenantSettings()->setCashRoundingEnabled(true);
+        $incoming = new TenantSettings()->setPosPieceCountEnabled(true);
+
+        /** @var TenantSettingsService&MockObject $service */
+        $service = $this->createMock(TenantSettingsService::class);
+        $service->method('get')->willReturn($existing);
+
+        $requestStack = new RequestStack();
+        $requestStack->push(new Request(content: '{"posPieceCountEnabled":true}'));
+
+        $processor = new TenantSettingsPatchProcessor($service, $requestStack);
+        $processor->process($incoming, new Patch());
+
+        static::assertTrue($existing->isPosPieceCountEnabled());
+        static::assertTrue($existing->isCashRoundingEnabled());
+
+        $requestStack = new RequestStack();
+        $requestStack->push(new Request(content: '{"posPieceCountEnabled":false}'));
+        new TenantSettingsPatchProcessor($service, $requestStack)->process(new TenantSettings(), new Patch());
+
+        static::assertFalse($existing->isPosPieceCountEnabled());
+    }
 }

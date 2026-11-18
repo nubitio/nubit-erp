@@ -15,6 +15,7 @@ export interface TenantSettingsDto {
   autoInvoice: boolean;
   autoPrint: boolean;
   cashRoundingEnabled: boolean;
+  posPieceCountEnabled: boolean;
   defaultCurrency: 'PEN' | 'USD';
   negativeStockPolicy: 'STRICT' | 'WARNING_ONLY' | 'ALLOW_NEGATIVE';
 }

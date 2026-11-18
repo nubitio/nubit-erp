@@ -96,6 +96,14 @@ class TenantSettings
     #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
     private bool $cashRoundingEnabled = false;
 
+    /**
+     * Show a piece counter on weighted POS lines (sold by kg) that prefixes the
+     * line description with the number of units, e.g. "2 Pechuga de pollo".
+     */
+    #[ORM\Column]
+    #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
+    private bool $posPieceCountEnabled = false;
+
     #[ORM\Column(enumType: DefaultCurrency::class)]
     #[Groups(['tenant_settings:read', 'tenant_settings:write'])]
     private DefaultCurrency $defaultCurrency = DefaultCurrency::PEN;
@@ -238,6 +246,17 @@ class TenantSettings
     public function setCashRoundingEnabled(bool $cashRoundingEnabled): static
     {
         $this->cashRoundingEnabled = $cashRoundingEnabled;
+        return $this;
+    }
+
+    public function isPosPieceCountEnabled(): bool
+    {
+        return $this->posPieceCountEnabled;
+    }
+
+    public function setPosPieceCountEnabled(bool $posPieceCountEnabled): static
+    {
+        $this->posPieceCountEnabled = $posPieceCountEnabled;
         return $this;
     }
 

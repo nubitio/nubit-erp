@@ -105,6 +105,7 @@ final readonly class TenantRuntimeConfigProvider
                 'pos' => [
                     'allowLinePriceOverride' => $vertical !== 'pharmacy',
                     'allowCatalogPriceEdit' => $vertical !== 'pharmacy',
+                    'pieceCountEnabled' => $settings->isPosPieceCountEnabled(),
                 ],
                 'reports' => [
                     'showAdvancedReports' => $advancedReports,

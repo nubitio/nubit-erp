@@ -22,7 +22,8 @@ const API = getCoreApiBaseUrl();
 const ENTITY_DROPDOWN_FILTERS = activeOnlyFilter();
 import { taxDocumentService } from '../sales/services/taxDocumentService';
 import { formatPosQuantity, isWeightUnitCode, toNumber } from './posHelpers';
-import { formatPosReceiptLabel } from './posPresentation';
+import { PieceCounter } from './PieceCounter';
+import { formatPosReceiptLabel, linePieceCount, withLinePieceCount } from './posPresentation';
 import type { LocalSale } from '@offline/types';
 
 interface POSCheckoutPanelProps {
@@ -42,6 +43,8 @@ interface POSCheckoutPanelProps {
   updateQuantity: (id: string, nextQuantity: number) => void | Promise<void>;
   updateLinePrice: (id: string, nextPrice: number) => void;
   allowLinePriceOverride?: boolean;
+  /** Show a +/- piece counter on weighted lines that prefixes the description. */
+  pieceCountEnabled?: boolean;
   allowDiscount?: boolean;
   updateLineDescription: (id: string, lineDescription: string) => void;
   removeFromCart: (id: string) => void;
@@ -112,6 +115,7 @@ export function POSCheckoutPanel({
   updateQuantity,
   updateLinePrice,
   allowLinePriceOverride = true,
+  pieceCountEnabled = false,
   allowDiscount = true,
   updateLineDescription,
   removeFromCart,
@@ -471,8 +475,19 @@ export function POSCheckoutPanel({
               const quantityFloor = isWeighted ? 0.001 : 1;
               const lineDescription = item.lineDescription ?? '';
               const displayName = lineDescription || item.name;
-              const hasCustomName =
-                lineDescription.trim() !== '' && lineDescription.trim() !== item.name;
+              const showPieceCounter = pieceCountEnabled && isWeighted;
+              // With the counter on, a bare piece prefix ("2 Pechuga de pollo") is not a custom
+              // name. With it off, a description is only ever what the cashier typed, so a leading
+              // number is just text and must not be stripped.
+              const hasCustomName = showPieceCounter
+                ? withLinePieceCount(lineDescription, item.name, 0) !== ''
+                : lineDescription.trim() !== '' && lineDescription.trim() !== item.name;
+              const pieceCount = showPieceCounter ? linePieceCount(lineDescription) : 0;
+              const setPieceCount = (next: number) =>
+                updateLineDescription(
+                  item.id,
+                  withLinePieceCount(lineDescription, item.name, Math.max(0, next)),
+                );
               const displayUnit = item.saleUnitCode
                 ? `/${item.saleUnitCode.toLowerCase()}`
                 : ' c/u';
@@ -572,6 +587,13 @@ export function POSCheckoutPanel({
                     )}
                     {hasCustomName && (
                       <div className="pos-line__base-name">Producto: {item.name}</div>
+                    )}
+                    {showPieceCounter && (
+                      <PieceCounter
+                        pieces={pieceCount}
+                        productName={item.name}
+                        onChange={setPieceCount}
+                      />
                     )}
                   </div>
                   <div className="pos-line__actions">

@@ -451,7 +451,7 @@ export const PosBehaviorSettings = () => {
   }, []);
 
   const patch = async (
-    field: 'autoInvoice' | 'autoPrint' | 'cashRoundingEnabled',
+    field: 'autoInvoice' | 'autoPrint' | 'cashRoundingEnabled' | 'posPieceCountEnabled',
     value: boolean,
   ) => {
     if (!state) return;
@@ -571,6 +571,23 @@ export const PosBehaviorSettings = () => {
           onChange={(checked) => void patch('cashRoundingEnabled', checked)}
           disabled={savingField !== null}
           aria-label="Redondeo de efectivo a diez céntimos"
+        />
+      </div>
+
+      <div className="config-toggle-row">
+        <div className="config-toggle-info">
+          <span className="config-toggle-label">Contar unidades en productos por peso</span>
+          <span className="config-toggle-description">
+            {state.posPieceCountEnabled
+              ? 'Las líneas vendidas por kg muestran un contador de unidades. El número se antepone a la descripción del comprobante (ej. "2 Pechuga de pollo").'
+              : 'Útil en carnicerías y pollerías que venden por kg pero necesitan registrar cuántas piezas lleva el cliente.'}
+          </span>
+        </div>
+        <Toggle
+          checked={state.posPieceCountEnabled ?? false}
+          onChange={(checked) => void patch('posPieceCountEnabled', checked)}
+          disabled={savingField !== null}
+          aria-label="Contar unidades en productos por peso"
         />
       </div>
     </section>

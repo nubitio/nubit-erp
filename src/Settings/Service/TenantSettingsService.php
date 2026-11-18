@@ -87,6 +87,11 @@ readonly class TenantSettingsService
         return $this->get()->isCashRoundingEnabled();
     }
 
+    public function isPosPieceCountEnabled(): bool
+    {
+        return $this->get()->isPosPieceCountEnabled();
+    }
+
     public function getDefaultCurrency(): DefaultCurrency
     {
         return $this->get()->getDefaultCurrency();

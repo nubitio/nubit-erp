@@ -739,6 +739,7 @@ const POSPage = () => {
         updateQuantity={updateQuantity}
         updateLinePrice={updateLinePrice}
         allowLinePriceOverride={allowLinePriceOverride}
+        pieceCountEnabled={runtimeConfig?.ui.pos?.pieceCountEnabled === true}
         allowDiscount={allowDiscount}
         updateLineDescription={updateLineDescription}
         removeFromCart={removeFromCart}

@@ -13910,6 +13910,12 @@ export interface components {
              */
             cashRoundingEnabled: boolean;
             /**
+             * @description Show a piece counter on weighted POS lines (sold by kg) that prefixes the
+             *     line description with the number of units, e.g. "2 Pechuga de pollo".
+             * @default false
+             */
+            posPieceCountEnabled: boolean;
+            /**
              * @default PEN
              * @enum {string}
              */
@@ -13981,6 +13987,12 @@ export interface components {
              */
             cashRoundingEnabled: boolean;
             /**
+             * @description Show a piece counter on weighted POS lines (sold by kg) that prefixes the
+             *     line description with the number of units, e.g. "2 Pechuga de pollo".
+             * @default false
+             */
+            posPieceCountEnabled: boolean;
+            /**
              * @default PEN
              * @enum {string}
              */
@@ -14038,6 +14050,12 @@ export interface components {
              * @default false
              */
             cashRoundingEnabled: boolean;
+            /**
+             * @description Show a piece counter on weighted POS lines (sold by kg) that prefixes the
+             *     line description with the number of units, e.g. "2 Pechuga de pollo".
+             * @default false
+             */
+            posPieceCountEnabled: boolean;
             /**
              * @default PEN
              * @enum {string}

@@ -47,6 +47,7 @@ export interface TenantRuntimeConfig {
     pos: {
       allowLinePriceOverride: boolean;
       allowCatalogPriceEdit: boolean;
+      pieceCountEnabled?: boolean;
     };
     reports: {
       showAdvancedReports: boolean;

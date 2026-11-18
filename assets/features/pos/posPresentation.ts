@@ -67,3 +67,31 @@ export function formatStockCount(stockValue: number): string {
   const amount = stockValue % 1 === 0 ? stockValue.toFixed(0) : stockValue.toFixed(1);
   return `${amount} und`;
 }
+
+const PIECE_PREFIX_RE = /^(\d{1,4})\s+(\S.*)$/s;
+
+/**
+ * Piece count encoded as a leading integer in a weighted line's description
+ * ("2 Pechuga de pollo" → 2). Returns 0 when there is no custom description.
+ */
+export function linePieceCount(lineDescription: string | null | undefined): number {
+  const match = PIECE_PREFIX_RE.exec((lineDescription ?? '').trim());
+  return match ? Number.parseInt(match[1], 10) : 0;
+}
+
+/**
+ * Rewrites a line description with a new piece count, keeping any manual text
+ * after the prefix. Returns '' when the result equals the product name so the
+ * line goes back to the catalog description.
+ */
+export function withLinePieceCount(
+  lineDescription: string | null | undefined,
+  productName: string,
+  pieces: number,
+): string {
+  const current = (lineDescription ?? '').trim();
+  const match = PIECE_PREFIX_RE.exec(current);
+  const base = (match ? match[2] : current).trim() || productName;
+  const next = pieces > 0 ? `${Math.floor(pieces)} ${base}` : base;
+  return next === productName ? '' : next.slice(0, 255);
+}

@@ -30,6 +30,7 @@ final class TenantRuntimeConfigProviderTest extends TestCase
             [
                 'allowLinePriceOverride' => true,
                 'allowCatalogPriceEdit' => true,
+                'pieceCountEnabled' => false,
             ],
             $config['ui']['pos'],
         );
@@ -43,9 +44,19 @@ final class TenantRuntimeConfigProviderTest extends TestCase
             [
                 'allowLinePriceOverride' => false,
                 'allowCatalogPriceEdit' => false,
+                'pieceCountEnabled' => false,
             ],
             $config['ui']['pos'],
         );
+    }
+
+    public function testExposesThePosPieceCounterOnlyWhenTheTenantTurnedItOn(): void
+    {
+        $off = $this->createProviderForVertical(RetailPreset::KEY)->getConfig();
+        $on = $this->createProviderForVertical(RetailPreset::KEY, pieceCountEnabled: true)->getConfig();
+
+        static::assertFalse($off['ui']['pos']['pieceCountEnabled']);
+        static::assertTrue($on['ui']['pos']['pieceCountEnabled']);
     }
 
     public function testDerivesBasicNavigationTierForSingleLocationTenant(): void
@@ -125,8 +136,11 @@ final class TenantRuntimeConfigProviderTest extends TestCase
         array $entitlements = [],
         int $branchCount = 1,
         int $warehouseCount = 1,
+        bool $pieceCountEnabled = false,
     ): TenantRuntimeConfigProvider {
-        $settings = new TenantSettings()->setVertical($vertical);
+        $settings = new TenantSettings()
+            ->setVertical($vertical)
+            ->setPosPieceCountEnabled($pieceCountEnabled);
 
         /** @var FeatureCheckerInterface&MockObject $featureChecker */
         $featureChecker = $this->createMock(FeatureCheckerInterface::class);

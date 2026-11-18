@@ -86,8 +86,8 @@ html[data-visual-style='nubit'] .pos-shell {
   }
   .pos-grid,
   .pos-skeleton-grid {
-    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+    gap: 8px;
     padding: 1px;
   }
   .pos-product-card {
@@ -100,8 +100,8 @@ html[data-visual-style='nubit'] .pos-shell {
     flex: 1;
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
-    padding: 10px;
+    gap: 4px;
+    padding: 8px;
     min-width: 0;
     width: 100%;
     border: 0;
@@ -125,22 +125,22 @@ html[data-visual-style='nubit'] .pos-shell {
   }
   .pos-product-card__thumb {
     width: 100%;
-    height: 84px;
-    flex: 0 0 84px;
+    height: 56px;
+    flex: 0 0 56px;
     margin: 0;
     border-radius: 8px;
     background: var(--pos-card-alt);
-    font-size: 24px;
+    font-size: 20px;
     color: var(--pos-muted);
   }
   .pos-product-card__image {
     object-fit: contain;
   }
   .pos-product-card__title {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
-    line-height: 20px;
-    height: 40px;
+    line-height: 17px;
+    height: 34px;
     margin: 0;
   }
   .pos-product-card__sku {
@@ -153,16 +153,16 @@ html[data-visual-style='nubit'] .pos-shell {
     padding-right: 24px;
   }
   .pos-product-card__price {
-    font-size: 16px;
-    line-height: 24px;
+    font-size: 15px;
+    line-height: 20px;
     font-weight: 600;
   }
   .pos-product-card__qty-badge,
   .pos-product-card__add-affordance {
     display: inline-grid;
     place-items: center;
-    min-width: 28px;
-    height: 28px;
+    min-width: 24px;
+    height: 24px;
     border-radius: 50%;
     padding: 0 4px;
     font-size: 14px;
@@ -209,6 +209,45 @@ html[data-visual-style='nubit'] .pos-shell {
   }
   .pos-line__unit {
     font-size: 12px;
+  }
+  // Piece counter for weighted lines: big click targets so it works with gloves.
+  .pos-line__pieces {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 2px;
+    margin-top: 4px;
+    padding: 2px;
+    border: 1px solid var(--pos-border);
+    border-radius: 8px;
+    background: var(--pos-card-alt);
+  }
+  .pos-line__pieces button {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 28px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--pos-card);
+    color: var(--pos-text);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .pos-line__pieces button:hover:not(:disabled) {
+    background: var(--pos-primary-soft);
+    color: var(--nb-color-text-brand);
+  }
+  .pos-line__pieces button:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .pos-line__pieces-value {
+    min-width: 48px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
   }
   .pos-line__total {
     font-size: 14px;
