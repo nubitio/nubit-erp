@@ -54,6 +54,19 @@ it('uses the actual section for grouped routes and keeps dashboard naming unchan
   expect(workspaceSectionTitle('/config/roles', menu, 'ERP')).toBe('Configuración');
   expect(workspaceSectionTitle('/cash-session/10/close', menu, 'Sucursal')).toBe('Caja');
   expect(workspaceSectionTitle('/accounts-payable', menu, 'ERP')).toBe('Finanzas');
+  for (const path of [
+    '/accounts-receivable',
+    '/bank-reconciliation',
+    '/bank-reconciliation/12',
+    '/bank-accounts',
+    '/financial-reports',
+    '/accounting',
+    '/expense-reports',
+    '/fixed-assets',
+  ]) {
+    // Even when the menu does not list them (capability off), never fall back to the branch name.
+    expect(workspaceSectionTitle(path, [], 'Sucursal Principal')).toBe('Finanzas');
+  }
   expect(workspaceSectionTitle('/dashboard', menu, 'ERP')).toBe('Inicio');
   expect(workspaceSectionTitle('/other', menu, 'ERP')).toBe('ERP');
 });

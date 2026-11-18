@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect -- the selected period is synchronized from loaded periods */
 import { useEffect, useMemo, useState } from 'react';
-import { Badge } from '@nubitio/ui';
+import { Badge, SelectField } from '@nubitio/ui';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { ErpModuleBanner } from '@features/shared/ErpModuleBanner';
@@ -170,7 +170,8 @@ export function AccountingPage() {
           <label className="acc-period">
             Periodo
             <span className="acc-period__fields">
-              <select
+              <SelectField
+                aria-label="Mes"
                 value={period.slice(4, 6)}
                 onChange={(event) => setPeriod(`${period.slice(0, 4)}${event.target.value}`)}
               >
@@ -179,8 +180,9 @@ export function AccountingPage() {
                     {name}
                   </option>
                 ))}
-              </select>
-              <select
+              </SelectField>
+              <SelectField
+                aria-label="Año"
                 value={period.slice(0, 4)}
                 onChange={(event) => setPeriod(`${event.target.value}${period.slice(4, 6)}`)}
               >
@@ -191,7 +193,7 @@ export function AccountingPage() {
                     {year}
                   </option>
                 ))}
-              </select>
+              </SelectField>
             </span>
           </label>
         </div>
@@ -221,13 +223,17 @@ export function AccountingPage() {
             <div className="acc-toolbar">
               <label>
                 Cuenta
-                <select value={account} onChange={(event) => setAccount(event.target.value)}>
+                <SelectField
+                  aria-label="Cuenta"
+                  value={account}
+                  onChange={(event) => setAccount(event.target.value)}
+                >
                   {LEDGER_ACCOUNTS.map((item) => (
                     <option key={item.code} value={item.code}>
                       {item.code} · {item.name}
                     </option>
                   ))}
-                </select>
+                </SelectField>
               </label>
               {ledger?.account && (
                 <div className="acc-balances">

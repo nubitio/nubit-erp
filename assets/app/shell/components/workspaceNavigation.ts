@@ -25,7 +25,11 @@ export function mobileWorkspaceDestinations(menu: AdminMenuItem[]): AdminBottomN
   );
 }
 
-/** Section labels for grouped routes; menu authorization remains independent. */
+/**
+ * Section labels for grouped routes. They are listed here, not read from the menu, because a screen
+ * reachable by URL can be absent from the user's menu (capability off) and would otherwise show the
+ * branch name as its title. Menu authorization remains independent.
+ */
 export function workspaceSectionTitle(
   pathname: string,
   menu: AdminMenuItem[],
@@ -39,6 +43,14 @@ export function workspaceSectionTitle(
     ['/accounts-payable', 'Finanzas'],
     ['/accounts-receivable', 'Finanzas'],
     ['/supplier-bill', 'Finanzas'],
+    ['/expense-category', 'Finanzas'],
+    ['/bank-reconciliation', 'Finanzas'],
+    ['/bank-accounts', 'Finanzas'],
+    ['/bank-statement-imports', 'Finanzas'],
+    ['/financial-reports', 'Finanzas'],
+    ['/expense-reports', 'Finanzas'],
+    ['/fixed-assets', 'Finanzas'],
+    ['/accounting', 'Finanzas'],
     ['/inventory', 'Inventario'],
     ['/purchases', 'Compras'],
   ];

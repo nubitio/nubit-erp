@@ -56,7 +56,8 @@
     color: var(--text-primary);
     font-size: var(--font-size-sm);
     min-height: 2.25rem;
-    padding: 0 var(--space-3);
+    // Room for the native arrow; this rule is more specific than the library's select padding.
+    padding: 0 var(--space-6, 2rem) 0 var(--space-3);
   }
 }
 

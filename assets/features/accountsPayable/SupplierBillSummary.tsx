@@ -1,8 +1,11 @@
-import { Alert, Button, KpiMetricRow } from '@nubitio/ui';
+import { Alert, Button, KpiMetricRow, Tooltip } from '@nubitio/ui';
 import { formatDate, formatMoney } from '@shared/lib/displayFormat';
 import './SupplierBillSummary.scss';
 
 import { useSupplierBillSummary } from './useSupplierBillSummary';
+
+const SUMMARY_HELP =
+  'Los próximos vencimientos incluyen hoy y excluyen lo ya vencido. El resumen abarca todas las facturas pendientes de la sucursal; los filtros inferiores afectan solo al listado.';
 
 export function SupplierBillSummary() {
   const { data, isPending, isError, isFetching, refetch } = useSupplierBillSummary();
@@ -25,7 +28,18 @@ export function SupplierBillSummary() {
       ) : (
         <>
           <div className="supplier-bill-summary__heading">
-            <p>Vencimientos de la sucursal · {formatDate(data.asOf)}</p>
+            <p>
+              Vencimientos de la sucursal · {formatDate(data.asOf)}{' '}
+              <Tooltip content={SUMMARY_HELP} side="bottom">
+                <button
+                  type="button"
+                  className="supplier-bill-summary__help"
+                  aria-label="Cómo se calcula este resumen"
+                >
+                  <i className="ph ph-info" aria-hidden />
+                </button>
+              </Tooltip>
+            </p>
             <Button variant="ghost" size="sm" disabled={isFetching} onClick={() => void refetch()}>
               Actualizar resumen
             </Button>
@@ -66,10 +80,6 @@ export function SupplierBillSummary() {
               </div>
             ))
           )}
-          <p className="supplier-bill-summary__hint">
-            Los próximos vencimientos incluyen hoy y excluyen lo ya vencido. El resumen abarca todas
-            las facturas pendientes de la sucursal; los filtros inferiores afectan al listado.
-          </p>
         </>
       )}
     </section>

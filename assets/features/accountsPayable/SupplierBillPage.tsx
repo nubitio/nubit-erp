@@ -120,7 +120,7 @@ export const SupplierBillPage = () => {
       title: 'Facturas pendientes',
       gridAppearance: 'page',
       cardView: {
-        defaultView: 'cards',
+        defaultView: 'table',
         groupBy: (row) => {
           const { key, label, overdue } = payableDueGroup(row.dueDate, asOf);
           return {

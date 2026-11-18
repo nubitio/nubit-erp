@@ -32,3 +32,20 @@
     }
   }
 }
+
+.supplier-bill-summary__help {
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 1em;
+  cursor: help;
+  vertical-align: middle;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--accent-color);
+  }
+}
