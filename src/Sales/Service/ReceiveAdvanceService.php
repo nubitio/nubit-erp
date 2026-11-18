@@ -13,6 +13,7 @@ use App\Identity\Entity\User;
 use App\Sales\Dto\CustomerAdvanceReceipt;
 use App\Sales\Repository\CustomerAccountEntryRepository;
 use App\Sales\State\SalesWriteGateway;
+use App\Treasury\Domain\MovementSource;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -36,6 +37,7 @@ readonly class ReceiveAdvanceService
         private SalesWriteGateway $salesWriteGateway,
         private MessageBusInterface $messageBus,
         private OperationLog $operationLog,
+        private ?TreasuryReceipts $treasuryReceipts = null,
     ) {}
 
     public function receive(
@@ -45,6 +47,7 @@ readonly class ReceiveAdvanceService
         DateTimeImmutable $paidAt,
         ?string $reference,
         User $createdBy,
+        ?string $moneyAccountId = null,
     ): CustomerAdvanceReceipt {
         if (
             !$paymentMethod->getIsActive()
@@ -81,6 +84,9 @@ readonly class ReceiveAdvanceService
             $advanceId,
             $description,
             $reference,
+            $paymentMethod,
+            $createdBy,
+            $moneyAccountId,
         ): void {
             $this->ledger->recordAdvanceReceived(
                 customerId: $customerId,
@@ -91,6 +97,22 @@ readonly class ReceiveAdvanceService
                 sourceId: $advanceId,
                 description: $reference !== null && $reference !== '' ? $reference : $description,
             );
+
+            // Same transaction as the ledger entry: a Treasury refusal leaves no advance behind.
+            $this->treasuryReceipts?->record(new TreasuryReceipt(
+                source: MovementSource::CustomerAdvance,
+                sourceId: $advanceId,
+                amount: Money::toString($amountMoney),
+                currency: $currency,
+                paymentMethod: $paymentMethod,
+                paidAt: $paidAt,
+                userId: $createdBy->getId(),
+                branchId: null,
+                customerId: (string) $customerId,
+                reference: $reference,
+                description: $description,
+                moneyAccountId: $moneyAccountId,
+            ));
         });
 
         if ($cashSessionId !== null) {

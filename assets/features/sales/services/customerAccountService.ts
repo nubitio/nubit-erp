@@ -9,6 +9,8 @@ export interface CollectOnAccountInput {
   paymentMethodId: number;
   paidAt?: string;
   reference?: string;
+  /** Treasury account the money lands in; omitted = the payment method's mapped account. */
+  moneyAccountId?: string;
   /** Empty => FIFO across every open sale, oldest first. */
   applications?: Array<{ saleId: string; amount: number }>;
 }
@@ -34,6 +36,8 @@ export interface ReceiveAdvanceInput {
   paymentMethodId: number;
   paidAt?: string;
   reference?: string;
+  /** Treasury account the money lands in; omitted = the payment method's mapped account. */
+  moneyAccountId?: string;
 }
 
 export interface CustomerAdvanceReceipt {
@@ -70,6 +74,7 @@ export const customerAccountService = {
       paymentMethodId: input.paymentMethodId,
       paidAt: input.paidAt,
       reference: input.reference,
+      moneyAccountId: input.moneyAccountId || undefined,
       applications: (input.applications ?? []).map((a) => ({
         saleId: a.saleId,
         amount: round2(a.amount),
@@ -84,6 +89,7 @@ export const customerAccountService = {
       paymentMethodId: input.paymentMethodId,
       paidAt: input.paidAt,
       reference: input.reference,
+      moneyAccountId: input.moneyAccountId || undefined,
     });
   },
 

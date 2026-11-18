@@ -70,6 +70,7 @@ readonly class SaleCollectPaymentProcessor implements ProcessorInterface
             $paidAt,
             $data->reference,
             $userRef,
+            $data->moneyAccountId,
         );
 
         return $sale;

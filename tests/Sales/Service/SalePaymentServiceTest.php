@@ -52,8 +52,10 @@ final class SalePaymentServiceTest extends TestCase
             });
     }
 
-    private function service(EntityManagerInterface $em): SalePaymentService
+    private function service(EntityManagerInterface&MockObject $em): SalePaymentService
     {
+        $em->method('wrapInTransaction')->willReturnCallback(static fn(callable $callback): mixed => $callback());
+
         return new SalePaymentService(
             $em,
             $this->writeGateway,

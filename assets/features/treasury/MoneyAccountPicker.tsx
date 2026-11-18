@@ -12,6 +12,8 @@ interface Props {
   value: string;
   onChange: (accountId: string) => void;
   disabled?: boolean;
+  /** `out`: money leaves (a payment to a supplier). `in`: money arrives (a collection or advance). */
+  direction?: 'in' | 'out';
 }
 
 /**
@@ -25,6 +27,7 @@ export const MoneyAccountPicker = ({
   value,
   onChange,
   disabled,
+  direction = 'out',
 }: Props) => {
   const config = useTenantRuntimeConfig();
   const enabled = config.data?.capabilities['treasury.accounts']?.enabled === true;
@@ -35,7 +38,9 @@ export const MoneyAccountPicker = ({
   if (Number(paymentMethodId) === CASH_METHOD_ID) {
     return (
       <Text tone="muted" as="p">
-        El efectivo sale de tu caja abierta y queda en el arqueo.
+        {direction === 'in'
+          ? 'El efectivo entra en tu caja abierta y queda en el arqueo.'
+          : 'El efectivo sale de tu caja abierta y queda en el arqueo.'}
       </Text>
     );
   }
@@ -44,9 +49,9 @@ export const MoneyAccountPicker = ({
 
   return (
     <FormField
-      label="Cuenta de salida"
+      label={direction === 'in' ? 'Cuenta de destino' : 'Cuenta de salida'}
       htmlFor="money-account-picker"
-      helpText="Por defecto sale de la cuenta asignada a este método de pago."
+      helpText="Por defecto se usa la cuenta asignada a este método de pago."
     >
       <SelectField
         id="money-account-picker"

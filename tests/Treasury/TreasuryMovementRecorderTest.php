@@ -92,6 +92,25 @@ final class TreasuryMovementRecorderTest extends TestCase
         $kit->recorder->record($this->request('S-2', Direction::Out, '20.00', method: 5, accountId: 'closed'));
     }
 
+    public function testAMovementWithoutABranchAsksForOneInsteadOfGuessingAnAccount(): void
+    {
+        $kit = TreasuryTestDatabase::create();
+        $kit->account('suspense', AccountKind::Suspense);
+        $request = new MoneyMovementRequest(
+            key: new MovementKey(MovementSource::SupplierPayment, 'S-1'),
+            direction: Direction::In,
+            amount: '10.00',
+            currency: 'PEN',
+            branchId: '',
+            occurredAt: new DateTimeImmutable('2026-11-18'),
+            paymentMethodId: self::YAPE,
+        );
+
+        $this->expectException(TreasuryException::class);
+        $this->expectExceptionMessage('Selecciona una sucursal');
+        $kit->recorder->record($request);
+    }
+
     public function testAMethodWithoutAnAccountLandsInSuspenseWithAWarning(): void
     {
         $kit = TreasuryTestDatabase::create();

@@ -63,6 +63,7 @@ readonly class ReceiveAdvanceProcessor implements ProcessorInterface
             paidAt: $paidAt,
             reference: $data->reference,
             createdBy: $userRef,
+            moneyAccountId: $data->moneyAccountId,
         );
     }
 }

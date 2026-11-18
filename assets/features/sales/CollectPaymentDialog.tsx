@@ -6,6 +6,7 @@ import customerAccountService, {
   type CollectOnAccountApplication,
 } from './services/customerAccountService';
 import toast from '@shared/lib/SharedUtils';
+import { MoneyAccountPicker } from '../treasury/MoneyAccountPicker';
 import NumberUtils from '@shared/lib/NumberUtils';
 
 const API = getCoreApiBaseUrl();
@@ -40,6 +41,7 @@ export const CollectPaymentDialog = ({
   const [amountValue, setAmountValue] = useState(() => initialAmount(balanceDue));
   const referenceRef = useRef<HTMLInputElement>(null);
   const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null);
+  const [moneyAccountId, setMoneyAccountId] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [applied, setApplied] = useState<CollectOnAccountApplication[] | null>(null);
 
@@ -58,6 +60,7 @@ export const CollectPaymentDialog = ({
         amount,
         paymentMethodId: parseInt(paymentMethodId, 10),
         reference: referenceRef.current?.value || undefined,
+        moneyAccountId,
       })
       .then(({ data }) => {
         toast(`Pago aplicado a ${data.applications.length} comprobante(s)`, 'success');
@@ -158,11 +161,22 @@ export const CollectPaymentDialog = ({
                   { field: 'isActive', operator: '=', value: 1 },
                 ]}
                 value={paymentMethodId}
-                onChange={setPaymentMethodId}
+                onChange={(value) => {
+                  setPaymentMethodId(value);
+                  setMoneyAccountId('');
+                }}
                 placeholder="Selecciona un método de pago"
                 searchExpr={['name']}
               />
             </FormField>
+            <MoneyAccountPicker
+              direction="in"
+              currency={currency}
+              paymentMethodId={paymentMethodId}
+              value={moneyAccountId}
+              onChange={setMoneyAccountId}
+              disabled={isProcessing}
+            />
           </div>
 
           <div className="mb-3">

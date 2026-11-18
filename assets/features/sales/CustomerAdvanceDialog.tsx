@@ -6,6 +6,7 @@ import customerAccountService, {
   type CollectOnAccountApplication,
 } from './services/customerAccountService';
 import toast from '@shared/lib/SharedUtils';
+import { MoneyAccountPicker } from '../treasury/MoneyAccountPicker';
 import NumberUtils from '@shared/lib/NumberUtils';
 
 const API = getCoreApiBaseUrl();
@@ -31,6 +32,7 @@ export const CustomerAdvanceDialog = ({
   const [amountValue, setAmountValue] = useState('');
   const referenceRef = useRef<HTMLInputElement>(null);
   const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null);
+  const [moneyAccountId, setMoneyAccountId] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [available, setAvailable] = useState<string | null>(null);
   const [applied, setApplied] = useState<CollectOnAccountApplication[] | null>(null);
@@ -40,6 +42,7 @@ export const CustomerAdvanceDialog = ({
   const reset = () => {
     setAmountValue('');
     setPaymentMethodId(null);
+    setMoneyAccountId('');
     setApplied(null);
     if (referenceRef.current) referenceRef.current.value = '';
   };
@@ -65,6 +68,7 @@ export const CustomerAdvanceDialog = ({
               amount,
               paymentMethodId: parseInt(paymentMethodId as string, 10),
               reference: referenceRef.current?.value || undefined,
+              moneyAccountId,
             })
             .then(({ data }) => {
               toast('Anticipo recibido', 'success');
@@ -195,11 +199,22 @@ export const CustomerAdvanceDialog = ({
                       { field: 'isActive', operator: '=', value: 1 },
                     ]}
                     value={paymentMethodId}
-                    onChange={setPaymentMethodId}
+                    onChange={(value) => {
+                      setPaymentMethodId(value);
+                      setMoneyAccountId('');
+                    }}
                     placeholder="Selecciona un método de pago"
                     searchExpr={['name']}
                   />
                 </FormField>
+                <MoneyAccountPicker
+                  direction="in"
+                  currency={currency}
+                  paymentMethodId={paymentMethodId}
+                  value={moneyAccountId}
+                  onChange={setMoneyAccountId}
+                  disabled={isProcessing}
+                />
               </div>
               <div className="mb-3">
                 <FormField label="Referencia" htmlFor="customer-advance-reference">

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\AccountsPayable\Service;
+namespace App\Tests\Treasury;
 
 use App\Treasury\Domain\MovementKey;
 use App\Treasury\Domain\TreasuryException;

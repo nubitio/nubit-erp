@@ -30,5 +30,7 @@ class SaleCollectOnAccountDto
             'amount' => [new Assert\NotBlank()],
         ])])]
         public array $applications = [],
+        /** Treasury account the money lands in (bank or wallet); omitted = the payment method's mapped account. */
+        public ?string $moneyAccountId = null,
     ) {}
 }

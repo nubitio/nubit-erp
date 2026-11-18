@@ -15,6 +15,7 @@ use App\Sales\Dto\CollectOnAccountResult;
 use App\Sales\Entity\CustomerPaymentApplication;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\State\SalesWriteGateway;
+use App\Treasury\Domain\MovementSource;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -49,6 +50,7 @@ readonly class CollectOnAccountService
         private SalesWriteGateway $salesWriteGateway,
         private MessageBusInterface $messageBus,
         private OperationLog $operationLog,
+        private ?TreasuryReceipts $treasuryReceipts = null,
     ) {}
 
     /**
@@ -63,6 +65,7 @@ readonly class CollectOnAccountService
         ?string $reference,
         array $applications,
         User $createdBy,
+        ?string $moneyAccountId = null,
     ): CollectOnAccountResult {
         $this->assertCollectableMethod($paymentMethod);
 
@@ -89,7 +92,18 @@ readonly class CollectOnAccountService
         $collectionId = Uuid::v4()->toRfc4122();
         $description = sprintf('Cobro a cuenta cliente #%d', $customerId);
 
-        $lines = $this->applyPlan($plan, $paymentMethod, $paidAt, $reference, $customerId, $currency, $collectionId);
+        $lines = $this->applyPlan(
+            $plan,
+            $paymentMethod,
+            $paidAt,
+            $reference,
+            $customerId,
+            $currency,
+            $collectionId,
+            $amountMoney,
+            $createdBy,
+            $moneyAccountId,
+        );
 
         $this->bookMoney(
             $collectionId,
@@ -178,6 +192,9 @@ readonly class CollectOnAccountService
         int $customerId,
         string $currency,
         string $collectionId,
+        BigDecimal $total,
+        User $createdBy,
+        ?string $moneyAccountId,
     ): array {
         return $this->entityManager->wrapInTransaction(function () use (
             $plan,
@@ -187,6 +204,9 @@ readonly class CollectOnAccountService
             $customerId,
             $currency,
             $collectionId,
+            $total,
+            $createdBy,
+            $moneyAccountId,
         ): array {
             $out = [];
             foreach ($plan as $row) {
@@ -230,6 +250,21 @@ readonly class CollectOnAccountService
                 );
             }
 
+            // The money of the whole collection, once, in the same transaction as the N payment rows.
+            $this->treasuryReceipts?->record(new TreasuryReceipt(
+                source: MovementSource::ReceivableCollection,
+                sourceId: $collectionId,
+                amount: Money::toString($total),
+                currency: $currency,
+                paymentMethod: $paymentMethod,
+                paidAt: $paidAt,
+                userId: $createdBy->getId(),
+                branchId: $plan[0]['sale']->getBranch()?->getId(),
+                customerId: (string) $customerId,
+                reference: $reference,
+                description: sprintf('Cobro a cuenta cliente #%d', $customerId),
+                moneyAccountId: $moneyAccountId,
+            ));
             $this->entityManager->flush();
 
             return $out;

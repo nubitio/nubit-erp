@@ -21,5 +21,7 @@ class SaleReceiveAdvanceDto
         public ?string $paidAt = null,
         #[Assert\Length(max: 120)]
         public ?string $reference = null,
+        /** Treasury account the money lands in (bank or wallet); omitted = the payment method's mapped account. */
+        public ?string $moneyAccountId = null,
     ) {}
 }

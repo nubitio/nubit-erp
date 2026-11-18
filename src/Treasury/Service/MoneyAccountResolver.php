@@ -38,6 +38,12 @@ final readonly class MoneyAccountResolver
             return ['account' => $account, 'warning' => null];
         }
 
+        if ($request->branchId === '' && !$request->isCash) {
+            throw new TreasuryException(
+                'Selecciona una sucursal para registrar este movimiento: la cuenta depende de la sucursal.',
+            );
+        }
+
         if ($request->isCash) {
             return ['account' => $this->openDrawerAccount($request), 'warning' => null];
         }

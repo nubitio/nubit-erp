@@ -14,6 +14,7 @@ use App\Sales\Entity\CustomerPaymentApplication;
 use App\Sales\Entity\SalePayment;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\State\SalesWriteGateway;
+use App\Treasury\Domain\MovementSource;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,6 +29,7 @@ readonly class SalePaymentService
         private MessageBusInterface $messageBus,
         private OperationLog $operationLog,
         private CustomerAccountLedger $customerAccountLedger,
+        private ?TreasuryReceipts $treasuryReceipts = null,
     ) {}
 
     /**
@@ -62,6 +64,7 @@ readonly class SalePaymentService
         DateTimeImmutable $paidAt,
         ?string $reference,
         User $createdBy,
+        ?string $moneyAccountId = null,
     ): SalePayment {
         // Same order as before the split: reject a bad method or a voided sale
         // before touching the cash drawer, so the error and the (lack of) side
@@ -82,13 +85,42 @@ readonly class SalePaymentService
             }
         }
 
-        $payment = $this->appendPayment($sale, $paymentMethod, $amount, $paidAt, $reference);
+        // One transaction: if Treasury refuses the movement the payment is rolled back with it.
+        return $this->entityManager->wrapInTransaction(function () use (
+            $sale,
+            $paymentMethod,
+            $amount,
+            $paidAt,
+            $reference,
+            $createdBy,
+            $moneyAccountId,
+            $cashSessionId,
+            $amountMoney,
+        ): SalePayment {
+            $payment = $this->appendPayment($sale, $paymentMethod, $amount, $paidAt, $reference);
 
-        $this->bookCollection($payment, $sale, $createdBy, $cashSessionId, $amountMoney, $paidAt);
+            $customer = $sale->getCustomer();
+            $this->treasuryReceipts?->record(new TreasuryReceipt(
+                source: MovementSource::ReceivableCollection,
+                sourceId: (string) $payment->getId(),
+                amount: Money::toString($amountMoney),
+                currency: $payment->getCurrency(),
+                paymentMethod: $paymentMethod,
+                paidAt: $paidAt,
+                userId: $createdBy->getId(),
+                branchId: $sale->getBranch()?->getId(),
+                customerId: $customer === null ? null : (string) $customer->getId(),
+                reference: $reference,
+                description: $this->collectionDescription($sale),
+                moneyAccountId: $moneyAccountId,
+            ));
 
-        $this->recordOnCustomerLedger($sale, $payment, $amountMoney, $paidAt);
+            $this->bookCollection($payment, $sale, $createdBy, $cashSessionId, $amountMoney, $paidAt);
 
-        return $payment;
+            $this->recordOnCustomerLedger($sale, $payment, $amountMoney, $paidAt);
+
+            return $payment;
+        });
     }
 
     /**

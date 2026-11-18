@@ -159,7 +159,7 @@ contexts:
     namespace: App\Sales
     layer: ErpCore
     dependsOn:
-      [Accounting, AccountsPayable, AI, Billing, CashRegister, Catalog, Contacts, Efact, Identity, Inventory, Organization, Settings]
+      [Accounting, AccountsPayable, AI, Billing, CashRegister, Catalog, Contacts, Efact, Identity, Inventory, Organization, Settings, Treasury]
     publicContracts:
       - App\Sales\Port\InvoiceCreatorInterface
       - App\Sales\Port\SaleInvoicePrinterInterface

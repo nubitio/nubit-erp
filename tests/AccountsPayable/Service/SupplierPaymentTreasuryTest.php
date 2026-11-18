@@ -11,6 +11,7 @@ use App\Catalog\Entity\PaymentMethod;
 use App\Contacts\Entity\Supplier;
 use App\Identity\Entity\User;
 use App\Organization\Entity\Branch;
+use App\Tests\Treasury\TreasurySpy;
 use App\Treasury\Domain\Direction;
 use App\Treasury\Domain\MovementKey;
 use App\Treasury\Domain\MovementSource;

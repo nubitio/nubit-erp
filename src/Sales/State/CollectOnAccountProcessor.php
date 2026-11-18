@@ -64,6 +64,7 @@ readonly class CollectOnAccountProcessor implements ProcessorInterface
             reference: $data->reference,
             applications: $data->applications,
             createdBy: $userRef,
+            moneyAccountId: $data->moneyAccountId,
         );
     }
 }
