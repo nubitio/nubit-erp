@@ -37,7 +37,7 @@ final class DocumentInputTest extends TestCase
         self::assertSame('F001', $input->series);
         self::assertSame(1234, $input->number);
         self::assertSame(9900, $input->totalMinor);
-        self::assertSame('RUC', $input->customerDocType);
+        self::assertSame('RUC', $input->customer->docType);
     }
 
     public function testReceiptMapsToSunat03(): void
@@ -50,7 +50,7 @@ final class DocumentInputTest extends TestCase
 
         self::assertFalse($input->isInvoice());
         self::assertSame('03', $input->sunatDocumentType());
-        self::assertNull($input->customerDocType);
+        self::assertNull($input->customer->docType);
     }
 
     public function testCollectsEveryValidationError(): void

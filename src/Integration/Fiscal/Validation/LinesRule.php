@@ -24,31 +24,16 @@ final class LinesRule implements DocumentRule
 
         $errors = [];
         $sums = ['subtotal_minor' => 0, 'tax_minor' => 0, 'total_minor' => 0];
+        $lineRule = new LineRule();
         foreach ($lines as $i => $line) {
             if (!is_array($line)) {
                 $errors[] = ['field' => "lines[$i]", 'issue' => 'must be an object'];
                 continue;
             }
-            $description = FieldReader::str($line, 'description');
-            if (null === $description || '' === trim($description) || mb_strlen($description) > 250) {
-                $errors[] = ['field' => "lines[$i].description", 'issue' => 'is required (max 250 characters)'];
-            }
-            $quantity = FieldReader::int($line, 'quantity');
-            if (null === $quantity || $quantity < 1) {
-                $errors[] = ['field' => "lines[$i].quantity", 'issue' => 'must be a positive integer'];
-            }
-            $amounts = [];
-            foreach (['subtotal_minor', 'tax_minor', 'total_minor'] as $field) {
-                $value = FieldReader::int($line, $field);
-                if (null === $value || $value < 0) {
-                    $errors[] = ['field' => "lines[$i].$field", 'issue' => 'must be a non-negative integer (minor units)'];
-                    continue;
-                }
-                $amounts[$field] = $value;
+            $checked = $lineRule->check($i, $line);
+            $errors = [...$errors, ...$checked['errors']];
+            foreach ($checked['amounts'] as $field => $value) {
                 $sums[$field] += $value;
-            }
-            if (3 === count($amounts) && $amounts['subtotal_minor'] + $amounts['tax_minor'] !== $amounts['total_minor']) {
-                $errors[] = ['field' => "lines[$i].total_minor", 'issue' => 'must equal subtotal_minor + tax_minor'];
             }
         }
 

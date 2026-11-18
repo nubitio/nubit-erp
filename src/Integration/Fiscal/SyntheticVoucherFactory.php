@@ -37,17 +37,23 @@ final class SyntheticVoucherFactory
 
         $lines = [] !== $input->lines
             ? $input->lines
-            : [new DocumentLine($input->lineDescription, 1, $input->subtotalMinor, $input->taxMinor, $input->totalMinor)];
+            : [new DocumentLine(
+                $input->lineDescription,
+                1,
+                $input->subtotalMinor,
+                $input->taxMinor,
+                $input->totalMinor,
+            )];
         $items = array_map(self::item(...), $lines);
 
         return new Voucher(
             sale_id: null,
             customer_doc_type: self::customerDocCode($input),
-            customer_doc_number: $input->customerDocNumber ?? '-',
-            customer_name: $input->customerName,
-            customer_address: $input->customerAddress ?? '-',
+            customer_doc_number: $input->customer->docNumber ?? '-',
+            customer_name: $input->customer->name,
+            customer_address: $input->customer->address ?? '-',
             customer_phone: null,
-            customer_email: $input->customerEmail,
+            customer_email: $input->customer->email,
             company_id: $companyId,
             voucher_type: $input->sunatDocumentType(),
             voucher_series: $input->series,
@@ -83,8 +89,12 @@ final class SyntheticVoucherFactory
             product_uom: self::UOM_UNIT,
             product_name: $line->description,
             quantity: (string) $line->quantity,
-            unit_value: 1 === $line->quantity ? $net : number_format($line->subtotalMinor / 100 / $line->quantity, 6, '.', ''),
-            unit_price: 1 === $line->quantity ? $gross : number_format($line->totalMinor / 100 / $line->quantity, 6, '.', ''),
+            unit_value: 1 === $line->quantity
+                ? $net
+                : number_format(($line->subtotalMinor / 100) / $line->quantity, 6, '.', ''),
+            unit_price: 1 === $line->quantity
+                ? $gross
+                : number_format(($line->totalMinor / 100) / $line->quantity, 6, '.', ''),
             discount_amount: '0.00',
             discount_percentage: null,
             taxed_amount: $net,
@@ -103,7 +113,7 @@ final class SyntheticVoucherFactory
     /** SUNAT catálogo 06: 6 = RUC, 1 = DNI, 0 = sin documento. */
     private static function customerDocCode(DocumentInput $input): string
     {
-        return match ($input->customerDocType) {
+        return match ($input->customer->docType) {
             'RUC' => '6',
             'DNI' => '1',
             default => '0',

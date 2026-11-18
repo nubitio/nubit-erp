@@ -119,6 +119,7 @@ final class TenantRuntimeConfigProviderTest extends TestCase
         ])->getConfig();
         $capabilities = $config['capabilities'];
         self::assertIsArray($capabilities);
+        /** @var array<string, array{enabled: bool}> $capabilities */
 
         self::assertTrue($capabilities['payroll.core']['enabled']);
         self::assertTrue($capabilities['treasury.bank_reconciliation']['enabled']);

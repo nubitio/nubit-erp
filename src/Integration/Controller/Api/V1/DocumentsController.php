@@ -80,7 +80,11 @@ final class DocumentsController extends AbstractController
         }
         $taxDocumentId = $document->getTaxDocumentId();
         if (IntegrationDocument::STATUS_ACCEPTED !== $document->getStatus() || null === $taxDocumentId) {
-            return $this->error('document_not_accepted', 'The PDF is available once SUNAT has accepted the document.', Response::HTTP_CONFLICT);
+            return $this->error(
+                'document_not_accepted',
+                'The PDF is available once SUNAT has accepted the document.',
+                Response::HTTP_CONFLICT,
+            );
         }
 
         $file = $billPdf($taxDocumentId);

@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/documents/{reference}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download the A4 PDF of an accepted document */
+        get: operations["getDocumentPdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/webhook-endpoints": {
         parameters: {
             query?: never;
@@ -493,6 +510,15 @@ export interface components {
             email?: string | null;
             address?: string | null;
         };
+        DocumentLine: {
+            description: string;
+            quantity: number;
+            /** @description Net amount of the whole line. */
+            subtotal_minor: number;
+            tax_minor: number;
+            /** @description Must equal subtotal_minor + tax_minor. */
+            total_minor: number;
+        };
         DocumentRequest: {
             /** @description Caller-owned idempotency key. Reuse with a different payload returns 409. */
             external_id: string;
@@ -508,6 +534,8 @@ export interface components {
             total_minor: number;
             customer: components["schemas"]["Customer"];
             line_description: string;
+            /** @description Optional. One voucher item per line; must sum to subtotal_minor, tax_minor and total_minor. Without it the document has a single line from line_description. */
+            lines?: components["schemas"]["DocumentLine"][];
             order_reference?: string | null;
         };
         DocumentAccepted: {
@@ -654,6 +682,15 @@ export interface components {
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
             };
         };
+        /** @description A4 PDF */
+        Pdf: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/pdf": string;
+            };
+        };
         /** @description ZIP download */
         Zip: {
             headers: {
@@ -763,6 +800,24 @@ export interface operations {
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    getDocumentPdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                reference: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Pdf"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["IdempotencyConflict"];
         };
     };
     listWebhookEndpoints: {

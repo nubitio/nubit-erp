@@ -8,7 +8,6 @@ use App\Efact\Web\HomeController;
 use JsonException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Routing\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 use Symfony\Component\Routing\RouterInterface;
@@ -199,8 +198,6 @@ final class SpaRoutingTest extends KernelTestCase
         try {
             $match = $this->router->match($url);
         } catch (ResourceNotFoundException|MethodNotAllowedException) {
-            return null;
-        } catch (ExceptionInterface) {
             return null;
         }
 

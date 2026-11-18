@@ -71,14 +71,37 @@ final class SyntheticVoucherFactoryTest extends TestCase
     {
         $body = [
             'external_id' => '0192abcd-1234-7890-abcd-ef0123456789',
-            'document_type' => 'invoice', 'series' => 'F001', 'number' => 7, 'currency' => 'PEN',
-            'subtotal_minor' => 21695, 'tax_minor' => 3905, 'total_minor' => 25600,
+            'document_type' => 'invoice',
+            'series' => 'F001',
+            'number' => 7,
+            'currency' => 'PEN',
+            'subtotal_minor' => 21695,
+            'tax_minor' => 3905,
+            'total_minor' => 25600,
             'customer' => ['document_type' => 'RUC', 'document_number' => '20123456789', 'name' => 'Empresa S.A.C.'],
             'line_description' => 'Illari',
             'lines' => [
-                ['description' => 'Illari Profesional', 'quantity' => 1, 'subtotal_minor' => 16864, 'tax_minor' => 3036, 'total_minor' => 19900],
-                ['description' => 'Alumno adicional', 'quantity' => 3, 'subtotal_minor' => 1017, 'tax_minor' => 183, 'total_minor' => 1200],
-                ['description' => 'Onboarding', 'quantity' => 1, 'subtotal_minor' => 3814, 'tax_minor' => 686, 'total_minor' => 4500],
+                [
+                    'description' => 'Illari Profesional',
+                    'quantity' => 1,
+                    'subtotal_minor' => 16864,
+                    'tax_minor' => 3036,
+                    'total_minor' => 19900,
+                ],
+                [
+                    'description' => 'Alumno adicional',
+                    'quantity' => 3,
+                    'subtotal_minor' => 1017,
+                    'tax_minor' => 183,
+                    'total_minor' => 1200,
+                ],
+                [
+                    'description' => 'Onboarding',
+                    'quantity' => 1,
+                    'subtotal_minor' => 3814,
+                    'tax_minor' => 686,
+                    'total_minor' => 4500,
+                ],
             ],
         ];
         $body['subtotal_minor'] = 16864 + 1017 + 3814;
@@ -90,7 +113,7 @@ final class SyntheticVoucherFactoryTest extends TestCase
 
     public function testBuildsOneItemPerLine(): void
     {
-        $voucher = (new SyntheticVoucherFactory())->fromInput(DocumentInput::fromArray($this->bodyWithLines()), 'c');
+        $voucher = new SyntheticVoucherFactory()->fromInput(DocumentInput::fromArray($this->bodyWithLines()), 'c');
 
         self::assertCount(3, $voucher->voucher_items);
         self::assertSame('Alumno adicional', $voucher->voucher_items[1]->product_name);
@@ -103,7 +126,7 @@ final class SyntheticVoucherFactoryTest extends TestCase
     public function testLinesMustSumToTheDocumentTotals(): void
     {
         $body = $this->bodyWithLines();
-        $body['total_minor'] += 1;
+        $body['total_minor'] = (int) $body['total_minor'] + 1;
 
         $this->expectException(\App\Integration\Fiscal\InvalidDocumentInput::class);
         DocumentInput::fromArray($body);
@@ -112,8 +135,11 @@ final class SyntheticVoucherFactoryTest extends TestCase
     public function testLineTotalMustEqualNetPlusTax(): void
     {
         $body = $this->bodyWithLines();
-        $body['lines'][0]['total_minor'] += 1;
-        $body['total_minor'] += 1;
+        /** @var list<array<string, int>> $lines */
+        $lines = $body['lines'];
+        $lines[0]['total_minor'] += 1;
+        $body['lines'] = $lines;
+        $body['total_minor'] = (int) $body['total_minor'] + 1;
 
         $this->expectException(\App\Integration\Fiscal\InvalidDocumentInput::class);
         DocumentInput::fromArray($body);
