@@ -1,7 +1,22 @@
+// The shell's top bar already names the screen; the heading stays for assistive technology only.
+.customers__title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.customers {
+  gap: var(--space-3, 0.75rem);
+}
+
 .customers__actions {
   display: flex;
   align-items: center;
   gap: var(--space-2, 0.5rem);
+  margin-left: auto;
 }
 
 .customers__toolbar {
@@ -55,7 +70,8 @@
   cursor: pointer;
 
   &:hover {
-    text-decoration: underline;
+    text-decoration: none;
+    filter: brightness(0.8);
   }
 
   &:focus-visible {

@@ -5,7 +5,6 @@ import {
   ConfirmDialog,
   EmptyState,
   Page,
-  PageHeader,
   SegmentedControl,
   TextField,
   type ContextMenuItem,
@@ -20,6 +19,7 @@ import {
   useDeleteCustomer,
   type CustomerStatusFilter,
 } from './api/customerData';
+import { CustomerAccountPanel } from './account/CustomerAccountPanel';
 import { CustomerDrawer, type CustomerDrawerState } from './CustomerDrawer';
 import { priceListOf, type Customer } from './form/customerForm';
 import './CustomersPage.scss';
@@ -81,11 +81,13 @@ export function CustomersPage() {
   const canAdd = hasPermission('customers.create');
   const canEdit = hasPermission('customers.edit');
   const canDelete = hasPermission('customers.delete');
+  const canViewAccount = hasPermission('sales.view');
 
   const [drawer, setDrawer] = useState<CustomerDrawerState>({ mode: 'closed' });
   const openings = useRef(0);
   const openCreate = () => setDrawer({ mode: 'create', key: ++openings.current });
   const [toDelete, setToDelete] = useState<Customer | null>(null);
+  const [accountOf, setAccountOf] = useState<Customer | null>(null);
   const [exporting, setExporting] = useState(false);
   const [columnSet, setColumnSet] = useState<ColumnSet>(readColumnSet);
 
@@ -151,20 +153,22 @@ export function CustomersPage() {
   }, [canEdit, columnSet]);
 
   const rowActions = useMemo(() => {
-    if (!canEdit && !canDelete) return undefined;
+    if (!canEdit && !canDelete && !canViewAccount) return undefined;
     return (customer: Customer): ContextMenuItem[] => {
       const items: ContextMenuItem[] = [];
+      if (canViewAccount)
+        items.push({ label: 'Ver cuenta', onClick: () => setAccountOf(customer) });
       if (canEdit) items.push({ label: 'Editar', onClick: () => openEdit(customer) });
       if (canDelete)
         items.push({
           label: 'Eliminar',
           danger: true,
-          separator: canEdit,
+          separator: canEdit || canViewAccount,
           onClick: () => setToDelete(customer),
         });
       return items;
     };
-  }, [canEdit, canDelete]);
+  }, [canEdit, canDelete, canViewAccount]);
 
   const confirmDelete = async () => {
     if (!toDelete) return;
@@ -193,34 +197,8 @@ export function CustomersPage() {
   const hasActiveFilters = grid.state.search.trim() !== '' || status !== '';
 
   return (
-    <Page wide className="customers">
-      <PageHeader
-        title="Clientes"
-        actions={
-          <div className="customers__actions">
-            <Button
-              variant="secondary"
-              icon="ph ph-download-simple"
-              loading={exporting}
-              disabled={exporting}
-              onClick={runExport}
-            >
-              Exportar
-            </Button>
-            <Button
-              variant="secondary"
-              icon="ph ph-arrow-clockwise"
-              aria-label="Actualizar"
-              onClick={() => grid.refetch()}
-            />
-            {canAdd && !isXSmall && (
-              <Button icon="ph ph-plus" onClick={openCreate}>
-                Nuevo
-              </Button>
-            )}
-          </div>
-        }
-      />
+    <Page wide fill className="customers">
+      <h1 className="customers__title">Clientes</h1>
 
       <div className="customers__toolbar" role="search" data-testid="customers-toolbar">
         <TextField
@@ -253,6 +231,28 @@ export function CustomersPage() {
             ]}
           />
         )}
+        <div className="customers__actions">
+          <Button
+            variant="secondary"
+            icon="ph ph-download-simple"
+            loading={exporting}
+            disabled={exporting}
+            onClick={runExport}
+          >
+            Exportar
+          </Button>
+          <Button
+            variant="secondary"
+            icon="ph ph-arrow-clockwise"
+            aria-label="Actualizar"
+            onClick={() => grid.refetch()}
+          />
+          {canAdd && !isXSmall && (
+            <Button icon="ph ph-plus" onClick={openCreate}>
+              Nuevo
+            </Button>
+          )}
+        </div>
       </div>
 
       <DataGrid<Customer>
@@ -296,6 +296,7 @@ export function CustomersPage() {
       )}
 
       <CustomerDrawer state={drawer} onClose={() => setDrawer({ mode: 'closed' })} />
+      <CustomerAccountPanel customer={accountOf} onClose={() => setAccountOf(null)} />
 
       <ConfirmDialog
         open={toDelete !== null}

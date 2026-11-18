@@ -1,16 +1,25 @@
 // Server-driven grid (see DataGrid.tsx). Looks come from @nubitio/ui's table tokens/classes;
 // this file only adds what React Aria's Table needs and the states around it.
 
+// Fills the height its parent gives it (a `Page fill`): the rows scroll inside the grid, the header
+// stays put and the pagination footer sits at the bottom. In a parent with no fixed height it just
+// takes the height of its content.
 .erp-grid {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: var(--space-3, 0.75rem);
   min-width: 0;
+  min-height: 0;
 }
 
 .erp-grid__body {
   position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   min-width: 0;
+  min-height: 0;
   transition: opacity 120ms ease;
 
   // While the next page loads, the previous one stays visible but is not interactive: a click
@@ -21,6 +30,12 @@
   }
 }
 
+.erp-grid__table-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
 .erp-grid__table {
   width: 100%;
   table-layout: auto;
@@ -28,12 +43,17 @@
   border-spacing: 0;
   outline: none;
 
+  // Compact rows: the library default (0.75rem) makes a one-line row about 65px tall.
   th,
   td {
+    padding-block: var(--grid-cell-padding-y, var(--space-2, 0.5rem));
     vertical-align: middle;
   }
 
   th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
     cursor: default;
     white-space: nowrap;
   }
@@ -106,6 +126,10 @@
 
 .erp-grid__cards {
   display: grid;
+  flex: 1 1 auto;
+  align-content: start;
+  min-height: 0;
+  overflow: auto;
   gap: var(--space-3, 0.75rem);
   margin: 0;
   padding: 0;
