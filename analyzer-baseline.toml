@@ -7780,7 +7780,7 @@ count = 1
 file = "tests/Settings/Runtime/TenantRuntimeConfigProviderTest.php"
 code = "mixed-array-access"
 message = "Unsafe array access on type `mixed`."
-count = 20
+count = 18
 
 [[issues]]
 file = "tests/Settings/Runtime/TenantRuntimeConfigProviderTest.php"
