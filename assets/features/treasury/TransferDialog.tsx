@@ -12,15 +12,23 @@ interface Props {
 
 export const TransferDialog = ({ accounts, fromId, onClose }: Props) => {
   const transfer = useTransfer();
-  // Drawers move through their own session (WP2); suspense is a holding account, not a place to move money to.
+  // Suspense is a holding account, not a place to move money to. A drawer can be one side of a transfer.
   const movable = useMemo(
-    () => accounts.filter((a) => a.active && (a.kind === 'bank' || a.kind === 'wallet')),
+    () => accounts.filter((a) => a.active && a.kind !== 'suspense'),
     [accounts],
   );
   const [from, setFrom] = useState(fromId ?? movable[0]?.id ?? '');
   const origin = movable.find((a) => a.id === from);
-  const destinations = movable.filter((a) => a.id !== from && a.currency === origin?.currency);
+  const destinations = movable.filter(
+    (a) =>
+      a.id !== from &&
+      a.currency === origin?.currency &&
+      // Cash moves between a drawer and a bank or wallet, not between two drawers.
+      !(a.kind === 'cash_register' && origin?.kind === 'cash_register'),
+  );
   const [to, setTo] = useState('');
+  const drawerInvolved =
+    origin?.kind === 'cash_register' || movable.find((a) => a.id === to)?.kind === 'cash_register';
   const [amount, setAmount] = useState('');
   const [reference, setReference] = useState('');
 
@@ -90,7 +98,11 @@ export const TransferDialog = ({ accounts, fromId, onClose }: Props) => {
       </FormField>
       <FormField
         label="Hacia"
-        helpText="Solo cuentas en la misma moneda: no se convierte automáticamente."
+        helpText={
+          drawerInvolved
+            ? 'El efectivo se registra en tu caja abierta: debe ser la caja de esta transferencia.'
+            : 'Solo cuentas en la misma moneda: no se convierte automáticamente.'
+        }
       >
         <SelectField value={to} onChange={(e) => setTo(e.target.value)}>
           <option value="">Elige una cuenta</option>

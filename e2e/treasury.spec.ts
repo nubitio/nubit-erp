@@ -194,8 +194,16 @@ test('cuentas de dinero: pagos por billetera y por caja, reversas, transferencia
     // 4. Un pago en efectivo sale de la caja abierta (el arqueo lo ve) y la reversa lo devuelve.
     const cashBefore = Number((await pen())?.position.cash);
     const billB = await createBill();
+    const drawersBefore = (await accounts()).filter((account) => account.kind === 'cash_register');
     const paymentB = await pay(billB, '20.00', cash.id);
     expect(Number((await pen())?.position.cash)).toBeCloseTo(cashBefore - 20, 2);
+    // La caja del usuario es la que se movió con su pago en efectivo.
+    const drawer = (await accounts()).find(
+      (account) =>
+        account.kind === 'cash_register' &&
+        Number(account.balance) !== Number(drawersBefore.find((d) => d.id === account.id)?.balance),
+    );
+    expect(drawer, 'el pago en efectivo movió la caja abierta del usuario').toBeTruthy();
     await reverse(billB, paymentB);
     expect(Number((await pen())?.position.cash)).toBeCloseTo(cashBefore, 2);
 
@@ -212,6 +220,21 @@ test('cuentas de dinero: pagos por billetera y por caja, reversas, transferencia
       data: { fromAccountId: wallet.id, toAccountId: wallet.id, amount: '1.00' },
     });
     expect(same.status()).toBe(422);
+
+    // 5b. Depositar efectivo de la caja abierta en una billetera: el arqueo lo ve salir y la billetera lo recibe.
+    const drawerBefore = Number((await pen())?.position.cash);
+    const deposit = await request.post(`${BASE_URL}/api/treasury/transfers`, {
+      headers,
+      data: {
+        fromAccountId: drawer!.id,
+        toAccountId: wallet.id,
+        amount: '15.00',
+        reference: 'Depósito E2E',
+      },
+    });
+    expect(deposit.status(), await deposit.text()).toBe(201);
+    expect(Number((await pen())?.position.cash)).toBeCloseTo(drawerBefore - 15, 2);
+    expect(await balanceOf(wallet.id)).toBe(415);
 
     // 6. El resumen del dueño refleja el dinero y avisa de lo que falta.
     const row = await pen();

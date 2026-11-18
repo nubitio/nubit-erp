@@ -123,7 +123,7 @@ final class TreasuryTestDatabase
         'CREATE TABLE supplier_payment (id INTEGER PRIMARY KEY, supplier_bill_id TEXT NOT NULL, payment_method_id INTEGER NOT NULL, amount NUMERIC NULL, paid_at TEXT NULL, reference TEXT NULL, reversed_at TEXT NULL)',
         'CREATE TABLE bank_reconciliation_match (id INTEGER PRIMARY KEY AUTOINCREMENT, treasury_movement_id TEXT NULL UNIQUE)',
         'CREATE TABLE cash_movement_category (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL UNIQUE, name TEXT NOT NULL, type TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1)',
-        "INSERT INTO cash_movement_category (code, name, type) VALUES ('supplier_payment', 'Pago a proveedor', 'expense'), ('supplier_payment_reversal', 'Reversión', 'income'), ('payroll_payment', 'Pago de planilla', 'expense')",
+        "INSERT INTO cash_movement_category (code, name, type) VALUES ('supplier_payment', 'Pago a proveedor', 'expense'), ('supplier_payment_reversal', 'Reversión', 'income'), ('payroll_payment', 'Pago de planilla', 'expense'), ('treasury_transfer_out', 'Transferencia a otra cuenta', 'expense'), ('treasury_transfer_in', 'Transferencia desde otra cuenta', 'income')",
         'CREATE TABLE cash_movements (
             id INTEGER PRIMARY KEY AUTOINCREMENT, cash_session_id INTEGER NOT NULL, movement_type TEXT NOT NULL, category_id INTEGER NULL,
             payment_method_id INTEGER NULL, amount NUMERIC NOT NULL, description TEXT NULL, occurred_at TEXT NULL, created_by INTEGER NULL,

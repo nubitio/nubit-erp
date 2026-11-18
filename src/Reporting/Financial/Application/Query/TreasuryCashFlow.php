@@ -45,7 +45,9 @@ final readonly class TreasuryCashFlow
              FROM cash_movements cm
              JOIN cash_sessions s ON s.id = cm.cash_session_id
              JOIN treasury_account a ON a.cash_register_id = s.cash_register_id
+             LEFT JOIN cash_movement_category c ON c.id = cm.category_id
              WHERE a.currency = :currency
+               AND (c.code IS NULL OR c.code NOT IN ('treasury_transfer_in', 'treasury_transfer_out'))
                AND cm.created_at >= :from AND cm.created_at < :toExclusive
              GROUP BY week_key", $params);
 

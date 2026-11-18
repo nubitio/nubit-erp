@@ -88,7 +88,7 @@ export const AccountsTab = ({ onOpenMethods }: Props) => {
         onClick: () => setDialog({ kind: 'opening', account }),
       });
     }
-    if (canTransfer && isLedger) {
+    if (canTransfer && (isLedger || account.kind === 'cash_register')) {
       items.push({
         label: 'Transferir desde aquí',
         onClick: () => setDialog({ kind: 'transfer', fromId: account.id }),

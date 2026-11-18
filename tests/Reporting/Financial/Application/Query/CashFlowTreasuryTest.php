@@ -37,7 +37,8 @@ final class CashFlowTreasuryTest extends TestCase
             'CREATE TABLE treasury_account (id VARCHAR(36) PRIMARY KEY, kind VARCHAR(20), currency CHAR(3), cash_register_id INT)',
             'CREATE TABLE treasury_movement (id INTEGER PRIMARY KEY AUTOINCREMENT, account_id VARCHAR(36), signed_amount DECIMAL(14,2), currency CHAR(3), occurred_at DATETIME, source_type VARCHAR(32))',
             'CREATE TABLE cash_sessions (id INTEGER PRIMARY KEY, cash_register_id INT)',
-            'CREATE TABLE cash_movements (id INTEGER PRIMARY KEY AUTOINCREMENT, cash_session_id INT, movement_type VARCHAR(30), amount DECIMAL(10,2), created_at DATETIME)',
+            'CREATE TABLE cash_movements (id INTEGER PRIMARY KEY AUTOINCREMENT, cash_session_id INT, category_id INT, movement_type VARCHAR(30), amount DECIMAL(10,2), created_at DATETIME)',
+            'CREATE TABLE cash_movement_category (id INTEGER PRIMARY KEY, code VARCHAR(40))',
             'CREATE TABLE sales (id VARCHAR(36) PRIMARY KEY, status VARCHAR(30) DEFAULT \'COMPLETED\', due_date DATE, balance_due DECIMAL(12,2), currency CHAR(3))',
             'CREATE TABLE supplier_bill (id VARCHAR(36) PRIMARY KEY, due_date DATE, balance_due DECIMAL(12,2), status VARCHAR(20) DEFAULT \'PENDING\', currency CHAR(3))',
         ] as $sql) {
@@ -62,6 +63,7 @@ final class CashFlowTreasuryTest extends TestCase
             'cash_register_id' => null,
         ]);
         $this->connection->insert('cash_sessions', ['id' => 10, 'cash_register_id' => 1]);
+        $this->connection->insert('cash_movement_category', ['id' => 1, 'code' => 'treasury_transfer_out']);
     }
 
     public function testRealFlowCountsBanksWalletsAndDrawersInOneCurrencyAndSkipsWhatIsNotAFlow(): void
@@ -76,6 +78,7 @@ final class CashFlowTreasuryTest extends TestCase
         $this->drawer('CASH_OUT', 20, '2026-06-04 11:00:00');
         $this->drawer('REFUND_OUT', 10, '2026-06-30 23:59:59');
         $this->drawer('OPENING', 500, '2026-06-04 07:00:00'); // not a flow
+        $this->drawer('CASH_OUT', 300, '2026-06-04 12:00:00', 1); // deposit to the bank: a transfer, not a flow
 
         /** @var array{source: string, currency: string|null, real: list<array{weekKey: string, entradas: float, salidas: float, neto: float}>, proyectado: list<array{cobrosEsperados: float, pagosEsperados: float}>} $result */
         $result = $this->query()->compute('2026-06-01', '2026-06-30');
@@ -158,10 +161,11 @@ final class CashFlowTreasuryTest extends TestCase
         ]);
     }
 
-    private function drawer(string $type, int $amount, string $at): void
+    private function drawer(string $type, int $amount, string $at, ?int $category = null): void
     {
         $this->connection->insert('cash_movements', [
             'cash_session_id' => 10,
+            'category_id' => $category,
             'movement_type' => $type,
             'amount' => $amount,
             'created_at' => $at,

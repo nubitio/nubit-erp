@@ -83,6 +83,9 @@ final readonly class DrawerRecorder
             $source === MovementSource::SupplierPaymentReversal && $direction === Direction::In
                 => 'supplier_payment_reversal',
             $source === MovementSource::PayrollPayment && $direction === Direction::Out => 'payroll_payment',
+            $source === MovementSource::Transfer => $direction === Direction::Out
+                ? 'treasury_transfer_out'
+                : 'treasury_transfer_in',
             default => throw new TreasuryException(sprintf('«%s» todavía no se registra en una caja.', $source->value)),
         };
     }

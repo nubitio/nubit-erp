@@ -7,25 +7,32 @@ namespace App\Treasury\Service;
 use App\Efact\Domain\Money;
 use App\Treasury\Domain\AccountKind;
 use App\Treasury\Domain\CurrencyMismatch;
-use App\Treasury\Domain\DrawerWriteNotAvailable;
+use App\Treasury\Domain\Direction;
 use App\Treasury\Domain\Leg;
 use App\Treasury\Domain\MovementKey;
 use App\Treasury\Domain\MovementSource;
+use App\Treasury\Domain\TreasuryAccount;
 use App\Treasury\Domain\TreasuryException;
 use App\Treasury\Domain\TreasuryMovement;
+use App\Treasury\Port\MoneyMovementRequest;
 use App\Treasury\Repository\TreasuryAccountRepository;
 use App\Treasury\Repository\TreasuryMovementRepository;
+use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Uid\Uuid;
 
-/** Moves money between two accounts as two legs that share a transfer id, in one transaction. */
+/**
+ * Moves money between two accounts as two legs that share a transfer id, in one transaction. A drawer is one of
+ * the two sides at most: its leg is written in the cash register's own ledger, inside the user's open session.
+ */
 final readonly class TransferMoney
 {
     public function __construct(
         private TreasuryAccountRepository $accounts,
         private TreasuryMovementRepository $movements,
         private Connection $connection,
+        private DrawerRecorder $drawer,
     ) {}
 
     /** @return string the transfer id */
@@ -53,10 +60,10 @@ final readonly class TransferMoney
         if ($from->currency !== $to->currency) {
             throw CurrencyMismatch::between($from->currency, $to->currency);
         }
-        foreach ([$from, $to] as $account) {
-            if ($account->kind === AccountKind::CashRegister) {
-                throw new DrawerWriteNotAvailable('Las transferencias desde o hacia una caja se habilitan en WP2.');
-            }
+        if ($from->kind === AccountKind::CashRegister && $to->kind === AccountKind::CashRegister) {
+            throw new TreasuryException(
+                'Para mover efectivo entre dos cajas registra un retiro en una y un ingreso en la otra.',
+            );
         }
 
         $transferId = Uuid::v7()->toRfc4122();
@@ -81,21 +88,74 @@ final readonly class TransferMoney
             createdBy: $userId,
         );
 
-        $this->connection->transactional(function () use ($leg, $from, $to, $value): void {
-            $this->movements->append($leg(
-                $from->id,
-                Money::toString($value->negated()),
-                Leg::Out,
-                'Transferencia a ' . $to->name,
-            ));
-            $this->movements->append($leg(
-                $to->id,
-                Money::toString($value),
-                Leg::In,
-                'Transferencia desde ' . $from->name,
-            ));
+        $legs = [
+            [$from, Leg::Out, Direction::Out, 'Transferencia a ' . $to->name],
+            [$to, Leg::In, Direction::In, 'Transferencia desde ' . $from->name],
+        ];
+        $this->connection->transactional(function () use (
+            $legs,
+            $leg,
+            $value,
+            $transferId,
+            $occurredAt,
+            $reference,
+            $userId,
+        ): void {
+            // A drawer is written first: it needs the user's open session on that register and can refuse.
+            foreach ($legs as [$account, $side, $direction, $description]) {
+                if ($account->kind === AccountKind::CashRegister) {
+                    $this->writeDrawer(
+                        $account,
+                        $side,
+                        $direction,
+                        $transferId,
+                        $value,
+                        $occurredAt,
+                        $reference,
+                        $description,
+                        $userId,
+                    );
+                }
+            }
+            foreach ($legs as [$account, $side, $direction, $description]) {
+                if ($account->kind !== AccountKind::CashRegister) {
+                    $signed = $direction === Direction::Out ? $value->negated() : $value;
+                    $this->movements->append($leg($account->id, Money::toString($signed), $side, $description));
+                }
+            }
         });
 
         return $transferId;
+    }
+
+    /** A drawer leg goes through the cash register's own ledger, inside the user's open session. */
+    private function writeDrawer(
+        TreasuryAccount $account,
+        Leg $leg,
+        Direction $direction,
+        string $transferId,
+        BigDecimal $amount,
+        DateTimeImmutable $occurredAt,
+        ?string $reference,
+        string $description,
+        ?int $userId,
+    ): void {
+        $this->drawer->record(
+            new MoneyMovementRequest(
+                key: new MovementKey(MovementSource::Transfer, $transferId, $leg),
+                direction: $direction,
+                amount: Money::toString($amount),
+                currency: $account->currency,
+                branchId: (string) $account->branchId,
+                occurredAt: $occurredAt,
+                isCash: true,
+                userId: $userId,
+                reference: $reference,
+                description: $description,
+                accountId: $account->id,
+            ),
+            $account,
+            null,
+        );
     }
 }
