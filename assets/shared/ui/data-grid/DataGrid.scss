@@ -1,0 +1,162 @@
+// Server-driven grid (see DataGrid.tsx). Looks come from @nubitio/ui's table tokens/classes;
+// this file only adds what React Aria's Table needs and the states around it.
+
+.erp-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 0.75rem);
+  min-width: 0;
+}
+
+.erp-grid__body {
+  position: relative;
+  min-width: 0;
+  transition: opacity 120ms ease;
+
+  // While the next page loads, the previous one stays visible but is not interactive: a click
+  // there would land on a row that is about to be replaced.
+  &[data-stale] {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+}
+
+.erp-grid__table {
+  width: 100%;
+  table-layout: auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  outline: none;
+
+  th,
+  td {
+    vertical-align: middle;
+  }
+
+  th {
+    cursor: default;
+    white-space: nowrap;
+  }
+
+  th[aria-sort] {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  th:focus-visible,
+  td:focus-visible,
+  [role='row']:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -2px;
+  }
+
+  [role='row'][data-hovered] td {
+    background: var(--grid-row-hover-bg, var(--surface-2));
+  }
+}
+
+.erp-grid__header {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1, 0.25rem);
+}
+
+.erp-grid__sort {
+  font-size: 0.7em;
+  color: var(--accent-color);
+}
+
+.erp-grid__col--end {
+  text-align: right;
+}
+
+.erp-grid__actions {
+  width: 56px;
+  padding-block: var(--space-1, 0.25rem);
+  text-align: right;
+}
+
+.erp-grid__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.erp-grid__loading {
+  display: grid;
+  gap: var(--space-2, 0.5rem);
+  padding: var(--space-4, 1rem);
+  border: 1px solid var(--border-subtle, var(--border-color));
+  border-radius: var(--radius-lg, 8px);
+  background: var(--surface-1);
+}
+
+.erp-grid__empty,
+.erp-grid__error {
+  display: grid;
+  place-items: center;
+  min-height: 280px;
+  border: 1px solid var(--border-subtle, var(--border-color));
+  border-radius: var(--radius-lg, 8px);
+  background: var(--surface-1);
+}
+
+.erp-grid__cards {
+  display: grid;
+  gap: var(--space-3, 0.75rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.erp-grid__card {
+  position: relative;
+  padding: var(--space-4, 1rem);
+  border: 1px solid var(--border-subtle, var(--border-color));
+  border-radius: var(--radius-lg, 8px);
+  background: var(--surface-1);
+}
+
+.erp-grid__card-body {
+  min-width: 0;
+  padding-right: var(--space-6, 2rem);
+}
+
+.erp-grid__card-actions {
+  position: absolute;
+  top: var(--space-2, 0.5rem);
+  right: var(--space-2, 0.5rem);
+}
+
+.erp-grid__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3, 0.75rem);
+  padding: var(--space-2, 0.5rem) var(--space-3, 0.75rem);
+  border: 1px solid var(--border-subtle, var(--border-color));
+  border-radius: var(--radius-lg, 8px);
+  background: var(--surface-1);
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--text-secondary);
+}
+
+.erp-grid__page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2, 0.5rem);
+
+  select {
+    width: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .erp-grid__footer {
+    justify-content: center;
+  }
+}

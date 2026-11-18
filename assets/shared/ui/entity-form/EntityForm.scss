@@ -1,0 +1,114 @@
+.erp-form {
+  display: grid;
+  gap: var(--space-5, 1.25rem);
+}
+
+.erp-form__error {
+  margin: 0;
+  padding: var(--space-3, 0.75rem);
+  border: 1px solid var(--error-color);
+  border-radius: var(--radius-md, 6px);
+  color: var(--error-color);
+  background: color-mix(in srgb, var(--error-color) 8%, transparent);
+}
+
+.erp-form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2, 0.5rem);
+}
+
+.erp-form-section {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+
+  legend {
+    padding: 0;
+    margin-bottom: var(--space-3, 0.75rem);
+    font-size: var(--font-size-xs, 0.75rem);
+    font-weight: var(--font-weight-semibold, 600);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+}
+
+.erp-form-section__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4, 1rem);
+}
+
+.erp-field {
+  display: grid;
+  gap: var(--space-1, 0.25rem);
+  min-width: 0;
+}
+
+.erp-field__label {
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--text-primary);
+}
+
+.erp-field__label[data-required]::after {
+  content: ' *';
+  // Empty alternative text: the marker is visual only (aria-required carries the meaning).
+  content: ' *' / '';
+  color: var(--error-color);
+}
+
+.erp-field__hint,
+.erp-field__error {
+  margin: 0;
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.erp-field__hint {
+  color: var(--text-secondary);
+}
+
+.erp-field__error {
+  // A text token: --error-color is a background red and fails contrast on dark surfaces.
+  color: var(--nb-color-text-danger, var(--error-color));
+}
+
+.erp-field[data-invalid] .nb-input,
+.erp-field[data-invalid] input,
+.erp-field[data-invalid] textarea {
+  border-color: var(--error-color);
+}
+
+// A control with an action beside it (e.g. the document lookup button).
+.erp-field__row {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-2, 0.5rem);
+
+  > :first-child {
+    flex: 1;
+    min-width: 0;
+  }
+
+  > button {
+    flex: none;
+  }
+}
+
+.erp-action-feedback {
+  margin: 0;
+  font-size: var(--font-size-sm, 0.875rem);
+
+  &[data-tone='success'] {
+    color: var(--success-color);
+  }
+
+  &[data-tone='warning'] {
+    color: var(--warning-color);
+  }
+
+  &[data-tone='danger'] {
+    color: var(--error-color);
+  }
+}

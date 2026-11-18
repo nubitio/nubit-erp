@@ -4700,8 +4700,10 @@ __metadata:
     postcss: "npm:^8.5.26"
     prettier: "npm:^3.9.5"
     react: "npm:^19.2.4"
+    react-aria-components: "npm:^1.22.1"
     react-dom: "npm:^19.2.4"
     react-dropzone: "npm:^15.0.0"
+    react-hook-form: "npm:^7.92.0"
     react-i18next: "npm:^14.0.0"
     react-router-dom: "npm:^6.30.3"
     recharts: "npm:^3.9.2"
@@ -7480,6 +7482,19 @@ __metadata:
   peerDependencies:
     react: ">= 16.8 || 18.0.0"
   checksum: 10c0/fb7b48a709fdd26273707f7aca5c0e77fce2b9c9201122645d3ecfb07ecfbb89e2495273ea141994f0ed0838ee79f27832c0855b2c598b377b342c3965608b54
+  languageName: node
+  linkType: hard
+
+"react-hook-form@npm:^7.92.0":
+  version: 7.92.0
+  resolution: "react-hook-form@npm:7.92.0"
+  peerDependencies:
+    "@types/react": "*"
+    react: ^16.8.0 || ^17 || ^18 || ^19
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/afed3d373c8f61bf019d82e92ff13dd41d39027b5c70332268f79a8bdcbea476798ffa9b4081df832dd6993e995092b2bc0788d24e51df173720ec57478a1631
   languageName: node
   linkType: hard
 
