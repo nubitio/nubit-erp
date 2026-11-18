@@ -192,7 +192,7 @@ contexts:
   Billing:
     namespace: App\Billing
     layer: ErpCore
-    dependsOn: [AI, CashRegister, Catalog, Contacts, ControlPlane, Efact, Identity, Inventory, Organization, Sales, Settings]
+    dependsOn: [AI, CashRegister, Catalog, Contacts, ControlPlane, Efact, Identity, Inventory, Organization, Sales, Settings, Treasury]
     publicContracts:
       - App\Billing\Sunat\Domain\BillRepositoryInterface
       - App\Billing\Contract\SunatRejectionQueryInterface

@@ -8,6 +8,7 @@ namespace App\Treasury\Domain;
 enum MovementSource: string
 {
     case SalePayment = 'sale_payment';
+    case SalePaymentReversal = 'sale_payment_reversal';
     case ReceivableCollection = 'receivable_collection';
     case CustomerAdvance = 'customer_advance';
     case SupplierPayment = 'supplier_payment';

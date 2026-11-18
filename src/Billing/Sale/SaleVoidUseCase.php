@@ -10,6 +10,7 @@ use App\Billing\Sale\Void\ReceivableVoidReverser;
 use App\Billing\Sale\Void\StockVoidReverserInterface;
 use App\Billing\Sale\Void\SunatVoidService;
 use App\Billing\Sale\Void\TaxDocumentVoidUpdater;
+use App\Billing\Sale\Void\TreasuryRefunds;
 use App\Billing\Service\SaleV2Loader;
 use App\Billing\Shared\ErrorMessages;
 use App\Efact\Audit\AuditLogger;
@@ -39,6 +40,7 @@ readonly class SaleVoidUseCase
         private SaleV2Loader $saleV2Loader,
         private StockVoidReverserInterface $stockVoidReverser,
         private ReceivableVoidReverser $receivableVoidReverser,
+        private ?TreasuryRefunds $treasuryRefunds = null,
     ) {}
 
     /**
@@ -94,6 +96,7 @@ readonly class SaleVoidUseCase
                 $sale->setUpdatedBy($userId);
                 $sale->setDateUpdated(new \DateTimeImmutable());
                 $this->cashRefundRegistrar->register($sale, $userId);
+                $this->treasuryRefunds?->reverseNonCashPayments($sale, $userId);
                 $this->receivableVoidReverser->reverse($sale);
                 $this->salesWriteGateway->zeroReceivableBalance($saleId);
                 $this->syncVoidToSalesV2($sale, $reason);
@@ -154,6 +157,7 @@ readonly class SaleVoidUseCase
             $sale->setDateUpdated(new \DateTimeImmutable());
 
             $this->cashRefundRegistrar->register($sale, $userId);
+            $this->treasuryRefunds?->reverseNonCashPayments($sale, $userId);
             $this->receivableVoidReverser->reverse($sale);
             $this->salesWriteGateway->zeroReceivableBalance($saleId);
 

@@ -24,6 +24,7 @@ use App\Sales\Event\SaleConfirmed;
 use App\Sales\Event\SaleConfirmedLine;
 use App\Sales\Port\InvoiceCreatorInterface;
 use App\Sales\Repository\SaleRecordRepository;
+use App\Sales\Service\SalePaymentsTreasury;
 use App\Sales\Service\SaleSettlementPlanService;
 use App\Settings\Service\TenantSettingsService;
 use Brick\Math\BigDecimal;
@@ -74,6 +75,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private CustomerRepository $customerRepository,
         private ActiveReferenceGuard $activeReferenceGuard,
         private ?MessageBusInterface $messageBus = null,
+        private ?SalePaymentsTreasury $paymentsTreasury = null,
     ) {}
 
     /**
@@ -399,6 +401,14 @@ readonly class SaleProcessor implements ProcessorInterface
                         );
                     }
                 }
+            }
+        }
+
+        if ($isNew && $isOperationalSale) {
+            // Non-cash payments, after the sale is stored; never refuses the sale (see SalePaymentsTreasury).
+            // isset(): tests build this class without its constructor, so the property may be uninitialized.
+            if (isset($this->paymentsTreasury)) {
+                $this->paymentsTreasury->record($data, $user->userId);
             }
         }
 
