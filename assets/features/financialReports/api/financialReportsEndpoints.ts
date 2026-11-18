@@ -55,6 +55,9 @@ export interface CashFlowProjectedWeek {
 export interface CashFlowResponse {
   from: string;
   to: string;
+  /** 'treasury' = cuentas de dinero (one currency); 'legacy' = ventas, compras y caja. */
+  source: 'treasury' | 'legacy';
+  currency: string | null;
   real: CashFlowWeek[];
   proyectado: CashFlowProjectedWeek[];
 }
@@ -66,8 +69,9 @@ export const financialReportsApi = {
       httpClient.get<ProfitAndLossResponse>(`${BASE}financial-reports/profit-and-loss${params}`),
     );
   },
-  cashFlow(from?: string, to?: string) {
+  cashFlow(from?: string, to?: string, currency?: string) {
     const params = new URLSearchParams();
+    if (currency) params.set('currency', currency);
     if (from) params.set('from', from);
     if (to) params.set('to', to);
     const query = params.toString();

@@ -158,12 +158,32 @@ function ProfitAndLossTab() {
 }
 
 function CashFlowTab() {
-  const { data, isLoading } = useCashFlow();
+  const [currency, setCurrency] = useState('PEN');
+  const { data, isLoading } = useCashFlow(undefined, undefined, currency);
+  const fromTreasury = data?.source === 'treasury';
 
   return (
     <div className="fr-tab-content">
       <div className="fr-card">
         <div className="fr-card__title">Flujo de caja real</div>
+        <p className="fr-empty">
+          {fromTreasury
+            ? `Según tus cuentas de dinero (${data?.currency}); no incluye transferencias entre tus cuentas.`
+            : 'Según ventas, compras y caja.'}
+          {fromTreasury && (
+            <>
+              {' '}
+              <select
+                aria-label="Moneda"
+                value={currency}
+                onChange={(event) => setCurrency(event.target.value)}
+              >
+                <option value="PEN">Soles (PEN)</option>
+                <option value="USD">Dólares (USD)</option>
+              </select>
+            </>
+          )}
+        </p>
         {isLoading ? (
           <div className="fr-loading">Cargando…</div>
         ) : (data?.real.length ?? 0) === 0 ? (

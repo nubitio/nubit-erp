@@ -191,5 +191,7 @@ final class CashFlowQueryTest extends TestCase
 
         static::assertSame(date('Y-m-01'), $result['from']);
         static::assertSame(date('Y-m-d'), $result['to']);
+        static::assertSame('legacy', $result['source']);
+        static::assertNull($result['currency']);
     }
 }

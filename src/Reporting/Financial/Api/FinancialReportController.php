@@ -33,8 +33,9 @@ final class FinancialReportController extends AbstractController
     {
         $from = (string) $request->query->get('from', '');
         $to = (string) $request->query->get('to', '');
+        $currency = (string) $request->query->get('currency', 'PEN');
 
-        return $this->json($query->compute($from, $to));
+        return $this->json($query->compute($from, $to, $currency));
     }
 
     #[RequiresFeature('excel_export')]

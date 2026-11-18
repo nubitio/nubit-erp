@@ -3,7 +3,8 @@ import { financialReportsApi } from './api/financialReportsEndpoints';
 
 export const FINANCIAL_REPORTS_QUERY_KEYS = {
   profitAndLoss: (period?: string) => ['financial-reports', 'profit-and-loss', period] as const,
-  cashFlow: (from?: string, to?: string) => ['financial-reports', 'cash-flow', from, to] as const,
+  cashFlow: (from?: string, to?: string, currency?: string) =>
+    ['financial-reports', 'cash-flow', from, to, currency] as const,
 };
 
 export function useProfitAndLoss(period?: string) {
@@ -14,10 +15,10 @@ export function useProfitAndLoss(period?: string) {
   });
 }
 
-export function useCashFlow(from?: string, to?: string) {
+export function useCashFlow(from?: string, to?: string, currency?: string) {
   return useQuery({
-    queryKey: FINANCIAL_REPORTS_QUERY_KEYS.cashFlow(from, to),
-    queryFn: () => financialReportsApi.cashFlow(from, to),
+    queryKey: FINANCIAL_REPORTS_QUERY_KEYS.cashFlow(from, to, currency),
+    queryFn: () => financialReportsApi.cashFlow(from, to, currency),
     staleTime: 30_000,
   });
 }
