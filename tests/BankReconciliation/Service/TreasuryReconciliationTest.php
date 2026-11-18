@@ -193,9 +193,6 @@ final class TreasuryReconciliationTest extends TestCase
     private function kit(): TreasuryTestDatabase
     {
         $kit = TreasuryTestDatabase::create();
-        $kit->db->executeStatement(
-            'CREATE TABLE bank_reconciliation_match (id INTEGER PRIMARY KEY AUTOINCREMENT, treasury_movement_id TEXT NULL UNIQUE)',
-        );
         $kit->account('bcp', AccountKind::Bank, name: 'Banco bcp', bankAccountId: self::BCP);
         $kit->account('bbva', AccountKind::Bank, name: 'Banco bbva', bankAccountId: self::BBVA);
 

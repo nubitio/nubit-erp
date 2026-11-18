@@ -45,7 +45,36 @@ export interface MappingData {
   mappings: MethodAccountMapping[];
 }
 
+export interface OpenItemsSummary {
+  balance: string;
+  overdue: string;
+  dueWithinSevenDays: string;
+  dueWithinThirtyDays: string;
+  count: number;
+  overdueCount: number;
+}
+
+export interface CurrencySummary {
+  currency: string;
+  position: { total: string; cash: string; banks: string; wallets: string; suspense: string };
+  receivables: OpenItemsSummary;
+  payables: OpenItemsSummary;
+  /** Today's money, plus receivables due within 30 days, minus payables due within 30 days or overdue. */
+  projectedInThirtyDays: string;
+}
+
+export interface FinanceSummary {
+  asOf: string;
+  currencies: CurrencySummary[];
+  attention: {
+    unreconciledBankMovements: number;
+    suspense: Array<{ currency: string; balance: string }>;
+    accountsWithoutOpeningBalance: string[];
+  };
+}
+
 const POSITION_KEY = ['treasury', 'accounts'] as const;
+const SUMMARY_KEY = ['treasury', 'summary'] as const;
 const MAPPING_KEY = ['treasury', 'mapping'] as const;
 
 /** The server's own explanation (`detail`) when it gave one, else `fallback`. */
@@ -64,6 +93,15 @@ export function useTreasuryPosition(enabled = true) {
     enabled,
     queryFn: async ({ signal }) =>
       (await httpClient.get<TreasuryPosition>(`${API}/accounts`, { signal })).data,
+  });
+}
+
+export function useFinanceSummary(enabled = true) {
+  return useQuery({
+    queryKey: SUMMARY_KEY,
+    enabled,
+    queryFn: async ({ signal }) =>
+      (await httpClient.get<FinanceSummary>(`${API}/summary`, { signal })).data,
   });
 }
 

@@ -117,10 +117,11 @@ final class TreasuryTestDatabase
         'CREATE TABLE cash_register (id INTEGER PRIMARY KEY, branch_id TEXT NOT NULL, name TEXT NOT NULL, is_active INTEGER NOT NULL DEFAULT 1)',
         'CREATE TABLE bank_account (id TEXT PRIMARY KEY, alias TEXT NOT NULL, currency TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL DEFAULT \'2026-01-01 00:00:00\')',
         'CREATE TABLE payment_method (id INTEGER PRIMARY KEY, name TEXT NOT NULL, is_active INTEGER NOT NULL DEFAULT 1, settlement_behavior TEXT NOT NULL DEFAULT \'COLLECTED\')',
-        'CREATE TABLE sales (id TEXT PRIMARY KEY, series TEXT NULL, number TEXT NULL, branch_id TEXT NULL, customer_id INTEGER NULL, status TEXT NULL, currency TEXT NULL)',
+        'CREATE TABLE sales (id TEXT PRIMARY KEY, series TEXT NULL, number TEXT NULL, branch_id TEXT NULL, customer_id INTEGER NULL, status TEXT NULL, currency TEXT NULL, due_date TEXT NULL, balance_due NUMERIC NULL, receivable_account INTEGER NULL, deleted_at TEXT NULL)',
         'CREATE TABLE sale_payments (id INTEGER PRIMARY KEY AUTOINCREMENT, sale_id TEXT NOT NULL, payment_method_id INTEGER NOT NULL, amount NUMERIC NULL, currency TEXT NULL, paid_at TEXT NULL, idempotency_key TEXT NULL, reference TEXT NULL)',
-        'CREATE TABLE supplier_bill (id TEXT PRIMARY KEY, supplier_id TEXT NULL, branch_id TEXT NULL, series TEXT NULL, number TEXT NULL, currency TEXT NULL)',
+        'CREATE TABLE supplier_bill (id TEXT PRIMARY KEY, supplier_id TEXT NULL, branch_id TEXT NULL, series TEXT NULL, number TEXT NULL, currency TEXT NULL, due_date TEXT NULL, balance_due NUMERIC NULL, status TEXT NULL)',
         'CREATE TABLE supplier_payment (id INTEGER PRIMARY KEY, supplier_bill_id TEXT NOT NULL, payment_method_id INTEGER NOT NULL, amount NUMERIC NULL, paid_at TEXT NULL, reference TEXT NULL, reversed_at TEXT NULL)',
+        'CREATE TABLE bank_reconciliation_match (id INTEGER PRIMARY KEY AUTOINCREMENT, treasury_movement_id TEXT NULL UNIQUE)',
         'CREATE TABLE cash_movement_category (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL UNIQUE, name TEXT NOT NULL, type TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1)',
         "INSERT INTO cash_movement_category (code, name, type) VALUES ('supplier_payment', 'Pago a proveedor', 'expense'), ('supplier_payment_reversal', 'Reversión', 'income'), ('payroll_payment', 'Pago de planilla', 'expense')",
         'CREATE TABLE cash_movements (

@@ -63,6 +63,7 @@
     "/exchange-rate",
     "/expense-category",
     "/expense-reports",
+    "/finance-summary",
     "/financial-reports",
     "/fixed-assets",
     "/forgot-password",
