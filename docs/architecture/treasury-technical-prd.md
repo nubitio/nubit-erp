@@ -4,9 +4,10 @@ Date: 2026-11-18
 Status: Approved 2026-11-18 (D-A to D-D accepted as recommended). Implements decisions 1 and 4 of
 [ADR-021](../adr/ADR-021-finance-module-redesign.md) (waves 1 and 2).
 
-Progress: WP1 done. WP2 step 1 done (supplier payments and their reversal, cash and bank). Still to do in WP2:
-non-cash sale payments (single collection, on-account collection, POS sale payments, voids), customer advances,
-payroll payments, the backfill and `treasury:verify`.
+Progress: WP1 done. WP2 done: supplier payments and reversal, receivable collections, on-account collections,
+customer advances, POS payments and sale voids, payroll payments, and `treasury:verify` / `treasury:backfill`.
+Not covered by WP2 (by design): drawer-to-bank transfers, reversing collections made against a voided credit sale,
+and history before activation (balances start at the opening balance, D-D).
 
 ## 1. Goal and scope
 

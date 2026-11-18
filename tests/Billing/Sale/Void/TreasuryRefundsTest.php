@@ -82,9 +82,6 @@ final class TreasuryRefundsTest extends TestCase
     {
         $kit = TreasuryTestDatabase::create();
         $kit->account('suspense', AccountKind::Suspense);
-        $kit->db->executeStatement(
-            'CREATE TABLE sale_payments (id INTEGER PRIMARY KEY AUTOINCREMENT, sale_id TEXT NOT NULL, payment_method_id INTEGER NOT NULL, idempotency_key TEXT NULL)',
-        );
 
         return $kit;
     }
