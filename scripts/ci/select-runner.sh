@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
-# Map CI_RUNNER_PROVIDER to GitHub Actions runner labels.
+# Map the selected runner provider(s) to GitHub Actions runner labels.
 #
-#   blacksmith  — Blacksmith (default)
-#   github      — GitHub-hosted ubuntu-latest
+#   hybrid      — CI_RUNNER_PROVIDER_HEAVY / CI_RUNNER_PROVIDER_LIGHT (defaults: Blacksmith / GitHub)
+#   blacksmith  — Blacksmith for every job
+#   github      — GitHub-hosted ubuntu-latest for every job
 #   auto        — optional; prefer Blacksmith until quota is low.
 #                 Requires BLACKSMITH_ORG_TOKEN + CI_BILLING_TOKEN.
 #                 Without them, auto == blacksmith.
 set -euo pipefail
 
-PROVIDER="$(printf '%s' "${CI_RUNNER_PROVIDER:-blacksmith}" | tr '[:upper:]' '[:lower:]')"
+PROVIDER="$(printf '%s' "${CI_RUNNER_PROVIDER:-}" | tr '[:upper:]' '[:lower:]')"
+HEAVY_PROVIDER="$(printf '%s' "${CI_RUNNER_PROVIDER_HEAVY:-blacksmith}" | tr '[:upper:]' '[:lower:]')"
+LIGHT_PROVIDER="$(printf '%s' "${CI_RUNNER_PROVIDER_LIGHT:-github}" | tr '[:upper:]' '[:lower:]')"
 GITHUB_INCLUDED="${CI_GITHUB_INCLUDED_MINUTES:-2000}"
 BLACKSMITH_INCLUDED="${CI_BLACKSMITH_INCLUDED_MINUTES:-3000}"
 RESERVE="${CI_RUNNER_RESERVE_MINUTES:-200}"
@@ -44,7 +47,42 @@ emit_blacksmith() {
   emit "blacksmith-4vcpu-ubuntu-2404" "blacksmith-2vcpu-ubuntu-2404" "true" "blacksmith"
 }
 
+emit_hybrid() {
+  local heavy_runner light_runner use_blacksmith_docker
+
+  case "$HEAVY_PROVIDER" in
+    blacksmith)
+      heavy_runner="blacksmith-4vcpu-ubuntu-2404"
+      use_blacksmith_docker="true"
+      ;;
+    github)
+      heavy_runner="ubuntu-latest"
+      use_blacksmith_docker="false"
+      ;;
+    *)
+      echo "Invalid CI_RUNNER_PROVIDER_HEAVY='$HEAVY_PROVIDER'; expected blacksmith or github." >&2
+      exit 2
+      ;;
+  esac
+
+  case "$LIGHT_PROVIDER" in
+    blacksmith) light_runner="blacksmith-2vcpu-ubuntu-2404" ;;
+    github) light_runner="ubuntu-latest" ;;
+    *)
+      echo "Invalid CI_RUNNER_PROVIDER_LIGHT='$LIGHT_PROVIDER'; expected blacksmith or github." >&2
+      exit 2
+      ;;
+  esac
+
+  echo "Selected hybrid runners (heavy=${HEAVY_PROVIDER}, light=${LIGHT_PROVIDER})."
+  emit "$heavy_runner" "$light_runner" "$use_blacksmith_docker" "hybrid"
+}
+
 case "$PROVIDER" in
+  '' | hybrid)
+    emit_hybrid
+    exit 0
+    ;;
   github)
     emit_github
     exit 0

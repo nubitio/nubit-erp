@@ -34,7 +34,7 @@ env:
 
 jobs:
   build:
-    runs-on: ${{ vars.CI_RUNNER_PROVIDER == 'github' && 'ubuntu-latest' || 'blacksmith-8vcpu-ubuntu-2404' }}
+    runs-on: ${{ (vars.CI_RUNNER_PROVIDER == 'github' || ((vars.CI_RUNNER_PROVIDER == '' || vars.CI_RUNNER_PROVIDER == 'hybrid') && vars.CI_RUNNER_PROVIDER_HEAVY == 'github')) && 'ubuntu-latest' || 'blacksmith-8vcpu-ubuntu-2404' }}
     timeout-minutes: 45
     outputs:
       image_ref: ${{ steps.publish.outputs.image_ref }}

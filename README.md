@@ -320,12 +320,23 @@ make shell-web
 
 Pipeline CI/CD en GitHub Actions:
 
-- `ci-main.yml`: quality + tests + coverage
-- `build-image.yml`: build imagen inmutable GHCR
-- `deploy-dev.yml`: deploy automático desde `main`
-- `deploy-staging.yml`: promote por tags `v*.*.*-rc*`
-- `deploy-prod.yml`: promote por tags `v*.*.*`
-- `deploy.yml`: despliegue reusable vía Portainer
+- `ci-main.yml`: quality + tests + coverage. Tras pasar los gates en `main`, `release.yml` calcula la versión, construye **una imagen inmutable** en GHCR y publica la GitHub Release cuando el commit lo amerita. Dev se despliega después usando el mismo digest; no se hace un segundo build.
+- `build-image.yml`: build reutilizable de imágenes GHCR; 8 vCPU por defecto para el build.
+- `deploy-dev.yml`: deploy manual de preview/recuperación. El deploy normal de `main` está en `ci-main.yml`, detrás de CI.
+- `deploy-staging.yml`: promoción por tags `v*.*.*-rc*` o manual con un digest inmutable.
+- `deploy-prod.yml`: promoción manual de una release estable. En **Actions → Promote to Production**, selecciona el tag `vX.Y.Z` en el selector de ref y deja `release_tag` vacío; también puedes ejecutar desde `main` y escribir el tag como input. El workflow valida la release y usa el digest de `deployment.json`; no reconstruye.
+- `rollback-prod.yml`: rollback manual seleccionando el ref de un release estable, indicando `release_tag`, o proporcionando directamente un digest de GHCR. Requiere exactamente un destino y omite migraciones.
+- `deploy.yml`: despliegue reusable vía Portainer con smoke test posterior.
+
+### Selección de runners
+
+El comportamiento híbrido predeterminado usa GitHub-hosted para trabajos livianos y Blacksmith para backend/E2E pesados y build de imagen. Se puede configurar en **Settings → Secrets and variables → Actions → Variables**:
+
+- `CI_RUNNER_PROVIDER_LIGHT`: `github` (default) o `blacksmith`.
+- `CI_RUNNER_PROVIDER_HEAVY`: `blacksmith` (default) o `github`.
+- `CI_RUNNER_PROVIDER`: override legado para forzar los workflows de deploy/build a GitHub (`github`) o Blacksmith (`blacksmith`). Déjalo sin definir para usar las variables por carga. `auto` se admite como override manual de `ci-main.yml`.
+
+Al ejecutar manualmente `ci-main.yml`, `runner_provider` permite elegir `hybrid`, `github`, `blacksmith` o `auto` para esa ejecución.
 
 Deploy manual por compose prod:
 

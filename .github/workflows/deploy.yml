@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ${{ vars.CI_RUNNER_PROVIDER == 'github' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
+    runs-on: ${{ (vars.CI_RUNNER_PROVIDER == 'github' || ((vars.CI_RUNNER_PROVIDER == '' || vars.CI_RUNNER_PROVIDER == 'hybrid') && vars.CI_RUNNER_PROVIDER_LIGHT != 'blacksmith')) && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     timeout-minutes: 20
     environment:
       name: ${{ inputs.environment }}

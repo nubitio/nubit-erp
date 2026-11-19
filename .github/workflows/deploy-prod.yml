@@ -4,8 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Published release to promote (v1.2.3). Uses the digest already recorded in that release's deployment.json. Does not rebuild.
-        required: true
+        description: Published release to promote (v1.2.3). Leave blank only when the workflow ref picker is set to that release tag.
+        required: false
+        default: ''
         type: string
 
 permissions:
@@ -15,7 +16,7 @@ jobs:
   resolve:
     uses: ./.github/workflows/resolve-release.yml
     with:
-      release_tag: ${{ inputs.release_tag }}
+      release_tag: ${{ inputs.release_tag || github.ref_name }}
     secrets: inherit
 
   deploy-production:

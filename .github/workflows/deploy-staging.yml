@@ -13,7 +13,7 @@ on:
 
 jobs:
   resolve-image:
-    runs-on: ${{ vars.CI_RUNNER_PROVIDER == 'github' && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
+    runs-on: ${{ (vars.CI_RUNNER_PROVIDER == 'github' || ((vars.CI_RUNNER_PROVIDER == '' || vars.CI_RUNNER_PROVIDER == 'hybrid') && vars.CI_RUNNER_PROVIDER_LIGHT != 'blacksmith')) && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
     permissions:
       contents: read
       packages: read
@@ -30,7 +30,11 @@ jobs:
 
       - name: Setup Blacksmith Builder
         uses: useblacksmith/setup-docker-builder@v1
-        if: ${{ inputs.image_ref == '' && vars.CI_RUNNER_PROVIDER != 'github' }}
+        if: ${{ inputs.image_ref == '' && vars.CI_RUNNER_PROVIDER != 'github' && (vars.CI_RUNNER_PROVIDER != '' && vars.CI_RUNNER_PROVIDER != 'hybrid' || vars.CI_RUNNER_PROVIDER_LIGHT == 'blacksmith') }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        if: ${{ inputs.image_ref == '' && (vars.CI_RUNNER_PROVIDER == 'github' || ((vars.CI_RUNNER_PROVIDER == '' || vars.CI_RUNNER_PROVIDER == 'hybrid') && vars.CI_RUNNER_PROVIDER_LIGHT != 'blacksmith')) }}
 
       - name: Resolve image reference
         id: resolve

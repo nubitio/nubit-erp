@@ -2,6 +2,10 @@ name: SemVer Release
 
 on:
   workflow_call:
+    outputs:
+      image_ref:
+        description: Immutable image built after CI gates for the caller commit
+        value: ${{ jobs.build.outputs.image_ref }}
 
 concurrency:
   group: semver-release-main
@@ -34,7 +38,6 @@ jobs:
 
   build:
     needs: version
-    if: needs.version.outputs.tag != ''
     uses: ./.github/workflows/build-image.yml
     permissions:
       contents: read
@@ -46,6 +49,7 @@ jobs:
 
   manifest:
     needs: [version, build]
+    if: needs.version.outputs.tag != ''
     runs-on: ubuntu-latest
     permissions:
       contents: write

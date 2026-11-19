@@ -4,8 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Last known-good release (v1.2.3); provide this OR image_ref
+        description: Last known-good release (v1.2.3). Leave blank to use a selected release tag as the workflow ref.
         required: false
+        default: ''
         type: string
       image_ref:
         description: Last known-good immutable image digest (ghcr.io/...@sha256:...)
@@ -21,7 +22,7 @@ jobs:
     steps:
       - name: Require exactly one rollback target
         env:
-          RELEASE_TAG: ${{ inputs.release_tag }}
+          RELEASE_TAG: ${{ inputs.release_tag || (github.ref_type == 'tag' && github.ref_name) || '' }}
           IMAGE_REF: ${{ inputs.image_ref }}
         run: |
           if { [ -z "$RELEASE_TAG" ] && [ -z "$IMAGE_REF" ]; } || \
@@ -32,10 +33,10 @@ jobs:
 
   resolve:
     needs: validate
-    if: inputs.release_tag != ''
+    if: inputs.release_tag != '' || github.ref_type == 'tag'
     uses: ./.github/workflows/resolve-release.yml
     with:
-      release_tag: ${{ inputs.release_tag }}
+      release_tag: ${{ inputs.release_tag || github.ref_name }}
     secrets: inherit
 
   rollback:

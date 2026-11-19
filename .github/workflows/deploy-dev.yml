@@ -2,9 +2,6 @@ name: Deploy to Dev
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   build-image:
@@ -19,6 +16,6 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       environment: dev
-      # APP_URL is the required smoke target configured in the dev environment.
+      # Manual recovery/preview deploys build the selected workflow ref.
       image_ref: ${{ needs.build-image.outputs.image_ref }}
     secrets: inherit
