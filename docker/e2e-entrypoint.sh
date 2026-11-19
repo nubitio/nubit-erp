@@ -7,6 +7,7 @@ set -e
 # Suppress the interactive download confirmation prompt.
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 COREPACK_DIR="${TMPDIR:-/tmp}/corepack"
+mkdir -p "$COREPACK_DIR/bin"
 if ! command -v corepack >/dev/null 2>&1; then
   npm install --prefix "$COREPACK_DIR" corepack
   PATH="$COREPACK_DIR/node_modules/.bin:$PATH"
