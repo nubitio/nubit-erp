@@ -6,7 +6,11 @@ set -e
 # ── 1. Activate Yarn 4 via Corepack ──────────────────────────────────────────
 # Suppress the interactive download confirmation prompt.
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+if ! command -v corepack >/dev/null 2>&1; then
+  npm install --global corepack
+fi
 corepack enable
+corepack prepare yarn@4.12.0 --activate
 
 # ── 2. Install dependencies if needed ────────────────────────────────────────
 if [ ! -d node_modules ] || [ ! -f node_modules/.yarn-state.yml ] || [ package.json -nt node_modules/.yarn-state.yml ] || [ yarn.lock -nt node_modules/.yarn-state.yml ]; then

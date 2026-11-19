@@ -58,8 +58,11 @@ echo "SPA shell is ready."
 # The e2e image may still expose the system Yarn 1 binary. Enable Corepack
 # before the first Yarn invocation so packageManager in package.json selects
 # the repository's pinned Yarn 4 version.
+if ! command -v corepack >/dev/null 2>&1; then
+  npm install --global corepack
+fi
 corepack enable
-corepack prepare yarn@4.9.1 --activate
+corepack prepare yarn@4.12.0 --activate
 
 echo "Checking OpenAPI compatibility ..."
 # Fetch docs.json with curl (openapi-typescript's fetch dies on a reset socket).
