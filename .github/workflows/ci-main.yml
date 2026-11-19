@@ -256,7 +256,10 @@ jobs:
       - name: Create and migrate test database
         if: needs.changes.outputs.backend == 'true'
         run: |
-          docker compose exec -T database mariadb -uroot -pchangeme -e "CREATE DATABASE IF NOT EXISTS demo_test CHARACTER SET utf8mb4;"
+          # Blacksmith may restore a sticky Docker disk that contains an older
+          # demo_test schema and migration history. Recreate this disposable DB
+          # so the entity schema and recorded migration versions always match.
+          docker compose exec -T database mariadb -uroot -pchangeme -e "DROP DATABASE IF EXISTS demo_test; CREATE DATABASE demo_test CHARACTER SET utf8mb4;"
           docker compose exec -T \
             -e APP_ENV=test \
             -e DATABASE_URL="${DATABASE_URL}" \

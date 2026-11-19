@@ -281,6 +281,25 @@ class ProductionPromotionTest(unittest.TestCase):
         metadata = next(step for step in tags if step.get('id') == 'meta')
         self.assertNotIn('latest', metadata['with']['tags'])
 
+    def test_ci_composer_cache_uses_node_24_compatible_action_runtime(self):
+        with (ROOT / '.github' / 'actions' / 'ci-stack' / 'action.yml').open(encoding='utf-8') as handle:
+            action = yaml.safe_load(handle)
+
+        cache = next(step for step in action['runs']['steps'] if step.get('name') == 'Restore Composer vendor cache')
+        self.assertEqual(cache['uses'], 'actions/cache@v5')
+
+    def test_backend_ci_recreates_its_disposable_test_database_before_migrating(self):
+        ci = load('ci-main.yml')
+        step = next(
+            step for step in ci['jobs']['backend']['steps']
+            if step.get('name') == 'Create and migrate test database'
+        )
+        drop = step['run'].index('DROP DATABASE IF EXISTS demo_test')
+        create = step['run'].index('CREATE DATABASE demo_test')
+        migrate = step['run'].index('doctrine:migrations:migrate')
+        self.assertLess(drop, create)
+        self.assertLess(create, migrate)
+
 
 if __name__ == '__main__':
     unittest.main()
