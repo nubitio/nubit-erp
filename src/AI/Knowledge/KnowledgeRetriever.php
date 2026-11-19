@@ -95,7 +95,7 @@ final readonly class KnowledgeRetriever
         $text = mb_strtolower($text);
         $text = preg_replace('/[^a-z0-9áéíóúñü ]/u', ' ', $text) ?? $text;
 
-        $parts = preg_split('/\s+/', $text, -1, PREG_SPLIT_NO_EMPTY);
+        $parts = preg_split('/\s+/', $text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
 
         $counts = [];
         foreach ($parts as $part) {

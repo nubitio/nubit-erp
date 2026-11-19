@@ -13,7 +13,7 @@ final class ReceiptPayload
         return base64_encode(json_encode([
             'type' => $type,
             'id' => $id,
-        ], JSON_UNESCAPED_SLASHES));
+        ], JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
     }
 
     public static function publicUrl(string $type, string $id): string

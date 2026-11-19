@@ -89,7 +89,7 @@ final readonly class DetractionCalculator implements DetractionCalculatorInterfa
         $sale->setDetraccionCodigo($detractionCatalog->getCode());
         $sale->setDetraccionPorcentaje($detractionCatalog->getPercentage());
         $amount = $sale->getDetraccionPorcentaje() !== null
-            ? round(($sale->getTotal() * $sale->getDetraccionPorcentaje()) / 100, 2)
+            ? round(((float) ($sale->getTotal() ?? 0) * $sale->getDetraccionPorcentaje()) / 100, 2)
             : null;
         $sale->setDetraccionMonto($amount);
         $sale->setDetraccionValorReferencial((float) ($sale->getTotal() ?? 0));

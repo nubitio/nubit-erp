@@ -19,8 +19,8 @@ final class WeightedAverageKardexValuator
     /**
      * @param list<array{
      *     warehouse_id: string,
-     *     qty_delta: string,
-     *     inbound_unit_cost: string|null
+     *     qty_delta: numeric-string,
+     *     inbound_unit_cost: numeric-string|null
      * }> $movements chronologically ordered (ASC)
      *
      * @return list<array{unit_cost: string, line_value: string, running_value: string}>
@@ -75,8 +75,8 @@ final class WeightedAverageKardexValuator
     /**
      * @param list<array{
      *     warehouse_id: string,
-     *     qty_delta: string,
-     *     inbound_unit_cost: string|null
+     *     qty_delta: numeric-string,
+     *     inbound_unit_cost: numeric-string|null
      * }> $movements chronologically ordered (ASC)
      *
      * @return array{stockValue: string, avgUnitCost: string|null}
@@ -130,6 +130,7 @@ final class WeightedAverageKardexValuator
         ];
     }
 
+    /** @param numeric-string $qty @param numeric-string $unitCost */
     private function multiplyMoneyRaw(string $qty, string $unitCost): string
     {
         return bcmul($qty, $unitCost, 8);

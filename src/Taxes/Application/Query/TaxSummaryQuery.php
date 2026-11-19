@@ -53,7 +53,8 @@ final readonly class TaxSummaryQuery
         // Historial — last 6 periods
         $historial = [];
         for ($i = 0; $i < 6; ++$i) {
-            $p = date('Ym', mktime(0, 0, 0, (int) substr($period, 4, 2) - $i, 1, (int) substr($period, 0, 4)));
+            $timestamp = mktime(0, 0, 0, (int) substr($period, 4, 2) - $i, 1, (int) substr($period, 0, 4));
+            $p = date('Ym', $timestamp === false ? null : $timestamp);
             $isCurrent = $p === $period;
 
             if ($isCurrent) {

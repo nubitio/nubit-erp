@@ -20,8 +20,8 @@ final class FifoKardexValuator
     /**
      * @param list<array{
      *     warehouse_id: string,
-     *     qty_delta: string,
-     *     inbound_unit_cost: string|null
+     *     qty_delta: numeric-string,
+     *     inbound_unit_cost: numeric-string|null
      * }> $movements chronologically ordered (ASC)
      *
      * @return list<array{unit_cost: string, line_value: string, running_value: string}>
@@ -66,8 +66,8 @@ final class FifoKardexValuator
     /**
      * @param list<array{
      *     warehouse_id: string,
-     *     qty_delta: string,
-     *     inbound_unit_cost: string|null
+     *     qty_delta: numeric-string,
+     *     inbound_unit_cost: numeric-string|null
      * }> $movements chronologically ordered (ASC)
      *
      * @return array{stockValue: string, avgUnitCost: string|null}
@@ -117,9 +117,9 @@ final class FifoKardexValuator
     }
 
     /**
-     * @param list<array{qty: string, cost: string}> $layers
+     * @param list<array{qty: numeric-string, cost: numeric-string}> $layers
      *
-     * @return array{0: list<array{qty: string, cost: string}>, 1: string, 2: string}
+     * @return array{0: list<array{qty: numeric-string, cost: numeric-string}>, 1: numeric-string, 2: numeric-string}
      */
     private function consumeFifo(array $layers, string $qtyToConsume): array
     {
@@ -156,7 +156,7 @@ final class FifoKardexValuator
     }
 
     /**
-     * @param list<array{qty: string, cost: string}> $layers
+     * @param list<array{qty: numeric-string, cost: numeric-string}> $layers
      */
     private function layersTotalValue(array $layers): string
     {
@@ -169,6 +169,7 @@ final class FifoKardexValuator
         return $total;
     }
 
+    /** @param numeric-string $qty @param numeric-string $unitCost */
     private function multiplyMoneyRaw(string $qty, string $unitCost): string
     {
         return bcmul($qty, $unitCost, 8);

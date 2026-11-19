@@ -28,16 +28,15 @@ final readonly class SalesAnalyticsRepository
         // sales between 19:00–23:59 Lima time (00:00–04:59 UTC next day) are included.
         $lima = new \DateTimeZone('America/Lima');
         $utc = new \DateTimeZone('UTC');
-        $fromUtc = \DateTimeImmutable::createFromFormat(
-            'Y-m-d H:i:s',
-            $from->format('Y-m-d') . ' 00:00:00',
-            $lima,
-        )->setTimezone($utc);
-        $toUtc = \DateTimeImmutable::createFromFormat(
-            'Y-m-d H:i:s',
-            $to->format('Y-m-d') . ' 23:59:59',
-            $lima,
-        )->setTimezone($utc);
+        $from = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $from->format('Y-m-d') . ' 00:00:00', $lima);
+        $to = \DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $to->format('Y-m-d') . ' 23:59:59', $lima);
+
+        if (!$from instanceof \DateTimeImmutable || !$to instanceof \DateTimeImmutable) {
+            throw new \LogicException('Unable to construct sales analytics date range.');
+        }
+
+        $fromUtc = $from->setTimezone($utc);
+        $toUtc = $to->setTimezone($utc);
 
         $row = $this->connection->fetchAssociative(
             <<<'SQL'
