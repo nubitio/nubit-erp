@@ -256,7 +256,7 @@ services:
     restart: 'no'
 
   e2e:
-    image: mcr.microsoft.com/playwright:v1.61.1-noble
+    image: mcr.microsoft.com/playwright:v1.65.1-noble
     security_opt:
       - label=disable
     working_dir: /home/node/app
