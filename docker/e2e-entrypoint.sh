@@ -6,10 +6,14 @@ set -e
 # ── 1. Activate Yarn 4 via Corepack ──────────────────────────────────────────
 # Suppress the interactive download confirmation prompt.
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+COREPACK_DIR="${TMPDIR:-/tmp}/corepack"
 if ! command -v corepack >/dev/null 2>&1; then
-  npm install --global corepack
+  npm install --prefix "$COREPACK_DIR" corepack
+  PATH="$COREPACK_DIR/node_modules/.bin:$PATH"
 fi
-corepack enable
+corepack enable --install-directory "$COREPACK_DIR/bin"
+PATH="$COREPACK_DIR/bin:$PATH"
+export PATH
 corepack prepare yarn@4.12.0 --activate
 
 # ── 2. Install dependencies if needed ────────────────────────────────────────

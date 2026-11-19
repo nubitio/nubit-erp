@@ -58,10 +58,14 @@ echo "SPA shell is ready."
 # The e2e image may still expose the system Yarn 1 binary. Enable Corepack
 # before the first Yarn invocation so packageManager in package.json selects
 # the repository's pinned Yarn 4 version.
+COREPACK_DIR="${TMPDIR:-/tmp}/corepack"
 if ! command -v corepack >/dev/null 2>&1; then
-  npm install --global corepack
+  npm install --prefix "$COREPACK_DIR" corepack
+  PATH="$COREPACK_DIR/node_modules/.bin:$PATH"
 fi
-corepack enable
+corepack enable --install-directory "$COREPACK_DIR/bin"
+PATH="$COREPACK_DIR/bin:$PATH"
+export PATH
 corepack prepare yarn@4.12.0 --activate
 
 echo "Checking OpenAPI compatibility ..."
