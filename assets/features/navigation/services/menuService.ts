@@ -177,9 +177,9 @@ function normalizePath(path: unknown): string {
 }
 
 /** Menu API paths are stored relative (e.g. `pos`), but router destinations must be rooted. */
-export function normalizeMenuDestinations<
-  T extends { path?: string; items?: T[] },
->(items: T[]): T[] {
+export function normalizeMenuDestinations<T extends { path?: string; items?: T[] }>(
+  items: T[],
+): T[] {
   return items.map((item) => ({
     ...item,
     path: item.path ? (item.path.startsWith('/') ? item.path : `/${item.path}`) : item.path,

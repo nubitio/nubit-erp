@@ -28,23 +28,18 @@ done
 
 if [ -n "$changed_frontend_files" ]; then
     echo "==> [frontend] format check (files in this push)"
-    if command -v corepack >/dev/null 2>&1; then
-        printf '%b' "$changed_frontend_files" | xargs -r corepack yarn prettier --check
-    else
-        printf '%b' "$changed_frontend_files" | xargs -r yarn prettier --check
+    if [ ! -x node_modules/.bin/prettier ]; then
+        echo "error: Prettier is not installed. Run corepack yarn install --immutable." >&2
+        exit 1
     fi
+    printf '%b' "$changed_frontend_files" | xargs -r node_modules/.bin/prettier --check
 else
     echo "==> [frontend] no Prettier-supported files in this push"
 fi
 
 echo "==> [frontend] eslint"
-if command -v corepack >/dev/null 2>&1; then
-    corepack yarn lint
-    corepack yarn tsc --noEmit
-else
-    yarn lint
-    yarn tsc --noEmit
-fi
+ESLINT_USE_FLAT_CONFIG=false node_modules/.bin/eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0
+node_modules/.bin/tsc --noEmit
 
 if command -v mago >/dev/null 2>&1; then
     echo "==> [backend] Mago lint"
