@@ -288,6 +288,11 @@ class ProductionPromotionTest(unittest.TestCase):
         cache = next(step for step in action['runs']['steps'] if step.get('name') == 'Restore Composer vendor cache')
         self.assertEqual(cache['uses'], 'actions/cache@v5')
 
+        image = load('build-image.yml')
+        actions = {step.get('name'): step.get('uses') for step in image['jobs']['build']['steps']}
+        self.assertEqual(actions['Login to GHCR'], 'docker/login-action@v4')
+        self.assertEqual(actions['Docker metadata'], 'docker/metadata-action@v6')
+
     def test_backend_ci_recreates_its_disposable_test_database_before_migrating(self):
         ci = load('ci-main.yml')
         step = next(
