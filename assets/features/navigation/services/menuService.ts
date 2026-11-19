@@ -176,6 +176,17 @@ function normalizePath(path: unknown): string {
     .toLowerCase();
 }
 
+/** Menu API paths are stored relative (e.g. `pos`), but router destinations must be rooted. */
+export function normalizeMenuDestinations<
+  T extends { path?: string; items?: T[] },
+>(items: T[]): T[] {
+  return items.map((item) => ({
+    ...item,
+    path: item.path ? (item.path.startsWith('/') ? item.path : `/${item.path}`) : item.path,
+    ...(item.items ? { items: normalizeMenuDestinations(item.items) } : {}),
+  }));
+}
+
 function isAllowedMenuPath(path: string, runtimeConfig: TenantRuntimeConfig): boolean {
   const minTier = MENU_MIN_TIER.get(path);
   const currentTier = runtimeConfig.profile.navigationTier ?? 'basic';
@@ -258,7 +269,10 @@ class MenuService {
     if (roleId === null || roleId === undefined) {
       roleId = 0;
     }
-    return httpClient.get<AdminMenuItem[]>(API + `menu/${roleId}`);
+    return httpClient.get<AdminMenuItem[]>(API + `menu/${roleId}`).then((response) => ({
+      ...response,
+      data: normalizeMenuDestinations(response.data),
+    }));
   }
 
   async getMenuByRoleIdForRuntimeConfig(roleId: number, runtimeConfig: TenantRuntimeConfig) {

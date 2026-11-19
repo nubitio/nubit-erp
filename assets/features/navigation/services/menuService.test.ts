@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { AdminMenuItem } from '@nubitio/admin';
 import type { TenantRuntimeConfig } from '@shared/hooks';
-import { filterMenuByRuntimeConfig } from './menuService';
+import { filterMenuByRuntimeConfig, normalizeMenuDestinations } from './menuService';
 
 function runtimeConfig(
   navigationTier: TenantRuntimeConfig['profile']['navigationTier'],
@@ -57,6 +57,22 @@ function visiblePaths(items: AdminMenuItem[]): string[] {
 
 afterEach(() => {
   localStorage.clear();
+});
+
+describe('normalizeMenuDestinations', () => {
+  it('roots menu and nested destinations so they cannot resolve relative to the current page', () => {
+    expect(
+      normalizeMenuDestinations([
+        { text: 'POS', path: 'pos' },
+        { text: 'Grupo', path: '', items: [{ text: 'Compras', path: 'purchases' }] },
+        { text: 'Ya absoluto', path: '/billing/sales' },
+      ] as AdminMenuItem[]),
+    ).toEqual([
+      { text: 'POS', path: '/pos' },
+      { text: 'Grupo', path: '', items: [{ text: 'Compras', path: '/purchases' }] },
+      { text: 'Ya absoluto', path: '/billing/sales' },
+    ]);
+  });
 });
 
 describe('filterMenuByRuntimeConfig', () => {

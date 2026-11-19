@@ -15,8 +15,8 @@ final class MenuProviderTest extends TestCase
     public function testBuildsHeadingsWithTheirChildRoutes(): void
     {
         $heading = $this->menu(1, 'Ventas', null, null);
-        $child = $this->menu(2, 'Comprobantes', '/billing', $heading);
-        $direct = $this->menu(3, 'Configuracion', '/config', null);
+        $child = $this->menu(2, 'Comprobantes', 'billing', $heading);
+        $direct = $this->menu(3, 'Configuracion', 'config', null);
 
         $query = $this->createMock(Query::class);
         $query->expects(static::once())->method('getResult')->willReturn([$heading, $child, $direct]);

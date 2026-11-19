@@ -45,15 +45,24 @@ readonly class MenuProvider implements ProviderInterface
 
                 foreach ($menus as $child) {
                     if ($child->getParent()?->getId() === $parent->getId()) {
-                        $items[] = new SubMenuDto($child->getKeyName(), $child->getRoute() ?? '');
+                        $items[] = new SubMenuDto($child->getKeyName(), $this->absolutePath($child->getRoute()));
                     }
                 }
 
                 yield new MenuDto($parent->getKeyName(), $parent->getIcon() ?? '', '', $items);
             } elseif ($parent->getParent() === null && is_string($route)) {
-                yield new MenuDto($parent->getKeyName(), $parent->getIcon() ?? '', $route);
+                yield new MenuDto($parent->getKeyName(), $parent->getIcon() ?? '', $this->absolutePath($route));
             }
         }
+    }
+
+    private function absolutePath(?string $route): string
+    {
+        if ($route === null || $route === '') {
+            return '';
+        }
+
+        return str_starts_with($route, '/') ? $route : '/' . $route;
     }
 
     /**

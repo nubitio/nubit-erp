@@ -15,7 +15,7 @@ when@dev:
             opentelemetry:
                 type: service
                 id: open_telemetry.monolog.handler
-                level: debug
+                level: info
             console:
                 type: console
                 process_psr_3_messages: false
@@ -53,7 +53,13 @@ when@prod:
             opentelemetry:
                 type: service
                 id: open_telemetry.monolog.handler
+                level: warning
+                channels: [ "!operation" ]
+            opentelemetry_operation:
+                type: service
+                id: open_telemetry.monolog.handler
                 level: info
+                channels: [ operation ]
             console:
                 type: console
                 process_psr_3_messages: false
