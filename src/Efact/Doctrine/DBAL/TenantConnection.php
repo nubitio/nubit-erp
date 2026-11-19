@@ -14,6 +14,9 @@ use Symfony\Component\Security\Core\Exception\RuntimeException;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
+/**
+ * @phpstan-import-type Params from \Doctrine\DBAL\DriverManager
+ */
 class TenantConnection extends Connection
 {
     protected bool $isConnected = false;
@@ -21,7 +24,7 @@ class TenantConnection extends Connection
     protected bool $autoCommit = true;
 
     public function __construct(
-        /** @var array<string, mixed> */
+        /** @var Params */
         protected array $tenantParams,
         Driver $driver,
         ?Configuration $config = null,
@@ -92,7 +95,7 @@ class TenantConnection extends Connection
     }
 
     /**
-     * @return array<string, mixed>
+     * @return Params
      */
     #[Override]
     public function getParams(): array

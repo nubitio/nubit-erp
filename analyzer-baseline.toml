@@ -92,12 +92,6 @@ count = 1
 
 [[issues]]
 file = "src/AI/Knowledge/KnowledgeIndex.php"
-code = "possibly-false-iterator"
-message = "Expression being iterated (type `false|list<string>`) might be `false` at runtime."
-count = 1
-
-[[issues]]
-file = "src/AI/Knowledge/KnowledgeIndex.php"
 code = "possibly-invalid-argument"
 message = '''Possible argument type mismatch for argument #1 of `App\AI\Knowledge\KnowledgeIndex::computeIdf`: expected `array<int, array{'tokens': array<string, int>}>`, but possibly received `non-empty-array<int, array{'content': string, 'source': string, 'title': string, 'tokens': array<string, int>}>`.'''
 count = 1
@@ -136,12 +130,6 @@ count = 1
 file = "src/AI/Knowledge/KnowledgeRetriever.php"
 code = "mixed-operand"
 message = "Invalid right operand: type `mixed` cannot be reliably used in string concatenation."
-count = 1
-
-[[issues]]
-file = "src/AI/Knowledge/KnowledgeRetriever.php"
-code = "possibly-false-iterator"
-message = "Expression being iterated (type `false|list<string>`) might be `false` at runtime."
 count = 1
 
 [[issues]]
@@ -1225,12 +1213,6 @@ message = "Attempting to call a method on `null`."
 count = 4
 
 [[issues]]
-file = "src/Billing/Receipt/ReceiptPayload.php"
-code = "possibly-false-argument"
-message = "Argument #1 of function `base64_encode` is possibly `false`, but parameter type `string` does not accept it."
-count = 1
-
-[[issues]]
 file = "src/Billing/Recurring/Command/GenerateRecurringSalesCommand.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
@@ -2204,12 +2186,6 @@ count = 1
 
 [[issues]]
 file = "src/ControlPlane/Backup/BinlogBackupService.php"
-code = "possibly-invalid-argument"
-message = '''Possible argument type mismatch for argument #1 of `Doctrine\DBAL\DriverManager::getConnection`: expected `array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'keepReplica'?: bool, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'primary'?: array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}, 'replica'?: array<array-key, array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}>, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}`, but possibly received `array<string, mixed>`.'''
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Backup/BinlogBackupService.php"
 code = "redundant-condition"
 message = "This condition (type `true`) will always evaluate to true."
 count = 1
@@ -2816,12 +2792,6 @@ count = 2
 
 [[issues]]
 file = "src/ControlPlane/Tenant/Command/TenantProvisionCommand.php"
-code = "possibly-invalid-argument"
-message = '''Possible argument type mismatch for argument #1 of `Doctrine\DBAL\DriverManager::getConnection`: expected `array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'keepReplica'?: bool, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'primary'?: array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}, 'replica'?: array<array-key, array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}>, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}`, but possibly received `array<string, mixed>`.'''
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Command/TenantProvisionCommand.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
@@ -3170,12 +3140,6 @@ count = 1
 
 [[issues]]
 file = "src/Efact/Doctrine/DBAL/TenantConnection.php"
-code = "incompatible-return-type"
-message = '''Return type `array<string, mixed>` of `App\Efact\Doctrine\DBAL\TenantConnection::getparams()` is incompatible with parent return type `array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'keepReplica'?: bool, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'primary'?: array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}, 'replica'?: array<array-key, array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}>, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}` of `Doctrine\DBAL\Connection::getparams()`'''
-count = 1
-
-[[issues]]
-file = "src/Efact/Doctrine/DBAL/TenantConnection.php"
 code = "invalid-return-statement"
 message = 'Invalid return type for function `App\Efact\Doctrine\DBAL\TenantConnection::connect`: expected `Doctrine\DBAL\Driver\Connection`, but found `Doctrine\DBAL\Driver\Connection|null`.'
 count = 1
@@ -3184,18 +3148,6 @@ count = 1
 file = "src/Efact/Doctrine/DBAL/TenantConnection.php"
 code = "nullable-return-statement"
 message = 'Function `App\Efact\Doctrine\DBAL\TenantConnection::connect` is declared to return `Doctrine\DBAL\Driver\Connection` but possibly returns a nullable value (inferred as `Doctrine\DBAL\Driver\Connection|null`).'
-count = 1
-
-[[issues]]
-file = "src/Efact/Doctrine/DBAL/TenantConnection.php"
-code = "possibly-invalid-argument"
-message = '''Possible argument type mismatch for argument #1 of `Doctrine\DBAL\Connection::__construct`: expected `array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'keepReplica'?: bool, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'primary'?: array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}, 'replica'?: array<array-key, array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}>, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}`, but possibly received `array<string, mixed>`.'''
-count = 1
-
-[[issues]]
-file = "src/Efact/Doctrine/DBAL/TenantConnection.php"
-code = "possibly-invalid-argument"
-message = '''Possible argument type mismatch for argument #1 of `Doctrine\DBAL\Driver::connect`: expected `array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'keepReplica'?: bool, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'primary'?: array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}, 'replica'?: array<array-key, array{'application_name'?: string, 'charset'?: string, 'dbname'?: string, 'defaultTableOptions'?: array<string, mixed>, 'driver'?: string('ibm_db2')|string('mysqli')|string('oci8')|string('pdo_mysql')|string('pdo_oci')|string('pdo_pgsql')|string('pdo_sqlite')|string('pdo_sqlsrv')|string('pgsql')|string('sqlite3')|string('sqlsrv'), 'driverClass'?: class-string<Doctrine\DBAL\Driver>, 'driverOptions'?: array<array-key, mixed>, 'host'?: string, 'memory'?: bool, 'password'?: string, 'path'?: string, 'persistent'?: bool, 'port'?: int, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}>, 'serverVersion'?: string, 'sessionMode'?: int, 'unix_socket'?: string, 'user'?: string, 'wrapperClass'?: class-string<Doctrine\DBAL\Connection>}`, but possibly received `array<string, mixed>`.'''
 count = 1
 
 [[issues]]
@@ -3832,7 +3784,7 @@ count = 1
 file = "src/Inventory/Repository/StockMovementRepository.php"
 code = "invalid-type-cast"
 message = "Casting `mixed` to `float`."
-count = 8
+count = 7
 
 [[issues]]
 file = "src/Inventory/Repository/StockMovementRepository.php"
@@ -3916,42 +3868,24 @@ count = 2
 file = "src/Inventory/Service/FifoKardexValuator.php"
 code = "possibly-invalid-argument"
 message = "Possible argument type mismatch for argument #1 of `bccomp`: expected `numeric-string`, but possibly received `string`."
-count = 5
-
-[[issues]]
-file = "src/Inventory/Service/FifoKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bcdiv`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/Service/FifoKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bcmul`: expected `numeric-string`, but possibly received `string`."
 count = 1
 
 [[issues]]
 file = "src/Inventory/Service/FifoKardexValuator.php"
 code = "possibly-invalid-argument"
 message = "Possible argument type mismatch for argument #1 of `bcsub`: expected `numeric-string`, but possibly received `string`."
-count = 2
-
-[[issues]]
-file = "src/Inventory/Service/FifoKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcadd`: expected `numeric-string`, but possibly received `string`."
-count = 5
-
-[[issues]]
-file = "src/Inventory/Service/FifoKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bccomp`: expected `numeric-string`, but possibly received `string`."
 count = 1
 
 [[issues]]
 file = "src/Inventory/Service/FifoKardexValuator.php"
 code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcdiv`: expected `numeric-string`, but possibly received `string`."
+message = "Possible argument type mismatch for argument #2 of `bcadd`: expected `numeric-string`, but possibly received `string`."
+count = 4
+
+[[issues]]
+file = "src/Inventory/Service/FifoKardexValuator.php"
+code = "possibly-invalid-argument"
+message = "Possible argument type mismatch for argument #2 of `bccomp`: expected `numeric-string`, but possibly received `string`."
 count = 1
 
 [[issues]]
@@ -3964,7 +3898,7 @@ count = 1
 file = "src/Inventory/Service/FifoKardexValuator.php"
 code = "possibly-invalid-argument"
 message = "Possible argument type mismatch for argument #2 of `bcsub`: expected `numeric-string`, but possibly received `string`."
-count = 4
+count = 1
 
 [[issues]]
 file = "src/Inventory/Service/InventorySummaryService.php"
@@ -4096,36 +4030,18 @@ count = 2
 file = "src/Inventory/Service/WeightedAverageKardexValuator.php"
 code = "possibly-invalid-argument"
 message = "Possible argument type mismatch for argument #1 of `bcadd`: expected `numeric-string`, but possibly received `string`."
-count = 6
-
-[[issues]]
-file = "src/Inventory/Service/WeightedAverageKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bccomp`: expected `numeric-string`, but possibly received `string`."
 count = 2
 
 [[issues]]
 file = "src/Inventory/Service/WeightedAverageKardexValuator.php"
 code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bcmul`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/Service/WeightedAverageKardexValuator.php"
-code = "possibly-invalid-argument"
 message = "Possible argument type mismatch for argument #2 of `bcadd`: expected `numeric-string`, but possibly received `string`."
-count = 8
+count = 3
 
 [[issues]]
 file = "src/Inventory/Service/WeightedAverageKardexValuator.php"
 code = "possibly-invalid-argument"
 message = "Possible argument type mismatch for argument #2 of `bcmul`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/Service/WeightedAverageKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcsub`: expected `numeric-string`, but possibly received `string`."
 count = 1
 
 [[issues]]
@@ -4862,27 +4778,9 @@ count = 3
 
 [[issues]]
 file = "src/Sales/Repository/SalesAnalyticsRepository.php"
-code = "invalid-method-access"
-message = "Attempting to access a method on a non-object type (`false`)."
-count = 2
-
-[[issues]]
-file = "src/Sales/Repository/SalesAnalyticsRepository.php"
 code = "invalid-type-cast"
 message = "Casting `mixed` to `float`."
 count = 3
-
-[[issues]]
-file = "src/Sales/Repository/SalesAnalyticsRepository.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
-
-[[issues]]
-file = "src/Sales/Repository/SalesAnalyticsRepository.php"
-code = "mixed-method-access"
-message = "Attempting to access a method on a non-object type (`mixed`)."
-count = 2
 
 [[issues]]
 file = "src/Sales/Service/ExplicitSaleSettlementResolver.php"
@@ -4946,33 +4844,9 @@ count = 3
 
 [[issues]]
 file = "src/Sales/State/DetractionCalculator.php"
-code = "invalid-operand"
-message = "Invalid type for left operand."
-count = 1
-
-[[issues]]
-file = "src/Sales/State/DetractionCalculator.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
 count = 3
-
-[[issues]]
-file = "src/Sales/State/DetractionCalculator.php"
-code = "mixed-argument"
-message = "Invalid argument type for argument #1 of `round`: expected `float|int`, but found `mixed`."
-count = 1
-
-[[issues]]
-file = "src/Sales/State/DetractionCalculator.php"
-code = "mixed-operand"
-message = "Left operand in binary operation has type `mixed`."
-count = 1
-
-[[issues]]
-file = "src/Sales/State/DetractionCalculator.php"
-code = "possibly-null-operand"
-message = "Left operand in arithmetic operation might be `null` (type `null|string`)."
-count = 1
 
 [[issues]]
 file = "src/Sales/State/DetractionCalculator.php"
@@ -5677,12 +5551,6 @@ message = "Casting `mixed` to `float`."
 count = 10
 
 [[issues]]
-file = "src/Taxes/Application/Query/TaxSummaryQuery.php"
-code = "possibly-false-argument"
-message = "Argument #2 of function `date` is possibly `false`, but parameter type `int|null` does not accept it."
-count = 1
-
-[[issues]]
 file = "tests/AI/Knowledge/KnowledgeIndexCorpusTest.php"
 code = "mixed-argument"
 message = "Invalid argument type for argument #1 of `array_column`: expected `array<array-key, array<string('source'), ('V.array_column() extends mixed)>|object>|list<array<string('source'), ('V.array_column() extends mixed)>|object>`, but found `mixed`."
@@ -6128,21 +5996,9 @@ count = 1
 
 [[issues]]
 file = "tests/Billing/State/TaxDocumentProviderTest.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
-count = 6
-
-[[issues]]
-file = "tests/Billing/State/TaxDocumentProviderTest.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayNotHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
-count = 2
-
-[[issues]]
-file = "tests/Billing/State/TaxDocumentProviderTest.php"
 code = "mixed-array-access"
 message = "Unsafe array access on type `mixed`."
-count = 7
+count = 3
 
 [[issues]]
 file = "tests/Billing/State/TaxDocumentProviderTest.php"
@@ -6488,15 +6344,9 @@ count = 1
 
 [[issues]]
 file = "tests/ControlPlane/Integration/Billing/EntitlementsEndpointTest.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
-count = 6
-
-[[issues]]
-file = "tests/ControlPlane/Integration/Billing/EntitlementsEndpointTest.php"
 code = "mixed-array-access"
 message = "Unsafe array access on type `mixed`."
-count = 17
+count = 2
 
 [[issues]]
 file = "tests/ControlPlane/Integration/Billing/EntitlementsEndpointTest.php"
@@ -6567,12 +6417,6 @@ count = 1
 [[issues]]
 file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
 code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
-code = "mixed-argument"
 message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertCount`: expected `Countable|iterable<mixed, mixed>`, but found `mixed`.'
 count = 1
 
@@ -6580,7 +6424,7 @@ count = 1
 file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
 code = "mixed-array-access"
 message = "Unsafe array access on type `mixed`."
-count = 4
+count = 2
 
 [[issues]]
 file = "tests/ControlPlane/Operator/Api/PlanApiControllerTest.php"
@@ -6700,18 +6544,6 @@ count = 1
 file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
 code = "possibly-false-argument"
 message = 'Argument #7 of method `Symfony\Component\HttpFoundation\Request::create` is possibly `false`, but parameter type `null|resource|string` does not accept it.'
-count = 2
-
-[[issues]]
-file = "tests/Identity/EventSubscriber/BranchFilterSubscriberTest.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertArrayHasKey`: expected `ArrayAccess<array-key, mixed>|array<array-key, mixed>`, but found `mixed`.'
-count = 2
-
-[[issues]]
-file = "tests/Identity/EventSubscriber/BranchFilterSubscriberTest.php"
-code = "mixed-array-access"
-message = "Unsafe array access on type `mixed`."
 count = 2
 
 [[issues]]

@@ -5274,7 +5274,7 @@ export interface components {
             readonly open?: boolean;
             /** @description Returns the currently open CashSession, or null if the register is closed. */
             readonly currentShift?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             } | null;
         };
         "CashRegister-cash_register.read": {
@@ -5292,7 +5292,7 @@ export interface components {
             readonly open?: boolean;
             /** @description Returns the currently open CashSession, or null if the register is closed. */
             readonly currentShift?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             } | null;
         };
         "CashRegister-cash_register_dashboard.read": Record<string, never>;
@@ -5308,12 +5308,12 @@ export interface components {
         "CashRegister.CashRegisterCloseResponseDto-cash_register_close.read": {
             success?: boolean;
             message?: string;
-            data?: string | null;
+            data?: unknown;
         };
         "CashRegister.CashRegisterCloseResponseDto.jsonld-cash_register_close.read": components["schemas"]["HydraItemBaseSchema"] & {
             success?: boolean;
             message?: string;
-            data?: string | null;
+            data?: unknown;
         };
         "CashRegister.CashRegisterOpenDto": {
             id?: number;
@@ -5475,7 +5475,7 @@ export interface components {
             readonly open?: boolean;
             /** @description Returns the currently open CashSession, or null if the register is closed. */
             readonly currentShift?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             } | null;
         };
         "CashRegister.jsonld-cash_register.read": components["schemas"]["HydraItemBaseSchema"] & {
@@ -5493,7 +5493,7 @@ export interface components {
             readonly open?: boolean;
             /** @description Returns the currently open CashSession, or null if the register is closed. */
             readonly currentShift?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             } | null;
         };
         "CashRegister.jsonld-cash_register_dashboard.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
@@ -5632,12 +5632,12 @@ export interface components {
         "CashSession.CashRegisterCloseResponseDto-cash_register_close.read": {
             success?: boolean;
             message?: string;
-            data?: string | null;
+            data?: unknown;
         };
         "CashSession.CashRegisterCloseResponseDto.jsonld-cash_register_close.read": components["schemas"]["HydraItemBaseSchema"] & {
             success?: boolean;
             message?: string;
-            data?: string | null;
+            data?: unknown;
         };
         "CashSession.CashSessionClosureSummaryDto-cash_closure_summary.read": {
             paymentMethodId?: number;
@@ -6429,7 +6429,7 @@ export interface components {
         "CustomerStatement.StreamedResponse": {
             /** @description Sets the PHP callback associated with this Response. */
             callback?: string;
-            headers?: (string | null)[];
+            headers?: unknown[];
             content?: string | null;
             /** @description Retrieves the status code for the current web response. */
             statusCode?: number;
@@ -6552,9 +6552,9 @@ export interface components {
             /** @description Returns the literal value of the ETag HTTP header. */
             etag?: string | null;
             /** @description Sets the response's cache headers (validation and/or expiration). */
-            cache?: (string | null)[];
+            cache?: unknown[];
             /** @description Returns an array of header names given in the Vary header. */
-            vary?: (string | null)[] | string;
+            vary?: unknown[] | string;
             /** @description Is response invalid? */
             readonly invalid?: boolean;
             /** @description Is response informative? */
@@ -6583,7 +6583,7 @@ export interface components {
         "CustomerStatement.StreamedResponse.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
             /** @description Sets the PHP callback associated with this Response. */
             callback?: string;
-            headers?: (string | null)[];
+            headers?: unknown[];
             content?: string | null;
             /** @description Retrieves the status code for the current web response. */
             statusCode?: number;
@@ -6706,9 +6706,9 @@ export interface components {
             /** @description Returns the literal value of the ETag HTTP header. */
             etag?: string | null;
             /** @description Sets the response's cache headers (validation and/or expiration). */
-            cache?: (string | null)[];
+            cache?: unknown[];
             /** @description Returns an array of header names given in the Vary header. */
-            vary?: (string | null)[] | string;
+            vary?: unknown[] | string;
             /** @description Is response invalid? */
             readonly invalid?: boolean;
             /** @description Is response informative? */
@@ -7501,7 +7501,7 @@ export interface components {
             /** @description employee.company.label */
             company: components["schemas"]["Company.jsonld-employee.read"];
             /** @description employee.user.label */
-            user?: components["schemas"]["User.jsonld-employee.read"] | null;
+            user?: components["schemas"]["User.jsonld-employee.read_validation.Default_user.create"] | null;
             /** @description employee.dni.label */
             dni?: string;
             /** @description employee.first_name.label */
@@ -7855,7 +7855,7 @@ export interface components {
         "ExpenseReport.jsonld-expense_report.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: string;
             /** @description expense_report.employee.label */
-            employee: components["schemas"]["User.jsonld-expense_report.read"];
+            employee: components["schemas"]["User.jsonld-expense_report.read_validation.Default_user.create"];
             /** @description expense_report.category.label */
             category: components["schemas"]["ExpenseCategory.jsonld-expense_report.read"];
             /** @description expense_report.branch.label */
@@ -7882,7 +7882,7 @@ export interface components {
              */
             status: string;
             /** @description expense_report.reviewed_by.label */
-            reviewedBy?: components["schemas"]["User.jsonld-expense_report.read"] | null;
+            reviewedBy?: components["schemas"]["User.jsonld-expense_report.read_validation.Default_user.create"] | null;
             /**
              * Format: date-time
              * @description expense_report.reviewed_at.label
@@ -8980,7 +8980,7 @@ export interface components {
             success?: boolean;
             message?: string;
             /** @description Sets the data to be sent as JSON. */
-            data?: string | null;
+            data?: unknown;
             /** @description Sets the JSONP callback. */
             callback?: string | null;
             /**
@@ -8988,7 +8988,7 @@ export interface components {
              * @default 15
              */
             encodingOptions: number;
-            headers?: (string | null)[];
+            headers?: unknown[];
             /** @description Gets the current response content. */
             content?: string | null;
             /** @description Retrieves the status code for the current web response. */
@@ -9113,9 +9113,9 @@ export interface components {
             /** @description Returns the literal value of the ETag HTTP header. */
             etag?: string | null;
             /** @description Sets the response's cache headers (validation and/or expiration). */
-            cache?: (string | null)[];
+            cache?: unknown[];
             /** @description Returns an array of header names given in the Vary header. */
-            vary?: (string | null)[] | string;
+            vary?: unknown[] | string;
             /** @description Is response invalid? */
             readonly invalid?: boolean;
             /** @description Is response informative? */
@@ -9145,7 +9145,7 @@ export interface components {
             success?: boolean;
             message?: string;
             /** @description Sets the data to be sent as JSON. */
-            data?: string | null;
+            data?: unknown;
             /** @description Sets the JSONP callback. */
             callback?: string | null;
             /**
@@ -9153,7 +9153,7 @@ export interface components {
              * @default 15
              */
             encodingOptions: number;
-            headers?: (string | null)[];
+            headers?: unknown[];
             /** @description Gets the current response content. */
             content?: string | null;
             /** @description Retrieves the status code for the current web response. */
@@ -9278,9 +9278,9 @@ export interface components {
             /** @description Returns the literal value of the ETag HTTP header. */
             etag?: string | null;
             /** @description Sets the response's cache headers (validation and/or expiration). */
-            cache?: (string | null)[];
+            cache?: unknown[];
             /** @description Returns an array of header names given in the Vary header. */
-            vary?: (string | null)[] | string;
+            vary?: unknown[] | string;
             /** @description Is response invalid? */
             readonly invalid?: boolean;
             /** @description Is response informative? */
@@ -10478,7 +10478,7 @@ export interface components {
             expectedDate?: string | null;
             /** @description Write-only transient payload, mirrors SaleQuote::$writeItems. */
             writeItems?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             }[];
         };
         /**
@@ -10515,7 +10515,7 @@ export interface components {
             expectedDate?: string | null;
             /** @description Write-only transient payload, mirrors SaleQuote::$writeItems. */
             writeItems?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             }[];
         };
         /**
@@ -11226,7 +11226,7 @@ export interface components {
             note?: string | null;
             /** @description sale_record.payments.label */
             payments?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             }[];
             readonly paymentState?: string;
             readonly sunatState?: string;
@@ -11305,17 +11305,17 @@ export interface components {
             note?: string | null;
             /** @description sale_record.payments.label */
             payments?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             }[];
             /**
              * @description Write-only settlement contract. PAYMENT entries represent collected
              *     money and RECEIVABLE entries represent customer financing.
              */
             settlements?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             }[];
             /** @description Items for write path (mapped to SaleItemRecord entities by processor). */
-            writeItems?: (string | null)[];
+            writeItems?: unknown[];
             /**
              * @description Compatibility flag for API/legacy clients that submit collected payment
              *     lines below the total. The POS derives it from its Crédito allocation.
@@ -11478,7 +11478,7 @@ export interface components {
             note?: string | null;
             /** @description sale_record.payments.label */
             payments?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             }[];
             readonly paymentState?: string;
             readonly sunatState?: string;
@@ -11678,7 +11678,7 @@ export interface components {
              *     SaleQuoteItem entities from it (see SaleQuoteService::buildItemsFromPayload).
              */
             writeItems?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             }[];
         };
         /**
@@ -11721,7 +11721,7 @@ export interface components {
              *     SaleQuoteItem entities from it (see SaleQuoteService::buildItemsFromPayload).
              */
             writeItems?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             }[];
         };
         /**
@@ -11894,7 +11894,7 @@ export interface components {
             note?: string | null;
             /** @description sale_record.payments.label */
             payments?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             }[];
             readonly paymentState?: string;
             readonly sunatState?: string;
@@ -12048,7 +12048,7 @@ export interface components {
             note?: string | null;
             /** @description sale_record.payments.label */
             payments?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             }[];
             readonly paymentState?: string;
             readonly sunatState?: string;
@@ -12153,7 +12153,7 @@ export interface components {
         "SaleReport.StreamedResponse": {
             /** @description Sets the PHP callback associated with this Response. */
             callback?: string;
-            headers?: (string | null)[];
+            headers?: unknown[];
             content?: string | null;
             /** @description Retrieves the status code for the current web response. */
             statusCode?: number;
@@ -12276,9 +12276,9 @@ export interface components {
             /** @description Returns the literal value of the ETag HTTP header. */
             etag?: string | null;
             /** @description Sets the response's cache headers (validation and/or expiration). */
-            cache?: (string | null)[];
+            cache?: unknown[];
             /** @description Returns an array of header names given in the Vary header. */
-            vary?: (string | null)[] | string;
+            vary?: unknown[] | string;
             /** @description Is response invalid? */
             readonly invalid?: boolean;
             /** @description Is response informative? */
@@ -12307,7 +12307,7 @@ export interface components {
         "SaleReport.StreamedResponse.jsonld": components["schemas"]["HydraItemBaseSchema"] & {
             /** @description Sets the PHP callback associated with this Response. */
             callback?: string;
-            headers?: (string | null)[];
+            headers?: unknown[];
             content?: string | null;
             /** @description Retrieves the status code for the current web response. */
             statusCode?: number;
@@ -12430,9 +12430,9 @@ export interface components {
             /** @description Returns the literal value of the ETag HTTP header. */
             etag?: string | null;
             /** @description Sets the response's cache headers (validation and/or expiration). */
-            cache?: (string | null)[];
+            cache?: unknown[];
             /** @description Returns an array of header names given in the Vary header. */
-            vary?: (string | null)[] | string;
+            vary?: unknown[] | string;
             /** @description Is response invalid? */
             readonly invalid?: boolean;
             /** @description Is response informative? */
@@ -12467,7 +12467,7 @@ export interface components {
             entityId?: string | null;
             /** @description Optional structured extras from the active screen (POS cart, form snapshot). */
             extra?: {
-                [key: string]: string | null;
+                [key: string]: unknown;
             } | null;
         };
         "Setup.InitialSetupInput": {
@@ -14264,7 +14264,7 @@ export interface components {
             /** @description user.username.label */
             username: string;
             /** @description user.plain_password.label */
-            plainPassword: string | null;
+            plainPassword?: string | null;
             /**
              * Format: iri-reference
              * @description user.role.label
@@ -14294,6 +14294,23 @@ export interface components {
              */
             email?: string | null;
         };
+        "User-user.create_user.update_validation.Default_user.create": {
+            /** @description user.username.label */
+            username: string;
+            /** @description user.plain_password.label */
+            plainPassword: string | null;
+            /**
+             * Format: iri-reference
+             * @description user.role.label
+             * @example https://example.com/
+             */
+            role?: string;
+            /**
+             * Format: email
+             * @description user.email.label
+             */
+            email?: string | null;
+        };
         "User-user.read": {
             readonly id?: number;
             /** @description user.username.label */
@@ -14311,13 +14328,47 @@ export interface components {
              */
             readonly lastLoginAt?: string | null;
         };
-        "User.jsonld-employee.read": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
-        "User.jsonld-expense_report.read": components["schemas"]["HydraItemBaseSchema"] & {
+        "User-user.read_validation.Default_user.create": {
+            readonly id?: number;
+            /** @description user.username.label */
+            username: string;
+            /** @description user.role.label */
+            role?: components["schemas"]["Role-user.read"];
+            /**
+             * Format: email
+             * @description user.email.label
+             */
+            email?: string | null;
+            /**
+             * Format: date-time
+             * @description user.last_login_at.label
+             */
+            readonly lastLoginAt?: string | null;
+        };
+        "User.jsonld-employee.read_validation.Default_user.create": components["schemas"]["HydraItemBaseSchema"] & Record<string, never>;
+        "User.jsonld-expense_report.read_validation.Default_user.create": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
             /** @description user.username.label */
             username: string;
         };
         "User.jsonld-user.read": components["schemas"]["HydraItemBaseSchema"] & {
+            readonly id?: number;
+            /** @description user.username.label */
+            username: string;
+            /** @description user.role.label */
+            role?: components["schemas"]["Role.jsonld-user.read"];
+            /**
+             * Format: email
+             * @description user.email.label
+             */
+            email?: string | null;
+            /**
+             * Format: date-time
+             * @description user.last_login_at.label
+             */
+            readonly lastLoginAt?: string | null;
+        };
+        "User.jsonld-user.read_validation.Default_user.create": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
             /** @description user.username.label */
             username: string;
@@ -28986,9 +29037,9 @@ export interface operations {
         /** @description The new User resource */
         requestBody: {
             content: {
-                "application/json": components["schemas"]["User-user.create_user.update"];
-                "application/ld+json": components["schemas"]["User-user.create_user.update"];
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["User-user.create_user.update"];
+                "application/json": components["schemas"]["User-user.create_user.update_validation.Default_user.create"];
+                "application/ld+json": components["schemas"]["User-user.create_user.update_validation.Default_user.create"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["User-user.create_user.update_validation.Default_user.create"];
             };
         };
         responses: {
@@ -28998,8 +29049,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["User-user.read"];
-                    "application/ld+json": components["schemas"]["User.jsonld-user.read"];
+                    "application/json": components["schemas"]["User-user.read_validation.Default_user.create"];
+                    "application/ld+json": components["schemas"]["User.jsonld-user.read_validation.Default_user.create"];
                 };
             };
             /** @description Invalid input */

@@ -257,8 +257,8 @@ final readonly class KardexSummaryService
     /**
      * @return list<array{
      *     warehouse_id: string,
-     *     qty_delta: string,
-     *     inbound_unit_cost: string|null
+     *     qty_delta: numeric-string,
+     *     inbound_unit_cost: numeric-string|null
      * }>
      *
      * @throws Exception
@@ -304,13 +304,26 @@ final readonly class KardexSummaryService
             ORDER BY sm.occurred_at ASC, sm.created_at ASC
             SQL, $params);
 
-        return array_map(static fn(array $row): array => [
-            'warehouse_id' => (string) $row['warehouse_id'],
-            'qty_delta' => number_format((float) $row['qty_delta_base'], 6, '.', ''),
-            'inbound_unit_cost' => $row['inbound_unit_cost'] !== null
-                ? number_format((float) $row['inbound_unit_cost'], 4, '.', '')
-                : null,
-        ], $rows);
+        $movements = array_map(
+            static function (array $row): array {
+                /** @var numeric-string $qtyDelta */
+                $qtyDelta = number_format((float) $row['qty_delta_base'], 6, '.', '');
+
+                /** @var numeric-string|null $inboundUnitCost */
+                $inboundUnitCost = $row['inbound_unit_cost'] !== null
+                    ? number_format((float) $row['inbound_unit_cost'], 4, '.', '')
+                    : null;
+
+                return [
+                    'warehouse_id' => (string) $row['warehouse_id'],
+                    'qty_delta' => $qtyDelta,
+                    'inbound_unit_cost' => $inboundUnitCost,
+                ];
+            },
+            $rows,
+        );
+
+        return $movements;
     }
 
     private function normalizeValuation(?string $valuation): string

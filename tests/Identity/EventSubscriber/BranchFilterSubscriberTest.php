@@ -174,6 +174,7 @@ final class BranchFilterSubscriberTest extends TestCase
         $paramsProp = new \ReflectionProperty(\Doctrine\ORM\Query\Filter\SQLFilter::class, 'parameters');
         $params = $paramsProp->getValue($filter);
 
+        self::assertIsArray($params);
         self::assertArrayHasKey('branchId', $params);
         // doctrine/orm >= 3.6 stores Parameter objects; older versions arrays.
         $param = $params['branchId'];
@@ -203,6 +204,7 @@ final class BranchFilterSubscriberTest extends TestCase
         $paramsProp = new \ReflectionProperty(\Doctrine\ORM\Query\Filter\SQLFilter::class, 'parameters');
         $params = $paramsProp->getValue($filter);
 
+        self::assertIsArray($params);
         self::assertArrayHasKey('branchId', $params);
         $param = $params['branchId'];
         self::assertSame('7', \is_array($param) ? $param['value'] : $param->value);

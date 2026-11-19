@@ -82,9 +82,12 @@ final class EntitlementsEndpointTest extends TestCase
 
         $payload = json_decode((string) $response->getContent(), true);
 
+        self::assertIsArray($payload);
         self::assertSame('basic', $payload['plan']);
         self::assertArrayHasKey('limits', $payload);
+        self::assertIsArray($payload['limits']);
         self::assertArrayHasKey('users', $payload['limits']);
+        self::assertIsArray($payload['limits']['users']);
         self::assertSame(3, $payload['limits']['users']['current']);
         self::assertSame(10, $payload['limits']['users']['limit']);
         self::assertArrayHasKey('features', $payload);
@@ -133,8 +136,10 @@ final class EntitlementsEndpointTest extends TestCase
 
         $payload = $response->toArray();
 
+        self::assertIsArray($payload['features']);
         self::assertSame('pro', $payload['plan']);
         self::assertArrayHasKey('excel_export', $payload['features']);
+        self::assertIsArray($payload['features']['excel_export']);
         self::assertArrayHasKey('source', $payload['features']['excel_export']);
         self::assertSame('plan', $payload['features']['excel_export']['source']);
         self::assertTrue($payload['features']['excel_export']['enabled']);
@@ -154,6 +159,7 @@ final class EntitlementsEndpointTest extends TestCase
         self::assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
 
         $payload = json_decode((string) $response->getContent(), true);
+        self::assertIsArray($payload);
         self::assertArrayHasKey('error', $payload);
     }
 

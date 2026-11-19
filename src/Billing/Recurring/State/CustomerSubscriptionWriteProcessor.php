@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 /** @extends AbstractEmbeddedLinesProcessor<CustomerSubscription, \App\Billing\Recurring\Entity\CustomerSubscriptionLine> */
 final readonly class CustomerSubscriptionWriteProcessor extends AbstractEmbeddedLinesProcessor
 {
-    /** @param ProcessorInterface<mixed, mixed> $persistProcessor */
+    /** @param ProcessorInterface<CustomerSubscription, CustomerSubscription> $persistProcessor */
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         ProcessorInterface $persistProcessor,

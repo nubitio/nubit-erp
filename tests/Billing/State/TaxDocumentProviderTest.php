@@ -90,6 +90,7 @@ final class TaxDocumentProviderTest extends TestCase
         $provider->provide(new GetCollection(), [], []);
 
         self::assertIsArray($capturedContext);
+        self::assertIsArray($capturedContext['filters']);
         self::assertArrayHasKey('sort', $capturedContext['filters']);
         self::assertSame([['selector' => 'createdAt', 'desc' => true]], $capturedContext['filters']['sort']);
         self::assertArrayNotHasKey('filter', $capturedContext['filters']);
@@ -120,6 +121,7 @@ final class TaxDocumentProviderTest extends TestCase
         $provider->provide(new GetCollection(), [], ['filters' => ['type' => 'invoice']]);
 
         self::assertIsArray($capturedContext);
+        self::assertIsArray($capturedContext['filters']);
         self::assertArrayHasKey('sort', $capturedContext['filters']);
         self::assertArrayHasKey('filter', $capturedContext['filters']);
         self::assertSame([['documentType', 'in', ['01', '03']]], $capturedContext['filters']['filter']);
@@ -150,6 +152,7 @@ final class TaxDocumentProviderTest extends TestCase
         $provider->provide(new GetCollection(), [], ['filters' => ['type' => 'note']]);
 
         self::assertIsArray($capturedContext);
+        self::assertIsArray($capturedContext['filters']);
         self::assertArrayHasKey('filter', $capturedContext['filters']);
         self::assertSame([['documentType', 'in', ['07', '08']]], $capturedContext['filters']['filter']);
     }
@@ -179,6 +182,7 @@ final class TaxDocumentProviderTest extends TestCase
         $provider->provide(new GetCollection(), [], ['filters' => ['type' => 'unknown']]);
 
         self::assertIsArray($capturedContext);
+        self::assertIsArray($capturedContext['filters']);
         self::assertArrayHasKey('sort', $capturedContext['filters']);
         self::assertArrayNotHasKey('filter', $capturedContext['filters']);
     }
@@ -209,6 +213,7 @@ final class TaxDocumentProviderTest extends TestCase
         $provider->provide(new GetCollection(), [], ['filters' => ['type' => 'invoice', 'filter' => $existingFilter]]);
 
         self::assertIsArray($capturedContext);
+        self::assertIsArray($capturedContext['filters']);
         self::assertArrayHasKey('filter', $capturedContext['filters']);
 
         $filter = $capturedContext['filters']['filter'];

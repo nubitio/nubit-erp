@@ -17,6 +17,9 @@ use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Process\Process;
 
+/**
+ * @phpstan-import-type Params from DriverManager
+ */
 final readonly class BinlogBackupService
 {
     public function __construct(
@@ -419,9 +422,7 @@ final readonly class BinlogBackupService
         return $connection;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return Params */
     private function buildBackupConnectionParams(string $url): array
     {
         $parts = parse_url($url);
@@ -436,12 +437,18 @@ final readonly class BinlogBackupService
 
         $params = [
             'driver' => 'pdo_mysql',
-            'host' => $parts['host'] ?? null,
             'port' => isset($parts['port']) ? (int) $parts['port'] : 3306,
-            'user' => isset($parts['user']) ? urldecode($parts['user']) : null,
-            'password' => isset($parts['pass']) ? urldecode($parts['pass']) : null,
         ];
 
+        if (isset($parts['host'])) {
+            $params['host'] = $parts['host'];
+        }
+        if (isset($parts['user'])) {
+            $params['user'] = urldecode($parts['user']);
+        }
+        if (isset($parts['pass'])) {
+            $params['password'] = urldecode($parts['pass']);
+        }
         if (!empty($parts['path']) && $parts['path'] !== '/') {
             $params['dbname'] = ltrim($parts['path'], '/');
         }

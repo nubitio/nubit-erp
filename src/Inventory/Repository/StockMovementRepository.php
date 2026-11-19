@@ -183,9 +183,9 @@ final readonly class StockMovementRepository
 
         $valuationInput = array_map(static fn(array $row): array => [
             'warehouse_id' => (string) $row['warehouse_id'],
-            'qty_delta' => number_format((float) $row['qty_delta_base'], 6, '.', ''),
+            'qty_delta' => self::formatNumeric($row['qty_delta_base'], 6),
             'inbound_unit_cost' => $row['inbound_unit_cost'] !== null
-                ? number_format((float) $row['inbound_unit_cost'], 4, '.', '')
+                ? self::formatNumeric($row['inbound_unit_cost'], 4)
                 : null,
         ], $rows);
 
@@ -211,6 +211,15 @@ final readonly class StockMovementRepository
         $rows = array_slice($rows, $offset, $perPage);
 
         return array_map($this->hydrateRow(...), $rows);
+    }
+
+    /** @return numeric-string */
+    private static function formatNumeric(mixed $value, int $scale): string
+    {
+        /** @var numeric-string $formatted */
+        $formatted = number_format((float) $value, $scale, '.', '');
+
+        return $formatted;
     }
 
     /**

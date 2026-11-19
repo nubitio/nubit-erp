@@ -24,6 +24,9 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Process\Process;
 use Symfony\Contracts\Cache\CacheInterface;
 
+/**
+ * @phpstan-import-type Params from DriverManager
+ */
 #[AsCommand(
     name: 'app:tenant:provision',
     description: 'Provision a tenant (DB, control plane, migrations, optional seed).',
@@ -374,7 +377,7 @@ class TenantProvisionCommand extends Command
      * with 'driver' (which produces an empty DSN), we parse the URL ourselves
      * and return a plain params array that DBAL 4 accepts without ambiguity.
      *
-     * @return array<string, mixed>
+     * @return Params
      */
     private function parseDbUrl(string $url): array
     {
@@ -399,7 +402,11 @@ class TenantProvisionCommand extends Command
         // Forward serverVersion from query string if present (informational only)
         if (!empty($parts['query'])) {
             parse_str($parts['query'], $query);
-            if (!empty($query['serverVersion'])) {
+            if (
+                isset($query['serverVersion'])
+                && is_string($query['serverVersion'])
+                && $query['serverVersion'] !== ''
+            ) {
                 $params['serverVersion'] = $query['serverVersion'];
             }
         }

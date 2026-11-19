@@ -28,7 +28,7 @@ final class FifoKardexValuator
      */
     public function apply(array $movements): array
     {
-        /** @var array<string, list<array{qty: string, cost: string}>> $layersByWarehouse */
+        /** @var array<string, list<array{qty: numeric-string, cost: numeric-string}>> $layersByWarehouse */
         $layersByWarehouse = [];
         $results = [];
 
@@ -74,7 +74,7 @@ final class FifoKardexValuator
      */
     public function endingMetrics(array $movements): array
     {
-        /** @var array<string, list<array{qty: string, cost: string}>> $layersByWarehouse */
+        /** @var array<string, list<array{qty: numeric-string, cost: numeric-string}>> $layersByWarehouse */
         $layersByWarehouse = [];
 
         foreach ($movements as $movement) {
@@ -149,6 +149,7 @@ final class FifoKardexValuator
             }
 
             $consumedQty = bcadd($consumedQty, $take, self::QTY_SCALE);
+            /** @var numeric-string $take */
             $consumedValue = bcadd($consumedValue, $this->multiplyMoneyRaw($take, $layer['cost']), 8);
         }
 
@@ -175,13 +176,21 @@ final class FifoKardexValuator
         return bcmul($qty, $unitCost, 8);
     }
 
+    /** @return numeric-string */
     private function formatMoney(string $value): string
     {
-        return number_format((float) $value, self::MONEY_SCALE, '.', '');
+        /** @var numeric-string $formatted */
+        $formatted = number_format((float) $value, self::MONEY_SCALE, '.', '');
+
+        return $formatted;
     }
 
+    /** @return numeric-string */
     private function formatCost(string $value): string
     {
-        return number_format((float) $value, self::COST_SCALE, '.', '');
+        /** @var numeric-string $formatted */
+        $formatted = number_format((float) $value, self::COST_SCALE, '.', '');
+
+        return $formatted;
     }
 }

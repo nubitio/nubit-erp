@@ -27,9 +27,9 @@ final class WeightedAverageKardexValuator
      */
     public function apply(array $movements): array
     {
-        /** @var array<string, string> $qtyByWarehouse */
+        /** @var array<string, numeric-string> $qtyByWarehouse */
         $qtyByWarehouse = [];
-        /** @var array<string, string> $avgCostByWarehouse */
+        /** @var array<string, numeric-string> $avgCostByWarehouse */
         $avgCostByWarehouse = [];
         $results = [];
 
@@ -83,9 +83,9 @@ final class WeightedAverageKardexValuator
      */
     public function endingMetrics(array $movements): array
     {
-        /** @var array<string, string> $qtyByWarehouse */
+        /** @var array<string, numeric-string> $qtyByWarehouse */
         $qtyByWarehouse = [];
-        /** @var array<string, string> $avgCostByWarehouse */
+        /** @var array<string, numeric-string> $avgCostByWarehouse */
         $avgCostByWarehouse = [];
 
         foreach ($movements as $movement) {
@@ -136,13 +136,21 @@ final class WeightedAverageKardexValuator
         return bcmul($qty, $unitCost, 8);
     }
 
+    /** @return numeric-string */
     private function formatMoney(string $value): string
     {
-        return number_format((float) $value, self::MONEY_SCALE, '.', '');
+        /** @var numeric-string $formatted */
+        $formatted = number_format((float) $value, self::MONEY_SCALE, '.', '');
+
+        return $formatted;
     }
 
+    /** @return numeric-string */
     private function formatCost(string $value): string
     {
-        return number_format((float) $value, self::COST_SCALE, '.', '');
+        /** @var numeric-string $formatted */
+        $formatted = number_format((float) $value, self::COST_SCALE, '.', '');
+
+        return $formatted;
     }
 }

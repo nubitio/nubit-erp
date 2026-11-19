@@ -35,6 +35,7 @@ final class PlanApiControllerTest extends TestCase
 
         $this->assertSame(Response::HTTP_OK, $response->getStatusCode());
         $payload = json_decode((string) $response->getContent(), true);
+        $this->assertIsArray($payload);
         $this->assertArrayHasKey('plans', $payload);
         $this->assertCount(1, $payload['plans']);
         $this->assertSame('free', $payload['plans'][0]['name']);
