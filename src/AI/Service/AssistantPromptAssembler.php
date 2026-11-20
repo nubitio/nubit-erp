@@ -96,7 +96,7 @@ final readonly class AssistantPromptAssembler
 
         if (is_array($ctx->extra) && $ctx->extra !== []) {
             $encoded = json_encode($ctx->extra, JSON_UNESCAPED_UNICODE);
-            if (is_string($encoded) && $encoded !== '') {
+            if ($encoded !== false) {
                 if (strlen($encoded) > self::EXTRA_JSON_MAX_BYTES) {
                     $encoded = substr($encoded, 0, self::EXTRA_JSON_MAX_BYTES) . '…';
                 }

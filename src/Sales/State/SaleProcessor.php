@@ -514,7 +514,7 @@ readonly class SaleProcessor implements ProcessorInterface
             total: $sale->getTotal() ?? '0.00',
             tax: $sale->getTaxTotal(),
             cogs: Money::toString($cogs),
-            currency: $sale->getCurrency() ?? 'PEN',
+            currency: $sale->getCurrency(),
         ));
     }
 

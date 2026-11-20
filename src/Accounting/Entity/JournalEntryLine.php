@@ -22,7 +22,7 @@ class JournalEntryLine
 
     #[ORM\ManyToOne(targetEntity: JournalEntry::class, inversedBy: 'lines')]
     #[ORM\JoinColumn(name: 'journal_entry_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
-    private ?JournalEntry $entry = null;
+    private JournalEntry $entry;
 
     #[Groups(['journal_entry:read'])]
     #[ORM\ManyToOne(targetEntity: Account::class)]
@@ -52,10 +52,10 @@ class JournalEntryLine
 
     public function getEntry(): ?JournalEntry
     {
-        return $this->entry;
+        return $this->entry ?? null;
     }
 
-    public function setEntry(?JournalEntry $entry): static
+    public function setEntry(JournalEntry $entry): static
     {
         $this->entry = $entry;
 

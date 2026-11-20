@@ -70,9 +70,6 @@ final readonly class AssistantThreadService
         $slice = array_slice($all, -self::HISTORY_LIMIT);
         $out = [];
         foreach ($slice as $message) {
-            if (!$message instanceof AssistantThreadMessage) {
-                continue;
-            }
             $out[] = [
                 'role' => $message->getRole(),
                 'content' => $message->getContent(),

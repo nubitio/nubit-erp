@@ -27,7 +27,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  *
  * Guard: a purchase that is already VOIDED cannot be voided again.
  *
- * @implements ProcessorInterface<Purchase, null>
+ * @implements ProcessorInterface<mixed, null>
  */
 final readonly class PurchaseVoidProcessor implements ProcessorInterface
 {

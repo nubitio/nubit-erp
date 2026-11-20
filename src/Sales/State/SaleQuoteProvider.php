@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\CollectionOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\Sales\Entity\SaleQuote;
-use App\Sales\Entity\SaleQuoteItem;
 use App\Sales\Service\SaleQuoteService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityNotFoundException;
@@ -88,10 +87,6 @@ readonly class SaleQuoteProvider implements ProviderInterface
     {
         foreach ($quotes as $quote) {
             foreach ($quote->getItems() as $item) {
-                if (!$item instanceof SaleQuoteItem) {
-                    continue;
-                }
-
                 $product = $item->getProduct();
                 if ($product === null) {
                     continue;

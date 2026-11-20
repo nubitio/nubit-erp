@@ -18,7 +18,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  * received order cannot be cancelled (goods have already moved); only
  * draft/sent orders can be.
  *
- * @implements ProcessorInterface<PurchaseOrder, null>
+ * @implements ProcessorInterface<mixed, null>
  */
 final readonly class PurchaseOrderCancelProcessor implements ProcessorInterface
 {

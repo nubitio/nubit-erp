@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\AI\Tool;
 
-use App\Inventory\ApiResource\StockMovement;
 use App\Inventory\Repository\StockMovementRepository;
 use Symfony\AI\Agent\Toolbox\Attribute\AsTool;
 use Throwable;
@@ -49,16 +48,13 @@ final readonly class InventoryMovementTools
 
         $items = [];
         foreach ($rows as $row) {
-            if (!$row instanceof StockMovement) {
-                continue;
-            }
             $items[] = [
                 'id' => $row->id,
                 'occurred_at' => $row->occurredAt,
                 'type' => $row->movementTypeLabel ?? $row->movementType,
                 'qty_in' => $row->qtyIn,
                 'qty_out' => $row->qtyOut,
-                'warehouse' => is_array($row->warehouse) ? $row->warehouse['name'] ?? null : null,
+                'warehouse' => $row->warehouse['name'] ?? null,
                 'source' => $row->sourceId,
             ];
         }

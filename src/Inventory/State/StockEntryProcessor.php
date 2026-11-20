@@ -38,10 +38,11 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
  *
  * All persistence + ledger writes happen inside a single transaction.
  *
- * @implements ProcessorInterface<StockEntry, StockEntry>
+ * @implements ProcessorInterface<mixed, mixed>
  */
 final readonly class StockEntryProcessor implements ProcessorInterface
 {
+    /** @param ProcessorInterface<mixed, mixed> $persistProcessor */
     public function __construct(
         private InventoryService $inventoryService,
         private UnitConversionServiceInterface $unitConversion,

@@ -163,45 +163,9 @@ message = "Assigning `mixed` type to a variable may lead to unexpected behavior.
 count = 1
 
 [[issues]]
-file = "src/AI/Service/AssistantCallLogger.php"
-code = "redundant-logical-operation"
-message = "Redundant `||` operation: left operand is always false and right operand is evaluated."
-count = 1
-
-[[issues]]
-file = "src/AI/Service/AssistantCallLogger.php"
-code = "redundant-type-comparison"
-message = "Redundant condition: variable `$data` (type `array<string, mixed>`) is already known to be `array<array-key, mixed>`."
-count = 2
-
-[[issues]]
-file = "src/AI/Service/AssistantCallLogger.php"
-code = "redundant-type-comparison"
-message = "Redundant type assertion: `$data` is already `array<string, mixed>`."
-count = 1
-
-[[issues]]
 file = "src/AI/Service/AssistantPromptAssembler.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
-file = "src/AI/Service/AssistantPromptAssembler.php"
-code = "redundant-comparison"
-message = "Redundant `!==` comparison: left-hand side is always not identical to right-hand side."
-count = 1
-
-[[issues]]
-file = "src/AI/Service/AssistantPromptAssembler.php"
-code = "redundant-logical-operation"
-message = "Redundant `&&` operation: left operand is evaluated and right operand is always truthy."
-count = 1
-
-[[issues]]
-file = "src/AI/Service/AssistantThreadService.php"
-code = "impossible-condition"
-message = "This condition (type `false`) will always evaluate to false."
 count = 1
 
 [[issues]]
@@ -281,18 +245,6 @@ file = "src/AI/Tool/CustomerIntelligenceTool.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
 count = 4
-
-[[issues]]
-file = "src/AI/Tool/InventoryMovementTools.php"
-code = "impossible-condition"
-message = "This condition (type `false`) will always evaluate to false."
-count = 1
-
-[[issues]]
-file = "src/AI/Tool/InventoryMovementTools.php"
-code = "redundant-null-coalesce"
-message = "Redundant null coalesce: left-hand side can never be `null` or undefined."
-count = 1
 
 [[issues]]
 file = "src/AI/Tool/ProductTools.php"
@@ -470,51 +422,15 @@ count = 1
 
 [[issues]]
 file = "src/BankReconciliation/Controller/BankStatementImportController.php"
-code = "mixed-argument"
-message = "Invalid argument type for argument #1 of `strtolower`: expected `string`, but found `mixed`."
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Controller/BankStatementImportController.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #3 of `App\BankReconciliation\Service\BankStatementImportService::startImport`: expected `string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Controller/BankStatementImportController.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #5 of `App\BankReconciliation\Message\BankStatementImportMessage::__construct`: expected `null|string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Controller/BankStatementImportController.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #7 of `App\BankReconciliation\Message\BankStatementImportMessage::__construct`: expected `null|string`, but found `nonnull`.'
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Controller/BankStatementImportController.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 2
 
 [[issues]]
 file = "src/BankReconciliation/Controller/BankStatementImportController.php"
-code = "mixed-assignment"
-message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Controller/BankStatementImportController.php"
-code = "mixed-method-access"
-message = "Attempting to access a method on a non-object type (`nonnull`)."
-count = 4
-
-[[issues]]
-file = "src/BankReconciliation/Controller/BankStatementImportController.php"
 code = "possibly-null-operand"
 message = "Possibly null left operand used in string concatenation (type `null|string`)."
-count = 2
+count = 1
 
 [[issues]]
 file = "src/BankReconciliation/Controller/BankStatementImportController.php"
@@ -1141,12 +1057,6 @@ message = "Redundant docblock type for variable `$line`."
 count = 1
 
 [[issues]]
-file = "src/Billing/Service/CreditNoteStockReverser.php"
-code = "redundant-null-coalesce"
-message = "Redundant null coalesce: left-hand side can never be `null` or undefined."
-count = 1
-
-[[issues]]
 file = "src/Billing/Service/InvoiceCreationService.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
@@ -1252,18 +1162,12 @@ count = 2
 file = "src/Billing/State/TaxDocumentProcessor.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
+count = 1
 
 [[issues]]
 file = "src/Billing/State/TaxDocumentProcessor.php"
 code = "null-operand"
 message = "Right operand in `!=` comparison is `null`."
-count = 1
-
-[[issues]]
-file = "src/Billing/State/TaxDocumentProcessor.php"
-code = "possible-method-access-on-null"
-message = "Attempting to call a method on `null`."
 count = 1
 
 [[issues]]
@@ -1552,36 +1456,6 @@ count = 1
 file = "src/CashRegister/State/CashMovementWriteProcessor.php"
 code = "mixed-operand"
 message = "Casting `mixed` to `bool`."
-count = 1
-
-[[issues]]
-file = "src/CashRegister/State/CashMovementWriteProcessor.php"
-code = "no-value"
-message = "Argument #1 passed to function `number_format` has type `never`, meaning it cannot produce a value."
-count = 1
-
-[[issues]]
-file = "src/CashRegister/State/CashMovementWriteProcessor.php"
-code = "redundant-comparison"
-message = "Redundant `!==` comparison: left-hand side is always not identical to right-hand side."
-count = 1
-
-[[issues]]
-file = "src/CashRegister/State/CashMovementWriteProcessor.php"
-code = "redundant-condition"
-message = "Redundant ternary operator: condition is always truthy."
-count = 1
-
-[[issues]]
-file = "src/CashRegister/State/CashMovementWriteProcessor.php"
-code = "redundant-logical-operation"
-message = "Redundant `&&` operation: left operand is always truthy and right operand is evaluated."
-count = 1
-
-[[issues]]
-file = "src/CashRegister/State/CashMovementWriteProcessor.php"
-code = "redundant-type-comparison"
-message = "Redundant type assertion: `$amount` is already `numeric-string`."
 count = 1
 
 [[issues]]
@@ -3476,20 +3350,8 @@ count = 3
 
 [[issues]]
 file = "src/Inventory/State/StockEntryProcessor.php"
-code = "impossible-condition"
-message = "This condition (type `false`) will always evaluate to false."
-count = 1
-
-[[issues]]
-file = "src/Inventory/State/StockEntryProcessor.php"
 code = "mixed-method-access"
 message = "Attempting to access a method on a non-object type (`mixed`)."
-count = 1
-
-[[issues]]
-file = "src/Inventory/State/StockEntryProcessor.php"
-code = "no-value"
-message = 'Argument #1 passed to method `ApiPlatform\State\ProcessorInterface::process` has type `never`, meaning it cannot produce a value.'
 count = 1
 
 [[issues]]
@@ -3562,7 +3424,7 @@ count = 2
 file = "src/Onboarding/OpeningBalanceRow.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
+count = 1
 
 [[issues]]
 file = "src/Onboarding/OpeningBalanceRow.php"
@@ -3709,12 +3571,6 @@ message = "Non numeric string of type `string` implicitly cast to `float`."
 count = 1
 
 [[issues]]
-file = "src/Purchasing/State/PurchaseOrderCancelProcessor.php"
-code = "impossible-condition"
-message = "This condition (type `false`) will always evaluate to false."
-count = 1
-
-[[issues]]
 file = "src/Purchasing/State/PurchaseProcessor.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
@@ -3724,12 +3580,6 @@ count = 1
 file = "src/Purchasing/State/PurchaseProvider.php"
 code = "docblock-type-mismatch"
 message = 'Docblock return type `ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|iterable<mixed, object>|null|object` is incompatible with native return type `array<array-key, mixed>|null|object`.'
-count = 1
-
-[[issues]]
-file = "src/Purchasing/State/PurchaseVoidProcessor.php"
-code = "impossible-condition"
-message = "This condition (type `false`) will always evaluate to false."
 count = 1
 
 [[issues]]
@@ -4279,12 +4129,6 @@ message = "Redundant docblock type for variable `$item`."
 count = 1
 
 [[issues]]
-file = "src/Sales/State/SaleProcessor.php"
-code = "redundant-null-coalesce"
-message = "Redundant null coalesce: left-hand side can never be `null` or undefined."
-count = 1
-
-[[issues]]
 file = "src/Sales/State/SaleProvider.php"
 code = "docblock-type-mismatch"
 message = 'Docblock return type `ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|iterable<mixed, object>|null|object` is incompatible with native return type `array<array-key, mixed>|null|object`.'
@@ -4312,12 +4156,6 @@ count = 1
 file = "src/Sales/State/SaleQuoteProvider.php"
 code = "docblock-type-mismatch"
 message = 'Docblock return type `ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|iterable<mixed, object>|null|object` is incompatible with native return type `array<array-key, mixed>|null|object`.'
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleQuoteProvider.php"
-code = "impossible-condition"
-message = "This condition (type `false`) will always evaluate to false."
 count = 1
 
 [[issues]]
@@ -4628,12 +4466,6 @@ count = 1
 
 [[issues]]
 file = "src/Setup/Service/E2eTestSeedService.php"
-code = "impossible-condition"
-message = "This condition (type `false`) will always evaluate to false."
-count = 1
-
-[[issues]]
-file = "src/Setup/Service/E2eTestSeedService.php"
 code = "less-specific-nested-argument-type"
 message = 'Argument type mismatch for argument #1 of `App\Setup\Service\E2eTestSeedService::purgeSalesByIds`: expected `list<string>`, but provided type `non-empty-list<mixed>` is less specific.'
 count = 3
@@ -4642,12 +4474,6 @@ count = 3
 file = "src/Setup/Service/PresentationDemoSeeder.php"
 code = "deprecated-class"
 message = 'Class `App\Inventory\Entity\ProductStock` is deprecated and should no longer be used.'
-count = 1
-
-[[issues]]
-file = "src/Setup/Service/PresentationDemoSeeder.php"
-code = "impossible-condition"
-message = "This condition (type `false`) will always evaluate to false."
 count = 1
 
 [[issues]]
@@ -4672,13 +4498,7 @@ count = 1
 file = "src/Setup/Service/PresentationDemoSeeder.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
-count = 4
-
-[[issues]]
-file = "src/Setup/Service/PresentationDemoSeeder.php"
-code = "redundant-null-coalesce"
-message = "Redundant null coalesce: left-hand side can never be `null` or undefined."
-count = 2
+count = 3
 
 [[issues]]
 file = "src/Setup/Service/TestDataSeeder.php"

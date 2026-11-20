@@ -1,7 +1,6 @@
 includes:
     - vendor/phpstan/phpstan-doctrine/extension.neon
     - vendor/phpstan/phpstan-doctrine/rules.neon
-    - phpstan-baseline.neon
 
 parameters:
     level: 8
@@ -21,12 +20,3 @@ parameters:
         - tests/FixedAssets/Command/GenerateDepreciationEntriesCommandTest.php
         - tests/CashRegister/Controller/CashRegisterReportControllerTest.php
         - tests/Setup/Command/SeedPresentationDemoCommandGuardTest.php
-    ignoreErrors:
-        # ApiPlatform ProcessorInterface requires generic types T1,T2 — safe to suppress at this level
-        - { message: '#ProcessorInterface but does not specify its types#', path: src/Inventory/State/StockEntryProcessor.php }
-        # PHPDoc-driven instanceof check — mixed $data is narrowed to StockEntry by ApiPlatform routing
-        - { message: '#Instanceof between.*StockEntry.*will always evaluate to true#', path: src/Inventory/State/StockEntryProcessor.php }
-        # Same pattern for Purchase void processor
-        - { message: '#Instanceof between.*Purchase.*will always evaluate to true#', path: src/Purchasing/State/PurchaseVoidProcessor.php }
-        # Same pattern for PurchaseOrder cancel processor
-        - { message: '#Instanceof between.*PurchaseOrder.*will always evaluate to true#', path: src/Purchasing/State/PurchaseOrderCancelProcessor.php }

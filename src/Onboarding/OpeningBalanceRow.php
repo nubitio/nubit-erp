@@ -61,6 +61,7 @@ final readonly class OpeningBalanceRow
 
     /**
      * @param array<string, mixed> $row
+     * @param list<string> $aliases
      */
     private static function pick(array $row, array $aliases): string
     {

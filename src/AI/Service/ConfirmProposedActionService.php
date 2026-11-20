@@ -229,7 +229,7 @@ final readonly class ConfirmProposedActionService
             $sale->setTipoPago($method);
         }
 
-        if (isset($payload['customerId']) && $payload['customerId'] !== null) {
+        if (isset($payload['customerId'])) {
             $customer = $this->customerRepository->find($payload['customerId']);
             if ($customer instanceof Customer) {
                 $sale->setCustomer($customer);
