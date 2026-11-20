@@ -151,7 +151,7 @@ final class E2eTestSeedServiceTest extends TestCase
         $paymentMethodRepository->method('find')->with(1)->willReturn($paymentMethod);
 
         $connection->method('fetchFirstColumn')->willReturn([]);
-        $controlPlaneSchemaManager->method('tablesExist')->with(['control_plane_admin_users'])->willReturn(false);
+        $controlPlaneSchemaManager->method('tablesExist')->willReturn(false);
         $controlPlaneConnection->method('createSchemaManager')->willReturn($controlPlaneSchemaManager);
         $connectionRegistry->method('getConnection')->with('control_plane')->willReturn($controlPlaneConnection);
 
