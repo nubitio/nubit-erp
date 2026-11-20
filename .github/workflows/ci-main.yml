@@ -136,7 +136,7 @@ jobs:
       - name: Resolve jobs
         id: jobs
         env:
-          FORCE_ALL: ${{ github.event_name != 'pull_request' }}
+          FORCE_ALL: ${{ github.event_name == 'workflow_dispatch' }}
           FILTER_BACKEND: ${{ steps.filter.outputs.backend }}
           FILTER_FRONTEND: ${{ steps.filter.outputs.frontend }}
         run: |
@@ -145,7 +145,7 @@ jobs:
             echo "backend=true" >> "$GITHUB_OUTPUT"
             echo "frontend=true" >> "$GITHUB_OUTPUT"
             echo "coverage=true" >> "$GITHUB_OUTPUT"
-            echo "Running full suite (push to main or manual dispatch)."
+            echo "Running full suite (manual dispatch)."
             exit 0
           fi
 
@@ -160,6 +160,7 @@ jobs:
   backend:
     name: Backend Quality & Coverage
     needs: changes
+    if: github.event_name != 'push'
     runs-on: ${{ needs.changes.outputs.backend == 'true' && needs.changes.outputs.runner || needs.changes.outputs.runner_light }}
     # Normal runs take 1-7 minutes. A run once hung ~29 minutes in the post-step
     # BuildKit cleanup (buildkitd killed with SIGKILL) after every test had
@@ -287,6 +288,7 @@ jobs:
   frontend:
     name: Frontend Lint, Tests & Coverage
     needs: changes
+    if: github.event_name != 'push'
     runs-on: ${{ needs.changes.outputs.runner_light }}
     timeout-minutes: 15
 
@@ -358,6 +360,7 @@ jobs:
   deploy-tooling:
     name: Deployment tooling checks
     needs: changes
+    if: github.event_name != 'push'
     runs-on: ${{ needs.changes.outputs.runner_light }}
     timeout-minutes: 5
     steps:
@@ -368,7 +371,9 @@ jobs:
 
   release:
     name: Release after quality gates
-    needs: [backend, frontend, e2e, deploy-tooling]
+    # The ruleset already requires the PR checks. Gate releases on E2E
+    # against the actual commit on main, not on skipped PR-only jobs.
+    needs: e2e
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     uses: ./.github/workflows/release.yml
     permissions:

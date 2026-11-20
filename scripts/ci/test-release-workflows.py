@@ -78,7 +78,7 @@ class ReleaseWorkflowTest(unittest.TestCase):
             "github.event_name == 'push' && github.ref == 'refs/heads/main'",
         )
         self.assertEqual(release['uses'], './.github/workflows/release.yml')
-        self.assertEqual(release['needs'], ['backend', 'frontend', 'e2e', 'deploy-tooling'])
+        self.assertEqual(release['needs'], 'e2e')
         commands = [
             step.get('run')
             for step in ci['jobs']['deploy-tooling']['steps']
@@ -86,6 +86,15 @@ class ReleaseWorkflowTest(unittest.TestCase):
         ]
         self.assertIn('python3 scripts/ci/test-release-pipeline.py', commands)
         self.assertIn('python3 scripts/ci/test-release-workflows.py', commands)
+
+    def test_main_does_not_repeat_required_pr_checks(self):
+        jobs = load('ci-main.yml')['jobs']
+        for job in ('backend', 'frontend', 'deploy-tooling'):
+            with self.subTest(job=job):
+                self.assertEqual(jobs[job]['if'], "github.event_name != 'push'")
+
+        resolve = next(step for step in jobs['changes']['steps'] if step.get('id') == 'jobs')
+        self.assertEqual(resolve['env']['FORCE_ALL'], "${{ github.event_name == 'workflow_dispatch' }}")
 
     def test_e2e_runs_after_merge_or_on_manual_dispatch_but_not_on_prs(self):
         ci = load('ci-main.yml')
