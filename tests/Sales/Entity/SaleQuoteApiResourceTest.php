@@ -24,7 +24,8 @@ final class SaleQuoteApiResourceTest extends TestCase
         $apiResource = $reflection->getAttributes(ApiResource::class)[0]->newInstance();
 
         $customPostCount = 0;
-        foreach ($apiResource->getOperations() as $operation) {
+        $operations = $apiResource->getOperations() ?? throw new \LogicException('Missing resource operations.');
+        foreach ($operations as $operation) {
             if (!$operation instanceof Post || $operation->getUriTemplate() === null) {
                 continue;
             }

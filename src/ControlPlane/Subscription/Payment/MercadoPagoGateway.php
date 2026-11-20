@@ -186,8 +186,8 @@ final class MercadoPagoGateway implements PaymentGatewayInterface
 
     private function verifyWebhookSignature(Request $request): ?bool
     {
-        $xSignature = $request->headers->get('x-signature', '');
-        $xRequestId = $request->headers->get('x-request-id', '');
+        $xSignature = $request->headers->get('x-signature') ?? '';
+        $xRequestId = $request->headers->get('x-request-id') ?? '';
 
         if ($xSignature === '' || $xRequestId === '') {
             return false;

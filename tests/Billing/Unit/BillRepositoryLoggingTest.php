@@ -178,7 +178,7 @@ final class BillRepositoryLoggingTest extends TestCase
 
         $repo->sendBill($this->makeInvoice('F001', '99'));
 
-        self::assertSame('0', $capturedContext['sunat_code']);
+        self::assertSame('0', $capturedContext['sunat_code'] ?? null);
         self::assertSame('Factura aceptada', $capturedContext['sunat_message']);
         self::assertTrue($capturedContext['success']);
         self::assertSame('7', $capturedContext['tenant_id']);
@@ -252,9 +252,9 @@ final class BillRepositoryLoggingTest extends TestCase
 
         $repo->sendBill($this->makeInvoice('B001', '5'));
 
-        self::assertSame('2800', $capturedContext['sunat_code']);
+        self::assertSame('2800', $capturedContext['sunat_code'] ?? null);
         self::assertSame('Documento duplicado', $capturedContext['sunat_message']);
-        self::assertFalse($capturedContext['success']);
+        self::assertFalse($capturedContext['success'] ?? null);
         self::assertSame('B001-5', $capturedContext['tax_document_id']);
     }
 
@@ -327,7 +327,7 @@ final class BillRepositoryLoggingTest extends TestCase
         } catch (\Throwable) {
         }
 
-        self::assertFalse($capturedContext['success']);
+        self::assertFalse($capturedContext['success'] ?? null);
         self::assertIsString($capturedContext['sunat_code']);
         self::assertIsString($capturedContext['sunat_message']);
     }
@@ -388,7 +388,7 @@ final class BillRepositoryLoggingTest extends TestCase
 
         $repo->sendBill($this->makeInvoice());
 
-        self::assertIsInt($capturedContext['duration_ms'], 'duration_ms must be an integer');
+        self::assertIsInt($capturedContext['duration_ms'] ?? null, 'duration_ms must be an integer');
         self::assertGreaterThanOrEqual(0, $capturedContext['duration_ms'], 'duration_ms must be >= 0');
     }
 
@@ -418,7 +418,7 @@ final class BillRepositoryLoggingTest extends TestCase
         } catch (\Throwable) {
         }
 
-        self::assertIsInt($capturedContext['duration_ms'], 'duration_ms must be an integer on exception path');
+        self::assertIsInt($capturedContext['duration_ms'] ?? null, 'duration_ms must be an integer on exception path');
         self::assertGreaterThanOrEqual(
             0,
             $capturedContext['duration_ms'],

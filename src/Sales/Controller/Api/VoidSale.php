@@ -12,6 +12,7 @@ use Nubit\Platform\Http\ApiResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class VoidSale extends AbstractController
 {
@@ -36,14 +37,14 @@ class VoidSale extends AbstractController
                 $restoreStock = is_array($payload) ? (bool) ($payload['restoreStock'] ?? false) : false;
             }
         }
-        $userId = $this->security->connectedUser()->userId;
+        $user = $this->security->connectedUser() ?? throw new AccessDeniedException();
 
         if (!is_string($reason) || trim($reason) === '') {
             return new ApiResponse(success: false, message: 'Debe indicar el motivo de anulación');
         }
 
         try {
-            $this->saleVoider->voidSale((string) $saleId, $reason, $userId, $restoreStock);
+            $this->saleVoider->voidSale((string) $saleId, $reason, $user->userId, $restoreStock);
         } catch (FilesystemException|SaleException $e) {
             $message = $e instanceof SaleException ? $e->getMessage() : 'Error al anular el comprobante';
 

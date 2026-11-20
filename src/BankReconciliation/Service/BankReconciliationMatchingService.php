@@ -316,11 +316,12 @@ final readonly class BankReconciliationMatchingService
 
         $candidates = [];
         foreach ($payments as $payment) {
-            if (($id = $payment->getId()) !== null) {
+            $paidAt = $payment->getPaidAt();
+            if (($id = $payment->getId()) !== null && $paidAt !== null) {
                 $candidates[] = [
                     'sourceType' => 'sale_payment',
                     'sourceId' => $id,
-                    'date' => DateTimeImmutable::createFromInterface($payment->getPaidAt()),
+                    'date' => DateTimeImmutable::createFromInterface($paidAt),
                     'label' => $this->formatSaleLabel($payment->getSaleRecord()),
                 ];
             }
@@ -360,10 +361,11 @@ final readonly class BankReconciliationMatchingService
 
         return array_map(function (array $row): array {
             $movement = $this->cashMovementHydrator->fromRow($row);
+            $id = $movement->getId() ?? throw new \LogicException('A hydrated cash movement must have an ID.');
 
             return [
                 'sourceType' => 'cash_movement',
-                'sourceId' => $movement->getId(),
+                'sourceId' => $id,
                 'date' => $movement->getCreatedAt(),
                 'label' => $movement->getDescription(),
             ];

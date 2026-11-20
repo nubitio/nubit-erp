@@ -6,6 +6,7 @@ namespace App\Inventory\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Catalog\Entity\Product;
 use App\Efact\Domain\ActiveReferenceGuard;
 use App\Identity\Entity\User;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
@@ -213,7 +214,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
                 continue;
             }
 
-            $productId = (string) $product?->getId();
+            $productId = (string) $product->getId();
             $qtyBefore = $this->inventoryService->getOnHand($warehouseId, $productId);
             $delta = bcsub($item->getQty(), $qtyBefore, 6);
 
@@ -286,7 +287,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
                     continue;
                 }
 
-                $productId = (string) $product?->getId();
+                $productId = (string) $product->getId();
                 $requestedByProduct[$productId] ??= ['product' => $product, 'qty' => '0.000000'];
                 $requestedByProduct[$productId]['qty'] = bcadd(
                     $requestedByProduct[$productId]['qty'],
@@ -372,7 +373,8 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         return $qty;
     }
 
-    private function isTracked(mixed $product): bool
+    /** @phpstan-assert-if-true =Product $product */
+    private function isTracked(?Product $product): bool
     {
         if ($product === null) {
             return false;

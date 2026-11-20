@@ -118,7 +118,7 @@ class PrintESCPOSController extends AbstractController
         }
 
         $printer->selectPrintMode(Printer::MODE_EMPHASIZED);
-        $printer->text($this->wrap($voucher->company_name, $width));
+        $printer->text($this->wrap($voucher->company_name ?? '', $width));
         $printer->selectPrintMode();
 
         if ($voucher->voucher_type !== '00') {
@@ -191,7 +191,7 @@ class PrintESCPOSController extends AbstractController
 
         foreach ($voucher->voucher_items as $item) {
             // Principal line: description + unit price + total
-            $saleItem = new SaleItemDto($width, $item->product_name, $item->unit_price, $item->total);
+            $saleItem = new SaleItemDto($width, $item->product_name ?? '', $item->unit_price, $item->total);
 
             $printer->text((string) $saleItem);
 
@@ -315,7 +315,7 @@ class PrintESCPOSController extends AbstractController
         // QR + HASH + legal text
         if ($voucher->voucher_type !== DocType::NOTA_VENTA->value) {
             $printer->feed();
-            $printer->qrCode($voucher->voucher_qr_data, Printer::QR_ECLEVEL_L, 5);
+            $this->printVoucherQr($printer, $voucher->voucher_qr_data);
 
             $printer->feed();
             $printer->text("Resumen:\n");
@@ -341,6 +341,13 @@ class PrintESCPOSController extends AbstractController
         $printer->close();
 
         return $commands;
+    }
+
+    private function printVoucherQr(Printer $printer, ?string $data): void
+    {
+        if ($data !== null && $data !== '') {
+            $printer->qrCode($data, Printer::QR_ECLEVEL_L, 5);
+        }
     }
 
     private function hr(string $char, int $width): string
@@ -370,7 +377,7 @@ class PrintESCPOSController extends AbstractController
      */
     private function wrap(string $text, int $width): string
     {
-        $text = trim(preg_replace('/\s+/', ' ', $text));
+        $text = trim(preg_replace('/\s+/', ' ', $text) ?? $text);
         if ($text === '') {
             return "-\n";
         }

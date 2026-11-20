@@ -111,7 +111,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
                 if ($branchId === null || $relatedBranchId === null || $branchId !== $relatedBranchId) {
                     throw new ServiceException('El comprobante afectado no pertenece a la sucursal actual.');
                 }
-                $affectedSeries = substr($data->getAffectedDocument(), 0, 4);
+                $affectedSeries = $related->getSeries();
                 $seriesResult = $this->taxDocumentRepository->getTaxDocumentSeriesByBranch(
                     $branchId,
                     '07',

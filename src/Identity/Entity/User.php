@@ -213,7 +213,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         return $this->role;
     }
 
-    public function setRole(?Role $role): static
+    public function setRole(Role $role): static
     {
         $this->role = $role;
 

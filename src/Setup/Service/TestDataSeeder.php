@@ -514,9 +514,15 @@ final readonly class TestDataSeeder
 
             if (!$existing instanceof Product) {
                 // Reload entities from database to avoid detachment
-                $category = $this->categoryRepository->find($categoryIds[array_rand($categoryIds)]);
-                $unit = $this->unitOfMeasureRepository->find($unitIds[array_rand($unitIds)]);
-                $warehouse = $this->warehouseRepository->find($warehouseId);
+                $category = $this->categoryRepository->find(
+                    $categoryIds[array_rand($categoryIds)],
+                ) ?? throw new \RuntimeException('Seed category not found.');
+                $unit = $this->unitOfMeasureRepository->find(
+                    $unitIds[array_rand($unitIds)],
+                ) ?? throw new \RuntimeException('Seed unit of measure not found.');
+                $warehouse = $this->warehouseRepository->find($warehouseId) ?? throw new \RuntimeException(
+                    'Seed warehouse not found.',
+                );
 
                 $name = self::PRODUCT_NAMES[($i - 1) % count(self::PRODUCT_NAMES)] . ' #' . $i;
                 $purchasePrice = number_format(random_int(10, 1000) / 10, 2, '.', '');
@@ -643,7 +649,9 @@ final readonly class TestDataSeeder
             $itemCount = random_int(1, 8);
 
             for ($j = 0; $j < $itemCount; ++$j) {
-                $product = $this->productRepository->find($productIds[array_rand($productIds)]);
+                $product = $this->productRepository->find(
+                    $productIds[array_rand($productIds)],
+                ) ?? throw new \RuntimeException('Seed product not found.');
                 $qty = random_int(1, 10);
                 $unitPrice = (float) $product->getSalePrice();
                 $lineTotal = round($unitPrice * $qty, 2);
@@ -693,7 +701,7 @@ final readonly class TestDataSeeder
             $taxDocument->setDocumentType($customer->getRuc()[0] === '1' ? '03' : '01');
             $taxDocument->setIssueDate($saleDate);
             $taxDocument->setSeries($series);
-            $taxDocument->setNumber($sale->getNumero());
+            $taxDocument->setNumber($sale->getNumero() ?? throw new \RuntimeException('Seed sale number not set.'));
             $taxDocument->setCurrency('PEN');
             $taxDocument->setPaymentMethod($sale->getFormaPago());
             $taxDocument->setSubtotal($invoiceAmounts->getSubtotal());

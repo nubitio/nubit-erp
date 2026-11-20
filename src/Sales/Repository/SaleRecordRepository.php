@@ -353,7 +353,9 @@ class SaleRecordRepository extends ServiceEntityRepository
         $paymentMethods = [];
         if ($pmIds !== []) {
             foreach ($pmRepository->findBy(['id' => $pmIds]) as $pm) {
-                $paymentMethods[$pm->getId()] = $pm;
+                if (($id = $pm->getId()) !== null) {
+                    $paymentMethods[$id] = $pm;
+                }
             }
         }
 

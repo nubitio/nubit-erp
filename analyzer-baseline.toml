@@ -536,12 +536,6 @@ count = 1
 
 [[issues]]
 file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::cashMovementCandidates`: expected `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|string, 'sourceType': string}>`, but found `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|null, 'sourceType': string('cash_movement')}>`.'''
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
 code = "mixed-return-statement"
 message = 'Could not infer a precise return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::unreconciledSalePayments`. Saw type `mixed`.'
 count = 1
@@ -556,12 +550,6 @@ count = 1
 file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
 code = "possibly-null-argument"
 message = "Argument #1 of function `mb_strtolower` is possibly `null`, but parameter type `string` does not accept it."
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "possibly-null-argument"
-message = "Argument #1 of method `DateTimeImmutable::createFromInterface` is possibly `null`, but parameter type `DateTimeInterface` does not accept it."
 count = 1
 
 [[issues]]
@@ -734,30 +722,6 @@ count = 1
 
 [[issues]]
 file = "src/Billing/Controller/PrintESCPOSController.php"
-code = "possibly-null-argument"
-message = "Argument #1 of function `trim` is possibly `null`, but parameter type `string` does not accept it."
-count = 1
-
-[[issues]]
-file = "src/Billing/Controller/PrintESCPOSController.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Billing\Controller\PrintESCPOSController::wrap` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Billing/Controller/PrintESCPOSController.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `Mike42\Escpos\Printer::qrCode` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Billing/Controller/PrintESCPOSController.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `App\Sales\Dto\SaleItemDto::__construct` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Billing/Controller/PrintESCPOSController.php"
 code = "possibly-null-operand"
 message = "Possibly null left operand used in string concatenation (type `null|string`)."
 count = 1
@@ -835,12 +799,6 @@ message = "Property `$apiToken` is never used."
 count = 1
 
 [[issues]]
-file = "src/Billing/Entity/TaxDocument.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `App\Billing\Receipt\ReceiptPayload::publicUrl` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
 file = "src/Billing/Extension/RemoteEscposImage.php"
 code = "deprecated-function"
 message = "Call to deprecated function: `imagedestroy`."
@@ -904,12 +862,6 @@ count = 3
 file = "src/Billing/Invoice/Domain/InvoiceConsultUseCase.php"
 code = "possibly-false-argument"
 message = 'Argument #2 of method `Nubit\Platform\Filesystem\FileManager::write` is possibly `false`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Billing/Invoice/Domain/InvoiceConsultUseCase.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Billing\Sunat\Domain\BillConsultUseCase::__invoke` is possibly `null`, but parameter type `string` does not accept it.'
 count = 1
 
 [[issues]]
@@ -1039,42 +991,6 @@ message = "Left operand in `!=` comparison might be `null` (type `null|string`).
 count = 1
 
 [[issues]]
-file = "src/Billing/Receipt/Domain/ReceiptCdrUseCase.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
-
-[[issues]]
-file = "src/Billing/Receipt/Domain/ReceiptCdrUseCase.php"
-code = "mixed-operand"
-message = "Invalid right operand: type `mixed` cannot be reliably used in string concatenation."
-count = 2
-
-[[issues]]
-file = "src/Billing/Receipt/Domain/ReceiptCdrUseCase.php"
-code = "possible-method-access-on-null"
-message = "Attempting to call a method on `null`."
-count = 4
-
-[[issues]]
-file = "src/Billing/Receipt/Domain/ReceiptXmlUseCase.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
-
-[[issues]]
-file = "src/Billing/Receipt/Domain/ReceiptXmlUseCase.php"
-code = "mixed-operand"
-message = "Invalid right operand: type `mixed` cannot be reliably used in string concatenation."
-count = 2
-
-[[issues]]
-file = "src/Billing/Receipt/Domain/ReceiptXmlUseCase.php"
-code = "possible-method-access-on-null"
-message = "Attempting to call a method on `null`."
-count = 4
-
-[[issues]]
 file = "src/Billing/Recurring/Command/GenerateRecurringSalesCommand.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
@@ -1135,21 +1051,9 @@ message = 'Could not infer a precise return type for function `App\Billing\Repos
 count = 1
 
 [[issues]]
-file = "src/Billing/Repository/TaxDocumentRepository.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `App\Billing\Dto\SeriesResultDto::__construct` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
 file = "src/Billing/Sale/SaleVoidUseCase.php"
 code = "possibly-null-operand"
 message = "Left operand in `<` comparison might be `null` (type `non-empty-string|null`)."
-count = 1
-
-[[issues]]
-file = "src/Billing/Sale/Void/InvoiceVoidStrategy.php"
-code = "possibly-null-argument"
-message = 'Argument #4 of method `App\Billing\Sale\Void\SunatVoidResponse::__construct` is possibly `null`, but parameter type `bool` does not accept it.'
 count = 1
 
 [[issues]]
@@ -1180,12 +1084,6 @@ count = 1
 file = "src/Billing/Sale/Void/StockVoidReverser.php"
 code = "mixed-operand"
 message = "Invalid right operand: type `mixed` cannot be reliably used in string concatenation."
-count = 1
-
-[[issues]]
-file = "src/Billing/Serializer/PublicReceiptUrlNormalizer.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `App\Billing\Receipt\ReceiptPayload::encode` is possibly `null`, but parameter type `string` does not accept it.'
 count = 1
 
 [[issues]]
@@ -1229,18 +1127,6 @@ file = "src/Billing/Service/CreditNoteService.php"
 code = "possibly-false-argument"
 message = 'Argument #2 of method `Nubit\Platform\Filesystem\FileManager::write` is possibly `false`, but parameter type `string` does not accept it.'
 count = 2
-
-[[issues]]
-file = "src/Billing/Service/CreditNoteService.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Billing\Sunat\Domain\NoteConsultUseCase::__invoke` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Billing/Service/CreditNoteService.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Billing\Sunat\Domain\NoteSendUseCase::__invoke` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
 
 [[issues]]
 file = "src/Billing/Service/CreditNoteStockReverser.php"
@@ -1382,12 +1268,6 @@ count = 1
 
 [[issues]]
 file = "src/Billing/State/TaxDocumentProcessor.php"
-code = "possibly-null-argument"
-message = "Argument #1 of function `substr` is possibly `null`, but parameter type `string` does not accept it."
-count = 1
-
-[[issues]]
-file = "src/Billing/State/TaxDocumentProcessor.php"
 code = "possibly-null-operand"
 message = "Left operand in `!=` comparison might be `null` (type `null|string`)."
 count = 1
@@ -1435,33 +1315,9 @@ message = "Assigning `mixed` type to a variable may lead to unexpected behavior.
 count = 1
 
 [[issues]]
-file = "src/Billing/Sunat/Domain/BillCreateUseCase.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `Greenter\Model\Sale\Detraction::setCtaBanco`: expected `null|string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Billing/Sunat/Domain/BillCreateUseCase.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
-file = "src/Billing/Sunat/Domain/BillCreateUseCase.php"
-code = "possible-method-access-on-null"
-message = "Attempting to call a method on `null`."
-count = 1
-
-[[issues]]
 file = "src/Billing/Sunat/Domain/NoteCreateUseCase.php"
 code = "possibly-false-operand"
 message = "Possibly false middle operand used in string concatenation (type `false|string`)."
-count = 1
-
-[[issues]]
-file = "src/Billing/Sunat/Domain/NoteCreateUseCase.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Billing\Sunat\Domain\NoteCreateUseCase::getNote` is possibly `null`, but parameter type `App\Billing\Entity\TaxDocument` does not accept it.'
 count = 1
 
 [[issues]]
@@ -2354,18 +2210,6 @@ count = 1
 
 [[issues]]
 file = "src/ControlPlane/Subscription/Payment/MercadoPagoGateway.php"
-code = "possibly-null-argument"
-message = "Argument #2 of function `explode` is possibly `null`, but parameter type `string` does not accept it."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Subscription/Payment/MercadoPagoGateway.php"
-code = "possibly-null-operand"
-message = "Possibly null middle operand used in string concatenation (type `non-empty-string|null`)."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Subscription/Payment/MercadoPagoGateway.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
@@ -2870,18 +2714,6 @@ count = 1
 
 [[issues]]
 file = "src/Efact/Doctrine/DBAL/TenantConnection.php"
-code = "invalid-return-statement"
-message = 'Invalid return type for function `App\Efact\Doctrine\DBAL\TenantConnection::connect`: expected `Doctrine\DBAL\Driver\Connection`, but found `Doctrine\DBAL\Driver\Connection|null`.'
-count = 1
-
-[[issues]]
-file = "src/Efact/Doctrine/DBAL/TenantConnection.php"
-code = "nullable-return-statement"
-message = 'Function `App\Efact\Doctrine\DBAL\TenantConnection::connect` is declared to return `Doctrine\DBAL\Driver\Connection` but possibly returns a nullable value (inferred as `Doctrine\DBAL\Driver\Connection|null`).'
-count = 1
-
-[[issues]]
-file = "src/Efact/Doctrine/DBAL/TenantConnection.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
@@ -3085,12 +2917,6 @@ message = "Possibly false right operand used in string concatenation (type `fals
 count = 1
 
 [[issues]]
-file = "src/Efact/Web/CspNonceListener.php"
-code = "possibly-null-argument"
-message = "Argument #1 of function `str_contains` is possibly `null`, but parameter type `string` does not accept it."
-count = 1
-
-[[issues]]
 file = "src/FixedAssets/Command/GenerateDepreciationEntriesCommand.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
@@ -3148,12 +2974,6 @@ count = 1
 file = "src/Identity/Dto/AuthUserDto.php"
 code = "mixed-argument"
 message = 'Invalid argument type for argument #4 of `App\Identity\Dto\AuthUserDto::__construct`: expected `array<array-key, string>|null`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Identity/Entity/User.php"
-code = "invalid-property-assignment-value"
-message = 'Invalid type for property `$role`: expected `App\Identity\Entity\Role`, but got `App\Identity\Entity\Role|null`.'
 count = 1
 
 [[issues]]
@@ -3352,18 +3172,6 @@ count = 1
 file = "src/Inventory/Core/Service/BomExplosionService.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$product`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/Core/Service/LotDeductionService.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Inventory\Entity\StockLot::setProduct` is possibly `null`, but parameter type `App\Catalog\Entity\Product` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Inventory/Core/Service/LotDeductionService.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Inventory\Entity\StockLot::setWarehouse` is possibly `null`, but parameter type `App\Inventory\Entity\Warehouse` does not accept it.'
 count = 1
 
 [[issues]]
@@ -3674,44 +3482,14 @@ count = 1
 
 [[issues]]
 file = "src/Inventory/State/StockEntryProcessor.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `App\Inventory\Core\Enum\InventoryBehavior::tryFrom`: expected `string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Inventory/State/StockEntryProcessor.php"
-code = "mixed-argument"
-message = "Invalid argument type for argument #2 of `sprintf`: expected `Stringable|null|scalar`, but found `mixed`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/State/StockEntryProcessor.php"
 code = "mixed-method-access"
 message = "Attempting to access a method on a non-object type (`mixed`)."
 count = 1
 
 [[issues]]
 file = "src/Inventory/State/StockEntryProcessor.php"
-code = "mixed-method-access"
-message = "Attempting to access a method on a non-object type (`nonnull`)."
-count = 1
-
-[[issues]]
-file = "src/Inventory/State/StockEntryProcessor.php"
 code = "no-value"
 message = 'Argument #1 passed to method `ApiPlatform\State\ProcessorInterface::process` has type `never`, meaning it cannot produce a value.'
-count = 1
-
-[[issues]]
-file = "src/Inventory/State/StockEntryProcessor.php"
-code = "possible-method-access-on-null"
-message = "Attempting to call a method on `null`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/State/StockEntryProcessor.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Inventory\Core\Contract\StockValidationPolicyInterface::validateSale` is possibly `null`, but parameter type `App\Catalog\Entity\Product` does not accept it.'
 count = 1
 
 [[issues]]
@@ -3790,12 +3568,6 @@ count = 2
 file = "src/Onboarding/OpeningBalanceRow.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
-count = 1
-
-[[issues]]
-file = "src/Organization/Entity/Branch.php"
-code = "invalid-property-assignment-value"
-message = 'Invalid type for property `$company`: expected `App\Organization\Entity\Company`, but got `App\Organization\Entity\Company|null`.'
 count = 1
 
 [[issues]]
@@ -4184,18 +3956,6 @@ count = 2
 
 [[issues]]
 file = "src/Sales/Controller/Api/VoidSale.php"
-code = "possibly-null-argument"
-message = 'Argument #3 of method `App\Sales\Port\SaleVoiderInterface::voidSale` is possibly `null`, but parameter type `int` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Sales/Controller/Api/VoidSale.php"
-code = "possibly-null-property-access"
-message = "Attempting to access a property on a possibly `null` value."
-count = 1
-
-[[issues]]
-file = "src/Sales/Controller/Api/VoidSale.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
@@ -4336,7 +4096,7 @@ count = 1
 file = "src/Sales/Repository/SaleRecordRepository.php"
 code = "possibly-null-array-index"
 message = "Possibly using `null` as an array index to access element."
-count = 3
+count = 2
 
 [[issues]]
 file = "src/Sales/Repository/SalesAnalyticsRepository.php"
@@ -4432,13 +4192,13 @@ count = 2
 file = "src/Sales/State/SaleInventoryOrchestrator.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
+count = 1
 
 [[issues]]
 file = "src/Sales/State/SaleInventoryOrchestrator.php"
 code = "possible-method-access-on-null"
 message = "Attempting to call a method on `null`."
-count = 8
+count = 4
 
 [[issues]]
 file = "src/Sales/State/SaleInventoryOrchestrator.php"
@@ -4456,12 +4216,6 @@ count = 1
 file = "src/Sales/State/SaleInventoryOrchestrator.php"
 code = "possibly-null-argument"
 message = 'Argument #1 of method `App\Sales\State\NegativeStockPolicyResolver::isStockTracked` is possibly `null`, but parameter type `App\Catalog\Entity\Product` does not accept it.'
-count = 2
-
-[[issues]]
-file = "src/Sales/State/SaleInventoryOrchestrator.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `App\Inventory\Core\Contract\SalesInventoryPortInterface::getStockForProductInWarehouse` is possibly `null`, but parameter type `App\Inventory\Entity\Warehouse` does not accept it.'
 count = 2
 
 [[issues]]
@@ -4576,12 +4330,6 @@ count = 1
 file = "src/Sales/State/SaleQuoteProvider.php"
 code = "possibly-invalid-argument"
 message = 'Possible argument type mismatch for argument #1 of `App\Sales\State\SaleQuoteProvider::expireStaleQuotes`: expected `array<array-key, App\Sales\Entity\SaleQuote>`, but possibly received `list{ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|App\Sales\Entity\SaleQuote}`.'
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleUtils.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Sales\State\SaleUtils::getSaleNumber` is possibly `null`, but parameter type `string` does not accept it.'
 count = 1
 
 [[issues]]
@@ -4946,57 +4694,9 @@ count = 1
 
 [[issues]]
 file = "src/Setup/Service/TestDataSeeder.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `App\Sales\Entity\SaleItemRecord::setNameSnapshot`: expected `string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Setup/Service/TestDataSeeder.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `App\Sales\Entity\SaleItemRecord::setSkuSnapshot`: expected `null|string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Setup/Service/TestDataSeeder.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `App\Sales\Entity\SaleItemRecord::setUomSnapshot`: expected `null|string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Setup/Service/TestDataSeeder.php"
 code = "mixed-method-access"
 message = "Attempting to access a method on a non-object type (`mixed`)."
-count = 5
-
-[[issues]]
-file = "src/Setup/Service/TestDataSeeder.php"
-code = "possible-method-access-on-null"
-message = "Attempting to call a method on `null`."
 count = 4
-
-[[issues]]
-file = "src/Setup/Service/TestDataSeeder.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Billing\Entity\TaxDocument::setNumber` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Setup/Service/TestDataSeeder.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Catalog\Entity\Product::setCategory` is possibly `null`, but parameter type `App\Catalog\Entity\Category` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Setup/Service/TestDataSeeder.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Catalog\Entity\Product::setUnitOfMeasure` is possibly `null`, but parameter type `App\Catalog\Entity\UnitOfMeasure` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Setup/Service/TestDataSeeder.php"
-code = "possibly-null-argument"
-message = 'Argument #1 of method `App\Inventory\Entity\ProductStock::setWarehouse` is possibly `null`, but parameter type `App\Inventory\Entity\Warehouse` does not accept it.'
-count = 1
 
 [[issues]]
 file = "src/Setup/Service/TestDataSeeder.php"
@@ -5131,58 +4831,10 @@ message = "Assigning `mixed` type to a variable may lead to unexpected behavior.
 count = 1
 
 [[issues]]
-file = "tests/BankReconciliation/Entity/BankStatementLineApiResourceTest.php"
-code = "possibly-null-iterator"
-message = 'Expression being iterated (type `ApiPlatform\Metadata\Operations<ApiPlatform\Metadata\HttpOperation>|null`) might be `null` at runtime.'
-count = 2
-
-[[issues]]
 file = "tests/Billing/Adapter/SaleInvoicingAdapterTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 2
-
-[[issues]]
-file = "tests/Billing/Billing/Domain/BillCreateUseCaseTest.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `PHPUnit\Framework\Assert::assertCount`: expected `Countable|iterable<mixed, mixed>`, but found `nonnull`.'
-count = 1
-
-[[issues]]
-file = "tests/Billing/Billing/Domain/BillCreateUseCaseTest.php"
-code = "mixed-array-access"
-message = "Unsafe array access on type `nonnull`."
-count = 1
-
-[[issues]]
-file = "tests/Billing/Billing/Domain/BillCreateUseCaseTest.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 3
-
-[[issues]]
-file = "tests/Billing/Billing/Domain/BillCreateUseCaseTest.php"
-code = "mixed-method-access"
-message = "Attempting to access a method on a non-object type (`mixed`)."
-count = 5
-
-[[issues]]
-file = "tests/Billing/Billing/Domain/BillCreateUseCaseTest.php"
-code = "possible-method-access-on-null"
-message = "Attempting to call a method on `null`."
-count = 10
-
-[[issues]]
-file = "tests/Billing/Billing/Domain/BillCreateUseCaseTest.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `PHPUnit\Framework\Assert::assertCount` is possibly `null`, but parameter type `Countable|iterable<mixed, mixed>` does not accept it.'
-count = 5
-
-[[issues]]
-file = "tests/Billing/Billing/Domain/BillCreateUseCaseTest.php"
-code = "possibly-null-array-access"
-message = "Cannot perform array access on possibly `null` value."
-count = 7
 
 [[issues]]
 file = "tests/Billing/Billing/Domain/NoteConsultUseCaseTest.php"
@@ -5458,7 +5110,7 @@ count = 9
 file = "tests/Billing/Unit/BillRepositoryLoggingTest.php"
 code = "possibly-null-array-access"
 message = "Cannot perform array access on possibly `null` value."
-count = 9
+count = 3
 
 [[issues]]
 file = "tests/Billing/Unit/NoteRepositoryLoggingTest.php"
@@ -5651,12 +5303,6 @@ file = "tests/ControlPlane/Onboarding/Payment/PayPalGatewayTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 2
-
-[[issues]]
-file = "tests/ControlPlane/Onboarding/Payment/SubscriptionManagerTest.php"
-code = "possibly-null-array-access"
-message = "Cannot perform array access on possibly `null` value."
-count = 3
 
 [[issues]]
 file = "tests/ControlPlane/Operator/Api/AuditLogApiControllerTest.php"
@@ -6280,7 +5926,7 @@ count = 3
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "possible-method-access-on-null"
 message = "Attempting to call a method on `null`."
-count = 15
+count = 13
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
@@ -6568,12 +6214,6 @@ count = 1
 file = "tests/Sales/Controller/Api/VoidSaleControllerTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
-file = "tests/Sales/Entity/SaleQuoteApiResourceTest.php"
-code = "possibly-null-iterator"
-message = 'Expression being iterated (type `ApiPlatform\Metadata\Operations<ApiPlatform\Metadata\HttpOperation>|null`) might be `null` at runtime.'
 count = 1
 
 [[issues]]

@@ -46,7 +46,8 @@ readonly class CreditNoteService
     public function sendToSunat(TaxDocument $creditNote): DocumentResponse
     {
         // Send to SUNAT using an existing billing service
-        $response = $this->noteSendUseCase->__invoke($creditNote->getId());
+        $id = $creditNote->getId() ?? throw new \LogicException('La nota de crédito aún no tiene ID.');
+        $response = $this->noteSendUseCase->__invoke($id);
 
         // Update credit note with SUNAT response
         $creditNote->setDigest($response->hash ?? null);
@@ -70,7 +71,6 @@ readonly class CreditNoteService
                 $creditNote->setCdrPath($docDir . '/R-' . $response->name . '.zip');
             } else {
                 // SUNAT did not return the CDR zip inline — attempt to fetch it via consult
-                $taxDocumentId = $creditNote->getId() ?? 'unknown';
                 $tenantId = $this->companyContext->getId();
                 try {
                     $this->consultCdr($creditNote);
@@ -78,7 +78,7 @@ readonly class CreditNoteService
                     $this->billingLogger->error('credit_note.send.failed', [
                         'exception' => $e->getMessage(),
                         'tenant_id' => $tenantId ?: 'unknown',
-                        'tax_document_id' => $taxDocumentId ?: 'unknown',
+                        'tax_document_id' => $id ?: 'unknown',
                     ]);
                     throw $e;
                 }
@@ -109,7 +109,8 @@ readonly class CreditNoteService
      */
     public function consultCdr(TaxDocument $creditNote): StatusCdrResult
     {
-        $consultResponse = $this->noteConsultUseCase->__invoke($creditNote->getId());
+        $id = $creditNote->getId() ?? throw new \LogicException('La nota de crédito aún no tiene ID.');
+        $consultResponse = $this->noteConsultUseCase->__invoke($id);
 
         if ($consultResponse->isSuccess()) {
             if ($consultResponse->getCdrResponse()?->isAccepted()) {

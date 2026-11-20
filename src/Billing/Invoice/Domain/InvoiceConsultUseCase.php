@@ -37,7 +37,7 @@ readonly class InvoiceConsultUseCase
             throw new ServiceException('Invoice not found');
         }
 
-        $consultResponse = $this->billConsultUseCase->__invoke($taxDocument->getId());
+        $consultResponse = $this->billConsultUseCase->__invoke($taxDocumentId);
 
         if ($consultResponse->isSuccess()) {
             if ($consultResponse->getCdrResponse()?->isAccepted()) {

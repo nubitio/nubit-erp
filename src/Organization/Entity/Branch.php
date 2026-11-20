@@ -127,7 +127,7 @@ class Branch implements ActivatableInterface
         return $this->company;
     }
 
-    public function setCompany(?Company $company): static
+    public function setCompany(Company $company): static
     {
         $this->company = $company;
 

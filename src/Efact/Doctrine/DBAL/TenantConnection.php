@@ -80,18 +80,19 @@ class TenantConnection extends Connection
     #[Override]
     protected function connect(): Driver\Connection
     {
-        if ($this->isConnected) {
+        if ($this->_conn !== null) {
             return $this->_conn;
         }
 
-        $this->_conn = $this->getDriver()->connect($this->tenantParams);
+        $connection = $this->getDriver()->connect($this->tenantParams);
+        $this->_conn = $connection;
         $this->isConnected = true;
 
         if (!$this->autoCommit) {
             $this->beginTransaction();
         }
 
-        return $this->_conn;
+        return $connection;
     }
 
     /**

@@ -80,7 +80,7 @@ final readonly class CspNonceListener
         $contentType = $response->headers->get('Content-Type', '');
 
         // Only inject CSP on HTML responses
-        if (!str_contains($contentType, 'text/html')) {
+        if (!str_contains($contentType ?? '', 'text/html')) {
             return;
         }
 
