@@ -91,7 +91,7 @@ final class BankReconciliationMatchServiceTest extends TestCase
         $user = new User();
 
         $existingMatch = new BankReconciliationMatch();
-        $repository = $this->createMock(EntityRepository::class);
+        $repository = $this->createStub(EntityRepository::class);
         $repository->method('findOneBy')->willReturn($existingMatch);
 
         $entityManager = $this->createMock(EntityManagerInterface::class);
@@ -126,7 +126,7 @@ final class BankReconciliationMatchServiceTest extends TestCase
     {
         $line = new BankStatementLine()->setStatus(BankStatementLine::MATCHED);
 
-        $repository = $this->createMock(EntityRepository::class);
+        $repository = $this->createStub(EntityRepository::class);
         $repository->method('findOneBy')->willReturn(null);
 
         $entityManager = $this->createMock(EntityManagerInterface::class);

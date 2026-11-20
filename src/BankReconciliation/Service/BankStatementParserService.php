@@ -204,6 +204,8 @@ final readonly class BankStatementParserService
 
     private function cellStr(Worksheet $sheet, string $col, int $row): string
     {
-        return trim((string) ($sheet->getCell($col . $row)->getValue() ?? ''));
+        $value = $sheet->getCell($col . $row)->getValue();
+
+        return is_scalar($value) || $value instanceof \Stringable ? trim((string) $value) : '';
     }
 }

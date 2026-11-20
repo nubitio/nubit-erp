@@ -22,7 +22,8 @@ class BankStatementLineRepository extends ServiceEntityRepository
     /** @return list<BankStatementLine> */
     public function findUnmatchedByImportBatch(BankStatementImport $importBatch): array
     {
-        return $this
+        /** @var list<BankStatementLine> $lines */
+        $lines = $this
             ->createQueryBuilder('l')
             ->andWhere('l.importBatch = :importBatch')
             ->andWhere('l.status = :status')
@@ -30,5 +31,7 @@ class BankStatementLineRepository extends ServiceEntityRepository
             ->setParameter('status', BankStatementLine::UNMATCHED)
             ->getQuery()
             ->getResult();
+
+        return $lines;
     }
 }

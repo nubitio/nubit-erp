@@ -122,6 +122,8 @@ final class BankStatementImportController extends AbstractController
         $tenant = $this->resolveTenantFromContextOrHost($tenantHost);
         $tenantName = $tenant['name'] ?? null;
         $tenantDomain = $tenant['domain'] ?? null;
+        $tenantId = $tenant['id'] ?? null;
+        $requestId = $request->attributes->get('request_id');
 
         $topic = $tenantOrigin . '/api/bank-statement-imports/' . $import->getId();
 
@@ -131,9 +133,9 @@ final class BankStatementImportController extends AbstractController
             bankProfile: $bankProfile->value,
             tenantOrigin: $tenantOrigin,
             tenantName: is_string($tenantName) ? $tenantName : null,
-            tenantId: isset($tenant['id']) ? (int) $tenant['id'] : null,
+            tenantId: is_numeric($tenantId) ? (int) $tenantId : null,
             tenantDomain: is_string($tenantDomain) ? $tenantDomain : $tenantHost,
-            requestId: (string) ($request->attributes->get('request_id') ?? ''),
+            requestId: is_string($requestId) ? $requestId : '',
         ));
 
         return $this->json([

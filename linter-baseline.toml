@@ -554,12 +554,6 @@ count = 1
 
 [[issues]]
 file = "src/BankReconciliation/Controller/BankStatementImportController.php"
-code = "no-isset"
-message = "Use of the `isset` construct."
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Controller/BankStatementImportController.php"
 code = "no-shorthand-ternary"
 message = "Use of the shorthand ternary operator."
 count = 2

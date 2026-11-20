@@ -216,6 +216,13 @@ jobs:
             -e OTEL_SDK_DISABLED=true \
             web php -d memory_limit=1G vendor/bin/phpstan analyse --configuration=phpstan.dist.neon --no-progress
 
+      - name: Run PHPStan level 9 for bank reconciliation
+        if: needs.changes.outputs.backend == 'true'
+        run: |
+          docker compose exec -T \
+            -e OTEL_SDK_DISABLED=true \
+            web php -d memory_limit=1G vendor/bin/phpstan analyse --configuration=phpstan.dist.neon --level=9 --no-progress src/BankReconciliation
+
       - name: Create and migrate test database
         if: needs.changes.outputs.backend == 'true'
         run: |

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\BankReconciliation\Service;
 
+use App\Efact\Domain\Money;
 use App\Settings\Capability\CapabilityKey;
 use App\Settings\Capability\TenantCapabilityResolver;
 use Brick\Math\BigDecimal;
@@ -45,7 +46,7 @@ final readonly class TreasuryReconciliationSource
 
     public function activeFor(string $bankAccountId): bool
     {
-        return $this->enabled() && $this->treasuryAccountOf($bankAccountId) !== null;
+        return $this->enabled() && $this->hasTreasuryAccount($bankAccountId);
     }
 
     /**
@@ -81,8 +82,8 @@ final readonly class TreasuryReconciliationSource
         );
 
         return array_map(static fn(array $row): array => [
-            'id' => (string) $row['id'],
-            'date' => new DateTimeImmutable((string) $row['occurred_on']),
+            'id' => self::requiredText($row, 'id'),
+            'date' => new DateTimeImmutable(self::requiredText($row, 'occurred_on')),
             'label' => self::label($row),
         ], $rows);
     }
@@ -125,11 +126,11 @@ final readonly class TreasuryReconciliationSource
         );
 
         return array_map(static fn(array $row): array => [
-            'id' => (string) $row['id'],
-            'amount' => number_format((float) $row['signed_amount'], 2, '.', ''),
-            'date' => (string) $row['occurred_on'],
+            'id' => self::requiredText($row, 'id'),
+            'amount' => self::amount($row['signed_amount']),
+            'date' => self::requiredText($row, 'occurred_on'),
             'label' => self::label($row),
-            'account' => (string) $row['account_name'],
+            'account' => self::requiredText($row, 'account_name'),
         ], $rows);
     }
 
@@ -142,13 +143,31 @@ final readonly class TreasuryReconciliationSource
         ) !== false;
     }
 
-    private function treasuryAccountOf(string $bankAccountId): ?string
+    private function hasTreasuryAccount(string $bankAccountId): bool
     {
-        $id = $this->connection->fetchOne('SELECT id FROM treasury_account WHERE bank_account_id = :bank AND active = 1', [
+        return $this->connection->fetchOne('SELECT 1 FROM treasury_account WHERE bank_account_id = :bank AND active = 1', [
             'bank' => $bankAccountId,
-        ]);
+        ]) !== false;
+    }
 
-        return $id === false ? null : (string) $id;
+    /** @param array<string, mixed> $row */
+    private static function requiredText(array $row, string $column): string
+    {
+        $value = $row[$column] ?? null;
+        if (!is_string($value)) {
+            throw new \UnexpectedValueException(sprintf('Expected text in Treasury column "%s".', $column));
+        }
+
+        return $value;
+    }
+
+    private static function amount(mixed $value): string
+    {
+        if (!is_numeric($value)) {
+            throw new \UnexpectedValueException('Expected a numeric Treasury movement amount.');
+        }
+
+        return Money::toString(Money::of($value));
     }
 
     /** @param array<string, mixed> $row */

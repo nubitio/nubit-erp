@@ -184,7 +184,14 @@ final readonly class BankReconciliationMatchingService
             $qb->andWhere('sp.paidAt <= :to')->setParameter('to', $to);
         }
 
-        return $qb->orderBy('sp.paidAt', 'DESC')->setMaxResults(self::UNRECONCILED_LIST_LIMIT)->getQuery()->getResult();
+        /** @var list<SupplierPayment> $payments */
+        $payments = $qb
+            ->orderBy('sp.paidAt', 'DESC')
+            ->setMaxResults(self::UNRECONCILED_LIST_LIMIT)
+            ->getQuery()
+            ->getResult();
+
+        return $payments;
     }
 
     /** @return list<SalePayment> */
@@ -205,7 +212,14 @@ final readonly class BankReconciliationMatchingService
             $qb->andWhere('sp.paidAt <= :to')->setParameter('to', $to);
         }
 
-        return $qb->orderBy('sp.paidAt', 'DESC')->setMaxResults(self::UNRECONCILED_LIST_LIMIT)->getQuery()->getResult();
+        /** @var list<SalePayment> $payments */
+        $payments = $qb
+            ->orderBy('sp.paidAt', 'DESC')
+            ->setMaxResults(self::UNRECONCILED_LIST_LIMIT)
+            ->getQuery()
+            ->getResult();
+
+        return $payments;
     }
 
     /**
