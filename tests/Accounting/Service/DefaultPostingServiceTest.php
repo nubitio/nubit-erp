@@ -26,15 +26,15 @@ final class DefaultPostingServiceTest extends TestCase
         ));
 
         self::assertSame('101', $lines[0]['code']);
-        self::assertSame('118.00', $lines[0]['debit']);
+        $this->assertLineAmount('118.00', $lines[0], 'debit');
         self::assertSame('70111', $lines[1]['code']);
-        self::assertSame('100.00', $lines[1]['credit']);
+        $this->assertLineAmount('100.00', $lines[1], 'credit');
         self::assertSame('40111', $lines[2]['code']);
-        self::assertSame('18.00', $lines[2]['credit']);
+        $this->assertLineAmount('18.00', $lines[2], 'credit');
         self::assertSame('691', $lines[3]['code']);
-        self::assertSame('40.00', $lines[3]['debit']);
+        $this->assertLineAmount('40.00', $lines[3], 'debit');
         self::assertSame('201', $lines[4]['code']);
-        self::assertSame('40.00', $lines[4]['credit']);
+        $this->assertLineAmount('40.00', $lines[4], 'credit');
         $this->assertBalanced($lines);
     }
 
@@ -51,10 +51,16 @@ final class DefaultPostingServiceTest extends TestCase
         ));
 
         self::assertSame('201', $lines[0]['code']);
-        self::assertSame('200.00', $lines[0]['debit']);
+        $this->assertLineAmount('200.00', $lines[0], 'debit');
         self::assertSame('421', $lines[2]['code']);
-        self::assertSame('236.00', $lines[2]['credit']);
+        $this->assertLineAmount('236.00', $lines[2], 'credit');
         $this->assertBalanced($lines);
+    }
+
+    /** @param array{code: string, debit?: string, credit?: string, memo?: string} $line */
+    private function assertLineAmount(string $expected, array $line, string $side): void
+    {
+        self::assertSame($expected, $line[$side] ?? null);
     }
 
     public function testReceivableCollectionInCashDebitsCajaAndCreditsReceivable(): void

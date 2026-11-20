@@ -27,11 +27,11 @@ readonly class CashRegisterDashboardProvider implements ProviderInterface
     ) {}
 
     /**
-     * @inheritdoc
+     * @return list<CashRegisterDashboardDto>
      * @throws Exception|DateMalformedStringException
      */
     #[Override]
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         $branchId = $this->branchContext->getCurrentBranchId();
 

@@ -160,7 +160,7 @@ final readonly class ProductImportProcessorService
     }
 
     /**
-     * @param array<string, Category|UnitOfMeasure> $categoryMap
+     * @param array<string, Category>                $categoryMap
      * @param array<string, UnitOfMeasure>           $unitMap
      * @param list<string>               $values
      * @param array<string, int>         $seenNames   tracks names seen in this file (mutated)
@@ -325,8 +325,9 @@ final readonly class ProductImportProcessorService
     /**
      * Build a lowercase-name → entity map for fast lookups.
      *
-     * @param array<Category|UnitOfMeasure> $entities
-     * @return array<string, Category|UnitOfMeasure>
+     * @template T of Category|UnitOfMeasure
+     * @param array<T> $entities
+     * @return array<string, T>
      */
     private function buildNameMap(array $entities): array
     {

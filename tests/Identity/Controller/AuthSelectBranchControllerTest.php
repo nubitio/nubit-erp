@@ -44,7 +44,9 @@ final class AuthSelectBranchControllerTest extends TestCase
             $this->createMock(LoggerInterface::class),
         );
 
-        $request = Request::create('/api/auth/select-branch', 'POST', [], [], [], [], json_encode(['branchId' => '1']));
+        $request = Request::create('/api/auth/select-branch', 'POST', [], [], [], [], json_encode([
+            'branchId' => '1',
+        ], JSON_THROW_ON_ERROR));
         $response = $controller($request);
 
         self::assertSame(Response::HTTP_UNAUTHORIZED, $response->getStatusCode());
@@ -74,7 +76,15 @@ final class AuthSelectBranchControllerTest extends TestCase
             $this->createMock(LoggerInterface::class),
         );
 
-        $request = Request::create('/api/auth/select-branch', 'POST', [], [], [], [], json_encode([]));
+        $request = Request::create(
+            '/api/auth/select-branch',
+            'POST',
+            [],
+            [],
+            [],
+            [],
+            json_encode([], JSON_THROW_ON_ERROR),
+        );
         $response = $controller($request);
 
         self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());

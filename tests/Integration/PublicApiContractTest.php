@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Integration\Api\PublicContractValidator;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Yaml\Yaml;
 
 uses(KernelTestCase::class);
@@ -13,7 +14,10 @@ final class PublicApiContractTestKernel extends KernelTestCase
 {
     public static function routeCollection(): RouteCollection
     {
-        return self::getContainer()->get('router')->getRouteCollection();
+        $router = self::getContainer()->get('router');
+        self::assertInstanceOf(RouterInterface::class, $router);
+
+        return $router->getRouteCollection();
     }
 }
 

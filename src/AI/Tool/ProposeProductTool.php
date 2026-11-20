@@ -23,7 +23,7 @@ final readonly class ProposeProductTool
     ) {}
 
     /**
-     * @return array{error: string}|array{id: string, kind: string, summary: string, payload: array<string, mixed>}
+     * @return array{error: string}|array{id: string, kind: string, summary: string, payload: array<string, mixed>, expiresAt: string}
      */
     public function proposeProduct(string $name, ?string $code = null, ?float $salePrice = null): array
     {

@@ -49,7 +49,7 @@ final class AdminUserApiController extends AbstractController
                 (string) ($payload['username'] ?? ''),
                 (string) ($payload['password'] ?? ''),
                 (string) ($payload['confirmPassword'] ?? $payload['confirm_password'] ?? ''),
-                is_array($payload['roles'] ?? null) ? $payload['roles'] : [],
+                $this->readRoles($payload['roles'] ?? null),
                 $this->actor(),
             );
         } catch (InvalidArgumentException $exception) {
@@ -68,7 +68,7 @@ final class AdminUserApiController extends AbstractController
         try {
             $this->adminUsers->updateUser(
                 $id,
-                is_array($payload['roles'] ?? null) ? $payload['roles'] : [],
+                $this->readRoles($payload['roles'] ?? null),
                 (bool) ($payload['isActive'] ?? $payload['is_active'] ?? true),
                 $this->actor(),
                 $this->getUser()?->getUserIdentifier() ?? '',
@@ -123,6 +123,12 @@ final class AdminUserApiController extends AbstractController
         }
 
         return $this->json(['ok' => true]);
+    }
+
+    /** @return list<string> */
+    private function readRoles(mixed $roles): array
+    {
+        return is_array($roles) ? array_values(array_filter($roles, is_string(...))) : [];
     }
 
     private function actor(): string

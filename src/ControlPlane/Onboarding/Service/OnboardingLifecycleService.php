@@ -172,6 +172,7 @@ final readonly class OnboardingLifecycleService
 
     private function cp(): Connection
     {
+        /** @var object $connection */
         $connection = $this->connections->getConnection('control_plane');
         if (!$connection instanceof Connection) {
             throw new \LogicException('The control-plane connection must be a DBAL connection.');

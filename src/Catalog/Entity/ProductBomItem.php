@@ -127,6 +127,10 @@ class ProductBomItem
     /** Effective quantity to deduct: component_qty_base × wastage_factor × parent_qty. */
     public function effectiveQty(string $parentQty): string
     {
+        if (!is_numeric($this->componentQtyBase) || !is_numeric($this->wastageFactor) || !is_numeric($parentQty)) {
+            throw new \ValueError('BOM quantities and wastage factor must be numeric.');
+        }
+
         return bcmul(bcmul($this->componentQtyBase, $this->wastageFactor, 6), $parentQty, 6);
     }
 

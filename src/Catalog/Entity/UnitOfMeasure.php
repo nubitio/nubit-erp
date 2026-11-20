@@ -52,7 +52,7 @@ class UnitOfMeasure implements ActivatableInterface
     #[ApiProperty(description: 'unit_of_measure.ratio.label')]
     #[Context(denormalizationContext: [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true])]
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private string|int|float $ratio = '1.00';
+    private string $ratio = '1.00';
 
     #[Groups(['unit-of-measure:read', 'unit-of-measure:write'])]
     #[ApiProperty(description: 'unit_of_measure.reference.label')]

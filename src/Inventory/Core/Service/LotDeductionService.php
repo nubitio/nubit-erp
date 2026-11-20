@@ -41,6 +41,10 @@ final readonly class LotDeductionService
      */
     public function deduct(string $productId, string $warehouseId, string $qty, LotTrackingStrategy $strategy): array
     {
+        if (!is_numeric($qty)) {
+            throw new \ValueError('Lot quantity must be numeric.');
+        }
+
         $lots = match ($strategy) {
             LotTrackingStrategy::FEFO => $this->stockLotRepository->findForFefo($productId, $warehouseId),
             LotTrackingStrategy::FIFO => $this->stockLotRepository->findForFifo($productId, $warehouseId),
@@ -92,6 +96,10 @@ final readonly class LotDeductionService
         ?\DateTimeImmutable $manufactureDate,
         ?\DateTimeImmutable $receivedAt,
     ): StockLot {
+        if (!is_numeric($qty)) {
+            throw new \ValueError('Lot quantity must be numeric.');
+        }
+
         $lot = $this->stockLotRepository->findByLotNumber($productId, $warehouseId, $lotNumber);
 
         if ($lot === null) {

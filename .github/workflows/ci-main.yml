@@ -108,6 +108,7 @@ jobs:
               - 'phpunit.coverage.xml'
               - 'phpstan.dist.neon'
               - 'phpstan-baseline.neon'
+              - 'tools/phpstan/**'
               - 'mago.toml'
               - 'rector.php'
               - 'phparkitect.php'

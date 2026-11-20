@@ -26,6 +26,10 @@ final readonly class ControlPlaneUser implements UserInterface, PasswordAuthenti
 
     public function getUserIdentifier(): string
     {
+        if ($this->username === '') {
+            throw new \LogicException('The username cannot be empty.');
+        }
+
         return $this->username;
     }
 

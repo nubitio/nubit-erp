@@ -35,7 +35,10 @@ final class LineRule
             }
             $amounts[$field] = $value;
         }
-        if (3 === count($amounts) && ($amounts['subtotal_minor'] + $amounts['tax_minor']) !== $amounts['total_minor']) {
+        if (
+            isset($amounts['subtotal_minor'], $amounts['tax_minor'], $amounts['total_minor'])
+            && ($amounts['subtotal_minor'] + $amounts['tax_minor']) !== $amounts['total_minor']
+        ) {
             $errors[] = ['field' => "lines[$i].total_minor", 'issue' => 'must equal subtotal_minor + tax_minor'];
         }
 

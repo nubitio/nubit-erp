@@ -30,7 +30,7 @@ final class ProposeReplaceRejectedToolTest extends TestCase
 
         $result = $tool->proposeReplaceRejected(taxDocumentId: 'td-1');
         self::assertArrayHasKey('error', $result);
-        self::assertStringContainsString('no está rechazado', $result['error']);
+        self::assertStringContainsString('no está rechazado', $result['error'] ?? '');
     }
 
     public function testReturnsErrorWhenDocumentIsMissing(): void

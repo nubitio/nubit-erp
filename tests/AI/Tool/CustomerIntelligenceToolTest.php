@@ -45,7 +45,7 @@ final class CustomerIntelligenceToolTest extends TestCase
         $result = $this->tool->customerIntelligence('12345678'); // 8-digit DNI not found
 
         self::assertArrayHasKey('error', $result);
-        self::assertSame('Cliente no encontrado', $result['error']);
+        self::assertSame('Cliente no encontrado', $result['error'] ?? null);
     }
 
     /**
@@ -59,7 +59,7 @@ final class CustomerIntelligenceToolTest extends TestCase
         $result = $this->tool->customerIntelligence('INVALID-ABC');
 
         self::assertArrayHasKey('error', $result);
-        self::assertSame('Cliente no encontrado', $result['error']);
+        self::assertSame('Cliente no encontrado', $result['error'] ?? null);
     }
 
     /**
@@ -72,7 +72,7 @@ final class CustomerIntelligenceToolTest extends TestCase
         $result = $this->tool->customerIntelligence('20123456789');
 
         self::assertArrayNotHasKey('error', $result);
-        self::assertSame('RUC', $result['document_type']);
+        self::assertSame('RUC', $result['document_type'] ?? null);
         self::assertSame('20123456789', $result['document_number']);
     }
 
@@ -86,7 +86,7 @@ final class CustomerIntelligenceToolTest extends TestCase
         $result = $this->tool->customerIntelligence('12345678');
 
         self::assertArrayNotHasKey('error', $result);
-        self::assertSame('DNI', $result['document_type']);
+        self::assertSame('DNI', $result['document_type'] ?? null);
         self::assertSame('12345678', $result['document_number']);
     }
 
@@ -108,7 +108,7 @@ final class CustomerIntelligenceToolTest extends TestCase
         $result = $this->tool->customerIntelligence('20123456789');
 
         self::assertArrayNotHasKey('error', $result);
-        self::assertSame('frecuente', $result['frequency']);
+        self::assertSame('frecuente', $result['frequency'] ?? null);
     }
 
     /**
@@ -129,7 +129,7 @@ final class CustomerIntelligenceToolTest extends TestCase
         $result = $this->tool->customerIntelligence('20123456789');
 
         self::assertArrayNotHasKey('error', $result);
-        self::assertSame('ocasional', $result['frequency']);
+        self::assertSame('ocasional', $result['frequency'] ?? null);
     }
 
     /**
@@ -150,7 +150,7 @@ final class CustomerIntelligenceToolTest extends TestCase
         $result = $this->tool->customerIntelligence('20123456789');
 
         self::assertArrayNotHasKey('error', $result);
-        self::assertSame('inactivo', $result['frequency']);
+        self::assertSame('inactivo', $result['frequency'] ?? null);
     }
 
     /**
@@ -183,7 +183,7 @@ final class CustomerIntelligenceToolTest extends TestCase
         self::assertArrayHasKey('frequency', $result);
         self::assertArrayHasKey('days_since_last_purchase', $result);
 
-        self::assertSame(5, $result['total_purchases']);
+        self::assertSame(5, $result['total_purchases'] ?? null);
         self::assertSame(500.0, $result['total_spent']);
         self::assertSame(100.0, $result['avg_ticket']);
     }

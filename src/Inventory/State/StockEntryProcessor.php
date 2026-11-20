@@ -356,6 +356,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         return sprintf('%s:line:%s', $entryId, $item->getId() ?? $lineNo);
     }
 
+    /** @return numeric-string */
     private function toBaseQty(StockEntryItem $item): string
     {
         $unitId = $item->getUnit()?->getId();
@@ -363,7 +364,12 @@ final readonly class StockEntryProcessor implements ProcessorInterface
             return $item->getQty();
         }
 
-        return $this->unitConversion->toBase((string) $item->getProduct()?->getId(), (int) $unitId, $item->getQty());
+        $qty = $this->unitConversion->toBase((string) $item->getProduct()?->getId(), (int) $unitId, $item->getQty());
+        if (!is_numeric($qty)) {
+            throw new \UnexpectedValueException('Converted stock quantity is not numeric.');
+        }
+
+        return $qty;
     }
 
     private function isTracked(mixed $product): bool

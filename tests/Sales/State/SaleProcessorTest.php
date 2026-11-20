@@ -1387,8 +1387,7 @@ final class SaleProcessorTest extends TestCase
         $rc->getProperty('stockValidationPolicy')->setValue($stub, $svp);
 
         // policyResolver (final) — bypass constructor, inject TenantSettingsService mock
-        $policyResolverClass = (string) $rc->getProperty('policyResolver')->getType();
-        $rcPr = new ReflectionClass($policyResolverClass);
+        $rcPr = new ReflectionClass(\App\Sales\State\NegativeStockPolicyResolver::class);
         /** @var \App\Sales\State\NegativeStockPolicyResolver $prStub */
         $prStub = $rcPr->newInstanceWithoutConstructor();
 

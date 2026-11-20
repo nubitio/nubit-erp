@@ -26,10 +26,10 @@ readonly class CashSessionMovementsProvider implements ProviderInterface
     /**
      * @inheritdoc
      * @throws Exception
-     * @return CashMovement[]
+     * @return list<CashMovement>
      */
     #[Override]
-    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): array
     {
         $cashSessionId = $uriVariables['id'];
 

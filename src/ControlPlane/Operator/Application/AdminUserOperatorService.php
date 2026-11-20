@@ -33,7 +33,7 @@ final readonly class AdminUserOperatorService
      */
     public function listUsers(): array
     {
-        return array_map($this->decodeUserRoles(...), $this->adminUserRepository->findAll());
+        return array_values(array_map($this->decodeUserRoles(...), $this->adminUserRepository->findAll()));
     }
 
     /**

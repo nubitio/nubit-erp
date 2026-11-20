@@ -104,6 +104,7 @@ final class SunatRucScraper
         return $ch;
     }
 
+    /** @param non-empty-string $url */
     private function curlGet(\CurlHandle $ch, string $url): string
     {
         curl_setopt($ch, CURLOPT_URL, $url);
@@ -115,6 +116,7 @@ final class SunatRucScraper
 
     /**
      * @param array<string, string> $data
+     * @param non-empty-string $url
      */
     private function curlPost(\CurlHandle $ch, string $url, array $data): string
     {
@@ -209,13 +211,13 @@ final class SunatRucScraper
             return $dic;
         }
 
-        $nodes = $listGroups->item(0)?->childNodes;
-        if (!$nodes instanceof \DOMNodeList) {
+        $group = $listGroups->item(0);
+        if (!$group instanceof \DOMElement) {
             return $dic;
         }
 
-        foreach ($nodes as $node) {
-            if (XML_ELEMENT_NODE !== $node->nodeType) {
+        foreach ($group->childNodes as $node) {
+            if (!$node instanceof \DOMElement) {
                 continue;
             }
 
@@ -245,8 +247,8 @@ final class SunatRucScraper
 
         // Special case: two headings, zero texts → "RUC: 20xxx - Razón Social"
         if (0 === $texts->count() && 2 === $headings->count()) {
-            $label = trim($headings->item(0)->textContent);
-            $value = trim($headings->item(1)->textContent);
+            $label = $this->elementText($headings->item(0));
+            $value = $this->elementText($headings->item(1));
             if ('' !== $label) {
                 $dic[$label] = $value;
             }
@@ -255,15 +257,20 @@ final class SunatRucScraper
         }
 
         for ($i = 0; $i < $headings->count(); ++$i) {
-            $label = trim($headings->item($i)->textContent);
+            $label = $this->elementText($headings->item($i));
             if ('' === $label) {
                 continue;
             }
 
             if ($texts->count() > $i) {
-                $dic[$label] = trim($texts->item($i)->textContent);
+                $dic[$label] = $this->elementText($texts->item($i));
             }
         }
+    }
+
+    private function elementText(\DOMNode|\DOMNameSpaceNode|null $node): string
+    {
+        return $node instanceof \DOMElement ? trim($node->textContent) : '';
     }
 
     /**

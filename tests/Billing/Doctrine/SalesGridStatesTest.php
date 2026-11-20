@@ -22,14 +22,17 @@ final class SalesGridStatesTest extends KernelTestCase
         foreach (['accepted', 'pending', 'not_applicable'] as $state) {
             $qb = $em->createQueryBuilder()->select('o.id')->from(SaleRecord::class, 'o');
             $filter->applyFilter($qb, SaleRecord::class, 'sunatState', '=', $state);
-            $sql = (string) $qb->getQuery()->getSQL();
+            $sql = $qb->getQuery()->getSQL();
+            self::assertIsString($sql);
             self::assertStringContainsString('tax_document', $sql);
             self::assertStringContainsString('NOT EXISTS', $sql);
             self::assertStringNotContainsString('JOIN', $sql);
         }
         $qb = $em->createQueryBuilder()->select('o.id')->from(SaleRecord::class, 'o');
         $filter->applyFilter($qb, SaleRecord::class, 'paymentState', '=', 'due');
-        self::assertStringContainsString('CASE WHEN', (string) $qb->getQuery()->getSQL());
+        $sql = $qb->getQuery()->getSQL();
+        self::assertIsString($sql);
+        self::assertStringContainsString('CASE WHEN', $sql);
         $parameter = $qb->getParameters()->first();
         self::assertInstanceOf(Parameter::class, $parameter);
         self::assertSame('due', $parameter->getValue());

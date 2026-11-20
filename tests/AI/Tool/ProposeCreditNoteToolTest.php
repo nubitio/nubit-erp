@@ -42,7 +42,7 @@ final class ProposeCreditNoteToolTest extends TestCase
 
         $result = $tool->proposeCreditNote(reasonCode: '01', taxDocumentId: 'td-1');
         self::assertArrayHasKey('error', $result);
-        self::assertStringContainsString('otra nota de crédito', $result['error']);
+        self::assertStringContainsString('otra nota de crédito', $result['error'] ?? '');
     }
 
     public function testRefusesRejectedDocumentsAndPointsToReplace(): void
@@ -64,7 +64,7 @@ final class ProposeCreditNoteToolTest extends TestCase
 
         $result = $tool->proposeCreditNote(reasonCode: '01', taxDocumentId: 'td-1');
         self::assertArrayHasKey('error', $result);
-        self::assertStringContainsString('propose_replace_rejected', $result['error']);
+        self::assertStringContainsString('propose_replace_rejected', $result['error'] ?? '');
     }
 
     public function testRejectsInvalidReasonCode(): void
@@ -84,6 +84,6 @@ final class ProposeCreditNoteToolTest extends TestCase
 
         $result = $tool->proposeCreditNote(reasonCode: '99', taxDocumentId: 'td-1');
         self::assertArrayHasKey('error', $result);
-        self::assertStringContainsString('catálogo SUNAT 09', $result['error']);
+        self::assertStringContainsString('catálogo SUNAT 09', $result['error'] ?? '');
     }
 }

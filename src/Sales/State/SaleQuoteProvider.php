@@ -43,6 +43,7 @@ readonly class SaleQuoteProvider implements ProviderInterface
     {
         if ($operation instanceof CollectionOperationInterface) {
             $paginator = $this->collectionProvider->provide($operation, $uriVariables, $context);
+            assert(is_iterable($paginator));
 
             $quotes = [];
             foreach ($paginator as $quote) {

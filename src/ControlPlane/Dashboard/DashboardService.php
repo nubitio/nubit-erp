@@ -72,12 +72,17 @@ final readonly class DashboardService
 
             $since = new \DateTimeImmutable(sprintf('-%d hours', $hours))->format('Y-m-d H:i:s');
 
-            return $conn->fetchAllAssociative('SELECT action, COUNT(*) as count
+            $rows = $conn->fetchAllAssociative('SELECT action, COUNT(*) as count
                  FROM audit_logs
                  WHERE created_at >= ?
                  GROUP BY action
                  ORDER BY count DESC
                  LIMIT 20', [$since]);
+
+            return array_map(static fn(array $row): array => [
+                'action' => (string) $row['action'],
+                'count' => (int) $row['count'],
+            ], $rows);
         } catch (\Throwable $e) {
             $this->logger->warning('Dashboard: failed to load audit summary', ['exception' => $e->getMessage()]);
 

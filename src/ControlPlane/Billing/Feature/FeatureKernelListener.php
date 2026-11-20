@@ -89,7 +89,7 @@ final class FeatureKernelListener
             if (str_contains($controller, '::')) {
                 [$class, $method] = explode('::', $controller, 2);
 
-                return [$class, $method];
+                return class_exists($class) ? [$class, $method] : [null, null];
             }
 
             // Plain function name — no class attributes to read.

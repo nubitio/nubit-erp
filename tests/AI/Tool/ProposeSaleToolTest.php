@@ -32,6 +32,6 @@ final class ProposeSaleToolTest extends TestCase
         $result = $tool->proposeSale('not-json');
 
         self::assertArrayHasKey('error', $result);
-        self::assertStringContainsString('JSON array', $result['error']);
+        self::assertStringContainsString('JSON array', $result['error'] ?? '');
     }
 }

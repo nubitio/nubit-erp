@@ -183,12 +183,14 @@ class AssistantProposedAction
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array{id: string, kind: string, summary: string, payload: array<string, mixed>, expiresAt: string}
      */
     public function toCard(): array
     {
+        $id = $this->id ?? throw new \LogicException('Persist the proposed action before building its card.');
+
         return [
-            'id' => $this->id,
+            'id' => $id,
             'kind' => $this->kind,
             'summary' => $this->summary,
             'payload' => $this->payload,

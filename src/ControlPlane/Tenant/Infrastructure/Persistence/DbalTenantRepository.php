@@ -378,7 +378,7 @@ final readonly class DbalTenantRepository implements TenantRepositoryInterface
      */
     private function mapRows(array $rows): array
     {
-        return array_map(static fn(array $row): TenantSnapshot => TenantSnapshot::fromArray($row), $rows);
+        return array_values(array_map(static fn(array $row): TenantSnapshot => TenantSnapshot::fromArray($row), $rows));
     }
 
     /**

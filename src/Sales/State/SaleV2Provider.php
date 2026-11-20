@@ -43,6 +43,9 @@ readonly class SaleV2Provider implements ProviderInterface
         if ($operation instanceof CollectionOperationInterface) {
             $context = $this->buildCollectionContext($context);
             $paginator = $this->collectionProvider->provide($operation, $uriVariables, $context);
+            if (!is_iterable($paginator)) {
+                return [];
+            }
 
             $records = [];
             foreach ($paginator as $record) {

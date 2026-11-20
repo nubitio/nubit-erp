@@ -57,7 +57,7 @@ final class ReportGridFilterApplierTest extends TestCase
     public function test_unknown_field_is_ignored(): void
     {
         $params = [];
-        $filter = json_encode(['unknownField', '=', 'value']);
+        $filter = json_encode(['unknownField', '=', 'value'], JSON_THROW_ON_ERROR);
         $result = $this->applier->buildSql($filter, ['issuedDate' => 's.issued_date'], $params);
 
         self::assertSame('', $result);
@@ -67,7 +67,7 @@ final class ReportGridFilterApplierTest extends TestCase
     public function test_known_field_produces_condition(): void
     {
         $params = [];
-        $filter = json_encode(['issuedDate', '=', '2024-01-15']);
+        $filter = json_encode(['issuedDate', '=', '2024-01-15'], JSON_THROW_ON_ERROR);
         $result = $this->applier->buildSql($filter, ['issuedDate' => 's.issued_date'], $params);
 
         self::assertSame('AND s.issued_date = :grid_filter_0', $result);
@@ -105,7 +105,7 @@ final class ReportGridFilterApplierTest extends TestCase
         mixed $expectedParamValue,
     ): void {
         $params = [];
-        $filter = json_encode(['myField', $frontendOp, $inputValue]);
+        $filter = json_encode(['myField', $frontendOp, $inputValue], JSON_THROW_ON_ERROR);
         $result = $this->applier->buildSql($filter, ['myField' => 'col'], $params);
 
         self::assertStringContainsString("col {$expectedSqlOp} :grid_filter_0", $result);
@@ -115,7 +115,7 @@ final class ReportGridFilterApplierTest extends TestCase
     public function test_unknown_operator_is_ignored(): void
     {
         $params = [];
-        $filter = json_encode(['myField', 'invalidOp', 'value']);
+        $filter = json_encode(['myField', 'invalidOp', 'value'], JSON_THROW_ON_ERROR);
         $result = $this->applier->buildSql($filter, ['myField' => 'col'], $params);
 
         self::assertSame('', $result);
@@ -133,7 +133,7 @@ final class ReportGridFilterApplierTest extends TestCase
             ['issuedDate', '>=', '2024-01-01'],
             'and',
             ['issuedDate', '<=', '2024-01-31'],
-        ]);
+        ], JSON_THROW_ON_ERROR);
         $fieldMap = ['issuedDate' => 's.issued_date'];
         $result = $this->applier->buildSql($filter, $fieldMap, $params);
 
@@ -150,7 +150,7 @@ final class ReportGridFilterApplierTest extends TestCase
         // DevExtreme nesting: [[field1, op, val1], 'and', [field2, op, val2]]
         $filter = json_encode([
             [['fieldA', '=', 'alpha'], 'and', ['fieldB', '=', 'beta']],
-        ]);
+        ], JSON_THROW_ON_ERROR);
         $fieldMap = ['fieldA' => 'col_a', 'fieldB' => 'col_b'];
         $result = $this->applier->buildSql($filter, $fieldMap, $params);
 
@@ -165,7 +165,7 @@ final class ReportGridFilterApplierTest extends TestCase
     public function test_param_index_starts_after_existing_params(): void
     {
         $params = ['local_id' => '1', 'date_from' => '2024-01-01'];
-        $filter = json_encode(['myField', '=', 'hello']);
+        $filter = json_encode(['myField', '=', 'hello'], JSON_THROW_ON_ERROR);
         $result = $this->applier->buildSql($filter, ['myField' => 'col'], $params);
 
         // index starts at count($params) = 2
@@ -180,7 +180,7 @@ final class ReportGridFilterApplierTest extends TestCase
     public function test_relation_identifier_array_unwraps_id(): void
     {
         $params = [];
-        $filter = json_encode(['customer', '=', ['id' => 'uuid-123', 'label' => 'ACME']]);
+        $filter = json_encode(['customer', '=', ['id' => 'uuid-123', 'label' => 'ACME']], JSON_THROW_ON_ERROR);
         $result = $this->applier->buildSql($filter, ['customer' => 'c.id'], $params);
 
         self::assertSame('AND c.id = :grid_filter_0', $result);

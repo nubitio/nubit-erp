@@ -27,6 +27,7 @@ use PHPUnit\Framework\TestCase;
 final class SalesReportSpreadsheetColumnsTest extends TestCase
 {
     /**
+     * @param class-string<ExportableReportInterface> $reportClass
      * @param array<string, array{0: string, 1: string, 2: string}> $expected
      */
     #[DataProvider('reportColumnsProvider')]
@@ -41,6 +42,7 @@ final class SalesReportSpreadsheetColumnsTest extends TestCase
     }
 
     /**
+     * @param class-string<ExportableReportInterface> $reportClass
      * @param array<string, string> $numericValues
      * @param list<string> $summedFields
      */

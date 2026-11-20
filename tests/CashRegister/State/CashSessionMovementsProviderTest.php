@@ -76,7 +76,6 @@ final class CashSessionMovementsProviderTest extends TestCase
         $provider = $this->makeProvider();
         $result = $provider->provide(new GetCollection(), ['id' => '7']);
 
-        self::assertIsArray($result);
         self::assertCount(2, $result);
         self::assertInstanceOf(CashMovement::class, $result[0]);
         self::assertInstanceOf(CashMovement::class, $result[1]);

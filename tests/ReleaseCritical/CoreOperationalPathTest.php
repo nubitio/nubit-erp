@@ -114,7 +114,11 @@ final class CoreOperationalPathTest extends KernelTestCase
         ]);
         self::assertIsArray($movement);
         self::assertSame('SALE', $movement['source_type']);
-        self::assertStringStartsWith((string) $result->getId(), (string) $movement['source_id']);
+        $saleId = (string) $result->getId();
+        if ($saleId === '') {
+            self::fail('The persisted sale has no ID.');
+        }
+        self::assertStringStartsWith($saleId, (string) $movement['source_id']);
     }
 
     public function testIdempotentReplayDoesNotDoubleStockOrCash(): void

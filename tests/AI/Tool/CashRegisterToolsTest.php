@@ -38,7 +38,8 @@ final class CashRegisterToolsTest extends TestCase
 
     public function testThrowsWhenCashRegisterNotFound(): void
     {
-        $this->cashRegisterRepository->method('find')->willReturn(null);
+        $this->cashRegisterRepository->expects(self::once())->method('find')->with(999)->willReturn(null);
+        $this->cashSessionRepository->expects(self::never())->method('findLatestByCashRegister');
 
         $this->expectException(ServiceException::class);
         $this->tool->cashRegisterStatus(999);
@@ -46,8 +47,16 @@ final class CashRegisterToolsTest extends TestCase
 
     public function testReturnsClosedWithNoDetailsWhenNoSessionExists(): void
     {
-        $this->cashRegisterRepository->method('find')->willReturn($this->makeCashRegister(1, 'Caja Principal'));
-        $this->cashSessionRepository->method('findLatestByCashRegister')->with(1)->willReturn(null);
+        $this->cashRegisterRepository
+            ->expects(self::once())
+            ->method('find')
+            ->with(1)
+            ->willReturn($this->makeCashRegister(1, 'Caja Principal'));
+        $this->cashSessionRepository
+            ->expects(self::once())
+            ->method('findLatestByCashRegister')
+            ->with(1)
+            ->willReturn(null);
 
         $result = $this->tool->cashRegisterStatus(1);
 
@@ -61,7 +70,11 @@ final class CashRegisterToolsTest extends TestCase
 
     public function testReturnsLatestCashSessionDetails(): void
     {
-        $this->cashRegisterRepository->method('find')->willReturn($this->makeCashRegister(1, 'Caja Principal'));
+        $this->cashRegisterRepository
+            ->expects(self::once())
+            ->method('find')
+            ->with(1)
+            ->willReturn($this->makeCashRegister(1, 'Caja Principal'));
 
         $user = new User()->setUsername('cajera1');
         new ReflectionProperty(User::class, 'id')->setValue($user, 7);
@@ -73,7 +86,11 @@ final class CashRegisterToolsTest extends TestCase
             ->setOpenedBy($user);
         new ReflectionProperty(CashSession::class, 'id')->setValue($session, 42);
 
-        $this->cashSessionRepository->method('findLatestByCashRegister')->with(1)->willReturn($session);
+        $this->cashSessionRepository
+            ->expects(self::once())
+            ->method('findLatestByCashRegister')
+            ->with(1)
+            ->willReturn($session);
 
         $result = $this->tool->cashRegisterStatus(1);
 

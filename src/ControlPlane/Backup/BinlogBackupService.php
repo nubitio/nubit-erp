@@ -453,14 +453,11 @@ final readonly class BinlogBackupService
             $params['dbname'] = ltrim($parts['path'], '/');
         }
 
-        if (isset($query['serverVersion']) && $query['serverVersion'] !== '') {
-            $params['serverVersion'] = (string) $query['serverVersion'];
-        }
-        if (isset($query['charset']) && $query['charset'] !== '') {
-            $params['charset'] = (string) $query['charset'];
-        }
-        if (isset($query['unix_socket']) && $query['unix_socket'] !== '') {
-            $params['unix_socket'] = (string) $query['unix_socket'];
+        foreach (['serverVersion', 'charset', 'unix_socket'] as $key) {
+            $value = $query[$key] ?? null;
+            if (is_string($value) && $value !== '') {
+                $params[$key] = $value;
+            }
         }
 
         if (empty($params['host']) && empty($params['unix_socket'])) {
