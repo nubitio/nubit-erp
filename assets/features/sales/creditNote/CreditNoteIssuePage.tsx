@@ -8,6 +8,7 @@ import {
   Card,
   Checkbox,
   Chip,
+  ConfirmDialog,
   DetailLayout,
   EmptyState,
   FormField,
@@ -21,6 +22,7 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 import { DateTime } from 'luxon';
 import { httpClient } from '@shared/api/HttpClient';
 import { formatMoney } from '@shared/lib/displayFormat';
+import { hydraMembers, type HydraCollection } from '@shared/api/hydraCollection';
 import { hasPermission } from '@shared/permissions';
 import toast from '@shared/lib/SharedUtils';
 import { sunatStatus } from '../sunat/sunatStatus';
@@ -29,11 +31,14 @@ import {
   FREQUENT_REASON_CODES,
   annulsDocument,
   buildCreditNotePayload,
+  creditNoteBlockedReason,
   creditNoteIssueErrors,
+  defaultReturnQuantity,
   lineReturnCents,
   returnAllLines,
   returnSummary,
   returnsEverything,
+  stepReturnQuantity,
   type OriginLine,
   type Returns,
 } from './creditNoteIssueModel';
@@ -59,10 +64,6 @@ const centsToMoney = (cents: bigint | null, currency: string) =>
     ? '—'
     : formatMoney(`${cents / 100n}.${(cents % 100n).toString().padStart(2, '0')}`, currency);
 
-function collection<T>(data: T[] | { member?: T[]; 'hydra:member'?: T[] }): T[] {
-  return Array.isArray(data) ? data : (data.member ?? data['hydra:member'] ?? []);
-}
-
 export function CreditNoteIssuePage() {
   const { documentId = '' } = useParams();
   const navigate = useNavigate();
@@ -85,11 +86,11 @@ export function CreditNoteIssuePage() {
     enabled: documentQuery.isSuccess,
     retry: false,
     queryFn: async () =>
-      collection(
+      hydraMembers(
         (
-          await httpClient.get<
-            OriginLine[] | { member?: OriginLine[]; 'hydra:member'?: OriginLine[] }
-          >(`${API}tax-documents/${documentId}/lines`)
+          await httpClient.get<HydraCollection<OriginLine>>(
+            `${API}tax-documents/${documentId}/lines`,
+          )
         ).data,
       ).sort((a, b) => a.lineNumber - b.lineNumber),
   });
@@ -110,16 +111,16 @@ export function CreditNoteIssuePage() {
   const toggleLine = (line: OriginLine, checked: boolean) =>
     setReturns((current) => {
       const next = { ...current };
-      if (checked) next[line.lineNumber] = '1';
+      if (checked) next[line.lineNumber] = defaultReturnQuantity(line);
       else delete next[line.lineNumber];
       return next;
     });
-  const stepLine = (line: OriginLine, delta: number) =>
+  const stepLine = (line: OriginLine, delta: 1 | -1) =>
     setReturns((current) => {
-      const value = Math.max(0, Number(current[line.lineNumber] ?? 0) + delta);
       const next = { ...current };
-      if (value === 0) delete next[line.lineNumber];
-      else next[line.lineNumber] = String(Math.min(value, Number(line.quantity)));
+      const quantity = stepReturnQuantity(line, current[line.lineNumber], delta);
+      if (quantity === null) delete next[line.lineNumber];
+      else next[line.lineNumber] = quantity;
       return next;
     });
 
@@ -145,9 +146,13 @@ export function CreditNoteIssuePage() {
     },
   });
 
+  const [confirmingAnnul, setConfirmingAnnul] = useState(false);
   const submit = () => {
     setSubmitted(true);
-    if (Object.keys(errors).length === 0 && !issue.isPending) issue.mutate();
+    if (Object.keys(errors).length > 0 || issue.isPending) return;
+    // An annulling reason cancels the sale and restocks it: ask once, plainly.
+    if (annulsDocument(reasonCode)) setConfirmingAnnul(true);
+    else issue.mutate();
   };
 
   const back = <Link to="/billing/sales">Volver a ventas</Link>;
@@ -185,7 +190,7 @@ export function CreditNoteIssuePage() {
     );
 
   const status = sunatStatus(origin.sunatStatus);
-  const blocked = origin.voided ? 'Este comprobante ya fue anulado.' : null;
+  const blocked = creditNoteBlockedReason({ voided: origin.voided, stage: status.stage });
 
   return (
     <Page className="credit-note-issue" aria-busy={issue.isPending}>
@@ -402,6 +407,19 @@ export function CreditNoteIssuePage() {
           </Section>
         </Card>
       </DetailLayout>
+      <ConfirmDialog
+        open={confirmingAnnul}
+        title="Anular la venta"
+        variant="danger"
+        message={`La nota ${reasonCode} anula la venta ${originNumber} y repone el stock. No se puede deshacer. ¿Emitir la nota de crédito?`}
+        confirmLabel="Emitir y anular"
+        cancelLabel="Cancelar"
+        onCancel={() => setConfirmingAnnul(false)}
+        onConfirm={() => {
+          setConfirmingAnnul(false);
+          issue.mutate();
+        }}
+      />
     </Page>
   );
 }
