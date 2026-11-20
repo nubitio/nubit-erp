@@ -41,7 +41,7 @@ for (const mobile of [false, true]) {
     await login(page, seed.username, seed.password);
     await page.goto(`${getE2EBaseUrl()}/customer`);
     await waitForCustomersGrid(page);
-    const newButton = newCustomerButton(page, mobile);
+    const newButton = newCustomerButton(page);
     await expect(newButton).toBeVisible({ timeout: 30000 });
     await newButton.click();
     const drawer = page.getByRole('dialog', { name: 'Nuevo cliente', exact: true });

@@ -1,14 +1,12 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-/**
- * The customers screen (ADR-019 pilot) is a composed page, not the schema-driven grid, so it is
- * addressed by role and test id instead of the engine's `.nb-datagrid__*` classes.
- */
-export const customersGrid = (page: Page): Locator => page.getByTestId('customers-grid');
+/** Scope the schema-driven grid to the active Customers page. */
+export const customersGrid = (page: Page): Locator =>
+  page.getByRole('main', { name: 'Clientes content', exact: true }).locator('.nb-datagrid');
 
-/** Desktop shows a "Nuevo" button in the header; small screens show a floating "Nuevo cliente". */
-export const newCustomerButton = (page: Page, mobile = false): Locator =>
-  page.getByRole('button', { name: mobile ? 'Nuevo cliente' : 'Nuevo', exact: true });
+/** Locate the create action in the customer's toolbar at either viewport size. */
+export const newCustomerButton = (page: Page): Locator =>
+  customersGrid(page).getByRole('button', { name: 'Nuevo', exact: true });
 
 /** First load done and no request in flight. */
 export async function waitForCustomersGrid(page: Page): Promise<void> {

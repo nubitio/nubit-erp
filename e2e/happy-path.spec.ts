@@ -35,7 +35,7 @@ import {
   dismissDevToolbar,
   waitForSaleFormReady,
 } from './helpers/crud';
-import { customerRow, waitForCustomersGrid } from './helpers/customers';
+import { customerRow, customersGrid, waitForCustomersGrid } from './helpers/customers';
 import { completePosCashPayment, selectPosCustomer, waitForPosCheckoutReady } from './helpers/pos';
 import { E2E_SEED } from './support/seedConstants';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
@@ -363,6 +363,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
     // via browser.newPage() rather than the Playwright fixture — the use.video
     // config only applies to fixture-managed pages, not manually-created ones.
     const context = await browser.newContext({
+      locale: 'es-PE',
+      serviceWorkers: 'block',
       recordVideo: { dir: 'var/test-results/videos/', size: { width: 1280, height: 720 } },
     });
     page = await context.newPage();
@@ -584,22 +586,35 @@ test.describe('Happy Path — flujo completo de venta', () => {
   });
 
   // ───────────────────────────────────────────────────────────────────────────
-  // PASO 5 — Registrar cliente nuevo
+  // PASO 5 — Verificar cliente seed
   // ───────────────────────────────────────────────────────────────────────────
-  test('05 - Crear cliente nuevo', async () => {
+  test('05 - Buscar cliente por RUC/DNI', async () => {
     await test.step('Navegar a /customer', async () => {
       await gotoProtectedRoute(page, 'customer');
-      // The customers screen is a composed page (ADR-019), addressed by test id.
       await waitForCustomersGrid(page);
-      await expect(page.getByTestId('customers-toolbar')).toBeVisible({ timeout: 15000 });
+      await expect(
+        customersGrid(page).getByRole('table', { name: 'Clientes', exact: true }),
+      ).toBeVisible();
     });
 
     await test.step('Filtrar y verificar el cliente seed del entorno E2E', async () => {
-      // Server-side search over RUC/DNI, razón social, teléfono and correo.
-      await page.getByLabel('Buscar clientes').fill(SEED_CUSTOMER_DNI);
+      const filtered = page.waitForResponse((response) => {
+        const url = new URL(response.url());
+        return (
+          url.pathname === '/api/customers' &&
+          response.request().method() === 'GET' &&
+          Array.from(url.searchParams.values()).some((value) => value.includes(SEED_CUSTOMER_DNI))
+        );
+      });
+      await customersGrid(page)
+        .getByRole('textbox', { name: 'Filtrar RUC/DNI', exact: true })
+        .fill(SEED_CUSTOMER_DNI);
+      const response = await filtered;
+      expect(response.ok()).toBe(true);
+      expect(response.headers()['content-type']).toMatch(/json/i);
       await waitForCustomersGrid(page);
 
-      await expect(customerRow(page, SEED_CUSTOMER_NAME)).toBeVisible({ timeout: 15000 });
+      await expect(customerRow(page, SEED_CUSTOMER_NAME)).toContainText(SEED_CUSTOMER_DNI);
     });
   });
 
