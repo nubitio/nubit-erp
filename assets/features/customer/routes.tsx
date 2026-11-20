@@ -1,6 +1,6 @@
 import { lazyNamed } from '@app/router/lazy';
 import type { AppRouteDefinition } from '@app/router/types';
 
-const CustomersPage = lazyNamed(() => import('./CustomersPage'), 'CustomersPage');
+const CustomerPage = lazyNamed(() => import('./CustomerPage'), 'CustomerPage');
 
-export const customerRoutes: AppRouteDefinition[] = [{ path: '/customer', element: CustomersPage }];
+export const customerRoutes: AppRouteDefinition[] = [{ path: '/customer', element: CustomerPage }];
