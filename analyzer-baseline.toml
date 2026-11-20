@@ -439,27 +439,9 @@ message = "Possibly null right operand used in string concatenation (type `null|
 count = 1
 
 [[issues]]
-file = "src/BankReconciliation/Repository/BankStatementLineRepository.php"
-code = "mixed-return-statement"
-message = 'Could not infer a precise return type for function `App\BankReconciliation\Repository\BankStatementLineRepository::findUnmatchedByImportBatch`. Saw type `mixed`.'
-count = 1
-
-[[issues]]
 file = "src/BankReconciliation/Service/BankReconciliationMatchService.php"
 code = "redundant-condition"
 message = "This condition (type `true`) will always evaluate to true."
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "mixed-return-statement"
-message = 'Could not infer a precise return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::unreconciledSalePayments`. Saw type `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "mixed-return-statement"
-message = 'Could not infer a precise return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::unreconciledSupplierPayments`. Saw type `mixed`.'
 count = 1
 
 [[issues]]
