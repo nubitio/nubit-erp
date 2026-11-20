@@ -93,6 +93,38 @@ class CustomerAccountEntryRepository extends ServiceEntityRepository
     }
 
     /**
+     * What a "cobro a cuenta" already applied, found by the collection id the ledger
+     * stores as `source_id`. Empty when no collection used that id: the lookup that
+     * lets a retried request return its first result instead of collecting twice.
+     *
+     * @return list<array{customerId: int, saleId: string, applied: string, currency: string}>
+     */
+    public function findCollectionApplications(string $collectionId): array
+    {
+        /** @var list<array{customerId: int, saleId: string, applied: string, currency: string}> $rows */
+        $rows = $this
+            ->getEntityManager()
+            ->createQueryBuilder()
+            ->select(
+                'e.customerId AS customerId',
+                'a.saleId AS saleId',
+                'a.appliedAmount AS applied',
+                'a.currency AS currency',
+            )
+            ->from(CustomerPaymentApplication::class, 'a')
+            ->join('a.accountEntry', 'e')
+            ->where('e.source = :source')
+            ->andWhere('e.sourceId = :sourceId')
+            ->setParameter('source', 'on_account_collect')
+            ->setParameter('sourceId', $collectionId)
+            ->orderBy('a.id', 'ASC')
+            ->getQuery()
+            ->getArrayResult();
+
+        return $rows;
+    }
+
+    /**
      * Whether a CHARGE entry already exists for a sale — the idempotency guard
      * for the credit-sale handler, which may see {@see \App\Sales\Event\SaleConfirmed}
      * more than once.

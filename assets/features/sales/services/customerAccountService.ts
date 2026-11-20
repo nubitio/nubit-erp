@@ -4,6 +4,8 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 const API = getCoreApiBaseUrl();
 
 export interface CollectOnAccountInput {
+  /** Same key on a retry of the same collection: the server returns the first result instead of collecting twice. */
+  idempotencyKey?: string;
   customerId: number;
   amount: number;
   paymentMethodId: number;
@@ -68,18 +70,22 @@ const round2 = (n: number) => Number(n.toFixed(2));
 
 export const customerAccountService = {
   collectOnAccount(input: CollectOnAccountInput) {
-    return httpClient.post<CollectOnAccountResult>(`${API}sales/collect-on-account`, {
-      customerId: input.customerId,
-      amount: round2(input.amount),
-      paymentMethodId: input.paymentMethodId,
-      paidAt: input.paidAt,
-      reference: input.reference,
-      moneyAccountId: input.moneyAccountId || undefined,
-      applications: (input.applications ?? []).map((a) => ({
-        saleId: a.saleId,
-        amount: round2(a.amount),
-      })),
-    });
+    return httpClient.post<CollectOnAccountResult>(
+      `${API}sales/collect-on-account`,
+      {
+        customerId: input.customerId,
+        amount: round2(input.amount),
+        paymentMethodId: input.paymentMethodId,
+        paidAt: input.paidAt,
+        reference: input.reference,
+        moneyAccountId: input.moneyAccountId || undefined,
+        applications: (input.applications ?? []).map((a) => ({
+          saleId: a.saleId,
+          amount: round2(a.amount),
+        })),
+      },
+      input.idempotencyKey ? { headers: { 'Idempotency-Key': input.idempotencyKey } } : undefined,
+    );
   },
 
   receiveAdvance(input: ReceiveAdvanceInput) {

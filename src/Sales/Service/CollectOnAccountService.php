@@ -13,12 +13,15 @@ use App\Identity\Entity\User;
 use App\Sales\Dto\CollectOnAccountApplication;
 use App\Sales\Dto\CollectOnAccountResult;
 use App\Sales\Entity\CustomerPaymentApplication;
+use App\Sales\Entity\SaleRecord;
+use App\Sales\Repository\CustomerAccountEntryRepository;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\State\SalesWriteGateway;
 use App\Treasury\Domain\MovementSource;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Uid\Uuid;
@@ -51,11 +54,14 @@ readonly class CollectOnAccountService
         private MessageBusInterface $messageBus,
         private OperationLog $operationLog,
         private ?TreasuryReceipts $treasuryReceipts = null,
+        private ?CustomerAccountEntryRepository $entries = null,
     ) {}
 
     /**
      * @param list<array{saleId: string, amount: string|float}> $applications
      *        empty = FIFO over every open sale, oldest first
+     * @param string|null $collectionId stable id derived from the caller's Idempotency-Key; when a collection
+     *        with it already exists its result is returned and nothing is booked again
      */
     public function collect(
         int $customerId,
@@ -66,7 +72,15 @@ readonly class CollectOnAccountService
         array $applications,
         User $createdBy,
         ?string $moneyAccountId = null,
+        ?string $collectionId = null,
     ): CollectOnAccountResult {
+        if ($collectionId !== null) {
+            $replayed = $this->replay($collectionId, $customerId);
+            if ($replayed instanceof CollectOnAccountResult) {
+                return $replayed;
+            }
+        }
+
         $this->assertCollectableMethod($paymentMethod);
 
         $amountMoney = Money::money($amount);
@@ -89,7 +103,7 @@ readonly class CollectOnAccountService
         $isCash = $paymentMethod->getId() === PaymentMethod::CASH;
         $cashSessionId = $isCash ? $this->resolveCashSession($createdBy) : null;
 
-        $collectionId = Uuid::v4()->toRfc4122();
+        $collectionId ??= Uuid::v4()->toRfc4122();
         $description = sprintf('Cobro a cuenta cliente #%d', $customerId);
 
         $lines = $this->applyPlan(
@@ -129,6 +143,43 @@ readonly class CollectOnAccountService
             customerId: $customerId,
             amount: Money::toString($amountMoney),
             currency: $currency,
+            applications: $lines,
+        );
+    }
+
+    /**
+     * The result of a collection that was already booked under this id, or null when none was.
+     * A retry after a timeout lands here, so the customer is not charged twice.
+     */
+    private function replay(string $collectionId, int $customerId): ?CollectOnAccountResult
+    {
+        $rows = $this->entries?->findCollectionApplications($collectionId) ?? [];
+        if ($rows === []) {
+            return null;
+        }
+
+        if ($rows[0]['customerId'] !== $customerId) {
+            throw new ConflictHttpException('Esta clave de idempotencia ya se usó en otro cobro.');
+        }
+
+        $total = BigDecimal::zero();
+        $lines = [];
+        foreach ($rows as $row) {
+            $sale = $this->sales->find($row['saleId']);
+            $total = $total->plus($row['applied']);
+            $lines[] = new CollectOnAccountApplication(
+                saleId: $row['saleId'],
+                document: $sale instanceof SaleRecord ? CollectOnAccountPlanner::documentLabel($sale) : $row['saleId'],
+                applied: Money::toString(Money::money($row['applied'])),
+                balanceDueAfter: $sale instanceof SaleRecord ? $sale->getBalanceDue() : '0.00',
+            );
+        }
+
+        return new CollectOnAccountResult(
+            collectionId: $collectionId,
+            customerId: $customerId,
+            amount: Money::toString($total),
+            currency: $rows[0]['currency'],
             applications: $lines,
         );
     }

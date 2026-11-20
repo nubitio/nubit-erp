@@ -5,6 +5,8 @@ import { FinanceNavigation } from '@shared/ui/finance/FinanceNavigation';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { httpClient } from '@shared/api/HttpClient';
 import { hasPermission } from '@shared/permissions';
+import { downloadBlob, filenameFromDisposition } from '@shared/lib/downloadBlob';
+import toast from '@shared/lib/SharedUtils';
 import { CollectPaymentDialog } from './CollectPaymentDialog';
 import { CustomerAdvanceDialog } from './CustomerAdvanceDialog';
 import { CustomerReceivableDrawer, type ReceivableCustomer } from './CustomerReceivableDrawer';
@@ -18,16 +20,13 @@ async function downloadCustomerStatement(id: number): Promise<void> {
     `${API}sales/reports/customer-statement?customer=${id}&format=pdf`,
     { responseType: 'blob' },
   );
-  const disposition = response.headers['content-disposition'] as string | undefined;
-  const match = disposition ? /filename="?([^";]+)"?/i.exec(disposition) : null;
-  const objectUrl = URL.createObjectURL(response.data);
-  const anchor = document.createElement('a');
-  anchor.href = objectUrl;
-  anchor.download = match?.[1] ?? `estado-cuenta-${id}.pdf`;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(objectUrl);
+  downloadBlob(
+    response.data,
+    filenameFromDisposition(
+      response.headers as Record<string, string> | undefined,
+      `estado-cuenta-${id}.pdf`,
+    ),
+  );
 }
 
 /**
@@ -72,7 +71,9 @@ export const AccountsReceivablePage = () => {
           setAdvanceCustomer(customer);
         }}
         onDownloadStatement={(customerId) => {
-          void downloadCustomerStatement(customerId);
+          downloadCustomerStatement(customerId).catch(() =>
+            toast('No se pudo descargar el estado de cuenta. Inténtalo de nuevo.', 'error'),
+          );
         }}
       />
       {collectCustomer && canCollect && (

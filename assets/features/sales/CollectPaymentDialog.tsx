@@ -8,6 +8,7 @@ import customerAccountService, {
 import toast from '@shared/lib/SharedUtils';
 import { MoneyAccountPicker } from '../treasury/MoneyAccountPicker';
 import NumberUtils from '@shared/lib/NumberUtils';
+import { useIdempotencyKey } from '@shared/lib/idempotency';
 
 const API = getCoreApiBaseUrl();
 
@@ -44,12 +45,24 @@ export const CollectPaymentDialog = ({
   const [moneyAccountId, setMoneyAccountId] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [applied, setApplied] = useState<CollectOnAccountApplication[] | null>(null);
+  // Same key while the form is unchanged: a retry after a timeout cannot collect twice.
+  const idempotency = useIdempotencyKey(
+    `${customerId}|${amountValue}|${paymentMethodId}|${moneyAccountId}`,
+  );
+  const balance = Number(balanceDue ?? 0);
 
   const submit = () => {
     if (isProcessing) return;
     const amount = amountValue !== '' ? parseFloat(amountValue) : NaN;
     if (!Number.isFinite(amount) || amount <= 0 || paymentMethodId === null) {
       toast('Completa el monto y el método de pago', 'error');
+      return;
+    }
+    if (balance > 0 && amount > balance + 0.004) {
+      toast(
+        `El monto supera el saldo pendiente (${NumberUtils.formatCurrency(balance, currency)}).`,
+        'error',
+      );
       return;
     }
 
@@ -61,8 +74,10 @@ export const CollectPaymentDialog = ({
         paymentMethodId: parseInt(paymentMethodId, 10),
         reference: referenceRef.current?.value || undefined,
         moneyAccountId,
+        idempotencyKey: idempotency.current(),
       })
       .then(({ data }) => {
+        idempotency.renew();
         toast(`Pago aplicado a ${data.applications.length} comprobante(s)`, 'success');
         setApplied(data.applications);
       })
