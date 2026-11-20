@@ -31,7 +31,7 @@ async function setup(page: Page, mobile = false) {
   await login(page, seed.username, seed.password);
   await page.goto(`${getE2EBaseUrl()}/customer`);
   await waitForCustomersGrid(page);
-  const add = newCustomerButton(page, mobile);
+  const add = newCustomerButton(page);
   await expect(add).toBeVisible({ timeout: 30000 });
   await add.click();
   const form = page.getByRole('dialog', { name: 'Nuevo cliente', exact: true });

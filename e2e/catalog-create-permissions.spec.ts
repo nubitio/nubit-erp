@@ -13,7 +13,6 @@ test('administrator can start product and customer creation from their grids', a
     await page.goto(`${BASE_URL}/${route}`);
     let createButton: Locator;
     if (route === 'customer') {
-      // Composed page (ADR-019): addressed by role, not by the engine's toolbar class.
       await waitForCustomersGrid(page);
       createButton = newCustomerButton(page);
     } else {
@@ -32,8 +31,10 @@ test('administrator can start product and customer creation from their grids', a
         .click();
       await expect(form).toHaveCount(0);
     } else {
-      await expect(page.getByRole('dialog').last()).toBeVisible();
+      const drawer = page.getByRole('dialog', { name: 'Nuevo cliente', exact: true });
+      await expect(drawer.getByLabel('RUC/DNI', { exact: true })).toBeVisible();
       await page.keyboard.press('Escape');
+      await expect(drawer).toBeHidden();
     }
   }
 
