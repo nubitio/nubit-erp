@@ -79,7 +79,10 @@ readonly class SalePaymentService
         $isCash = $paymentMethod->getId() === PaymentMethod::CASH;
         $cashSessionId = null;
         if ($isCash) {
-            $cashSessionId = $this->salesWriteGateway->findOpenCashSessionIdForUser((int) $createdBy->getId());
+            $cashSessionId = $this->salesWriteGateway->findOpenCashSessionIdForUser(
+                (int) $createdBy->getId(),
+                $sale->getBranch()?->getId(),
+            );
             if ($cashSessionId === null) {
                 throw new UnprocessableEntityHttpException('Abre tu caja para registrar cobros en efectivo.');
             }
