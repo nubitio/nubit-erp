@@ -63,7 +63,9 @@ final class PublicReceiptUrlNormalizer implements NormalizerInterface, Normalize
     private function buildPayload(mixed $object): ?string
     {
         if ($object instanceof TaxDocument) {
-            return ReceiptPayload::encode($object->getDocumentType(), $object->getId());
+            $id = $object->getId();
+
+            return $id === null ? null : ReceiptPayload::encode($object->getDocumentType(), $id);
         }
 
         if ($object instanceof SaleRecord) {

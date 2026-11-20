@@ -7,6 +7,7 @@ namespace App\Sales\State;
 use App\Identity\Dto\AuthUserDto;
 use App\Inventory\Core\Contract\SalesInventoryPortInterface;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
+use App\Inventory\Entity\Warehouse;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use Nubit\Platform\Exception\ServiceException;
@@ -36,12 +37,13 @@ final readonly class SaleInventoryOrchestrator
      */
     public function process(SaleRecord $sale, AuthUserDto $user, bool $isOfflineSale = false): void
     {
-        if (!$sale->getAlmacen()) {
+        $warehouse = $sale->getAlmacen();
+        if ($warehouse === null) {
             return;
         }
 
         $this->logger->info('Updating warehouse stock', [
-            'warehouse_id' => $sale->getAlmacen()->getId(),
+            'warehouse_id' => $warehouse->getId(),
             'sale_type_id' => $sale->getTipoId(),
             'is_offline_sale' => $isOfflineSale,
         ]);
@@ -50,7 +52,7 @@ final readonly class SaleInventoryOrchestrator
 
         // Offline sales bypass stock validation — the transaction is a physical fait accompli.
         if ($isOfflineSale) {
-            $this->applyInventoryMovements($sale, $useCoreValidation, false);
+            $this->applyInventoryMovements($sale, $warehouse, $useCoreValidation, false);
 
             return;
         }
@@ -60,33 +62,34 @@ final readonly class SaleInventoryOrchestrator
         $enforceNonNegative = $sale->getTipoId() === 2 ? !$allowNegative : true;
 
         if ($sale->getTipoId() === 2) {
-            $this->validateStock($sale, $useCoreValidation, $enforceNonNegative);
+            $this->validateStock($sale, $warehouse, $useCoreValidation, $enforceNonNegative);
         }
 
-        $this->applyInventoryMovements($sale, $useCoreValidation, $enforceNonNegative);
+        $this->applyInventoryMovements($sale, $warehouse, $useCoreValidation, $enforceNonNegative);
     }
 
     /**
      * @throws ServiceException
      * @throws \Doctrine\DBAL\Exception
      */
-    private function validateStock(SaleRecord $sale, bool $useCoreValidation, bool $enforceNonNegative): void
-    {
+    private function validateStock(
+        SaleRecord $sale,
+        Warehouse $warehouse,
+        bool $useCoreValidation,
+        bool $enforceNonNegative,
+    ): void {
         /** @var SaleItemRecord $item */
         foreach ($sale->getSaleItemRecords() as $item) {
             if (!$item->getProduct() || !$this->policyResolver->isStockTracked($item->getProduct())) {
                 continue;
             }
 
-            $currentStock = $this->salesInventory->getStockForProductInWarehouse(
-                $item->getProduct(),
-                $sale->getAlmacen(),
-            );
+            $currentStock = $this->salesInventory->getStockForProductInWarehouse($item->getProduct(), $warehouse);
 
             if ($useCoreValidation) {
                 $validation = $this->stockValidationPolicy->validateSale(
                     $item->getProduct(),
-                    (string) $sale->getAlmacen()->getId(),
+                    (string) $warehouse->getId(),
                     number_format((float) $item->getQty(), 6, '.', ''),
                     number_format($currentStock, 6, '.', ''),
                 );
@@ -104,7 +107,7 @@ final readonly class SaleInventoryOrchestrator
                     $this->logger->warning('Inventory policy warning on sale validation', [
                         'sale_id' => $sale->getId(),
                         'product_id' => $item->getProduct()->getId(),
-                        'warehouse_id' => $sale->getAlmacen()->getId(),
+                        'warehouse_id' => $warehouse->getId(),
                         'warning' => $validation->warning,
                         'available_qty' => $currentStock,
                         'requested_qty' => $item->getQty(),
@@ -128,8 +131,12 @@ final readonly class SaleInventoryOrchestrator
     /**
      * @throws \Doctrine\DBAL\Exception
      */
-    private function applyInventoryMovements(SaleRecord $sale, bool $useCoreValidation, bool $enforceNonNegative): void
-    {
+    private function applyInventoryMovements(
+        SaleRecord $sale,
+        Warehouse $warehouse,
+        bool $useCoreValidation,
+        bool $enforceNonNegative,
+    ): void {
         $lineNo = 0;
 
         /** @var SaleItemRecord $item */
@@ -141,11 +148,8 @@ final readonly class SaleInventoryOrchestrator
             }
 
             $productId = $item->getProduct()->getId();
-            $warehouseId = $sale->getAlmacen()->getId();
-            $currentStock = $this->salesInventory->getStockForProductInWarehouse(
-                $item->getProduct(),
-                $sale->getAlmacen(),
-            );
+            $warehouseId = $warehouse->getId();
+            $currentStock = $this->salesInventory->getStockForProductInWarehouse($item->getProduct(), $warehouse);
 
             $this->logger->debug('Current stock for product', [
                 'product_id' => $productId,

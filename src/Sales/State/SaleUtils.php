@@ -144,8 +144,9 @@ readonly class SaleUtils
         // This is only an initial value. SalesWriteGateway derives the final
         // SUNAT condition from the canonical collected/receivable allocation.
         $sale->setFormaPago(1);
-        $sale->setSerie($this->getSaleSeries($docType->value, $sale->getAlmacen()?->getId() ?: ''));
-        $sale->setNumero($this->getSaleNumber($sale->getSerie()));
+        $series = $this->getSaleSeries($docType->value, $sale->getAlmacen()?->getId() ?: '');
+        $sale->setSerie($series);
+        $sale->setNumero($this->getSaleNumber($series));
 
         $sale->setIgv((string) $this->tenantSettings->getIgv());
         $sale->setRecargoConsumo((int) $this->tenantSettings->getRc());

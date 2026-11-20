@@ -159,7 +159,7 @@ readonly class BillCreateUseCase
         }
 
         if ($hasDetraction) {
-            $detractionAccount = $company->getDetraccionAccount() ?: $hydratedVoucher->voucherDetractionAccount;
+            $detractionAccount = $company?->getDetraccionAccount() ?: $hydratedVoucher->voucherDetractionAccount;
             $detraction = new Detraction()
                 ->setPercent($detractionPercent)
                 ->setMount($detractionAmount)

@@ -200,16 +200,11 @@ final class CoreOperationalPathTest extends KernelTestCase
         $this->entityManager->clear();
         $sale = $this->entityManager->find(SaleRecord::class, $saleId);
         static::assertInstanceOf(SaleRecord::class, $sale);
+        $cash = $this->entityManager->find(PaymentMethod::class, PaymentMethod::CASH);
+        static::assertInstanceOf(PaymentMethod::class, $cash);
         static::getContainer()
             ->get(SalePaymentService::class)
-            ->registerPayment(
-                $sale,
-                $this->entityManager->find(PaymentMethod::class, PaymentMethod::CASH),
-                '3.88',
-                new \DateTimeImmutable(),
-                'Abono María',
-                $world->user,
-            );
+            ->registerPayment($sale, $cash, '3.88', new \DateTimeImmutable(), 'Abono María', $world->user);
         $row = $this->paymentBreakdown($world, $sale);
         static::assertSame('10.00', $row['pm_2']);
         static::assertSame('3.88', $row['pm_1']);
@@ -226,7 +221,7 @@ final class CoreOperationalPathTest extends KernelTestCase
                 ->get(SalePaymentService::class)
                 ->registerPayment(
                     $sale,
-                    $this->entityManager->find(PaymentMethod::class, PaymentMethod::CASH),
+                    $cash,
                     $collection['amount'],
                     new \DateTimeImmutable(),
                     'Abono adicional María',
@@ -382,6 +377,7 @@ final class CoreOperationalPathTest extends KernelTestCase
             ['id' => $world->cashSession->getId()],
         );
         $closed = $this->entityManager->find(\App\CashRegister\Entity\CashSession::class, $world->cashSession->getId());
+        static::assertInstanceOf(\App\CashRegister\Entity\CashSession::class, $closed);
         static::assertSame($expected, $closed->getExpectedAmount());
         static::assertSame('0.00', $closed->getDifferenceAmount());
     }

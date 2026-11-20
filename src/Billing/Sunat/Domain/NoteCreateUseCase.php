@@ -32,7 +32,9 @@ readonly class NoteCreateUseCase
      */
     public function __invoke(string $taxDocumentId): Note
     {
-        $creditNote = $this->taxDocumentRepository->find($taxDocumentId);
+        $creditNote = $this->taxDocumentRepository->find($taxDocumentId) ?? throw new ServiceException(
+            'Nota de crédito no encontrada.',
+        );
         $voucher = $this->taxDocumentRepository->getNoteVoucher($taxDocumentId);
 
         return $this->getNote($creditNote, $voucher);

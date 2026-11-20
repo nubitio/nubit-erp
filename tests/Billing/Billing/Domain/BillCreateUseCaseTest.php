@@ -207,7 +207,7 @@ final class BillCreateUseCaseTest extends TestCase
 
         $invoice = $this->useCase->__invoke('td-1');
 
-        self::assertSame(10.5, $invoice->getDetails()[0]->getPorcentajeIgv());
+        self::assertSame(10.5, ($invoice->getDetails()[0] ?? null)?->getPorcentajeIgv());
     }
 
     public function testExoneratedItemsPopulateExoneratedTotalInsteadOfTaxedTotal(): void
@@ -235,8 +235,9 @@ final class BillCreateUseCaseTest extends TestCase
 
         self::assertNull($invoice->getMtoOperGravadas());
         self::assertSame(72.0, $invoice->getMtoOperExoneradas());
-        self::assertSame('20', $invoice->getDetails()[0]->getTipAfeIgv());
-        self::assertSame(0.0, $invoice->getDetails()[0]->getIgv());
+        $detail = $invoice->getDetails()[0] ?? throw new \LogicException('Missing invoice detail.');
+        self::assertSame('20', $detail->getTipAfeIgv());
+        self::assertSame(0.0, $detail->getIgv());
     }
 
     public function testInvokeUsesFormaPagoContadoWhenPaymentMethodIsOne(): void
@@ -282,7 +283,7 @@ final class BillCreateUseCaseTest extends TestCase
         self::assertSame(OperationType::DETRACTION_SALE->value, $invoice->getTipoOperacion());
         self::assertNotNull($invoice->getDetraccion());
         // Two legends: amount-in-words + detraction
-        self::assertCount(2, $invoice->getLegends());
+        self::assertCount(2, $invoice->getLegends() ?? []);
     }
 
     public function testInvokeKeepsExplicitOperationTypeWhenDetractionPresent(): void
@@ -362,8 +363,9 @@ final class BillCreateUseCaseTest extends TestCase
 
         $invoice = $this->useCase->__invoke('td-1');
 
-        self::assertCount(1, $invoice->getDetails());
-        $detail = $invoice->getDetails()[0];
+        $details = $invoice->getDetails() ?? [];
+        self::assertCount(1, $details);
+        $detail = $details[0];
         self::assertSame('PROD-001', $detail->getCodProducto());
         self::assertSame('Test Product', $detail->getDescripcion());
     }
@@ -379,7 +381,7 @@ final class BillCreateUseCaseTest extends TestCase
 
         $invoice = $this->useCase->__invoke('td-1');
 
-        self::assertCount(1, $invoice->getLegends());
+        self::assertCount(1, $invoice->getLegends() ?? []);
     }
 
     public function testInvokeUsesDetractionAccountFromCompanyWhenSet(): void
@@ -597,8 +599,8 @@ final class BillCreateUseCaseTest extends TestCase
         $invoice = $this->useCase->__invoke('td-1');
 
         $details = $invoice->getDetails();
-        self::assertCount(1, $details);
-        $detail = $details[0];
+        self::assertCount(1, $details ?? []);
+        $detail = $details[0] ?? throw new \LogicException('Missing invoice detail.');
 
         // setDescuento still set
         self::assertEqualsWithDelta(10.0, $detail->getDescuento(), 0.001);
@@ -633,8 +635,8 @@ final class BillCreateUseCaseTest extends TestCase
         $invoice = $this->useCase->__invoke('td-1');
 
         $details = $invoice->getDetails();
-        self::assertCount(1, $details);
-        $detail = $details[0];
+        self::assertCount(1, $details ?? []);
+        $detail = $details[0] ?? throw new \LogicException('Missing invoice detail.');
 
         // No AllowanceCharge on non-discounted line
         self::assertNull($detail->getDescuentos());
@@ -670,8 +672,8 @@ final class BillCreateUseCaseTest extends TestCase
 
         $invoice = $this->useCase->__invoke('td-1');
 
-        $detail = $invoice->getDetails()[0];
-        $lineCharge = $detail->getDescuentos()[0];
+        $detail = $invoice->getDetails()[0] ?? throw new \LogicException('Missing invoice detail.');
+        $lineCharge = $detail->getDescuentos()[0] ?? throw new \LogicException('Missing line discount.');
         // factor = 10 / 100 = 0.10
         self::assertEqualsWithDelta(0.10, $lineCharge->getFactor(), 0.0001);
     }

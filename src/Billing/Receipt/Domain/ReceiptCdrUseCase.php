@@ -36,7 +36,7 @@ readonly class ReceiptCdrUseCase
      */
     public function getCdrForInvoice(string $id): FileResponse
     {
-        $invoice = $this->taxDocumentRepository->find($id);
+        $invoice = $this->taxDocumentRepository->find($id) ?? throw new ServiceException('Comprobante no encontrado.');
         $companyId = $this->companyContext->getId();
 
         $docName = $invoice->getFullNumber();
@@ -54,7 +54,7 @@ readonly class ReceiptCdrUseCase
      */
     public function getCdrForNote(string $id): FileResponse
     {
-        $note = $this->taxDocumentRepository->find($id);
+        $note = $this->taxDocumentRepository->find($id) ?? throw new ServiceException('Nota no encontrada.');
         $companyId = $this->companyContext->getId();
 
         $docName = $note->getFullNumber();

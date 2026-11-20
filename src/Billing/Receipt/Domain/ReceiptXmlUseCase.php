@@ -9,6 +9,7 @@ use App\Billing\Sunat\Domain\FileResponse;
 use App\Efact\Config\EfactConstants as Constants;
 use App\Organization\Service\CompanyContext;
 use League\Flysystem\FilesystemException;
+use Nubit\Platform\Exception\ServiceException;
 use Nubit\Platform\Filesystem\FileManager;
 
 readonly class ReceiptXmlUseCase
@@ -35,7 +36,7 @@ readonly class ReceiptXmlUseCase
      */
     public function getXmlForInvoice(string $id): FileResponse
     {
-        $invoice = $this->taxDocumentRepository->find($id);
+        $invoice = $this->taxDocumentRepository->find($id) ?? throw new ServiceException('Comprobante no encontrado.');
         $companyId = $this->companyContext->getId();
 
         $docName = $invoice->getFullNumber();
@@ -52,7 +53,7 @@ readonly class ReceiptXmlUseCase
      */
     public function getXmlForNote(string $id): FileResponse
     {
-        $note = $this->taxDocumentRepository->find($id);
+        $note = $this->taxDocumentRepository->find($id) ?? throw new ServiceException('Nota no encontrada.');
         $companyId = $this->companyContext->getId();
 
         $docName = $note->getFullNumber();

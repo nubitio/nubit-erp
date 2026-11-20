@@ -175,10 +175,10 @@ final class SubscriptionManagerTest extends TestCase
 
         $manager = $this->manager($connection);
         self::assertNull($manager->findByGatewaySubscriptionId('paypal', 'sub-404'));
-        self::assertSame(2, $manager->findByGatewaySubscriptionId('paypal', 'sub-2')['id']);
+        self::assertSame(2, $manager->findByGatewaySubscriptionId('paypal', 'sub-2')['id'] ?? null);
         self::assertNull($manager->findById(3));
-        self::assertSame('active', $manager->findById(4)['status']);
-        self::assertSame('past_due', $manager->findActiveByTenant(8)['status']);
+        self::assertSame('active', $manager->findById(4)['status'] ?? null);
+        self::assertSame('past_due', $manager->findActiveByTenant(8)['status'] ?? null);
     }
 
     public function testGracePeriodQueriesAndEventProcessedFlag(): void

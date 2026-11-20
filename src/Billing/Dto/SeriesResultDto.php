@@ -6,6 +6,6 @@ class SeriesResultDto
 {
     public function __construct(
         public string $series,
-        public string $associatedSeries,
+        public ?string $associatedSeries,
     ) {}
 }

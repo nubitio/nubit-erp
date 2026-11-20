@@ -765,7 +765,9 @@ class TaxDocument
     #[Groups(['invoice:read', 'creditnote:read'])]
     public function getPublicReceiptUrl(): string
     {
-        return ReceiptPayload::publicUrl($this->getDocumentType(), $this->getId());
+        $id = $this->getId() ?? throw new \LogicException('El comprobante aún no tiene ID.');
+
+        return ReceiptPayload::publicUrl($this->getDocumentType(), $id);
     }
 
     #[Groups(['invoice:read'])]

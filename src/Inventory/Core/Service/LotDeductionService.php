@@ -103,8 +103,14 @@ final readonly class LotDeductionService
         $lot = $this->stockLotRepository->findByLotNumber($productId, $warehouseId, $lotNumber);
 
         if ($lot === null) {
-            $product = $this->entityManager->getReference(\App\Catalog\Entity\Product::class, $productId);
-            $warehouse = $this->entityManager->getReference(\App\Inventory\Entity\Warehouse::class, $warehouseId);
+            $product = $this->entityManager->getReference(
+                \App\Catalog\Entity\Product::class,
+                $productId,
+            ) ?? throw new ServiceException('Producto no encontrado.');
+            $warehouse = $this->entityManager->getReference(
+                \App\Inventory\Entity\Warehouse::class,
+                $warehouseId,
+            ) ?? throw new ServiceException('Almacén no encontrado.');
 
             $lot = new StockLot();
             $lot->setProduct($product);
