@@ -8,6 +8,8 @@ import { useSessionInfo } from '@shared/sessionInfo';
 import { hasPermission } from '@shared/permissions';
 import { cashboxService } from './services/cashboxService';
 import { Alert, ConfirmDialog } from '@nubitio/ui';
+import NumberUtils from '@shared/lib/NumberUtils';
+import { closeConfirmation } from './components/closeConfirmation';
 import {
   CashClosureGrid,
   type CashClosureGridHandle,
@@ -16,6 +18,9 @@ import {
 import './CashRegisterClose.scss';
 
 const API = getCoreApiBaseUrl();
+
+/** The server answered but refused to close: its message is what the user needs to read. */
+class CloseRejectedError extends Error {}
 
 type CashClosureParams = {
   id: string;
@@ -35,6 +40,9 @@ export const CashRegisterClose = () => {
   const [closeError, setCloseError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [sessionContext, setSessionContext] = useState('');
+  const [confirmation, setConfirmation] = useState(() =>
+    closeConfirmation([], [], (value) => String(value)),
+  );
   const draftKey = cashSessionId
     ? `nubit:cash-count:${currentUserId}:${currentBranchId}:${cashSessionId}`
     : undefined;
@@ -72,14 +80,16 @@ export const CashRegisterClose = () => {
       .then((response) => {
         const result = response.data as { success?: boolean; message?: string };
         if (result?.success === false)
-          throw new Error(result.message || 'No se pudo cerrar la caja.');
+          throw new CloseRejectedError(result.message || 'No se pudo cerrar la caja.');
         gridRef.current?.clearDraft();
         toast('Caja cerrada correctamente', 'success');
         navigate('/cashbox/dashboard');
       })
-      .catch(() =>
+      .catch((error: unknown) =>
         setCloseError(
-          'No se pudo cerrar la caja. El conteo se conserva para que puedas reintentar.',
+          error instanceof CloseRejectedError
+            ? `${error.message} El conteo se conserva para que puedas reintentar.`
+            : 'No se pudo cerrar la caja. El conteo se conserva para que puedas reintentar.',
         ),
       )
       .finally(() => setIsClosing(false));
@@ -189,13 +199,21 @@ export const CashRegisterClose = () => {
         closing={isClosing}
         onCloseRequest={() => {
           setCloseError(null);
+          setConfirmation(
+            closeConfirmation(
+              gridRef.current?.getRows() ?? [],
+              gridRef.current?.getDifferences() ?? [],
+              (value) => NumberUtils.formatCurrency(value, 'PEN'),
+            ),
+          );
           setShowCloseConfirm(true);
         }}
       />
       <ConfirmDialog
         open={showCloseConfirm}
         title="Cerrar caja"
-        message="¿Está seguro que desea cerrar la caja?"
+        message={confirmation.message}
+        variant={confirmation.hasDifferences ? 'warning' : 'info'}
         cancelLabel="No"
         confirmLabel="Sí"
         onCancel={() => setShowCloseConfirm(false)}
