@@ -153,17 +153,7 @@ export const CustomerAdvanceDialog = ({
           }}
         >
           <div className="mb-3">
-            <FormField
-              label={
-                <>
-                  Monto{' '}
-                  <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>
-                    *
-                  </span>
-                </>
-              }
-              htmlFor="customer-advance-amount"
-            >
+            <FormField label="Monto" required htmlFor="customer-advance-amount">
               <TextField
                 value={amountValue}
                 onChange={(event) => setAmountValue(event.target.value)}
@@ -181,17 +171,7 @@ export const CustomerAdvanceDialog = ({
           {mode === 'receive' && (
             <>
               <div className="mb-3">
-                <FormField
-                  label={
-                    <>
-                      Método de pago{' '}
-                      <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>
-                        *
-                      </span>
-                    </>
-                  }
-                  htmlFor="customer-advance-method"
-                >
+                <FormField label="Método de pago" required htmlFor="customer-advance-method">
                   <EntityDropdown
                     url={API + 'payment-methods'}
                     filters={[

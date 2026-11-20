@@ -10,7 +10,6 @@ import {
   returnAllLines,
   returnSummary,
   selectedLines,
-  stepReturnQuantity,
   type OriginLine,
 } from './creditNoteIssueModel';
 
@@ -122,15 +121,6 @@ describe('fractional quantities', () => {
     expect(
       creditNoteIssueErrors({ reasonCode: '07', reasonDescription: 'x', lines: [half], returns }),
     ).toEqual({});
-  });
-
-  it('steps by one but lands exactly on what was sold', () => {
-    expect(stepReturnQuantity(two, '1', 1)).toBe('2');
-    expect(stepReturnQuantity(two, '2', 1)).toBe('2.5');
-    expect(stepReturnQuantity(two, '2.5', 1)).toBe('2.5');
-    expect(stepReturnQuantity(two, '2.5', -1)).toBe('1.5');
-    expect(stepReturnQuantity(half, '0.5', -1)).toBeNull();
-    expect(stepReturnQuantity(two, '1', -1)).toBeNull();
   });
 });
 

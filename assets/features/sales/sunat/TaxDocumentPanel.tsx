@@ -5,6 +5,7 @@ import {
   Alert,
   Badge,
   Button,
+  ButtonLink,
   ConfirmDialog,
   DescriptionList,
   Section,
@@ -160,8 +161,12 @@ export function TaxDocumentPanel({ sale }: { sale: SaleDetail }) {
             )}
             {status.stage === 'accepted' && active && hasPermission('sales.void') && (
               <>
-                <Link to={`/billing/credit-notes/new/${id}`}>Emitir nota de crédito</Link>
-                <Link to="/billing/credit-notes">Gestionar notas de crédito</Link>
+                <ButtonLink as={Link} to={`/billing/credit-notes/new/${id}`} variant="primary">
+                  Emitir nota de crédito
+                </ButtonLink>
+                <ButtonLink as={Link} to="/billing/credit-notes">
+                  Gestionar notas de crédito
+                </ButtonLink>
               </>
             )}
           </div>

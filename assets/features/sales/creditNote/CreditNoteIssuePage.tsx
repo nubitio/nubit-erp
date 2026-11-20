@@ -14,6 +14,7 @@ import {
   FormField,
   Page,
   PageHeader,
+  QuantityStepper,
   Section,
   SelectField,
   TextField,
@@ -38,7 +39,6 @@ import {
   returnAllLines,
   returnSummary,
   returnsEverything,
-  stepReturnQuantity,
   type OriginLine,
   type Returns,
 } from './creditNoteIssueModel';
@@ -115,12 +115,11 @@ export function CreditNoteIssuePage() {
       else delete next[line.lineNumber];
       return next;
     });
-  const stepLine = (line: OriginLine, delta: 1 | -1) =>
+  const setLineQuantity = (line: OriginLine, quantity: number) =>
     setReturns((current) => {
       const next = { ...current };
-      const quantity = stepReturnQuantity(line, current[line.lineNumber], delta);
-      if (quantity === null) delete next[line.lineNumber];
-      else next[line.lineNumber] = quantity;
+      if (quantity <= 0) delete next[line.lineNumber];
+      else next[line.lineNumber] = String(quantity);
       return next;
     });
 
@@ -377,25 +376,13 @@ export function CreditNoteIssuePage() {
                       </span>
                       <span role="cell">{Number(line.quantity)}</span>
                       <span role="cell" className="credit-note-issue__stepper">
-                        <button
-                          type="button"
-                          aria-label={`Menos ${line.productName}`}
+                        <QuantityStepper
+                          label={`Cantidad a devolver de ${line.productName}`}
+                          value={checked ? Number(quantity) : 0}
+                          max={Number(line.quantity)}
                           disabled={locked || !checked}
-                          onClick={() => stepLine(line, -1)}
-                        >
-                          −
-                        </button>
-                        <output aria-label={`Cantidad a devolver de ${line.productName}`}>
-                          {checked ? Number(quantity) : 0}
-                        </output>
-                        <button
-                          type="button"
-                          aria-label={`Más ${line.productName}`}
-                          disabled={locked || !checked || Number(quantity) >= Number(line.quantity)}
-                          onClick={() => stepLine(line, 1)}
-                        >
-                          +
-                        </button>
+                          onChange={(next) => setLineQuantity(line, next)}
+                        />
                       </span>
                       <span role="cell">{checked ? centsToMoney(cents, currency) : '—'}</span>
                     </div>
