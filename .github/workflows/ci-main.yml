@@ -13,11 +13,6 @@ on:
         type: choice
         options: [hybrid, github, blacksmith, auto]
         default: hybrid
-      force_all_jobs:
-        description: Run backend, frontend, e2e and coverage regardless of path filters
-        required: false
-        type: boolean
-        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -48,7 +43,6 @@ jobs:
       provider: ${{ steps.runner.outputs.provider }}
       backend: ${{ steps.jobs.outputs.backend }}
       frontend: ${{ steps.jobs.outputs.frontend }}
-      e2e: ${{ steps.jobs.outputs.e2e }}
       coverage: ${{ steps.jobs.outputs.coverage }}
     steps:
       - uses: actions/checkout@v6
@@ -138,54 +132,26 @@ jobs:
               - 'scripts/copy-themes.mjs'
               - '.github/workflows/ci-main.yml'
               - '.github/actions/**'
-            e2e:
-              - 'e2e/**'
-              - 'playwright.config.ts'
-              - 'assets/**'
-              - 'src/**'
-              - 'config/**'
-              - 'templates/**'
-              - 'translations/**'
-              - 'composer.json'
-              - 'composer.lock'
-              - 'package.json'
-              - 'yarn.lock'
-              - 'Dockerfile'
-              - 'docker-compose.yml'
-              - 'docker-compose.ci.yml'
-              - 'docker/**'
-              - 'public/**'
-              - '.github/workflows/ci-main.yml'
-              - '.github/actions/**'
 
       - name: Resolve jobs
         id: jobs
         env:
-          FORCE_ALL: ${{ github.event_name != 'pull_request' || github.event.inputs.force_all_jobs }}
+          FORCE_ALL: ${{ github.event_name != 'pull_request' }}
           FILTER_BACKEND: ${{ steps.filter.outputs.backend }}
           FILTER_FRONTEND: ${{ steps.filter.outputs.frontend }}
-          FILTER_E2E: ${{ steps.filter.outputs.e2e }}
-          ACTOR: ${{ github.actor }}
         run: |
           set -euo pipefail
           if [ "$FORCE_ALL" = "true" ]; then
             echo "backend=true" >> "$GITHUB_OUTPUT"
             echo "frontend=true" >> "$GITHUB_OUTPUT"
-            echo "e2e=true" >> "$GITHUB_OUTPUT"
             echo "coverage=true" >> "$GITHUB_OUTPUT"
-            echo "Running full suite (push to main, dispatch, or force_all_jobs)."
+            echo "Running full suite (push to main or manual dispatch)."
             exit 0
           fi
 
           echo "backend=${FILTER_BACKEND:-false}" >> "$GITHUB_OUTPUT"
           echo "frontend=${FILTER_FRONTEND:-false}" >> "$GITHUB_OUTPUT"
 
-          e2e="${FILTER_E2E:-false}"
-          if [ "$ACTOR" = "dependabot[bot]" ]; then
-            echo "Skipping e2e on Dependabot PRs."
-            e2e=false
-          fi
-          echo "e2e=${e2e}" >> "$GITHUB_OUTPUT"
           # Coverage is part of the PR contract. Keeping it behind the same
           # path filters avoids paying for docs-only changes while preventing
           # a green backend/frontend PR from bypassing the threshold.
@@ -425,12 +391,11 @@ jobs:
 
   e2e:
     name: End-to-End Workflows
-    # E2E provisions its own stack and can run alongside the quality jobs.
-    # Keep change detection as the sole prerequisite so a failed detector
-    # cannot accidentally allow an E2E run.
+    # Keep E2E off automatic PR runs; release still depends on it on main.
+    # Manual dispatch can validate a feature branch without publishing.
     needs: changes
-    if: needs.changes.result == 'success'
-    runs-on: ${{ needs.changes.outputs.e2e == 'true' && needs.changes.outputs.runner || needs.changes.outputs.runner_light }}
+    if: needs.changes.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ${{ needs.changes.outputs.runner }}
     timeout-minutes: 20
 
     env:
@@ -441,17 +406,11 @@ jobs:
       CONTROL_PLANE_DATABASE_URL: mysql://efact:changeme@database:3306/efact?serverVersion=10.7.1-MariaDB&charset=utf8mb4
 
     steps:
-      - name: Skip (no e2e-relevant changes)
-        if: needs.changes.outputs.e2e != 'true'
-        run: echo "No e2e-relevant changes on this PR (or Dependabot)."
-
       - uses: actions/checkout@v6
-        if: needs.changes.outputs.e2e == 'true'
         with:
           fetch-depth: 1
 
       - name: Start e2e stack
-        if: needs.changes.outputs.e2e == 'true'
         uses: ./.github/actions/ci-stack
         with:
           use_blacksmith_docker: ${{ needs.changes.outputs.use_blacksmith_docker }}
@@ -460,11 +419,9 @@ jobs:
       # See the frontend job: Corepack must be enabled before actions/setup-node
       # so its `cache: yarn` step does not run the runner's global Yarn 1.x.
       - name: Enable Corepack
-        if: needs.changes.outputs.e2e == 'true'
         run: corepack enable
 
       - name: Setup Node.js
-        if: needs.changes.outputs.e2e == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: '24.14.1'
@@ -472,25 +429,20 @@ jobs:
           cache-dependency-path: yarn.lock
 
       - name: Activate pinned Yarn
-        if: needs.changes.outputs.e2e == 'true'
         run: |
           corepack enable
           corepack prepare yarn@4.9.1 --activate
 
       - name: Install frontend dependencies
-        if: needs.changes.outputs.e2e == 'true'
         run: yarn install --immutable
 
       - name: Build frontend for E2E
-        if: needs.changes.outputs.e2e == 'true'
         run: yarn build
 
       - name: Install PHP dependencies for e2e
-        if: needs.changes.outputs.e2e == 'true'
         run: docker compose exec -T web composer install --no-interaction --no-progress --prefer-dist
 
       - name: Provision tenant database for e2e
-        if: needs.changes.outputs.e2e == 'true'
         run: |
           docker compose exec -T database sh -lc "until mariadb-admin ping -h127.0.0.1 -uroot -pchangeme --silent; do sleep 1; done"
           docker compose exec -T database mariadb -h127.0.0.1 -uroot -pchangeme <<'SQL'
@@ -501,7 +453,6 @@ jobs:
           SQL
 
       - name: Run database migrations for e2e
-        if: needs.changes.outputs.e2e == 'true'
         run: |
           docker compose exec -T \
             -e DATABASE_URL="${DATABASE_URL}" \
@@ -519,13 +470,11 @@ jobs:
             web php bin/console doctrine:migrations:migrate --no-interaction
 
       - name: Provision local E2E tenant registry record
-        if: needs.changes.outputs.e2e == 'true'
         run: |
           docker compose exec -T database mariadb -uroot -pchangeme efact -e \
             "INSERT INTO tenants (name, connection, status, created_at, updated_at, deleted_at) VALUES ('demo', 'demo', 'active', NOW(), NOW(), NULL) ON DUPLICATE KEY UPDATE connection = 'demo', status = 'active', updated_at = NOW(), deleted_at = NULL;"
 
       - name: Seed E2E data on-the-fly
-        if: needs.changes.outputs.e2e == 'true'
         run: |
           set -euo pipefail
           SEED_OUTPUT=$(docker compose exec -T \
@@ -545,7 +494,6 @@ jobs:
           echo "E2E_SALE_ID=$(echo "$E2E_SEED_JSON" | jq -r '.saleId')" >> "$GITHUB_ENV"
 
       - name: Warm SPA before Playwright
-        if: needs.changes.outputs.e2e == 'true'
         run: |
           set -euo pipefail
           # A health probe can look up the `demo` tenant before it is registered;
@@ -557,7 +505,6 @@ jobs:
           bash scripts/ci/wait-for-spa-host.sh
 
       - name: Run Playwright e2e tests
-        if: needs.changes.outputs.e2e == 'true'
         run: |
           docker compose --profile e2e run --rm --no-deps \
             -e CI \
@@ -569,5 +516,5 @@ jobs:
             sh /home/node/app/docker/ci-e2e-runner.sh
 
       - name: Stop full stack
-        if: always() && needs.changes.outputs.e2e == 'true'
+        if: always()
         run: docker compose down -v

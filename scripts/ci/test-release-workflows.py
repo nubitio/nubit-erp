@@ -87,6 +87,18 @@ class ReleaseWorkflowTest(unittest.TestCase):
         self.assertIn('python3 scripts/ci/test-release-pipeline.py', commands)
         self.assertIn('python3 scripts/ci/test-release-workflows.py', commands)
 
+    def test_e2e_runs_after_merge_or_on_manual_dispatch_but_not_on_prs(self):
+        ci = load('ci-main.yml')
+        events = triggers(ci)
+        self.assertEqual(events['push']['branches'], ['main'])
+        self.assertIn('workflow_dispatch', events)
+        e2e = ci['jobs']['e2e']
+        self.assertEqual(e2e['needs'], 'changes')
+        self.assertEqual(
+            e2e['if'],
+            "needs.changes.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')",
+        )
+
     def test_commit_type_ci_is_not_releasable(self):
         import json
 
