@@ -4,7 +4,7 @@
 
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
-| **ci-main.yml** | PR to `main`, push to `main`, manual | Path-filtered quality gates + cached stack + e2e; after successful `main` gates, deploys dev from the same immutable image |
+| **ci-main.yml** | PR to `main`, push to `main`, manual | Path-filtered quality on PRs; release-critical E2E on `main` before release and dev deploy; full checks on manual dispatch |
 | **release.yml** | Called after successful push CI on `main` | Conventional Commits → optional SemVer release → one immutable image build; attaches a manifest when a release is created |
 | **build-image.yml** | Manual, reusable | Build and push image to GHCR, output immutable `image_ref` |
 | **deploy-dev.yml** | Manual | Build and deploy a selected workflow ref for preview/recovery |
@@ -39,14 +39,17 @@ Or **Actions → CI → Run workflow** and select `runner_provider`: `hybrid`, `
 
 On a **pull request**, `Detect changes` decides which gates are worth the minutes (no repo checkout; uses the GitHub API):
 
-| Job | PR | Push to `main` |
-|-----|----|----------------|
-| Backend (Mago, PHPStan, Pest) | Only if PHP/config/docker changed | Always, **with** coverage |
-| Frontend (lint, tsc, Vitest) | Only if `assets/` / Yarn files changed; no coverage | Always, with coverage |
-| E2E (3 Playwright flows) | Only if app/UI/e2e changed; skipped for Dependabot | Always |
-| Dev deploy | Never | After backend, frontend, E2E and deployment-tooling gates; reuses the built digest |
+| Job | PR | Push to `main` | Manual |
+| --- | --- | --- | --- |
+| Backend (Mago, PHPStan, PHPUnit/Pest) | Backend path filter; with coverage | Skipped | With coverage |
+| Frontend (ESLint, TypeScript, Vitest) | Frontend path filter; with coverage | Skipped | With coverage |
+| Deployment tooling | Runs | Skipped | Runs |
+| E2E (Playwright + OpenAPI compatibility) | Skipped | Runs | Runs |
+| Release/build and dev deploy | Skipped | After E2E passes; dev reuses the release job's digest | Skipped |
 
-Docs-only PRs still get a green check: the named jobs start on a 2 vCPU runner and exit immediately so required status checks do not block.
+On docs-only PRs, the backend and frontend jobs run their no-op steps so required status checks do not block. Deployment tooling checks still run.
+Backend CI enforces 40% PHP line coverage and runs PHPStan at level 8 overall and level 9 for `src/BankReconciliation`. Frontend CI collects coverage without a global threshold.
+The release-critical Playwright spec list lives in [`docker/ci-e2e-runner.sh`](../../docker/ci-e2e-runner.sh).
 
 E2E stays on an isolated compose stack (not `dev.efact.app`). Setup is cached:
 
@@ -66,8 +69,9 @@ E2E stays on an isolated compose stack (not `dev.efact.app`). Setup is cached:
 
 ## Automatic SemVer releases
 
-After backend, frontend and E2E pass on a push to `main`, `release.yml` runs
-semantic-release with the locked dependencies in `scripts/release/`. It uses
+The repository ruleset requires the PR checks before merge. After E2E passes
+on the integrated commit on `main`, `release.yml` runs semantic-release with
+the locked dependencies in `scripts/release/`. It uses
 the existing `.releaserc.json` rules: `feat` → minor; `fix`, `perf`, `refactor`,
 `docs`, `revert` → patch; breaking changes (`feat!` or `BREAKING CHANGE:`) →
 major. Other commit types do not create a release unless they are breaking.

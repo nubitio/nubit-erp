@@ -123,7 +123,7 @@ IDs `NB-n`. Cada tarea: **Objetivo · Entregable · Criterio de aceptación**. O
 
 **NB-1 · Verificador de reglas arquitectónicas** — implementado; cobertura completa AR-001…AR-010 por confirmar
 Objetivo: convertir las reglas en un check de CI, no sólo el guard Platform actual.
-Entregable: `phparkitect.php` (capas derivadas de `architecture/contexts.yaml`, ver NB-2); `phparkitect-baseline.json` (violaciones pre-existentes, sólo puede reducirse); `composer check:architecture`; job en `ci-main.yml` + `scripts/quality-check.sh` (pre-push).
+Entregable: `phparkitect.php` (capas derivadas de `architecture/contexts.yaml`, ver NB-2); `phparkitect-baseline.json` (violaciones pre-existentes, sólo puede reducirse); `composer check:architecture`; check de backend en `ci-main.yml` y ejecución local manual con `scripts/quality-check.sh` (no forma parte del hook pre-push).
 Nota: se eligió PHPArkitect sobre Deptrac porque deptrac 3.0 empaqueta php-parser 4.x y no parsea la sintaxis PHP 8.4 `new Foo()->method()` usada en todo el repo.
 Criterio: el CI falla ante un import `src/Inventory` → `src/Pharmacy`; `main` verde con baseline.
 

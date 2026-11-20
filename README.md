@@ -8,7 +8,7 @@ SaaS multi-tenant de mini ERP para Perú: POS, inventario, compras, tesorería, 
 
 - Docker + Docker Compose plugin (`docker compose`)
 - Git
-- (Opcional local) Node compatible con `package.json` (`^22.18.0`, `^24.11.0` o `>=26`) y Yarn 4.9.1 vía Corepack
+- (Para frontend local y el hook pre-push) Node compatible con `package.json` (`^22.18.0`, `^24.11.0` o `>=26`) y Yarn 4.12.0 vía Corepack
 
 ### 2) Levantar entorno local
 
@@ -47,22 +47,18 @@ make migrate
 - Health: http://localhost:8080/health
 - Mailpit (correo de desarrollo): http://localhost:8026 (`MAILPIT_UI_PORT` para cambiarlo). El correo sale por la cola `async`: levanta `docker compose up -d messenger_worker` para que se entregue.
 
-## Variables de entorno críticas
+## Integración local del Design System
 
-### Integración local del Design System
-
-Esta rama consume las mejoras de `nubit-react` mediante resoluciones Yarn `portal:`
-en `package.json`, desde `../../nubit-dev/nubit-react/packages/*`. Son enlaces de
-desarrollo, no una publicación nueva de npm. Antes de instalar el ERP, ejecutar
-`corepack pnpm build` en ese monorepo; después, `corepack yarn install` aquí.
-El servicio Docker `vite` monta la misma ruta para resolver los paquetes locales.
+El ERP consume los paquetes `@nubitio/*` publicados en npm. No necesitas clonar
+`nubit-react` para instalarlo. Para probar cambios aún no publicados, consulta
+[la guía de desarrollo local de `@nubitio`](docs/nubit-local-dev.md).
 
 El tema Nubit se activa en `AppProviders`; los componentes, tokens y layouts se
 mantienen en las librerías base. La búsqueda del header busca secciones del menú
 autorizado, no documentos ni clientes. El catálogo reutiliza el grid y el
 formulario compartidos, sin cambiar reglas de stock, precios o facturación.
-Antes de desplegar fuera de este workspace, publicar una versión compatible de
-las librerías y sustituir estas resoluciones locales por versiones de npm.
+
+## Variables de entorno críticas
 
 Configurar al menos estas variables en `.env.local` para desarrollo real:
 
@@ -103,7 +99,7 @@ make logs
 
 ```bash
 make help          # lista comandos disponibles
-make up            # levanta database, redis, otel-collector, web, vite y mercure
+make up            # levanta database, redis, otel-collector, web, vite, mercure y object-storage
 make down          # baja el stack
 make restart       # reinicia contenedores
 make reset         # baja, borra volúmenes y reconstruye entorno dev
@@ -111,12 +107,12 @@ make bootstrap     # up + install + migrate + cache:clear
 make install       # composer install + yarn install
 make migrate       # migraciones control plane + tenant
 make cache-clear   # limpia cache Symfony
-make dev           # levanta Vite dentro de Docker
+make dev           # reinicia Vite en Docker y sigue sus logs
 make lint          # eslint
-make lint-php      # mago lint + mago analyze
+make lint-php      # mago lint + mago analyze + mago fmt --check
 make format        # prettier
 make format-php    # mago fmt
-make test          # phpunit + vitest
+make test          # Pest + Vitest
 make e2e           # playwright end-to-end
 make ps            # estado de los contenedores
 make logs          # logs del stack
@@ -237,8 +233,11 @@ make test-back
 ### Backend con cobertura
 
 ```bash
-docker compose exec -T web php -d pcov.enabled=1 -d pcov.directory=/app/src ./vendor/bin/phpunit -c phpunit.coverage.xml
+docker compose exec -T -e APP_ENV=test -e DATABASE_URL="$TEST_DATABASE_URL" web php -d pcov.enabled=1 -d pcov.directory=/app/src ./vendor/bin/pest -c phpunit.coverage.xml
 ```
+
+Define `TEST_DATABASE_URL` con la conexión a una base de pruebas ya migrada,
+no con la conexión a la base de desarrollo.
 
 ### Frontend unit
 
@@ -252,15 +251,11 @@ El type-check TypeScript (`tsc --noEmit`) se ejecuta en CI como paso previo a Vi
 
 ### E2E (Playwright)
 
+Para reproducir el gate de CI en un stack aislado, con migraciones, sembrado y
+assets de producción:
+
 ```bash
-# Seed E2E (obligatorio para tests de flujo)
-docker compose exec -T -e E2E_SEED_ENABLED=1 web php bin/console app:test:seed-e2e
-
-# Ejecutar e2e
-make e2e
-
-# Cleanup
-docker compose exec -T -e E2E_SEED_ENABLED=1 web php bin/console app:test:reset-e2e
+make e2e-ci
 ```
 
 Specs E2E seleccionadas como gate de release en CI (el conjunto es intencionalmente menor que todos los specs del directorio):
@@ -274,31 +269,39 @@ Specs E2E seleccionadas como gate de release en CI (el conjunto es intencionalme
 | `e2e/cash-rounding.spec.ts`, `e2e/pos-credit-sale.spec.ts`, `e2e/pos-offline.spec.ts` | Redondeo, venta al crédito y operación offline de POS. |
 | `e2e/accounts-receivable.spec.ts`, `e2e/catalog-create-permissions.spec.ts` | Cuentas por cobrar y control de permisos en catálogo. |
 | `e2e/nrus-voucher-type.spec.ts` | Tipo de comprobante NRUS. |
+| `e2e/treasury.spec.ts` | Activación de Tesorería y cuentas de dinero. |
 
 Solo el golden path fiscal:
 
 ```bash
-docker compose --profile e2e run --rm e2e yarn test:e2e e2e/golden-path-fiscal.spec.ts
+bash scripts/ci/e2e-local.sh e2e/golden-path-fiscal.spec.ts
 ```
 
 ## Calidad de código
 
 ```bash
-make lint-php      # mago lint + mago analyze
-make format-php    # mago fmt --check
+make lint-php      # mago lint + mago analyze + mago fmt --check
+make format-php    # mago fmt (reescribe archivos)
 make lint          # eslint (frontend)
 ```
 
 ### Pre-push hook
 
-`.husky/pre-push` corre `scripts/quality-check.sh`, que espeja los checks del job "Backend Quality & Coverage" de CI (mago, phpstan, pest) más eslint/tsc/vitest del frontend, contra el stack de Docker local. Requiere `docker compose up -d` corriendo antes de pushear.
+`.husky/pre-push` ejecuta `scripts/pre-push-check.sh` con herramientas locales:
+Prettier sobre los archivos compatibles del push, ESLint y TypeScript, más
+`mago lint` y `mago fmt --check` si Mago está instalado. Requiere dependencias
+frontend instaladas con `corepack yarn install --immutable`, pero no Docker.
 
-`mago analyze` corre con `--fail-on-out-of-sync-baseline`: falla tanto si aparece un issue nuevo no cubierto por `analyzer-baseline.toml` como si el baseline tiene entradas obsoletas (issues que ya no existen). Si el hook falla en este paso:
+Para ejecutar manualmente análisis y pruebas contra Docker, usa
+`sh scripts/quality-check.sh` con el stack levantado. Este script recrea
+`demo_test`; no lo uses si necesitas conservar esa base. PHPStan usa nivel 8
+sin baseline; CI comprueba además `src/BankReconciliation` en nivel 9.
+
+El script manual y CI ejecutan `mago analyze` con `--fail-on-out-of-sync-baseline`.
+Si falla este paso:
 
 - **Issue nuevo real**: corrígelo en el código, no lo agregues al baseline.
 - **Baseline desactualizado** (el mensaje dice "N entries not seen in this run" o similar): regeneralo con `docker exec nubit-erp-web mago analyze --generate-baseline` y commitea `analyzer-baseline.toml` junto con tu cambio — no es deuda tuya, pero bloquea el push hasta que se corrija.
-
-Si necesitas pushear sin correr el stack local (no recomendado salvo emergencia), la verificación real ocurre igual en CI al abrir el PR.
 
 ## Docker comandos útiles
 
@@ -320,7 +323,7 @@ make shell-web
 
 Pipeline CI/CD en GitHub Actions:
 
-- `ci-main.yml`: quality + tests + coverage. Tras pasar los gates en `main`, `release.yml` calcula la versión, construye **una imagen inmutable** en GHCR y publica la GitHub Release cuando el commit lo amerita. Dev se despliega después usando el mismo digest; no se hace un segundo build.
+- `ci-main.yml`: calidad, pruebas unitarias y cobertura según los archivos del PR, más checks de tooling de despliegue. En `main` ejecuta E2E (incluida la compatibilidad OpenAPI) sobre el commit integrado. Si pasa, `release.yml` construye **una imagen inmutable** en GHCR y publica la GitHub Release cuando corresponde. Dev reutiliza el mismo digest, sin otro build.
 - `build-image.yml`: build reutilizable de imágenes GHCR; 8 vCPU por defecto para el build.
 - `deploy-dev.yml`: deploy manual de preview/recuperación. El deploy normal de `main` está en `ci-main.yml`, detrás de CI.
 - `deploy-staging.yml`: promoción por tags `v*.*.*-rc*` o manual con un digest inmutable.

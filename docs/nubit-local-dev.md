@@ -1,24 +1,25 @@
-# Developing @nubitio packages against efact
+# Developing @nubitio packages against Nubit ERP
 
-efact consumes the published `@nubitio/*` packages from npm. The package sources
-live in [nubitio/nubit-react](https://github.com/nubitio/nubit-react)
-(local clone: `~/Projects/nubit-react`).
+Nubit ERP consumes the published `@nubitio/*` packages from npm. The package sources
+live in [nubitio/nubit-react](https://github.com/nubitio/nubit-react).
+Paths below assume `nubit-react` is at `../../nubit-react` relative to the ERP checkout,
+matching the bind mount for the `vite` service in `docker-compose.yml`.
 
 ## Normal flow
 
 Package changes ship via nubit-react releases:
 
 ```bash
-cd ~/Projects/nubit-react
+cd ../../nubit-react  # from the ERP checkout
 node scripts/set-version.mjs 0.2.0
 git commit -am "release: v0.2.0" && git tag v0.2.0 && git push && git push --tags
-# CI publishes; then in efact:
-yarn up '@nubitio/*'
+# Once CI publishes, run from the ERP checkout:
+corepack yarn up '@nubitio/*'
 ```
 
 ## Iterating locally (unpublished changes)
 
-Point efact at the local build with yarn's portal protocol — add to
+Point the ERP at the local build with Yarn's portal protocol — add these entries to
 `package.json` `resolutions` (do not commit):
 
 ```json
@@ -35,8 +36,9 @@ Point efact at the local build with yarn's portal protocol — add to
 Then:
 
 ```bash
-cd ~/Projects/nubit-react && pnpm build   # rebuild dist after each change
-cd ~/Projects/efact-project/efact && yarn install
+# From the ERP checkout:
+(cd ../../nubit-react && corepack pnpm build)
+corepack yarn install
 ```
 
 Remove the resolutions and `yarn install` again before committing.

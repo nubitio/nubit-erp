@@ -1,7 +1,10 @@
 # ADR-021: Finance module redesign (proposal)
 
 Date: 2026-11-18
-Status: Accepted in direction, 2026-11-18 (decisions below). Nothing is implemented yet.
+Status: Accepted in direction, 2026-11-18 (decisions below). Implementation is underway:
+the Treasury ledger and payment integrations, matching against Treasury movements, the finance summary,
+reporting changes and drawer-to-bank/wallet transfers are in code. See the
+[Treasury technical PRD](../architecture/treasury-technical-prd.md) for scope and limits.
 
 ## Context: what exists today
 
