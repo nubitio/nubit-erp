@@ -14,6 +14,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
 use Nubit\Platform\Tenant\Contract\TenantRegistryInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -58,7 +59,7 @@ final class BankStatementImportController extends AbstractController
         }
 
         $file = $request->files->get('file');
-        if ($file === null) {
+        if (!$file instanceof UploadedFile) {
             throw new BadRequestHttpException('El parámetro "file" es obligatorio.');
         }
 
@@ -106,18 +107,21 @@ final class BankStatementImportController extends AbstractController
         $filePath = $uploadDir . '/' . $filename;
 
         $forwardedHost = $request->headers->get('X-Forwarded-Host');
-        $forwardedProto = $request->headers->get('X-Forwarded-Proto', $request->getScheme());
+        $forwardedProto = $request->headers->get('X-Forwarded-Proto') ?? $request->getScheme();
         if ($forwardedHost) {
             $tenantOrigin = $forwardedProto . '://' . $forwardedHost;
         } else {
             $tenantDomain = $this->tenantContext->getTenantDomain();
-            $tenantOrigin = $tenantDomain
-                ? $request->getScheme() . '://' . $tenantDomain
-                : $request->getSchemeAndHttpHost();
+            $tenantOrigin =
+                $tenantDomain !== null && $tenantDomain !== ''
+                    ? $request->getScheme() . '://' . $tenantDomain
+                    : $request->getSchemeAndHttpHost();
         }
 
         $tenantHost = $forwardedHost ?: ($this->tenantContext->getTenantDomain() ?: $request->getHost());
         $tenant = $this->resolveTenantFromContextOrHost($tenantHost);
+        $tenantName = $tenant['name'] ?? null;
+        $tenantDomain = $tenant['domain'] ?? null;
 
         $topic = $tenantOrigin . '/api/bank-statement-imports/' . $import->getId();
 
@@ -126,9 +130,9 @@ final class BankStatementImportController extends AbstractController
             filePath: $filePath,
             bankProfile: $bankProfile->value,
             tenantOrigin: $tenantOrigin,
-            tenantName: $tenant['name'] ?? null,
+            tenantName: is_string($tenantName) ? $tenantName : null,
             tenantId: isset($tenant['id']) ? (int) $tenant['id'] : null,
-            tenantDomain: $tenant['domain'] ?? $tenantHost,
+            tenantDomain: is_string($tenantDomain) ? $tenantDomain : $tenantHost,
             requestId: (string) ($request->attributes->get('request_id') ?? ''),
         ));
 

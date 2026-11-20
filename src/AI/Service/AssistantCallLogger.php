@@ -89,7 +89,7 @@ final readonly class AssistantCallLogger
             return [];
         }
 
-        if (!\is_array($data) || !isset($data['usage']) || !\is_array($data['usage'])) {
+        if (!isset($data['usage']) || !\is_array($data['usage'])) {
             return [];
         }
 

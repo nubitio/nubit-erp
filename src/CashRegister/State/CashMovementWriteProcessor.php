@@ -133,8 +133,8 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
             sourceId: (string) $newId,
             kind: $movementType === 'CASH_OUT' ? EconomicEvent::CASH_OUT : EconomicEvent::CASH_IN,
             occurredOn: new DateTimeImmutable()->format('Y-m-d'),
-            description: $description !== null && $description !== '' ? $description : 'Movimiento de caja',
-            total: is_string($amount) ? $amount : number_format((float) $amount, 2, '.', ''),
+            description: $description !== '' ? $description : 'Movimiento de caja',
+            total: $amount,
         ));
 
         return $data;

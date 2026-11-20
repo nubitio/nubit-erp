@@ -143,12 +143,7 @@ final class PresentationDemoSeeder
             return $preferred;
         }
 
-        $first = $warehouses[0];
-        if (!$first instanceof Warehouse) {
-            throw new RuntimeException('No warehouse found. Run initial setup first.');
-        }
-
-        return $first;
+        return $warehouses[0];
     }
 
     private function hideSyntheticBranches(Branch $keep): void
@@ -471,7 +466,7 @@ final class PresentationDemoSeeder
             for ($line = 0; $line < $lineCount; ++$line) {
                 $product = $products[($index + $line) % count($products)];
                 $qty = (string) (1 + (($index + $line) % 3));
-                $unitPrice = $product->getSalePrice() ?? '0.00';
+                $unitPrice = $product->getSalePrice();
                 $lineInputs[] = new InvoiceLineInput(quantity: $qty, unitPrice: (string) $unitPrice);
 
                 $item = new SaleItemRecord()
@@ -482,7 +477,7 @@ final class PresentationDemoSeeder
                     ->setLineNo($line + 1)
                     ->setNameSnapshot($product->getName())
                     ->setSkuSnapshot($product->getCode())
-                    ->setUomSnapshot($product->getUnitOfMeasure()?->getCode())
+                    ->setUomSnapshot($product->getUnitOfMeasure()->getCode())
                     ->setUnitCostSnapshot($product->getPurchasePrice())
                     ->setLastModifiedAt($issuedAt)
                     ->setSyncedAt($issuedAt);
@@ -625,7 +620,7 @@ final class PresentationDemoSeeder
                 ->setLineNo(1)
                 ->setNameSnapshot($product->getName())
                 ->setSkuSnapshot($product->getCode())
-                ->setUomSnapshot($product->getUnitOfMeasure()?->getCode())
+                ->setUomSnapshot($product->getUnitOfMeasure()->getCode())
                 ->setQty((string) $qty)
                 ->setUnitCost(number_format($unitCost, 4, '.', ''))
                 ->setGrossAmount(number_format($gross, 2, '.', ''))
@@ -689,7 +684,7 @@ final class PresentationDemoSeeder
             ->setLineNo(1)
             ->setNameSnapshot($product->getName())
             ->setSkuSnapshot($product->getCode())
-            ->setUomSnapshot($product->getUnitOfMeasure()?->getCode())
+            ->setUomSnapshot($product->getUnitOfMeasure()->getCode())
             ->setOrderedQty($qty)
             ->setExpectedUnitCost(number_format($unitCost, 4, '.', ''))
             ->setGrossAmount(number_format($gross, 2, '.', ''))
@@ -718,7 +713,7 @@ final class PresentationDemoSeeder
         foreach ($statuses as $index => $status) {
             $product = $products[$index % count($products)];
             $qty = '2.000';
-            $unitPrice = (string) ($product->getSalePrice() ?? '10.00');
+            $unitPrice = $product->getSalePrice();
             $amounts = new InvoiceCalculator(
                 [new InvoiceLineInput(quantity: $qty, unitPrice: $unitPrice)],
                 '0',
@@ -750,7 +745,7 @@ final class PresentationDemoSeeder
                 ->setNetAmount($amounts->getTotal())
                 ->setNameSnapshot($product->getName())
                 ->setSkuSnapshot($product->getCode())
-                ->setUomSnapshot($product->getUnitOfMeasure()?->getCode());
+                ->setUomSnapshot($product->getUnitOfMeasure()->getCode());
             $quote->addItem($item);
             $this->entityManager->persist($quote);
         }

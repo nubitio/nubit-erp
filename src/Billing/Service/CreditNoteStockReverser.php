@@ -119,7 +119,7 @@ final readonly class CreditNoteStockReverser implements CreditNoteStockReverserI
                         note: sprintf(
                             'Devolución cliente — nota de crédito %s (código: %s)',
                             $creditNote->getFullNumber(),
-                            $reasonCode ?? 'N/A',
+                            $reasonCode,
                         ),
                     ),
                     behavior: InventoryBehavior::TRACKED,

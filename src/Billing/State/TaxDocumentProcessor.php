@@ -70,10 +70,8 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
 
         $lockName = $this->acquireCreditNoteLock($isNew ? $data : null);
         $connection = $lockName !== null ? $this->entityManager->getConnection() : null;
-        $managesTransaction = $connection !== null && !$connection->isTransactionActive();
-        if ($managesTransaction) {
-            $connection->beginTransaction();
-        }
+        $transactionConnection = $connection !== null && !$connection->isTransactionActive() ? $connection : null;
+        $transactionConnection?->beginTransaction();
 
         try {
             if ($isNew && $data->getReasonCode() != null) {
@@ -157,14 +155,12 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
                 $this->creditNoteStockReverser->reverse($data);
             }
 
-            if ($managesTransaction) {
-                $connection->commit();
-            }
+            $transactionConnection?->commit();
 
             return $result;
         } catch (\Throwable $exception) {
-            if ($managesTransaction && $connection?->isTransactionActive()) {
-                $connection->rollBack();
+            if ($transactionConnection !== null && $transactionConnection->isTransactionActive()) {
+                $transactionConnection->rollBack();
             }
 
             throw $exception;
@@ -355,7 +351,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
 
     private function acquireCreditNoteLock(?TaxDocument $document): ?string
     {
-        if ($document?->getReasonCode() === null) {
+        if ($document === null || $document->getReasonCode() === null) {
             return null;
         }
 

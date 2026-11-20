@@ -137,9 +137,6 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
                 continue;
             }
             $availableBranch = $availableRegister->getBranch();
-            if (!$availableBranch instanceof Branch) {
-                continue;
-            }
             $openSession = $this->entityManager
                 ->getRepository(CashSession::class)
                 ->findOneBy([
