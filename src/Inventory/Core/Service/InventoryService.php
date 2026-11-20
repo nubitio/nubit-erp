@@ -136,6 +136,8 @@ final class InventoryService
     /**
      * Get on-hand quantity for a product in a warehouse.
      * stock_items is the canonical V2 read model; missing rows mean zero stock.
+     *
+     * @return numeric-string
      */
     public function getOnHand(string $warehouseId, string $productId): string
     {
@@ -144,7 +146,12 @@ final class InventoryService
             'p' => $productId,
         ]);
         if ($qty !== false) {
-            return (string) $qty;
+            $value = (string) $qty;
+            if (!is_numeric($value)) {
+                throw new \UnexpectedValueException('Stored stock quantity is not numeric.');
+            }
+
+            return $value;
         }
 
         return '0';

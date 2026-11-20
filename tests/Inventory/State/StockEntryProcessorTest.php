@@ -266,6 +266,8 @@ final class StockEntryProcessorTest extends TestCase
                 string $requestedQty,
                 string $onHand,
             ): StockValidationResult {
+                self::assertIsNumeric($requestedQty);
+                self::assertIsNumeric($onHand);
                 return bccomp($requestedQty, $onHand, 6) === 1
                     ? StockValidationResult::blocked('stock insuficiente')
                     : StockValidationResult::allowed();

@@ -1,0 +1,17 @@
+<?php
+
+namespace Symfony\Component\DependencyInjection;
+
+class Container
+{
+    public const EXCEPTION_ON_INVALID_REFERENCE = 1;
+
+    /**
+     * Class and interface service IDs resolve to instances of those types.
+     *
+     * @template T of object
+     * @param class-string<T>|string $id
+     * @return ($id is class-string<T> ? ($invalidBehavior is self::EXCEPTION_ON_INVALID_REFERENCE ? T : T|null) : object|null)
+     */
+    public function get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE): ?object {}
+}

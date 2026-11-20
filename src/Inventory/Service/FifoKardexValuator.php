@@ -118,6 +118,7 @@ final class FifoKardexValuator
 
     /**
      * @param list<array{qty: numeric-string, cost: numeric-string}> $layers
+     * @param numeric-string $qtyToConsume
      *
      * @return array{0: list<array{qty: numeric-string, cost: numeric-string}>, 1: numeric-string, 2: numeric-string}
      */
@@ -170,7 +171,11 @@ final class FifoKardexValuator
         return $total;
     }
 
-    /** @param numeric-string $qty @param numeric-string $unitCost */
+    /**
+     * @param numeric-string $qty
+     * @param numeric-string $unitCost
+     * @return numeric-string
+     */
     private function multiplyMoneyRaw(string $qty, string $unitCost): string
     {
         return bcmul($qty, $unitCost, 8);

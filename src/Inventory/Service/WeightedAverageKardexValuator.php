@@ -130,7 +130,11 @@ final class WeightedAverageKardexValuator
         ];
     }
 
-    /** @param numeric-string $qty @param numeric-string $unitCost */
+    /**
+     * @param numeric-string $qty
+     * @param numeric-string $unitCost
+     * @return numeric-string
+     */
     private function multiplyMoneyRaw(string $qty, string $unitCost): string
     {
         return bcmul($qty, $unitCost, 8);

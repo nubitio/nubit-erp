@@ -25,7 +25,7 @@ final class ProposeProductFromImageToolTest extends TestCase
 
         $result = $tool->proposeProductFromImage('   ');
         self::assertArrayHasKey('error', $result);
-        self::assertStringContainsString('nombre', $result['error']);
+        self::assertStringContainsString('nombre', $result['error'] ?? '');
     }
 
     public function testRejectsDuplicateProductName(): void

@@ -305,6 +305,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
 
     private function ensureControlPlaneAdminUser(): void
     {
+        /** @var object $conn */
         $conn = $this->connectionRegistry->getConnection('control_plane');
         if (!$conn instanceof Connection) {
             throw new \RuntimeException('Control plane connection must be a DBAL connection.');

@@ -176,7 +176,7 @@ final class CustomerAccountLedgerTest extends TestCase
     {
         $sink = new LedgerEntrySink();
 
-        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager = $this->createStub(EntityManagerInterface::class);
         $entityManager
             ->method('persist')
             ->willReturnCallback(static function (object $entity) use ($sink): void {
@@ -185,7 +185,7 @@ final class CustomerAccountLedgerTest extends TestCase
                 }
             });
 
-        $repository = $this->createMock(CustomerAccountEntryRepository::class);
+        $repository = $this->createStub(CustomerAccountEntryRepository::class);
         $repository
             ->method('currentBalance')
             ->willReturnCallback(static function (int $customerId) use ($sink): string {
@@ -213,6 +213,11 @@ final class LedgerEntrySink
 
     public function last(): CustomerAccountEntry
     {
-        return $this->entries[array_key_last($this->entries)];
+        $key = array_key_last($this->entries);
+        if ($key === null) {
+            throw new \LogicException('No ledger entries were recorded.');
+        }
+
+        return $this->entries[$key];
     }
 }

@@ -103,8 +103,7 @@ final class InventoryBehaviorTest extends TestCase
             static fn(InventoryBehavior $b) => !$b->tracksInventory(),
         );
 
-        self::assertCount(1, $nonTracking);
-        self::assertSame(InventoryBehavior::NOT_TRACKED, array_values($nonTracking)[0]);
+        self::assertSame([InventoryBehavior::NOT_TRACKED], array_values($nonTracking));
     }
 
     // ─── Invariant: exactly one case generates own movements ────────────────────
@@ -113,7 +112,6 @@ final class InventoryBehaviorTest extends TestCase
     {
         $generating = array_filter(InventoryBehavior::cases(), static fn(InventoryBehavior $b) => $b->generatesOwnMovements());
 
-        self::assertCount(1, $generating);
-        self::assertSame(InventoryBehavior::TRACKED, array_values($generating)[0]);
+        self::assertSame([InventoryBehavior::TRACKED], array_values($generating));
     }
 }

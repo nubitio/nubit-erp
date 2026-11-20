@@ -36,7 +36,7 @@ final class CertificateMetadataExtractorTest extends TestCase
         self::assertNotFalse($privateKey);
 
         $csr = openssl_csr_new(['commonName' => $commonName], $privateKey);
-        self::assertNotFalse($csr);
+        self::assertInstanceOf(\OpenSSLCertificateSigningRequest::class, $csr);
 
         $certificate = openssl_csr_sign($csr, null, $privateKey, 365);
         self::assertNotFalse($certificate);

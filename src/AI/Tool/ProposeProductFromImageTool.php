@@ -24,7 +24,7 @@ final readonly class ProposeProductFromImageTool
     ) {}
 
     /**
-     * @return array{error: string}|array{id: string, kind: string, summary: string, payload: array<string, mixed>}
+     * @return array{error: string}|array{id: string, kind: string, summary: string, payload: array<string, mixed>, expiresAt: string}
      */
     public function proposeProductFromImage(string $name, ?string $code = null, ?float $salePrice = null): array
     {

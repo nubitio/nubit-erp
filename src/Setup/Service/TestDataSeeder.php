@@ -668,7 +668,7 @@ final readonly class TestDataSeeder
                 $sale->addSaleItemRecord($saleItem);
             }
 
-            $total = $subtotal - ($subtotal * ($sale->getDescuento() / 100));
+            $total = $subtotal - ($subtotal * ((float) $sale->getDescuento() / 100));
             $sale->setSubtotal(number_format($subtotal, 2, '.', ''));
             $sale->setTotal(number_format($total, 2, '.', ''));
 

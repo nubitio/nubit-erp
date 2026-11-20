@@ -187,7 +187,9 @@ final class TaxDocumentProcessorTest extends TestCase
     {
         $relatedDoc = $this->buildRelatedTaxDocument(isVoided: false, series: 'F001');
         $creditNote = $this->buildNewCreditNote(relatedTaxDocument: $relatedDoc, reasonCode: '07');
-        $creditNote->getLines()->first()->setQuantity('0.600000');
+        $firstLine = $creditNote->getLines()->first();
+        self::assertInstanceOf(TaxDocumentLine::class, $firstLine);
+        $firstLine->setQuantity('0.600000');
         $duplicate = new TaxDocumentLine();
         $duplicate->setLineNumber(1);
         $duplicate->setProductName('Test product');

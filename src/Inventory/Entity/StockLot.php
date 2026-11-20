@@ -48,6 +48,7 @@ class StockLot
     #[ORM\Column(name: 'manufacture_date', type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $manufactureDate = null;
 
+    /** @var numeric-string */
     #[Groups(['stock_lot:read'])]
     #[ORM\Column(name: 'qty_on_hand', type: Types::DECIMAL, precision: 18, scale: 6)]
     private string $qtyOnHand = '0.000000';
@@ -136,6 +137,7 @@ class StockLot
         return $this;
     }
 
+    /** @return numeric-string */
     public function getQtyOnHand(): string
     {
         return $this->qtyOnHand;
@@ -144,6 +146,9 @@ class StockLot
     public function setQtyOnHand(string $qtyOnHand): static
     {
         // Normalise to 6 decimal places without float coercion.
+        if (!is_numeric($qtyOnHand)) {
+            throw new \ValueError('Lot quantity must be numeric.');
+        }
         $this->qtyOnHand = bcadd($qtyOnHand, '0', 6);
 
         return $this;
@@ -156,6 +161,9 @@ class StockLot
 
     public function setCost(?string $cost): static
     {
+        if ($cost !== null && !is_numeric($cost)) {
+            throw new \ValueError('Lot cost must be numeric.');
+        }
         $this->cost = $cost !== null ? bcadd($cost, '0', 4) : null;
 
         return $this;

@@ -63,12 +63,13 @@ class StockEntryItem
      * - RECEIPT / ISSUE / TRANSFER: how many units move (delta, always positive)
      * - ADJUSTMENT: the new real quantity (absolute)
      */
+    /** @var numeric-string */
     #[Groups(['stock_entry:read', 'stock_entry:write', 'stock_entry_items:read'])]
     #[ApiProperty(description: 'stock_entry_item.qty.label', openapiContext: ['x-crud' => ['order' => 2]])]
     #[Context(denormalizationContext: [AbstractObjectNormalizer::DISABLE_TYPE_ENFORCEMENT => true])]
     #[ORM\Column(name: 'qty', type: Types::DECIMAL, precision: 18, scale: 6)]
     #[Assert\Positive(message: 'La cantidad debe ser mayor a cero.')]
-    private string|int|float $qty = '0.000000';
+    private string $qty = '0.000000';
 
     /**
      * Stock snapshot before this entry — set by processor for ADJUSTMENT only.
@@ -134,6 +135,7 @@ class StockEntryItem
         return $this;
     }
 
+    /** @return numeric-string */
     public function getQty(): string
     {
         return $this->qty;
@@ -141,7 +143,11 @@ class StockEntryItem
 
     public function setQty(string|int|float $qty): static
     {
-        $this->qty = bcadd((string) $qty, '0', 6);
+        $value = (string) $qty;
+        if (!is_numeric($value)) {
+            throw new \ValueError('Stock entry quantity must be numeric.');
+        }
+        $this->qty = bcadd($value, '0', 6);
         return $this;
     }
 
@@ -152,6 +158,9 @@ class StockEntryItem
 
     public function setQtyBefore(?string $v): static
     {
+        if ($v !== null && !is_numeric($v)) {
+            throw new \ValueError('Previous stock quantity must be numeric.');
+        }
         $this->qtyBefore = $v !== null ? bcadd($v, '0', 6) : null;
         return $this;
     }

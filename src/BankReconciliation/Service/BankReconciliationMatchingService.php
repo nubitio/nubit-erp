@@ -261,6 +261,7 @@ final readonly class BankReconciliationMatchingService
         DateTimeImmutable $from,
         DateTimeImmutable $to,
     ): array {
+        /** @var list<SupplierPayment> $payments */
         $payments = $this->em
             ->createQueryBuilder()
             ->select('sp')
@@ -275,12 +276,19 @@ final readonly class BankReconciliationMatchingService
             ->getQuery()
             ->getResult();
 
-        return array_map(static fn(SupplierPayment $p): array => [
-            'sourceType' => 'supplier_payment',
-            'sourceId' => $p->getId(),
-            'date' => DateTimeImmutable::createFromInterface($p->getPaidAt()),
-            'label' => (string) $p->getReference(),
-        ], $payments);
+        $candidates = [];
+        foreach ($payments as $payment) {
+            if (($id = $payment->getId()) !== null) {
+                $candidates[] = [
+                    'sourceType' => 'supplier_payment',
+                    'sourceId' => $id,
+                    'date' => DateTimeImmutable::createFromInterface($payment->getPaidAt()),
+                    'label' => (string) $payment->getReference(),
+                ];
+            }
+        }
+
+        return $candidates;
     }
 
     /**
@@ -291,6 +299,7 @@ final readonly class BankReconciliationMatchingService
         DateTimeImmutable $from,
         DateTimeImmutable $to,
     ): array {
+        /** @var list<SalePayment> $payments */
         $payments = $this->em
             ->createQueryBuilder()
             ->select('sp')
@@ -305,12 +314,19 @@ final readonly class BankReconciliationMatchingService
             ->getQuery()
             ->getResult();
 
-        return array_map(fn(SalePayment $p): array => [
-            'sourceType' => 'sale_payment',
-            'sourceId' => $p->getId(),
-            'date' => DateTimeImmutable::createFromInterface($p->getPaidAt()),
-            'label' => $this->formatSaleLabel($p->getSaleRecord()),
-        ], $payments);
+        $candidates = [];
+        foreach ($payments as $payment) {
+            if (($id = $payment->getId()) !== null) {
+                $candidates[] = [
+                    'sourceType' => 'sale_payment',
+                    'sourceId' => $id,
+                    'date' => DateTimeImmutable::createFromInterface($payment->getPaidAt()),
+                    'label' => $this->formatSaleLabel($payment->getSaleRecord()),
+                ];
+            }
+        }
+
+        return $candidates;
     }
 
     /**

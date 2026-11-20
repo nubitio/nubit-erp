@@ -100,7 +100,7 @@ class ProductStockService
             $productStock = new ProductStock();
             $productStock->setProduct($product);
             $productStock->setWarehouse($warehouse);
-            $productStock->setMinStock($product->getMinStock() ?? 0);
+            $productStock->setMinStock((float) $product->getMinStock());
         }
 
         $productStock->setStock($newStock);

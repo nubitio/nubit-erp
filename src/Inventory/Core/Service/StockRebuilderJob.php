@@ -35,7 +35,7 @@ final readonly class StockRebuilderJob
                 updated_at = VALUES(updated_at)
             SQL;
 
-        return $this->connection->executeStatement($sql, [
+        return (int) $this->connection->executeStatement($sql, [
             'warehouse_id' => $warehouseId,
             'product_id' => $productId,
         ]);

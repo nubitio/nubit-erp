@@ -127,9 +127,9 @@ final class ColorUtils
         $hexColor = str_replace('#', '', $hexColor);
 
         return [
-            hexdec(substr($hexColor, 0, 2)),
-            hexdec(substr($hexColor, 2, 2)),
-            hexdec(substr($hexColor, 4, 2)),
+            (int) hexdec(substr($hexColor, 0, 2)),
+            (int) hexdec(substr($hexColor, 2, 2)),
+            (int) hexdec(substr($hexColor, 4, 2)),
         ];
     }
 

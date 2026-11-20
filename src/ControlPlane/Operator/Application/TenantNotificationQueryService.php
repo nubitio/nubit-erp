@@ -51,8 +51,10 @@ final readonly class TenantNotificationQueryService
             $matrix[$eventKey][$channel] = [
                 'enabled' => (bool) ($target['is_enabled'] ?? false),
                 'severity' => (string) ($target['severity'] ?? $definitions[$eventKey]['severity']),
-                'recipients' => is_array($target['recipients'] ?? null) ? $target['recipients'] : [],
-                'config' => is_array($target['config'] ?? null) ? $target['config'] : [],
+                'recipients' => is_array($target['recipients'] ?? null)
+                    ? array_values(array_filter($target['recipients'], is_string(...)))
+                    : [],
+                'config' => $this->readConfig($target['config'] ?? null),
             ];
         }
 
@@ -61,6 +63,21 @@ final readonly class TenantNotificationQueryService
             'channels' => $channels,
             'matrix' => $matrix,
         ];
+    }
+
+    /** @return array<string, mixed> */
+    private function readConfig(mixed $value): array
+    {
+        $config = [];
+        if (is_array($value)) {
+            foreach ($value as $key => $entry) {
+                if (is_string($key)) {
+                    $config[$key] = $entry;
+                }
+            }
+        }
+
+        return $config;
     }
 
     /**

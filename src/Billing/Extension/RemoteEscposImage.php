@@ -121,9 +121,12 @@ class RemoteEscposImage extends EscposImage
         $height = imagesy($src);
 
         // Resize if wider than maxWidth, preserving the aspect ratio
-        if ($maxWidth !== null && $width > $maxWidth) {
-            $newHeight = (int) round($height * ($maxWidth / $width));
+        if ($maxWidth !== null && $maxWidth > 0 && $width > $maxWidth) {
+            $newHeight = max(1, (int) round($height * ($maxWidth / $width)));
             $resized = imagecreatetruecolor($maxWidth, $newHeight);
+            if ($resized === false) {
+                return $imagePath;
+            }
             imagecopyresampled($resized, $src, 0, 0, 0, 0, $maxWidth, $newHeight, $width, $height);
             imagedestroy($src);
             $src = $resized;
@@ -133,8 +136,12 @@ class RemoteEscposImage extends EscposImage
 
         // Create a white background image
         $dest = imagecreatetruecolor($width, $height);
-        $white = imagecolorallocate($dest, 255, 255, 255);
-        $black = imagecolorallocate($dest, 0, 0, 0);
+        if ($dest === false) {
+            return $imagePath;
+        }
+        // Truecolor GD images accept packed RGB values directly.
+        $white = 0xFFFFFF;
+        $black = 0x000000;
         imagefill($dest, 0, 0, $white);
 
         // Copy with transparency handling

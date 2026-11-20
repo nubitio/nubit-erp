@@ -1,0 +1,15 @@
+<?php
+
+namespace Doctrine\Persistence;
+
+use Doctrine\DBAL\Connection;
+
+interface ConnectionRegistry
+{
+    /**
+     * Named connections configured in config/packages/doctrine.yaml are DBAL connections.
+     *
+     * @return ($name is 'control_plane'|'tenant'|null ? Connection : object)
+     */
+    public function getConnection(?string $name = null): object;
+}

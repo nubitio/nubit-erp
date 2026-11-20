@@ -24,7 +24,7 @@ final readonly class Validator
         if (count($violations) > 0) {
             $errors = [];
             foreach ($violations as $violation) {
-                $errors[$violation->getPropertyPath()][] = $violation->getMessage();
+                $errors[$violation->getPropertyPath()][] = (string) $violation->getMessage();
             }
 
             throw ValidationException::withErrors($errors);
@@ -53,7 +53,7 @@ final readonly class Validator
         $errors = [];
 
         foreach ($violations as $violation) {
-            $errors[$violation->getPropertyPath()][] = $violation->getMessage();
+            $errors[$violation->getPropertyPath()][] = (string) $violation->getMessage();
         }
 
         return $errors;

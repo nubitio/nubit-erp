@@ -20,7 +20,7 @@ final class ProposeOnboardingFillToolTest extends TestCase
         $result = $tool->proposeOnboardingFill('{"solPass":"secret","certificate":"x.pfx"}');
 
         self::assertArrayHasKey('error', $result);
-        self::assertStringContainsString('campos permitidos', $result['error']);
+        self::assertStringContainsString('campos permitidos', $result['error'] ?? '');
     }
 
     public function testRejectsInvalidJson(): void

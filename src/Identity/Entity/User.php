@@ -172,6 +172,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     #[Override]
     public function getUserIdentifier(): string
     {
+        if ($this->username === '') {
+            throw new \LogicException('The username cannot be empty.');
+        }
+
         return $this->username;
     }
 
@@ -189,7 +193,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         // guarantee every user at least has ROLE_USER
         $roles[] = 'ROLE_USER';
 
-        return array_unique($roles);
+        return array_values(array_unique($roles));
     }
 
     #[Override]

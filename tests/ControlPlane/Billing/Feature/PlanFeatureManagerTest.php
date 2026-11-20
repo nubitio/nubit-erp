@@ -63,7 +63,7 @@ final class PlanFeatureManagerTest extends TestCase
              */
             public function get(string $key, callable $callback, ?float $beta = null, ?array &$metadata = null): mixed
             {
-                return null;
+                throw new \LogicException('This test does not read from the cache.');
             }
 
             public function delete(string $key): bool

@@ -40,7 +40,7 @@ final class TaxDocumentToolsTest extends TestCase
         $tools = new TaxDocumentTools($repo);
         $result = $tools->taxDocumentStatus(id: 'td-1');
 
-        self::assertSame('F001', $result['series']);
+        self::assertSame('F001', $result['series'] ?? null);
         self::assertSame('ACEPTADO', $result['sunat_status']);
     }
 }

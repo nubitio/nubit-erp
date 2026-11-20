@@ -4,7 +4,10 @@ includes:
     - phpstan-baseline.neon
 
 parameters:
-    level: 6   # upgraded from 5 per SLICE-SEC-001. Target: level 8 by end of Roadmap Phase 2.
+    level: 7   # Target: level 8 by end of Roadmap Phase 2.
+    stubFiles:
+        - tools/phpstan/ConnectionRegistry.stub
+        - tools/phpstan/SymfonyContainer.stub
     paths:
         - src/
         - tests/

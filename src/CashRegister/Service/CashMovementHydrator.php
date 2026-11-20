@@ -51,7 +51,7 @@ final readonly class CashMovementHydrator
     }
 
     /**
-     * @param array{id: int|string, cash_session_id: int|string|null, category_id: int|string|null, amount: string, description: string|null, created_at: string, movement_type: string} $row
+     * @param array<string, mixed> $row Raw DBAL row with the cash movement columns.
      */
     public function fromRow(array $row): CashMovement
     {

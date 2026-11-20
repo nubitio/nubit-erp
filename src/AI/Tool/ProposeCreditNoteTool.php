@@ -30,7 +30,7 @@ final readonly class ProposeCreditNoteTool
     ) {}
 
     /**
-     * @return array{error: string}|array{id: string, kind: string, summary: string, payload: array<string, mixed>}
+     * @return array{error: string}|array{id: string, kind: string, summary: string, payload: array<string, mixed>, expiresAt: string}
      */
     public function proposeCreditNote(
         string $reasonCode,
@@ -82,8 +82,8 @@ final readonly class ProposeCreditNoteTool
         }
 
         $lines = $this->resolveLines($document, $linesJson);
-        if (isset($lines['error'])) {
-            return $lines;
+        if (isset($lines['error']) && is_string($lines['error'])) {
+            return ['error' => $lines['error']];
         }
 
         $summary = sprintf(

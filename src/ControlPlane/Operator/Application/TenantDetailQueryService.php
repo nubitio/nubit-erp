@@ -124,7 +124,7 @@ final readonly class TenantDetailQueryService
     private function loadBackups(int $id): array
     {
         try {
-            return $this->backupService->listBackupsByTenantId($id);
+            return array_values($this->backupService->listBackupsByTenantId($id));
         } catch (\Throwable $exception) {
             $this->logger->warning('Tenant detail: failed to load backups', [
                 'tenant_id' => $id,
@@ -153,7 +153,7 @@ final readonly class TenantDetailQueryService
     private function loadProvisions(int $id): array
     {
         try {
-            return $this->provisionRepository->findByTenantId($id);
+            return array_values($this->provisionRepository->findByTenantId($id));
         } catch (\Throwable) {
             return [];
         }
@@ -177,7 +177,7 @@ final readonly class TenantDetailQueryService
     private function loadPaymentEvents(int $id): array
     {
         try {
-            return $this->paymentEventRepository->findByTenantId($id);
+            return array_values($this->paymentEventRepository->findByTenantId($id));
         } catch (\Throwable) {
             return [];
         }

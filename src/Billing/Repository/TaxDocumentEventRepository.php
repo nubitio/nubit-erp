@@ -39,7 +39,9 @@ class TaxDocumentEventRepository extends ServiceEntityRepository implements Suna
         $event->setStatus($this->resolveStatus($statusCode));
         $event->setCode($statusCode);
         $event->setMessage($statusMessage);
-        $event->setPayloadJson($payload === null ? null : json_encode($payload, JSON_UNESCAPED_UNICODE));
+        $event->setPayloadJson(
+            $payload === null ? null : json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+        );
         $event->setCreatedAt(new \DateTimeImmutable());
 
         $this->registry->getManager()->persist($event);

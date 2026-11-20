@@ -421,7 +421,7 @@ readonly class SaleProcessor implements ProcessorInterface
                 if (!$invoiceResult['success']) {
                     $this->logger->warning('Auto invoice skipped', [
                         'sale_id' => $data->getId(),
-                        'message' => $invoiceResult['message'],
+                        'message' => $invoiceResult['message'] ?? null,
                     ]);
                 }
             } catch (\Throwable $throwable) {

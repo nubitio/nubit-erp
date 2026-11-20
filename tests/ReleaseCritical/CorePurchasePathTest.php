@@ -62,7 +62,11 @@ final class CorePurchasePathTest extends KernelTestCase
         self::assertIsArray($movement);
         self::assertSame('PURCHASE_IN', $movement['movement_type']);
         self::assertSame('PURCHASE_ITEM', $movement['source_type']);
-        self::assertStringStartsWith((string) $result->getId(), (string) $movement['source_id']);
+        $purchaseId = (string) $result->getId();
+        if ($purchaseId === '') {
+            self::fail('The persisted purchase has no ID.');
+        }
+        self::assertStringStartsWith($purchaseId, (string) $movement['source_id']);
         self::assertEqualsWithDelta(5.0, (float) $movement['qty_delta_base'], 0.001);
     }
 

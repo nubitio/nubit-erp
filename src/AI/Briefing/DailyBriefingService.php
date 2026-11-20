@@ -157,7 +157,6 @@ final readonly class DailyBriefingService
     private function fetchTopProducts(string $yesterday): array
     {
         try {
-            /** @var array<int, array<string, mixed>> $rows */
             $rows = $this->connection->fetchAllAssociative("SELECT COALESCE(p.descripcion, 'Sin producto') AS product,
                         COALESCE(SUM(pds.net_sales), 0) AS total
                  FROM product_daily_summary pds

@@ -107,13 +107,14 @@ class VoucherSearchController extends AbstractController
 
         $currency = strtoupper(trim((string) ($document['currency'] ?? 'PEN')));
         $currencySymbol = self::CURRENCY_SYMBOLS[$currency] ?? $currency;
+        $issueTimestamp = strtotime((string) $document['issue_date']);
 
         $session->remove(self::SESSION_ERROR);
         $session->set(self::SESSION_RESULT, [
             'type' => self::VOUCHER_TYPES[strval($document['document_type'])] ?? 'Comprobante',
             'series' => $document['series'],
             'number' => $document['number'],
-            'date' => date('d/m/Y', strtotime(strval($document['issue_date']))),
+            'date' => $issueTimestamp === false ? '' : date('d/m/Y', $issueTimestamp),
             'total' => $document['total'],
             'hash' => $document['digest'],
             'status' => $isVoided ? 'ANULADO' : 'ACEPTADO',
