@@ -121,6 +121,7 @@ yarn test:e2e \
   e2e/auth-refresh-regression.spec.ts \
   e2e/auth-expiry-concurrency.spec.ts \
   e2e/cash-rounding.spec.ts \
+  e2e/cash-credit-reconciliation.spec.ts \
   e2e/pos-credit-sale.spec.ts \
   e2e/pos-offline.spec.ts \
   e2e/accounts-receivable.spec.ts \
