@@ -80,9 +80,10 @@ for (const mobile of [false, true])
       .click();
     await expect(page).toHaveURL(/\/pos$/);
     await page.goto(url);
-    await expect(
-      page.getByText('Conteo recuperado de este equipo.', { exact: true }),
-    ).toBeVisible();
+    // A full reload: bundle, session refresh and the summary request all come before the draft is restored.
+    await expect(page.getByText('Conteo recuperado de este equipo.', { exact: true })).toBeVisible({
+      timeout: 20_000,
+    });
     await expect(
       page.getByRole('spinbutton', { name: 'Monto contado de Efectivo', exact: true }),
     ).toHaveValue('400.50');

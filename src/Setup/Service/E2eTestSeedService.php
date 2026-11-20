@@ -60,6 +60,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
     private const string E2E_PRODUCT_2_NAME = 'Producto CI E2E 2';
     private const string E2E_SUPPLIER_RUC = '20100000999';
     private const string E2E_SUPPLIER_NAME = 'Proveedor CI E2E';
+    private const string E2E_TENANT_NAME = 'demo';
     private const string CONTROL_PLANE_ADMIN_USER = 'admin';
     private const string CONTROL_PLANE_ADMIN_PASSWORD = 'Admin.Control.123';
 
@@ -119,6 +120,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         }
 
         $this->ensureControlPlaneAdminUser();
+        $this->ensureExcelExportEntitlement();
 
         $user = $this->upsertE2eUser(self::E2E_PASSWORD);
 
@@ -300,13 +302,41 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         );
     }
 
-    private function ensureControlPlaneAdminUser(): void
+    private function controlPlaneConnection(): Connection
     {
         /** @var object $conn */
         $conn = $this->connectionRegistry->getConnection('control_plane');
         if (!$conn instanceof Connection) {
             throw new \RuntimeException('Control plane connection must be a DBAL connection.');
         }
+
+        return $conn;
+    }
+
+    /**
+     * The e2e tenant is registered without a plan, so it lands on `free`, where Excel export is off. The
+     * reconciliation specs download the sales report, so grant that one feature to the tenant instead of
+     * moving it to `pro`, which would also switch on multi-warehouse and change the UI under every spec.
+     */
+    private function ensureExcelExportEntitlement(): void
+    {
+        $conn = $this->controlPlaneConnection();
+        if (!$conn->createSchemaManager()->tablesExist(['tenants', 'tenant_feature_overrides'])) {
+            return;
+        }
+
+        $conn->executeStatement(<<<'SQL'
+            INSERT INTO tenant_feature_overrides (tenant_id, feature_key, is_enabled, reason, created_at)
+            SELECT id, 'excel_export', 1, 'e2e seed: export specs', NOW()
+            FROM tenants
+            WHERE name = ?
+            ON DUPLICATE KEY UPDATE is_enabled = 1, expires_at = NULL, cleaned_at = NULL
+            SQL, [self::E2E_TENANT_NAME]);
+    }
+
+    private function ensureControlPlaneAdminUser(): void
+    {
+        $conn = $this->controlPlaneConnection();
 
         if (!$conn->createSchemaManager()->tablesExist(['control_plane_admin_users'])) {
             return;
