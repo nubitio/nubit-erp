@@ -48,8 +48,11 @@ firewall claims `^/api/v1` **before** `main`; `TenantListener` skips `^/api/v1`.
 `POST /api/v1/documents` accepts nubit-control's minimal payload (totals in
 minor units, customer identity, caller-supplied series + number — **the ERP
 never allocates a correlative for this channel**). `SyntheticVoucherFactory`
-builds the `Voucher` the SUNAT pipeline needs directly (one line, 18 % IGV,
-cash, no detraction). `BillCreateUseCase` / `BillSendUseCase` gained an optional
+builds the `Voucher` the SUNAT pipeline needs directly (18 % IGV, cash, no
+detraction). Without `lines`, it produces one item from `line_description`.
+With `lines`, it produces one item per entry; their subtotal, tax and total
+must match the document totals. See the [public contract](../api/public-v1.yaml).
+`BillCreateUseCase` / `BillSendUseCase` gained an optional
 pre-built `Voucher` parameter and skip `getVoucherByTaxDocumentId()` when given
 one — the only change to `src/Billing`. Intake persists a `TaxDocument` (no
 branch, no sale) + an `IntegrationDocument` (idempotent on `external_id`), then
@@ -57,7 +60,8 @@ queues `SendIntegrationDocumentMessage`; the handler rebuilds the voucher from
 the stored request, calls `BillSendUseCase`, maps greenter's response
 (`SunatOutcomeMapper`: CDR `0` / `4000+` = accepted, `2000-3999` = rejected),
 and records the terminal outbox event. `GET /api/v1/documents/{reference}`
-serves the resource for a polling fallback.
+serves the resource for a polling fallback. `GET /api/v1/documents/{reference}/pdf`
+requires `documents:read` and returns the A4 PDF once the document is accepted.
 
 ### 3. Outbound webhooks — transactional outbox, HMAC, bounded retries
 

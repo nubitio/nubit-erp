@@ -2,7 +2,9 @@
 
 `public-v1.yaml` is the authoritative contract for the tenant-scoped machine-to-machine API. It is intentionally separate from API Platform's internal CRUD documentation: `/api/v1` is the compatibility surface for external clients.
 
-Run `composer check:api-contract` to boot the real Symfony router, validate the OpenAPI structure/security semantics, and compare every `/api/v1` route with its documented operation. Run `yarn generate:api-types` to generate the public TypeScript types into `assets/api/public-v1.types.generated.ts`; the existing `assets/api/types.generated.ts` remains the compatibility artifact for API Platform consumers.
+Run `php scripts/api/check-public-contract.php` (or `yarn check:api-contract`) in an environment with the backend dependencies installed. This boots the real Symfony router, validates the OpenAPI structure and security semantics, and compares the `/api/v1` routes with the documented operations. The backend CI job runs the PHP command in the `web` container.
+
+Run `yarn generate:api-types` to generate the public TypeScript types into `assets/api/public-v1.types.generated.ts`; `assets/api/types.generated.ts` is the separate compatibility artifact for API Platform consumers.
 
 ## Compatibility policy
 

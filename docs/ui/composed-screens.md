@@ -1,7 +1,9 @@
 # Composed screens (ADR-019)
 
 How to migrate a business screen from the schema-driven CRUD engine to a composed one, and what
-was learned doing the first (Customers). Decision and rationale: `docs/adr/ADR-019-*.md`.
+was learned from the original Customers pilot. Customers now runs on `SchemaCrudPage` again;
+see [current status](composed-screens-status.md). Decision and rationale:
+[`ADR-019`](../adr/ADR-019-composed-ui-over-schema-driven-crud.md).
 
 ## Where things live
 
@@ -27,8 +29,7 @@ Components stay in the ERP. Promote one to `@nubitio/ui` only when a second app 
    effects). Server errors go through `applyServerErrors`.
 4. **Page**: header actions, toolbar (debounced search, filters), `DataGrid`, row actions with
    permissions, delete confirmation, mobile cards and a floating action button.
-5. **Route**: point the route at the new page. Keep the old screen only while something else
-   embeds it (Customers: `SalePage` still uses the old form).
+5. **Route**: point the route at the new page. Keep the old form while something else embeds it.
 
 ## Verification checklist
 
@@ -64,10 +65,11 @@ Components stay in the ERP. Promote one to `@nubitio/ui` only when a second app 
 
 - `@nubitio/ui` dark theme: the active segmented-control button (3.47:1) and the secondary
   button (4:1) miss WCAG AA. Fix in nubit-react, not here.
-- Customer record side panel with receivables (the "new capability" that ADR-019 asks each pilot
-  to prove) is not built yet.
+- The customer record side panel with receivables was built for the pilot and removed when the
+  schema-driven page was restored.
 
 ## Order of the waves
 
-Customers (done), Catalog/Products, Purchasing/AP/Payroll/Fixed assets, Sales last (it embeds
-the most forms). Delete the engine wiring of a screen when its replacement ships.
+The original order was Customers, Catalog/Products, Purchasing/AP/Payroll/Fixed assets, then Sales
+(it embeds the most forms). The Customers pilot is no longer active. Delete a screen's engine wiring
+only after its replacement ships and no remaining consumer needs it.

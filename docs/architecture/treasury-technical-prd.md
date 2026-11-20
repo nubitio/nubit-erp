@@ -6,8 +6,12 @@ Status: Approved 2026-11-18 (D-A to D-D accepted as recommended). Implements dec
 
 Progress: WP1 done. WP2 done: supplier payments and reversal, receivable collections, on-account collections,
 customer advances, POS payments and sale voids, payroll payments, and `treasury:verify` / `treasury:backfill`.
-Not covered by WP2 (by design): drawer-to-bank transfers, reversing collections made against a voided credit sale,
-and history before activation (balances start at the opening balance, D-D).
+Drawer-to-bank/wallet transfers shipped separately after WP2 and require the relevant cash drawer to be open.
+WP2 does not cover reversing collections made against a voided credit sale or history before activation
+(balances start at the opening balance, D-D).
+
+Later waves also added matching against Treasury movements, the finance summary, cash flow from money
+accounts when Treasury is enabled, and profit and loss from the ledger when Accounting is enabled.
 
 ## 1. Goal and scope
 
@@ -133,9 +137,14 @@ branch, user, occurred at, optional party, reference, optional **account overrid
 
 ### 3.6 API, permissions, capability
 
-- Internal API (not the public `/api/v1`): `GET /treasury/accounts`, `GET /treasury/positions`,
-  `GET /treasury/movements` (x-grid-protocol), `POST /treasury/accounts`, `POST /treasury/transfers`,
-  `PUT /treasury/payment-method-accounts`.
+- Internal API, under `/api/treasury` (not public `/api/v1`):
+  - `GET /accounts` returns accounts and `totalsByCurrency`; `POST /accounts` creates an account.
+  - `POST /accounts/sync` seeds accounts from existing cash registers and banks.
+  - `POST /accounts/{id}/opening-balance` records the opening balance.
+  - `GET /accounts/{id}/movements` uses `limit` and `offset`; drawer movements are shown in Caja.
+  - `GET` and `PUT /payment-method-accounts` read and update mappings.
+  - `POST /transfers` records a transfer; `GET /summary` returns the finance summary.
+  - `PUT /capability` sets the tenant's Treasury activation.
 - Permissions: `treasury.view`, `treasury.manage` (accounts and mapping), `treasury.transfer`.
 - Capability `treasury.accounts` (new `CapabilityKey`), off by default; `treasury.bank_reconciliation` keeps its
   own gate. With the capability off, recorders skip Treasury and behave as today.
@@ -146,25 +155,26 @@ Strangler, as in ADR-004, with the lessons of its amendment: each step is revers
 
 1. **Schema and accounts.** Migration. Command `treasury:accounts:seed` creates one account per
    `cash_register` and `bank_account`, plus a suspense account per branch and currency, and proposes the
-   default mapping (decision 4): Transferencia and Depósito to the main bank account in PEN, Yape/Plin/cards
-   to a wallet account the admin names. Nothing is recorded yet.
+   default mapping (decision 4): Transferencia and Depósito map automatically only when exactly one
+   active bank account exists in that currency; existing mappings are not overwritten. An admin maps
+   Yape/Plin/cards manually. Nothing is recorded yet.
 2. **Dual write** behind `treasury.accounts`. Recorders write movements; the old paths keep working.
-3. **Backfill.** `treasury:backfill --from=<date> [--dry-run]`, idempotent (unique key), chunked, `origin=backfill`:
-   non-cash `SalePayment`, bank and wallet `SupplierPayment`, receivable collections, advances and payroll
-   payments. Historical supplier "BANK" payments go to the suspense account until the admin reclassifies them.
-   Historical cash supplier payments are **not** backfilled: they never touched a drawer, and rewriting past
-   arqueos would be wrong; the gap is documented in the activation notes.
-4. **Opening balances.** Bank and wallet balances start at the activation date: the admin enters an
-   `opening_balance` movement per account (the screen offers the last imported statement balance as a hint).
-   Before that date the screens say "desde la activación".
-5. **Read cutover.** Reconciliation reads `UnreconciledMovementsQuery`; the forecast reads `PositionQuery`.
-   Old matches are re-pointed through a one-off mapping (`sale_payment_id` or `supplier_payment_id` to the
-   movement with that source). Old query paths stay for two releases, then are removed.
+3. **Backfill.** `treasury:backfill --tenant=<tenant> [--from=YYYY-MM-DD] [--dry-run]`
+   records missing non-cash POS payments with a stable idempotency key and missing non-cash
+   supplier payments. It skips voided sales, uncollected POS methods and reversed supplier
+   payments. It does not repair collections, advances, payroll or cash movements. When `--from`
+   is omitted, the command uses the date of the earliest opening balance and refuses to proceed if none exists.
+4. **Opening balances.** The admin enters an `opening_balance` movement for each bank or wallet account.
+5. **Read cutover.** Reconciliation uses `TreasuryReconciliationSource` when Treasury is enabled
+   and the bank account is linked to a Treasury account; the legacy path still applies otherwise.
+   New matches can store `treasury_movement_id`. The migration adds the nullable link and does not
+   rewrite historical matches.
 6. **Rollback.** Turn the capability off. Tables stay; no destructive step exists before step 6 of the waves.
 
-**Integrity check** `treasury:verify` (also run in CI against the seeded e2e data): every post-activation
-non-cash payment has exactly one movement; no movement lacks a source; per source the sums match; per drawer
-the adapter equals the session expected amount; suspense balance reported. Non-zero exit on a mismatch.
+**Integrity check.** `treasury:verify --tenant=<tenant> [--from=YYYY-MM-DD]` checks for missing
+movements over the same payment set as backfill. It fails on gaps and warns on non-zero suspense
+balances. With no opening balance and no `--from`, it reports that there is nothing to verify.
+It does not check amounts, drawer balances or orphaned movements, and CI does not invoke the command.
 
 ## 5. Testing
 
@@ -173,8 +183,8 @@ the adapter equals the session expected amount; suspense balance reported. Non-z
 - Integration: each source produces its movement; reversal produces the correction; an offline replay does not
   duplicate; the transfer writes both legs and the drawer `DEPOSIT`.
 - Architecture: `ContextManifest` entry, table ownership, no cross-context writes, ledger immutability.
-- E2E (extends the clean-stack suite): paying a supplier in cash lowers the drawer's expected amount; paying by
-  transfer from account X lowers X; the movement appears in reconciliation.
+- E2E: `e2e/treasury.spec.ts` covers activation, opening balances, supplier payments by wallet
+  and in cash, reversals, transfers and the finance summary. It does not exercise reconciliation.
 - Static: Mago and PHPStan clean, verified with the CI image on a clean checkout (see the baseline lesson).
 
 ## 6. Work packets
@@ -185,8 +195,8 @@ permissions. Acceptance: with the capability on, creating an account and a mappi
 passes on an empty ledger; architecture tests pass.
 
 **WP2: recorders.** Supplier payment and reversal, non-cash sale payment, receivable collection, advance,
-payroll, with the account selector in the collect and pay dialogs. Backfill and verify command. Acceptance:
-the four scenarios of section 5 pass on the e2e stack; offline replay test passes.
+payroll, with the account selector in the collect and pay dialogs. Backfill and verify commands
+cover the subset described in section 4. The E2E coverage is listed in section 5.
 
 Later waves (not in this document): reconciliation on one source, the finance summary, the P&L.
 
@@ -194,7 +204,7 @@ Later waves (not in this document): reconciliation on one source, the finance su
 
 | Risk | Mitigation |
 | --- | --- |
-| Drawer and ledger drift (D-A) | One writer per kind, `treasury:verify` in CI, no summing of drawer rows |
+| Drawer and ledger drift (D-A) | One writer per kind; drawer balances come from Caja. `treasury:verify` only checks for missing non-cash movements |
 | Offline POS duplicates | Deterministic key from the payment id, unique index, replay test |
 | Unmapped methods block sales | Suspense account plus warning; sale never fails on configuration |
 | Admin never reclassifies suspense | Suspense balance on the config screen and in the summary |
