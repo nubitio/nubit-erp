@@ -13,6 +13,7 @@ use App\Sales\Entity\CustomerAccountEntry;
 use App\Sales\Entity\CustomerPaymentApplication;
 use App\Sales\Entity\SalePayment;
 use App\Sales\Entity\SaleRecord;
+use App\Sales\Repository\CustomerAccountEntryRepository;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\Service\CollectOnAccountPlanner;
 use App\Sales\Service\CollectOnAccountService;
@@ -25,6 +26,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -109,6 +111,75 @@ final class CollectOnAccountServiceTest extends TestCase
         self::assertSame([], $this->dispatched);
     }
 
+    public function testARetriedRequestReturnsTheFirstResultAndBooksNothingAgain(): void
+    {
+        $sale = $this->sale('s1', '30.00');
+        $sales = $this->createMock(SaleRecordRepository::class);
+        $sales->expects(self::never())->method('findOpenReceivablesForCustomer');
+        $sales->method('find')->willReturn($sale);
+
+        $entries = $this->createMock(CustomerAccountEntryRepository::class);
+        $entries
+            ->method('findCollectionApplications')
+            ->with('col-1')
+            ->willReturn([
+                ['customerId' => 9, 'saleId' => 's1', 'applied' => '70.00', 'currency' => 'PEN'],
+            ]);
+
+        $this->salePaymentService->expects(self::never())->method('appendPayment');
+        $this->gateway->expects(self::never())->method('writeOnAccountCollectionMovement');
+
+        $result = $this->service(
+            $this->em(),
+            $sales,
+            $this->createMock(CustomerAccountLedger::class),
+            $entries,
+        )->collect(
+            customerId: 9,
+            paymentMethod: $this->method(PaymentMethod::CASH),
+            amount: '70.00',
+            paidAt: new DateTimeImmutable('2026-03-05'),
+            reference: null,
+            applications: [],
+            createdBy: new User(),
+            collectionId: 'col-1',
+        );
+
+        self::assertSame('col-1', $result->collectionId);
+        self::assertSame('70.00', $result->amount);
+        self::assertCount(1, $result->applications);
+        self::assertSame('70.00', $result->applications[0]->applied);
+        self::assertSame([], $this->dispatched);
+    }
+
+    public function testTheSameKeyOnAnotherCustomerIsAConflict(): void
+    {
+        $entries = $this->createMock(CustomerAccountEntryRepository::class);
+        $entries
+            ->method('findCollectionApplications')
+            ->willReturn([
+                ['customerId' => 9, 'saleId' => 's1', 'applied' => '70.00', 'currency' => 'PEN'],
+            ]);
+
+        $this->expectException(ConflictHttpException::class);
+
+        $this->service(
+            $this->em(),
+            $this->salesRepo([]),
+            $this->createMock(CustomerAccountLedger::class),
+            $entries,
+        )->collect(
+            customerId: 10,
+            paymentMethod: $this->method(PaymentMethod::CASH),
+            amount: '70.00',
+            paidAt: new DateTimeImmutable('2026-03-05'),
+            reference: null,
+            applications: [],
+            createdBy: new User(),
+            collectionId: 'col-1',
+        );
+    }
+
     public function testRejectsWhenTheCustomerHasNoOpenSales(): void
     {
         $this->expectException(UnprocessableEntityHttpException::class);
@@ -172,6 +243,7 @@ final class CollectOnAccountServiceTest extends TestCase
         EntityManagerInterface $em,
         SaleRecordRepository $sales,
         CustomerAccountLedger $ledger,
+        ?CustomerAccountEntryRepository $entries = null,
     ): CollectOnAccountService {
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->method('dispatch')->willReturnCallback(function (object $m): Envelope {
@@ -191,6 +263,8 @@ final class CollectOnAccountServiceTest extends TestCase
             $this->gateway,
             $bus,
             new OperationLog(new NullLogger()),
+            null,
+            $entries,
         );
     }
 

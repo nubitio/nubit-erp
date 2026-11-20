@@ -1,4 +1,5 @@
 import { httpClient } from '@shared/api/HttpClient';
+import { generateIdempotencyKey } from '@shared/lib/idempotency';
 import { createLocalSaleAndEnqueue } from '@offline/outbox';
 import type { CreateOfflineSaleInput, LocalSale } from '@offline/types';
 
@@ -30,16 +31,7 @@ const asTrimmedString = (value: unknown): string | null => {
   return trimmed === '' ? null : trimmed;
 };
 
-export const generateIdempotencyKey = (): string => {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID();
-  }
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (char) => {
-    const random = (Math.random() * 16) | 0;
-    const value = char === 'x' ? random : (random & 0x3) | 0x8;
-    return value.toString(16);
-  });
-};
+export { generateIdempotencyKey };
 
 const looksLikeUuid = (value: string): boolean =>
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
