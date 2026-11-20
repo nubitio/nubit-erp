@@ -2,12 +2,15 @@ import { describe, expect, it } from 'vitest';
 import {
   annulsDocument,
   buildCreditNotePayload,
+  creditNoteBlockedReason,
   creditNoteIssueErrors,
+  defaultReturnQuantity,
   isValidReturnQuantity,
   lineReturnCents,
   returnAllLines,
   returnSummary,
   selectedLines,
+  stepReturnQuantity,
   type OriginLine,
 } from './creditNoteIssueModel';
 
@@ -93,5 +96,53 @@ describe('credit note issue model', () => {
         returns: { 1: '1' },
       }),
     ).toEqual({});
+  });
+});
+
+describe('fractional quantities', () => {
+  const half = {
+    lineNumber: 1,
+    productName: 'Queso',
+    quantity: '0.5',
+    unitPrice: '40.00',
+    taxPercentage: '18',
+    total: '20.00',
+  };
+  const two = { ...half, lineNumber: 2, quantity: '2.5', total: '100.00' };
+
+  it('starts at everything sold when less than one unit was sold', () => {
+    expect(defaultReturnQuantity(half)).toBe('0.5');
+    expect(defaultReturnQuantity(two)).toBe('1');
+    expect(isValidReturnQuantity(half, defaultReturnQuantity(half))).toBe(true);
+  });
+
+  it('keeps a checked 0.5 line in the summary and the payload', () => {
+    const returns = { 1: defaultReturnQuantity(half) };
+    expect(returnSummary([half], returns).total).toBe('20.00');
+    expect(
+      creditNoteIssueErrors({ reasonCode: '07', reasonDescription: 'x', lines: [half], returns }),
+    ).toEqual({});
+  });
+
+  it('steps by one but lands exactly on what was sold', () => {
+    expect(stepReturnQuantity(two, '1', 1)).toBe('2');
+    expect(stepReturnQuantity(two, '2', 1)).toBe('2.5');
+    expect(stepReturnQuantity(two, '2.5', 1)).toBe('2.5');
+    expect(stepReturnQuantity(two, '2.5', -1)).toBe('1.5');
+    expect(stepReturnQuantity(half, '0.5', -1)).toBeNull();
+    expect(stepReturnQuantity(two, '1', -1)).toBeNull();
+  });
+});
+
+describe('creditNoteBlockedReason', () => {
+  it('allows an accepted, active document', () => {
+    expect(creditNoteBlockedReason({ stage: 'accepted' })).toBeNull();
+  });
+
+  it('blocks voided, rejected and not-yet-accepted documents with a reason', () => {
+    expect(creditNoteBlockedReason({ stage: 'accepted', voided: true })).toContain('anulado');
+    expect(creditNoteBlockedReason({ stage: 'rejected' })).toContain('Reemplázalo');
+    expect(creditNoteBlockedReason({ stage: 'pending' })).toContain('aún no aceptó');
+    expect(creditNoteBlockedReason({ stage: 'sent' })).toContain('aún no aceptó');
   });
 });

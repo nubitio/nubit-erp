@@ -76,6 +76,45 @@ export function selectedLines(lines: readonly OriginLine[], returns: Returns) {
   });
 }
 
+/** What checking a line returns at first: one unit, or everything sold when less than one was (0.5 kg). */
+export function defaultReturnQuantity(line: OriginLine): string {
+  const sold = toMicro(line.quantity);
+  return sold !== null && sold < 10n ** BigInt(MICRO) ? line.quantity : '1';
+}
+
+/**
+ * The quantity after pressing + or −, or null when it reaches zero (the line is unchecked).
+ * Moves by one but never past what was sold, so a 0.5 line reaches 0.5 and 2.5 reaches 2.5.
+ */
+export function stepReturnQuantity(
+  line: OriginLine,
+  current: string | undefined,
+  delta: 1 | -1,
+): string | null {
+  const max = toMicro(line.quantity);
+  const now = toMicro(current ?? '0');
+  if (max === null || now === null) return null;
+  const one = 10n ** BigInt(MICRO);
+  let next = now + (delta === 1 ? one : -one);
+  if (next > max) next = max;
+  if (next <= 0n) return null;
+  const whole = next / one;
+  const fraction = (next % one).toString().padStart(MICRO, '0').replace(/0+$/, '');
+  return fraction ? `${whole}.${fraction}` : String(whole);
+}
+
+/** Why a credit note cannot be issued against this document, or null when it can. */
+export function creditNoteBlockedReason(origin: {
+  voided?: boolean;
+  stage: 'accepted' | 'rejected' | 'observed' | 'pending' | 'sent' | 'error';
+}): string | null {
+  if (origin.voided) return 'Este comprobante ya fue anulado.';
+  if (origin.stage === 'accepted') return null;
+  if (origin.stage === 'rejected')
+    return 'SUNAT rechazó este comprobante. Reemplázalo en lugar de emitir una nota de crédito.';
+  return 'SUNAT aún no aceptó este comprobante. Una nota de crédito solo se emite sobre uno aceptado.';
+}
+
 export function returnAllLines(lines: readonly OriginLine[]): Returns {
   return Object.fromEntries(lines.map((line) => [line.lineNumber, line.quantity]));
 }

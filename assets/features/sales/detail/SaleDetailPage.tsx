@@ -16,6 +16,7 @@ import {
   useTheme,
 } from '@nubitio/ui';
 import { httpClient } from '@shared/api/HttpClient';
+import { hydraMembers, type HydraCollection } from '@shared/api/hydraCollection';
 import { hasPermission } from '@shared/permissions';
 import { useSessionInfo } from '@shared/sessionInfo';
 import toast from '@shared/lib/SharedUtils';
@@ -33,10 +34,6 @@ import {
 } from './saleDetailModel';
 import './SaleDetailPage.scss';
 import { TaxDocumentPanel } from '../sunat/TaxDocumentPanel';
-
-function collection<T>(data: T[] | { member?: T[]; 'hydra:member'?: T[] }): T[] {
-  return Array.isArray(data) ? data : (data.member ?? data['hydra:member'] ?? []);
-}
 
 export function SaleDetailPage() {
   const { id = '' } = useParams();
@@ -56,12 +53,8 @@ export function SaleDetailPage() {
   const itemsQuery = useQuery({
     queryKey: ['sales', 'detail-items', currentBranchId, id],
     queryFn: async () =>
-      collection(
-        (
-          await httpClient.get<
-            SaleDetailItem[] | { member?: SaleDetailItem[]; 'hydra:member'?: SaleDetailItem[] }
-          >(saleEndpoints.items(id))
-        ).data,
+      hydraMembers(
+        (await httpClient.get<HydraCollection<SaleDetailItem>>(saleEndpoints.items(id))).data,
       ).sort((a, b) => a.lineNo - b.lineNo),
     enabled: saleQuery.isSuccess && canView,
     retry: false,
