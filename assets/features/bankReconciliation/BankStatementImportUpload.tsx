@@ -114,17 +114,7 @@ export const BankStatementImportUpload = () => {
         {status === 'idle' && (
           <>
             <div className="mb-3">
-              <FormField
-                label={
-                  <>
-                    Cuenta bancaria{' '}
-                    <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>
-                      *
-                    </span>
-                  </>
-                }
-                htmlFor="bank-statement-import-account"
-              >
+              <FormField label="Cuenta bancaria" required htmlFor="bank-statement-import-account">
                 <EntityDropdown
                   url={API + 'bank-accounts'}
                   value={bankAccountId}
@@ -157,14 +147,8 @@ export const BankStatementImportUpload = () => {
 
             <div className="mb-3">
               <FormField
-                label={
-                  <>
-                    Archivo (.xlsx o .csv){' '}
-                    <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>
-                      *
-                    </span>
-                  </>
-                }
+                label="Archivo (.xlsx o .csv)"
+                required
                 htmlFor="bank-statement-import-file"
               >
                 <input

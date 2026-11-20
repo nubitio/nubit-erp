@@ -82,27 +82,6 @@ export function defaultReturnQuantity(line: OriginLine): string {
   return sold !== null && sold < 10n ** BigInt(MICRO) ? line.quantity : '1';
 }
 
-/**
- * The quantity after pressing + or −, or null when it reaches zero (the line is unchecked).
- * Moves by one but never past what was sold, so a 0.5 line reaches 0.5 and 2.5 reaches 2.5.
- */
-export function stepReturnQuantity(
-  line: OriginLine,
-  current: string | undefined,
-  delta: 1 | -1,
-): string | null {
-  const max = toMicro(line.quantity);
-  const now = toMicro(current ?? '0');
-  if (max === null || now === null) return null;
-  const one = 10n ** BigInt(MICRO);
-  let next = now + (delta === 1 ? one : -one);
-  if (next > max) next = max;
-  if (next <= 0n) return null;
-  const whole = next / one;
-  const fraction = (next % one).toString().padStart(MICRO, '0').replace(/0+$/, '');
-  return fraction ? `${whole}.${fraction}` : String(whole);
-}
-
 /** Why a credit note cannot be issued against this document, or null when it can. */
 export function creditNoteBlockedReason(origin: {
   voided?: boolean;

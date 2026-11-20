@@ -132,17 +132,7 @@ export const CollectPaymentDialog = ({
           }}
         >
           <div className="mb-3">
-            <FormField
-              label={
-                <>
-                  Monto{' '}
-                  <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>
-                    *
-                  </span>
-                </>
-              }
-              htmlFor="receivable-payment-amount"
-            >
+            <FormField label="Monto" required htmlFor="receivable-payment-amount">
               <TextField
                 value={amountValue}
                 onChange={(event) => setAmountValue(event.target.value)}
@@ -158,17 +148,7 @@ export const CollectPaymentDialog = ({
           </div>
 
           <div className="mb-3">
-            <FormField
-              label={
-                <>
-                  Método de pago{' '}
-                  <span aria-hidden="true" style={{ color: 'var(--error-color)' }}>
-                    *
-                  </span>
-                </>
-              }
-              htmlFor="receivable-payment-method"
-            >
+            <FormField label="Método de pago" required htmlFor="receivable-payment-method">
               <EntityDropdown
                 url={API + 'payment-methods'}
                 filters={[
