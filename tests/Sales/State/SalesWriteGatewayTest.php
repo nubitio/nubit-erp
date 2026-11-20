@@ -123,6 +123,29 @@ class SalesWriteGatewayTest extends TestCase
 
     // ── write() guard tests ───────────────────────────────────────────────────
 
+    public function testOpenSessionLookupPrefersTheOperationsBranchAndBreaksTiesById(): void
+    {
+        $this->connection
+            ->expects(self::once())
+            ->method('fetchOne')
+            ->willReturnCallback(static function (string $sql, array $params): int {
+                self::assertSame(['user_id' => 2, 'branch_id' => 'branch-a'], $params);
+                self::assertStringContainsString('(cr.branch_id = :branch_id) DESC', $sql);
+                self::assertStringContainsString('cs.opened_at DESC, cs.id DESC', $sql);
+
+                return 7;
+            });
+
+        self::assertSame(7, $this->gateway->findOpenCashSessionIdForUser(2, 'branch-a'));
+    }
+
+    public function testOpenSessionLookupReturnsNullWhenNoSessionIsOpen(): void
+    {
+        $this->connection->method('fetchOne')->willReturn(false);
+
+        self::assertNull($this->gateway->findOpenCashSessionIdForUser(2));
+    }
+
     public function testWriteThrowsWhenSaleIdIsNull(): void
     {
         // Partial mock so getCreatedBy() returns null safely (property is int, cannot be null)

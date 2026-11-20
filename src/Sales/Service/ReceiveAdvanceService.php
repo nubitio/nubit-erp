@@ -9,6 +9,7 @@ use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Enum\SettlementBehavior;
 use App\Efact\Domain\Money;
 use App\Efact\Observability\OperationLog;
+use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Entity\User;
 use App\Sales\Dto\CustomerAdvanceReceipt;
 use App\Sales\Repository\CustomerAccountEntryRepository;
@@ -38,6 +39,7 @@ readonly class ReceiveAdvanceService
         private MessageBusInterface $messageBus,
         private OperationLog $operationLog,
         private ?TreasuryReceipts $treasuryReceipts = null,
+        private ?BranchContextServiceInterface $branchContext = null,
     ) {}
 
     public function receive(
@@ -66,7 +68,10 @@ readonly class ReceiveAdvanceService
         $isCash = $paymentMethod->getId() === PaymentMethod::CASH;
         $cashSessionId = null;
         if ($isCash) {
-            $cashSessionId = $this->salesWriteGateway->findOpenCashSessionIdForUser((int) $createdBy->getId());
+            $cashSessionId = $this->salesWriteGateway->findOpenCashSessionIdForUser(
+                (int) $createdBy->getId(),
+                $this->branchContext?->getCurrentBranchId(),
+            );
             if ($cashSessionId === null) {
                 throw new UnprocessableEntityHttpException('Abre tu caja para registrar anticipos en efectivo.');
             }

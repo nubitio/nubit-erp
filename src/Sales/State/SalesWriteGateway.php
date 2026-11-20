@@ -562,16 +562,21 @@ readonly class SalesWriteGateway
      *
      * @throws Exception
      */
-    public function findOpenCashSessionIdForUser(int $userId): ?int
+    public function findOpenCashSessionIdForUser(int $userId, ?string $branchId = null): ?int
     {
+        // A user can hold an open session in more than one branch. The money must land in the drawer of the
+        // branch the operation belongs to, so that one wins; without a branch the latest session is used, and
+        // `id` settles two sessions opened in the same second instead of leaving the pick to the database.
         $id = $this->connection->fetchOne(
             <<<'SQL'
-                SELECT id FROM cash_sessions
-                WHERE opened_by = :user_id AND status = 'OPEN'
-                ORDER BY opened_at DESC
+                SELECT cs.id
+                FROM cash_sessions cs
+                LEFT JOIN cash_register cr ON cr.id = cs.cash_register_id
+                WHERE cs.opened_by = :user_id AND cs.status = 'OPEN'
+                ORDER BY (cr.branch_id = :branch_id) DESC, cs.opened_at DESC, cs.id DESC
                 LIMIT 1
                 SQL,
-            ['user_id' => $userId],
+            ['user_id' => $userId, 'branch_id' => $branchId],
         );
 
         return $id === false || $id === null ? null : (int) $id;

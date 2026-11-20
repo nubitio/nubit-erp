@@ -101,7 +101,9 @@ readonly class CollectOnAccountService
 
         $currency = $plan[0]['sale']->getCurrency() !== '' ? $plan[0]['sale']->getCurrency() : 'PEN';
         $isCash = $paymentMethod->getId() === PaymentMethod::CASH;
-        $cashSessionId = $isCash ? $this->resolveCashSession($createdBy) : null;
+        $cashSessionId = $isCash
+            ? $this->resolveCashSession($createdBy, $plan[0]['sale']->getBranch()?->getId())
+            : null;
 
         $collectionId ??= Uuid::v4()->toRfc4122();
         $description = sprintf('Cobro a cuenta cliente #%d', $customerId);
@@ -217,9 +219,9 @@ readonly class CollectOnAccountService
         }
     }
 
-    private function resolveCashSession(User $createdBy): int
+    private function resolveCashSession(User $createdBy, ?string $branchId): int
     {
-        $cashSessionId = $this->salesWriteGateway->findOpenCashSessionIdForUser((int) $createdBy->getId());
+        $cashSessionId = $this->salesWriteGateway->findOpenCashSessionIdForUser((int) $createdBy->getId(), $branchId);
         if ($cashSessionId === null) {
             throw new UnprocessableEntityHttpException('Abre tu caja para registrar cobros en efectivo.');
         }
