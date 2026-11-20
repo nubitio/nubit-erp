@@ -31,6 +31,8 @@ desktop.ini
 /.env.local.php
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
+# Symfony-generated PHP config IDE reference; this project uses YAML configs.
+/config/reference.php
 /public/bundles/
 /var/
 /test-results/

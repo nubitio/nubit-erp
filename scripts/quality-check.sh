@@ -39,9 +39,6 @@ docker exec "$WEB_CONTAINER" mago fmt --check
 echo "==> [backend] platform boundary guard"
 docker exec "$WEB_CONTAINER" php scripts/architecture/check-platform-boundary.php
 
-echo "==> [backend] generated Symfony reference artifacts"
-docker exec "$WEB_CONTAINER" sh scripts/ci/check-generated-artifacts.sh
-
 echo "==> [backend] architecture rules (phparkitect AR-001…AR-010)"
 docker exec "$WEB_CONTAINER" composer check:architecture
 

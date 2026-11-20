@@ -9,7 +9,6 @@ parameters:
         - src/
         - tests/
     excludePaths:
-        - config/reference.php
         - migrations/
         - migrations_control_plane/
         - tests/Unit/CashRegister/CashSessionDomainTest.php
