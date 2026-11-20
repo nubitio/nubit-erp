@@ -2,12 +2,6 @@ variant = "loose"
 
 [[issues]]
 file = "src/AI/Briefing/DailyBriefingService.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\AI\Briefing\DailyBriefingService::fetchTopProducts`: expected `list<array{'product': string, 'total': float}>`, but found `array<int, array{'product': string, 'total': float}>|list<array{'product': string, 'total': float}>`.'''
-count = 1
-
-[[issues]]
-file = "src/AI/Briefing/DailyBriefingService.php"
 code = "invalid-type-cast"
 message = "Casting `mixed` to `float`."
 count = 2
@@ -320,12 +314,6 @@ count = 1
 
 [[issues]]
 file = "src/AI/Tool/ProposeCreditNoteTool.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\AI\Tool\ProposeCreditNoteTool::proposeCreditNote`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
-count = 1
-
-[[issues]]
-file = "src/AI/Tool/ProposeCreditNoteTool.php"
 code = "invalid-type-cast"
 message = "Casting `mixed` to `float`."
 count = 1
@@ -356,12 +344,6 @@ count = 1
 
 [[issues]]
 file = "src/AI/Tool/ProposeCustomerTool.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\AI\Tool\ProposeCustomerTool::proposeCustomer`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
-count = 1
-
-[[issues]]
-file = "src/AI/Tool/ProposeCustomerTool.php"
 code = "redundant-comparison"
 message = "Redundant `!==` comparison: left-hand side is always not identical to right-hand side."
 count = 1
@@ -374,32 +356,8 @@ count = 1
 
 [[issues]]
 file = "src/AI/Tool/ProposeOnboardingFillTool.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\AI\Tool\ProposeOnboardingFillTool::proposeOnboardingFill`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
-count = 1
-
-[[issues]]
-file = "src/AI/Tool/ProposeOnboardingFillTool.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
-file = "src/AI/Tool/ProposeProductFromImageTool.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\AI\Tool\ProposeProductFromImageTool::proposeProductFromImage`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
-count = 1
-
-[[issues]]
-file = "src/AI/Tool/ProposeProductTool.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\AI\Tool\ProposeProductTool::proposeProduct`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
-count = 1
-
-[[issues]]
-file = "src/AI/Tool/ProposeReplaceRejectedTool.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\AI\Tool\ProposeReplaceRejectedTool::proposeReplaceRejected`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
 count = 1
 
 [[issues]]
@@ -412,12 +370,6 @@ count = 1
 file = "src/AI/Tool/ProposeSaleTool.php"
 code = "invalid-operand"
 message = "Invalid type for left operand."
-count = 1
-
-[[issues]]
-file = "src/AI/Tool/ProposeSaleTool.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\AI\Tool\ProposeSaleTool::proposeSale`: expected `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`, but found `array<string, mixed>`.'''
 count = 1
 
 [[issues]]
@@ -584,45 +536,9 @@ count = 1
 
 [[issues]]
 file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "invalid-argument"
-message = '''Invalid argument type for argument #1 of `array_map`: expected `(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}): App\CashRegister\Entity\CashMovement)|(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}, ('S.array_map() extends mixed)): App\CashRegister\Entity\CashMovement)|null`, but found `(closure(array{'amount': string, 'cash_session_id': int|null|string, 'category_id': int|null|string, 'created_at': string, 'description': null|string, 'id': int|string, 'movement_type': string}): App\CashRegister\Entity\CashMovement)`.'''
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
 code = "invalid-return-statement"
 message = '''Invalid return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::cashMovementCandidates`: expected `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|string, 'sourceType': string}>`, but found `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|null, 'sourceType': string('cash_movement')}>`.'''
 count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::salePaymentCandidates`: expected `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|string, 'sourceType': string}>`, but found `array<array-key, array{'date': DateTimeImmutable&static, 'label': string, 'sourceId': int|null, 'sourceType': string('sale_payment')}>|list<array{'date': DateTimeImmutable&static, 'label': string, 'sourceId': int|null, 'sourceType': string('sale_payment')}>`.'''
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::supplierPaymentCandidates`: expected `list<array{'date': DateTimeImmutable, 'label': string, 'sourceId': int|string, 'sourceType': string}>`, but found `array<array-key, array{'date': DateTimeImmutable&static, 'label': string, 'sourceId': int|null, 'sourceType': string('supplier_payment')}>|list<array{'date': DateTimeImmutable&static, 'label': string, 'sourceId': int|null, 'sourceType': string('supplier_payment')}>`.'''
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "mixed-argument"
-message = '''Invalid argument type for argument #2 of `array_map`: expected `array<('K.array_map() extends array-key), App\AccountsPayable\Entity\SupplierPayment>`, but found `mixed`.'''
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "mixed-argument"
-message = '''Invalid argument type for argument #2 of `array_map`: expected `array<('K.array_map() extends array-key), App\Sales\Entity\SalePayment>`, but found `mixed`.'''
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 2
 
 [[issues]]
 file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
@@ -634,12 +550,6 @@ count = 1
 file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
 code = "mixed-return-statement"
 message = 'Could not infer a precise return type for function `App\BankReconciliation\Service\BankReconciliationMatchingService::unreconciledSupplierPayments`. Saw type `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/BankReconciliation/Service/BankReconciliationMatchingService.php"
-code = "possibly-invalid-argument"
-message = '''Possible argument type mismatch for argument #1 of `App\CashRegister\Service\CashMovementHydrator::fromRow`: expected `array{'amount': string, 'cash_session_id': int|null|string, 'category_id': int|null|string, 'created_at': string, 'description': null|string, 'id': int|string, 'movement_type': string}`, but possibly received `array<string, mixed>`.'''
 count = 1
 
 [[issues]]
@@ -692,39 +602,9 @@ count = 1
 
 [[issues]]
 file = "src/Billing/Consult/Infrastructure/SunatRucScraper.php"
-code = "mixed-argument"
-message = "Invalid argument type for argument #1 of `trim`: expected `string`, but found `mixed`."
-count = 4
-
-[[issues]]
-file = "src/Billing/Consult/Infrastructure/SunatRucScraper.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 4
-
-[[issues]]
-file = "src/Billing/Consult/Infrastructure/SunatRucScraper.php"
-code = "non-existent-property"
-message = "Property `$childNodes` does not exist on class `DOMNameSpaceNode`."
-count = 1
-
-[[issues]]
-file = "src/Billing/Consult/Infrastructure/SunatRucScraper.php"
-code = "non-existent-property"
-message = "Property `$textContent` does not exist on class `DOMNameSpaceNode`."
-count = 4
-
-[[issues]]
-file = "src/Billing/Consult/Infrastructure/SunatRucScraper.php"
-code = "possibly-invalid-argument"
-message = '''Possible argument type mismatch for argument #2 of `App\Billing\Consult\Infrastructure\SunatRucScraper::extractFromItem`: expected `DOMNode`, but possibly received `('TNode.domnodelist extends DOMNameSpaceNode|DOMNode)`.'''
-count = 1
-
-[[issues]]
-file = "src/Billing/Consult/Infrastructure/SunatRucScraper.php"
-code = "possibly-null-property-access"
-message = "Attempting to access a property on a possibly `null` value."
-count = 4
+count = 3
 
 [[issues]]
 file = "src/Billing/Consult/Infrastructure/SunatRucScraper.php"
@@ -907,12 +787,6 @@ message = "Assigning `mixed` type to a variable may lead to unexpected behavior.
 count = 1
 
 [[issues]]
-file = "src/Billing/Controller/VoucherSearchController.php"
-code = "possibly-false-argument"
-message = "Argument #2 of function `date` is possibly `false`, but parameter type `int|null` does not accept it."
-count = 1
-
-[[issues]]
 file = "src/Billing/Despatch/Builder/DespatchBuilder.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
@@ -983,18 +857,6 @@ file = "src/Billing/Extension/RemoteEscposImage.php"
 code = "non-existent-class"
 message = "Class `ImagickPixel` not found."
 count = 1
-
-[[issues]]
-file = "src/Billing/Extension/RemoteEscposImage.php"
-code = "possibly-false-argument"
-message = "Argument #4 of function `imagefill` is possibly `false`, but parameter type `int` does not accept it."
-count = 1
-
-[[issues]]
-file = "src/Billing/Extension/RemoteEscposImage.php"
-code = "possibly-false-argument"
-message = "Argument #4 of function `imagesetpixel` is possibly `false`, but parameter type `int` does not accept it."
-count = 2
 
 [[issues]]
 file = "src/Billing/Invoice/Api/VoucherProvider.php"
@@ -1234,12 +1096,6 @@ count = 1
 file = "src/Billing/Repository/TaxDocumentEventRepository.php"
 code = "incompatible-readonly-modifier"
 message = 'Cannot redeclare readonly property `Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository::$registry` as non-readonly `App\Billing\Repository\TaxDocumentEventRepository::$registry`.'
-count = 1
-
-[[issues]]
-file = "src/Billing/Repository/TaxDocumentEventRepository.php"
-code = "possibly-false-argument"
-message = 'Argument #1 of method `App\Billing\Entity\TaxDocumentEvent::setPayloadJson` is possibly `false`, but parameter type `null|string` does not accept it.'
 count = 1
 
 [[issues]]
@@ -1831,24 +1687,6 @@ message = 'Could not infer a precise return type for function `App\CashRegister\
 count = 1
 
 [[issues]]
-file = "src/CashRegister/Service/CashMovementHydrator.php"
-code = "possibly-invalid-argument"
-message = '''Possible argument type mismatch for argument #1 of `App\CashRegister\Service\CashMovementHydrator::fromRow`: expected `array{'amount': string, 'cash_session_id': int|null|string, 'category_id': int|null|string, 'created_at': string, 'description': null|string, 'id': int|string, 'movement_type': string}`, but possibly received `array<string, mixed>`.'''
-count = 1
-
-[[issues]]
-file = "src/CashRegister/Service/CashMovementHydrator.php"
-code = "redundant-cast"
-message = "Redundant cast to `(string)`: the expression already has this type."
-count = 3
-
-[[issues]]
-file = "src/CashRegister/State/CashMovementCollectionProvider.php"
-code = "invalid-argument"
-message = '''Invalid argument type for argument #1 of `array_map`: expected `(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}): App\CashRegister\Entity\CashMovement)|(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}, ('S.array_map() extends mixed)): App\CashRegister\Entity\CashMovement)|null`, but found `(closure(array{'amount': string, 'cash_session_id': int|null|string, 'category_id': int|null|string, 'created_at': string, 'description': null|string, 'id': int|string, 'movement_type': string}): App\CashRegister\Entity\CashMovement)`.'''
-count = 1
-
-[[issues]]
 file = "src/CashRegister/State/CashMovementCollectionProvider.php"
 code = "mixed-assignment"
 message = "Assigning `nonnull` type to a variable may lead to unexpected behavior."
@@ -1895,12 +1733,6 @@ file = "src/CashRegister/State/CashRegisterCloseProcessor.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
 count = 2
-
-[[issues]]
-file = "src/CashRegister/State/CashRegisterDashboardProvider.php"
-code = "docblock-type-mismatch"
-message = 'Docblock return type `ApiPlatform\State\Pagination\PartialPaginatorInterface<App\CashRegister\Dto\CashRegisterDashboardDto>|App\CashRegister\Dto\CashRegisterDashboardDto|iterable<mixed, App\CashRegister\Dto\CashRegisterDashboardDto>|null` is incompatible with native return type `array<array-key, mixed>|null|object`.'
-count = 1
 
 [[issues]]
 file = "src/CashRegister/State/CashRegisterDashboardProvider.php"
@@ -1982,12 +1814,6 @@ count = 2
 
 [[issues]]
 file = "src/CashRegister/State/CashSessionMovementsProvider.php"
-code = "invalid-argument"
-message = '''Invalid argument type for argument #1 of `array_map`: expected `(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}): App\CashRegister\Entity\CashMovement)|(callable(array<string, mixed>|array{'amount': mixed, 'cash_session_id': mixed, 'category_id': mixed, 'created_at': mixed, 'description': mixed, 'id': mixed, 'movement_type': mixed}, ('S.array_map() extends mixed)): App\CashRegister\Entity\CashMovement)|null`, but found `(closure(array{'amount': string, 'cash_session_id': int|null|string, 'category_id': int|null|string, 'created_at': string, 'description': null|string, 'id': int|string, 'movement_type': string}): App\CashRegister\Entity\CashMovement)`.'''
-count = 1
-
-[[issues]]
-file = "src/CashRegister/State/CashSessionMovementsProvider.php"
 code = "mixed-argument"
 message = "Invalid argument type for argument #2 of `sprintf`: expected `Stringable|null|scalar`, but found `mixed`."
 count = 1
@@ -2041,24 +1867,6 @@ message = "Possibly null left operand used in string concatenation (type `null|s
 count = 1
 
 [[issues]]
-file = "src/Catalog/Entity/ProductBomItem.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bcmul`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Catalog/Entity/ProductBomItem.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcmul`: expected `numeric-string`, but possibly received `string`."
-count = 2
-
-[[issues]]
-file = "src/Catalog/Entity/UnitOfMeasure.php"
-code = "invalid-return-statement"
-message = 'Invalid return type for function `App\Catalog\Entity\UnitOfMeasure::getRatio`: expected `string`, but found `float|int|string`.'
-count = 1
-
-[[issues]]
 file = "src/Catalog/Repository/ProductBomItemRepository.php"
 code = "mixed-return-statement"
 message = 'Could not infer a precise return type for function `App\Catalog\Repository\ProductBomItemRepository::findByParent`. Saw type `mixed`.'
@@ -2089,18 +1897,6 @@ message = "Invalid right operand: type `mixed` cannot be reliably used in string
 count = 2
 
 [[issues]]
-file = "src/Catalog/Service/ProductImportProcessorService.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #1 of `App\Catalog\Entity\Product::setCategory`: expected `App\Catalog\Entity\Category`, but possibly received `App\Catalog\Entity\Category|App\Catalog\Entity\UnitOfMeasure`.'
-count = 1
-
-[[issues]]
-file = "src/Catalog/Service/ProductImportProcessorService.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #4 of `App\Catalog\Service\ProductImportProcessorService::processRow`: expected `array<string, App\Catalog\Entity\UnitOfMeasure>`, but possibly received `array<string, App\Catalog\Entity\Category|App\Catalog\Entity\UnitOfMeasure>`.'
-count = 1
-
-[[issues]]
 file = "src/Catalog/Service/ProductImportTemplateService.php"
 code = "invalid-operand"
 message = "Invalid type for left operand."
@@ -2123,12 +1919,6 @@ file = "src/Catalog/State/ProductStockController.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 2
-
-[[issues]]
-file = "src/ControlPlane/Admin/Security/ControlPlaneUser.php"
-code = "invalid-return-statement"
-message = 'Invalid return type for function `App\ControlPlane\Admin\Security\ControlPlaneUser::getUserIdentifier`: expected `non-empty-string`, but found `string`.'
-count = 1
 
 [[issues]]
 file = "src/ControlPlane/Admin/Security/ControlPlaneUserProvider.php"
@@ -2159,12 +1949,6 @@ file = "src/ControlPlane/Admin/User/AdminUserRepository.php"
 code = "mixed-operand"
 message = "Casting `mixed` to `bool`."
 count = 1
-
-[[issues]]
-file = "src/ControlPlane/Backup/BinlogBackupService.php"
-code = "array-to-string-conversion"
-message = "Potentially casting `array` to `string`."
-count = 3
 
 [[issues]]
 file = "src/ControlPlane/Backup/BinlogBackupService.php"
@@ -2366,12 +2150,6 @@ count = 1
 
 [[issues]]
 file = "src/ControlPlane/Dashboard/DashboardService.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\ControlPlane\Dashboard\DashboardService::getRecentAuditSummary`: expected `array<int, array{'action': string, 'count': int}>`, but found `list<array<string, mixed>>`.'''
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Dashboard/DashboardService.php"
 code = "less-specific-return-statement"
 message = 'Returned type `object` is less specific than the declared return type `Doctrine\DBAL\Connection` for function `App\ControlPlane\Dashboard\DashboardService::getConnection`.'
 count = 1
@@ -2443,18 +2221,6 @@ message = "Casting `mixed` to `bool`."
 count = 1
 
 [[issues]]
-file = "src/ControlPlane/Operator/Api/AdminUserApiController.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #2 of `App\ControlPlane\Operator\Application\AdminUserOperatorService::updateUser`: expected `list<string>`, but possibly received `array<array-key, mixed>`.'
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Operator/Api/AdminUserApiController.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #4 of `App\ControlPlane\Operator\Application\AdminUserOperatorService::createUser`: expected `list<string>`, but possibly received `array<array-key, mixed>`.'
-count = 1
-
-[[issues]]
 file = "src/ControlPlane/Operator/Api/PlanApiController.php"
 code = "mixed-operand"
 message = "Casting `mixed` to `bool`."
@@ -2498,12 +2264,6 @@ count = 2
 
 [[issues]]
 file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
-code = "invalid-return-statement"
-message = 'Invalid return type for function `App\ControlPlane\Operator\Application\AdminUserOperatorService::listUsers`: expected `list<array<string, mixed>>`, but found `array<int, array<string, mixed>>|list<array<string, mixed>>`.'
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Operator/Application/AdminUserOperatorService.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 2
@@ -2534,24 +2294,6 @@ count = 8
 
 [[issues]]
 file = "src/ControlPlane/Operator/Application/TenantDetailQueryService.php"
-code = "invalid-return-statement"
-message = 'Invalid return type for function `App\ControlPlane\Operator\Application\TenantDetailQueryService::loadBackups`: expected `list<array<string, mixed>>`, but found `array<int, array<string, mixed>>`.'
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Operator/Application/TenantDetailQueryService.php"
-code = "invalid-return-statement"
-message = 'Invalid return type for function `App\ControlPlane\Operator\Application\TenantDetailQueryService::loadPaymentEvents`: expected `list<array<string, mixed>>`, but found `array<int, array<string, mixed>>`.'
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Operator/Application/TenantDetailQueryService.php"
-code = "invalid-return-statement"
-message = 'Invalid return type for function `App\ControlPlane\Operator\Application\TenantDetailQueryService::loadProvisions`: expected `list<array<string, mixed>>`, but found `array<int, array<string, mixed>>`.'
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Operator/Application/TenantDetailQueryService.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
@@ -2560,12 +2302,6 @@ count = 1
 file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
 code = "less-specific-return-statement"
 message = '''Returned type `array<string, non-empty-array<string, array{'config': array<array-key, mixed>, 'enabled': bool, 'recipients': list<truthy-string>, 'severity': string}>>` is less specific than the declared return type `array<string, array<string, array{'config': array<string, mixed>, 'enabled': bool, 'recipients': list<string>, 'severity': string}>>` for function `App\ControlPlane\Operator\Application\TenantNotificationQueryService::parseTargetsPayload`.'''
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Operator/Application/TenantNotificationQueryService.php"
-code = "less-specific-return-statement"
-message = '''Returned type `array{'channels': list<string>, 'eventDefinitions': array<string, array{'label': string, 'severity': string}>, 'matrix': array<string, non-empty-array<string, array{'config': array<array-key, mixed>, 'enabled': bool, 'recipients': array<array-key, mixed>, 'severity': string}>>}` is less specific than the declared return type `array{'channels': list<string>, 'eventDefinitions': array<string, array{'label': string, 'severity': string}>, 'matrix': array<string, array<string, array{'config': array<string, mixed>, 'enabled': bool, 'recipients': list<string>, 'severity': string}>>}` for function `App\ControlPlane\Operator\Application\TenantNotificationQueryService::getMatrix`.'''
 count = 1
 
 [[issues]]
@@ -2890,12 +2626,6 @@ count = 1
 file = "src/ControlPlane/Tenant/Infrastructure/Persistence/DbalTenantDomainRepository.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
-count = 1
-
-[[issues]]
-file = "src/ControlPlane/Tenant/Infrastructure/Persistence/DbalTenantRepository.php"
-code = "invalid-return-statement"
-message = 'Invalid return type for function `App\ControlPlane\Tenant\Infrastructure\Persistence\DbalTenantRepository::mapRows`: expected `list<App\ControlPlane\Tenant\Domain\Model\TenantSnapshot>`, but found `array<int, App\ControlPlane\Tenant\Domain\Model\TenantSnapshot>|list<App\ControlPlane\Tenant\Domain\Model\TenantSnapshot>`.'
 count = 1
 
 [[issues]]
@@ -3237,12 +2967,6 @@ count = 3
 [[issues]]
 file = "src/Efact/Util/ColorUtils.php"
 code = "invalid-return-statement"
-message = 'Invalid return type for function `App\Efact\Util\ColorUtils::hexToRgb`: expected `array<int, int>`, but found `list{float|int, float|int, float|int}`.'
-count = 1
-
-[[issues]]
-file = "src/Efact/Util/ColorUtils.php"
-code = "invalid-return-statement"
 message = 'Invalid return type for function `App\Efact\Util\ColorUtils::rgbToHsl`: expected `array<int, int>`, but found `list{float|int, float|int, float|int}`.'
 count = 1
 
@@ -3296,21 +3020,9 @@ count = 2
 
 [[issues]]
 file = "src/Efact/Validation/Validator.php"
-code = "invalid-return-statement"
-message = 'Invalid return type for function `App\Efact\Validation\Validator::getViolations`: expected `array<string, array<array-key, string>>`, but found `array<string, non-empty-list<Stringable|string>>`.'
-count = 1
-
-[[issues]]
-file = "src/Efact/Validation/Validator.php"
 code = "less-specific-nested-argument-type"
 message = 'Argument type mismatch for argument #2 of `Symfony\Component\Validator\Validator\ValidatorInterface::validate`: expected `Symfony\Component\Validator\Constraint|array<array-key, Symfony\Component\Validator\Constraint>|null`, but provided type `array<int, mixed>` is less specific.'
 count = 3
-
-[[issues]]
-file = "src/Efact/Validation/Validator.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #1 of `Nubit\Platform\Exception\ValidationException::withErrors`: expected `array<string, array<array-key, string>>`, but possibly received `array<string, non-empty-list<Stringable|string>>`.'
-count = 1
 
 [[issues]]
 file = "src/Efact/Validator/UniqueEntity.php"
@@ -3442,18 +3154,6 @@ count = 1
 file = "src/Identity/Entity/User.php"
 code = "invalid-property-assignment-value"
 message = 'Invalid type for property `$role`: expected `App\Identity\Entity\Role`, but got `App\Identity\Entity\Role|null`.'
-count = 1
-
-[[issues]]
-file = "src/Identity/Entity/User.php"
-code = "invalid-return-statement"
-message = '''Invalid return type for function `App\Identity\Entity\User::getRoles`: expected `list<string>`, but found `array<non-negative-int, string('ROLE_ADMIN')|string('ROLE_CASHIER')|string('ROLE_SUPER_ADMIN')|string('ROLE_USER')>`.'''
-count = 1
-
-[[issues]]
-file = "src/Identity/Entity/User.php"
-code = "invalid-return-statement"
-message = 'Invalid return type for function `App\Identity\Entity\User::getUserIdentifier`: expected `non-empty-string`, but found `string`.'
 count = 1
 
 [[issues]]
@@ -3610,7 +3310,7 @@ count = 1
 file = "src/Inventory/Adapter/InventoryServiceSalesInventoryPort.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
-count = 2
+count = 1
 
 [[issues]]
 file = "src/Inventory/Adapter/InventoryServiceSalesInventoryPort.php"
@@ -3656,36 +3356,6 @@ count = 1
 
 [[issues]]
 file = "src/Inventory/Core/Service/LotDeductionService.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bcadd`: expected `numeric-string`, but possibly received `string`."
-count = 2
-
-[[issues]]
-file = "src/Inventory/Core/Service/LotDeductionService.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bccomp`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/Core/Service/LotDeductionService.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bcsub`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/Core/Service/LotDeductionService.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcadd`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/Core/Service/LotDeductionService.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcsub`: expected `numeric-string`, but possibly received `string`."
-count = 2
-
-[[issues]]
-file = "src/Inventory/Core/Service/LotDeductionService.php"
 code = "possibly-null-argument"
 message = 'Argument #1 of method `App\Inventory\Entity\StockLot::setProduct` is possibly `null`, but parameter type `App\Catalog\Entity\Product` does not accept it.'
 count = 1
@@ -3700,12 +3370,6 @@ count = 1
 file = "src/Inventory/Core/Service/ReconciliationService.php"
 code = "possibly-invalid-argument"
 message = "Possible argument type mismatch for argument #1 of `bccomp`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/Core/Service/StockRebuilderJob.php"
-code = "invalid-return-statement"
-message = 'Invalid return type for function `App\Inventory\Core\Service\StockRebuilderJob::rebuild`: expected `int`, but found `int|numeric-string`.'
 count = 1
 
 [[issues]]
@@ -3727,28 +3391,10 @@ message = "Non numeric string of type `string` implicitly cast to `float`."
 count = 2
 
 [[issues]]
-file = "src/Inventory/Entity/StockEntryItem.php"
-code = "invalid-return-statement"
-message = 'Invalid return type for function `App\Inventory\Entity\StockEntryItem::getQty`: expected `string`, but found `float|int|string`.'
-count = 1
-
-[[issues]]
-file = "src/Inventory/Entity/StockEntryItem.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bcadd`: expected `numeric-string`, but possibly received `string`."
-count = 2
-
-[[issues]]
 file = "src/Inventory/Entity/StockItem.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
 count = 3
-
-[[issues]]
-file = "src/Inventory/Entity/StockLot.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bcadd`: expected `numeric-string`, but possibly received `string`."
-count = 2
 
 [[issues]]
 file = "src/Inventory/Repository/ProductStockRepository.php"
@@ -3865,42 +3511,6 @@ message = "Non numeric string of type `string` implicitly cast to `float`."
 count = 2
 
 [[issues]]
-file = "src/Inventory/Service/FifoKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bccomp`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/Service/FifoKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bcsub`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/Service/FifoKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcadd`: expected `numeric-string`, but possibly received `string`."
-count = 4
-
-[[issues]]
-file = "src/Inventory/Service/FifoKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bccomp`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/Service/FifoKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcmul`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/Service/FifoKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcsub`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
 file = "src/Inventory/Service/InventorySummaryService.php"
 code = "invalid-type-cast"
 message = "Casting `mixed` to `float`."
@@ -4000,13 +3610,7 @@ count = 1
 file = "src/Inventory/Service/ProductStockService.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
-count = 3
-
-[[issues]]
-file = "src/Inventory/Service/ProductStockService.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #1 of `App\Inventory\Entity\ProductStock::setMinStock`: expected `float`, but possibly received `int(0)|string`.'
-count = 1
+count = 2
 
 [[issues]]
 file = "src/Inventory/Service/ProductStockService.php"
@@ -4015,34 +3619,10 @@ message = "Possible argument type mismatch for argument #1 of `bcsub`: expected 
 count = 1
 
 [[issues]]
-file = "src/Inventory/Service/ProductStockService.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcsub`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
 file = "src/Inventory/Service/WeightedAverageKardexValuator.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
 count = 2
-
-[[issues]]
-file = "src/Inventory/Service/WeightedAverageKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bcadd`: expected `numeric-string`, but possibly received `string`."
-count = 2
-
-[[issues]]
-file = "src/Inventory/Service/WeightedAverageKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcadd`: expected `numeric-string`, but possibly received `string`."
-count = 3
-
-[[issues]]
-file = "src/Inventory/Service/WeightedAverageKardexValuator.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcmul`: expected `numeric-string`, but possibly received `string`."
-count = 1
 
 [[issues]]
 file = "src/Inventory/State/PriceListApplyProvider.php"
@@ -4126,24 +3706,6 @@ count = 1
 file = "src/Inventory/State/StockEntryProcessor.php"
 code = "possible-method-access-on-null"
 message = "Attempting to call a method on `null`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/State/StockEntryProcessor.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bcsub`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/State/StockEntryProcessor.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcadd`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "src/Inventory/State/StockEntryProcessor.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bcsub`: expected `numeric-string`, but possibly received `string`."
 count = 1
 
 [[issues]]
@@ -4952,12 +4514,6 @@ count = 1
 
 [[issues]]
 file = "src/Sales/State/SaleProcessor.php"
-code = "possibly-undefined-string-array-index"
-message = "Possibly undefined array key 'message' accessed on `array{'invoiceId'?: string, 'message'?: string, 'success': false}`."
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleProcessor.php"
 code = "redundant-cast"
 message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
@@ -5006,20 +4562,8 @@ count = 1
 
 [[issues]]
 file = "src/Sales/State/SaleQuoteProvider.php"
-code = "generic-object-iteration"
-message = "Iterating over a generic `object`. This will iterate its public properties."
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleQuoteProvider.php"
 code = "impossible-condition"
 message = "This condition (type `false`) will always evaluate to false."
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleQuoteProvider.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 1
 
 [[issues]]
@@ -5032,12 +4576,6 @@ count = 1
 file = "src/Sales/State/SaleQuoteProvider.php"
 code = "possibly-invalid-argument"
 message = 'Possible argument type mismatch for argument #1 of `App\Sales\State\SaleQuoteProvider::expireStaleQuotes`: expected `array<array-key, App\Sales\Entity\SaleQuote>`, but possibly received `list{ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|App\Sales\Entity\SaleQuote}`.'
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleQuoteProvider.php"
-code = "possibly-null-iterator"
-message = 'Expression being iterated (type `ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|iterable<mixed, object>|null|object`) might be `null` at runtime.'
 count = 1
 
 [[issues]]
@@ -5060,12 +4598,6 @@ count = 1
 
 [[issues]]
 file = "src/Sales/State/SaleV2Provider.php"
-code = "generic-object-iteration"
-message = "Iterating over a generic `object`. This will iterate its public properties."
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleV2Provider.php"
 code = "less-specific-nested-argument-type"
 message = '''Argument type mismatch for argument #3 of `ApiPlatform\State\ProviderInterface::provide`: expected `array{'request'?: Symfony\Component\HttpFoundation\Request, 'resource_class'?: string, ...<string, mixed>}`, but provided type `array<string, mixed>` is less specific.'''
 count = 1
@@ -5078,20 +4610,8 @@ count = 1
 
 [[issues]]
 file = "src/Sales/State/SaleV2Provider.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleV2Provider.php"
 code = "possibly-invalid-argument"
 message = 'Possible argument type mismatch for argument #1 of `App\Sales\State\SaleV2Provider::enrichRecords`: expected `array<array-key, App\Sales\Entity\SaleRecord>`, but possibly received `list{ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|App\Sales\Entity\SaleRecord}`.'
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleV2Provider.php"
-code = "possibly-null-iterator"
-message = 'Expression being iterated (type `ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|iterable<mixed, object>|null|object`) might be `null` at runtime.'
 count = 1
 
 [[issues]]
@@ -5420,12 +4940,6 @@ count = 1
 
 [[issues]]
 file = "src/Setup/Service/TestDataSeeder.php"
-code = "invalid-operand"
-message = "Invalid type for left operand."
-count = 1
-
-[[issues]]
-file = "src/Setup/Service/TestDataSeeder.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
 count = 1
@@ -5450,27 +4964,9 @@ count = 1
 
 [[issues]]
 file = "src/Setup/Service/TestDataSeeder.php"
-code = "mixed-argument"
-message = "Invalid argument type for argument #1 of `number_format`: expected `float`, but found `mixed`."
-count = 1
-
-[[issues]]
-file = "src/Setup/Service/TestDataSeeder.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
-file = "src/Setup/Service/TestDataSeeder.php"
 code = "mixed-method-access"
 message = "Attempting to access a method on a non-object type (`mixed`)."
 count = 5
-
-[[issues]]
-file = "src/Setup/Service/TestDataSeeder.php"
-code = "mixed-operand"
-message = "Right operand in binary operation has type `mixed`."
-count = 2
 
 [[issues]]
 file = "src/Setup/Service/TestDataSeeder.php"
@@ -5500,12 +4996,6 @@ count = 1
 file = "src/Setup/Service/TestDataSeeder.php"
 code = "possibly-null-argument"
 message = 'Argument #1 of method `App\Inventory\Entity\ProductStock::setWarehouse` is possibly `null`, but parameter type `App\Inventory\Entity\Warehouse` does not accept it.'
-count = 1
-
-[[issues]]
-file = "src/Setup/Service/TestDataSeeder.php"
-code = "possibly-null-operand"
-message = "Left operand in arithmetic operation might be `null` (type `null|string`)."
 count = 1
 
 [[issues]]
@@ -5572,73 +5062,13 @@ count = 1
 file = "tests/AI/Tool/CustomerIntelligenceToolTest.php"
 code = "possibly-undefined-string-array-index"
 message = "Possibly undefined array key accessed on `array{'avg_ticket': float, 'customer_id': int, 'days_since_last_purchase': int, 'document_number': string, 'document_type': string, 'first_purchase_date': string, 'frequency': string, 'last_purchase_date': string, 'name': string, 'top_products': list<array{'product_name': string, 'qty': float, 'times_purchased': int}>, 'total_purchases': int, 'total_spent': float}|array{'error': string}`."
-count = 12
-
-[[issues]]
-file = "tests/AI/Tool/ProposeCreditNoteToolTest.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `PHPUnit\Framework\Assert::assertStringContainsString` is possibly `null`, but parameter type `string` does not accept it.'
-count = 3
-
-[[issues]]
-file = "tests/AI/Tool/ProposeCreditNoteToolTest.php"
-code = "possibly-undefined-string-array-index"
-message = "Possibly undefined array key accessed on `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`."
-count = 3
-
-[[issues]]
-file = "tests/AI/Tool/ProposeOnboardingFillToolTest.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `PHPUnit\Framework\Assert::assertStringContainsString` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
-file = "tests/AI/Tool/ProposeOnboardingFillToolTest.php"
-code = "possibly-undefined-string-array-index"
-message = "Possibly undefined array key accessed on `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`."
-count = 1
-
-[[issues]]
-file = "tests/AI/Tool/ProposeProductFromImageToolTest.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `PHPUnit\Framework\Assert::assertStringContainsString` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
-file = "tests/AI/Tool/ProposeProductFromImageToolTest.php"
-code = "possibly-undefined-string-array-index"
-message = "Possibly undefined array key accessed on `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`."
-count = 1
-
-[[issues]]
-file = "tests/AI/Tool/ProposeReplaceRejectedToolTest.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `PHPUnit\Framework\Assert::assertStringContainsString` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
-file = "tests/AI/Tool/ProposeReplaceRejectedToolTest.php"
-code = "possibly-undefined-string-array-index"
-message = "Possibly undefined array key accessed on `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`."
-count = 1
-
-[[issues]]
-file = "tests/AI/Tool/ProposeSaleToolTest.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `PHPUnit\Framework\Assert::assertStringContainsString` is possibly `null`, but parameter type `string` does not accept it.'
-count = 1
-
-[[issues]]
-file = "tests/AI/Tool/ProposeSaleToolTest.php"
-code = "possibly-undefined-string-array-index"
-message = "Possibly undefined array key accessed on `array{'error': string}|array{'id': string, 'kind': string, 'payload': array<string, mixed>, 'summary': string}`."
-count = 1
+count = 4
 
 [[issues]]
 file = "tests/AI/Tool/TaxDocumentToolsTest.php"
 code = "possibly-undefined-string-array-index"
 message = "Possibly undefined array key accessed on `array{'document_type': string, 'id': string, 'issue_date': string, 'number': string, 'sale_id': null|string, 'series': string, 'sunat_message': null|string, 'sunat_status': null|string, 'total': string}|array{'error': string}`."
-count = 2
+count = 1
 
 [[issues]]
 file = "tests/AI/ToolCoherenceTest.php"
@@ -5669,18 +5099,6 @@ file = "tests/Accounting/Service/DefaultPostingServiceTest.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
 count = 2
-
-[[issues]]
-file = "tests/Accounting/Service/DefaultPostingServiceTest.php"
-code = "possibly-undefined-string-array-index"
-message = "Possibly undefined array key 'credit' accessed on `array{'code': string, 'credit'?: string, 'debit'?: string, 'memo'?: string}`."
-count = 4
-
-[[issues]]
-file = "tests/Accounting/Service/DefaultPostingServiceTest.php"
-code = "possibly-undefined-string-array-index"
-message = "Possibly undefined array key 'debit' accessed on `array{'code': string, 'credit'?: string, 'debit'?: string, 'memo'?: string}`."
-count = 3
 
 [[issues]]
 file = "tests/Accounting/Service/DefaultPostingServiceTest.php"
@@ -5966,12 +5384,6 @@ count = 1
 
 [[issues]]
 file = "tests/Billing/State/TaxDocumentProcessorTest.php"
-code = "invalid-method-access"
-message = "Attempting to access a method on a non-object type (`false`)."
-count = 1
-
-[[issues]]
-file = "tests/Billing/State/TaxDocumentProcessorTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 1
@@ -6056,111 +5468,9 @@ count = 9
 
 [[issues]]
 file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "impossible-type-comparison"
-message = "Impossible type assertion: `$dto->cashShiftId` of type `null` can never be `int(42)`."
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "impossible-type-comparison"
-message = "Impossible type assertion: `$dto->cashier` of type `null` can never be `string('juan')`."
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "impossible-type-comparison"
-message = "Impossible type assertion: `$dto->id` of type `null` can never be `int(1)`."
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "impossible-type-comparison"
-message = "Impossible type assertion: `$dto->id` of type `null` can never be `int(2)`."
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "impossible-type-comparison"
-message = "Impossible type assertion: `$dto->name` of type `null` can never be `string('Caja 1')`."
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "impossible-type-comparison"
-message = "Impossible type assertion: `$dto->status` of type `null` can never be `string('closed')`."
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "impossible-type-comparison"
-message = "Impossible type assertion: `$dto->status` of type `null` can never be `string('open')`."
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "impossible-type-comparison"
-message = "Impossible type assertion: `$dto->todaySales` of type `null` can never be `string('0.00')`."
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "impossible-type-comparison"
-message = "Impossible type assertion: `$dto->todaySales` of type `null` can never be `string('1200.50')`."
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "invalid-array-access"
-message = 'Cannot access array index on object `ApiPlatform\State\Pagination\PartialPaginatorInterface<App\CashRegister\Dto\CashRegisterDashboardDto>` that does not implement `ArrayAccess`.'
-count = 3
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "invalid-array-access"
-message = 'Cannot access array index on object `App\CashRegister\Dto\CashRegisterDashboardDto` that does not implement `ArrayAccess`.'
-count = 3
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
 code = "less-specific-argument"
 message = 'Argument type mismatch for argument #1 of `App\Tests\CashRegister\State\CashRegisterDashboardProviderTest::makeProvider`: expected `array<int, array<string, mixed>>`, but provided type `array<array-key, array<string, mixed>>` is less specific.'
 count = 3
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "null-property-access"
-message = "Attempting to access a property on an expression that is always `null`."
-count = 15
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #2 of `PHPUnit\Framework\Assert::assertCount`: expected `Countable|iterable<mixed, mixed>`, but possibly received `ApiPlatform\State\Pagination\PartialPaginatorInterface<App\CashRegister\Dto\CashRegisterDashboardDto>|App\CashRegister\Dto\CashRegisterDashboardDto|iterable<mixed, App\CashRegister\Dto\CashRegisterDashboardDto>|null`.'
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "possibly-invalid-array-access"
-message = 'Cannot perform array access on value of type `iterable<mixed, App\CashRegister\Dto\CashRegisterDashboardDto>`.'
-count = 3
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `PHPUnit\Framework\Assert::assertCount` is possibly `null`, but parameter type `Countable|iterable<mixed, mixed>` does not accept it.'
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "possibly-null-array-access"
-message = "Cannot perform array access on possibly `null` value."
-count = 3
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterDashboardProviderTest.php"
-code = "redundant-null-coalesce"
-message = "Redundant null coalesce: left-hand side is always `null`."
-count = 1
 
 [[issues]]
 file = "tests/CashRegister/State/CashRegisterOpenProcessorTest.php"
@@ -6196,24 +5506,6 @@ count = 1
 file = "tests/CashRegister/State/CashSessionClosureSummaryProviderTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$cashRow`."
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashSessionMovementsProviderTest.php"
-code = "possible-method-access-on-null"
-message = "Attempting to call a method on `null`."
-count = 5
-
-[[issues]]
-file = "tests/CashRegister/State/CashSessionMovementsProviderTest.php"
-code = "possibly-null-array-access"
-message = "Cannot perform array access on possibly `null` value."
-count = 5
-
-[[issues]]
-file = "tests/CashRegister/State/CashSessionMovementsProviderTest.php"
-code = "possibly-null-iterator"
-message = 'Expression being iterated (type `array<array-key, App\CashRegister\Entity\CashMovement>|null`) might be `null` at runtime.'
 count = 1
 
 [[issues]]
@@ -6284,20 +5576,8 @@ count = 1
 
 [[issues]]
 file = "tests/ControlPlane/Certificate/CertificateLifecycleServiceTest.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `openssl_csr_sign`: expected `OpenSSLCertificateSigningRequest|string`, but possibly received `OpenSSLCertificateSigningRequest|resource`."
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Certificate/CertificateLifecycleServiceTest.php"
 code = "reference-to-undefined-variable"
 message = "Reference created from a previously undefined variable `$pem`."
-count = 1
-
-[[issues]]
-file = "tests/ControlPlane/Certificate/CertificateMetadataExtractorTest.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `openssl_csr_sign`: expected `OpenSSLCertificateSigningRequest|string`, but possibly received `OpenSSLCertificateSigningRequest|resource`."
 count = 1
 
 [[issues]]
@@ -6541,12 +5821,6 @@ message = "Assigning `mixed` type to a variable may lead to unexpected behavior.
 count = 1
 
 [[issues]]
-file = "tests/Identity/Controller/AuthSelectBranchControllerTest.php"
-code = "possibly-false-argument"
-message = 'Argument #7 of method `Symfony\Component\HttpFoundation\Request::create` is possibly `false`, but parameter type `null|resource|string` does not accept it.'
-count = 2
-
-[[issues]]
 file = "tests/Identity/EventSubscriber/BranchFilterSubscriberTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
@@ -6655,12 +5929,6 @@ message = "Casting `mixed` to `float`."
 count = 4
 
 [[issues]]
-file = "tests/Inventory/InventoryServiceIntegrationTest.php"
-code = "invalid-type-cast"
-message = "Non numeric string of type `string` implicitly cast to `float`."
-count = 7
-
-[[issues]]
 file = "tests/Inventory/Service/ProductStockServiceTest.php"
 code = "deprecated-class"
 message = 'Class `App\Inventory\Entity\ProductStock` is deprecated and should no longer be used.'
@@ -6689,18 +5957,6 @@ file = "tests/Inventory/State/StockEntryProcessorTest.php"
 code = "invalid-type-cast"
 message = "Non numeric string of type `string` implicitly cast to `float`."
 count = 4
-
-[[issues]]
-file = "tests/Inventory/State/StockEntryProcessorTest.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `bccomp`: expected `numeric-string`, but possibly received `string`."
-count = 1
-
-[[issues]]
-file = "tests/Inventory/State/StockEntryProcessorTest.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #2 of `bccomp`: expected `numeric-string`, but possibly received `string`."
-count = 1
 
 [[issues]]
 file = "tests/Onboarding/OpeningReceivableBranchDeduplicationTest.php"
@@ -6884,18 +6140,6 @@ count = 13
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "invalid-array-access"
-message = 'Cannot access array index on object `ApiPlatform\State\Pagination\PartialPaginatorInterface<App\CashRegister\Dto\CashRegisterDashboardDto>` that does not implement `ArrayAccess`.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "invalid-array-access"
-message = 'Cannot access array index on object `App\CashRegister\Dto\CashRegisterDashboardDto` that does not implement `ArrayAccess`.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "invalid-iterator"
 message = "The expression provided to `foreach` is not iterable. It resolved to type `mixed`, which is not iterable."
 count = 1
@@ -7034,27 +6278,9 @@ count = 3
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "null-property-access"
-message = "Attempting to access a property on an expression that is always `null`."
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "possible-method-access-on-null"
 message = "Attempting to call a method on `null`."
 count = 15
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #1 of `PHPUnit\Framework\Assert::assertStringStartsWith`: expected `non-empty-string`, but possibly received `string`.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "possibly-invalid-array-access"
-message = 'Cannot perform array access on value of type `iterable<mixed, App\CashRegister\Dto\CashRegisterDashboardDto>`.'
-count = 1
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
@@ -7138,12 +6364,6 @@ count = 1
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "possibly-null-argument"
 message = 'Argument #8 of method `App\Sales\State\SaleProcessor::__construct` is possibly `null`, but parameter type `Psr\Log\LoggerInterface` does not accept it.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "possibly-null-array-access"
-message = "Cannot perform array access on possibly `null` value."
 count = 1
 
 [[issues]]
@@ -7240,12 +6460,6 @@ count = 2
 file = "tests/ReleaseCritical/CorePurchasePathTest.php"
 code = "possible-method-access-on-null"
 message = "Attempting to call a method on `null`."
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #1 of `PHPUnit\Framework\Assert::assertStringStartsWith`: expected `non-empty-string`, but possibly received `string`.'
 count = 1
 
 [[issues]]
@@ -7376,12 +6590,6 @@ count = 1
 
 [[issues]]
 file = "tests/Sales/Report/SalesReportSpreadsheetColumnsTest.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #1 of `App\Tests\Sales\Report\SalesReportSpreadsheetColumnsTest::newReport`: expected `class-string<Nubit\Platform\Report\ExportableReportInterface>`, but possibly received `string`.'
-count = 2
-
-[[issues]]
-file = "tests/Sales/Report/SalesReportSpreadsheetColumnsTest.php"
 code = "unsafe-instantiation"
 message = 'Potentially unsafe instantiation: `class-string<Nubit\Platform\Report\ExportableReportInterface>` may contain the interface `Nubit\Platform\Report\ExportableReportInterface` itself, which cannot be instantiated.'
 count = 1
@@ -7415,18 +6623,6 @@ file = "tests/Sales/Repository/DashboardRepositoryTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 4
-
-[[issues]]
-file = "tests/Sales/Service/CustomerAccountLedgerTest.php"
-code = "possibly-null-array-index"
-message = "Possibly using `null` as an array index to access elementof variable $this->entries."
-count = 1
-
-[[issues]]
-file = "tests/Sales/Service/ReportGridFilterApplierTest.php"
-code = "possibly-false-argument"
-message = 'Argument #1 of method `Nubit\Platform\Report\GridFilterApplier::buildSql` is possibly `false`, but parameter type `string` does not accept it.'
-count = 8
 
 [[issues]]
 file = "tests/Sales/State/NegativeStockPolicyResolverTest.php"
@@ -7475,12 +6671,6 @@ file = "tests/Sales/State/SaleProcessorTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 10
-
-[[issues]]
-file = "tests/Sales/State/SaleProcessorTest.php"
-code = "possibly-invalid-argument"
-message = "Possible argument type mismatch for argument #1 of `ReflectionClass::__construct`: expected `('T.reflectionclass extends object)|class-string<'T.reflectionclass extends object>`, but possibly received `string`."
-count = 1
 
 [[issues]]
 file = "tests/Sales/State/SaleProcessorTest.php"
