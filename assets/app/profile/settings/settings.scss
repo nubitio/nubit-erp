@@ -137,6 +137,7 @@
 
 .settings-row__label {
   display: block;
+  overflow-wrap: anywhere;
   color: var(--text-primary);
   font-size: var(--font-size-md);
 }
@@ -404,4 +405,26 @@
     color: var(--text-secondary);
     font-size: var(--font-size-xs);
   }
+}
+
+// A row with a state and several actions: they wrap under the text on narrow widths.
+.settings-row--wrap {
+  flex-wrap: wrap;
+
+  .settings-row__text {
+    flex: 1 1 16rem;
+  }
+
+  .settings-row__control {
+    flex-shrink: 1;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+}
+
+// A short list of checkboxes inside a form field (permissions, events).
+.settings-checks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }

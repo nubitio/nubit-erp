@@ -27,15 +27,18 @@ export const SettingsRow = ({
   label,
   description,
   htmlFor,
+  wrap = false,
   children,
 }: {
   label: string;
   description?: ReactNode;
   /** Id of the control, so the label names it. */
   htmlFor?: string;
+  /** Lets several controls (a state and its actions) wrap under the text instead of overflowing. */
+  wrap?: boolean;
   children?: ReactNode;
 }) => (
-  <div className="settings-row">
+  <div className={wrap ? 'settings-row settings-row--wrap' : 'settings-row'}>
     <div className="settings-row__text">
       <label className="settings-row__label" htmlFor={htmlFor}>
         {label}
