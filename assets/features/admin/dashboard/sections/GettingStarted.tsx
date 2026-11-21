@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 
 const STEPS: Array<{ label: string; to: string }> = [
   { label: 'Empresa', to: '?settings=company' },
-  { label: 'Series SUNAT', to: '/config/series' },
+  { label: 'Series SUNAT', to: '?settings=series' },
   { label: 'Primer producto', to: '/catalog/products' },
   { label: 'Primera venta', to: '/pos' },
 ];

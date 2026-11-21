@@ -6,10 +6,12 @@ import { buildProfileNav, parseSection, type ProfileSection } from './profileNav
 import { SettingsLayout } from './settings/SettingsLayout';
 import { AccountSection } from './sections/AccountSection';
 import { AppearanceSection } from './sections/AppearanceSection';
+import { BranchesSection } from './sections/BranchesSection';
 import { CompanySection } from './sections/CompanySection';
 import { OperationSection } from './sections/OperationSection';
 import { PlanSection } from './sections/PlanSection';
 import { SecuritySection } from './sections/SecuritySection';
+import { SeriesSection } from './sections/SeriesSection';
 import { SunatSection } from './sections/SunatSection';
 import { UsageSection } from './sections/UsageSection';
 import { useProfile } from './useProfile';
@@ -24,6 +26,8 @@ const TITLES: Record<ProfileSection, string> = {
   company: 'Empresa',
   sunat: 'SUNAT',
   general: 'Operación',
+  series: 'Series',
+  branches: 'Sucursales',
 };
 
 /**
@@ -92,6 +96,8 @@ const OpenSettings = ({
         {section === 'company' && <CompanySection />}
         {section === 'sunat' && <SunatSection />}
         {section === 'general' && <OperationSection />}
+        {section === 'series' && <SeriesSection />}
+        {section === 'branches' && <BranchesSection />}
       </SettingsLayout>
     </AppDialog>
   );
