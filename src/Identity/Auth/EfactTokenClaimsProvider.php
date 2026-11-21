@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Identity\Auth;
 
 use App\Identity\Entity\User;
+use App\Identity\Profile\ProfileView;
 use App\Identity\Security\PermissionCheckerInterface;
 use Nubit\AdminBundle\Auth\TokenClaimsProviderInterface;
 use Nubit\Platform\Tenant\Context\TenantContext;
@@ -58,6 +59,10 @@ final readonly class EfactTokenClaimsProvider implements TokenClaimsProviderInte
             'role' => $user instanceof User ? $user->getRole()?->getId() : null,
             'roles' => $user->getRoles(),
             'permissions' => $user instanceof User ? $this->permissionChecker->permissionsFor($user) : [],
+            // What the shell needs to show the person without another round trip.
+            'name' => $user instanceof User ? $user->getDisplayName() : null,
+            'email' => $user instanceof User ? $user->getEmail() : null,
+            'avatarUrl' => $user instanceof User ? ProfileView::avatarUrl($user) : null,
         ];
     }
 }

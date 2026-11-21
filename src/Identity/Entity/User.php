@@ -119,6 +119,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     #[ORM\Column(length: 180, nullable: true)]
     private ?string $email = null;
 
+    /** How the person is shown in the app; the username stays the login identifier. */
+    #[Groups(['user:read'])]
+    #[ApiProperty(writable: false)]
+    #[ORM\Column(name: 'display_name', length: 120, nullable: true)]
+    private ?string $displayName = null;
+
+    #[Groups(['user:read'])]
+    #[ApiProperty(writable: false)]
+    #[ORM\Column(length: 30, nullable: true)]
+    private ?string $phone = null;
+
+    /** Object path of the photo inside the avatars directory; never exposed, it is served by the profile API. */
+    #[ORM\Column(name: 'avatar_path', length: 255, nullable: true)]
+    private ?string $avatarPath = null;
+
+    #[ORM\Column(name: 'avatar_updated_at', type: 'datetime_immutable', nullable: true)]
+    private ?DateTimeImmutable $avatarUpdatedAt = null;
+
+    /** @var array<string, mixed>|null Account-level UI preferences (density, theme). */
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $preferences = null;
+
     #[Groups(['user:read'])]
     #[ApiProperty(description: 'user.last_login_at.label', writable: false)]
     #[ORM\Column(name: 'last_login_at', type: 'datetime_immutable', nullable: true)]
@@ -229,6 +251,64 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     {
         $email = $email === null ? null : trim($email);
         $this->email = $email === '' ? null : $email;
+
+        return $this;
+    }
+
+    public function getDisplayName(): ?string
+    {
+        return $this->displayName;
+    }
+
+    public function setDisplayName(?string $displayName): static
+    {
+        $displayName = $displayName === null ? null : trim($displayName);
+        $this->displayName = $displayName === '' ? null : $displayName;
+
+        return $this;
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(?string $phone): static
+    {
+        $phone = $phone === null ? null : trim($phone);
+        $this->phone = $phone === '' ? null : $phone;
+
+        return $this;
+    }
+
+    public function getAvatarPath(): ?string
+    {
+        return $this->avatarPath;
+    }
+
+    public function getAvatarUpdatedAt(): ?DateTimeImmutable
+    {
+        return $this->avatarUpdatedAt;
+    }
+
+    public function setAvatar(?string $path, ?DateTimeImmutable $updatedAt = null): static
+    {
+        $this->avatarPath = $path;
+        $this->avatarUpdatedAt = $path === null ? null : $updatedAt ?? new DateTimeImmutable();
+
+        return $this;
+    }
+
+    /** @return array<string, mixed> */
+    public function getPreferences(): array
+    {
+        return $this->preferences ?? [];
+    }
+
+    /** @param array<string, mixed> $preferences */
+    public function setPreferences(array $preferences): static
+    {
+        $this->preferences = $preferences === [] ? null : $preferences;
 
         return $this;
     }
