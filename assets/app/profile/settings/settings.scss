@@ -296,4 +296,36 @@
   table {
     min-width: 32rem;
   }
+
+  // The library pins the actions cell to the right with its own background and shadow, and tints only
+  // that cell on row hover. In a short list that reads as a stray block that breaks the row lines:
+  // keep it a plain cell, and the row static.
+  .nb-data-table__actions-head,
+  .nb-data-table__actions {
+    background: transparent;
+    box-shadow: none;
+    position: static;
+  }
+
+  // Same tint as the other header cells, so the header band runs to the edge.
+  .nb-data-table__actions-head {
+    background: var(--surface-2, var(--surface-1));
+  }
+
+  // The library sizes this column for an icon button; ours holds a text button.
+  .nb-data-table__actions-head,
+  .nb-data-table__actions {
+    width: 6rem;
+    min-width: 6rem;
+    max-width: none;
+  }
+
+  .nb-data-table__actions {
+    display: table-cell;
+    text-align: right;
+  }
+
+  .nb-data-table tbody tr:hover .nb-data-table__actions {
+    background: transparent;
+  }
 }
