@@ -9,7 +9,6 @@ import { Avatar, Badge } from '@nubitio/ui';
 import { DateTime } from 'luxon';
 import { entityLabel } from '@shared/lib/displayFormat';
 import { userEndpoints } from './api/adminEndpoints';
-import { RoleUserSummary } from './components/RoleUserSummary';
 
 interface UserRecord extends DataRecord {
   id: number;
@@ -79,7 +78,6 @@ export const userResource = defineResource<UserRecord>(userEndpoints.list(), {
   viewMode: 'dialog',
   defaultPreset: 'basic',
   columnPresets: USER_COLUMN_PRESETS,
-  aboveGrid: <RoleUserSummary />,
   fieldContract: defineFields<UserRecord>({
     source: 'hydra',
     strategy: 'augment',
