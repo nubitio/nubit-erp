@@ -34,6 +34,32 @@ afterEach(() => {
 });
 
 describe('shared authentication recovery', () => {
+  it('sends a file upload with a Content-Type whose boundary matches the body', async () => {
+    const sent: { contentType: string | null; body: string }[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const request = requestOf(input, init);
+        sent.push({
+          contentType: request.headers.get('Content-Type'),
+          body: await request.clone().text(),
+        });
+        return Response.json({});
+      }),
+    );
+    install();
+
+    const body = new FormData();
+    body.append('file', new File(['png-bytes'], 'foto.png', { type: 'image/png' }));
+    await globalThis.fetch('/api/profile/avatar', { method: 'POST', body });
+
+    const boundary = sent[0]?.contentType?.match(/^multipart\/form-data; boundary=(.+)$/)?.[1];
+    expect(boundary, 'a multipart Content-Type with a boundary').toBeTruthy();
+    // The body's delimiters must use the very boundary the header announces.
+    expect(sent[0]?.body.startsWith(`--${boundary}`)).toBe(true);
+    expect(sent[0]?.body).toContain('png-bytes');
+  });
+
   it('shares one renewal across SDK clients and the outbox, preserving POST data and idempotency', async () => {
     const gate = deferred();
     let renewals = 0;

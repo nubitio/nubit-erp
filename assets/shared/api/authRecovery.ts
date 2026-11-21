@@ -221,10 +221,15 @@ export function installAuthRecovery(): void {
     const template = input instanceof Request ? new Request(input, init) : new Request(url, init);
     // Preserve regular SDK JSON/FormData bodies instead of turning every POST
     // into a streaming upload. Request inputs still have a cloneable retry.
-    const send = (request: Request) =>
-      input instanceof Request
-        ? original(request)
-        : original(input, { ...init, headers: request.headers, signal: request.signal });
+    const send = (request: Request) => {
+      if (input instanceof Request) return original(request);
+      const headers = new Headers(request.headers);
+      // `template` was built from the FormData, so it carries a multipart Content-Type with ITS
+      // boundary. fetch serialises `init.body` again with a fresh one, and a copied header would no
+      // longer match the body: the server then sees no file at all. Let fetch write the header.
+      if (init?.body instanceof FormData) headers.delete('Content-Type');
+      return original(input, { ...init, headers, signal: request.signal });
+    };
     if (template.headers.has('X-Api-Key')) return original(input, init);
     const path = url.pathname;
     if (CREDENTIAL_PATHS.has(path) || path === '/api/auth/select-branch') {
