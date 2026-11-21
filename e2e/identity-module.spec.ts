@@ -447,19 +447,30 @@ test.describe('invitation and recovery pages (browser)', () => {
 test.describe('two-factor settings (browser)', () => {
   const uiUsername = `ui.${stamp}`;
 
-  test('a user turns the second factor on from the menu, login then needs it, and can turn it off', async ({
+  test('a user turns the second factor on from Ajustes, login then needs it, and can turn it off', async ({
     page,
   }) => {
     await uiLogin(page, uiUsername, UI_NEW_PASSWORD);
     await page.goto(`${BASE}/dashboard`); // the user menu lives in the admin shell, not the full-screen POS
     await page.getByRole('button', { name: 'Menú de usuario' }).click();
-    await page.getByText('Verificación en dos pasos').click();
+    await page.getByRole('menuitem', { name: 'Ajustes' }).click();
+    await page
+      .getByRole('dialog', { name: 'Ajustes' })
+      .getByRole('navigation', { name: 'Secciones de ajustes' })
+      .getByRole('button', { name: 'Seguridad' })
+      .click();
+    await page
+      .getByRole('dialog', { name: 'Ajustes' })
+      .getByRole('button', { name: 'Configurar' })
+      .click();
     const dialog = page.getByRole('dialog', { name: 'Verificación en dos pasos' });
     await expect(dialog).toBeVisible();
 
     await dialog.getByRole('button', { name: 'Activar' }).click();
     await expect(dialog.getByTestId('two-factor-secret')).toBeVisible();
     const secret = (await dialog.getByTestId('two-factor-secret').innerText()).replace(/\s/g, '');
+    // The codes are folded away to keep the dialog short; unfold them to read them.
+    await dialog.getByText('Ver códigos').click();
     const codes = await dialog
       .getByTestId('two-factor-recovery-codes')
       .locator('li')

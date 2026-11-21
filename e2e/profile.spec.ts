@@ -163,7 +163,7 @@ test.describe('two-step verification setup', () => {
   // The QR is decoded in the page with jsQR, which is injected inline: the page's CSP would refuse it.
   test.use({ bypassCSP: true });
 
-  test('shows a QR that scans back to the otpauth URI the server issued, plus the manual key', async ({
+  test('shows a QR that scans back to the otpauth URI, a one-line key, and recovery codes as a download', async ({
     page,
   }) => {
     const dialog = await openSettings(page);
@@ -179,7 +179,11 @@ test.describe('two-step verification setup', () => {
         response.url().endsWith('/api/auth/totp') && response.request().method() === 'POST',
     );
     await modal.getByRole('button', { name: 'Activar' }).click();
-    const { uri, secret } = (await (await issued).json()) as { uri: string; secret: string };
+    const { uri, secret, recoveryCodes } = (await (await issued).json()) as {
+      uri: string;
+      secret: string;
+      recoveryCodes: string[];
+    };
 
     const qr = modal.getByRole('img', { name: /Código QR/ });
     await expect(qr).toBeVisible();
@@ -211,6 +215,31 @@ test.describe('two-step verification setup', () => {
       return read(pixels.data, 480, 480)?.data ?? null;
     });
     expect(decoded).toBe(uri);
+
+    // The key is one centred line, not wrapped.
+    const key = modal.getByTestId('two-factor-secret');
+    const box = await key.boundingBox();
+    expect(box && box.height, 'the key sits on a single line').toBeLessThan(60);
+    expect(await key.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+    expect(await key.evaluate((element) => getComputedStyle(element).textAlign)).toBe('center');
+    // ...and its box leaves the same margin on both sides of the dialog.
+    const dialogBox = await modal.boundingBox();
+    if (!box || !dialogBox) throw new Error('missing boxes');
+    const left = box.x - dialogBox.x;
+    const right = dialogBox.x + dialogBox.width - (box.x + box.width);
+    expect(Math.abs(left - right), `margins ${left}px / ${right}px`).toBeLessThanOrEqual(1);
+
+    // The recovery codes are not listed by default; they come as a .txt, or unfold on request.
+    const list = modal.getByTestId('two-factor-recovery-codes');
+    await expect(list).toBeHidden();
+    const download = page.waitForEvent('download');
+    await modal.getByRole('button', { name: 'Descargar (.txt)' }).click();
+    const file = await download;
+    expect(file.suggestedFilename()).toMatch(/^nubit-erp-codigos-recuperacion-.+\.txt$/);
+    const saved = readFileSync((await file.path()) as string, 'utf8');
+    for (const code of recoveryCodes) expect(saved).toContain(code);
+    await modal.getByText('Ver códigos').click();
+    await expect(list.locator('li')).toHaveCount(recoveryCodes.length);
 
     await modal.getByRole('button', { name: 'Cancelar' }).click();
   });

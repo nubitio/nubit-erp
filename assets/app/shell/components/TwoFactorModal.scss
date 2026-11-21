@@ -10,7 +10,9 @@
     display: grid;
     gap: 16px;
     margin: 0;
-    padding-left: 20px;
+    // The numbers hang in the left inset; the same inset on the right keeps the QR and the key
+    // box centred in the dialog instead of leaning against its right edge.
+    padding-inline: 20px;
   }
 
   &__qr {
@@ -26,17 +28,34 @@
     font-size: var(--font-size-sm);
   }
 
+  // The key is 39 characters in groups of four: one centred line, never wrapped.
   &__secret {
     background: var(--nb-color-bg-subtle, var(--surface-2));
     border-radius: 8px;
     display: block;
     font-family: var(--font-family-mono, ui-monospace, monospace);
-    font-size: 1rem;
-    letter-spacing: 0.05em;
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
     margin-top: 8px;
+    overflow-x: auto;
     padding: 10px 12px;
+    text-align: center;
     user-select: all;
-    word-break: break-all;
+    white-space: nowrap;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &__details {
+    summary {
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: var(--font-size-sm);
+    }
   }
 
   &__codes {
