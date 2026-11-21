@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[IsGranted('ROLE_USER')]
+#[IsGranted('perm:inventory.view')]
 #[Route('/api/inventory/summary', name: 'api_inventory_summary', methods: ['GET'])]
 final class InventorySummaryController extends AbstractController
 {

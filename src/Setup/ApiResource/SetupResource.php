@@ -16,8 +16,15 @@ use App\Setup\State\SetupStatusProvider;
     uriTemplate: '/setup',
     shortName: 'Setup',
     operations: [
-        new Get(output: SetupStatusDto::class, provider: SetupStatusProvider::class),
+        // Public on purpose: it bootstraps an empty tenant (access_control lets /api/setup through) and
+        // InitialSetupService refuses once a user exists. Said out loud so the security audit knows.
+        new Get(
+            output: SetupStatusDto::class,
+            provider: SetupStatusProvider::class,
+            security: "is_granted('PUBLIC_ACCESS')",
+        ),
         new Post(
+            security: "is_granted('PUBLIC_ACCESS')",
             input: InitialSetupInput::class,
             output: SetupStatusDto::class,
             read: false,
