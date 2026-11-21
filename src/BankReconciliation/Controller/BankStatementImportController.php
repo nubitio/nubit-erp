@@ -22,6 +22,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * POST /api/v1/bank-statement-imports
@@ -46,6 +47,7 @@ final class BankStatementImportController extends AbstractController
         private readonly string $projectDir,
     ) {}
 
+    #[IsGranted('perm:bank_reconciliation.import')]
     #[Route('', name: 'bank_statement_import_upload', methods: ['POST'])]
     public function upload(Request $request): Response
     {

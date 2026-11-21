@@ -8,6 +8,7 @@ use App\Catalog\Service\ProductExportService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/api/v1/products')]
 final class ProductExportController extends AbstractController
@@ -21,6 +22,7 @@ final class ProductExportController extends AbstractController
      * Streams all current products as a .xlsx file — same column layout as
      * the import template so users can edit and re-import seamlessly.
      */
+    #[IsGranted('perm:catalog.view')]
     #[Route('/export', name: 'product_export', methods: ['GET'])]
     public function export(): StreamedResponse
     {

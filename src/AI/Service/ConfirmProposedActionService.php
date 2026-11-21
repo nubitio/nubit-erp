@@ -17,6 +17,7 @@ use App\Catalog\Repository\ProductRepository;
 use App\Contacts\Entity\Customer;
 use App\Contacts\Repository\CustomerRepository;
 use App\Identity\Entity\User;
+use App\Identity\Security\PermissionCheckerInterface;
 use App\Inventory\Entity\Warehouse;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Port\RejectedDocumentReplacerInterface;
@@ -39,6 +40,7 @@ final readonly class ConfirmProposedActionService
         private SaleProcessor $saleProcessor,
         private RejectedDocumentReplacerInterface $rejectedDocumentReplacer,
         private TaxDocumentProcessor $taxDocumentProcessor,
+        private PermissionCheckerInterface $permissions,
     ) {}
 
     /**
@@ -47,6 +49,8 @@ final readonly class ConfirmProposedActionService
     public function confirm(string $actionId): array
     {
         $action = $this->loadOwned($actionId);
+        // The assistant proposes on the user's behalf, so confirming needs what doing it by hand needs.
+        $this->requirePermission($action->getKind());
 
         if ($action->getStatus() === AssistantProposedAction::CONFIRMED) {
             return $this->toResult($action);
@@ -100,6 +104,26 @@ final readonly class ConfirmProposedActionService
         $this->entityManager->flush();
 
         return $this->toResult($action);
+    }
+
+    /** The permission each kind of proposal stands for; the same ones the screens and the API ask for. */
+    private const array PERMISSION_BY_KIND = [
+        AssistantProposedAction::KIND_CREATE_CUSTOMER => 'customers.create',
+        AssistantProposedAction::KIND_CREATE_PRODUCT => 'catalog.create',
+        AssistantProposedAction::KIND_CREATE_SALE => 'sales.create',
+        AssistantProposedAction::KIND_REPLACE_REJECTED => 'sales.create',
+        AssistantProposedAction::KIND_CREATE_CREDIT_NOTE => 'sales.create',
+        AssistantProposedAction::KIND_FILL_ONBOARDING => 'settings.edit',
+    ];
+
+    private function requirePermission(string $kind): void
+    {
+        $permission = self::PERMISSION_BY_KIND[$kind] ?? null;
+        if ($permission === null || $this->permissions->hasPermission($permission)) {
+            return;
+        }
+
+        throw ServiceException::create('No tienes permiso para confirmar esta acción.', Response::HTTP_FORBIDDEN);
     }
 
     private function loadOwned(string $actionId): AssistantProposedAction
