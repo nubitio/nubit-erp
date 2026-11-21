@@ -1,42 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useScreenSize } from '@nubitio/admin';
-import { MercureManager, useMercureHub } from '@nubitio/core';
 import { AppDialog, Button } from '@nubitio/ui';
-import { httpClient } from '@shared/api/HttpClient';
 import { downloadProductImportTemplate } from '../model/downloadProductImportTemplate';
+import { progressPercent, useProductImportJob } from '../model/useProductImportJob';
 
 import './ProductImportDialog.scss';
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-type ImportStatus = 'idle' | 'uploading' | 'processing' | 'completed' | 'failed';
-
-interface Progress {
-  current: number;
-  total: number;
-}
-
-interface ImportError {
-  row: number;
-  message: string;
-}
-
-interface ImportResult {
-  created: number;
-  updated: number;
-  errors: ImportError[];
-}
-
-interface MercureEvent {
-  jobId: string;
-  status: 'processing' | 'completed' | 'failed';
-  progress?: Progress;
-  result?: ImportResult;
-  error?: string;
-}
 
 interface ProductImportDialogProps {
   isOpen: boolean;
@@ -45,29 +14,14 @@ interface ProductImportDialogProps {
 }
 
 // ---------------------------------------------------------------------------
-// Helper
-// ---------------------------------------------------------------------------
-
-function progressPercent(p: Progress | null): number {
-  if (!p || p.total === 0) return 0;
-  return Math.round((p.current / p.total) * 100);
-}
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
 export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductImportDialogProps) {
   const { isXSmall } = useScreenSize();
-  const hubUrl = useMercureHub();
-
-  const [status, setStatus] = useState<ImportStatus>('idle');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [progress, setProgress] = useState<Progress | null>(null);
-  const [result, setResult] = useState<ImportResult | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const jobIdRef = useRef<string | null>(null);
+  const { status, progress, result, errorMessage, isRunning, start, reset } =
+    useProductImportJob(onImportDone);
 
   const prevIsOpenRef = useRef(isOpen);
   useEffect(() => {
@@ -75,46 +29,13 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
     prevIsOpenRef.current = isOpen;
     if (wasOpen && !isOpen) {
       const id = setTimeout(() => {
-        setStatus('idle');
         setSelectedFile(null);
-        setProgress(null);
-        setResult(null);
-        setErrorMessage(null);
-        jobIdRef.current = null;
+        reset();
       }, 300);
       return () => clearTimeout(id);
     }
     return undefined;
-  }, [isOpen]);
-
-  // ---------------------------------------------------------------------------
-  // Mercure
-  // ---------------------------------------------------------------------------
-
-  const subscribeMercure = useCallback(
-    (topic: string) => {
-      if (!hubUrl) return;
-
-      const handler = (data: unknown) => {
-        const event = data as MercureEvent;
-        if (event.status === 'processing' && event.progress) {
-          setProgress(event.progress);
-        } else if (event.status === 'completed' && event.result) {
-          setResult(event.result);
-          setStatus('completed');
-          MercureManager.unsubscribe(topic, handler);
-          onImportDone?.();
-        } else if (event.status === 'failed') {
-          setErrorMessage(event.error ?? 'Error desconocido');
-          setStatus('failed');
-          MercureManager.unsubscribe(topic, handler);
-        }
-      };
-
-      MercureManager.subscribe(topic, handler);
-    },
-    [hubUrl, onImportDone],
-  );
+  }, [isOpen, reset]);
 
   // ---------------------------------------------------------------------------
   // Dropzone
@@ -129,9 +50,7 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
     onDrop: (acceptedFiles) => {
       const file = acceptedFiles[0] ?? null;
       setSelectedFile(file);
-      setStatus('idle');
-      setResult(null);
-      setErrorMessage(null);
+      reset();
     },
   });
 
@@ -139,28 +58,8 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
   // Handlers
   // ---------------------------------------------------------------------------
 
-  const handleImport = async () => {
-    if (!selectedFile) return;
-    setStatus('uploading');
-    setProgress(null);
-    setResult(null);
-    setErrorMessage(null);
-
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-
-    try {
-      const response = await httpClient.post<{ jobId: string; status: string; topic: string }>(
-        '/api/v1/products/import',
-        formData,
-      );
-      jobIdRef.current = response.data.jobId;
-      setStatus('processing');
-      subscribeMercure(response.data.topic);
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Error al subir el archivo');
-      setStatus('failed');
-    }
+  const handleImport = () => {
+    if (selectedFile) void start(selectedFile);
   };
 
   const handleClose = () => {
@@ -168,7 +67,6 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
     onClose();
   };
 
-  const isRunning = status === 'uploading' || status === 'processing';
   const pct = progressPercent(progress);
 
   // ---------------------------------------------------------------------------
@@ -311,7 +209,7 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
             Cerrar
           </Button>
           {status === 'idle' && (
-            <Button variant="primary" disabled={!selectedFile} onClick={() => void handleImport()}>
+            <Button variant="primary" disabled={!selectedFile} onClick={handleImport}>
               Importar
             </Button>
           )}
@@ -319,9 +217,8 @@ export function ProductImportDialog({ isOpen, onClose, onImportDone }: ProductIm
             <Button
               variant="primary"
               onClick={() => {
-                setStatus('idle');
                 setSelectedFile(null);
-                setResult(null);
+                reset();
               }}
             >
               Importar otro

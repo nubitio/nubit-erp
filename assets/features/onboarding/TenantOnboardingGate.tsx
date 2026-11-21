@@ -266,7 +266,8 @@ export function TenantOnboardingGate() {
       }
       if (step === 5) {
         await completeOnboarding.mutateAsync();
-        navigate('/dashboard', { replace: true });
+        // The gate only shows on a new installation, so this is the one time the import is offered.
+        navigate('/setup/import', { replace: true });
         return;
       }
       setStep((value) => Math.min(value + 1, 5) as OnboardingStep);
@@ -581,6 +582,9 @@ export function TenantOnboardingGate() {
                   <li>Almacén: {warehouse.name}</li>
                   <li>SUNAT: {sunatStatusLabel}</li>
                 </ul>
+                <p>
+                  Lo siguiente es traer tus productos, clientes y saldos desde Excel (opcional).
+                </p>
               </div>
             )}
           </div>
@@ -602,7 +606,7 @@ export function TenantOnboardingGate() {
             disabled={!canContinue || busy}
             loading={busy}
           >
-            {step === 5 ? 'Entrar al mini ERP' : busy ? 'Guardando…' : 'Continuar'}
+            {step === 5 ? 'Continuar a importar datos' : busy ? 'Guardando…' : 'Continuar'}
           </Button>
         </footer>
       </section>

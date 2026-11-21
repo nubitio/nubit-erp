@@ -1,24 +1,45 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, FileDropzone } from '@nubitio/ui';
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Cluster,
+  DataTable,
+  type DataTableColumn,
+  FileDropzone,
+  PageHeader,
+  Progress,
+  Row,
+  Stack,
+  Text,
+  Timeline,
+  TimelineItem,
+} from '@nubitio/ui';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { httpClient } from '@shared/api/HttpClient';
 import { extractCollection } from '@shared/pos/helpers';
-import { ProductImportDialog } from '@features/product/components/ProductImportDialog';
+import toast from '@shared/lib/SharedUtils';
+import { downloadProductImportTemplate } from '@features/product/model/downloadProductImportTemplate';
+import { progressPercent, useProductImportJob } from '@features/product/model/useProductImportJob';
+import { downloadTemplate } from './downloadTemplate';
 import { pick } from './parseCsv';
-import './ExcelImportPage.scss';
 
 const API = getCoreApiBaseUrl();
+const XLSX = '.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+const TEMPLATE_URL = '/api/v1/onboarding/spreadsheets/template';
 
-type Step = 'products' | 'customers' | 'balances' | 'done';
+type Step = 'products' | 'customers' | 'receivables' | 'payables' | 'done';
 type RowResult = { row: number; ok: boolean; message: string };
 type BalanceKind = 'receivables' | 'payables';
 
 const STEPS: { key: Step; title: string; subtitle: string }[] = [
-  { key: 'products', title: 'Productos', subtitle: 'Código, nombre, precio, stock mínimo.' },
-  { key: 'customers', title: 'Clientes', subtitle: 'RUC/DNI, nombre y teléfono.' },
-  { key: 'balances', title: 'Saldos', subtitle: 'Por cobrar y por pagar.' },
-  { key: 'done', title: 'Listo', subtitle: 'Ya puedes vender y cobrar en un solo sistema.' },
+  { key: 'products', title: 'Productos', subtitle: 'Catálogo y precios' },
+  { key: 'customers', title: 'Clientes', subtitle: 'RUC/DNI y contacto' },
+  { key: 'receivables', title: 'Por cobrar', subtitle: 'Lo que te deben' },
+  { key: 'payables', title: 'Por pagar', subtitle: 'Lo que debes' },
+  { key: 'done', title: 'Listo', subtitle: 'Primeros pasos' },
 ];
 
 async function spreadsheetRows(file: File): Promise<Array<Record<string, string>>> {
@@ -31,12 +52,21 @@ async function spreadsheetRows(file: File): Promise<Array<Record<string, string>
   return response.data.rows;
 }
 
+const downloadSafely = (download: () => Promise<void>) => () =>
+  download().catch((error: unknown) =>
+    toast(error instanceof Error ? error.message : 'No se pudo descargar la plantilla.', 'error'),
+  );
+
+/**
+ * First-run import wizard, shown once after the tenant onboarding: one step per kind of data, each
+ * with the same two moves (download the template, upload the filled file).
+ */
 export function ExcelImportPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>('products');
-  const [productImportOpen, setProductImportOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<RowResult[]>([]);
+  const [productFile, setProductFile] = useState<File | null>(null);
   const [customerFile, setCustomerFile] = useState<File | null>(null);
   const [payableFile, setPayableFile] = useState<File | null>(null);
   const [receivableFile, setReceivableFile] = useState<File | null>(null);
@@ -45,6 +75,7 @@ export function ExcelImportPage() {
     null,
   );
   const [previewError, setPreviewError] = useState<string | null>(null);
+  const productJob = useProductImportJob();
 
   const stepIndex = STEPS.findIndex((item) => item.key === step);
   const summary = useMemo(() => {
@@ -52,6 +83,12 @@ export function ExcelImportPage() {
     const failed = results.filter((row) => !row.ok).length;
     return { ok, failed };
   }, [results]);
+
+  const goTo = (next: Step) => {
+    setResults([]);
+    setPreviewError(null);
+    setStep(next);
+  };
 
   const importCustomers = async () => {
     if (!customerFile) return;
@@ -233,256 +270,421 @@ export function ExcelImportPage() {
     setBusy(false);
   };
 
+  const statusOf = (index: number) =>
+    index < stepIndex ? 'complete' : index === stepIndex ? 'current' : 'pending';
+
+  // A step counts as done once it imported something; until then the way forward is "Omitir".
+  const stepDone =
+    (step === 'products' && productJob.status === 'completed') ||
+    (step === 'customers' && summary.ok > 0) ||
+    (step === 'receivables' && summary.ok > 0) ||
+    (step === 'payables' && summary.ok > 0);
+  const previous = STEPS[stepIndex - 1];
+  const next = STEPS[stepIndex + 1];
+
   return (
-    <div className="excel-import">
-      <header className="excel-import__header">
-        <div>
-          <p className="excel-import__kicker">Salir de Excel</p>
-          <h1>Trae tus datos al mini ERP</h1>
-          <p>
-            Migración inicial desde Excel: productos, clientes y saldos abiertos. Úsala al comenzar
-            o al cambiar de sistema.
-          </p>
-        </div>
-        <Button variant="secondary" onClick={() => navigate('/dashboard')}>
-          Volver al inicio
-        </Button>
-      </header>
-
-      <ol className="excel-import__steps">
-        {STEPS.map((item, index) => (
-          <li
-            key={item.key}
-            className={index === stepIndex ? 'is-active' : index < stepIndex ? 'is-done' : ''}
-          >
-            <strong>
-              {index + 1}. {item.title}
-            </strong>
-            <span>{item.subtitle}</span>
-          </li>
-        ))}
-      </ol>
-
-      {step === 'products' && (
-        <section className="excel-import__card">
-          <h2>1. Productos</h2>
-          <p>
-            Usa la plantilla oficial con categorías y unidades. Es el mismo importador del catálogo.
-          </p>
-          <div className="excel-import__actions">
-            <Button onClick={() => setProductImportOpen(true)}>Importar productos</Button>
-            <Button variant="secondary" onClick={() => setStep('customers')}>
-              Ya los tengo / Siguiente
+    <Stack
+      gap={5}
+      style={{ maxWidth: 880, margin: '0 auto', padding: 'var(--space-6) var(--space-4)' }}
+    >
+      <PageHeader
+        title="Importa tus datos"
+        subtitle="Migración inicial desde Excel. Cada paso es opcional: omite lo que no necesites."
+        actions={
+          step !== 'done' && (
+            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+              Omitir importación
             </Button>
-          </div>
-        </section>
-      )}
-
-      {step === 'customers' && (
-        <section className="excel-import__card">
-          <h2>2. Clientes</h2>
-          <p>
-            Sube el Excel que ya usas. Solo debe tener las columnas RUC/DNI, Nombre, Teléfono y
-            Correo.
-          </p>
-          <div className="excel-import__actions">
-            <Button
-              variant="secondary"
-              onClick={() =>
-                window.open('/api/v1/onboarding/spreadsheets/template/customers', '_blank')
-              }
-            >
-              Descargar plantilla
-            </Button>
-          </div>
-          <FileDropzone
-            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            value={customerFile ? { fileName: customerFile.name } : null}
-            labels={{
-              prompt: 'Suelta tu Excel de clientes o haz clic para buscarlo',
-              hint: 'Formato .xlsx · un cliente por fila.',
-              replace: 'Cambiar archivo',
-              remove: 'Quitar',
-              open: 'Abrir',
-            }}
-            onFileSelect={setCustomerFile}
-            onClear={() => setCustomerFile(null)}
-          />
-          <div className="excel-import__actions">
-            <Button onClick={() => void importCustomers()} disabled={!customerFile || busy}>
-              {busy ? 'Importando…' : 'Importar clientes'}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setResults([]);
-                setStep('balances');
-              }}
-            >
-              Siguiente
-            </Button>
-          </div>
-        </section>
-      )}
-
-      {step === 'balances' && (
-        <section className="excel-import__card">
-          <h2>3. Migración de saldos iniciales</h2>
-          <p>
-            Importa desde Excel lo que te deben y lo que debes. Primero revisa la vista previa; nada
-            se registra hasta confirmar.
-          </p>
-
-          <h3>Por cobrar</h3>
-          <div className="excel-import__actions">
-            <Button
-              variant="secondary"
-              onClick={() =>
-                window.open('/api/v1/onboarding/spreadsheets/template/receivables', '_blank')
-              }
-            >
-              Plantilla por cobrar
-            </Button>
-          </div>
-          <FileDropzone
-            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            value={receivableFile ? { fileName: receivableFile.name } : null}
-            labels={{
-              prompt: 'Excel de cuentas por cobrar',
-              hint: 'RUC, nombre, monto y vencimiento. No emite SUNAT: es un saldo inicial.',
-              replace: 'Cambiar archivo',
-              remove: 'Quitar',
-              open: 'Abrir',
-            }}
-            onFileSelect={(file) => {
-              setReceivableFile(file);
-              setReceivablePreview(null);
-              setPreviewError(null);
-            }}
-            onClear={() => {
-              setReceivableFile(null);
-              setReceivablePreview(null);
-            }}
-          />
-          {receivablePreview && <BalancePreview kind="receivables" rows={receivablePreview} />}
-          {previewError && (
-            <p className="excel-import__error" role="alert">
-              {previewError}
-            </p>
-          )}
-          <div className="excel-import__actions">
-            <Button onClick={() => void importReceivables()} disabled={!receivableFile || busy}>
-              {busy
-                ? 'Procesando…'
-                : receivablePreview
-                  ? 'Confirmar por cobrar'
-                  : 'Previsualizar por cobrar'}
-            </Button>
-          </div>
-
-          <h3>Por pagar</h3>
-          <div className="excel-import__actions">
-            <Button
-              variant="secondary"
-              onClick={() =>
-                window.open('/api/v1/onboarding/spreadsheets/template/payables', '_blank')
-              }
-            >
-              Plantilla por pagar
-            </Button>
-          </div>
-          <FileDropzone
-            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            value={payableFile ? { fileName: payableFile.name } : null}
-            labels={{
-              prompt: 'Excel de cuentas por pagar',
-              hint: 'El proveedor debe existir en Catálogo → Proveedores.',
-              replace: 'Cambiar archivo',
-              remove: 'Quitar',
-              open: 'Abrir',
-            }}
-            onFileSelect={(file) => {
-              setPayableFile(file);
-              setPayablePreview(null);
-              setPreviewError(null);
-            }}
-            onClear={() => {
-              setPayableFile(null);
-              setPayablePreview(null);
-            }}
-          />
-          {payablePreview && <BalancePreview kind="payables" rows={payablePreview} />}
-          <div className="excel-import__actions">
-            <Button onClick={() => void importPayables()} disabled={!payableFile || busy}>
-              {busy
-                ? 'Procesando…'
-                : payablePreview
-                  ? 'Confirmar por pagar'
-                  : 'Previsualizar por pagar'}
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setResults([]);
-                setStep('done');
-              }}
-            >
-              Siguiente
-            </Button>
-          </div>
-        </section>
-      )}
-
-      {step === 'done' && (
-        <section className="excel-import__card">
-          <h2>4. Checklist de la primera semana</h2>
-          <ol className="excel-import__checklist">
-            <li>
-              <button type="button" onClick={() => navigate('/config/company')}>
-                Revisa razón social y RUC
-              </button>
-            </li>
-            <li>
-              <button type="button" onClick={() => navigate('/config/series')}>
-                Confirma series SUNAT
-              </button>
-            </li>
-            <li>
-              <button type="button" onClick={() => navigate('/catalog/products')}>
-                Abre el catálogo y verifica precios
-              </button>
-            </li>
-            <li>
-              <button type="button" onClick={() => navigate('/pos')}>
-                Haz la primera venta
-              </button>
-            </li>
-          </ol>
-          <Button onClick={() => navigate('/dashboard')}>Ir al inicio</Button>
-        </section>
-      )}
-
-      {results.length > 0 && (
-        <section className="excel-import__results">
-          <p>
-            {summary.ok} ok · {summary.failed} con error
-          </p>
-          <ul>
-            {results.slice(0, 20).map((row) => (
-              <li key={`${row.row}-${row.message}`} className={row.ok ? 'is-ok' : 'is-error'}>
-                Fila {row.row}: {row.message}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <ProductImportDialog
-        isOpen={productImportOpen}
-        onClose={() => setProductImportOpen(false)}
-        onImportDone={() => setStep('customers')}
+          )
+        }
       />
-    </div>
+
+      <Card variant="panel">
+        <Stack gap={5}>
+          <Timeline variant="stepper" orientation="horizontal" aria-label="Pasos de la importación">
+            {STEPS.map((item, index) => (
+              <TimelineItem
+                key={item.key}
+                status={statusOf(index)}
+                title={item.title}
+                marker={index + 1}
+              >
+                {item.subtitle}
+              </TimelineItem>
+            ))}
+          </Timeline>
+
+          {step === 'products' && (
+            <Stack gap={4}>
+              <StepIntro
+                title="Productos"
+                text="La plantilla incluye listas desplegables para categorías y unidades de medida. Los productos existentes se actualizan por código."
+              />
+              <TemplateUpload
+                onDownload={downloadSafely(downloadProductImportTemplate)}
+                file={productFile}
+                prompt="Suelta tu Excel de productos o haz clic para buscarlo"
+                hint="Formato .xlsx · un producto por fila."
+                disabled={productJob.isRunning}
+                onFile={(file) => {
+                  setProductFile(file);
+                  productJob.reset();
+                }}
+                onClear={() => {
+                  setProductFile(null);
+                  productJob.reset();
+                }}
+              />
+              {productJob.isRunning && (
+                <Progress
+                  label={
+                    productJob.status === 'uploading'
+                      ? 'Subiendo archivo…'
+                      : `Importando productos… ${progressPercent(productJob.progress)}%`
+                  }
+                  value={progressPercent(productJob.progress)}
+                />
+              )}
+              {productJob.status === 'failed' && (
+                <Alert tone="danger">{productJob.errorMessage}</Alert>
+              )}
+              {productJob.result && (
+                <ImportSummary
+                  lines={[
+                    `${productJob.result.created} creados`,
+                    `${productJob.result.updated} actualizados`,
+                  ]}
+                  errors={productJob.result.errors.map((error) => ({
+                    row: error.row,
+                    ok: false,
+                    message: error.message,
+                  }))}
+                />
+              )}
+              <Cluster>
+                <Button
+                  variant="primary"
+                  icon="ph ph-upload-simple"
+                  disabled={!productFile || productJob.status === 'completed'}
+                  loading={productJob.isRunning}
+                  onClick={() => productFile && void productJob.start(productFile)}
+                >
+                  Importar productos
+                </Button>
+              </Cluster>
+            </Stack>
+          )}
+
+          {step === 'customers' && (
+            <Stack gap={4}>
+              <StepIntro
+                title="Clientes"
+                text="Sube el Excel que ya usas. Solo necesita las columnas RUC/DNI, Nombre, Teléfono y Correo."
+              />
+              <TemplateUpload
+                onDownload={downloadSafely(() =>
+                  downloadTemplate(`${TEMPLATE_URL}/customers`, 'plantilla-clientes.xlsx'),
+                )}
+                file={customerFile}
+                prompt="Suelta tu Excel de clientes o haz clic para buscarlo"
+                hint="Formato .xlsx · un cliente por fila."
+                onFile={setCustomerFile}
+                onClear={() => setCustomerFile(null)}
+              />
+              <Cluster>
+                <Button
+                  variant="primary"
+                  icon="ph ph-upload-simple"
+                  disabled={!customerFile}
+                  loading={busy}
+                  onClick={() => void importCustomers()}
+                >
+                  Importar clientes
+                </Button>
+              </Cluster>
+            </Stack>
+          )}
+
+          {step === 'receivables' && (
+            <BalanceStep
+              kind="receivables"
+              title="Cuentas por cobrar"
+              text="Lo que tus clientes te deben. No emite comprobantes SUNAT: es un saldo inicial. Revisa la vista previa; nada se registra hasta confirmar."
+              prompt="Suelta tu Excel de cuentas por cobrar o haz clic para buscarlo"
+              hint="RUC, nombre, monto y vencimiento."
+              file={receivableFile}
+              preview={receivablePreview}
+              busy={busy}
+              error={previewError}
+              onFile={(file) => {
+                setReceivableFile(file);
+                setReceivablePreview(null);
+                setPreviewError(null);
+              }}
+              onClear={() => {
+                setReceivableFile(null);
+                setReceivablePreview(null);
+              }}
+              onSubmit={() => void importReceivables()}
+            />
+          )}
+
+          {step === 'payables' && (
+            <BalanceStep
+              kind="payables"
+              title="Cuentas por pagar"
+              text="Lo que debes a tus proveedores. Cada proveedor debe existir en Catálogo → Proveedores. Revisa la vista previa; nada se registra hasta confirmar."
+              prompt="Suelta tu Excel de cuentas por pagar o haz clic para buscarlo"
+              hint="RUC del proveedor, monto y vencimiento."
+              file={payableFile}
+              preview={payablePreview}
+              busy={busy}
+              error={previewError}
+              onFile={(file) => {
+                setPayableFile(file);
+                setPayablePreview(null);
+                setPreviewError(null);
+              }}
+              onClear={() => {
+                setPayableFile(null);
+                setPayablePreview(null);
+              }}
+              onSubmit={() => void importPayables()}
+            />
+          )}
+
+          {step === 'done' && (
+            <Stack gap={4}>
+              <StepIntro
+                title="¡Todo listo!"
+                text="Ya puedes vender y cobrar en un solo sistema. Estos son los primeros pasos recomendados."
+              />
+              <Stack gap={2}>
+                <Button
+                  variant="secondary"
+                  icon="ph ph-buildings"
+                  onClick={() => navigate('/config/company')}
+                >
+                  Revisa razón social y RUC
+                </Button>
+                <Button
+                  variant="secondary"
+                  icon="ph ph-hash"
+                  onClick={() => navigate('/config/series')}
+                >
+                  Confirma series SUNAT
+                </Button>
+                <Button
+                  variant="secondary"
+                  icon="ph ph-package"
+                  onClick={() => navigate('/catalog/products')}
+                >
+                  Abre el catálogo y verifica precios
+                </Button>
+                <Button
+                  variant="secondary"
+                  icon="ph ph-shopping-cart"
+                  onClick={() => navigate('/pos')}
+                >
+                  Haz la primera venta
+                </Button>
+              </Stack>
+            </Stack>
+          )}
+
+          {step !== 'done' && results.length > 0 && (
+            <ImportSummary
+              lines={[`${summary.ok} correctos`, `${summary.failed} con error`]}
+              errors={results}
+            />
+          )}
+
+          <Row justify="between" align="center">
+            {previous ? (
+              <Button variant="secondary" onClick={() => goTo(previous.key)} disabled={busy}>
+                Atrás
+              </Button>
+            ) : (
+              <span />
+            )}
+            {step === 'done' ? (
+              <Button variant="primary" onClick={() => navigate('/dashboard')}>
+                Ir al inicio
+              </Button>
+            ) : (
+              next && (
+                <Button
+                  variant={stepDone ? 'primary' : 'secondary'}
+                  onClick={() => goTo(next.key)}
+                  disabled={busy || productJob.isRunning}
+                >
+                  {stepDone ? 'Siguiente' : 'Omitir este paso'}
+                </Button>
+              )
+            )}
+          </Row>
+        </Stack>
+      </Card>
+    </Stack>
+  );
+}
+
+function StepIntro({ title, text }: { title: string; text: string }) {
+  return (
+    <Stack gap={1}>
+      <Text as="p">
+        <strong>{title}</strong>
+      </Text>
+      <Text as="p" tone="muted">
+        {text}
+      </Text>
+    </Stack>
+  );
+}
+
+/** The same two moves for every kind of data: download the template, then upload the filled file. */
+function TemplateUpload({
+  onDownload,
+  file,
+  prompt,
+  hint,
+  disabled,
+  onFile,
+  onClear,
+}: {
+  onDownload: () => void;
+  file: File | null;
+  prompt: string;
+  hint: string;
+  disabled?: boolean;
+  onFile: (file: File) => void;
+  onClear: () => void;
+}) {
+  return (
+    <Stack gap={3}>
+      <Row gap={3} align="center" wrap>
+        <Badge variant="secondary" pill>
+          1
+        </Badge>
+        <Text>Descarga la plantilla y complétala</Text>
+        <Button variant="secondary" size="sm" icon="ph ph-download-simple" onClick={onDownload}>
+          Descargar plantilla
+        </Button>
+      </Row>
+      <Row gap={3} align="center">
+        <Badge variant="secondary" pill>
+          2
+        </Badge>
+        <Text>Sube el archivo completado</Text>
+      </Row>
+      <FileDropzone
+        accept={XLSX}
+        value={file ? { fileName: file.name } : null}
+        disabled={disabled}
+        labels={{
+          prompt,
+          hint,
+          replace: 'Cambiar archivo',
+          remove: 'Quitar',
+          open: 'Abrir',
+        }}
+        onFileSelect={onFile}
+        onClear={onClear}
+      />
+    </Stack>
+  );
+}
+
+const RESULT_COLUMNS: Array<DataTableColumn<RowResult>> = [
+  { id: 'row', header: 'Fila', nowrap: true, render: (row) => (row.row > 0 ? row.row : '—') },
+  {
+    id: 'status',
+    header: 'Estado',
+    nowrap: true,
+    render: (row) => (
+      <Badge variant={row.ok ? 'success' : 'danger'}>{row.ok ? 'OK' : 'Error'}</Badge>
+    ),
+  },
+  { id: 'message', header: 'Detalle', accessor: (row) => row.message },
+];
+
+function ImportSummary({ lines, errors }: { lines: string[]; errors: RowResult[] }) {
+  return (
+    <Stack gap={3}>
+      <Row gap={2} wrap>
+        {lines.map((line) => (
+          <Badge key={line} variant="info">
+            {line}
+          </Badge>
+        ))}
+      </Row>
+      {errors.length > 0 && (
+        <DataTable
+          variant="flush"
+          columns={RESULT_COLUMNS}
+          rows={errors.slice(0, 20)}
+          getRowKey={(row) => `${row.row}-${row.message}`}
+        />
+      )}
+    </Stack>
+  );
+}
+
+function BalanceStep({
+  kind,
+  title,
+  text,
+  prompt,
+  hint,
+  file,
+  preview,
+  busy,
+  error,
+  onFile,
+  onClear,
+  onSubmit,
+}: {
+  kind: BalanceKind;
+  title: string;
+  text: string;
+  prompt: string;
+  hint: string;
+  file: File | null;
+  preview: Array<Record<string, string>> | null;
+  busy: boolean;
+  error: string | null;
+  onFile: (file: File) => void;
+  onClear: () => void;
+  onSubmit: () => void;
+}) {
+  const label = kind === 'receivables' ? 'por cobrar' : 'por pagar';
+  return (
+    <Stack gap={4}>
+      <StepIntro title={title} text={text} />
+      <TemplateUpload
+        onDownload={downloadSafely(() =>
+          downloadTemplate(`${TEMPLATE_URL}/${kind}`, `plantilla-${kind}.xlsx`),
+        )}
+        file={file}
+        prompt={prompt}
+        hint={hint}
+        onFile={onFile}
+        onClear={onClear}
+      />
+      {preview && <BalancePreview kind={kind} rows={preview} />}
+      {error && <Alert tone="danger">{error}</Alert>}
+      <Cluster>
+        <Button
+          variant="primary"
+          icon={preview ? 'ph ph-check' : 'ph ph-eye'}
+          disabled={!file}
+          loading={busy}
+          onClick={onSubmit}
+        >
+          {preview ? `Confirmar ${label}` : `Previsualizar ${label}`}
+        </Button>
+      </Cluster>
+    </Stack>
   );
 }
 
@@ -493,10 +695,15 @@ function BalancePreview({
   kind: BalanceKind;
   rows: Array<Record<string, string>>;
 }) {
-  const columns =
+  const columns: Array<DataTableColumn<Record<string, string>>> = (
     kind === 'receivables'
       ? ['ruc/dni', 'nombre', 'monto', 'vencimiento', 'numero']
-      : ['ruc', 'proveedor', 'monto', 'vencimiento', 'numero'];
+      : ['ruc', 'proveedor', 'monto', 'vencimiento', 'numero']
+  ).map((column) => ({
+    id: column,
+    header: column,
+    accessor: (row) => row[column] || '—',
+  }));
   const visibleRows = rows.slice(0, 8);
   const issues = rows.filter((row) => {
     const identity = pick(
@@ -516,49 +723,36 @@ function BalancePreview({
   }).length;
 
   return (
-    <div
-      className="excel-import__preview"
+    <Stack
+      gap={3}
       aria-label={`Vista previa ${kind === 'receivables' ? 'por cobrar' : 'por pagar'}`}
     >
-      <strong>Vista previa · {rows.length} filas</strong>
-      <p className="excel-import__preview-effect">
+      <Text>
+        <strong>Vista previa · {rows.length} filas</strong>
+      </Text>
+      <Text tone="muted" as="p">
         Efecto al confirmar:{' '}
         {kind === 'receivables'
           ? 'Dr 121 Cuentas por cobrar · Cr 591 Saldos iniciales'
           : 'Dr 659 Gasto pendiente · Cr 421 Cuentas por pagar'}
         .
-      </p>
+      </Text>
       {issues > 0 && (
-        <p className="excel-import__preview-warning" role="alert">
+        <Alert tone="warning">
           {issues} filas tienen datos obligatorios incompletos o un monto inválido. Corrígelas antes
           de confirmar.
-        </p>
+        </Alert>
       )}
-      <div className="excel-import__preview-table-wrap">
-        <table className="excel-import__preview-table">
-          <thead>
-            <tr>
-              {columns.map((column) => (
-                <th key={column}>{column}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {visibleRows.map((row, index) => (
-              <tr key={`${index}-${row[columns[0]] ?? ''}`}>
-                {columns.map((column) => (
-                  <td key={column}>{row[column] || '—'}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={columns}
+        rows={visibleRows}
+        getRowKey={(row) => visibleRows.indexOf(row)}
+      />
       {rows.length > visibleRows.length && (
-        <small>
-          Se muestran las primeras {visibleRows.length} filas. Se importarán {rows.length}.
-        </small>
+        <Text tone="muted">
+          Mostrando {visibleRows.length} de {rows.length} filas.
+        </Text>
       )}
-    </div>
+    </Stack>
   );
 }
