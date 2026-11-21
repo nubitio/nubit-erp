@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { Avatar } from '@nubitio/ui';
+import { useSettingsDialog } from '@app/profile';
+import { UserAvatar } from '@shared/components';
 import { useAuth } from '@app/contexts/auth';
 import type { UserMenuSectionProps } from '@app/types';
 import { useTenantRuntimeConfig } from '@shared/hooks';
@@ -13,14 +14,10 @@ type MenuItem = {
   onClick: () => void;
 };
 
-export const UserMenuSection = ({
-  showAvatar,
-  onAction,
-  onChangeBranch,
-  onChangePassword,
-  onTwoFactor,
-}: UserMenuSectionProps) => {
+export const UserMenuSection = ({ showAvatar, onAction, onChangeBranch }: UserMenuSectionProps) => {
   const { user, signOut } = useAuth();
+  const { open: openSettings } = useSettingsDialog();
+  const displayName = user?.name || user?.username || '';
   const { data: runtimeConfig, isError: runtimeConfigError } = useTenantRuntimeConfig();
   const canChangeBranch = runtimeConfigError || runtimeConfig?.ui.shell.showBranchPicker === true;
 
@@ -32,7 +29,14 @@ export const UserMenuSection = ({
   };
 
   const menuItems = useMemo<MenuItem[]>(() => {
-    const items: MenuItem[] = [];
+    const items: MenuItem[] = [
+      {
+        text: 'Ajustes',
+        icon: 'ph ph-gear',
+        closeAfterAction: true,
+        onClick: () => openSettings(),
+      },
+    ];
 
     if (canChangeBranch) {
       items.push({
@@ -45,45 +49,30 @@ export const UserMenuSection = ({
       });
     }
 
-    items.push(
-      {
-        text: 'Cambiar contraseña',
-        icon: 'ph ph-lock',
-        closeAfterAction: true,
-        onClick: () => {
-          onChangePassword?.();
-        },
-      },
-      ...(window.app_identity && onTwoFactor
-        ? [
-            {
-              text: 'Verificación en dos pasos',
-              icon: 'ph ph-shield-check',
-              closeAfterAction: true,
-              onClick: onTwoFactor,
-            },
-          ]
-        : []),
-      {
-        text: 'Cerrar sesión',
-        icon: 'ph ph-sign-out',
-        closeAfterAction: true,
-        onClick: signOut,
-      },
-    );
+    items.push({
+      text: 'Cerrar sesión',
+      icon: 'ph ph-sign-out',
+      closeAfterAction: true,
+      onClick: signOut,
+    });
 
     return items;
-  }, [canChangeBranch, onChangeBranch, onChangePassword, onTwoFactor, signOut]);
+  }, [canChangeBranch, onChangeBranch, openSettings, signOut]);
 
   return (
     <>
       <div className="user-info">
         {showAvatar && (
           <div className="image-container">
-            <Avatar owner={user?.username ?? ''} size={28} />
+            <UserAvatar name={displayName} avatarUrl={user?.avatarUrl} size={28} />
           </div>
         )}
-        <div className="user-name">{user?.username}</div>
+        <div className="user-name">
+          {displayName}
+          {user?.name && user.username !== user.name && (
+            <span className="user-name__username">{user.username}</span>
+          )}
+        </div>
       </div>
       <div className="user-info-list" role="menu" aria-label="Acciones de usuario">
         {menuItems.map((item) => (

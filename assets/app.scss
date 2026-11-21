@@ -21,35 +21,9 @@
   min-height: var(--control-height);
 }
 
-// Browsers paint an autofilled input (history, saved values) with their own light background,
-// which ignores the theme. Repaint it with the control's surface and text colours.
-// TEMPORARY: fixed in @nubitio/ui by nubitio/nubit-react#59 — remove this block and the
-// `.nb-alert > i` rule below once the ERP upgrades to the release that includes it.
-input:-webkit-autofill,
-input:-webkit-autofill:hover,
-input:-webkit-autofill:focus,
-textarea:-webkit-autofill,
-select:-webkit-autofill {
-  -webkit-text-fill-color: var(--text-primary);
-  caret-color: var(--text-primary);
-  box-shadow: 0 0 0 1000px var(--surface-1) inset;
-  transition: background-color 9999s ease-out;
-}
-
-// The inset shadow replaces the focus ring, so draw the ring again on top of it.
-input:-webkit-autofill:focus,
-textarea:-webkit-autofill:focus,
-select:-webkit-autofill:focus {
-  box-shadow:
-    0 0 0 1000px var(--surface-1) inset,
-    0 0 0 3px var(--focus-ring-color);
-}
-
-// ui's Alert aligns its icon to the top of the box, so a one-line message sits lower than its
-// icon. Give the icon the height of one text line so both centre on the first line.
-.nb-alert > i {
-  display: inline-flex;
-  align-items: center;
+// Round profile photo (UserAvatar); the initials fallback comes from ui's Avatar.
+.erp-user-avatar {
+  border-radius: 50%;
+  object-fit: cover;
   flex-shrink: 0;
-  height: 1lh;
 }

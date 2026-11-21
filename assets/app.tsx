@@ -18,9 +18,12 @@ import { startAppUpdates } from '@offline/appUpdate';
 import { AppUpdateNotice } from '@app/shell/components/AppUpdateNotice';
 import { installAuthRecovery } from '@shared/api/authRecovery';
 import { normalizeLegacyHashUrl } from '@shared/lib/legacyHashRedirect';
+import { clearLegacyAccentColor } from '@shared/lib/legacyAccentColor';
 import './i18n';
 import './legacy-tokens.scss';
 import './app.scss';
+
+clearLegacyAccentColor();
 
 // Ensure all luxon DateTime operations default to Peru timezone (UTC-5, no DST)
 Settings.defaultZone = 'America/Lima';

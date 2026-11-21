@@ -6,9 +6,6 @@ export interface UserMenuSectionProps {
   showAvatar?: boolean;
   onAction?: () => void;
   onChangeBranch?: () => void;
-  onChangePassword?: () => void;
-  /** Offered only when the identity module is enabled server-side. */
-  onTwoFactor?: () => void;
 }
 
 export interface User {
@@ -29,6 +26,8 @@ export type AuthContextType = {
     password: string,
   ) => Promise<{ isOk: boolean; data?: User; message?: string }>;
   signOut: () => void;
+  /** Merges fresh profile data (name, photo…) into the signed-in user and the stored session. */
+  updateUser: (patch: Partial<User>) => void;
   loading: boolean;
 };
 
