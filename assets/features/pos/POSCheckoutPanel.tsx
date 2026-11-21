@@ -9,12 +9,16 @@ import {
   Chip,
   EmptyState,
   IconButton,
+  Row,
   TextAreaField,
   TextField,
+  Tooltip,
 } from '@nubitio/ui';
 import type { SalePaymentLineDraft } from '@shared/lib/salePayments';
 import { SplitPaymentsField } from '@shared/ui/split-payments/SplitPaymentsField';
 import { formatPosCustomerLabel } from './lib/mapPosCustomer';
+import { QuickCustomerDialog } from './QuickCustomerDialog';
+import { hasPermission } from '@shared/permissions';
 import type { CartItem, CustomerOption, PaymentMethodOption } from './types';
 import { activeOnlyFilter } from '@shared/lib/activeEntityField';
 
@@ -165,6 +169,7 @@ export function POSCheckoutPanel({
   setPaymentOpen,
 }: POSCheckoutPanelProps) {
   const customerDropdownRef = useRef<HTMLDivElement>(null);
+  const [creatingCustomer, setCreatingCustomer] = useState(false);
   const cartBodyRef = useRef<HTMLDivElement>(null);
   // Collapsed by default to save vertical space — auto-opens when a discount is
   // already active so an in-progress sale never hides its own state.
@@ -404,19 +409,42 @@ export function POSCheckoutPanel({
         <div className="pos-customer-section" ref={customerDropdownRef} data-testid="pos-customer">
           <div className="pos-customer-section__field">
             <span className="pos-customer-section__label">Cliente</span>
-            <EntityDropdown
-              url={`${API}customers`}
-              valueField="id"
-              textField="businessName"
-              value={selectedCustomerId != null ? String(selectedCustomerId) : null}
-              onChange={onCustomerChange}
-              placeholder="Buscar por nombre o RUC..."
-              searchExpr={['businessName', 'ruc']}
-              itemFormatter={formatPosCustomerLabel}
-              filters={ENTITY_DROPDOWN_FILTERS}
-            />
+            <Row gap={2} align="center">
+              <div className="pos-customer-section__control">
+                <EntityDropdown
+                  url={`${API}customers`}
+                  valueField="id"
+                  textField="businessName"
+                  value={selectedCustomerId != null ? String(selectedCustomerId) : null}
+                  onChange={onCustomerChange}
+                  placeholder="Buscar por nombre o RUC..."
+                  searchExpr={['businessName', 'ruc']}
+                  itemFormatter={formatPosCustomerLabel}
+                  filters={ENTITY_DROPDOWN_FILTERS}
+                />
+              </div>
+              {hasPermission('customers.create') && (
+                <Tooltip content="Nuevo cliente">
+                  <IconButton
+                    icon="ph ph-user-plus"
+                    label="Nuevo cliente"
+                    data-testid="pos-new-customer"
+                    onClick={() => setCreatingCustomer(true)}
+                  />
+                </Tooltip>
+              )}
+            </Row>
           </div>
         </div>
+      )}
+      {creatingCustomer && (
+        <QuickCustomerDialog
+          onClose={() => setCreatingCustomer(false)}
+          onCreated={(customer) => {
+            setCreatingCustomer(false);
+            onCustomerChange(String(customer.id), customer);
+          }}
+        />
       )}
 
       {/* ── Comprobante: one choice instead of a toggle plus a hidden chip group ── */}
