@@ -6,6 +6,12 @@ namespace App\Catalog\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Catalog\Entity\VoucherType;
 use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Efact\Domain\ActivatableInterface;
@@ -17,6 +23,15 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity(repositoryClass: VoucherSeriesRepository::class)]
 #[ORM\Table(name: 'local_comprobante')]
 #[ApiResource(
+    operations: [
+        // Everyone signed in reads these (branch picker, receipts, series per sale); changing them is settings.
+        new GetCollection(security: "is_granted('ROLE_USER')"),
+        new Get(security: "is_granted('ROLE_USER')"),
+        new Post(security: "is_granted('perm:settings.edit')"),
+        new Put(security: "is_granted('perm:settings.edit')"),
+        new Patch(security: "is_granted('perm:settings.edit')"),
+        new Delete(security: "is_granted('perm:settings.edit')"),
+    ],
     shortName: 'VoucherSerie',
     normalizationContext: ['groups' => ['voucher_series:read']],
     filters: [DataGridFilter::class],

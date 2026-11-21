@@ -6,6 +6,8 @@ namespace App\Tests\Identity\Security;
 
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
@@ -13,8 +15,11 @@ use App\Billing\Entity\TaxDocument;
 use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Entity\CashSession;
 use App\Catalog\Entity\Product;
+use App\Catalog\Entity\VoucherSeries;
 use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
+use App\Organization\Entity\Branch;
+use App\Organization\Entity\Company;
 use App\Purchasing\Entity\Purchase;
 use App\Sales\Entity\SaleQuote;
 use App\Sales\Entity\SaleRecord;
@@ -117,6 +122,23 @@ final class CriticalApiPermissionsTest extends TestCase
         static::assertContains("is_granted('perm:roles.view')", $roleSecurities);
         static::assertContains("is_granted('perm:roles.edit')", $roleSecurities);
         static::assertNotContains(null, $roleSecurities);
+    }
+
+    public function testCompanyBranchesAndSeriesCanOnlyBeChangedWithSettingsEdit(): void
+    {
+        foreach ([Company::class, Branch::class, VoucherSeries::class] as $resource) {
+            foreach ($this->operations($resource) as $operation) {
+                $security = $operation->getSecurity();
+                static::assertNotNull($security, $resource . ' has an operation without security');
+
+                $isRead = $operation instanceof Get || $operation instanceof GetCollection;
+                static::assertSame(
+                    $isRead ? "is_granted('ROLE_USER')" : "is_granted('perm:settings.edit')",
+                    $security,
+                    sprintf('%s %s', $resource, $operation::class),
+                );
+            }
+        }
     }
 
     /**
