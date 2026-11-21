@@ -33,14 +33,22 @@ describe('buildProfileNav', () => {
     expect(nav[1]?.items.map((item) => item.key)).toEqual(['usage', 'plan']);
   });
 
-  it('edits the company in the panel, links to the other settings pages and drops the hidden ones', () => {
+  it('edits company, SUNAT and operation in the panel, links to the other pages and drops the hidden ones', () => {
     const organization = buildProfileNav({
-      organizationTabs: [tab('company'), tab('users'), tab('roles', false)],
+      organizationTabs: [
+        tab('company'),
+        tab('sunat'),
+        tab('general'),
+        tab('users'),
+        tab('roles', false),
+      ],
       canSeeOrganization: true,
       canManagePlan: false,
     }).find((group) => group.key === 'organization');
     expect(organization?.items).toEqual([
       { key: 'company', label: 'company', icon: 'ph-gear' },
+      { key: 'sunat', label: 'sunat', icon: 'ph-gear' },
+      { key: 'general', label: 'general', icon: 'ph-gear' },
       { key: 'org-users', label: 'users', icon: 'ph-gear', href: '/config/users' },
     ]);
   });
@@ -58,6 +66,8 @@ describe('buildProfileNav', () => {
 describe('parseSection', () => {
   it('reads a known section and falls back to the account page', () => {
     expect(parseSection('security')).toBe('security');
+    expect(parseSection('sunat')).toBe('sunat');
+    expect(parseSection('general')).toBe('general');
     expect(parseSection('usage')).toBe('usage');
     expect(parseSection(undefined)).toBe('account');
     expect(parseSection('nope')).toBe('account');

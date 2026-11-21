@@ -34,6 +34,24 @@ const FIELDS = [
   'bankCci',
   'detraccionAccount',
 ] as const;
+interface UbigeoItem {
+  code?: string;
+  department?: string | null;
+  province?: string | null;
+  district?: string | null;
+}
+
+/** A list row: the district first, then where it is and its INEI code. */
+const UbigeoOption = ({ item }: { item: UbigeoItem }) => (
+  <span className="ubigeo-option">
+    <strong>{item.district || item.province || item.department}</strong>
+    <small>
+      {[item.province, item.department].filter(Boolean).join(', ')}
+      {item.code ? ` · ${item.code}` : ''}
+    </small>
+  </span>
+);
+
 const BANK_OPTIONS = BANKS.map((bank) => ({ value: bank, label: bank }));
 
 const draftOf = (company: Company): CompanyDraft => ({
@@ -370,35 +388,38 @@ const CompanyForm = ({ company }: { company: Company }) => {
       <SettingsGroup title="Ubicación">
         <SettingsRow
           label="Ubigeo (INEI)"
-          description="Busca por código, departamento, provincia o distrito."
+          description="Busca por distrito, provincia, departamento o código."
           htmlFor="company-ubigeo"
         >
-          <EntityDropdown
-            id="company-ubigeo"
-            url={`${API}ubigeos`}
-            valueField="code"
-            textField="name"
-            searchExpr={['code', 'department', 'province', 'district']}
-            value={draft.ubigeoCode || null}
-            disabled={!canEdit}
-            onChange={(value, item) =>
-              set({
-                ubigeoCode: value ?? '',
-                department: String(item?.['department'] ?? ''),
-                province: String(item?.['province'] ?? ''),
-                district: String(item?.['district'] ?? ''),
-              })
-            }
-          />
+          <div className="settings-ubigeo">
+            <EntityDropdown
+              id="company-ubigeo"
+              url={`${API}ubigeos`}
+              valueField="code"
+              textField="name"
+              searchExpr={['district', 'province', 'department', 'code']}
+              placeholder="Ej. Miraflores o 150122"
+              value={draft.ubigeoCode || null}
+              disabled={!canEdit}
+              itemFormatter={(item) => <UbigeoOption item={item as UbigeoItem} />}
+              onChange={(value, item) =>
+                set({
+                  ubigeoCode: value ?? '',
+                  department: String(item?.['department'] ?? ''),
+                  province: String(item?.['province'] ?? ''),
+                  district: String(item?.['district'] ?? ''),
+                })
+              }
+            />
+          </div>
         </SettingsRow>
-        <SettingsRow label="Departamento">
-          <span className="settings-muted">{draft.department || '—'}</span>
-        </SettingsRow>
-        <SettingsRow label="Provincia">
-          <span className="settings-muted">{draft.province || '—'}</span>
-        </SettingsRow>
-        <SettingsRow label="Distrito">
-          <span className="settings-muted">{draft.district || '—'}</span>
+        <SettingsRow
+          label="Distrito, provincia y departamento"
+          description="Se completan al elegir el ubigeo."
+        >
+          <span className="settings-muted">
+            {[draft.district, draft.province, draft.department].filter(Boolean).join(' · ') || '—'}
+          </span>
         </SettingsRow>
       </SettingsGroup>
 

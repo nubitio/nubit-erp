@@ -213,61 +213,6 @@
   gap: 0.75rem;
 }
 
-.settings-sunat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.settings-operation {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.settings-panel .config-content {
-  gap: 0.75rem;
-}
-
-.settings-panel .config-group {
-  border-color: var(--border-subtle, var(--border-color));
-  border-radius: var(--radius-md, 10px);
-  background: var(--surface-1);
-}
-
-.settings-panel .config-group-title {
-  padding: 0.6rem 1.1rem;
-  border-bottom: 1px solid var(--border-subtle, var(--border-color));
-  background: var(--surface-0);
-  color: var(--text-secondary);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.settings-panel .config-setting-row,
-.settings-panel .config-toggle-row {
-  min-height: 3.25rem;
-  padding: 0.7rem 1.1rem;
-  border-color: var(--border-subtle);
-}
-
-.settings-panel .config-setting-label,
-.settings-panel .config-toggle-label {
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.settings-panel .config-setting-description,
-.settings-panel .config-toggle-description {
-  max-width: 620px;
-  color: var(--text-secondary);
-  font-size: 0.775rem;
-  line-height: 1.45;
-}
-
 .settings-panel > .nb-card,
 .settings-integrations > .nb-card {
   border-color: var(--border-subtle, var(--border-color));
@@ -301,36 +246,6 @@
   color: var(--text-secondary);
   font-size: 0.8125rem;
   text-align: left;
-}
-
-.sunat-certificate__status {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  padding: 0.6rem 0.85rem;
-  border: 1px solid var(--border-subtle, var(--border-color));
-  border-radius: 8px;
-  background: var(--surface-0, var(--base-bg));
-
-  > div {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-  }
-}
-
-.sunat-certificate__form {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.85rem;
-}
-
-.sunat-certificate__actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 1rem;
 }
 
 @media (max-width: 720px) {
@@ -375,42 +290,6 @@
 
   .settings-advanced-link {
     min-height: 40px;
-  }
-
-  .settings-panel .config-setting-row,
-  .settings-panel .config-toggle-row {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.6rem;
-  }
-
-  .settings-panel .config-setting-value,
-  .settings-panel .config-setting-edit,
-  .settings-panel .config-setting-display {
-    width: 100%;
-  }
-
-  .settings-panel .config-setting-display {
-    justify-content: space-between;
-  }
-
-  .settings-panel .config-setting-edit {
-    align-items: stretch;
-    flex-wrap: wrap;
-  }
-
-  .settings-panel .config-setting-input {
-    flex: 1 1 100%;
-    width: 100%;
-  }
-
-  .sunat-certificate__form {
-    grid-template-columns: 1fr;
-  }
-
-  .sunat-certificate__status {
-    align-items: flex-start;
-    flex-direction: column;
   }
 }
 

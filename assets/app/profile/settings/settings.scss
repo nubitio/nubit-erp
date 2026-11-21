@@ -378,3 +378,30 @@
   max-height: 72px;
   object-fit: contain;
 }
+
+// The certificate picker inside a settings row.
+.settings-dropzone {
+  width: min(22rem, 100%);
+}
+
+// The ubigeo picker: wide enough for "Distrito, Provincia, Departamento" to read in one go.
+.settings-ubigeo {
+  width: min(24rem, 100%);
+}
+
+.ubigeo-option {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+
+  strong {
+    color: var(--text-primary);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  small {
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+  }
+}
