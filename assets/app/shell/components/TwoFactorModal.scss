@@ -13,6 +13,19 @@
     padding-left: 20px;
   }
 
+  &__qr {
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    display: block;
+    margin: 12px auto;
+  }
+
+  &__alt {
+    color: var(--text-secondary);
+    display: block;
+    font-size: var(--font-size-sm);
+  }
+
   &__secret {
     background: var(--nb-color-bg-subtle, var(--surface-2));
     border-radius: 8px;
