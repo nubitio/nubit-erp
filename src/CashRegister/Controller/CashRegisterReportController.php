@@ -14,6 +14,7 @@ use Nubit\Platform\Feature\Attribute\RequiresFeature;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Twig\Environment;
 
 class CashRegisterReportController extends AbstractController
@@ -27,6 +28,7 @@ class CashRegisterReportController extends AbstractController
     /**
      * @throws Exception
      */
+    #[IsGranted('perm:cash.view')]
     #[RequiresFeature('pdf_bulk_download')]
     #[Route('/api/cash-sessions/{id}/closure-report', name: 'cash_session_closure_report', methods: ['GET'])]
     public function __invoke(int $id): Response

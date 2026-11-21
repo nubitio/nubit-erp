@@ -129,6 +129,9 @@ security:
         - { path: ^/api/v1/bank-statement-imports, roles: ROLE_USER }
         - { path: ^/api/v1/onboarding, roles: ROLE_USER }
         - { path: '^/api/v1/products/import(?:/|$)', roles: 'perm:catalog.create' }
+        # Also ERP web UI screens (Tipo de cambio, exportar productos); the controllers add the finer permission.
+        - { path: ^/api/v1/exchange-rate, roles: ROLE_USER }
+        - { path: '^/api/v1/products/export$', roles: 'perm:catalog.view' }
         - { path: ^/api/v1, roles: ROLE_INTEGRATION }
         - { path: ^/api/settings, roles: ROLE_USER }
         - { path: ^/api/setup, roles: PUBLIC_ACCESS }

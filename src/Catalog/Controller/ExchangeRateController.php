@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * @deprecated Use the API Platform endpoints GET/PUT /api/exchange-rate/{currency}
@@ -41,6 +42,7 @@ class ExchangeRateController extends AbstractController
         ]);
     }
 
+    #[IsGranted('perm:settings.edit')]
     #[Route('', name: 'exchange_rate_put', methods: ['PUT'])]
     public function put(Request $request): JsonResponse
     {
@@ -70,6 +72,7 @@ class ExchangeRateController extends AbstractController
         ]);
     }
 
+    #[IsGranted('perm:settings.edit')]
     #[Route('/sync', name: 'exchange_rate_sync', methods: ['POST'])]
     public function sync(): JsonResponse
     {

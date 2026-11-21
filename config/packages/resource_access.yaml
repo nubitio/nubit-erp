@@ -1,0 +1,165 @@
+# Who may use each API resource that does not declare `security` on the entity.
+#
+# API Platform leaves an operation open to every signed-in user unless it has a `security`
+# expression, so a cashier could change the tax rate, the stock or the payroll just by calling the
+# API; only the screens hid the buttons. App\Identity\Security\PolicyResourceMetadataCollectionFactory
+# fills the gaps from here, and ApiResourceAccessPolicyTest fails when an operation is left without a
+# rule, so a new resource cannot ship open by accident. A `security` written on the entity wins.
+#
+# It lives in config, not in PHP, because it names resources of every context (and of the Pharmacy
+# vertical): the architecture tests forbid core code from referencing them, and this is the
+# composition root where that is allowed.
+#
+# A rule is looked up by, in order: "METHOD /uriTemplate" (a custom operation), the HTTP method
+# (POST, PUT, PATCH, DELETE), then `read` (GET) or `write` (anything else). Its value is:
+#   open              signed in is enough: reference data every role works with (the POS reads the
+#                     catalog, payment methods and warehouses). A decision, not an omission.
+#   a.permission      the PermissionCatalog key the user's role must hold
+#   [a.perm, b.perm]  any one of them
+parameters:
+    app.resource_access.exempt:
+        # Public bootstrap of an empty tenant; InitialSetupService refuses once there is a user.
+        - 'App\Setup\ApiResource\SetupResource'
+
+    app.resource_access.rules:
+        'App\AccountsPayable\Entity\ExpenseCategory':
+            read: open
+            write: accounts_payable.create
+        'App\BankReconciliation\Entity\BankAccount':
+            read: [treasury.view, bank_reconciliation.view]
+            write: treasury.manage
+        'App\BankReconciliation\Entity\BankStatementImport':
+            read: bank_reconciliation.view
+            'POST /bank-statement-imports/{id}/auto-match': bank_reconciliation.match
+        'App\BankReconciliation\Entity\BankStatementLine':
+            read: bank_reconciliation.view
+            'POST /bank-statement-lines/{id}/match': bank_reconciliation.match
+            'POST /bank-statement-lines/{id}/ignore': bank_reconciliation.match
+            'POST /bank-statement-lines/{id}/unmatch': bank_reconciliation.void
+        'App\Billing\ApiResource\ConsultResource':
+            read: open
+        'App\Billing\Despatch\Entity\DespatchGuide':
+            read: sales.view
+        'App\Billing\Entity\TaxDocumentLine':
+            read: sales.view
+        'App\Billing\Invoice\Api\InvoiceCreateDto':
+            write: sales.create
+        'App\Billing\Invoice\Api\VoucherDto':
+            read: sales.view
+        'App\CashRegister\Entity\CashMovementCategory':
+            read: open
+            write: cash.manage
+        'App\Catalog\Entity\Category':
+            read: open
+            POST: catalog.create
+            PUT: catalog.edit
+            PATCH: catalog.edit
+            DELETE: catalog.delete
+        'App\Catalog\Entity\ExchangeRate':
+            read: open
+            write: settings.edit
+        'App\Catalog\Entity\PaymentMethod':
+            read: open
+            write: treasury.manage
+        'App\Catalog\Entity\SunatCatalog':
+            read: open
+            write: settings.edit
+        'App\Catalog\Entity\UnitOfMeasure':
+            read: open
+            write: catalog.edit
+        'App\Catalog\Entity\VoucherType':
+            read: open
+            write: settings.edit
+        'App\Contacts\Entity\Supplier':
+            read: open
+            POST: purchases.create
+            write: purchases.edit
+        'App\ExpenseReports\Entity\ExpenseReport':
+            read: expense_reports.view
+            write: expense_reports.create
+            'POST /expense-reports/{id}/approve': expense_reports.approve
+            'POST /expense-reports/{id}/reject': expense_reports.approve
+            'POST /expense-reports/{id}/reimburse': expense_reports.reimburse
+        'App\FixedAssets\Entity\AssetDepreciationEntry':
+            read: fixed_assets.view
+        'App\FixedAssets\Entity\FixedAsset':
+            read: fixed_assets.view
+            write: fixed_assets.create
+            'POST /fixed-assets/{id}/dispose': fixed_assets.dispose
+        'App\Identity\Entity\UserNotification':
+            read: open
+            write: open
+        'App\Inventory\Entity\LogisticOperation':
+            read: [inventory.view, purchases.view]
+            write: inventory.adjust
+        'App\Inventory\Entity\PriceList':
+            read: open
+            write: catalog.edit
+        'App\Inventory\Entity\ProductStock':
+            read: open
+            write: inventory.adjust
+        'App\Inventory\Entity\StockEntry':
+            write: purchases.create
+        'App\Inventory\Entity\StockEntryItem':
+            read: purchases.view
+        'App\Inventory\Entity\StockItem':
+            read: [inventory.view, purchases.view]
+        'App\Inventory\Entity\Warehouse':
+            read: open
+            write: settings.edit
+        'App\Payroll\Entity\AfpRate':
+            read: payroll.view
+            write: payroll.manage_rates
+        'App\Payroll\Entity\Employee':
+            read: payroll.view
+            write: payroll.manage_employees
+        'App\Payroll\Entity\PayrollRun':
+            read: payroll.view
+            write: payroll.run
+            'POST /payroll-runs/{id}/calculate': payroll.run
+            'POST /payroll-runs/{id}/approve': payroll.approve
+            'POST /payroll-runs/{id}/pay': payroll.approve
+        'App\Payroll\Entity\PayslipEntry':
+            read: payroll.view
+        'App\Pharmacy\Entity\PharmacyBatch':
+            read: inventory.view
+        'App\Pharmacy\Entity\PharmacyProduct':
+            read: inventory.view
+        'App\Pharmacy\Entity\Prescription':
+            read: inventory.view
+            write: sales.create
+        'App\Purchasing\Entity\PurchaseItem':
+            read: purchases.view
+        'App\Purchasing\Entity\PurchaseOrder':
+            read: purchase_orders.view
+            POST: purchase_orders.create
+            PATCH: purchase_orders.edit
+            PUT: purchase_orders.edit
+            DELETE: purchase_orders.cancel
+        'App\Purchasing\Entity\PurchaseOrderItem':
+            read: purchase_orders.view
+        'App\Sales\ApiResource\CustomerStatementResource':
+            read: sales.view
+        'App\Sales\ApiResource\DashboardResource':
+            read: open
+        'App\Sales\ApiResource\SaleReportResource':
+            read: sales.view
+        'App\Sales\Entity\SaleItemRecord':
+            read: sales.view
+        'App\Settings\ApiResource\MenuResource':
+            read: open
+        'App\Settings\ApiResource\RoleMenuResource':
+            read: roles.view
+            write: roles.assign
+        'App\Settings\Entity\Config':
+            read: open
+            write: settings.edit
+        'App\Settings\Entity\TenantSettings':
+            read: open
+            write: settings.edit
+        'App\Settings\Entity\Ubigeo':
+            read: open
+            write: settings.edit
+        'Nubit\AdminBundle\Media\Entity\Media':
+            read: open
+            DELETE: [settings.edit, catalog.edit]
