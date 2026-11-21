@@ -276,3 +276,11 @@ test.describe('two-step verification setup', () => {
     await modal.getByRole('button', { name: 'Cancelar' }).click();
   });
 });
+
+test('the settings panel follows the dialog's rounded bottom corners', async ({ page }) => {
+  const dialog = await openSettings(page);
+  const radius = await dialog
+    .locator('.settings-shell')
+    .evaluate((element) => getComputedStyle(element).borderBottomLeftRadius);
+  expect(parseFloat(radius)).toBeGreaterThan(0);
+});
