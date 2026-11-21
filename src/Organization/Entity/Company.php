@@ -6,6 +6,12 @@ namespace App\Organization\Entity;
 
 use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Organization\Repository\CompanyRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\AdminBundle\Media\Entity\Media;
@@ -16,7 +22,20 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CompanyRepository::class)]
 #[ORM\Table(name: 'empresa')]
-#[ApiResource(normalizationContext: ['groups' => ['company:read']], filters: [DataGridFilter::class], mercure: true)]
+#[ApiResource(
+    operations: [
+        // Everyone signed in reads these (branch picker, receipts, series per sale); changing them is settings.
+        new GetCollection(security: "is_granted('ROLE_USER')"),
+        new Get(security: "is_granted('ROLE_USER')"),
+        new Post(security: "is_granted('perm:settings.edit')"),
+        new Put(security: "is_granted('perm:settings.edit')"),
+        new Patch(security: "is_granted('perm:settings.edit')"),
+        new Delete(security: "is_granted('perm:settings.edit')"),
+    ],
+    normalizationContext: ['groups' => ['company:read']],
+    filters: [DataGridFilter::class],
+    mercure: true,
+)]
 class Company
 {
     #[Groups([
