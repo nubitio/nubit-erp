@@ -518,11 +518,14 @@ test.describe('invite dialog (browser)', () => {
     await expect(dialog).toBeVisible();
 
     // the super administrator role is not offered here
-    await expect(dialog.getByRole('option', { name: 'Super Administrador' })).toHaveCount(0);
+    await dialog.getByRole('combobox', { name: 'Rol' }).click();
+    await expect(page.getByRole('option', { name: 'Super Administrador' })).toHaveCount(0);
+    await page.keyboard.press('Escape');
     await expect(dialog.getByRole('button', { name: 'Enviar invitación' })).toBeDisabled();
 
     await dialog.getByLabel('Correo').fill('not-an-email');
-    await dialog.getByLabel('Rol').selectOption({ label: 'Cajero' });
+    await dialog.getByRole('combobox', { name: 'Rol' }).click();
+    await page.getByRole('option', { name: 'Cajero' }).click();
     await dialog.getByRole('button', { name: 'Enviar invitación' }).click();
     await expect(dialog.getByRole('alert')).toContainText('correo válido');
 
@@ -717,7 +720,7 @@ test.describe('pending invitations and second-factor visibility', () => {
 });
 
 test.describe('pending invitations and 2FA reset on the users screen (browser)', () => {
-  test('the Invitaciones tab lists an invitation, resends it, and revokes it after confirming', async ({
+  test('a pending invitation is a row of the users grid: resent, then revoked after confirming', async ({
     page,
   }) => {
     const seed = await getE2ESeed();
@@ -726,15 +729,15 @@ test.describe('pending invitations and 2FA reset on the users screen (browser)',
     await mailTo(email, 'invitaron');
 
     await uiLogin(page, seed.username, seed.password);
-    await page.goto(`${BASE}/config/invitations`);
-    await expect(page.getByTestId('invitations-page')).toBeVisible({ timeout: 25_000 });
+    await page.goto(`${BASE}/config/users`);
     const row = page.locator('tbody tr').filter({ hasText: email });
     await expect(row).toBeVisible({ timeout: 25_000 });
+    await expect(row).toContainText('Invitación pendiente');
     await expect(row).toContainText('Cajero');
     await expect(row).toContainText('vence en 7 días');
 
     await row.getByRole('button').last().click();
-    await page.getByRole('menuitem', { name: 'Reenviar' }).click();
+    await page.getByRole('menuitem', { name: 'Reenviar invitación' }).click();
     await expect(page.getByText(`Enviamos un nuevo enlace a ${email}`)).toBeVisible({
       timeout: 15_000,
     });
@@ -753,7 +756,7 @@ test.describe('pending invitations and 2FA reset on the users screen (browser)',
       .toBe(2);
 
     await row.getByRole('button').last().click();
-    await page.getByRole('menuitem', { name: 'Revocar' }).click();
+    await page.getByRole('menuitem', { name: 'Revocar invitación' }).click();
     await expect(page.getByText('Revocar invitación', { exact: true })).toBeVisible();
     await expect(
       page.getByText(`El enlace enviado a ${email} dejará de funcionar de inmediato.`),

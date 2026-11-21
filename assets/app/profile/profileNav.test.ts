@@ -25,7 +25,7 @@ describe('buildProfileNav', () => {
 
   it('adds plan and organization for the tenant admin', () => {
     const nav = buildProfileNav({
-      organizationTabs: [tab('company'), tab('users')],
+      organizationTabs: [tab('company'), tab('series')],
       canSeeOrganization: true,
       canManagePlan: true,
     });
@@ -33,7 +33,7 @@ describe('buildProfileNav', () => {
     expect(nav[1]?.items.map((item) => item.key)).toEqual(['usage', 'plan']);
   });
 
-  it('edits company, SUNAT and operation in the panel, links to the other pages and drops the hidden ones', () => {
+  it('lists every settings page for the panel and drops the hidden ones', () => {
     const organization = buildProfileNav({
       organizationTabs: [
         tab('company'),
@@ -42,8 +42,7 @@ describe('buildProfileNav', () => {
         tab('series'),
         tab('branches'),
         tab('integrations'),
-        tab('users'),
-        tab('roles', false),
+        tab('activity', false),
       ],
       canSeeOrganization: true,
       canManagePlan: false,
@@ -55,13 +54,12 @@ describe('buildProfileNav', () => {
       { key: 'series', label: 'series', icon: 'ph-gear' },
       { key: 'branches', label: 'branches', icon: 'ph-gear' },
       { key: 'integrations', label: 'integrations', icon: 'ph-gear' },
-      { key: 'org-users', label: 'users', icon: 'ph-gear', href: '/config/users' },
     ]);
   });
 
   it('omits the organization group when nothing in it is visible', () => {
     const nav = buildProfileNav({
-      organizationTabs: [tab('roles', false)],
+      organizationTabs: [tab('activity', false)],
       canSeeOrganization: true,
       canManagePlan: false,
     });

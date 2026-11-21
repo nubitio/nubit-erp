@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { AppDialog, Button, SelectField, TextField } from '@nubitio/ui';
+import { Alert, AppDialog, Button, Combobox, FormField, FormLayout, TextField } from '@nubitio/ui';
 
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
@@ -9,6 +9,8 @@ import { roleEndpoints } from '../api/roleEndpoints';
 import { PENDING_INVITATIONS_QUERY_KEY } from '../usePendingInvitations';
 
 import './InviteUserDialog.scss';
+
+const FORM_ID = 'invite-user-form';
 
 /** Role id 1 (super administrator) can only be handed out by a super administrator: use the API. */
 const SUPER_ADMIN_ROLE_ID = 1;
@@ -36,13 +38,14 @@ export const InviteUserDialog = ({ onClose }: { onClose: () => void }) => {
       (await httpClient.get<RoleRow[]>(`${roleEndpoints.list()}?itemsPerPage=100`)).data,
   });
   const [email, setEmail] = useState('');
-  const [roleId, setRoleId] = useState('');
+  const [roleId, setRoleId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const options = (Array.isArray(roles.data) ? roles.data : []).filter(
-    (role) => role.id !== SUPER_ADMIN_ROLE_ID,
-  );
+  const roleOptions = (Array.isArray(roles.data) ? roles.data : [])
+    .filter((role) => role.id !== SUPER_ADMIN_ROLE_ID)
+    .map((role) => ({ value: String(role.id), label: role.name }));
+  const canSubmit = Boolean(email.trim() && roleId);
 
   const submit = async () => {
     setError(null);
@@ -67,7 +70,11 @@ export const InviteUserDialog = ({ onClose }: { onClose: () => void }) => {
     <AppDialog
       open
       title="Invitar usuario"
-      onClose={onClose}
+      onClose={() => {
+        if (!loading) onClose();
+      }}
+      closeOnEscape={!loading}
+      showCloseButton={!loading}
       width={440}
       footer={
         <>
@@ -75,27 +82,33 @@ export const InviteUserDialog = ({ onClose }: { onClose: () => void }) => {
             Cancelar
           </Button>
           <Button
+            type="submit"
+            form={FORM_ID}
             variant="primary"
             loading={loading}
-            disabled={!email.trim() || !roleId}
-            onClick={() => void submit()}
+            disabled={!canSubmit}
           >
             Enviar invitación
           </Button>
         </>
       }
     >
-      <div className="invite-user">
-        <p>
+      <FormLayout
+        id={FORM_ID}
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (canSubmit) void submit();
+        }}
+      >
+        <p className="invite-user__intro">
           Le enviaremos un correo con un enlace para que cree su propia contraseña. El enlace vence
           en 7 días.
         </p>
-        <label className="invite-user__field">
-          <span>Correo</span>
+        <FormField label="Correo" required>
           <TextField
             type="email"
             autoComplete="off"
-            aria-label="Correo"
+            required
             value={email}
             disabled={loading}
             onChange={(event) => {
@@ -103,29 +116,20 @@ export const InviteUserDialog = ({ onClose }: { onClose: () => void }) => {
               setError(null);
             }}
           />
-        </label>
-        <label className="invite-user__field">
-          <span>Rol</span>
-          <SelectField
+        </FormField>
+        <FormField label="Rol" required>
+          <Combobox
             aria-label="Rol"
+            required
+            placeholder="Elige un rol…"
+            options={roleOptions}
             value={roleId}
             disabled={loading || roles.isPending}
-            onChange={(event) => setRoleId(event.target.value)}
-          >
-            <option value="">Elige un rol…</option>
-            {options.map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.name}
-              </option>
-            ))}
-          </SelectField>
-        </label>
-        {error && (
-          <div className="invite-user__error" role="alert">
-            {error}
-          </div>
-        )}
-      </div>
+            onChange={setRoleId}
+          />
+        </FormField>
+        {error && <Alert tone="danger">{error}</Alert>}
+      </FormLayout>
     </AppDialog>
   );
 };

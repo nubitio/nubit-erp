@@ -255,3 +255,30 @@ describe('filterMenuByRuntimeConfig', () => {
     ).toContain('/inventory/warehouses');
   });
 });
+
+describe('Administración group', () => {
+  const administration = [
+    {
+      text: 'Administración',
+      items: [
+        { text: 'Usuarios', path: '/config/users' },
+        { text: 'Roles', path: '/config/roles' },
+        { text: 'Actividad', path: '/config/activity' },
+      ],
+    },
+  ] as unknown as AdminMenuItem[];
+  const childPaths = (items: AdminMenuItem[]) => items[0]?.items?.map((child) => child.path);
+
+  it('is hidden for basic tenants, which have no administration screens', () => {
+    expect(filterMenuByRuntimeConfig(administration, runtimeConfig('basic'))).toEqual([]);
+  });
+
+  it('offers each page only to who holds its permission', () => {
+    localStorage.setItem(
+      'user',
+      JSON.stringify({ username: 'auditor', permissions: ['activity.view'] }),
+    );
+    const filtered = filterMenuByRuntimeConfig(administration, runtimeConfig('standard'));
+    expect(childPaths(filtered)).toEqual(['/config/activity']);
+  });
+});

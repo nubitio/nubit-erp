@@ -42,8 +42,10 @@ const MENU_VIEW_PERMISSION: Record<string, string> = {
   employees: 'payroll.view',
   'payroll-runs': 'payroll.view',
   ple: 'reports.ple',
-  config: 'settings.view',
-  'setup/import': 'settings.view',
+  // The "Administración" group: lists of records that used to be tabs of the settings hub.
+  'config/users': 'users.view',
+  'config/roles': 'users.view',
+  'config/activity': 'activity.view',
 };
 
 const NAVIGATION_TIER_RANK: Record<TenantRuntimeConfig['profile']['navigationTier'], number> = {
@@ -58,6 +60,9 @@ const MENU_MIN_TIER = new Map<string, TenantRuntimeConfig['profile']['navigation
   ['ple', 'advanced'],
   ['subscriptions', 'advanced'],
   ['expense-reports', 'advanced'],
+  ['config/users', 'standard'],
+  ['config/roles', 'standard'],
+  ['config/activity', 'standard'],
 ]);
 
 const MENU_REQUIRED_CAPABILITY: Record<string, string> = {

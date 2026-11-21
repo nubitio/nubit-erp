@@ -3,7 +3,6 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 import { DateTime } from 'luxon';
 
 import { httpClient } from '@shared/api/HttpClient';
-import { hasPermission } from '@shared/permissions';
 import toast from '@shared/lib/SharedUtils';
 
 export const PENDING_INVITATIONS_QUERY_KEY = ['admin', 'pending-invitations'] as const;
@@ -17,10 +16,6 @@ export interface PendingInvitation {
 }
 
 const api = () => `${getCoreApiBaseUrl()}user-invitations`;
-
-/** Invitations exist only while the identity module is on, and listing needs users.view. */
-export const invitationsAvailable = (): boolean =>
-  Boolean(window.app_identity) && hasPermission('users.view');
 
 /** "vence en 3 días" / "vence mañana" / "vence hoy", by calendar day in the viewer's zone. */
 export function expiryLabel(expiresAt: string, now: DateTime = DateTime.now()): string {

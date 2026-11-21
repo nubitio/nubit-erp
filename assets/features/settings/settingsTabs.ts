@@ -1,18 +1,3 @@
-import { hasPermission } from '@shared/permissions';
-
-/** The pages edited inside the account settings dialog; the rest are screens of their own. */
-export const IN_DIALOG: ReadonlySet<string> = new Set([
-  'company',
-  'sunat',
-  'general',
-  'series',
-  'branches',
-  'integrations',
-]);
-
-/** Pages that appear in the settings list as a link to their own screen, outside the hub. */
-export const LINK_ONLY: ReadonlySet<string> = new Set(['import']);
-
 export interface SettingsTab {
   key: string;
   label: string;
@@ -23,8 +8,9 @@ export interface SettingsTab {
 }
 
 /**
- * The tenant's settings pages and who gets to see them. One list for the settings hub's tabs and
- * for the "Organización" group of the account settings, so the two never disagree.
+ * The tenant's settings pages, each edited inside the account settings dialog ("Organización").
+ * Users, roles, invitations and activity are lists of records, so they are pages of their own
+ * under the "Administración" menu group instead.
  *
  * `showAdminTabs`: the tenant's navigation tier includes the administration screens.
  */
@@ -46,34 +32,6 @@ export function settingsTabs({ showAdminTabs }: { showAdminTabs: boolean }): Set
     },
     { key: 'series', label: 'Series', path: '/config/series', icon: 'ph-hash', visible: true },
     {
-      key: 'users',
-      label: 'Usuarios',
-      path: '/config/users',
-      icon: 'ph-users',
-      visible: showAdminTabs,
-    },
-    {
-      key: 'invitations',
-      label: 'Invitaciones',
-      path: '/config/invitations',
-      icon: 'ph-envelope-simple',
-      visible: showAdminTabs && Boolean(window.app_identity) && hasPermission('users.view'),
-    },
-    {
-      key: 'roles',
-      label: 'Roles',
-      path: '/config/roles',
-      icon: 'ph-user-gear',
-      visible: showAdminTabs,
-    },
-    {
-      key: 'activity',
-      label: 'Actividad',
-      path: '/config/activity',
-      icon: 'ph-clock-counter-clockwise',
-      visible: showAdminTabs && hasPermission('activity.view'),
-    },
-    {
       key: 'branches',
       label: 'Sucursales',
       path: '/config/branches',
@@ -86,13 +44,6 @@ export function settingsTabs({ showAdminTabs }: { showAdminTabs: boolean }): Set
       path: '/config/integrations',
       icon: 'ph-plugs-connected',
       visible: showAdminTabs,
-    },
-    {
-      key: 'import',
-      label: 'Importar datos',
-      path: '/setup/import',
-      icon: 'ph-database',
-      visible: true,
     },
     {
       key: 'general',

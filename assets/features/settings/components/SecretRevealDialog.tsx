@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AppDialog, Button, Code } from '@nubitio/ui';
 import toast from '@shared/lib/SharedUtils';
+import './SecretRevealDialog.scss';
 
 interface SecretRevealDialogProps {
   open: boolean;
