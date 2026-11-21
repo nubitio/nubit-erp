@@ -1,16 +1,11 @@
-import { useTheme } from '@nubitio/ui';
+const NUBIT_ICON = '/assets/images/nubit-icon.png';
 
+/** Same mark as the login brand panel: the Nubit "N" icon plus the product name. */
 export function WorkspaceBrand() {
-  const { theme } = useTheme();
   return (
-    <img
-      className="erp-workspace-brand"
-      src={
-        theme === 'dark'
-          ? '/assets/images/nubit-erp-logo-dark.svg'
-          : '/assets/images/nubit-erp-logo.svg'
-      }
-      alt="Nubit ERP"
-    />
+    <span className="erp-workspace-brand">
+      <img src={NUBIT_ICON} alt="" />
+      <span>Nubit ERP</span>
+    </span>
   );
 }
