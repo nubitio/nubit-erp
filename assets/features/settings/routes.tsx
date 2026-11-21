@@ -2,7 +2,6 @@ import { Navigate } from 'react-router-dom';
 import { lazyNamed } from '@app/router/lazy';
 import type { AppRouteDefinition } from '@app/router/types';
 import { SettingsHubLayout } from './SettingsHubLayout';
-import { SettingsIntegrationsTab } from './SettingsIntegrationsTab';
 import { SettingsCrudPanel } from './SettingsCrudPanel';
 import { useTenantRuntimeConfig } from '@shared/hooks';
 
@@ -69,7 +68,10 @@ export const settingsRoutes: AppRouteDefinition[] = [
         element: () => <Navigate to="/dashboard?settings=branches" replace />,
       },
       { path: 'general', element: () => <Navigate to="/dashboard?settings=general" replace /> },
-      { path: 'integrations', element: SettingsIntegrationsTab },
+      {
+        path: 'integrations',
+        element: () => <Navigate to="/dashboard?settings=integrations" replace />,
+      },
     ],
   },
 ];

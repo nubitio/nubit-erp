@@ -16,7 +16,9 @@ test('Ajustes > Operación muestra el redondeo de efectivo del POS', async ({ pa
   await expect(dialog.getByLabel('Redondeo de efectivo a S/ 0.10')).toBeAttached();
 });
 
-test('/config/general, sunat, series y branches abren Ajustes en su sección', async ({ page }) => {
+test('/config/general, sunat, series, branches e integrations abren Ajustes en su sección', async ({
+  page,
+}) => {
   const seed = await getE2ESeed();
 
   await login(page, seed.username, seed.password);
@@ -25,6 +27,7 @@ test('/config/general, sunat, series y branches abren Ajustes en su sección', a
     ['sunat', 'SUNAT'],
     ['series', 'Series'],
     ['branches', 'Sucursales'],
+    ['integrations', 'Integraciones'],
   ]) {
     await page.goto(`${BASE_URL}/config/${route}`);
     await expect(page).toHaveURL(new RegExp(`[?&]settings=${route}`));

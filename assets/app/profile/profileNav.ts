@@ -12,6 +12,7 @@ export const PROFILE_SECTIONS = [
   'general',
   'series',
   'branches',
+  'integrations',
 ] as const;
 export type ProfileSection = (typeof PROFILE_SECTIONS)[number];
 

@@ -7,6 +7,7 @@ export const IN_DIALOG: ReadonlySet<string> = new Set([
   'general',
   'series',
   'branches',
+  'integrations',
 ]);
 
 export interface SettingsTab {

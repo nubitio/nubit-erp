@@ -41,6 +41,7 @@ describe('buildProfileNav', () => {
         tab('general'),
         tab('series'),
         tab('branches'),
+        tab('integrations'),
         tab('users'),
         tab('roles', false),
       ],
@@ -53,6 +54,7 @@ describe('buildProfileNav', () => {
       { key: 'general', label: 'general', icon: 'ph-gear' },
       { key: 'series', label: 'series', icon: 'ph-gear' },
       { key: 'branches', label: 'branches', icon: 'ph-gear' },
+      { key: 'integrations', label: 'integrations', icon: 'ph-gear' },
       { key: 'org-users', label: 'users', icon: 'ph-gear', href: '/config/users' },
     ]);
   });
@@ -74,6 +76,7 @@ describe('parseSection', () => {
     expect(parseSection('general')).toBe('general');
     expect(parseSection('series')).toBe('series');
     expect(parseSection('branches')).toBe('branches');
+    expect(parseSection('integrations')).toBe('integrations');
     expect(parseSection('usage')).toBe('usage');
     expect(parseSection(undefined)).toBe('account');
     expect(parseSection('nope')).toBe('account');

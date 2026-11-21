@@ -8,6 +8,7 @@ import { AccountSection } from './sections/AccountSection';
 import { AppearanceSection } from './sections/AppearanceSection';
 import { BranchesSection } from './sections/BranchesSection';
 import { CompanySection } from './sections/CompanySection';
+import { IntegrationsSection } from './sections/IntegrationsSection';
 import { OperationSection } from './sections/OperationSection';
 import { PlanSection } from './sections/PlanSection';
 import { SecuritySection } from './sections/SecuritySection';
@@ -28,6 +29,7 @@ const TITLES: Record<ProfileSection, string> = {
   general: 'Operación',
   series: 'Series',
   branches: 'Sucursales',
+  integrations: 'Integraciones',
 };
 
 /**
@@ -98,6 +100,7 @@ const OpenSettings = ({
         {section === 'general' && <OperationSection />}
         {section === 'series' && <SeriesSection />}
         {section === 'branches' && <BranchesSection />}
+        {section === 'integrations' && <IntegrationsSection />}
       </SettingsLayout>
     </AppDialog>
   );
