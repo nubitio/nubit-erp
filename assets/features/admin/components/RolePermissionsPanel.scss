@@ -1,0 +1,15 @@
+// The dialog is flush: the tab bar spans it edge to edge, its first label lines up with the pane content
+// (tab padding + this inset = the pane inset), and the panes bring their own insets.
+.role-permissions {
+  .nb-tabs__list {
+    padding-inline: var(--space-1);
+  }
+
+  .nb-tabs__panel {
+    padding: 0;
+  }
+
+  &__pane {
+    padding: var(--space-4);
+  }
+}

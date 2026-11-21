@@ -1,164 +1,100 @@
-import './PermissionMatrix.scss';
 import { forwardRef, useImperativeHandle, useMemo, useState } from 'react';
+import { Text, TreeList, type TreeNodeId } from '@nubitio/ui';
 
-export type PermissionModule = {
-  key: string;
-  label: string;
-  permissions: { key: string; label: string; granted: boolean }[];
-};
+import {
+  countOn,
+  grantedKeys,
+  initialModuleSelection,
+  moduleNodeId,
+  moduleNodes,
+  normalizeModuleSelection,
+  type PermissionModule,
+  type PermissionNode,
+} from './permissionSelection';
+
+export type { PermissionModule } from './permissionSelection';
 
 export interface PermissionMatrixHandle {
   setModules: (modules: PermissionModule[]) => void;
   getGrantedKeys: () => string[];
 }
 
-type MatrixCheckboxProps = {
-  checked: boolean;
-  indeterminate?: boolean;
-  label: string;
-  onChange: () => void;
-};
-
-function MatrixCheckbox({ checked, indeterminate = false, label, onChange }: MatrixCheckboxProps) {
-  return (
-    <label className="permission-matrix__checkbox">
-      <input
-        type="checkbox"
-        checked={checked}
-        className="permission-matrix__input"
-        ref={(element) => {
-          if (element) element.indeterminate = indeterminate;
-        }}
-        onChange={onChange}
-      />
-      <span>{label}</span>
-    </label>
-  );
-}
-
+/** What a role may do, grouped by module. The tree's own search filters by module or permission. */
 export const PermissionMatrix = forwardRef<PermissionMatrixHandle>((_props, ref) => {
-  const [modules, setModulesState] = useState<PermissionModule[]>([]);
-  const [grantedKeys, setGrantedKeys] = useState<Set<string>>(() => new Set());
-  const [query, setQuery] = useState('');
+  const [modules, setModules] = useState<PermissionModule[]>([]);
+  const [selected, setSelected] = useState<ReadonlySet<TreeNodeId>>(() => new Set());
+  // Remounting the tree clears its search and expansion when another role is loaded.
+  const [generation, setGeneration] = useState(0);
 
   useImperativeHandle(ref, () => ({
-    setModules: (nextModules) => {
-      setModulesState(nextModules);
-      setQuery('');
-      setGrantedKeys(
-        new Set(
-          nextModules.flatMap((module) =>
-            module.permissions
-              .filter((permission) => permission.granted)
-              .map((permission) => permission.key),
-          ),
-        ),
-      );
+    setModules: (next) => {
+      setModules(next);
+      setSelected(initialModuleSelection(next));
+      setGeneration((current) => current + 1);
     },
-    getGrantedKeys: () => [...grantedKeys],
+    getGrantedKeys: () => grantedKeys(modules, selected),
   }));
 
-  const visibleModules = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    if (!normalized) return modules;
+  const nodes = useMemo(() => moduleNodes(modules), [modules]);
+  const permissionsOf = useMemo(
+    () =>
+      new Map(
+        modules.map((module) => [
+          moduleNodeId(module.key),
+          module.permissions.map((permission) => ({ id: permission.key })),
+        ]),
+      ),
+    [modules],
+  );
 
-    return modules
-      .map((module) => {
-        if (module.label.toLowerCase().includes(normalized)) return module;
-
-        return {
-          ...module,
-          permissions: module.permissions.filter((permission) =>
-            permission.label.toLowerCase().includes(normalized),
-          ),
-        };
-      })
-      .filter((module) => module.permissions.length > 0);
-  }, [modules, query]);
-
-  const togglePermission = (permissionKey: string) => {
-    const next = new Set(grantedKeys);
-    if (next.has(permissionKey)) {
-      next.delete(permissionKey);
-    } else {
-      next.add(permissionKey);
-    }
-    setGrantedKeys(next);
-  };
-
-  const toggleModule = (module: PermissionModule) => {
-    const allGranted = module.permissions.every((permission) => grantedKeys.has(permission.key));
-    const next = new Set(grantedKeys);
-
-    module.permissions.forEach((permission) => {
-      if (allGranted) {
-        next.delete(permission.key);
-      } else {
-        next.add(permission.key);
-      }
-    });
-
-    setGrantedKeys(next);
-  };
-
-  const totalCount = modules.reduce((count, module) => count + module.permissions.length, 0);
-  const grantedCount = grantedKeys.size;
+  const total = modules.reduce((count, module) => count + module.permissions.length, 0);
+  const granted = grantedKeys(modules, selected).length;
 
   return (
-    <div className="permission-matrix">
-      <div className="permission-matrix__header">
-        <input
-          type="search"
-          className="permission-matrix__search"
-          placeholder="Buscar permiso…"
-          aria-label="Buscar permiso"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
-        <span className="permission-matrix__count">
-          {grantedCount} de {totalCount} permisos
-        </span>
-      </div>
-      <div className="permission-matrix__modules">
-        {visibleModules.map((module) => {
-          const grantedInModule = module.permissions.filter((permission) =>
-            grantedKeys.has(permission.key),
-          ).length;
-          const allGranted =
-            module.permissions.length > 0 && grantedInModule === module.permissions.length;
-          const someGranted = grantedInModule > 0 && !allGranted;
-
-          return (
-            <section key={module.key} className="permission-matrix__module">
-              <header className="permission-matrix__module-header">
-                <MatrixCheckbox
-                  checked={allGranted}
-                  indeterminate={someGranted}
-                  label={module.label}
-                  onChange={() => toggleModule(module)}
-                />
-                <span className="permission-matrix__module-count">
-                  {grantedInModule}/{module.permissions.length}
-                </span>
-              </header>
-              <div className="permission-matrix__permissions">
-                {module.permissions.map((permission) => (
-                  <MatrixCheckbox
-                    key={permission.key}
-                    checked={grantedKeys.has(permission.key)}
-                    label={permission.label}
-                    onChange={() => togglePermission(permission.key)}
-                  />
-                ))}
-              </div>
-            </section>
-          );
-        })}
-        {visibleModules.length === 0 && (
-          <p className="permission-matrix__empty">Sin permisos que coincidan con la búsqueda.</p>
-        )}
-      </div>
-    </div>
+    <>
+      <Text tone="muted" data-testid="role-actions-count">
+        {granted} de {total} permisos
+      </Text>
+      <TreeList<PermissionNode>
+        key={generation}
+        ariaLabel="Permisos de acción"
+        testId="role-actions-tree"
+        density="compact"
+        showBorders={false}
+        highlightSelectedRows={false}
+        recursiveSelection
+        autoExpandAll
+        maxHeight="50vh"
+        filterPlaceholder="Buscar permiso"
+        items={nodes}
+        getId={(node) => node.id}
+        getParentId={(node) => node.parentId}
+        selectionMode="multiple"
+        selectedIds={selected}
+        onSelectedIdsChange={(ids) => setSelected(normalizeModuleSelection(modules, ids))}
+        columns={[
+          {
+            id: 'label',
+            header: 'Módulo y permiso',
+            value: (node) => node.label,
+            render: (node) => {
+              const entries = permissionsOf.get(String(node.id)) ?? [];
+              return (
+                <>
+                  {node.label}
+                  {entries.length > 0 && (
+                    <Text tone="muted">
+                      {' '}
+                      · {countOn(entries, selected)}/{entries.length}
+                    </Text>
+                  )}
+                </>
+              );
+            },
+          },
+        ]}
+      />
+    </>
   );
 });
 

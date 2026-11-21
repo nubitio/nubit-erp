@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { createRef } from 'react';
-import { render, screen, fireEvent, act, cleanup } from '@testing-library/react';
+import { render, screen, fireEvent, act, cleanup, within } from '@testing-library/react';
 
 import {
   PermissionMatrix,
@@ -35,56 +35,75 @@ function renderMatrix() {
   return ref;
 }
 
+const box = (text: string) => {
+  const row = screen
+    .getAllByRole('row')
+    .find((candidate) => candidate.textContent?.trim().startsWith(text));
+  if (!row) throw new Error(`No row starts with "${text}"`);
+  return within(row).getByRole('checkbox') as HTMLInputElement;
+};
+
 describe('PermissionMatrix', () => {
-  it('initializes granted keys from the loaded modules', () => {
+  it('starts from the granted keys of the loaded modules, with modules open', () => {
     const ref = renderMatrix();
 
     expect(ref.current?.getGrantedKeys()).toEqual(['sales.view']);
-    expect((screen.getByLabelText('Ver comprobantes') as HTMLInputElement).checked).toBe(true);
-    expect((screen.getByLabelText('Emitir comprobantes') as HTMLInputElement).checked).toBe(false);
+    expect(box('Ver comprobantes').checked).toBe(true);
+    expect(box('Emitir comprobantes').checked).toBe(false);
   });
 
   it('toggles a single permission', () => {
     const ref = renderMatrix();
 
-    fireEvent.click(screen.getByLabelText('Emitir comprobantes'));
+    fireEvent.click(box('Emitir comprobantes'));
 
     expect(ref.current?.getGrantedKeys()).toEqual(
       expect.arrayContaining(['sales.view', 'sales.create']),
     );
+    // with both on, the module reads as on
+    expect(box('Ventas').checked).toBe(true);
   });
 
-  it('module checkbox selects and clears the whole module', () => {
+  it('a module checkbox grants the whole module, and then clears it', () => {
     const ref = renderMatrix();
 
-    fireEvent.click(screen.getByLabelText('Ventas'));
+    fireEvent.click(box('Ventas'));
     expect(ref.current?.getGrantedKeys()).toEqual(
       expect.arrayContaining(['sales.view', 'sales.create']),
     );
 
-    fireEvent.click(screen.getByLabelText('Ventas'));
+    fireEvent.click(box('Ventas'));
     expect(ref.current?.getGrantedKeys()).toEqual([]);
   });
 
-  it('filters modules and permissions by search query', () => {
-    renderMatrix();
-
-    fireEvent.change(screen.getByLabelText('Buscar permiso'), {
-      target: { value: 'abrir' },
-    });
-
-    expect(screen.getByLabelText('Abrir caja')).toBeTruthy();
-    expect(screen.queryByLabelText('Ver comprobantes')).toBeNull();
-  });
-
-  it('keeps hidden selections when a filter is active', () => {
+  it('never returns module ids as permissions', () => {
     const ref = renderMatrix();
 
-    fireEvent.change(screen.getByLabelText('Buscar permiso'), {
-      target: { value: 'abrir' },
-    });
-    fireEvent.click(screen.getByLabelText('Abrir caja'));
+    fireEvent.click(box('Caja'));
 
+    expect(ref.current?.getGrantedKeys()).toEqual(['sales.view', 'cash.open']);
+  });
+
+  it('shows a module with only some permissions granted as indeterminate', () => {
+    renderMatrix();
+
+    expect(box('Ventas').indeterminate).toBe(true);
+    expect(box('Caja').indeterminate).toBe(false);
+  });
+
+  it('counts the granted permissions', () => {
+    renderMatrix();
+
+    expect(screen.getByTestId('role-actions-count').textContent).toBe('1 de 3 permisos');
+  });
+
+  it('filters with the tree search and keeps selections it hides', () => {
+    const ref = renderMatrix();
+
+    fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'abrir' } });
+
+    expect(screen.queryByText('Ver comprobantes')).toBeNull();
+    fireEvent.click(box('Abrir caja'));
     expect(ref.current?.getGrantedKeys()).toEqual(
       expect.arrayContaining(['sales.view', 'cash.open']),
     );
