@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect -- checkout resets dependent payment and customer state */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import toast, { getIRI } from '@shared/lib/SharedUtils';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
@@ -112,6 +112,12 @@ export const usePosCheckout = ({
   const draft = readDraft();
 
   const [cart, setCart] = useState<CartItem[]>(() => draft?.cart ?? []);
+  // Lines waiting for the scale, and a view of the cart that async scale reads can compare against.
+  const [scaleReadingIds, setScaleReadingIds] = useState<ReadonlySet<string>>(() => new Set());
+  const cartRef = useRef(cart);
+  useEffect(() => {
+    cartRef.current = cart;
+  }, [cart]);
   const [paymentLines, setPaymentLines] = useState<SalePaymentLineDraft[]>([]);
   const [discountPercent, setDiscountPercent] = useState(() => draft?.discountPercent ?? 0);
   const [note, setNote] = useState(() => draft?.note ?? '');
@@ -182,7 +188,8 @@ export const usePosCheckout = ({
 
     try {
       toast('Coloque el producto en la balanza…', 'info');
-      return await waitForStableWeight({ timeoutMs: 4_000, pollMs: 300 });
+      // Long enough to tap the product first and then put it on the scale.
+      return await waitForStableWeight({ timeoutMs: 15_000, pollMs: 300 });
     } catch (err) {
       if (err instanceof LocalAgentNotAvailableError) {
         toast(
@@ -191,7 +198,7 @@ export const usePosCheckout = ({
         );
       } else {
         toast(
-          'No se obtuvo peso estable. Use el botón de balanza o ingrese manualmente.',
+          'No se obtuvo peso estable. Use "Volver a pesar" o ingrese la cantidad manualmente.',
           'warning',
         );
       }
@@ -310,27 +317,51 @@ export const usePosCheckout = ({
     });
 
     if (isWeighted && scaleReady) {
-      void readScaleQuantity().then((weight) => {
-        if (weight == null) return;
-        setCart((prevCart) =>
-          prevCart.map((cartItem) =>
-            cartItem.id === item.id
-              ? {
-                  ...cartItem,
-                  saleUnitCode: cartItem.saleUnitCode ?? item.saleUnitCode,
-                  quantity: Number(weight.toFixed(3)),
-                }
-              : cartItem,
-          ),
-        );
+      void readScaleIntoLine(item.id, initialQuantity, item.saleUnitCode);
+    }
+  };
+
+  /** Marks the line as waiting while the scale settles. */
+  const trackScaleReading = async <T>(id: string, read: () => Promise<T>): Promise<T> => {
+    setScaleReadingIds((ids) => new Set(ids).add(id));
+    try {
+      return await read();
+    } finally {
+      setScaleReadingIds((ids) => {
+        const next = new Set(ids);
+        next.delete(id);
+        return next;
       });
     }
   };
 
-  const readScaleForLine = async (id: string) => {
-    const weight = await readScaleQuantity();
+  /**
+   * Reads the scale for a line and applies the weight, unless the cashier changed that line's
+   * quantity meanwhile: a typed quantity must not be overwritten by a late reading.
+   */
+  const readScaleIntoLine = async (id: string, baseline: number, saleUnitCode?: string) => {
+    const weight = await trackScaleReading(id, readScaleQuantity);
     if (weight == null) return;
-    await updateQuantity(id, Number(weight.toFixed(3)));
+    const line = cartRef.current.find((cartItem) => cartItem.id === id);
+    if (!line || line.quantity !== baseline) return;
+    const next = Number(weight.toFixed(3));
+    if (saleUnitCode !== undefined) {
+      setCart((prevCart) =>
+        prevCart.map((cartItem) =>
+          cartItem.id === id
+            ? { ...cartItem, saleUnitCode: cartItem.saleUnitCode ?? saleUnitCode, quantity: next }
+            : cartItem,
+        ),
+      );
+      return;
+    }
+    await updateQuantity(id, next);
+  };
+
+  const readScaleForLine = async (id: string) => {
+    const line = cartRef.current.find((cartItem) => cartItem.id === id);
+    if (!line) return;
+    await readScaleIntoLine(id, line.quantity);
   };
 
   const removeFromCart = (id: string) => {
@@ -756,6 +787,7 @@ export const usePosCheckout = ({
     getEffectiveStock,
     readScaleForLine,
     scaleReady,
+    scaleReadingIds,
     syncCartPricesFromCatalog,
   };
 };
