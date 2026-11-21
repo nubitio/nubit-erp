@@ -15,10 +15,26 @@ nubit_admin:
         storage:
             filesystem: 'oneup_flysystem.default_filesystem_filesystem'
         directory: images
+        # Whoever edits something that carries an image: the company logo, a product photo, an expense
+        # receipt. Without this any signed-in user could upload. Type and size are limited by the bundle
+        # (images and PDF, 10 MB).
+        upload_security: >-
+            is_granted('perm:settings.edit')
+            or is_granted('perm:catalog.create')
+            or is_granted('perm:catalog.edit')
+            or is_granted('perm:expense_reports.create')
     # Audit trail: #[Auditable] entities (Supplier, Product) record
     # field-level diffs, served at /api/audit-trail/{resource}/{id}.
     audit:
         enabled: true
+        # The history shows who changed what, with before and after (costs, prices, tax documents), so it
+        # follows the permission that edits the thing. Anything not listed is refused.
+        read_security: >-
+          (subject['resource'] == 'product' and is_granted('perm:catalog.edit'))
+          or (subject['resource'] == 'supplier' and is_granted('perm:purchases.edit'))
+          or (subject['resource'] == 'purchase' and is_granted('perm:purchases.view'))
+          or (subject['resource'] == 'stockentry' and is_granted('perm:inventory.adjust'))
+          or (subject['resource'] == 'taxdocument' and is_granted('perm:sales.view'))
     # Full OpenTelemetry instrumentation supplied by Nubit: HTTP spans and
     # metrics, Doctrine spans, Messenger trace propagation, tenant context and
     # privacy-safe log/trace attribute redaction.
