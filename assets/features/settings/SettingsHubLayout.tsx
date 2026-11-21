@@ -13,10 +13,11 @@ export const SettingsHubLayout = () => {
       density="compact"
       title="Ajustes"
       basePath="/config"
-      defaultPath="/config/company"
+      defaultPath="/config/sunat"
       tabsAriaLabel="Secciones de ajustes"
       className="settings-hub"
-      tabs={settingsTabs({ showAdminTabs })}
+      // The company lives in the account settings dialog, not in this hub.
+      tabs={settingsTabs({ showAdminTabs }).filter((tab) => tab.key !== 'company')}
     />
   );
 };

@@ -9,7 +9,6 @@ const ExcelImportPage = lazyNamed(
   'ExcelImportPage',
 );
 const ExchangeRatePage = lazyNamed(() => import('./ExchangeRatePage'), 'ExchangeRatePage');
-const CompanyPage = lazyNamed(() => import('./CompanyPage'), 'CompanyPage');
 const PleExportPage = lazyNamed(() => import('./PleExportPage'), 'PleExportPage');
 const ReportsRedirect = () => <Navigate to="/dashboard" replace />;
 
@@ -18,7 +17,6 @@ export const adminRoutes: AppRouteDefinition[] = [
   { path: '/setup/import', element: ExcelImportPage },
   { path: '/reports', element: ReportsRedirect },
   { path: '/ple', element: PleExportPage },
-  { path: '/company', element: CompanyPage },
   { path: '/exchange-rate', element: ExchangeRatePage },
   ...settingsRoutes,
 ];

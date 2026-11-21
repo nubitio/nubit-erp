@@ -2,7 +2,6 @@
 // Pages
 export { DashboardPage } from './DashboardPage';
 export { BranchPage } from './BranchPage';
-export { CompanyPage } from './CompanyPage';
 export { ConfigPage } from './ConfigPage';
 export { ExchangeRatePage } from './ExchangeRatePage';
 export { RolePage } from './RolePage';

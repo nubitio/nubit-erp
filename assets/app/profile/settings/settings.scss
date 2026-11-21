@@ -329,3 +329,52 @@
     background: transparent;
   }
 }
+
+// The company logo row: the image framed as it prints, and what can be done with it.
+.company-logo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.company-logo__frame {
+  display: inline-flex;
+  flex: none;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-0);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgb(0 0 0 / 8%));
+
+  // Nothing uploaded yet: an outline that invites dropping a logo in.
+  &--empty {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    gap: var(--space-1);
+    width: 120px;
+    height: 72px;
+    border-style: dashed;
+    background: var(--surface-2);
+    box-shadow: none;
+    color: var(--text-tertiary);
+    font-size: var(--font-size-xs);
+
+    i {
+      font-size: 24px;
+    }
+  }
+}
+
+// The frame hugs the picture, so any proportion looks intentional.
+.company-logo__image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 200px;
+  max-height: 72px;
+  object-fit: contain;
+}

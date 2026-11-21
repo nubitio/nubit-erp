@@ -115,16 +115,21 @@ test('the settings list shows the account pages and, to an admin, plan and organ
   // The e2e user administers its tenant.
   await expect(nav.getByRole('button', { name: 'Uso' })).toBeVisible();
   await expect(nav.getByRole('button', { name: 'Plan y facturación' })).toBeVisible();
-  await expect(nav.getByRole('link', { name: 'Empresa' })).toBeVisible();
+  await expect(nav.getByRole('button', { name: 'Empresa' })).toBeVisible();
 
   await nav.getByRole('button', { name: 'Uso' }).click();
   await expect(page).toHaveURL(/[?&]settings=usage/);
   await expect(dialog.getByRole('heading', { name: 'Uso', exact: true })).toBeVisible();
   await expect(dialog.locator('.settings-row').filter({ hasText: 'Usuarios' })).toBeVisible();
 
-  // An organization page leaves the dialog behind.
-  await nav.getByRole('link', { name: 'Empresa' }).click();
-  await expect(page).toHaveURL(/\/config\/company/);
+  // The company is edited inside the dialog; the other organization pages leave it behind.
+  await nav.getByRole('button', { name: 'Empresa' }).click();
+  await expect(page).toHaveURL(/[?&]settings=company/);
+  await expect(dialog.getByRole('heading', { name: 'Empresa', exact: true })).toBeVisible();
+  await expect(dialog.locator('#company-ruc')).toBeVisible();
+
+  await nav.getByRole('link', { name: 'SUNAT' }).click();
+  await expect(page).toHaveURL(/\/config\/sunat/);
   await expect(page.getByRole('dialog', { name: 'Ajustes' })).toHaveCount(0);
 });
 

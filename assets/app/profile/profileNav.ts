@@ -1,7 +1,14 @@
 import type { SettingsTab } from '@features/settings/settingsTabs';
 import type { SettingsNavGroup } from './settings/SettingsLayout';
 
-export const PROFILE_SECTIONS = ['account', 'security', 'appearance', 'usage', 'plan'] as const;
+export const PROFILE_SECTIONS = [
+  'account',
+  'security',
+  'appearance',
+  'usage',
+  'plan',
+  'company',
+] as const;
 export type ProfileSection = (typeof PROFILE_SECTIONS)[number];
 
 /** The `?settings=<section>` of the URL; anything unknown (or absent) is the account page. */
@@ -67,12 +74,12 @@ export function buildProfileNav({
     groups.push({
       key: 'organization',
       title: 'Organización',
-      items: visibleTabs.map((tab) => ({
-        key: `org-${tab.key}`,
-        label: tab.label,
-        icon: tab.icon,
-        href: tab.path,
-      })),
+      items: visibleTabs.map((tab) =>
+        // The company is edited right here; the other pages are full screens of their own.
+        tab.key === 'company'
+          ? { key: 'company', label: tab.label, icon: tab.icon }
+          : { key: `org-${tab.key}`, label: tab.label, icon: tab.icon, href: tab.path },
+      ),
     });
   }
 

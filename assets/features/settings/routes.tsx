@@ -2,7 +2,6 @@ import { Navigate } from 'react-router-dom';
 import { lazyNamed } from '@app/router/lazy';
 import type { AppRouteDefinition } from '@app/router/types';
 import { SettingsHubLayout } from './SettingsHubLayout';
-import { SettingsCompanyTab } from './SettingsCompanyTab';
 import { SettingsSunatTab } from './SettingsSunatTab';
 import { SettingsGeneralTab } from './SettingsGeneralTab';
 import { SettingsIntegrationsTab } from './SettingsIntegrationsTab';
@@ -77,7 +76,7 @@ export const settingsRoutes: AppRouteDefinition[] = [
     path: '/config',
     element: SettingsHubLayout,
     children: [
-      { path: 'company', element: SettingsCompanyTab },
+      { path: 'company', element: () => <Navigate to="/dashboard?settings=company" replace /> },
       { path: 'sunat', element: SettingsSunatTab },
       { path: 'series', element: SettingsSeriesTab },
       { path: 'users', element: SettingsUsersTab },

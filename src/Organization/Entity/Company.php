@@ -35,6 +35,8 @@ class Company
     #[ORM\Column(length: 11)]
     private string $ruc;
 
+    #[Assert\NotBlank(message: 'Indica la razón social.')]
+    #[Assert\Length(max: 255, maxMessage: 'La razón social no puede superar {{ limit }} caracteres.')]
     #[Groups([
         'company:read',
         'branch:read',
@@ -43,17 +45,20 @@ class Company
     #[ORM\Column(name: 'razon_social', length: 255)]
     private string $businessName;
 
+    #[Assert\Length(max: 255, maxMessage: 'El nombre comercial no puede superar {{ limit }} caracteres.')]
     #[Groups(['company:read'])]
     #[ApiProperty(description: 'company.trade_name.label')]
     #[ORM\Column(name: 'nombre_comercial', length: 255, nullable: true)]
     private ?string $tradeName = null;
 
-    #[Assert\NotBlank]
+    #[Assert\NotBlank(message: 'Indica el domicilio fiscal.')]
+    #[Assert\Length(max: 500, maxMessage: 'El domicilio fiscal no puede superar {{ limit }} caracteres.')]
     #[Groups(['company:read'])]
     #[ApiProperty(description: 'company.fiscal_address.label')]
     #[ORM\Column(name: 'domicilio_fiscal', type: 'text')]
     private string $fiscalAddress;
 
+    #[Assert\Regex(pattern: '/^\d{6,10}$/', message: 'El teléfono debe tener entre 6 y 10 dígitos.')]
     #[Groups(['company:read'])]
     #[ApiProperty(description: 'company.phone.label')]
     #[ORM\Column(name: 'telefono', length: 10, nullable: true)]
@@ -90,16 +95,19 @@ class Company
     #[ORM\Column(name: 'bank_name', length: 255, nullable: true)]
     private ?string $bankName = null;
 
+    #[Assert\Regex(pattern: '/^\d{10,20}$/', message: 'La cuenta bancaria debe tener entre 10 y 20 dígitos.')]
     #[Groups(['company:read'])]
     #[ApiProperty(description: 'company.bank_account.label')]
     #[ORM\Column(name: 'bank_account', length: 50, nullable: true)]
     private ?string $bankAccount = null;
 
+    #[Assert\Regex(pattern: '/^\d{20}$/', message: 'El CCI debe tener 20 dígitos.')]
     #[Groups(['company:read'])]
     #[ApiProperty(description: 'company.bank_cci.label')]
     #[ORM\Column(name: 'bank_cci', length: 50, nullable: true)]
     private ?string $bankCci = null;
 
+    #[Assert\Regex(pattern: '/^\d{11}$/', message: 'La cuenta de detracciones debe tener 11 dígitos.')]
     #[Groups(['company:read'])]
     #[ApiProperty(description: 'company.detraccion_account.label')]
     #[ORM\Column(name: 'detraccion_account', length: 50, nullable: true)]

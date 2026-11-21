@@ -33,19 +33,15 @@ describe('buildProfileNav', () => {
     expect(nav[1]?.items.map((item) => item.key)).toEqual(['usage', 'plan']);
   });
 
-  it('links to the tenant settings pages, leaving the panel, and drops the hidden ones', () => {
+  it('edits the company in the panel, links to the other settings pages and drops the hidden ones', () => {
     const organization = buildProfileNav({
-      organizationTabs: [tab('company'), tab('roles', false)],
+      organizationTabs: [tab('company'), tab('users'), tab('roles', false)],
       canSeeOrganization: true,
       canManagePlan: false,
     }).find((group) => group.key === 'organization');
     expect(organization?.items).toEqual([
-      {
-        key: 'org-company',
-        label: 'company',
-        icon: 'ph-gear',
-        href: '/config/company',
-      },
+      { key: 'company', label: 'company', icon: 'ph-gear' },
+      { key: 'org-users', label: 'users', icon: 'ph-gear', href: '/config/users' },
     ]);
   });
 
