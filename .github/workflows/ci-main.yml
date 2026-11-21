@@ -209,6 +209,10 @@ jobs:
         if: needs.changes.outputs.backend == 'true'
         run: docker compose exec -T web composer check:architecture
 
+      - name: Check every API write operation is guarded
+        if: needs.changes.outputs.backend == 'true'
+        run: docker compose exec -T web php bin/console nubit:security:audit --strict
+
       - name: Run PHPStan
         if: needs.changes.outputs.backend == 'true'
         run: |

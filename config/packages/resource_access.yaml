@@ -17,9 +17,8 @@
 #   a.permission      the PermissionCatalog key the user's role must hold
 #   [a.perm, b.perm]  any one of them
 parameters:
-    app.resource_access.exempt:
-        # Public bootstrap of an empty tenant; InitialSetupService refuses once there is a user.
-        - 'App\Setup\ApiResource\SetupResource'
+    # Resources outside the policy on purpose. None today: even the public setup states it on the entity.
+    app.resource_access.exempt: []
 
     app.resource_access.rules:
         'App\AccountsPayable\Entity\ExpenseCategory':
