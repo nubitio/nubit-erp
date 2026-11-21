@@ -41,8 +41,6 @@ final readonly class ResourceAccessPolicy
     /**
      * The `security` expression for one operation of `$resourceClass`, or null when the policy has
      * nothing to say about it.
-     *
-     * @param class-string $resourceClass
      */
     public function expressionFor(string $resourceClass, string $httpMethod, ?string $uriTemplate): ?string
     {

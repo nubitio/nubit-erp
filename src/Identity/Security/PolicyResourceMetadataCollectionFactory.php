@@ -37,24 +37,33 @@ final readonly class PolicyResourceMetadataCollectionFactory implements Resource
                 continue;
             }
 
+            /** @var iterable<string, HttpOperation> $declared */
+            $declared = $operations;
+
+            /** @var array<string, HttpOperation> $guarded */
             $guarded = [];
-            foreach ($operations as $name => $operation) {
-                if ($operation instanceof HttpOperation && $operation->getSecurity() === null) {
-                    $expression = $this->policy->expressionFor(
-                        $resourceClass,
-                        $operation->getMethod() ?? 'GET',
-                        $operation->getUriTemplate(),
-                    );
-                    if ($expression !== null) {
-                        $operation = $operation->withSecurity($expression);
-                    }
-                }
-                $guarded[$name] = $operation;
+            foreach ($declared as $name => $operation) {
+                $guarded[$name] = $this->guard($resourceClass, $operation);
             }
 
             $collection[$index] = $resource->withOperations(new Operations($guarded));
         }
 
         return $collection;
+    }
+
+    private function guard(string $resourceClass, HttpOperation $operation): HttpOperation
+    {
+        if ($operation->getSecurity() !== null) {
+            return $operation;
+        }
+
+        $expression = $this->policy->expressionFor(
+            $resourceClass,
+            $operation->getMethod(),
+            $operation->getUriTemplate(),
+        );
+
+        return $expression === null ? $operation : $operation->withSecurity($expression);
     }
 }
