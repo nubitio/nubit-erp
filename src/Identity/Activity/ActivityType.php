@@ -19,6 +19,7 @@ final class ActivityType
     public const string INVITATION_RESENT = 'user.invitation_resent';
     public const string INVITATION_REVOKED = 'user.invitation_revoked';
     public const string USER_CREATED = 'user.created';
+    public const string EMAIL_CHANGED = 'user.email_changed';
     public const string USER_DELETED = 'user.deleted';
     public const string ROLE_PERMISSIONS_CHANGED = 'role.permissions_changed';
 
@@ -44,6 +45,7 @@ final class ActivityType
             self::INVITATION_RESENT,
             self::INVITATION_REVOKED,
             self::USER_CREATED,
+            self::EMAIL_CHANGED,
             self::USER_DELETED,
             self::ROLE_PERMISSIONS_CHANGED,
         ];
@@ -74,6 +76,7 @@ final class ActivityType
             self::INVITATION_RESENT => 'Invitaciones reenviadas',
             self::INVITATION_REVOKED => 'Invitaciones revocadas',
             self::USER_CREATED => 'Usuarios creados',
+            self::EMAIL_CHANGED => 'Correos cambiados',
             self::USER_DELETED => 'Usuarios eliminados',
             self::ROLE_PERMISSIONS_CHANGED => 'Cambios de permisos de rol',
             default => $type,
