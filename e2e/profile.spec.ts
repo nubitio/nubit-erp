@@ -277,7 +277,7 @@ test.describe('two-step verification setup', () => {
   });
 });
 
-test('the settings panel follows the dialog's rounded bottom corners', async ({ page }) => {
+test('the settings panel follows the rounded bottom corners of the dialog', async ({ page }) => {
   const dialog = await openSettings(page);
   const radius = await dialog
     .locator('.settings-shell')
