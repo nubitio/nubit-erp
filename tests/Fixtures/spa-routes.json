@@ -41,7 +41,6 @@
     "/catalog/suppliers",
     "/catalog/units",
     "/category",
-    "/company",
     "/config",
     "/config/activity",
     "/config/branches",

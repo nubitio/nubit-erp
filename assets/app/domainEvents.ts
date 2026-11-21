@@ -4,6 +4,5 @@
 // by resolveCrudResource() and don't need to be listed here.
 import { createCrudEvents } from '@nubitio/crud';
 
-export const companyEvents = createCrudEvents('company');
 export const permissionEvents = createCrudEvents('permission');
 export const priceEvents = createCrudEvents('price');

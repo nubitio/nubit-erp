@@ -6,6 +6,7 @@ import { buildProfileNav, parseSection, type ProfileSection } from './profileNav
 import { SettingsLayout } from './settings/SettingsLayout';
 import { AccountSection } from './sections/AccountSection';
 import { AppearanceSection } from './sections/AppearanceSection';
+import { CompanySection } from './sections/CompanySection';
 import { PlanSection } from './sections/PlanSection';
 import { SecuritySection } from './sections/SecuritySection';
 import { UsageSection } from './sections/UsageSection';
@@ -18,6 +19,7 @@ const TITLES: Record<ProfileSection, string> = {
   appearance: 'Apariencia',
   usage: 'Uso',
   plan: 'Plan y facturación',
+  company: 'Empresa',
 };
 
 /**
@@ -46,17 +48,21 @@ const OpenSettings = ({
 
   const navigationTier = runtimeConfig?.profile.navigationTier ?? 'basic';
   const canManagePlan = hasPermission('settings.edit');
+  const canSeeCompany = hasPermission('settings.view');
   const groups = buildProfileNav({
     organizationTabs: settingsTabs({
       showAdminTabs: navigationTier === 'standard' || navigationTier === 'advanced',
     }),
-    canSeeOrganization: hasPermission('settings.view'),
+    canSeeOrganization: canSeeCompany,
     canManagePlan,
   });
 
-  // Plan and usage are the tenant admin's; anyone else who types the address sees the profile.
+  // Plan, usage and the company are the tenant admin's; anyone else who types the address sees the profile.
   const section: ProfileSection =
-    (requested === 'usage' || requested === 'plan') && !canManagePlan ? 'account' : requested;
+    ((requested === 'usage' || requested === 'plan') && !canManagePlan) ||
+    (requested === 'company' && !canSeeCompany)
+      ? 'account'
+      : requested;
 
   return (
     <AppDialog
@@ -82,6 +88,7 @@ const OpenSettings = ({
         {section === 'appearance' && <AppearanceSection />}
         {section === 'usage' && <UsageSection />}
         {section === 'plan' && <PlanSection />}
+        {section === 'company' && <CompanySection />}
       </SettingsLayout>
     </AppDialog>
   );
