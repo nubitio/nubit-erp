@@ -6,19 +6,8 @@ import { SettingsIntegrationsTab } from './SettingsIntegrationsTab';
 import { SettingsCrudPanel } from './SettingsCrudPanel';
 import { useTenantRuntimeConfig } from '@shared/hooks';
 
-const VoucherSeriesPage = lazyNamed(
-  () => import('@features/catalog/VoucherSeriesPage'),
-  'VoucherSeriesPage',
-);
 const UserPage = lazyNamed(() => import('@features/admin/UserPage'), 'UserPage');
 const RolePage = lazyNamed(() => import('@features/admin/RolePage'), 'RolePage');
-const BranchPage = lazyNamed(() => import('@features/admin/BranchPage'), 'BranchPage');
-
-const SettingsSeriesTab = () => (
-  <SettingsCrudPanel>
-    <VoucherSeriesPage />
-  </SettingsCrudPanel>
-);
 
 const SettingsUsersTab = () => (
   <SettingsCrudPanel>
@@ -50,12 +39,6 @@ const SettingsActivityTab = () => (
   </SettingsCrudPanel>
 );
 
-const SettingsBranchesTab = () => (
-  <SettingsCrudPanel>
-    <BranchPage />
-  </SettingsCrudPanel>
-);
-
 const WarehousesRedirect = () => {
   const { data: runtimeConfig } = useTenantRuntimeConfig();
   if (runtimeConfig?.ui.inventory.showWarehouseManagement === false) {
@@ -76,12 +59,15 @@ export const settingsRoutes: AppRouteDefinition[] = [
     children: [
       { path: 'company', element: () => <Navigate to="/dashboard?settings=company" replace /> },
       { path: 'sunat', element: () => <Navigate to="/dashboard?settings=sunat" replace /> },
-      { path: 'series', element: SettingsSeriesTab },
+      { path: 'series', element: () => <Navigate to="/dashboard?settings=series" replace /> },
       { path: 'users', element: SettingsUsersTab },
       { path: 'roles', element: SettingsRolesTab },
       { path: 'invitations', element: SettingsInvitationsTab },
       { path: 'activity', element: SettingsActivityTab },
-      { path: 'branches', element: SettingsBranchesTab },
+      {
+        path: 'branches',
+        element: () => <Navigate to="/dashboard?settings=branches" replace />,
+      },
       { path: 'general', element: () => <Navigate to="/dashboard?settings=general" replace /> },
       { path: 'integrations', element: SettingsIntegrationsTab },
     ],

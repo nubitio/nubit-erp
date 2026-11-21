@@ -128,8 +128,8 @@ test('the settings list shows the account pages and, to an admin, plan and organ
   await expect(dialog.getByRole('heading', { name: 'Empresa', exact: true })).toBeVisible();
   await expect(dialog.locator('#company-ruc')).toBeVisible();
 
-  await nav.getByRole('link', { name: 'Series' }).click();
-  await expect(page).toHaveURL(/\/config\/series/);
+  await nav.getByRole('link', { name: 'Usuarios' }).click();
+  await expect(page).toHaveURL(/\/config\/users/);
   await expect(page.getByRole('dialog', { name: 'Ajustes' })).toHaveCount(0);
 });
 

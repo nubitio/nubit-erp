@@ -10,6 +10,8 @@ export const PROFILE_SECTIONS = [
   'company',
   'sunat',
   'general',
+  'series',
+  'branches',
 ] as const;
 export type ProfileSection = (typeof PROFILE_SECTIONS)[number];
 

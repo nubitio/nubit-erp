@@ -1,7 +1,13 @@
 import { hasPermission } from '@shared/permissions';
 
 /** The pages edited inside the account settings dialog; the rest are screens of their own. */
-export const IN_DIALOG: ReadonlySet<string> = new Set(['company', 'sunat', 'general']);
+export const IN_DIALOG: ReadonlySet<string> = new Set([
+  'company',
+  'sunat',
+  'general',
+  'series',
+  'branches',
+]);
 
 export interface SettingsTab {
   key: string;
