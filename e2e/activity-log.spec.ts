@@ -268,7 +268,8 @@ test.describe('the Actividad tab (browser)', () => {
 
     // routine sign-ins only appear under "Todos"
     await expect(root.locator('[data-type="auth.login"]')).toHaveCount(0);
-    await root.getByLabel('Tipo').selectOption('all');
+    await root.getByRole('combobox', { name: 'Tipo' }).click();
+    await page.getByRole('option', { name: 'Todos', exact: true }).click();
     await expect(root.locator('[data-type="auth.login"]').first()).toBeVisible({ timeout: 15_000 });
 
     // search narrows, and an impossible search shows the empty state
@@ -276,6 +277,8 @@ test.describe('the Actividad tab (browser)', () => {
     await expect(page.getByTestId('activity-empty')).toBeVisible({ timeout: 15_000 });
     await root.getByLabel('Buscar en la actividad').fill('');
 
-    await expect(page.getByTestId('activity-summary-row').first()).toBeVisible();
+    // the week's counts sit above the filters, one tile per type
+    await expect(root.getByTestId('activity-summary')).toContainText('Inicios de sesión');
+    await expect(root.getByTestId('activity-summary')).toContainText('Ingresos fallidos');
   });
 });
