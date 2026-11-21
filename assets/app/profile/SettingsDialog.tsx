@@ -7,8 +7,10 @@ import { SettingsLayout } from './settings/SettingsLayout';
 import { AccountSection } from './sections/AccountSection';
 import { AppearanceSection } from './sections/AppearanceSection';
 import { CompanySection } from './sections/CompanySection';
+import { OperationSection } from './sections/OperationSection';
 import { PlanSection } from './sections/PlanSection';
 import { SecuritySection } from './sections/SecuritySection';
+import { SunatSection } from './sections/SunatSection';
 import { UsageSection } from './sections/UsageSection';
 import { useProfile } from './useProfile';
 import { useSettingsDialog } from './useSettingsDialog';
@@ -20,6 +22,8 @@ const TITLES: Record<ProfileSection, string> = {
   usage: 'Uso',
   plan: 'Plan y facturación',
   company: 'Empresa',
+  sunat: 'SUNAT',
+  general: 'Operación',
 };
 
 /**
@@ -48,21 +52,18 @@ const OpenSettings = ({
 
   const navigationTier = runtimeConfig?.profile.navigationTier ?? 'basic';
   const canManagePlan = hasPermission('settings.edit');
-  const canSeeCompany = hasPermission('settings.view');
+  const canSeeSettings = hasPermission('settings.view');
   const groups = buildProfileNav({
     organizationTabs: settingsTabs({
       showAdminTabs: navigationTier === 'standard' || navigationTier === 'advanced',
     }),
-    canSeeOrganization: canSeeCompany,
+    canSeeOrganization: canSeeSettings,
     canManagePlan,
   });
 
-  // Plan, usage and the company are the tenant admin's; anyone else who types the address sees the profile.
-  const section: ProfileSection =
-    ((requested === 'usage' || requested === 'plan') && !canManagePlan) ||
-    (requested === 'company' && !canSeeCompany)
-      ? 'account'
-      : requested;
+  // Only what the list offers this user opens; anyone else who types the address sees the profile.
+  const offered = groups.some((group) => group.items.some((item) => item.key === requested));
+  const section: ProfileSection = offered ? requested : 'account';
 
   return (
     <AppDialog
@@ -89,6 +90,8 @@ const OpenSettings = ({
         {section === 'usage' && <UsageSection />}
         {section === 'plan' && <PlanSection />}
         {section === 'company' && <CompanySection />}
+        {section === 'sunat' && <SunatSection />}
+        {section === 'general' && <OperationSection />}
       </SettingsLayout>
     </AppDialog>
   );

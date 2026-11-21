@@ -1,6 +1,6 @@
 import { FeatureHubLayout } from '@nubitio/admin';
 import { useTenantRuntimeConfig } from '@shared/hooks';
-import { settingsTabs } from './settingsTabs';
+import { IN_DIALOG, settingsTabs } from './settingsTabs';
 import './settingsHub.scss';
 
 export const SettingsHubLayout = () => {
@@ -13,11 +13,11 @@ export const SettingsHubLayout = () => {
       density="compact"
       title="Ajustes"
       basePath="/config"
-      defaultPath="/config/sunat"
+      defaultPath="/config/series"
       tabsAriaLabel="Secciones de ajustes"
       className="settings-hub"
-      // The company lives in the account settings dialog, not in this hub.
-      tabs={settingsTabs({ showAdminTabs }).filter((tab) => tab.key !== 'company')}
+      // These live in the account settings dialog, not in this hub.
+      tabs={settingsTabs({ showAdminTabs }).filter((tab) => !IN_DIALOG.has(tab.key))}
     />
   );
 };

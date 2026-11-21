@@ -2,8 +2,6 @@ import { Navigate } from 'react-router-dom';
 import { lazyNamed } from '@app/router/lazy';
 import type { AppRouteDefinition } from '@app/router/types';
 import { SettingsHubLayout } from './SettingsHubLayout';
-import { SettingsSunatTab } from './SettingsSunatTab';
-import { SettingsGeneralTab } from './SettingsGeneralTab';
 import { SettingsIntegrationsTab } from './SettingsIntegrationsTab';
 import { SettingsCrudPanel } from './SettingsCrudPanel';
 import { useTenantRuntimeConfig } from '@shared/hooks';
@@ -77,14 +75,14 @@ export const settingsRoutes: AppRouteDefinition[] = [
     element: SettingsHubLayout,
     children: [
       { path: 'company', element: () => <Navigate to="/dashboard?settings=company" replace /> },
-      { path: 'sunat', element: SettingsSunatTab },
+      { path: 'sunat', element: () => <Navigate to="/dashboard?settings=sunat" replace /> },
       { path: 'series', element: SettingsSeriesTab },
       { path: 'users', element: SettingsUsersTab },
       { path: 'roles', element: SettingsRolesTab },
       { path: 'invitations', element: SettingsInvitationsTab },
       { path: 'activity', element: SettingsActivityTab },
       { path: 'branches', element: SettingsBranchesTab },
-      { path: 'general', element: SettingsGeneralTab },
+      { path: 'general', element: () => <Navigate to="/dashboard?settings=general" replace /> },
       { path: 'integrations', element: SettingsIntegrationsTab },
     ],
   },
