@@ -94,7 +94,7 @@ final class AvatarServiceTest extends TestCase
         $avatar = $service->read($user);
 
         self::assertSame('image/png', $avatar['mime'] ?? null);
-        self::assertSame(ProfileUsers::png(), $avatar['content'] ?? null);
+        self::assertSame(ProfileUsers::png(), $avatar['content']);
         self::assertNull($service->read(ProfileUsers::user()));
     }
 
