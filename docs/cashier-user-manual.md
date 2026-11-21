@@ -96,7 +96,7 @@ La caja debe estar abierta. Si está cerrada, el botón **COBRAR** aparece como 
 
 ### 2.3 Gestionar el carrito
 
-- **Cambiar cantidad:** Clic en el número de cantidad para editarlo en línea, o usa los botones `−` y `+`.
+- **Cambiar cantidad:** Clic en el número de cantidad para editarlo en línea, o usa los botones `−` y `+`. Con el teclado, `F8` edita la cantidad de la última línea agregada (escribe el número y `Enter`).
 - **Eliminar línea:** Reduce la cantidad a 0 con el botón `−` o usa el ícono de papelera.
 - **Modificar precio (si está habilitado):** Clic en el precio de la línea (requiere permiso `ui.pos.allowLinePriceOverride`).
 - **Limpiar carrito:** Tecla `Esc` → confirma en el diálogo.
@@ -108,6 +108,7 @@ La caja debe estar abierta. Si está cerrada, el botón **COBRAR** aparece como 
 
 - Por defecto se usa **Cliente General** (RUC 00000000).
 - Para cambiar: haz clic en **"Cambiar"** o presiona `F3`.
+- Para crear un cliente nuevo sin salir de la venta: botón con el ícono de persona junto al selector (requiere permiso de crear clientes) o `Shift+F3`. Escribe el RUC/DNI y usa **Consultar** para completar el nombre. El cliente queda seleccionado en la venta.
 - Busca por nombre, RUC o DNI. Se muestran hasta 8 resultados.
 - El tipo de comprobante (boleta/factura) se determina automáticamente por el RUC del cliente:
   - RUC de 11 dígitos → **Factura**
@@ -129,7 +130,7 @@ La caja debe estar abierta. Si está cerrada, el botón **COBRAR** aparece como 
 
 ### 2.7 Cobrar
 
-1. Haz clic en **COBRAR S/ X.XX**.
+1. Haz clic en **COBRAR S/ X.XX** o presiona `F9` (dentro del cobro, `F9` o `Enter` confirman).
 2. El sistema envía la venta al servidor (`POST /api/sales`).
 3. **Resultado en línea:** Muestra el código de la venta, el vuelto y opciones de impresión.
 4. **Resultado sin conexión:** La venta se guarda en la cola local y se sincroniza automáticamente cuando hay internet.
@@ -142,7 +143,31 @@ La caja debe estar abierta. Si está cerrada, el botón **COBRAR** aparece como 
 - El POS sigue funcionando sin internet.
 - Las ventas quedan en cola (`mode: queued`) en el almacén local del navegador (IndexedDB).
 - Al recuperar la conexión, las ventas se sincronizan automáticamente.
-- El ícono de sincronización en la barra superior muestra el estado de la cola.
+- El punto junto a **Ventas en espera** indica la conexión (verde conectado, ámbar sincronizando, rojo sin conexión). Cuando hay ventas por sincronizar o con error aparece el botón **Ventas pendientes: N**, desde donde puedes reintentar las fallidas.
+
+### 2.9 Ventas en espera
+
+Para atender a otro cliente sin perder la venta actual: botón **En espera** del carrito o `F4`. La venta se guarda con su cliente y se vacía el carrito. Para recuperarla: **Ventas en espera** en la barra superior o `Shift+F4`. Si el carrito actual tiene productos, no se pierde: pasa a la lista.
+
+### 2.10 Atajos de teclado
+
+Presiona `?` (fuera de un campo de texto) para ver esta lista en pantalla.
+
+| Tecla | Acción |
+| --- | --- |
+| `F2` o `/` | Enfocar el buscador de productos |
+| Lector de barras + `Enter` | Agregar el producto por código |
+| `F8` | Editar la cantidad de la última línea |
+| `Esc` | Vaciar el carrito (con confirmación) |
+| `F3` | Seleccionar cliente |
+| `Shift+F3` | Crear cliente nuevo |
+| `F9` o `Enter` | Cobrar; dentro del cobro, confirmar |
+| `F4` | Poner la venta en espera |
+| `Shift+F4` | Ver las ventas en espera |
+| `?` | Mostrar la lista de atajos |
+| `Ctrl/⌘+K` | Asistente de IA (si está habilitado) |
+
+Los atajos no actúan mientras escribes en un campo de texto ni cuando hay un diálogo abierto.
 
 ---
 
