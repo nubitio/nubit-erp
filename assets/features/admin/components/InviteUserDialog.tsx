@@ -95,6 +95,8 @@ export const InviteUserDialog = ({ onClose }: { onClose: () => void }) => {
     >
       <FormLayout
         id={FORM_ID}
+        // The server answers in Spanish; the browser's own e-mail check would speak its language.
+        noValidate
         onSubmit={(event) => {
           event.preventDefault();
           if (canSubmit) void submit();
