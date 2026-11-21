@@ -60,16 +60,48 @@ test('a link with ?settings= opens the dialog on that section; the header has no
   await expect(page.getByRole('button', { name: 'Apariencia' })).toHaveCount(0);
 });
 
-test('Seguridad holds the password and two-step entries', async ({ page }) => {
+const twoStepRow = (dialog: ReturnType<Page['locator']>) =>
+  dialog.locator('.settings-row').filter({ hasText: 'Verificación en dos pasos' });
+
+test('Seguridad holds the password and two-step entries, and says whether two-step is on', async ({
+  page,
+}) => {
   const dialog = await openSettings(page);
   await dialog
     .getByRole('navigation', { name: 'Secciones de ajustes' })
     .getByRole('button', { name: 'Seguridad' })
     .click();
   await expect(dialog.getByRole('button', { name: 'Cambiar contraseña' })).toBeVisible();
-  await expect(dialog.getByRole('button', { name: 'Configurar' })).toBeVisible();
+
+  // Not enrolled: the row says so and offers to switch it on.
+  const row = twoStepRow(dialog);
+  await expect(row.getByTestId('two-factor-status')).toHaveText('Desactivada');
+  await expect(row.getByRole('button', { name: 'Activar' })).toBeVisible();
+
   await dialog.getByRole('button', { name: 'Cambiar contraseña' }).click();
   await expect(page.getByRole('dialog', { name: 'Cambiar contraseña' })).toBeVisible();
+});
+
+test('once two-step is on, the row says Activada and offers Administrar', async ({ page }) => {
+  // Only the status read is faked; nothing is enrolled on the account.
+  await page.route('**/api/auth/totp', (route) =>
+    route.request().method() === 'GET'
+      ? route.fulfill({
+          json: { enrolled: true, pending: false, recoveryCodesLeft: 10 },
+        })
+      : route.fallback(),
+  );
+  const dialog = await openSettings(page);
+  await dialog
+    .getByRole('navigation', { name: 'Secciones de ajustes' })
+    .getByRole('button', { name: 'Seguridad' })
+    .click();
+
+  const row = twoStepRow(dialog);
+  await expect(row.getByTestId('two-factor-status')).toHaveText('Activada');
+  await expect(row.getByRole('button', { name: 'Administrar' })).toBeVisible();
+  await expect(row.getByRole('button', { name: 'Activar' })).toHaveCount(0);
+  await expect(row).toContainText('10');
 });
 
 test('the settings list shows the account pages and, to an admin, plan and organization', async ({
@@ -171,7 +203,7 @@ test.describe('two-step verification setup', () => {
       .getByRole('navigation', { name: 'Secciones de ajustes' })
       .getByRole('button', { name: 'Seguridad' })
       .click();
-    await dialog.getByRole('button', { name: 'Configurar' }).click();
+    await twoStepRow(dialog).getByRole('button', { name: 'Activar' }).click();
     const modal = page.getByRole('dialog', { name: 'Verificación en dos pasos' });
 
     const issued = page.waitForResponse(

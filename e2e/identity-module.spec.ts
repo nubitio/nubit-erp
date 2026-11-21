@@ -461,7 +461,9 @@ test.describe('two-factor settings (browser)', () => {
       .click();
     await page
       .getByRole('dialog', { name: 'Ajustes' })
-      .getByRole('button', { name: 'Configurar' })
+      .locator('.settings-row')
+      .filter({ hasText: 'Verificación en dos pasos' })
+      .getByRole('button', { name: 'Activar' })
       .click();
     const dialog = page.getByRole('dialog', { name: 'Verificación en dos pasos' });
     await expect(dialog).toBeVisible();
