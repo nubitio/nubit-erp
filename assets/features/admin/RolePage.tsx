@@ -89,7 +89,7 @@ export const RolePage = () => {
   return (
     <>
       <SchemaCrudPage resource={resource} />
-      <DialogView events={permissionEvents}>
+      <DialogView events={permissionEvents} width={640} flush>
         <RolePermissionsPanel treeRef={treeRef} matrixRef={matrixRef} />
       </DialogView>
     </>

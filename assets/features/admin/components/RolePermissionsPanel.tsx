@@ -1,5 +1,6 @@
-import './RolePermissionsPanel.scss';
 import { useState, type RefObject } from 'react';
+import { Alert, Stack, Tabs } from '@nubitio/ui';
+import './RolePermissionsPanel.scss';
 import { PermissionTreeView, type PermissionTreeHandle } from './PermissionTreeView';
 import { PermissionMatrix, type PermissionMatrixHandle } from './PermissionMatrix';
 
@@ -10,47 +11,45 @@ type RolePermissionsPanelProps = {
   matrixRef: RefObject<PermissionMatrixHandle | null>;
 };
 
-const TABS: { id: TabId; label: string; icon: string }[] = [
-  { id: 'menus', label: 'Menús', icon: 'ph-list' },
-  { id: 'actions', label: 'Acciones', icon: 'ph-shield-check' },
-];
-
 /**
  * Content of the "Permisos" dialog on the Roles page: menu visibility
- * (tree) and granular action permissions (matrix). Both panels stay
+ * (tree) and granular action permissions (tree by module). Both stay
  * mounted so their imperative handles survive tab switches.
  */
 export const RolePermissionsPanel = ({ treeRef, matrixRef }: RolePermissionsPanelProps) => {
   const [tab, setTab] = useState<TabId>('menus');
 
   return (
-    <div className="role-permissions-panel">
-      <div className="role-permissions-panel__tabs" role="tablist">
-        {TABS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === item.id}
-            className={`role-permissions-panel__tab${tab === item.id ? ' is-active' : ''}`}
-            onClick={() => setTab(item.id)}
-          >
-            <i className={`ph ${item.icon}`} aria-hidden="true" />
-            {item.label}
-          </button>
-        ))}
-      </div>
-      <div hidden={tab !== 'menus'}>
-        <PermissionTreeView ref={treeRef} />
-      </div>
-      <div hidden={tab !== 'actions'}>
-        <p className="role-permissions-panel__help">
-          Los permisos de acción controlan lo que el usuario puede hacer aunque tenga visible el
-          menú. Para cambiar solo el precio de una venta usa “Modificar precio de línea en el POS”;
-          para cambiar el precio maestro usa “Editar productos y precios del catálogo”.
-        </p>
-        <PermissionMatrix ref={matrixRef} />
-      </div>
-    </div>
+    <Tabs<TabId>
+      className="role-permissions"
+      aria-label="Tipos de permiso"
+      value={tab}
+      onChange={setTab}
+      keepMounted
+      items={[
+        {
+          value: 'menus',
+          label: 'Menús',
+          content: (
+            <div className="role-permissions__pane">
+              <PermissionTreeView ref={treeRef} />
+            </div>
+          ),
+        },
+        {
+          value: 'actions',
+          label: 'Acciones',
+          content: (
+            <Stack gap={3} className="role-permissions__pane">
+              <Alert tone="info">
+                Los permisos de acción definen lo que puede hacer cada usuario del rol, aunque vea
+                el menú. Marca un módulo para conceder todos sus permisos.
+              </Alert>
+              <PermissionMatrix ref={matrixRef} />
+            </Stack>
+          ),
+        },
+      ]}
+    />
   );
 };

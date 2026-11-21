@@ -78,7 +78,7 @@ All imports: `import { … } from '@nubitio/ui'`. Styles load once at the app ro
 | Component | Key props | Notes |
 | --- | --- | --- |
 | `DataTable` | `columns: {id,header,align,render,accessor}[]`, `rows`, `getRowKey`, `rowActions`, `pagination`, `emptyMessage`, `variant` | Small static tables. Server-driven lists use the ERP `DataGrid` or `SchemaCrudPage`. |
-| `TreeList` | `items`, `columns`, `getId`, `getParentId`/`getChildren`, `loadChildren`, `selectionMode`, `onMove`, `ariaLabel` | Hierarchies (chart of accounts). |
+| `TreeList` | `items`, `columns`, `getId`, `getParentId`/`getChildren`, `loadChildren`, `selectionMode`, `recursiveSelection` (parent checked/indeterminate from its children), `autoExpandAll`, `showBorders`/`showRowLines`/`showColumnHeaders`, `rowAlternationEnabled`, `highlightSelectedRows`, `allowSelectAll`, `maxHeight`, `getRowLabel`, `ariaLabel` | Hierarchies (chart of accounts) and checkbox trees (role permissions). Option names follow DevExtreme's TreeList. Needs @nubitio/ui with those props (PR #65). |
 | `Pagination` | `page`, `totalPages`, `onPageChange` | |
 | `DescriptionList` | `items: {term,value}[]` | Read-only key/value. |
 | `Badge` | `variant: primary｜secondary｜success｜danger｜warning｜info｜light｜dark`, `size`, `outlined`, `pill`, `dot` | Status. |
