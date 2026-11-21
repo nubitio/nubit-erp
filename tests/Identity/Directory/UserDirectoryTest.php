@@ -65,7 +65,9 @@ final class UserDirectoryTest extends TestCase
         static::assertSame(4, $page['totalItems']);
         static::assertSame(['ana', 'beto', 'carla', 'dani'], array_column($page['member'], 'username'));
         static::assertSame('active', $page['member'][0]['status']);
-        static::assertSame('Cajero', $page['member'][0]['role']['name']);
+        $role = $page['member'][0]['role'];
+        static::assertIsArray($role);
+        static::assertSame('Cajero', $role['name']);
     }
 
     public function testPagesWithAStableOrderAndAnExactTotal(): void
