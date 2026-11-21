@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { FeatureHubLayout } from '@nubitio/admin';
 import { useTenantRuntimeConfig } from '@shared/hooks';
-import { IN_DIALOG, settingsTabs } from './settingsTabs';
+import { IN_DIALOG, LINK_ONLY, settingsTabs } from './settingsTabs';
 import './settingsHub.scss';
 
 /** The administration screens that are lists at scale; the rest of the settings are in the dialog. */
@@ -11,7 +11,7 @@ export const SettingsHubLayout = () => {
   const navigationTier = runtimeConfig?.profile.navigationTier ?? 'basic';
   const showAdminTabs = navigationTier === 'standard' || navigationTier === 'advanced';
   const tabs = settingsTabs({ showAdminTabs }).filter(
-    (tab) => tab.visible && !IN_DIALOG.has(tab.key),
+    (tab) => tab.visible && !IN_DIALOG.has(tab.key) && !LINK_ONLY.has(tab.key),
   );
 
   // A tenant without the administration screens has nothing to show here: open the dialog on the
@@ -25,7 +25,7 @@ export const SettingsHubLayout = () => {
   return (
     <FeatureHubLayout
       density="compact"
-      title="Ajustes"
+      title="Administración"
       basePath="/config"
       defaultPath={tabs[0].path}
       tabsAriaLabel="Secciones de ajustes"

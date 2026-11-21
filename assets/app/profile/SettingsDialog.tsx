@@ -1,8 +1,5 @@
 import { AppDialog, Alert, Skeleton } from '@nubitio/ui';
-import { settingsTabs } from '@features/settings/settingsTabs';
-import { useTenantRuntimeConfig } from '@shared/hooks';
-import { hasPermission } from '@shared/permissions';
-import { buildProfileNav, parseSection, type ProfileSection } from './profileNav';
+import { parseSection, type ProfileSection } from './profileNav';
 import { SettingsLayout } from './settings/SettingsLayout';
 import { AccountSection } from './sections/AccountSection';
 import { AppearanceSection } from './sections/AppearanceSection';
@@ -17,6 +14,7 @@ import { SunatSection } from './sections/SunatSection';
 import { UsageSection } from './sections/UsageSection';
 import { useProfile } from './useProfile';
 import { useSettingsDialog } from './useSettingsDialog';
+import { useSettingsNav } from './useSettingsNav';
 
 const TITLES: Record<ProfileSection, string> = {
   account: 'Perfil',
@@ -54,18 +52,7 @@ const OpenSettings = ({
   onClose: () => void;
 }) => {
   const { data: profile, isError, isPending } = useProfile();
-  const { data: runtimeConfig } = useTenantRuntimeConfig();
-
-  const navigationTier = runtimeConfig?.profile.navigationTier ?? 'basic';
-  const canManagePlan = hasPermission('settings.edit');
-  const canSeeSettings = hasPermission('settings.view');
-  const groups = buildProfileNav({
-    organizationTabs: settingsTabs({
-      showAdminTabs: navigationTier === 'standard' || navigationTier === 'advanced',
-    }),
-    canSeeOrganization: canSeeSettings,
-    canManagePlan,
-  });
+  const groups = useSettingsNav();
 
   // Only what the list offers this user opens; anyone else who types the address sees the profile.
   const offered = groups.some((group) => group.items.some((item) => item.key === requested));

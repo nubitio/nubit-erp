@@ -36,7 +36,7 @@ export function workspaceSectionTitle(
   fallback: string,
 ): string {
   const sections: Array<[string, string]> = [
-    ['/config', 'Configuración'],
+    ['/config', 'Administración'],
     ['/cashbox', 'Caja'],
     ['/cash-session', 'Caja'],
     ['/cash-register', 'Caja'],

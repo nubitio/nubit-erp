@@ -303,34 +303,6 @@ class MenuSeedService
             'parent_id' => 795,
         ],
 
-        [
-            'id' => 909,
-            'order_index' => 13,
-            'key_name' => 'Configuración',
-            'type' => 'group',
-            'route' => null,
-            'icon' => 'ph ph-gear-six',
-            'parent_id' => null,
-        ],
-        [
-            'id' => 908,
-            'order_index' => 0,
-            'key_name' => 'Preferencias generales',
-            'type' => 'route',
-            'route' => '/config',
-            'icon' => 'ph ph-sliders-horizontal',
-            'parent_id' => 909,
-        ],
-        [
-            'id' => 820,
-            'order_index' => 1,
-            'key_name' => 'Migración inicial',
-            'type' => 'route',
-            'route' => '/setup/import',
-            'icon' => 'ph ph-database',
-            'parent_id' => 909,
-        ],
-
         // ── Grupo: Restaurante (mesas y cocina, NB-18) ──────────────────────
         [
             'id' => 830,
