@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
 import { login } from './helpers/auth';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
@@ -155,4 +157,61 @@ test('a photo can be uploaded, is shown, and removed', async ({ page }) => {
   await dialog.getByRole('button', { name: 'Quitar' }).click();
   await expect(page.getByText('Foto eliminada')).toBeVisible();
   await expect(dialog.getByRole('button', { name: 'Subir foto' }).first()).toBeVisible();
+});
+
+test.describe('two-step verification setup', () => {
+  // The QR is decoded in the page with jsQR, which is injected inline: the page's CSP would refuse it.
+  test.use({ bypassCSP: true });
+
+  test('shows a QR that scans back to the otpauth URI the server issued, plus the manual key', async ({
+    page,
+  }) => {
+    const dialog = await openSettings(page);
+    await dialog
+      .getByRole('navigation', { name: 'Secciones de ajustes' })
+      .getByRole('button', { name: 'Seguridad' })
+      .click();
+    await dialog.getByRole('button', { name: 'Configurar' }).click();
+    const modal = page.getByRole('dialog', { name: 'Verificación en dos pasos' });
+
+    const issued = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/auth/totp') && response.request().method() === 'POST',
+    );
+    await modal.getByRole('button', { name: 'Activar' }).click();
+    const { uri, secret } = (await (await issued).json()) as { uri: string; secret: string };
+
+    const qr = modal.getByRole('img', { name: /Código QR/ });
+    await expect(qr).toBeVisible();
+    await expect(modal.getByTestId('two-factor-secret')).toContainText(secret.slice(0, 4));
+
+    await page.addScriptTag({
+      content: readFileSync(join(process.cwd(), 'node_modules/jsqr/dist/jsQR.js'), 'utf8'),
+    });
+    const decoded = await page.evaluate(async () => {
+      const svg = document.querySelector('svg.two-factor__qr');
+      if (!svg) return null;
+      const xml = new XMLSerializer().serializeToString(svg);
+      const image = new Image();
+      image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(xml)}`;
+      await image.decode();
+      const canvas = document.createElement('canvas');
+      canvas.width = 480;
+      canvas.height = 480;
+      const context = canvas.getContext('2d');
+      if (!context) return null;
+      context.imageSmoothingEnabled = false;
+      context.drawImage(image, 0, 0, 480, 480);
+      const pixels = context.getImageData(0, 0, 480, 480);
+      const read = (
+        window as unknown as {
+          jsQR: (d: Uint8ClampedArray, w: number, h: number) => { data: string } | null;
+        }
+      ).jsQR;
+      return read(pixels.data, 480, 480)?.data ?? null;
+    });
+    expect(decoded).toBe(uri);
+
+    await modal.getByRole('button', { name: 'Cancelar' }).click();
+  });
 });

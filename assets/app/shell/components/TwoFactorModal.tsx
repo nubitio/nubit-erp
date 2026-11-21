@@ -5,6 +5,7 @@ import { describeIdentityError } from '@features/auth/identityErrors';
 import { classifyLoginError } from '@features/auth/loginErrors';
 import toast from '@shared/lib/SharedUtils';
 import { Button, TextField } from '@nubitio/ui';
+import { QrCode } from '@shared/components';
 
 import { AppDialog } from './AppDialog';
 
@@ -156,8 +157,16 @@ const TwoFactorDialog = ({ visible, onClose }: TwoFactorModalProps) => {
       <>
         <ol className="two-factor__steps">
           <li>
-            En tu app de autenticación (Google Authenticator, Authy, 1Password…) agrega una cuenta
-            nueva con esta clave:
+            Abre tu app de autenticación (Google Authenticator, Authy, 1Password…) y escanea este
+            código:
+            <QrCode
+              className="two-factor__qr"
+              value={enrolment.uri}
+              label="Código QR para agregar esta cuenta a tu app de autenticación"
+            />
+            <span className="two-factor__alt">
+              ¿No puedes escanearlo? Agrega la cuenta a mano con esta clave:
+            </span>
             <code className="two-factor__secret" data-testid="two-factor-secret">
               {groupSecret(enrolment.secret)}
             </code>
