@@ -358,6 +358,44 @@ class MenuSeedService
             'icon' => 'ph ph-map-trifold',
             'parent_id' => 830,
         ],
+
+        // ── Grupo: Administración (usuarios y sus invitaciones, roles, actividad) ─
+        [
+            'id' => 840,
+            'order_index' => 15,
+            'key_name' => 'Administración',
+            'type' => 'group',
+            'route' => null,
+            'icon' => 'ph ph-shield-star',
+            'parent_id' => null,
+        ],
+        [
+            'id' => 841,
+            'order_index' => 0,
+            'key_name' => 'Usuarios',
+            'type' => 'route',
+            'route' => '/config/users',
+            'icon' => 'ph ph-users',
+            'parent_id' => 840,
+        ],
+        [
+            'id' => 843,
+            'order_index' => 1,
+            'key_name' => 'Roles',
+            'type' => 'route',
+            'route' => '/config/roles',
+            'icon' => 'ph ph-user-gear',
+            'parent_id' => 840,
+        ],
+        [
+            'id' => 844,
+            'order_index' => 2,
+            'key_name' => 'Actividad',
+            'type' => 'route',
+            'route' => '/config/activity',
+            'icon' => 'ph ph-clock-counter-clockwise',
+            'parent_id' => 840,
+        ],
     ];
 
     public function __construct(

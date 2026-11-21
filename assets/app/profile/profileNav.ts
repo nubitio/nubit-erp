@@ -1,4 +1,4 @@
-import { IN_DIALOG, type SettingsTab } from '@features/settings/settingsTabs';
+import type { SettingsTab } from '@features/settings/settingsTabs';
 import type { SettingsNavGroup } from './settings/SettingsLayout';
 
 export const PROFILE_SECTIONS = [
@@ -79,12 +79,7 @@ export function buildProfileNav({
     groups.push({
       key: 'organization',
       title: 'Organización',
-      items: visibleTabs.map((tab) =>
-        // These are edited right here; the other pages are full screens of their own.
-        IN_DIALOG.has(tab.key)
-          ? { key: tab.key, label: tab.label, icon: tab.icon }
-          : { key: `org-${tab.key}`, label: tab.label, icon: tab.icon, href: tab.path },
-      ),
+      items: visibleTabs.map((tab) => ({ key: tab.key, label: tab.label, icon: tab.icon })),
     });
   }
 
