@@ -5,6 +5,9 @@
   height: 100%;
   min-height: 0;
   overflow: hidden;
+  // The dialog does not clip its content, and this is its last child: follow its rounded bottom corners
+  // so the nav's grey background does not stick out of the lower-left one.
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 .settings-nav {
