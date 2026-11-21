@@ -37,8 +37,8 @@ test('previsualiza e importa saldos iniciales por cobrar y los contabiliza', asy
   }
 
   await page.goto(`${BASE_URL}/setup/import`);
-  await page.getByRole('button', { name: /Ya los tengo \/ Siguiente/ }).click();
-  await page.getByRole('button', { name: 'Siguiente', exact: true }).click();
+  await page.getByRole('button', { name: 'Omitir este paso' }).click();
+  await page.getByRole('button', { name: 'Omitir este paso' }).click();
 
   const upload = page.locator('input[type="file"]').first();
   await upload.setInputFiles({
