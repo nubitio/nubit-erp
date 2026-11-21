@@ -10,6 +10,7 @@ import {
   EmptyState,
   IconButton,
   Row,
+  Spinner,
   TextAreaField,
   TextField,
   Tooltip,
@@ -42,6 +43,10 @@ interface POSCheckoutPanelProps {
   onCustomerChange: (value: string | null, item?: unknown) => void;
   clearSelectedCustomer: () => void;
   focusCustomerTrigger?: number;
+  /** Bumped by the Shift+F3 shortcut to open the new-customer dialog. */
+  newCustomerTrigger?: number;
+  /** Bumped by the F8 shortcut to edit the quantity of the last line. */
+  editLastQtyTrigger?: number;
   note: string;
   setNote: (value: string) => void;
   updateQuantity: (id: string, nextQuantity: number) => void | Promise<void>;
@@ -94,6 +99,8 @@ interface POSCheckoutPanelProps {
   onRetrySale?: (saleId: string) => void;
   onReadScaleWeight?: (itemId: string) => void;
   scaleReady?: boolean;
+  /** Lines currently waiting for a stable weight from the scale. */
+  scaleReadingIds?: ReadonlySet<string>;
   /** Local order reference shown in the header, e.g. "#00483". */
   ticketLabel?: string;
   /** Parks the order so another customer can be served; omitted when unsupported. */
@@ -114,6 +121,8 @@ export function POSCheckoutPanel({
   onCustomerChange,
   clearSelectedCustomer,
   focusCustomerTrigger,
+  newCustomerTrigger,
+  editLastQtyTrigger,
   note,
   setNote,
   updateQuantity,
@@ -163,6 +172,7 @@ export function POSCheckoutPanel({
   onRetrySale: _onRetrySale,
   onReadScaleWeight,
   scaleReady = false,
+  scaleReadingIds,
   ticketLabel,
   onHold,
   paymentOpen,
@@ -334,6 +344,21 @@ export function POSCheckoutPanel({
     });
   }, [focusCustomerTrigger, clearSelectedCustomer]);
 
+  useEffect(() => {
+    if (!newCustomerTrigger) return;
+    setCreatingCustomer(true);
+  }, [newCustomerTrigger]);
+
+  useEffect(() => {
+    if (!editLastQtyTrigger) return;
+    const last = cart[cart.length - 1];
+    if (!last) return;
+    setEditingQtyId(last.id);
+    setEditingQtyVal(String(last.quantity));
+    // Runs only when the shortcut fires; later cart changes must not reopen the editor.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editLastQtyTrigger]);
+
   const sendReceiptEmail = async () => {
     const documentId = successTaxDocumentIdRef.current;
     const address = emailValue.trim();
@@ -390,6 +415,7 @@ export function POSCheckoutPanel({
             size="sm"
             onClick={onHold}
             disabled={cart.length === 0}
+            title="Poner en espera (F4)"
             data-testid="pos-hold-btn"
           >
             <i className="ph ph-pause" aria-hidden="true" /> En espera
@@ -424,7 +450,7 @@ export function POSCheckoutPanel({
                 />
               </div>
               {hasPermission('customers.create') && (
-                <Tooltip content="Nuevo cliente">
+                <Tooltip content="Nuevo cliente (Shift+F3)">
                   <IconButton
                     icon="ph ph-user-plus"
                     label="Nuevo cliente"
@@ -671,7 +697,7 @@ export function POSCheckoutPanel({
                           className="pos-line__qty-display"
                           role="button"
                           tabIndex={0}
-                          title="Editar cantidad"
+                          title="Editar cantidad (F8 en la última línea)"
                           onClick={() => {
                             setEditingQtyId(item.id);
                             setEditingQtyVal(String(item.quantity));
@@ -693,19 +719,29 @@ export function POSCheckoutPanel({
                       >
                         <i className="ph ph-plus" aria-hidden="true" />
                       </button>
+                      {/* Only offered while a scale is connected: otherwise the weight is typed. */}
+                      {isWeighted && onReadScaleWeight && scaleReady && (
+                        <button
+                          type="button"
+                          className="pos-line__scale-btn"
+                          onClick={() => onReadScaleWeight(item.id)}
+                          disabled={scaleReadingIds?.has(item.id)}
+                          aria-busy={scaleReadingIds?.has(item.id) || undefined}
+                          aria-label={`Volver a pesar ${item.name}`}
+                          title={
+                            scaleReadingIds?.has(item.id)
+                              ? 'Esperando peso estable…'
+                              : 'Volver a pesar'
+                          }
+                        >
+                          {scaleReadingIds?.has(item.id) ? (
+                            <Spinner size="sm" label="Esperando peso estable" />
+                          ) : (
+                            <i className="ph ph-scales" aria-hidden="true" />
+                          )}
+                        </button>
+                      )}
                     </div>
-                    {isWeighted && onReadScaleWeight && (
-                      <button
-                        type="button"
-                        className="pos-line__scale-btn"
-                        disabled={!scaleReady}
-                        onClick={() => onReadScaleWeight(item.id)}
-                        aria-label={`Leer peso de ${item.name} desde la balanza`}
-                        title={scaleReady ? 'Leer balanza' : 'Balanza no configurada'}
-                      >
-                        <i className="ph ph-scales" aria-hidden="true" />
-                      </button>
-                    )}
                   </div>
                   <strong className="pos-line__total">
                     {formatMoney(toNumber(item.salePrice) * item.quantity)}

@@ -240,7 +240,8 @@ test('Una venta offline sobrevive a recarga y actualización PWA y se sincroniza
       );
     }
     expect(synced?.outbox.every((item) => item.status === 'done')).toBe(true);
-    await expect(page.getByRole('button', { name: /Ventas pendientes: 0/ })).toBeVisible();
+    // The indicator only shows while something is pending or failed.
+    await expect(page.getByRole('button', { name: /Ventas pendientes/ })).toHaveCount(0);
     expect(errors).toEqual([]);
   } finally {
     const statePath = test.info().outputPath('offline-state.json');

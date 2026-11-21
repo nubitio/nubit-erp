@@ -20,7 +20,7 @@ html[data-visual-style='nubit'] .pos-shell {
   padding: 16px;
 
   .pos-desktop-context {
-    grid-column: 1 / -1;
+    grid-column: 1;
     grid-row: 1;
     min-width: 0;
   }
@@ -290,28 +290,6 @@ html[data-visual-style='nubit'] .pos-shell {
     background: var(--pos-primary);
     color: var(--nb-color-text-on-brand);
   }
-}
-
-.pos-context-dialog .pos-operator-header {
-  height: auto;
-  padding: 16px;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 20px;
-  overflow: visible;
-  border: 0;
-  box-shadow: none;
-}
-.pos-context-dialog .pos-operator-header__left,
-.pos-context-dialog .pos-operator-header__right {
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.pos-context-dialog .pos-operator-header__label {
-  display: inline;
-}
-.pos-context-dialog .pos-operator-header__ctx strong {
-  max-width: 220px;
 }
 
 @media (max-width: 860px) {
