@@ -13,13 +13,13 @@ import { AdminShell, AdminBottomNavigation, type AdminMenuItem } from '@nubitio/
 import { userInformation } from '@app/userInformation';
 import { menuService } from '@features/navigation';
 import { useNotifications } from '@features/notifications';
-import { Drawer, SettingsPanel } from '@nubitio/ui';
+import { Drawer } from '@nubitio/ui';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
+import { AccountPreferencesSync, SettingsDialog } from '@app/profile';
+import { UserAvatar } from '@shared/components';
 import { UserMenuSection } from './components/UserMenuSection';
 import { NotificationPanel } from './components/NotificationPanel';
 import { BranchPicker } from './components/BranchPicker';
-import { ChangePasswordModal } from './components/ChangePasswordModal';
-import { TwoFactorModal } from './components/TwoFactorModal';
 import { useFeature, useTenantRuntimeConfig } from '@shared/hooks';
 import { useAuth } from '@app/contexts/auth';
 import { WorkspaceSearch } from './components/WorkspaceSearch';
@@ -40,11 +40,9 @@ interface EfactAdminShellProps {
 
 export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShellProps) => {
   // Committed branch changes also refresh the auth context.
-  useAuth();
+  const { user } = useAuth();
   const [menuItems, setMenuItems] = useState<AdminMenuItem[]>([]);
   const [showBranchPicker, setShowBranchPicker] = useState(false);
-  const [showChangePassword, setShowChangePassword] = useState(false);
-  const [showTwoFactor, setShowTwoFactor] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
   // Track whether the drawer has ever been opened so the Assistant component
@@ -99,6 +97,7 @@ export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShe
 
   return (
     <>
+      <AccountPreferencesSync />
       <AdminShell
         variant="workspace"
         brand={<WorkspaceBrand />}
@@ -143,20 +142,19 @@ export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShe
             badge: unreadCount,
             onClick: () => setNotifOpen((prev) => !prev),
           },
-          {
-            id: 'display-settings',
-            icon: 'ph ph-sliders-horizontal',
-            label: 'Apariencia',
-            renderPanel: ({ close }) => <SettingsPanel onClose={close} />,
-          },
         ]}
+        userAvatar={
+          <UserAvatar
+            name={user?.name || user?.username || ''}
+            avatarUrl={user?.avatarUrl}
+            size={28}
+          />
+        }
         renderUserMenu={({ close }) => (
           <UserMenuSection
             showAvatar
             onAction={close}
             onChangeBranch={() => setShowBranchPicker(true)}
-            onChangePassword={() => setShowChangePassword(true)}
-            onTwoFactor={() => setShowTwoFactor(true)}
           />
         )}
         renderThemeSwitcher={() => <ThemeSwitcher />}
@@ -205,13 +203,7 @@ export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShe
       </Drawer>
 
       <BranchPicker visible={showBranchPicker} setVisible={setShowBranchPicker} />
-      <ChangePasswordModal
-        visible={showChangePassword}
-        onClose={() => setShowChangePassword(false)}
-      />
-      {window.app_identity && (
-        <TwoFactorModal visible={showTwoFactor} onClose={() => setShowTwoFactor(false)} />
-      )}
+      <SettingsDialog />
     </>
   );
 };

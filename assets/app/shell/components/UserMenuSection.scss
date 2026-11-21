@@ -13,6 +13,13 @@
     font-weight: var(--font-weight-medium);
   }
 
+  .user-name__username {
+    color: var(--text-secondary);
+    display: block;
+    font-size: var(--font-size-xs);
+    font-weight: 400;
+  }
+
   .image-container {
     align-items: center;
     display: inline-flex;

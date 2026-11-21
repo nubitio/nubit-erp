@@ -82,7 +82,16 @@ function AuthProvider(props: React.PropsWithChildren<unknown>) {
     void authService.logout().catch(() => undefined);
   }, []);
 
-  return <AuthContext.Provider value={{ user, signIn, signOut, loading }} {...props} />;
+  const updateUser = useCallback((patch: Partial<User>) => {
+    setUser((current) => {
+      if (!current) return current;
+      const next = { ...current, ...patch };
+      StorageUtils.setItem('user', next);
+      return next;
+    });
+  }, []);
+
+  return <AuthContext.Provider value={{ user, signIn, signOut, updateUser, loading }} {...props} />;
 }
 
 function throwNoProvider(): never {
@@ -94,6 +103,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: false,
   signIn: throwNoProvider,
   signOut: throwNoProvider,
+  updateUser: throwNoProvider,
 });
 const useAuth = () => useContext(AuthContext);
 
