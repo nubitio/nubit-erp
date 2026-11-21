@@ -51,7 +51,7 @@ it('uses the actual section for grouped routes and keeps dashboard naming unchan
     { text: 'Inicio', path: '/dashboard' },
     { text: 'Preferencias generales', path: '/config' },
   ];
-  expect(workspaceSectionTitle('/config/roles', menu, 'ERP')).toBe('Configuración');
+  expect(workspaceSectionTitle('/config/roles', menu, 'ERP')).toBe('Administración');
   expect(workspaceSectionTitle('/cash-session/10/close', menu, 'Sucursal')).toBe('Caja');
   expect(workspaceSectionTitle('/accounts-payable', menu, 'ERP')).toBe('Finanzas');
   for (const path of [

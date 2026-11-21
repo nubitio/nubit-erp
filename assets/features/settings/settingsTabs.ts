@@ -10,6 +10,9 @@ export const IN_DIALOG: ReadonlySet<string> = new Set([
   'integrations',
 ]);
 
+/** Pages that appear in the settings list as a link to their own screen, outside the hub. */
+export const LINK_ONLY: ReadonlySet<string> = new Set(['import']);
+
 export interface SettingsTab {
   key: string;
   label: string;
@@ -83,6 +86,13 @@ export function settingsTabs({ showAdminTabs }: { showAdminTabs: boolean }): Set
       path: '/config/integrations',
       icon: 'ph-plugs-connected',
       visible: showAdminTabs,
+    },
+    {
+      key: 'import',
+      label: 'Importar datos',
+      path: '/setup/import',
+      icon: 'ph-database',
+      visible: true,
     },
     {
       key: 'general',
