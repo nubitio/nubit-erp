@@ -1,11 +1,13 @@
 import { DateTime } from 'luxon';
 import { describe, expect, it } from 'vitest';
 import {
+  activityIcon,
   buildActivityQuery,
   DEFAULT_FILTERS,
   formatTime,
   groupByDay,
   rangeToDates,
+  summaryTone,
   type ActivityItem,
 } from './activityFormat';
 
@@ -105,5 +107,22 @@ describe('buildActivityQuery', () => {
     expect(params.get('q')).toBe('50% off & más');
     expect(params.get('from')).toBe('2026-11-07');
     expect(params.get('page')).toBe('2');
+  });
+});
+
+describe('activityIcon', () => {
+  it('picks an icon per kind of event, with a fallback by family', () => {
+    expect(activityIcon('auth.login_failed')).toBe('ph ph-warning');
+    expect(activityIcon('auth.totp_enabled')).toBe('ph ph-shield-check');
+    expect(activityIcon('role.permissions_changed')).toBe('ph ph-user-gear');
+    expect(activityIcon('auth.password_reset')).toBe('ph ph-key');
+    expect(activityIcon('user.created')).toBe('ph ph-user');
+  });
+});
+
+describe('summaryTone', () => {
+  it('flags failures and leaves the rest neutral', () => {
+    expect(summaryTone('auth.login_failed')).toBe('danger');
+    expect(summaryTone('auth.login')).toBe('default');
   });
 });

@@ -115,3 +115,26 @@ export function buildActivityQuery(
   if (page !== undefined) params.set('page', String(page));
   return params.toString();
 }
+
+/** Phosphor icon (full classes) for an event type, used when the entry has no person to show. */
+export function activityIcon(type: string): string {
+  switch (type) {
+    case 'auth.login':
+      return 'ph ph-sign-in';
+    case 'auth.login_failed':
+      return 'ph ph-warning';
+    case 'auth.totp_enabled':
+    case 'auth.totp_disabled':
+    case 'auth.totp_reset':
+      return 'ph ph-shield-check';
+    case 'role.permissions_changed':
+      return 'ph ph-user-gear';
+    default:
+      return type.startsWith('auth.') ? 'ph ph-key' : 'ph ph-user';
+  }
+}
+
+/** A failure reads as a warning in the weekly summary; everything else is neutral. */
+export function summaryTone(type: string): 'default' | 'danger' {
+  return type.endsWith('_failed') ? 'danger' : 'default';
+}

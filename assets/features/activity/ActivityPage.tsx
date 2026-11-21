@@ -1,11 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Avatar, Badge, Button, SelectField, TextField } from '@nubitio/ui';
+import {
+  Alert,
+  AppDropdown,
+  Button,
+  Card,
+  Cluster,
+  EmptyState,
+  KpiMetricRow,
+  Skeleton,
+  Stack,
+  Text,
+  TextField,
+} from '@nubitio/ui';
 
+import { ActivityEntry } from './ActivityEntry';
 import {
   DEFAULT_FILTERS,
-  formatTime,
   groupByDay,
   RANGE_OPTIONS,
+  summaryTone,
   TYPE_OPTIONS,
   type ActivityFilters,
   type ActivityRange,
@@ -50,60 +63,86 @@ export function ActivityPage() {
   const set = <K extends keyof ActivityFilters>(key: K, value: ActivityFilters[K]) =>
     setFilters((current) => ({ ...current, [key]: value }));
 
+  const actorOptions = useMemo(
+    () => [
+      { value: '', label: 'Todos los usuarios' },
+      ...(actors.data ?? []).map((name) => ({ value: name, label: name })),
+    ],
+    [actors.data],
+  );
+
+  const summaryItems = summary.data?.items ?? [];
+
   return (
-    <div className="activity-page" data-testid="activity-page">
-      <div className="activity-filters">
-        <TextField
-          type="search"
-          aria-label="Buscar en la actividad"
-          placeholder="Buscar por usuario, rol o palabra"
-          value={searchText}
-          onChange={(event) => setSearchText(event.target.value)}
-        />
-        <SelectField
-          aria-label="Usuario"
-          value={filters.actor}
-          onChange={(event) => set('actor', event.target.value)}
-        >
-          <option value="">Usuario: Todos</option>
-          {(actors.data ?? []).map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-        </SelectField>
-        <SelectField
-          aria-label="Tipo"
+    <Stack gap={4} fill data-testid="activity-page">
+      <section aria-label="Resumen de la semana" data-testid="activity-summary">
+        <Text tone="muted" className="activity-eyebrow">
+          Esta semana
+        </Text>
+        {summary.isPending || summaryItems.length > 0 ? (
+          <KpiMetricRow
+            layout="strip"
+            density="compact"
+            loading={summary.isPending}
+            items={summaryItems.map((entry) => ({
+              label: entry.label,
+              value: entry.count,
+              tone: summaryTone(entry.type),
+            }))}
+          />
+        ) : (
+          <Text tone="muted">Sin actividad registrada esta semana.</Text>
+        )}
+      </section>
+
+      <Cluster gap={2}>
+        <div className="activity-search">
+          <TextField
+            type="search"
+            aria-label="Buscar en la actividad"
+            placeholder="Buscar por usuario, rol o palabra"
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+          />
+        </div>
+        <AppDropdown
+          variant="toolbar"
+          ariaLabel="Tipo"
+          icon="ph ph-funnel"
           value={filters.type}
-          onChange={(event) => set('type', event.target.value as ActivityTypeFilter)}
-        >
-          {TYPE_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              Tipo: {option.label}
-            </option>
-          ))}
-        </SelectField>
-        <SelectField
-          aria-label="Fecha"
+          options={TYPE_OPTIONS.map((option) => ({
+            ...option,
+            selectedLabel: `Tipo: ${option.label}`,
+          }))}
+          onChange={(value) => set('type', value as ActivityTypeFilter)}
+        />
+        <AppDropdown
+          variant="toolbar"
+          ariaLabel="Usuario"
+          icon="ph ph-user"
+          value={filters.actor}
+          options={actorOptions}
+          onChange={(value) => set('actor', value)}
+        />
+        <AppDropdown
+          variant="toolbar"
+          ariaLabel="Fecha"
+          icon="ph ph-calendar-blank"
           value={filters.range}
-          onChange={(event) => set('range', event.target.value as ActivityRange)}
-        >
-          {RANGE_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              Fecha: {option.label}
-            </option>
-          ))}
-        </SelectField>
+          options={RANGE_OPTIONS}
+          onChange={(value) => set('range', value as ActivityRange)}
+        />
         <Button
           variant="secondary"
+          icon="ph ph-download-simple"
           onClick={() => window.location.assign(activityExportUrl(effective))}
         >
           Exportar
         </Button>
-      </div>
+      </Cluster>
 
-      <div className="activity-layout">
-        <section className="activity-feed" aria-label="Actividad">
+      <Card variant="panel">
+        <section aria-label="Actividad" className="activity-feed">
           {list.isError ? (
             <Alert tone="danger">
               No se pudo cargar la actividad.{' '}
@@ -112,37 +151,25 @@ export function ActivityPage() {
               </Button>
             </Alert>
           ) : list.isPending ? (
-            <p role="status">Cargando actividad…</p>
+            <div role="status" aria-label="Cargando actividad">
+              <Skeleton variant="text" lines={6} />
+            </div>
           ) : groups.length === 0 ? (
-            <p role="status" className="activity-empty" data-testid="activity-empty">
-              No hay actividad con estos filtros.
-            </p>
+            <div data-testid="activity-empty">
+              <EmptyState
+                icon="clock-counter-clockwise"
+                title="No hay actividad con estos filtros"
+                description="Prueba con otro tipo, otro usuario o un rango de fechas más amplio."
+                size="sm"
+              />
+            </div>
           ) : (
             groups.map((group) => (
               <div key={group.key} className="activity-day">
                 <h3 className="activity-day__heading">{group.heading}</h3>
                 <ul className="activity-list">
                   {group.items.map((entry) => (
-                    <li
-                      key={entry.id}
-                      className="activity-row"
-                      data-testid="activity-row"
-                      data-type={entry.type}
-                    >
-                      <time className="activity-row__time" dateTime={entry.occurredAt}>
-                        {formatTime(entry.occurredAt)}
-                      </time>
-                      <Avatar owner={entry.actor ?? entry.summary} size={32} />
-                      <div className="activity-row__body">
-                        <strong>{entry.summary}</strong>
-                        {entry.detail ? <small>{entry.detail}</small> : null}
-                      </div>
-                      {entry.sensitive ? (
-                        <Badge pill variant="danger">
-                          Sensible
-                        </Badge>
-                      ) : null}
-                    </li>
+                    <ActivityEntry key={entry.id} entry={entry} />
                   ))}
                 </ul>
               </div>
@@ -161,30 +188,12 @@ export function ActivityPage() {
             </div>
           ) : null}
 
-          <p className="activity-note">
+          <Text tone="muted" className="activity-note">
             <i className="ph ph-shield-check" aria-hidden="true" /> Este registro no se puede editar
             ni borrar desde el sistema.
-          </p>
+          </Text>
         </section>
-
-        <aside className="activity-side" aria-label="Resumen de la semana">
-          <h3>Esta semana</h3>
-          {summary.isPending ? (
-            <p role="status">Cargando…</p>
-          ) : (summary.data?.items.length ?? 0) === 0 ? (
-            <p>Sin actividad registrada.</p>
-          ) : (
-            <dl>
-              {summary.data?.items.map((entry) => (
-                <div key={entry.type} data-testid="activity-summary-row">
-                  <dt>{entry.label}</dt>
-                  <dd>{entry.count}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
-        </aside>
-      </div>
-    </div>
+      </Card>
+    </Stack>
   );
 }
