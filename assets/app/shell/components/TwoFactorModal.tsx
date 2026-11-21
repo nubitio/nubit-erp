@@ -6,6 +6,9 @@ import { classifyLoginError } from '@features/auth/loginErrors';
 import toast from '@shared/lib/SharedUtils';
 import { Button, TextField } from '@nubitio/ui';
 import { QrCode } from '@shared/components';
+import { downloadBlob } from '@shared/lib/downloadBlob';
+import { useAuth } from '@app/contexts/auth';
+import { recoveryCodesFile } from './recoveryCodesFile';
 
 import { AppDialog } from './AppDialog';
 
@@ -34,6 +37,7 @@ function codeError(err: unknown): string {
 }
 
 const TwoFactorDialog = ({ visible, onClose }: TwoFactorModalProps) => {
+  const { user } = useAuth();
   const [status, setStatus] = useState<Status | null>(null);
   const [mode, setMode] = useState<Mode>('status');
   const [enrolment, setEnrolment] = useState<Enrolment | null>(null);
@@ -128,24 +132,49 @@ const TwoFactorDialog = ({ visible, onClose }: TwoFactorModalProps) => {
   const codesList = (codes: string[]) => (
     <>
       <p>
-        <strong>Guarda estos códigos de recuperación.</strong> Cada uno sirve una sola vez si
-        pierdes tu teléfono. No volverán a mostrarse.
+        <strong>Guarda tus códigos de recuperación.</strong> Cada uno sirve una sola vez si pierdes
+        tu teléfono, y no volverán a mostrarse.
       </p>
-      <ul className="two-factor__codes" data-testid="two-factor-recovery-codes">
-        {codes.map((value) => (
-          <li key={value}>{value}</li>
-        ))}
-      </ul>
-      <Button
-        variant="secondary"
-        size="sm"
-        onClick={() => {
-          void navigator.clipboard?.writeText(codes.join('\n'));
-          toast('Códigos copiados.', 'success');
-        }}
-      >
-        Copiar códigos
-      </Button>
+      <div className="two-factor__actions">
+        <Button
+          variant="secondary"
+          size="sm"
+          icon="ph ph-download-simple"
+          onClick={() => {
+            const file = recoveryCodesFile({
+              username: user?.username ?? '',
+              codes,
+              issuedAt: new Date(),
+            });
+            downloadBlob(
+              new Blob([file.content], { type: 'text/plain;charset=utf-8' }),
+              file.filename,
+            );
+            toast('Códigos descargados.', 'success');
+          }}
+        >
+          Descargar (.txt)
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          icon="ph ph-copy"
+          onClick={() => {
+            void navigator.clipboard?.writeText(codes.join('\n'));
+            toast('Códigos copiados.', 'success');
+          }}
+        >
+          Copiar
+        </Button>
+      </div>
+      <details className="two-factor__details">
+        <summary>Ver códigos</summary>
+        <ul className="two-factor__codes" data-testid="two-factor-recovery-codes">
+          {codes.map((value) => (
+            <li key={value}>{value}</li>
+          ))}
+        </ul>
+      </details>
     </>
   );
 
@@ -157,15 +186,16 @@ const TwoFactorDialog = ({ visible, onClose }: TwoFactorModalProps) => {
       <>
         <ol className="two-factor__steps">
           <li>
-            Abre tu app de autenticación (Google Authenticator, Authy, 1Password…) y escanea este
-            código:
+            Escanea este código con tu app de autenticación (Google Authenticator, Authy,
+            1Password…):
             <QrCode
               className="two-factor__qr"
+              size={160}
               value={enrolment.uri}
               label="Código QR para agregar esta cuenta a tu app de autenticación"
             />
             <span className="two-factor__alt">
-              ¿No puedes escanearlo? Agrega la cuenta a mano con esta clave:
+              ¿No puedes escanearlo? Ingresa esta clave a mano:
             </span>
             <code className="two-factor__secret" data-testid="two-factor-secret">
               {groupSecret(enrolment.secret)}
