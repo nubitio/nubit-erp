@@ -18,6 +18,7 @@ import { useSessionInfo } from '@shared/sessionInfo';
 import { createInvoicePrinter, InvoicePrinter } from '@features/sales';
 import { ThemeContext } from '@assets/theme/theme';
 import { POSOperatorHeader } from './POSOperatorHeader';
+import { POSShortcutsDialog } from './POSShortcutsDialog';
 import { POSCatalogPanel } from './POSCatalogPanel';
 import { POSCheckoutPanel } from './POSCheckoutPanel';
 import { productService } from '@features/product/services/productService';
@@ -70,6 +71,10 @@ const POSPage = () => {
   const [openCajaDialogOpen, setOpenCajaDialogOpen] = useState(false);
   const [quickMode, setQuickMode] = useState(false);
   const [focusCustomerTrigger, setFocusCustomerTrigger] = useState(0);
+  // Counters the checkout panel reacts to: it owns the dialog / the line being edited.
+  const [newCustomerTrigger, setNewCustomerTrigger] = useState(0);
+  const [editLastQtyTrigger, setEditLastQtyTrigger] = useState(0);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
   const mobileHeading = useRef<HTMLHeadingElement>(null);
   const previousPanel = useRef<'catalog' | 'cart'>('catalog');
@@ -229,6 +234,7 @@ const POSPage = () => {
     igvRate,
     readScaleForLine,
     scaleReady,
+    scaleReadingIds,
     syncCartPricesFromCatalog,
   } = usePosCheckout({
     tenantId: window.location.hostname || 'default-tenant',
@@ -284,6 +290,12 @@ const POSPage = () => {
     setTicketNumber(nextTicketNumber(heldStoreId));
     toast(`Venta ${formatTicketNumber(ticketNumber)} en espera`, 'success');
   };
+
+  // The key handler is registered once per dependency change; it reaches the latest closure here.
+  const holdCurrentOrderRef = useRef(holdCurrentOrder);
+  useEffect(() => {
+    holdCurrentOrderRef.current = holdCurrentOrder;
+  });
 
   const resumeHeldSale = (id: string) => {
     const target = heldSales.find((sale) => sale.id === id);
@@ -454,6 +466,13 @@ const POSPage = () => {
         target.closest('button, a, [role="button"], [role="option"], [role="radio"]'),
       );
 
+      // ? → shortcuts list (not while typing, and never in the middle of a scanner burst)
+      if (e.key === '?' && !isInput && !isInteractive && barcodeBufferRef.current.length === 0) {
+        e.preventDefault();
+        setShortcutsOpen(true);
+        return;
+      }
+
       // Barcode scanner: single printable char arriving fast → buffer; Enter → resolve
       if (
         e.key.length === 1 &&
@@ -474,6 +493,16 @@ const POSPage = () => {
         e.preventDefault();
         searchInputRef.current?.focus();
         barcodeBufferRef.current = '';
+        return;
+      }
+
+      // Shift+F3 → new customer
+      if (e.key === 'F3' && e.shiftKey) {
+        e.preventDefault();
+        if (!hasPermission('customers.create')) return;
+        setActivePanel('cart');
+        setQuickMode(false); // the customer section hosts the button
+        setNewCustomerTrigger((n) => n + 1);
         return;
       }
 
@@ -518,6 +547,24 @@ const POSPage = () => {
         } else if (cajaAbierta && cart.length > 0) {
           e.preventDefault();
           setPaymentOpen(true);
+        }
+        return;
+      }
+
+      // F4 → hold the current sale · Shift+F4 → list held sales (Alt+F4 stays the OS's)
+      if (e.key === 'F4' && !e.altKey) {
+        e.preventDefault();
+        if (e.shiftKey) setHeldOpen(true);
+        else if (!paymentOpen && cart.length > 0) holdCurrentOrderRef.current();
+        return;
+      }
+
+      // F8 → edit the quantity of the last line
+      if (e.key === 'F8') {
+        e.preventDefault();
+        if (cart.length > 0) {
+          setActivePanel('cart');
+          setEditLastQtyTrigger((n) => n + 1);
         }
         return;
       }
@@ -584,8 +631,9 @@ const POSPage = () => {
     [cart.length, cartItemsCount, total, customersState.selectedCustomer, cajaAbierta],
   );
 
-  const operatorHeader = (
+  const renderOperatorHeader = (variant: 'bar' | 'panel') => (
     <POSOperatorHeader
+      variant={variant}
       branchName={currentBranchName}
       userName={currentUserName}
       warehouses={warehouses}
@@ -611,20 +659,21 @@ const POSPage = () => {
       onAssistantClick={() => setAssistantOpen((open) => !open)}
       heldSalesCount={heldSales.length}
       onOpenHeldSales={() => setHeldOpen(true)}
+      onShowShortcuts={() => setShortcutsOpen(true)}
     />
   );
 
   return (
     <div className="pos-shell" data-theme={resolvedTheme} data-active-panel={activePanel}>
       {/* ── Operational context header ── */}
-      <div className="pos-desktop-context">{operatorHeader}</div>
+      <div className="pos-desktop-context">{renderOperatorHeader('bar')}</div>
       <AppDialog
         open={contextOpen}
         title="Opciones del punto de venta"
         onClose={() => setContextOpen(false)}
         className="pos-context-dialog"
       >
-        {operatorHeader}
+        {renderOperatorHeader('panel')}
       </AppDialog>
 
       <header className="pos-mobile-heading">
@@ -722,6 +771,8 @@ const POSPage = () => {
         onCustomerChange={customersState.selectCustomer}
         clearSelectedCustomer={clearSelectedCustomer}
         focusCustomerTrigger={focusCustomerTrigger}
+        newCustomerTrigger={newCustomerTrigger}
+        editLastQtyTrigger={editLastQtyTrigger}
         lastSaleCode={lastSaleCode}
         lastSaleDocumentType={lastSaleDocumentType}
         lastSaleTotal={lastSaleTotal}
@@ -781,10 +832,17 @@ const POSPage = () => {
           void readScaleForLine(id);
         }}
         scaleReady={scaleReady}
+        scaleReadingIds={scaleReadingIds}
         ticketLabel={formatTicketNumber(ticketNumber)}
         onHold={holdCurrentOrder}
         paymentOpen={paymentOpen}
         setPaymentOpen={setPaymentOpen}
+      />
+
+      <POSShortcutsDialog
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+        assistantEnabled={assistantEnabled}
       />
 
       <AppDialog

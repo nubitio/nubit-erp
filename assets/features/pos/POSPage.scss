@@ -68,12 +68,32 @@
   --pos-border: color-mix(in srgb, var(--border-color) 60%, transparent);
 }
 
+// The options dialog is portalled outside .pos-shell, so it does not inherit the --pos-* tokens
+// that the sale-sync list inside it relies on.
+.pos-context-dialog {
+  --pos-card: var(--surface-1);
+  --pos-card-alt: var(--surface-2);
+  --pos-border: var(--border-color);
+  --pos-muted: var(--text-secondary);
+  --pos-text: var(--text-primary);
+  --pos-primary: var(--accent-color);
+  --pos-primary-soft: color-mix(in srgb, var(--accent-color) 12%, transparent);
+  --pos-primary-border: color-mix(in srgb, var(--accent-color) 28%, transparent);
+  --pos-warning: var(--warning-color);
+  --pos-warning-soft: color-mix(in srgb, var(--warning-color) 14%, transparent);
+  --pos-danger: var(--error-color);
+  --pos-danger-border: color-mix(in srgb, var(--error-color) 30%, transparent);
+  --pos-radius-sm: var(--radius-md);
+  --pos-radius-pill: 999px;
+  --pos-transition: var(--transition-fast);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Operator Header — full-width first row
 // ─────────────────────────────────────────────────────────────────────────────
 // ─── Operator header — single compact bar ────────────────────────────────────
 .pos-operator-header {
-  grid-column: 1 / -1;
+  grid-column: 1;
   grid-row: 1;
   position: relative;
   z-index: 10;
@@ -160,6 +180,38 @@
   font-size: 0.7rem;
   color: var(--pos-muted);
   font-weight: 500;
+}
+
+// The slim bar shows icon + value only; the options dialog (`panel`) keeps the labels.
+.pos-operator-header--bar .pos-operator-header__label {
+  display: none;
+}
+
+// The bar only spans the catalog column. Below this width, drop branch and cashier (the least
+// useful while selling) before anything gets squeezed.
+@media (max-width: 1180px) {
+  .pos-operator-header--bar .pos-operator-header__ctx--branch,
+  .pos-operator-header--bar .pos-operator-header__ctx--cashier,
+  .pos-operator-header--bar .pos-operator-header__sep {
+    display: none;
+  }
+}
+
+// Let the context shrink (with an ellipsis) instead of running under the actions.
+.pos-operator-header--bar {
+  .pos-operator-header__left {
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  .pos-operator-header__ctx {
+    min-width: 0;
+
+    // The old 90–120px cap predates the bar sharing its row with the catalog only.
+    strong {
+      max-width: 180px;
+    }
+  }
 }
 
 .pos-operator-header__warehouse-dropdown {
@@ -493,6 +545,13 @@
   &.is-close {
     background: var(--pos-card-alt);
     color: var(--pos-muted);
+    border-color: var(--pos-border);
+  }
+
+  // Secondary action (e.g. held sales): quiet, so it does not outshine the sale in progress.
+  &.is-neutral {
+    background: var(--pos-card-alt);
+    color: var(--pos-text-soft);
     border-color: var(--pos-border);
   }
 }
@@ -1064,7 +1123,8 @@
 // Right panel — Checkout / Cart
 // ─────────────────────────────────────────────────────────────────────────────
 .pos-cart-panel {
-  grid-row: 2;
+  // Starts level with the header, so the order gets the vertical space the header row used to take.
+  grid-row: 1 / span 2;
   height: 100%;
   min-height: 0;
   position: relative;
@@ -1557,33 +1617,14 @@
   flex-shrink: 0;
 }
 
-.pos-line__scale-btn {
-  width: 1.8rem;
-  height: 1.8rem;
-  flex-shrink: 0;
-  border: 1px solid var(--pos-border);
-  border-radius: var(--pos-radius);
-  background: var(--pos-card-alt);
+// Inside .pos-line__qty so it outranks that group's button reset.
+.pos-line__qty .pos-line__scale-btn {
+  // A segment of the quantity group, not a loose icon beside it.
+  border-left: 1px solid var(--pos-border);
   color: var(--pos-muted);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition:
-    background var(--pos-transition),
-    color var(--pos-transition),
-    border-color var(--pos-transition);
-
-  &:hover,
-  &:focus-visible {
-    background: var(--pos-primary-soft);
-    border-color: var(--pos-primary-border);
-    color: var(--pos-primary);
-  }
 
   &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    cursor: progress;
   }
 }
 
@@ -1595,14 +1636,16 @@
   overflow: hidden;
   flex-shrink: 0;
 
+  // 36px targets: comfortable to tap all day without crowding a 460px order panel.
   button {
-    width: 1.7rem;
+    width: 2.25rem;
+    min-height: 2.25rem;
     flex-shrink: 0;
     border: 0;
     border-radius: 0;
     background: var(--pos-card);
     color: var(--pos-text-soft);
-    font-size: 0.82rem;
+    font-size: 1.1rem;
     line-height: 1;
     cursor: pointer;
     display: flex;
@@ -1628,10 +1671,10 @@
   }
 
   span {
-    min-width: 1.8rem;
+    min-width: 2.4rem;
     text-align: center;
-    font-size: var(--font-size-sm);
-    font-weight: 500;
+    font-size: var(--font-size-md);
+    font-weight: 600;
     color: var(--pos-text);
     border-left: 1px solid var(--pos-border);
     border-right: 1px solid var(--pos-border);
@@ -1643,10 +1686,11 @@
 }
 
 .pos-line__qty-display {
-  min-width: 1.8rem;
+  min-width: 2.4rem;
+  padding-inline: 0.25rem;
   text-align: center;
-  font-size: var(--font-size-sm);
-  font-weight: 500;
+  font-size: var(--font-size-md);
+  font-weight: 600;
   color: var(--pos-text);
   cursor: pointer;
   border-left: 1px solid var(--pos-border);
@@ -1671,9 +1715,10 @@
 }
 
 .pos-line__qty-input {
-  width: 3.6rem;
+  width: 4rem;
+  min-height: 2.25rem;
   text-align: center;
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--pos-text);
   border: 1.5px solid var(--pos-primary-border);
@@ -2800,6 +2845,15 @@
 }
 
 // ─── Shortcuts list (rendered inside AppDialog) ─────────────────────────────
+.pos-shortcuts-group {
+  margin: 0.6rem 0.75rem 0;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--pos-muted);
+}
+
 .pos-shortcuts-list {
   list-style: none;
   margin: 0;
@@ -2808,11 +2862,13 @@
   flex-direction: column;
   gap: 0.1rem;
 
+  // Fixed key column so every description starts at the same x.
   &__item {
-    display: flex;
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr);
     align-items: center;
     gap: 0.75rem;
-    padding: 0.45rem 0.35rem;
+    padding: 0.3rem 0.35rem;
     border-radius: var(--pos-radius-sm);
 
     &:hover {
@@ -2826,7 +2882,7 @@
   }
 
   &__key {
-    flex-shrink: 0;
+    justify-self: start;
     min-width: 5.5rem;
     padding: 0.22rem 0.55rem;
     background: var(--pos-card-alt);
@@ -2937,13 +2993,14 @@ html[data-density='compact'] {
   .pos-line__qty {
     gap: 0;
     button {
-      width: 1.4rem;
-      height: 1.4rem;
-      font-size: 0.75rem;
+      width: 1.75rem;
+      min-height: 1.75rem;
+      font-size: 0.9rem;
     }
     span {
-      width: 1.4rem;
-      font-size: var(--font-size-xs);
+      width: auto;
+      min-width: 2rem;
+      font-size: var(--font-size-sm);
     }
   }
 
@@ -3070,12 +3127,13 @@ html[data-density='comfortable'] {
   .pos-line__qty {
     gap: 0.15rem;
     button {
-      width: 1.9rem;
-      height: 1.9rem;
-      font-size: 1rem;
+      width: 2.5rem;
+      min-height: 2.5rem;
+      font-size: 1.15rem;
     }
     span {
-      width: 2rem;
+      width: auto;
+      min-width: 2.6rem;
       font-size: var(--font-size-md);
     }
   }

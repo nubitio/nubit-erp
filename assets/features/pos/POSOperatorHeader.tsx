@@ -1,14 +1,29 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ThemeSwitcher } from '@nubitio/ui';
+import {
+  AppDropdown,
+  Badge,
+  Button,
+  ConfirmDialog,
+  ContextMenu,
+  DescriptionList,
+  Row,
+  Stack,
+  useTheme,
+  type ContextMenuItem,
+} from '@nubitio/ui';
 import type { WarehouseOption } from './types';
 import type { LocalSale } from '@offline/types';
 import { ConnectivityBadge } from './ConnectivityBadge';
 import { PendingSalesIndicator } from './PendingSalesIndicator';
-import { AppDialog, AppDropdown, ConfirmDialog } from '@nubitio/ui';
 import { HardwareAgentDialog } from './HardwareAgentDialog';
 
 interface POSOperatorHeaderProps {
+  /**
+   * `bar` is the slim desktop strip: only what the cashier needs during a sale, with the rest in a
+   * menu. `panel` is a vertical list of every control, for the options dialog on small screens.
+   */
+  variant?: 'bar' | 'panel';
   branchName: string;
   userName: string;
   warehouses: WarehouseOption[];
@@ -30,9 +45,11 @@ interface POSOperatorHeaderProps {
   onAssistantClick?: () => void;
   heldSalesCount?: number;
   onOpenHeldSales?: () => void;
+  onShowShortcuts: () => void;
 }
 
 export function POSOperatorHeader({
+  variant = 'bar',
   branchName,
   userName,
   warehouses,
@@ -54,9 +71,9 @@ export function POSOperatorHeader({
   onAssistantClick,
   heldSalesCount = 0,
   onOpenHeldSales,
+  onShowShortcuts,
 }: POSOperatorHeaderProps) {
   const navigate = useNavigate();
-  const [showShortcuts, setShowShortcuts] = useState(false);
   const [showHardware, setShowHardware] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
 
@@ -64,6 +81,7 @@ export function POSOperatorHeader({
   const [warehouseConfirmOpen, setWarehouseConfirmOpen] = useState(false);
   const pendingWarehouseIdRef = useRef<string | null>(null);
   const [closeCajaConfirmOpen, setCloseCajaConfirmOpen] = useState(false);
+  const { mode: themeMode, switchTheme } = useTheme();
 
   useEffect(() => {
     const handler = () => setIsFullscreen(!!document.fullscreenElement);
@@ -79,6 +97,14 @@ export function POSOperatorHeader({
     }
   }
 
+  function requestCloseCaja() {
+    if (cartItemsCount > 0) {
+      setCloseCajaConfirmOpen(true);
+      return;
+    }
+    setCajaAbierta(false);
+  }
+
   function handleWarehouseChange(newId: string) {
     if (hasCartItems && newId !== selectedWarehouseId) {
       pendingWarehouseIdRef.current = newId;
@@ -88,8 +114,204 @@ export function POSOperatorHeader({
     setSelectedWarehouseId(newId);
   }
 
+  const cajaTime =
+    cajaAbierta && cajaOpenedAt
+      ? new Date(cajaOpenedAt).toLocaleTimeString('es-PE', {
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZone: 'America/Lima',
+        })
+      : null;
+
+  const warehouseName =
+    warehouses.find((warehouse) => warehouse.id === selectedWarehouseId)?.name ??
+    warehouses[0]?.name;
+
+  const warehouseSelectable = showWarehouseSelector && warehouses.length > 1;
+
+  // Secondary actions: a menu on the bar, a list of buttons in the options panel.
+  const menuItems: ContextMenuItem[] = [
+    {
+      label: isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa',
+      icon: isFullscreen ? 'ph ph-arrows-in' : 'ph ph-arrows-out',
+      onClick: toggleFullscreen,
+    },
+    {
+      label:
+        themeMode === 'dark'
+          ? 'Tema: oscuro'
+          : themeMode === 'light'
+            ? 'Tema: claro'
+            : 'Tema: sistema',
+      icon:
+        themeMode === 'dark' ? 'ph ph-moon' : themeMode === 'light' ? 'ph ph-sun' : 'ph ph-desktop',
+      onClick: switchTheme,
+    },
+    {
+      label: 'Hardware local',
+      icon: 'ph ph-plugs',
+      onClick: () => setShowHardware(true),
+    },
+    {
+      label: 'Atajos de teclado',
+      icon: 'ph ph-question',
+      onClick: onShowShortcuts,
+    },
+    ...(cajaAbierta
+      ? [
+          {
+            label: 'Cerrar caja',
+            icon: 'ph ph-lock-key',
+            danger: true,
+            separator: true,
+            onClick: requestCloseCaja,
+          },
+        ]
+      : []),
+  ];
+
+  const dialogs = (
+    <>
+      <HardwareAgentDialog open={showHardware} onClose={() => setShowHardware(false)} />
+
+      {/* ── Warehouse change confirmation ── */}
+      <ConfirmDialog
+        open={warehouseConfirmOpen}
+        title="Cambiar almacén"
+        message="Cambiar de almacén vaciará el carrito. ¿Continuar?"
+        confirmLabel="Continuar"
+        cancelLabel="Cancelar"
+        variant="warning"
+        onConfirm={() => {
+          setWarehouseConfirmOpen(false);
+          if (pendingWarehouseIdRef.current !== null) {
+            setSelectedWarehouseId(pendingWarehouseIdRef.current);
+            pendingWarehouseIdRef.current = null;
+          }
+        }}
+        onCancel={() => {
+          setWarehouseConfirmOpen(false);
+          pendingWarehouseIdRef.current = null;
+        }}
+      />
+
+      {/* ── Close caja confirmation ── */}
+      <ConfirmDialog
+        open={closeCajaConfirmOpen}
+        title="Cerrar caja"
+        message="Hay productos en el carrito. ¿Cerrar caja igualmente?"
+        confirmLabel="Cerrar caja"
+        cancelLabel="Cancelar"
+        variant="danger"
+        onConfirm={() => {
+          setCloseCajaConfirmOpen(false);
+          setCajaAbierta(false);
+        }}
+        onCancel={() => setCloseCajaConfirmOpen(false)}
+      />
+    </>
+  );
+
+  if (variant === 'panel') {
+    const connectionLabel = isSyncing ? 'Sincronizando' : isOnline ? 'Conectado' : 'Sin conexión';
+    return (
+      <Stack gap={4} className="pos-options">
+        <DescriptionList
+          items={[
+            { term: 'Sucursal', value: branchName || 'Principal' },
+            ...(warehouses.length > 0
+              ? [
+                  {
+                    term: 'Almacén',
+                    value: warehouseSelectable ? (
+                      <AppDropdown
+                        id="pos-warehouse-select"
+                        value={selectedWarehouseId}
+                        options={warehouses.map((warehouse) => ({
+                          value: warehouse.id,
+                          label: warehouse.name,
+                        }))}
+                        onChange={handleWarehouseChange}
+                        variant="compact"
+                        showFieldLabel={false}
+                        ariaLabel="Almacén"
+                        placeholder="Almacén"
+                      />
+                    ) : (
+                      warehouseName
+                    ),
+                  },
+                ]
+              : []),
+            { term: 'Cajero', value: userName || '—' },
+          ]}
+        />
+
+        <Row gap={2} wrap>
+          <Badge variant={cajaAbierta ? 'success' : 'danger'}>
+            {cajaAbierta ? 'Caja abierta' : 'Caja cerrada'}
+            {cajaTime ? ` · ${cajaTime}` : ''}
+          </Badge>
+          <Badge variant={isSyncing ? 'warning' : isOnline ? 'success' : 'danger'} outlined>
+            {connectionLabel}
+          </Badge>
+        </Row>
+
+        {onOpenHeldSales && (
+          <Button
+            variant="secondary"
+            fullWidth
+            icon="ph ph-pause-circle"
+            onClick={onOpenHeldSales}
+            data-testid="pos-held-sales-btn"
+          >
+            Ventas en espera{heldSalesCount > 0 ? ` (${heldSalesCount})` : ''}
+          </Button>
+        )}
+
+        {pendingSalesCount > 0 && (
+          <PendingSalesIndicator
+            pendingSalesCount={pendingSalesCount}
+            sales={outboxSales}
+            onRetrySale={onRetrySale}
+          />
+        )}
+
+        {!cajaAbierta && (
+          <Button
+            variant="primary"
+            fullWidth
+            onClick={() => (onOpenCaja ? onOpenCaja() : setCajaAbierta(true))}
+          >
+            Abrir caja
+          </Button>
+        )}
+
+        {assistantEnabled && onAssistantClick && (
+          <Button variant="secondary" fullWidth icon="ph ph-sparkle" onClick={onAssistantClick}>
+            Asistente de IA
+          </Button>
+        )}
+
+        {menuItems.map((item) => (
+          <Button
+            key={item.label}
+            variant={item.danger ? 'danger' : 'secondary'}
+            fullWidth
+            icon={item.icon}
+            onClick={item.onClick}
+          >
+            {item.label}
+          </Button>
+        ))}
+
+        {dialogs}
+      </Stack>
+    );
+  }
+
   return (
-    <header className="pos-operator-header">
+    <header className="pos-operator-header pos-operator-header--bar">
       {/* ── Left: context data ── */}
       <div className="pos-operator-header__left">
         <button
@@ -103,7 +325,7 @@ export function POSOperatorHeader({
 
         <div className="pos-operator-header__sep" />
 
-        <div className="pos-operator-header__ctx">
+        <div className="pos-operator-header__ctx pos-operator-header__ctx--branch">
           <i className="ph ph-storefront" aria-hidden="true" />
           <span className="pos-operator-header__label">Sucursal</span>
           <strong>{branchName || 'Principal'}</strong>
@@ -158,58 +380,43 @@ export function POSOperatorHeader({
 
         <div className="pos-operator-header__sep" />
 
-        <div className="pos-operator-header__ctx">
+        <div className="pos-operator-header__ctx pos-operator-header__ctx--cashier">
           <i className="ph ph-user" aria-hidden="true" />
           <span className="pos-operator-header__label">Cajero</span>
           <strong>{userName || '—'}</strong>
         </div>
       </div>
 
-      {/* ── Right: compact status + actions ── */}
+      {/* ── Right: status + actions ── */}
       <div className="pos-operator-header__right">
-        {/* Connectivity: icon-only dot, tooltip on hover */}
         <ConnectivityBadge
           isOnline={isOnline}
           isSyncing={isSyncing}
           pendingSalesCount={pendingSalesCount}
         />
 
-        <PendingSalesIndicator
-          pendingSalesCount={pendingSalesCount}
-          sales={outboxSales}
-          onRetrySale={onRetrySale}
-        />
+        {/* Only worth the space when something is waiting or failed (the count includes errors). */}
+        {pendingSalesCount > 0 && (
+          <PendingSalesIndicator
+            pendingSalesCount={pendingSalesCount}
+            sales={outboxSales}
+            onRetrySale={onRetrySale}
+          />
+        )}
 
         {onOpenHeldSales && (
           <button
             type="button"
-            className="pos-caja-action-btn"
+            className="pos-caja-action-btn is-neutral"
             onClick={onOpenHeldSales}
             data-testid="pos-held-sales-btn"
           >
-            <i className="ph ph-pause-circle" aria-hidden="true" /> Ventas en espera (
-            {heldSalesCount})
+            <i className="ph ph-pause-circle" aria-hidden="true" /> Ventas en espera
+            {heldSalesCount > 0 ? ` (${heldSalesCount})` : ''}
           </button>
         )}
 
-        <div className="pos-operator-header__sep" />
-
-        {cajaAbierta ? (
-          <button
-            type="button"
-            className="pos-caja-action-btn is-close"
-            onClick={() => {
-              if (cartItemsCount > 0) {
-                setCloseCajaConfirmOpen(true);
-                return;
-              }
-              setCajaAbierta(false);
-            }}
-            title="Cerrar caja"
-          >
-            Cerrar caja
-          </button>
-        ) : (
+        {!cajaAbierta && (
           <button
             type="button"
             className="pos-caja-action-btn is-open"
@@ -220,122 +427,21 @@ export function POSOperatorHeader({
         )}
 
         {assistantEnabled && onAssistantClick ? (
-          <>
-            <div className="pos-operator-header__sep" />
-            <button
-              type="button"
-              className="pos-shortcuts-btn"
-              onClick={onAssistantClick}
-              aria-label="Asistente de IA"
-              title="Asistente de IA (Ctrl+K)"
-            >
-              <i className="ph ph-sparkle" aria-hidden="true" />
-            </button>
-          </>
+          <button
+            type="button"
+            className="pos-shortcuts-btn"
+            onClick={onAssistantClick}
+            aria-label="Asistente de IA"
+            title="Asistente de IA (Ctrl+K)"
+          >
+            <i className="ph ph-sparkle" aria-hidden="true" />
+          </button>
         ) : null}
 
-        <div className="pos-operator-header__sep" />
-        <ThemeSwitcher />
-
-        <button
-          type="button"
-          className="pos-shortcuts-btn"
-          onClick={toggleFullscreen}
-          aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
-          title={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
-        >
-          {isFullscreen ? (
-            <i className="ph ph-arrows-in" aria-hidden="true" />
-          ) : (
-            <i className="ph ph-arrows-out" aria-hidden="true" />
-          )}
-        </button>
-
-        <button
-          type="button"
-          className="pos-shortcuts-btn"
-          onClick={() => setShowHardware(true)}
-          aria-label="Hardware local"
-          title="Hardware local (impresora y balanza)"
-        >
-          <i className="ph ph-plugs" aria-hidden="true" />
-        </button>
-
-        <button
-          type="button"
-          className="pos-shortcuts-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowShortcuts(true);
-          }}
-          aria-label="Atajos de teclado"
-          title="Atajos de teclado"
-        >
-          <i className="ph ph-question" aria-hidden="true" />
-        </button>
+        <ContextMenu triggerLabel="Más opciones" items={menuItems} />
       </div>
 
-      <HardwareAgentDialog open={showHardware} onClose={() => setShowHardware(false)} />
-
-      {/* ── Shortcuts modal ── */}
-      <AppDialog
-        open={showShortcuts}
-        title="Atajos de teclado"
-        onClose={() => setShowShortcuts(false)}
-      >
-        <ul className="pos-shortcuts-list">
-          {(
-            [
-              ['F2', 'Enfocar buscador de productos'],
-              ['F3', 'Seleccionar cliente'],
-              ['Enter', 'Cobrar (cuando el carrito tiene items)'],
-              ['Esc', 'Cancelar venta y vaciar carrito'],
-              ['Scanner → Enter', 'Añadir producto por código de barras'],
-            ] as [string, string][]
-          ).map(([key, desc]) => (
-            <li key={key} className="pos-shortcuts-list__item">
-              <kbd className="pos-shortcuts-list__key">{key}</kbd>
-              <span>{desc}</span>
-            </li>
-          ))}
-        </ul>
-      </AppDialog>
-
-      {/* ── Warehouse change confirmation ── */}
-      <ConfirmDialog
-        open={warehouseConfirmOpen}
-        title="Cambiar almacén"
-        message="Cambiar de almacén vaciará el carrito. ¿Continuar?"
-        confirmLabel="Continuar"
-        cancelLabel="Cancelar"
-        variant="warning"
-        onConfirm={() => {
-          setWarehouseConfirmOpen(false);
-          if (pendingWarehouseIdRef.current !== null) {
-            setSelectedWarehouseId(pendingWarehouseIdRef.current);
-            pendingWarehouseIdRef.current = null;
-          }
-        }}
-        onCancel={() => {
-          setWarehouseConfirmOpen(false);
-          pendingWarehouseIdRef.current = null;
-        }}
-      />
-
-      {/* ── Close caja confirmation ── */}
-      <ConfirmDialog
-        open={closeCajaConfirmOpen}
-        title="Cerrar caja"
-        message="Hay productos en el carrito. ¿Cerrar caja igualmente?"
-        confirmLabel="Cerrar caja"
-        cancelLabel="Cancelar"
-        variant="danger"
-        onConfirm={() => {
-          setCloseCajaConfirmOpen(false);
-          setCajaAbierta(false);
-        }}
-        onCancel={() => setCloseCajaConfirmOpen(false)}
-      />
+      {dialogs}
     </header>
   );
 }
