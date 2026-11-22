@@ -87,6 +87,65 @@ class TaxDocumentRepository extends ServiceEntityRepository
     }
 
     /**
+     * Invoices and receipts of a branch that a credit note can still affect: accepted by
+     * SUNAT and not annulled. `$text` matches a "F001-123" number, or a customer name/RUC.
+     *
+     * @return list<TaxDocument>
+     */
+    public function findAcceptedForCreditNote(string $branchId, string $text, int $limit): array
+    {
+        $qb = $this
+            ->createQueryBuilder('td')
+            ->leftJoin('td.customer', 'c')
+            ->addSelect('c')
+            ->where('td.branch = :branch')
+            ->andWhere('td.documentType IN (:types)')
+            ->andWhere('td.sunatStatus = :accepted')
+            ->andWhere('td.voidTicket IS NULL')
+            ->andWhere('td.voidCorrelation IS NULL')
+            ->setParameter('branch', $branchId)
+            ->setParameter('types', ['01', '03'])
+            ->setParameter('accepted', '0')
+            ->orderBy('td.issueDate', 'DESC')
+            ->addOrderBy('td.number', 'DESC')
+            // Annulled sales are dropped afterwards, so over-read to still fill the page.
+            ->setMaxResults($limit * 3);
+
+        $text = trim($text);
+        if (preg_match('/^([A-Za-z0-9]{4})-?(\d+)$/', $text, $number) === 1) {
+            $qb
+                ->andWhere('td.series = :series AND td.number LIKE :number')
+                ->setParameter('series', strtoupper($number[1]))
+                ->setParameter('number', ltrim($number[2], characters: '0') . '%');
+        } elseif ($text !== '') {
+            $qb->andWhere(
+                'td.series LIKE :text OR td.number LIKE :text OR c.businessName LIKE :text OR c.ruc LIKE :text',
+            )->setParameter('text', '%' . addcslashes($text, characters: '%_') . '%');
+        }
+
+        /** @var list<mixed> $rows */
+        $rows = $qb->getQuery()->getResult();
+        $found = [];
+        foreach ($rows as $document) {
+            if (!$document instanceof TaxDocument || $this->isAnnulled($document)) {
+                continue;
+            }
+            $found[] = $document;
+            if (count($found) >= $limit) {
+                break;
+            }
+        }
+
+        return $found;
+    }
+
+    /** A sale cancelled, or a full-annulment credit note already issued: no further note may affect it. */
+    public function isAnnulled(TaxDocument $document): bool
+    {
+        return $document->getSaleRecord()?->getStatus() === 'VOIDED' || $this->hasAnnullingCreditNote($document);
+    }
+
+    /**
      * @throws ORMException
      */
     public function getTaxDocumentSeriesByBranch(

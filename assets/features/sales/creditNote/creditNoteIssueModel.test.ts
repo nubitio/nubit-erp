@@ -10,8 +10,14 @@ import {
   returnAllLines,
   returnSummary,
   selectedLines,
+  buildReturnChoices,
+  choosesRestock,
+  padNumber,
+  returnsFromDraft,
   type OriginLine,
 } from './creditNoteIssueModel';
+
+const ch = (quantity: string, restock = true) => ({ quantity, restock });
 
 const lines: OriginLine[] = [
   {
@@ -49,7 +55,7 @@ describe('credit note issue model', () => {
   });
 
   it('summarises only selected lines and backs tax out of the gross total', () => {
-    expect(returnSummary(lines, { 1: '2', 2: '0' })).toEqual({
+    expect(returnSummary(lines, { 1: ch('2'), 2: ch('0') })).toEqual({
       count: 1,
       total: '49.80',
       valueSold: '42.20',
@@ -70,11 +76,12 @@ describe('credit note issue model', () => {
       reasonCode: '07',
       reasonDescription: '  2 mouses con falla  ',
       lines,
-      returns: { 1: '2' },
+      returns: { 1: ch('2') },
     });
     expect(payload.reasonDescription).toBe('2 mouses con falla');
     expect(payload.lines).toHaveLength(1);
     expect(payload.lines[0]).toMatchObject({ lineNumber: 1, quantity: '2' });
+    expect(payload.lines[0]).toMatchObject({ restock: true });
     expect(payload.lines[0]).not.toHaveProperty('id');
     expect(payload.lines[0]).not.toHaveProperty('createdAt');
   });
@@ -92,7 +99,7 @@ describe('credit note issue model', () => {
         reasonCode: '07',
         reasonDescription: 'x',
         lines,
-        returns: { 1: '1' },
+        returns: { 1: ch('1') },
       }),
     ).toEqual({});
   });
@@ -116,7 +123,7 @@ describe('fractional quantities', () => {
   });
 
   it('keeps a checked 0.5 line in the summary and the payload', () => {
-    const returns = { 1: defaultReturnQuantity(half) };
+    const returns = { 1: ch(defaultReturnQuantity(half)) };
     expect(returnSummary([half], returns).total).toBe('20.00');
     expect(
       creditNoteIssueErrors({ reasonCode: '07', reasonDescription: 'x', lines: [half], returns }),
@@ -134,5 +141,36 @@ describe('creditNoteBlockedReason', () => {
     expect(creditNoteBlockedReason({ stage: 'rejected' })).toContain('Reemplázalo');
     expect(creditNoteBlockedReason({ stage: 'pending' })).toContain('aún no aceptó');
     expect(creditNoteBlockedReason({ stage: 'sent' })).toContain('aún no aceptó');
+  });
+});
+
+describe('restock and drafts', () => {
+  it('only the physical-return reason lets the user choose what re-enters stock', () => {
+    expect(choosesRestock('07')).toBe(true);
+    expect(['01', '03', '05', '06'].some(choosesRestock)).toBe(false);
+  });
+
+  it('sends the restock flag per line, including a line kept out of stock', () => {
+    const payload = buildCreditNotePayload({
+      relatedTaxDocumentIri: '/api/tax-documents/abc',
+      issueDate: '2026-10-30',
+      reasonCode: '07',
+      reasonDescription: 'falla',
+      lines,
+      returns: { 1: ch('1', false), 2: ch('3', true) },
+    });
+    expect(payload.lines.map((l) => l.restock)).toEqual([false, true]);
+  });
+
+  it('round-trips a draft and drops lines the document no longer has', () => {
+    const choices = buildReturnChoices(lines, { 1: ch('2', false), 2: ch('0') });
+    expect(choices).toEqual([{ lineNumber: 1, quantity: '2', restock: false }]);
+    expect(
+      returnsFromDraft(lines, [...choices, { lineNumber: 99, quantity: '1', restock: true }]),
+    ).toEqual({ 1: ch('2', false) });
+  });
+
+  it('pads the correlative like the printed document', () => {
+    expect(padNumber('58')).toBe('00000058');
   });
 });

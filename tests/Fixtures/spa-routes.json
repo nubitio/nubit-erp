@@ -14,6 +14,7 @@
     "/billing/consult",
     "/billing/credit-notes",
     "/billing/credit-notes/:id?",
+    "/billing/credit-notes/new",
     "/billing/credit-notes/new/:documentId",
     "/billing/documents",
     "/billing/documents/:id?",

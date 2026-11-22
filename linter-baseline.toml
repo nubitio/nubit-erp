@@ -1606,7 +1606,7 @@ count = 1
 file = "src/Billing/State/TaxDocumentProcessor.php"
 code = "halstead"
 message = "Method has a high halstead volume and effort"
-count = 2
+count = 1
 
 [[issues]]
 file = "src/Billing/State/TaxDocumentProcessor.php"
@@ -1624,7 +1624,7 @@ count = 1
 file = "src/Billing/State/TaxDocumentProcessor.php"
 code = "literal-named-argument"
 message = "Literal argument `true` should be passed as a named argument for clarity."
-count = 2
+count = 1
 
 [[issues]]
 file = "src/Billing/State/TaxDocumentProcessor.php"

@@ -66,7 +66,7 @@ final readonly class VoucherPdfRenderer
      * Dompdf runs in-process (no process spawn, no network), which is what
      * makes this ~10x faster than shelling out to WeasyPrint.
      */
-    private function renderPdf(string $html): string
+    public function renderPdf(string $html): string
     {
         $options = new Options();
         $options->set('isRemoteEnabled', false); // never fetch anything while rendering

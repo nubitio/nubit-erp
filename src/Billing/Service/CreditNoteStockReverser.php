@@ -93,6 +93,10 @@ final readonly class CreditNoteStockReverser implements CreditNoteStockReverserI
             /** @var TaxDocumentLine $line */
             ++$lineNo;
 
+            if (!$line->isRestock()) {
+                continue; // the user kept these goods out of the warehouse (damaged, discarded)
+            }
+
             $productId = $line->getProductId();
             if ($productId === null) {
                 continue; // service line or non-inventory line

@@ -1,0 +1,95 @@
+{# Unsaved credit-note preview. Plain tables for Dompdf; carries a watermark-style banner
+   because the document has no correlative, hash or SUNAT validity yet. #}
+{% set symbol = {'PEN': 'S/', 'USD': '$', 'EUR': '€'}[currency]|default(currency) %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Vista previa nota de crédito</title>
+<style>
+    @page { margin: 34px 38px; }
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #1f2937; margin: 0; }
+    table { border-collapse: collapse; width: 100%; }
+    td, th { vertical-align: top; }
+    p { margin: 0; }
+    .muted { color: #6b7280; }
+    .right { text-align: right; }
+    .banner { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; text-align: center; padding: 6px; font-weight: bold; margin-bottom: 12px; border-radius: 6px; }
+    .box { border: 1.5px solid #111827; border-radius: 6px; text-align: center; padding: 10px 8px; }
+    .title { font-size: 14px; font-weight: bold; }
+    .number { font-size: 15px; font-weight: bold; margin-top: 8px; }
+    .brand { font-size: 16px; font-weight: bold; }
+    .info { margin-top: 14px; border: 1px solid #d1d5db; border-radius: 6px; }
+    .info td { padding: 4px 8px; }
+    .k { color: #6b7280; width: 110px; }
+    .items { margin-top: 12px; }
+    .items th { background: #f3f4f6; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; padding: 6px 8px; text-align: left; font-size: 10px; }
+    .items td { padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
+    .totals { width: 250px; margin-left: auto; margin-top: 10px; }
+    .totals td { padding: 3px 8px; }
+    .totals .grand td { border-top: 1.5px solid #111827; font-size: 13px; font-weight: bold; padding-top: 6px; }
+</style>
+</head>
+<body>
+<div class="banner">VISTA PREVIA — sin valor tributario. El número definitivo se asigna al emitir.</div>
+<table>
+    <tr>
+        <td style="width: 60%; padding-right: 12px;">
+            <p class="brand">{{ companyName }}</p>
+            <p class="muted" style="margin-top: 3px;">{{ companyAddress|default('-') }}</p>
+        </td>
+        <td style="width: 40%;">
+            <div class="box">
+                <p class="title">NOTA DE CRÉDITO ELECTRÓNICA</p>
+                <p class="muted" style="margin-top: 4px;">R.U.C.: <strong>{{ companyRuc }}</strong></p>
+                <p class="number">{{ series }}-{{ number }}</p>
+            </div>
+        </td>
+    </tr>
+</table>
+<table class="info">
+    <tr>
+        <td class="k">Cliente</td><td><strong>{{ customerName|default('-') }}</strong></td>
+        <td class="k">Fecha emisión</td><td>{{ issueDate|date('d/m/Y') }}</td>
+    </tr>
+    <tr>
+        <td class="k">Documento</td><td>{{ customerDocument|default('-') }}</td>
+        <td class="k">Moneda</td><td>{{ currency }}</td>
+    </tr>
+    <tr>
+        <td class="k">Comprobante afectado</td><td><strong>{{ affectedDocument }}</strong></td>
+        <td class="k">Motivo</td><td>{{ reasonCode }} — {{ reasonText }}</td>
+    </tr>
+    <tr>
+        <td class="k">Sustento</td><td colspan="3">{{ reasonDescription|default('-') }}</td>
+    </tr>
+</table>
+<table class="items">
+    <thead>
+    <tr>
+        <th style="width: 14%">Cantidad</th>
+        <th style="width: 16%">Código</th>
+        <th>Descripción</th>
+        <th class="right" style="width: 14%">P. Unit</th>
+        <th class="right" style="width: 14%">Importe</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for line in lines %}
+        <tr>
+            <td>{{ line.quantity|number_format(2, '.', '') }} {{ line.uom|default('') }}</td>
+            <td>{{ line.code|default('-') }}</td>
+            <td><strong>{{ line.name }}</strong>{% if line.restock %}<span class="muted"> · reingresa a inventario</span>{% endif %}</td>
+            <td class="right">{{ line.unitPrice|number_format(2, '.', '') }}</td>
+            <td class="right">{{ line.total|number_format(2, '.', '') }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<table class="totals">
+    <tr><td>Op. Gravadas</td><td class="right">{{ symbol }} {{ taxable|number_format(2, '.', '') }}</td></tr>
+    <tr><td>I.G.V.</td><td class="right">{{ symbol }} {{ igv|number_format(2, '.', '') }}</td></tr>
+    <tr class="grand"><td>TOTAL</td><td class="right">{{ symbol }} {{ total|number_format(2, '.', '') }}</td></tr>
+</table>
+</body>
+</html>

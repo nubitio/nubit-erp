@@ -200,6 +200,7 @@ contexts:
       - tax_document
       - tax_document_line
       - tax_document_event
+      - billing_credit_note_draft
       - despatch_guide
       - despatch_guide_line
       - customer_subscription
