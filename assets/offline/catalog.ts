@@ -24,6 +24,23 @@ export const persistProducts = async (products: ProductPayload[]) => {
   return rows.length;
 };
 
+/** Adds or replaces the given products, keeping the rest of the cache. */
+export const mergeCachedProducts = async (products: ProductPayload[]) => {
+  if (products.length === 0) return 0;
+  const now = new Date().toISOString();
+  const rows: ProductCache[] = products.map((product) => ({
+    id: String(product?.id ?? ''),
+    name: String(product?.name ?? 'Producto'),
+    sku: product.sku ? String(product.sku) : undefined,
+    barcode: product.barcode ? String(product.barcode) : undefined,
+    raw: product,
+    updatedAt: now,
+    lastSyncedAt: now,
+  }));
+  await offlineDb.products.bulkPut(rows);
+  return rows.length;
+};
+
 export const getCachedProducts = async () => {
   return offlineDb.products.toArray();
 };

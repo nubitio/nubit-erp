@@ -23,6 +23,8 @@ export interface PosItem {
 export type CartItem = PosItem & {
   quantity: number;
   lineDescription?: string;
+  /** The catalogue price the line was given; a different `salePrice` means it was changed by hand. */
+  quotedPrice?: string;
 };
 
 export interface CustomerOption {

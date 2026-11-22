@@ -140,6 +140,16 @@ class Product
     #[ORM\Column(name: 'is_active', options: ['default' => true])]
     private bool $isActive = true;
 
+    /** Maintained by the database (`ON UPDATE CURRENT_TIMESTAMP`); never written from here. */
+    #[ORM\Column(
+        name: 'updated_at',
+        type: Types::DATETIME_IMMUTABLE,
+        insertable: false,
+        updatable: false,
+        generated: 'ALWAYS',
+    )]
+    private ?\DateTimeImmutable $updatedAt = null; // @phpstan-ignore property.unusedType (set by the database)
+
     #[Assert\NotBlank]
     #[Groups([
         'product:read',
@@ -383,6 +393,11 @@ class Product
         $this->baseUnit = $baseUnit;
 
         return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
     }
 
     public function isActive(): bool
