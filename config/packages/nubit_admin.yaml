@@ -23,7 +23,7 @@ nubit_admin:
             or is_granted('perm:catalog.create')
             or is_granted('perm:catalog.edit')
             or is_granted('perm:expense_reports.create')
-    # Audit trail: #[Auditable] entities (Supplier, Product) record
+    # Audit trail: #[Auditable] entities (Supplier, Product, PriceList) record
     # field-level diffs, served at /api/audit-trail/{resource}/{id}.
     audit:
         enabled: true
@@ -31,6 +31,7 @@ nubit_admin:
         # follows the permission that edits the thing. Anything not listed is refused.
         read_security: >-
           (subject['resource'] == 'product' and is_granted('perm:catalog.edit'))
+          or (subject['resource'] == 'pricelist' and is_granted('perm:catalog.edit'))
           or (subject['resource'] == 'supplier' and is_granted('perm:purchases.edit'))
           or (subject['resource'] == 'purchase' and is_granted('perm:purchases.view'))
           or (subject['resource'] == 'stockentry' and is_granted('perm:inventory.adjust'))

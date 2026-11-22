@@ -16,7 +16,11 @@ use App\Efact\Domain\ActiveReferenceGuard;
 use App\Efact\Domain\Money;
 use App\Identity\Auth\BranchContextService;
 use App\Identity\Security\Security;
+use App\Inventory\Domain\PriceListPricing;
+use App\Inventory\Entity\PriceListItem;
 use App\Organization\Repository\BranchRepository;
+use App\Sales\Domain\AuthorizedPrice;
+use App\Sales\Domain\PriceSource;
 use App\Sales\Domain\SaleSettlementType;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
@@ -233,7 +237,7 @@ readonly class SaleProcessor implements ProcessorInterface
         }
 
         if ($isOperationalSale) {
-            $this->validateCommercialControls($data);
+            $this->validateCommercialControls($data, $isOfflineSale);
         }
 
         $this->logger->info('Calculating sale totals');
@@ -648,7 +652,7 @@ readonly class SaleProcessor implements ProcessorInterface
         return $items;
     }
 
-    private function validateCommercialControls(SaleRecord $sale): void
+    private function validateCommercialControls(SaleRecord $sale, bool $isOfflineSale): void
     {
         $globalDiscount = $sale->getDescuento() ?? '0';
         if (!is_numeric($globalDiscount) || (float) $globalDiscount < 0 || (float) $globalDiscount > 100) {
@@ -667,7 +671,20 @@ readonly class SaleProcessor implements ProcessorInterface
                     'product' => ['Cada línea de venta debe tener un producto válido.'],
                 ]);
             }
-            if (!$this->isAuthorizedPrice($sale->getCustomer(), $product, $item->getUnitPrice())) {
+            [$expectedPrice, $source] = $this->quotedPrice($sale->getCustomer(), $product);
+            $authorized = AuthorizedPrice::matches($item->getUnitPrice(), $expectedPrice);
+            // Decided here, never taken from the client, and recorded with the price the server
+            // expected so a later dispute can be traced. A price that is not the current one is:
+            //  - online: a manual price, which needs `pos.price_override` (the cashier can still fix it);
+            //  - offline: accepted and flagged for review. The customer already has the ticket, so
+            //    refusing the sale would only leave the till out of balance.
+            $item->setPriceSource(match (true) {
+                $authorized => $source,
+                $isOfflineSale => PriceSource::OFFLINE_DIFF,
+                default => PriceSource::MANUAL,
+            });
+            $item->setListPriceSnapshot((string) BigDecimal::of($expectedPrice)->toScale(4, RoundingMode::HALF_UP));
+            if (!$authorized && !$isOfflineSale) {
                 $hasPriceOverride = true;
             }
         }
@@ -680,26 +697,34 @@ readonly class SaleProcessor implements ProcessorInterface
         }
     }
 
-    private function isAuthorizedPrice(?Customer $customer, Product $product, string $unitPrice): bool
+    /**
+     * The price the catalogue or the customer's price list dictates, and which of the two it is.
+     *
+     * @return array{0: string, 1: PriceSource}
+     */
+    private function quotedPrice(?Customer $customer, Product $product): array
     {
-        $expectedPrice = $product->getSalePrice();
         $priceList = $customer?->getPriceList();
-        if ($priceList !== null && $priceList->getId() !== null) {
-            $explicitPrice = $this->entityManager->getConnection()->fetchOne('SELECT price FROM price_list_detail WHERE price_list_id = :priceList AND product_id = :product', [
-                'priceList' => $priceList->getId(),
-                'product' => $product->getId(),
-            ]);
-            if ($explicitPrice !== false) {
-                $expectedPrice = (string) $explicitPrice;
-            } else {
-                $multiplier = $priceList->getMultiplier();
-                if ($multiplier !== null) {
-                    $expectedPrice = (string) BigDecimal::of($expectedPrice)->multipliedBy($multiplier);
-                }
-            }
+        if ($priceList === null || $priceList->getId() === null) {
+            return [PriceListPricing::resolve($product->getSalePrice(), null, null)['price'], PriceSource::CATALOG];
         }
 
-        return BigDecimal::of($unitPrice)->compareTo(BigDecimal::of($expectedPrice)) === 0;
+        $item = $this->entityManager
+            ->getRepository(PriceListItem::class)
+            ->findOneBy([
+                'priceList' => $priceList,
+                'product' => $product,
+            ]);
+        $resolved = PriceListPricing::resolve(
+            $product->getSalePrice(),
+            $priceList->getMultiplier(),
+            $item?->getPrice(),
+        );
+
+        return [
+            $resolved['price'],
+            $resolved['source'] === PriceListPricing::BASE ? PriceSource::CATALOG : PriceSource::PRICE_LIST,
+        ];
     }
 
     /**

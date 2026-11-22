@@ -6,65 +6,84 @@ namespace App\Tests\Inventory\State;
 
 use ApiPlatform\Metadata\GetCollection;
 use App\Inventory\Dto\PriceListApplyDto;
+use App\Inventory\Entity\PriceList;
+use App\Inventory\Repository\PriceListItemRepository;
+use App\Inventory\Repository\PriceListRepository;
 use App\Inventory\State\PriceListApplyProvider;
-use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 
 final class PriceListApplyProviderTest extends TestCase
 {
-    /** @param list<array<string,string>> $rows */
-    private function makeProvider(array $rows): PriceListApplyProvider
-    {
-        $conn = $this->createStub(Connection::class);
-        $conn->method('fetchAllAssociative')->willReturn($rows);
+    /** @param list<array{id: string, name: string, sku: ?string, code: ?string, basePrice: string, override: ?string}> $rows */
+    private function makeProvider(
+        array $rows,
+        ?string $multiplier = null,
+        bool $listExists = true,
+    ): PriceListApplyProvider {
+        $list = null;
+        if ($listExists) {
+            $list = new PriceList()
+                ->setName('Marcia')
+                ->setMultiplier($multiplier);
+            new ReflectionProperty(PriceList::class, 'id')->setValue($list, 5);
+        }
 
-        return new PriceListApplyProvider($conn);
+        $lists = $this->createStub(PriceListRepository::class);
+        $lists->method('find')->willReturn($list);
+        $items = $this->createStub(PriceListItemRepository::class);
+        $items->method('catalogueWithOverrides')->willReturn($rows);
+
+        return new PriceListApplyProvider($lists, $items);
     }
 
-    public function testProvideReturnsMappedApplyDtos(): void
+    public function testProvideReturnsTheEffectivePriceOfEveryProduct(): void
     {
-        $provider = $this->makeProvider([
-            ['id' => 'prod-1', 'price' => '90.0000'],
-            ['id' => 'prod-2', 'price' => '250.0000'],
-        ]);
-
-        $result = $provider->provide(new GetCollection(), ['id' => 5]);
+        $result = $this->makeProvider([
+            [
+                'id' => 'prod-1',
+                'name' => 'A',
+                'sku' => null,
+                'code' => null,
+                'basePrice' => '10.10',
+                'override' => '10.4000',
+            ],
+            [
+                'id' => 'prod-2',
+                'name' => 'B',
+                'sku' => null,
+                'code' => null,
+                'basePrice' => '250.00',
+                'override' => null,
+            ],
+        ])->provide(new GetCollection(), ['id' => 5]);
 
         self::assertIsArray($result);
-        self::assertCount(2, $result);
-
-        /** @var PriceListApplyDto $first */
-        $first = $result[0];
-        self::assertInstanceOf(PriceListApplyDto::class, $first);
-        self::assertSame('prod-1', $first->id);
-        self::assertSame('90.0000', $first->price);
-
-        /** @var PriceListApplyDto $second */
-        $second = $result[1];
-        self::assertSame('prod-2', $second->id);
-        self::assertSame('250.0000', $second->price);
+        self::assertContainsOnlyInstancesOf(PriceListApplyDto::class, $result);
+        self::assertSame(['prod-1', '10.4000'], [$result[0]->id, $result[0]->price]);
+        self::assertSame(['prod-2', '250.0000'], [$result[1]->id, $result[1]->price]);
     }
 
-    public function testProvideReturnsEmptyArrayForUnknownPriceList(): void
+    public function testTheListFactorAppliesWhereThereIsNoSpecialPrice(): void
     {
-        $provider = $this->makeProvider([]);
-
-        $result = $provider->provide(new GetCollection(), ['id' => 999]);
+        $result = $this->makeProvider([
+            [
+                'id' => 'prod-1',
+                'name' => 'A',
+                'sku' => null,
+                'code' => null,
+                'basePrice' => '10.40',
+                'override' => null,
+            ],
+        ], multiplier: '1.0333')->provide(new GetCollection(), ['id' => 5]);
 
         self::assertIsArray($result);
-        self::assertCount(0, $result);
+        /** @var list<PriceListApplyDto> $result */
+        self::assertSame('10.7463', $result[0]->price);
     }
 
-    public function testProvidePassesPriceListIdToQuery(): void
+    public function testAnUnknownListReturnsNoPrices(): void
     {
-        $conn = $this->createMock(Connection::class);
-        $conn
-            ->expects(self::once())
-            ->method('fetchAllAssociative')
-            ->with(self::anything(), ['id' => 7])
-            ->willReturn([]);
-
-        $provider = new PriceListApplyProvider($conn);
-        $provider->provide(new GetCollection(), ['id' => 7]);
+        self::assertSame([], $this->makeProvider([], listExists: false)->provide(new GetCollection(), ['id' => 999]));
     }
 }

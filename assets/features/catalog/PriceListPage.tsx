@@ -37,6 +37,12 @@ const baseResource = defineResource(priceListEndpoints.list(), {
     icon: 'tag',
   },
   permissions: { canEdit: true, canDelete: true },
+  // Special prices are written in bulk by the price editor; each save that changes one
+  // leaves a before/after entry here (the trail is read from nubit_audit_log).
+  auditTrail: {
+    enabled: true,
+    apiUrl: (id: string | number) => `/api/audit-trail/pricelist/${id}`,
+  },
 });
 
 export const PriceListPage = () => {

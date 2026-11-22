@@ -1,6 +1,7 @@
 import { Outlet, useMatch } from 'react-router-dom';
 import { FeatureHubLayout } from '@nubitio/admin';
 import { useTenantRuntimeConfig } from '@shared/hooks';
+import { hasPermission } from '@shared/permissions';
 
 export const BillingHubLayout = () => {
   const { data: runtimeConfig } = useTenantRuntimeConfig();
@@ -33,6 +34,13 @@ export const BillingHubLayout = () => {
           path: '/billing/consult',
           icon: 'ph-chart-line-up',
           visible: showOperationalReviewTabs,
+        },
+        {
+          key: 'price-review',
+          label: 'Precios a revisar',
+          path: '/billing/price-review',
+          icon: 'ph-seal-warning',
+          visible: showOperationalReviewTabs && hasPermission('reports.view'),
         },
         {
           key: 'documents',

@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Link;
 use App\Catalog\Entity\Product;
+use App\Sales\Domain\PriceSource;
 use App\Sales\Repository\SaleItemRecordRepository;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
@@ -82,6 +83,14 @@ class SaleItemRecord
     #[ORM\Column(name: 'net_amount', type: Types::DECIMAL, precision: 12, scale: 2)]
     #[ApiProperty(description: 'sale_item_record.net_amount.label')]
     private string $netAmount = '0.00';
+
+    /** Where the price came from (a {@see PriceSource} value); null on lines written before this was recorded. */
+    #[ORM\Column(name: 'price_source', type: 'string', length: 12, nullable: true)]
+    private ?string $priceSource = null;
+
+    /** What the server expected the unit price to be (catalogue or price list) when the sale was written. */
+    #[ORM\Column(name: 'list_price_snapshot', type: Types::DECIMAL, precision: 12, scale: 4, nullable: true)]
+    private ?string $listPriceSnapshot = null;
 
     #[ORM\Column(name: 'unit_cost_snapshot', type: Types::DECIMAL, precision: 12, scale: 4, nullable: true)]
     private ?string $unitCostSnapshot = null;
@@ -263,6 +272,30 @@ class SaleItemRecord
     public function setNetAmount(string $netAmount): static
     {
         $this->netAmount = $netAmount;
+
+        return $this;
+    }
+
+    public function getPriceSource(): ?PriceSource
+    {
+        return $this->priceSource === null ? null : PriceSource::from($this->priceSource);
+    }
+
+    public function setPriceSource(?PriceSource $priceSource): static
+    {
+        $this->priceSource = $priceSource?->value;
+
+        return $this;
+    }
+
+    public function getListPriceSnapshot(): ?string
+    {
+        return $this->listPriceSnapshot;
+    }
+
+    public function setListPriceSnapshot(?string $listPriceSnapshot): static
+    {
+        $this->listPriceSnapshot = $listPriceSnapshot;
 
         return $this;
     }

@@ -20,11 +20,13 @@ use App\Inventory\State\PriceListApplyProvider;
 use App\Inventory\State\PriceListProcessor;
 use App\Inventory\State\PriceListProvider;
 use Doctrine\ORM\Mapping as ORM;
+use Nubit\ApiPlatform\Attribute\Auditable;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Nubit\Platform\Http\ApiResponse;
 use Symfony\Component\Serializer\Attribute\Context;
 use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
+#[Auditable]
 #[ORM\Entity(repositoryClass: PriceListRepository::class)]
 #[ORM\Table(name: 'price_list')]
 #[ApiResource(
@@ -75,7 +77,7 @@ class PriceList
 
     /**
      * Optional global multiplier.
-     * When set and no explicit per-product override exists in price_list_detail,
+     * When set and no special price exists for the product (see PriceListItem),
      * the effective price is computed as: base_price × multiplier.
      * NULL means "explicit overrides only" (original behaviour).
      */
