@@ -70,7 +70,10 @@ final readonly class VoucherPdfRenderer
         try {
             return $this->fileManager->exists($location) ? $this->fileManager->read($location) : null;
         } catch (\Throwable $e) {
-            $this->billingLogger->warning('voucher_pdf.cache_read_failed', ['location' => $location, 'error' => $e->getMessage()]);
+            $this->billingLogger->warning('voucher_pdf.cache_read_failed', [
+                'location' => $location,
+                'error' => $e->getMessage(),
+            ]);
 
             return null;
         }
@@ -81,7 +84,10 @@ final readonly class VoucherPdfRenderer
         try {
             $this->fileManager->write($location, $bytes);
         } catch (\Throwable $e) {
-            $this->billingLogger->warning('voucher_pdf.cache_write_failed', ['location' => $location, 'error' => $e->getMessage()]);
+            $this->billingLogger->warning('voucher_pdf.cache_write_failed', [
+                'location' => $location,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 

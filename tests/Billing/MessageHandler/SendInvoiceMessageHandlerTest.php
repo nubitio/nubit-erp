@@ -31,7 +31,7 @@ final class SendInvoiceMessageHandlerTest extends TestCase
         $this->billSendUseCase = $this->createStub(BillSendUseCase::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->bus = $this->createStub(MessageBusInterface::class);
-        $this->bus->method('dispatch')->willReturnCallback(static fn (object $m) => new Envelope($m));
+        $this->bus->method('dispatch')->willReturnCallback(static fn(object $m) => new Envelope($m));
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -40,7 +40,11 @@ final class SendInvoiceMessageHandlerTest extends TestCase
 
     private function makeHandler(): SendInvoiceMessageHandler
     {
-        return new SendInvoiceMessageHandler(billSendUseCase: $this->billSendUseCase, billingLogger: $this->logger, messageBus: $this->bus);
+        return new SendInvoiceMessageHandler(
+            billSendUseCase: $this->billSendUseCase,
+            billingLogger: $this->logger,
+            messageBus: $this->bus,
+        );
     }
 
     // ──────────────────────────────────────────────────────────────────────────
