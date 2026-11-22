@@ -1,0 +1,177 @@
+{# Print-only A4 voucher. Deliberately plain: tables + a few inline rules so
+   Dompdf (pure PHP, no process spawn, no network) can render it in ~100 ms.
+   No Bootstrap, no flex/grid, no CSS variables. #}
+{% set currency_symbols = {'PEN': 'S/', 'USD': '$', 'EUR': '€'} %}
+{% set currency_symbol = currency_symbols[voucher.voucher_currency|default('PEN')]|default(voucher.voucher_currency|default('S/')) %}
+{% set is_nv = voucher.voucher_type == '00' %}
+{% set logo = printLogo|default(false) ? embedded_logo() : '' %}
+{% set total_item_discounts = 0 %}
+{% for item in voucher.voucher_items %}
+    {% set total_item_discounts = total_item_discounts + (item.discount_amount|default(0)) %}
+{% endfor %}
+{% set gross_subtotal = voucher.voucher_sale_amount + total_item_discounts + (voucher.voucher_discount_amount|default(0)) %}
+{% set net_subtotal = gross_subtotal - total_item_discounts %}
+{% set cash_rounding = voucher.voucher_cash_rounding_adjustment|default(0) %}
+{% set commercial_discount = (voucher.voucher_discount_amount|default(0)) - cash_rounding %}
+{% set has_detraction = voucher.voucher_detraction_amount and voucher.voucher_detraction_amount > 0 %}
+{% set doc_title = {'01': 'FACTURA ELECTRÓNICA', '03': 'BOLETA ELECTRÓNICA', '07': 'NOTA DE CRÉDITO ELECTRÓNICA', '08': 'NOTA DE DÉBITO ELECTRÓNICA'}[voucher.voucher_type]|default('NOTA DE VENTA') %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>{{ voucher.voucher_series }}-{{ voucher.voucher_number }}</title>
+<style>
+    @page { margin: 34px 38px; }
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #1f2937; margin: 0; }
+    table { border-collapse: collapse; width: 100%; }
+    td, th { vertical-align: top; }
+    p { margin: 0; }
+    .muted { color: #6b7280; }
+    .right { text-align: right; }
+    .nowrap { white-space: nowrap; }
+    .box { border: 1.5px solid #111827; border-radius: 6px; text-align: center; padding: 10px 8px; }
+    .title { font-size: 14px; font-weight: bold; }
+    .number { font-size: 15px; font-weight: bold; margin-top: 8px; }
+    .brand { font-size: 16px; font-weight: bold; }
+    .info { margin-top: 14px; border: 1px solid #d1d5db; border-radius: 6px; }
+    .info td { padding: 4px 8px; }
+    .k { color: #6b7280; width: 90px; }
+    .items { margin-top: 12px; }
+    .items th { background: #f3f4f6; border-top: 1px solid #d1d5db; border-bottom: 1px solid #d1d5db; padding: 6px 8px; text-align: left; font-size: 10px; }
+    .items td { padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
+    .totals { width: 250px; margin-left: auto; margin-top: 10px; }
+    .totals td { padding: 3px 8px; }
+    .totals .grand td { border-top: 1.5px solid #111827; font-size: 13px; font-weight: bold; padding-top: 6px; }
+    .section { margin-top: 14px; font-weight: bold; font-size: 10px; letter-spacing: .5px; border-bottom: 1px dashed #d1d5db; padding-bottom: 4px; }
+    .kv td { padding: 2px 0; }
+    .kv .k { width: 110px; }
+    .foot { margin-top: 14px; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px; font-size: 10px; }
+</style>
+</head>
+<body>
+
+<table>
+    <tr>
+        <td style="width: 60%; padding-right: 12px;">
+            {% if logo %}<img src="{{ logo }}" alt="Logo" style="max-height: 60px; margin-bottom: 6px;">{% endif %}
+            <p class="brand">{{ voucher.company_name }}</p>
+            <p class="muted" style="margin-top: 3px;"><strong>Dirección:</strong> {{ voucher.branch_address|default(voucher.company_address)|default('-') }}</p>
+            {% set phone = voucher.branch_phone|default(voucher.company_phone) %}
+            {% if phone %}<p class="muted"><strong>Tel.:</strong> {{ phone }}</p>{% endif %}
+        </td>
+        <td style="width: 40%;">
+            <div class="box">
+                <p class="title">{{ doc_title }}</p>
+                {% if not is_nv %}<p class="muted" style="margin-top: 4px;">R.U.C.: <strong>{{ voucher.company_id }}</strong></p>{% endif %}
+                <p class="number">{{ voucher.voucher_series }}-{{ voucher.voucher_number }}</p>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<table class="info">
+    <tr>
+        <td class="k">Razón social</td><td><strong>{{ voucher.customer_name }}</strong></td>
+        <td class="k">Fecha emisión</td><td>{{ voucher.voucher_date|date('d/m/Y') }}</td>
+    </tr>
+    <tr>
+        <td class="k">{% if voucher.customer_doc_type == '6' %}RUC{% elseif voucher.customer_doc_type == '1' %}DNI{% else %}Doc. Identidad{% endif %}</td>
+        <td><strong>{{ voucher.customer_doc_number|default('-') }}</strong></td>
+        <td class="k">Moneda</td><td>{{ voucher.voucher_currency|default('PEN') }}</td>
+    </tr>
+    <tr>
+        <td class="k">Dirección</td><td colspan="3">{{ voucher.customer_address|default('-') }}</td>
+    </tr>
+</table>
+
+<table class="items">
+    <thead>
+    <tr>
+        <th style="width: 14%">Cantidad</th>
+        <th style="width: 16%">Código</th>
+        <th>Descripción</th>
+        <th class="right" style="width: 14%">V. Unit</th>
+        <th class="right" style="width: 14%">V. Total</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in voucher.voucher_items %}
+        <tr>
+            <td class="nowrap">{{ item.quantity|number_format(2, '.', '') }} {{ item.product_uom|default('') }}</td>
+            <td class="nowrap">{{ item.product_code|default('-') }}</td>
+            <td><strong>{{ item.product_name }}</strong></td>
+            <td class="right nowrap">{{ item.unit_price|number_format(2, '.', '') }}</td>
+            <td class="right nowrap">{{ item.total|number_format(2, '.', '') }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<table style="margin-top: 10px;">
+    <tr>
+        <td style="width: 52%; padding-right: 12px;">
+            <div class="foot" style="margin-top: 0;">
+                <strong>{{ voucher.voucherTotalText }}</strong>
+                <p class="muted" style="margin-top: 3px;">Forma de pago: <strong>{% if voucher.voucher_payment_method == 2 %}CRÉDITO{% else %}CONTADO{% endif %}</strong></p>
+            </div>
+        </td>
+        <td style="width: 48%;">
+            <table class="totals">
+                <tr><td>Subtotal bruto</td><td class="right">{{ currency_symbol }} {{ gross_subtotal|number_format(2, '.', '') }}</td></tr>
+                {% if total_item_discounts > 0 %}
+                    <tr><td>Descuentos por ítem</td><td class="right">-{{ currency_symbol }} {{ total_item_discounts|number_format(2, '.', '') }}</td></tr>
+                    <tr><td>Subtotal neto</td><td class="right">{{ currency_symbol }} {{ net_subtotal|number_format(2, '.', '') }}</td></tr>
+                {% endif %}
+                {% if commercial_discount > 0 %}
+                    <tr><td>Descuento global</td><td class="right">-{{ currency_symbol }} {{ commercial_discount|number_format(2, '.', '') }}</td></tr>
+                {% endif %}
+                {% if cash_rounding > 0 %}
+                    <tr><td>Redondeo en efectivo</td><td class="right">-{{ currency_symbol }} {{ cash_rounding|number_format(2, '.', '') }}</td></tr>
+                {% endif %}
+                {% if not is_nv %}
+                    <tr><td>Op. Gravadas</td><td class="right">{{ currency_symbol }} {{ voucher.voucher_taxed_amount|number_format(2, '.', '') }}</td></tr>
+                    <tr><td>I.G.V.</td><td class="right">{{ currency_symbol }} {{ voucher.voucher_total_taxes|number_format(2, '.', '') }}</td></tr>
+                {% endif %}
+                <tr class="grand"><td>TOTAL</td><td class="right">{{ currency_symbol }} {{ voucher.voucher_sale_amount|number_format(2, '.', '') }}</td></tr>
+                {% if has_detraction %}
+                    <tr><td>Detracción ({{ voucher.voucher_detraction_percent|default(0) }}%)</td><td class="right">S/ {{ voucher.voucher_detraction_amount|number_format(2, '.', '') }}</td></tr>
+                {% endif %}
+            </table>
+        </td>
+    </tr>
+</table>
+
+<table style="margin-top: 4px;">
+    <tr>
+        <td style="width: 70%; padding-right: 12px;">
+            <p class="section">INFORMACIÓN ADICIONAL</p>
+            <table class="kv" style="margin-top: 4px;">
+                {% if has_detraction %}
+                    <tr><td class="k">Leyenda</td><td>Operación sujeta a detracción</td></tr>
+                    <tr><td class="k">Tipo detracción</td><td>{% if voucher.voucher_detraction_code %}{{ voucher.voucher_detraction_code }}{% if voucher.voucher_detraction_description %} - {{ voucher.voucher_detraction_description }}{% endif %}{% else %}-{% endif %}</td></tr>
+                    <tr><td class="k">Medio de pago</td><td>{% if voucher.voucher_detraction_payment_method %}{{ voucher.voucher_detraction_payment_method }}{% if voucher.voucher_detraction_payment_description %} - {{ voucher.voucher_detraction_payment_description }}{% endif %}{% else %}-{% endif %}</td></tr>
+                    {% if voucher.voucher_detraction_account %}<tr><td class="k">CTA Banco Nación</td><td>{{ voucher.voucher_detraction_account }}</td></tr>{% endif %}
+                {% endif %}
+                {% if voucher.voucher_bank_name or voucher.voucher_bank_account or voucher.voucher_bank_cci %}
+                    <tr><td class="k">Banco</td><td>{{ voucher.voucher_bank_name|default('-') }}</td></tr>
+                    {% if voucher.voucher_bank_account %}<tr><td class="k">Cuenta</td><td>{{ voucher.voucher_bank_account }}</td></tr>{% endif %}
+                    {% if voucher.voucher_bank_cci %}<tr><td class="k">CCI</td><td>{{ voucher.voucher_bank_cci }}</td></tr>{% endif %}
+                {% endif %}
+                <tr><td class="k">Observación</td><td>{{ voucher.voucher_note|default('-') }}</td></tr>
+            </table>
+        </td>
+        <td style="width: 30%;" class="right">
+            {% if not is_nv %}<img src="{{ qr|default('') }}" alt="QR" width="110" height="110">{% endif %}
+        </td>
+    </tr>
+</table>
+
+{% if not is_nv %}
+    <div class="foot">
+        <p><strong>Resumen:</strong> {{ voucher.voucher_hash }}</p>
+        <p class="muted">Representación impresa del comprobante electrónico. Consulte en: {{ base_url() }}/buscar</p>
+    </div>
+{% endif %}
+
+</body>
+</html>
