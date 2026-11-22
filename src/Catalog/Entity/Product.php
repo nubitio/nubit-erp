@@ -148,7 +148,7 @@ class Product
         updatable: false,
         generated: 'ALWAYS',
     )]
-    private ?\DateTimeImmutable $updatedAt = null; // @phpstan-ignore property.unusedType (set by the database)
+    private \DateTimeImmutable $updatedAt;
 
     #[Assert\NotBlank]
     #[Groups([
@@ -397,7 +397,7 @@ class Product
 
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
-        return $this->updatedAt;
+        return $this->updatedAt ?? null;
     }
 
     public function isActive(): bool
