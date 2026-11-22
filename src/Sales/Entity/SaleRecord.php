@@ -170,6 +170,10 @@ class SaleRecord
     #[ApiProperty(description: 'sale_record.seller_user_id.label')]
     private ?int $sellerUserId = null;
 
+    /** Who delivered the sale when that is not who made it (an offline sale sent from another cashier's session). */
+    #[ORM\Column(name: 'synced_by_user_id', type: 'integer', nullable: true)]
+    private ?int $syncedByUserId = null;
+
     #[Groups(['sale_record:read'])]
     #[ORM\Column(name: 'status', type: 'string', length: 30, options: ['default' => 'COMPLETED'])]
     #[ApiProperty(description: 'sale_record.status.label')]
@@ -631,6 +635,18 @@ class SaleRecord
     public function getSellerUserId(): ?int
     {
         return $this->sellerUserId;
+    }
+
+    public function getSyncedByUserId(): ?int
+    {
+        return $this->syncedByUserId;
+    }
+
+    public function setSyncedByUserId(?int $syncedByUserId): static
+    {
+        $this->syncedByUserId = $syncedByUserId;
+
+        return $this;
     }
 
     public function setSellerUserId(?int $sellerUserId): static

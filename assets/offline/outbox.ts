@@ -8,6 +8,7 @@ import { sendApiRequest } from './api';
 import { getAppUpdateState, runCriticalOperation } from './appUpdate';
 import { getAuthSessionState } from '@shared/lib/authSessionState';
 import { belongsToAnotherUser, currentUserId } from './outboxOwnership';
+import { signOfflineSale } from './offlineCredential';
 import type {
   CreateOfflineSaleInput,
   LocalSale,
@@ -75,6 +76,15 @@ export const createLocalSaleAndEnqueue = async (input: CreateOfflineSaleInput) =
   const correlativoTemporal = await buildTemporalCorrelative();
   const outboxId = generateUUID();
   const ownerUserId = currentUserId() ?? undefined;
+  // Signed now, over the exact text that will be sent, so the server can tell who made the sale
+  // whoever's session delivers it. Unsigned (no credential, no Web Crypto) keeps the owner binding.
+  const bodyText = JSON.stringify(input.requestBody);
+  const signature = await signOfflineSale({
+    userId: ownerUserId ?? null,
+    idempotencyKey,
+    bodyText,
+    nowMs: now.getTime(),
+  });
 
   const sale: LocalSale = {
     id: saleId,
@@ -90,6 +100,7 @@ export const createLocalSaleAndEnqueue = async (input: CreateOfflineSaleInput) =
     updatedAt: nowIso,
     idempotencyKey,
     ownerUserId,
+    signed: signature !== null,
   };
 
   const outbox: OutboxItem = {
@@ -99,16 +110,19 @@ export const createLocalSaleAndEnqueue = async (input: CreateOfflineSaleInput) =
       method: 'POST',
       url: input.endpointUrl,
       body: input.requestBody,
+      rawBody: bodyText,
       headers: {
         'Content-Type': 'application/json',
         'Idempotency-Key': idempotencyKey,
         'X-Offline-Sale': 'true',
+        ...signature,
       },
     },
     status: 'pending',
     attempts: 0,
     createdAt: nowIso,
     ownerUserId,
+    signed: signature !== null,
   };
 
   await offlineDb.transaction('rw', offlineDb.sales, offlineDb.outbox, async () => {
@@ -154,6 +168,7 @@ const processOutboxItem = async (item: OutboxItem) => {
     method: item.request.method,
     url: item.request.url,
     body: item.request.body,
+    rawBody: item.request.rawBody,
     headers: item.request.headers,
   });
 
