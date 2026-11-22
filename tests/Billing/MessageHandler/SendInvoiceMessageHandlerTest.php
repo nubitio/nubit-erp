@@ -12,6 +12,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * AC-5: tenant_id from message appears in every log context entry.
@@ -22,11 +24,14 @@ final class SendInvoiceMessageHandlerTest extends TestCase
 {
     private BillSendUseCase&Stub $billSendUseCase;
     private LoggerInterface&MockObject $logger;
+    private MessageBusInterface&Stub $bus;
 
     protected function setUp(): void
     {
         $this->billSendUseCase = $this->createStub(BillSendUseCase::class);
         $this->logger = $this->createMock(LoggerInterface::class);
+        $this->bus = $this->createStub(MessageBusInterface::class);
+        $this->bus->method('dispatch')->willReturnCallback(static fn(object $m) => new Envelope($m));
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -35,7 +40,11 @@ final class SendInvoiceMessageHandlerTest extends TestCase
 
     private function makeHandler(): SendInvoiceMessageHandler
     {
-        return new SendInvoiceMessageHandler(billSendUseCase: $this->billSendUseCase, billingLogger: $this->logger);
+        return new SendInvoiceMessageHandler(
+            billSendUseCase: $this->billSendUseCase,
+            billingLogger: $this->logger,
+            messageBus: $this->bus,
+        );
     }
 
     // ──────────────────────────────────────────────────────────────────────────
