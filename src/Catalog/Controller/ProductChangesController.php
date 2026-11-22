@@ -33,14 +33,14 @@ final class ProductChangesController extends AbstractController
     #[IsGranted('perm:catalog.view')]
     public function __invoke(Request $request): JsonResponse
     {
-        $since = $request->query->get('since');
+        $since = $request->query->getString('since');
         $cursor = $this->feed->cursor();
 
-        if ($since === null || $since === '') {
+        if ($since === '') {
             return $this->json(['cursor' => $cursor, 'products' => []]);
         }
 
-        if (!is_string($since) || !ProductChangeFeed::isValidCursor($since)) {
+        if (!ProductChangeFeed::isValidCursor($since)) {
             return $this->json([
                 'error' => 'since must be a cursor returned by this endpoint.',
             ], Response::HTTP_BAD_REQUEST);

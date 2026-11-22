@@ -47,7 +47,7 @@ class PriceListItem
         updatable: false,
         generated: 'ALWAYS',
     )]
-    private ?DateTimeImmutable $updatedAt = null; // @phpstan-ignore property.unusedType (set by the database)
+    private DateTimeImmutable $updatedAt;
 
     public function __construct(PriceList $priceList, Product $product, string $price)
     {
@@ -85,6 +85,6 @@ class PriceListItem
 
     public function getUpdatedAt(): ?DateTimeImmutable
     {
-        return $this->updatedAt;
+        return $this->updatedAt ?? null;
     }
 }
