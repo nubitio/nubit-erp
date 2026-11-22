@@ -96,11 +96,113 @@
       font-size: var(--font-size-xs);
     }
   }
+  &__lines-actions {
+    display: inline-flex;
+    gap: var(--space-1);
+  }
+  &__lines-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-subtle, var(--border-color));
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    strong {
+      color: var(--text-primary);
+      font-variant-numeric: tabular-nums;
+    }
+  }
   &__product {
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    strong,
+    small {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     small {
       color: var(--text-secondary);
+    }
+    &.is-idle strong {
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+  }
+  &__idle {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  &__restock-head {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  &__info {
+    display: inline-flex;
+    color: var(--text-muted);
+    cursor: help;
+  }
+
+  // Lines table. The library's `.nb-data-table th/td { text-align: left }` outranks its own
+  // right/center alignment classes, so numbers are re-aligned here. A long invoice scrolls
+  // inside the table (header pinned) instead of pushing the form down.
+  &__table {
+    max-height: 22rem;
+    overflow: auto;
+    table {
+      table-layout: fixed;
+      min-width: 44rem;
+    }
+    th,
+    td {
+      vertical-align: middle;
+      white-space: nowrap;
+      padding-block: var(--space-2);
+    }
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .nb-data-table__cell--num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .nb-data-table__cell--center {
+      text-align: center;
+    }
+    th:nth-child(1) {
+      width: 2.75rem;
+    }
+    th:nth-child(3) {
+      width: 5.5rem;
+    }
+    th:nth-child(4) {
+      width: 12rem;
+    }
+    th:nth-child(5) {
+      width: 6.5rem;
+    }
+    th:nth-child(6) {
+      width: 7rem;
+    }
+    th:nth-child(7) {
+      width: 9.5rem;
+    }
+    td:nth-child(2) {
+      overflow: hidden;
+    }
+  }
+  // Compact +/- so a one-unit line does not dominate the row.
+  &__stepper {
+    justify-content: flex-end;
+    .nb-quantity-stepper__button {
+      width: 1.75rem;
+      height: 1.75rem;
     }
   }
   &__totals {

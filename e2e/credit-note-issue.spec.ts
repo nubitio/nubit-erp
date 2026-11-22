@@ -110,13 +110,20 @@ test('issues a credit note from its own screen: search, reason, quantities, rest
   await page.getByRole('option', { name: /07/ }).click();
   await page.getByTestId('credit-note-detail').fill('Devolución de un producto defectuoso');
 
+  // Bulk actions: everything back (the invoice sold 2 units) and then nothing.
+  await page.getByTestId('credit-note-return-all').click();
+  await expect(page.getByTestId('credit-note-total')).toContainText('111.23');
+  await expect(page.getByTestId('credit-note-lines-total')).toContainText('1 de 1 ítem a devolver');
+  await page.getByRole('button', { name: 'Quitar todo', exact: true }).click();
+  await expect(page.getByTestId('credit-note-total')).toContainText('0.00');
+
   // 3. Return one unit: totals follow the chosen quantity.
   await page
     .getByRole('button', { name: /Aumentar|Incrementar|más/i })
     .first()
     .click();
   await expect(page.getByTestId('credit-note-total')).toContainText('55.62');
-  const restock = page.getByRole('checkbox', { name: /Reingresar .* a inventario/ });
+  const restock = page.getByRole('checkbox', { name: /Reingresar Audífonos .* a inventario/ });
   await expect(restock).toBeChecked();
   await restock.uncheck();
 

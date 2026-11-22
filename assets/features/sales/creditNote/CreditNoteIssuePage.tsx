@@ -19,6 +19,7 @@ import {
   QuantityStepper,
   Section,
   TextAreaField,
+  Tooltip,
   type ComboboxOption,
   type DataTableColumn,
 } from '@nubitio/ui';
@@ -191,6 +192,8 @@ export function CreditNoteIssuePage() {
   const showRestock = choosesRestock(reasonCode);
   const errors = creditNoteIssueErrors({ reasonCode, reasonDescription, lines, returns });
   const summary = returnSummary(lines, returns);
+  const chosenChoices = Object.values(returns);
+  const restockCount = chosenChoices.filter((choice) => choice.restock).length;
 
   const loadDocuments = async (query: string, { signal }: { signal: AbortSignal }) => ({
     options: (await searchEligibleDocuments(query, signal)).map(documentOption),
@@ -224,6 +227,22 @@ export function CreditNoteIssuePage() {
       current[line.lineNumber]
         ? { ...current, [line.lineNumber]: { ...current[line.lineNumber]!, restock } }
         : current,
+    );
+
+  const returnEverything = () =>
+    setReturns((current) =>
+      Object.fromEntries(
+        lines.map((line) => [
+          line.lineNumber,
+          { quantity: line.quantity, restock: current[line.lineNumber]?.restock ?? true },
+        ]),
+      ),
+    );
+  const setAllRestock = (restock: boolean) =>
+    setReturns((current) =>
+      Object.fromEntries(
+        Object.entries(current).map(([key, choice]) => [key, { ...choice, restock }]),
+      ),
     );
 
   const issue = useMutation({
@@ -423,14 +442,15 @@ export function CreditNoteIssuePage() {
   const blocked = creditNoteBlockedReason({ voided: origin.voided, stage: status.stage });
   const hint = reasonHint(reasonCode);
 
+  const idle = (line: OriginLine) => !returns[line.lineNumber];
   const columns: DataTableColumn<OriginLine>[] = [
-    { id: 'n', header: '#', render: (line) => line.lineNumber },
+    { id: 'n', header: '#', muted: true, render: (line) => line.lineNumber },
     {
       id: 'product',
       header: 'Producto',
       render: (line) => (
-        <span className="credit-note-issue__product">
-          <strong>{line.productName}</strong>
+        <span className={`credit-note-issue__product${idle(line) ? ' is-idle' : ''}`}>
+          <strong title={line.productName}>{line.productName}</strong>
           {line.productCode && <small>{line.productCode}</small>}
         </span>
       ),
@@ -438,10 +458,11 @@ export function CreditNoteIssuePage() {
     { id: 'sold', header: 'Vendido', align: 'right', render: (line) => Number(line.quantity) },
     {
       id: 'qty',
-      header: 'A devolver *',
+      header: 'A devolver',
       align: 'right',
       render: (line) => (
         <QuantityStepper
+          className="credit-note-issue__stepper"
           label={`Cantidad a devolver de ${line.productName}`}
           value={Number(returns[line.lineNumber]?.quantity ?? 0)}
           max={Number(line.quantity)}
@@ -452,7 +473,7 @@ export function CreditNoteIssuePage() {
     },
     {
       id: 'price',
-      header: 'Precio unitario',
+      header: 'P. unit.',
       align: 'right',
       nowrap: true,
       render: (line) => formatMoney(line.unitPrice, currency),
@@ -464,14 +485,39 @@ export function CreditNoteIssuePage() {
       nowrap: true,
       render: (line) => {
         const choice = returns[line.lineNumber];
-        return choice ? centsToMoney(lineReturnCents(line, choice.quantity), currency) : '—';
+        return (
+          <strong className={idle(line) ? 'credit-note-issue__idle' : undefined}>
+            {choice ? centsToMoney(lineReturnCents(line, choice.quantity), currency) : '—'}
+          </strong>
+        );
       },
     },
     ...(showRestock
       ? [
           {
             id: 'restock',
-            header: 'Reingresar a inventario',
+            header: (
+              <span className="credit-note-issue__restock-head">
+                <Checkbox
+                  aria-label="Reingresar todos a inventario"
+                  checked={chosenChoices.length > 0 && restockCount === chosenChoices.length}
+                  indeterminate={restockCount > 0 && restockCount < chosenChoices.length}
+                  disabled={chosenChoices.length === 0}
+                  onChange={(event) => setAllRestock(event.target.checked)}
+                />
+                Reingresa
+                <Tooltip content="Marca los productos que vuelven al inventario del almacén de origen. Desmarca los dañados o descartados.">
+                  <span
+                    className="credit-note-issue__info"
+                    tabIndex={0}
+                    role="img"
+                    aria-label="Qué significa reingresar a inventario"
+                  >
+                    <i className="ph ph-info" aria-hidden="true" />
+                  </span>
+                </Tooltip>
+              </span>
+            ),
             align: 'center' as const,
             render: (line: OriginLine) => (
               <Checkbox
@@ -647,13 +693,29 @@ export function CreditNoteIssuePage() {
         <Card variant="panel">
           <div className="credit-note-issue__lines-head">
             <h3>Productos afectados</h3>
-            <span>
-              {locked
-                ? 'Este motivo devuelve todos los ítems completos y repone su stock.'
-                : showRestock
-                  ? 'Desmarca “Reingresar” en los productos que no deben volver al inventario.'
-                  : 'Indica las cantidades que se acreditarán.'}
-            </span>
+            {locked ? (
+              <span>Este motivo devuelve todos los ítems completos y repone su stock.</span>
+            ) : (
+              <span className="credit-note-issue__lines-actions">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={lines.length === 0}
+                  onClick={returnEverything}
+                  data-testid="credit-note-return-all"
+                >
+                  Devolver todo
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={chosenChoices.length === 0}
+                  onClick={() => setReturns({})}
+                >
+                  Quitar todo
+                </Button>
+              </span>
+            )}
           </div>
           {linesQuery.isPending ? (
             <p role="status">Cargando ítems…</p>
@@ -663,6 +725,7 @@ export function CreditNoteIssuePage() {
             <DataTable
               variant="flush"
               testId="credit-note-lines"
+              wrapClassName="credit-note-issue__table"
               columns={columns}
               rows={lines}
               getRowKey={(line) => line.lineNumber}
@@ -670,6 +733,12 @@ export function CreditNoteIssuePage() {
             />
           )}
           {submitted && errors.lines && <Alert tone="danger">{errors.lines}</Alert>}
+          <div className="credit-note-issue__lines-foot" data-testid="credit-note-lines-total">
+            <span>
+              {summary.count} de {lines.length} {lines.length === 1 ? 'ítem' : 'ítems'} a devolver
+            </span>
+            <strong>{formatMoney(summary.total, currency)}</strong>
+          </div>
         </Card>
       </DetailLayout>
       <ConfirmDialog
