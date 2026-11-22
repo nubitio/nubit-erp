@@ -318,11 +318,11 @@ export function CreditNoteIssuePage() {
 
   const header = (
     <>
-      <PageHeader
-        title="Notas de crédito"
-        subtitle="Emite notas de crédito electrónicas (SUNAT) para anular, corregir o devolver comprobantes de venta."
-      />
       <CreditNoteTabs active="issue" />
+      <PageHeader
+        title="Emitir nota de crédito"
+        subtitle="Anula, corrige o devuelve un comprobante de venta con una nota de crédito electrónica (SUNAT)."
+      />
     </>
   );
 

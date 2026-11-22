@@ -180,7 +180,7 @@ export const CreditNotePage = () => {
 
   return (
     <>
-      <CreditNoteTabs active="history" />
+      <CreditNoteTabs active="history" inset="grid" />
       <SchemaCrudPage
         resource={resource}
         formRef={formRef}
