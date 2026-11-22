@@ -11,7 +11,7 @@ namespace App\Inventory\Dto;
  * from the database without floating-point rounding errors.
  *
  * `priceSource` indicates how the effective price was computed:
- *   - 'override'   explicit row in price_list_detail
+ *   - 'override'   a special price stored for the product in the list
  *   - 'multiplier' base_price × price_list.multiplier
  *   - 'base'       product base price (fallback)
  */

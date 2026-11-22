@@ -287,6 +287,119 @@ final class SaleProcessorTest extends TestCase
         $this->buildAndRunProcessor($sale, new Post());
     }
 
+    private function buildSaleWithLineAt(string $unitPrice, string $catalogPrice): SaleRecord
+    {
+        $product = new \App\Catalog\Entity\Product();
+        $product->setSalePrice($catalogPrice);
+
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
+        $item = new SaleItemRecord();
+        $item->setProduct($product);
+        $item->setQty('1');
+        $item->setUnitPrice($unitPrice);
+        $item->setGrossAmount($unitPrice);
+        $item->setNetAmount($unitPrice);
+        $item->setNameSnapshot('POLLO ENTERO X KG');
+        $sale->addSaleItemRecord($item);
+        $sale->setPayments([['payment_method_id' => 1, 'amount' => $unitPrice]]);
+
+        return $sale;
+    }
+
+    public function testALineAtTheCataloguePriceIsRecordedAsCatalog(): void
+    {
+        $sale = $this->buildSaleWithLineAt('10.40', '10.40');
+
+        $this->buildAndRunProcessor($sale, new Post());
+
+        $line = $sale->getSaleItemRecords()->first();
+        self::assertInstanceOf(SaleItemRecord::class, $line);
+        self::assertSame(\App\Sales\Domain\PriceSource::CATALOG, $line->getPriceSource());
+        self::assertSame('10.4000', $line->getListPriceSnapshot());
+    }
+
+    public function testALineAtAnOutdatedPriceIsRecordedAsManualWithTheExpectedPrice(): void
+    {
+        // The till was still quoting 9.80 when the catalogue already said 10.10.
+        $sale = $this->buildSaleWithLineAt('9.80', '10.10');
+
+        $this->buildAndRunProcessor($sale, new Post());
+
+        $line = $sale->getSaleItemRecords()->first();
+        self::assertInstanceOf(SaleItemRecord::class, $line);
+        self::assertSame(\App\Sales\Domain\PriceSource::MANUAL, $line->getPriceSource());
+        self::assertSame('10.1000', $line->getListPriceSnapshot());
+    }
+
+    public function testACashierWithoutPriceOverrideCannotSellAtAnOutdatedPrice(): void
+    {
+        $this->grantedPermissions = [];
+        $sale = $this->buildSaleWithLineAt('9.80', '10.10');
+
+        $this->expectException(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class);
+        $this->expectExceptionMessage('pos.price_override');
+
+        $this->buildAndRunProcessor($sale, new Post());
+    }
+
+    private function offlineRequest(): Request
+    {
+        $request = new Request();
+        $request->headers->set('X-Offline-Sale', 'true');
+        $request->headers->set('Idempotency-Key', '11111111-2222-3333-4444-555555555555');
+
+        return $request;
+    }
+
+    public function testAnOfflineSaleAtADifferentPriceIsAcceptedFromACashierWithoutPriceOverride(): void
+    {
+        // A cashier can sell offline, but cannot change prices. The ticket was already given to the customer.
+        $this->grantedPermissions = ['pos.offline_sale'];
+        $sale = $this->buildSaleWithLineAt('9.80', '10.10');
+
+        $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $this->offlineRequest()]);
+
+        $line = $sale->getSaleItemRecords()->first();
+        self::assertInstanceOf(SaleItemRecord::class, $line);
+        self::assertSame(\App\Sales\Domain\PriceSource::OFFLINE_DIFF, $line->getPriceSource());
+        self::assertSame('10.1000', $line->getListPriceSnapshot());
+        self::assertSame('9.80', $line->getUnitPrice(), 'the price charged is kept as it was');
+    }
+
+    public function testAnOfflineSaleAtTheCurrentPriceIsNotFlagged(): void
+    {
+        $this->grantedPermissions = ['pos.offline_sale'];
+        $sale = $this->buildSaleWithLineAt('10.10', '10.10');
+
+        $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $this->offlineRequest()]);
+
+        $line = $sale->getSaleItemRecords()->first();
+        self::assertInstanceOf(SaleItemRecord::class, $line);
+        self::assertSame(\App\Sales\Domain\PriceSource::CATALOG, $line->getPriceSource());
+    }
+
+    public function testTheSameDifferentPriceOnlineIsStillRefusedWithoutPriceOverride(): void
+    {
+        $this->grantedPermissions = [];
+        $sale = $this->buildSaleWithLineAt('9.80', '10.10');
+
+        $this->expectException(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class);
+        $this->expectExceptionMessage('pos.price_override');
+
+        $this->buildAndRunProcessor($sale, new Post());
+    }
+
+    public function testAnOfflineSaleStillNeedsThePermissionToSyncOfflineSales(): void
+    {
+        $this->grantedPermissions = [];
+        $sale = $this->buildSaleWithLineAt('9.80', '10.10');
+
+        $this->expectException(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class);
+        $this->expectExceptionMessage('pos.offline_sale');
+
+        $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $this->offlineRequest()]);
+    }
+
     // -------------------------------------------------------------------------
     // TC-05: REQUIRE_CASH_REGISTER=true + no open shift → ServiceException
     // -------------------------------------------------------------------------

@@ -23,6 +23,7 @@ const AccountsReceivablePage = lazyNamed(
   'AccountsReceivablePage',
 );
 
+const PriceReviewPage = lazyNamed(() => import('./priceReview/PriceReviewPage'), 'PriceReviewPage');
 const SalesRedirect = () => <Navigate to="/billing/sales" replace />;
 const ConsultRedirect = () => <Navigate to="/billing/consult" replace />;
 
@@ -49,6 +50,7 @@ export const billingRoutes: AppRouteDefinition[] = [
       { path: 'sales', element: SalePage },
       { path: 'sales/:id', element: SaleDetailPage },
       { path: 'consult', element: SaleConsultPage },
+      { path: 'price-review', element: PriceReviewPage },
       { path: 'documents', element: InvoicePage },
       { path: 'documents/:id?', element: InvoicePage },
       { path: 'credit-notes/new/:documentId', element: CreditNoteIssuePage },

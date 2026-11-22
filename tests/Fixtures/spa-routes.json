@@ -17,6 +17,7 @@
     "/billing/credit-notes/new/:documentId",
     "/billing/documents",
     "/billing/documents/:id?",
+    "/billing/price-review",
     "/billing/sales",
     "/billing/sales/:id",
     "/branch",

@@ -43,6 +43,8 @@ export interface LocalSale {
   errorCode?: string;
   errorAction?: string;
   numericErrorCode?: number;
+  /** User who made the sale (see outboxOwnership.ts). */
+  ownerUserId?: string;
 }
 
 export interface OutboxRequest {
@@ -64,6 +66,8 @@ export interface OutboxItem {
   lastNumericErrorCode?: number;
   createdAt: string;
   nextRetryAt?: string;
+  /** User who made the sale; it is only sent from their session. See outboxOwnership.ts. */
+  ownerUserId?: string;
 }
 
 export interface SyncLog {

@@ -7,6 +7,7 @@ import { logSyncEvent } from './telemetry';
 import { sendApiRequest } from './api';
 import { getAppUpdateState, runCriticalOperation } from './appUpdate';
 import { getAuthSessionState } from '@shared/lib/authSessionState';
+import { belongsToAnotherUser, currentUserId } from './outboxOwnership';
 import type {
   CreateOfflineSaleInput,
   LocalSale,
@@ -73,6 +74,7 @@ export const createLocalSaleAndEnqueue = async (input: CreateOfflineSaleInput) =
   const idempotencyKey = generateUUID();
   const correlativoTemporal = await buildTemporalCorrelative();
   const outboxId = generateUUID();
+  const ownerUserId = currentUserId() ?? undefined;
 
   const sale: LocalSale = {
     id: saleId,
@@ -87,6 +89,7 @@ export const createLocalSaleAndEnqueue = async (input: CreateOfflineSaleInput) =
     createdAt: nowIso,
     updatedAt: nowIso,
     idempotencyKey,
+    ownerUserId,
   };
 
   const outbox: OutboxItem = {
@@ -105,6 +108,7 @@ export const createLocalSaleAndEnqueue = async (input: CreateOfflineSaleInput) =
     status: 'pending',
     attempts: 0,
     createdAt: nowIso,
+    ownerUserId,
   };
 
   await offlineDb.transaction('rw', offlineDb.sales, offlineDb.outbox, async () => {
@@ -290,8 +294,11 @@ export const processOutboxQueue = async () => {
       .anyOf(['pending', 'retrying'])
       .sortBy('createdAt');
 
+    const signedInUserId = currentUserId();
     for (const item of queue) {
       if (getAuthSessionState().active === false) break;
+      // Someone else's sale waits for them: it must not be sent, and attributed, as ours.
+      if (belongsToAnotherUser(item, signedInUserId)) continue;
       if (item.nextRetryAt && item.nextRetryAt > nowIso) {
         continue;
       }
