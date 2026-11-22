@@ -31,6 +31,7 @@
     "doctrine/doctrine-bundle": "^3.0",
     "doctrine/doctrine-migrations-bundle": "^4.0",
     "doctrine/orm": "^3.5",
+    "dompdf/dompdf": "^3.1",
     "dragonmantank/cron-expression": "^3.3",
     "firebase/php-jwt": "^7.0",
     "greenter/consulta-cpe": "^1.1",
