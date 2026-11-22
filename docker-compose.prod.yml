@@ -1,5 +1,5 @@
 # worker_async and worker_scheduler run the same image with the same
-# environment (only S3_PUBLIC_URL differs) — shared here so the two don't
+# environment — shared here so the two don't
 # drift when an env var is added/changed for one but not the other.
 x-worker-env: &worker-env
   APP_ENV: ${APP_ENV:?set APP_ENV in .env.prod}
@@ -35,6 +35,7 @@ x-worker-env: &worker-env
   S3_ACCESS_SECRET: ${S3_ACCESS_SECRET}
   S3_BUCKET_REGION: ${S3_BUCKET_REGION}
   S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+  S3_PUBLIC_URL: ${S3_PUBLIC_URL}
   # Billing
   BILL_API_BASE_URL: ${BILL_API_BASE_URL}
   BILL_API_TOKEN: ${BILL_API_TOKEN}
@@ -91,6 +92,7 @@ services:
       S3_ACCESS_SECRET: ${S3_ACCESS_SECRET}
       S3_BUCKET_REGION: ${S3_BUCKET_REGION}
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       QZ_CERT_PATH: ${QZ_CERT_PATH:-/app/var/qz/qz_cert.pem}
       QZ_PRIVATE_KEY_PATH: ${QZ_PRIVATE_KEY_PATH:-/app/var/qz/qz_private.key}
@@ -188,6 +190,9 @@ services:
       S3_ACCESS_SECRET: ${S3_ACCESS_SECRET}
       S3_BUCKET_REGION: ${S3_BUCKET_REGION}
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      # Public base URL of the bucket/CDN (no bucket in the path). Required:
+      # .env ships in the image, so without this the app can't build asset URLs.
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL}
       # OPENAI
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       # QZ Tray signing
@@ -242,7 +247,6 @@ services:
         condition: service_healthy
     environment:
       <<: *worker-env
-      S3_PUBLIC_URL: ${S3_PUBLIC_URL}
       NUBIT_WORKER_HEARTBEAT_FILE: /app/var/worker-async.heartbeat
     extra_hosts:
       - 'host.docker.internal:host-gateway'
