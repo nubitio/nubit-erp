@@ -3295,24 +3295,6 @@ message = 'Docblock return type `ApiPlatform\State\Pagination\PartialPaginatorIn
 count = 1
 
 [[issues]]
-file = "src/Inventory/State/PriceListApplyProvider.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #1 of `App\Inventory\Dto\PriceListApplyDto::__construct`: expected `string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Inventory/State/PriceListApplyProvider.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #2 of `App\Inventory\Dto\PriceListApplyDto::__construct`: expected `string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "src/Inventory/State/PriceListApplyProvider.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
 file = "src/Inventory/State/PriceListProcessor.php"
 code = "incompatible-parameter-type"
 message = 'Parameter `$data` of `App\Inventory\State\PriceListProcessor::process()` expects type `App\Inventory\Dto\PricesDto` but parent `ApiPlatform\State\ProcessorInterface::process()` expects type `mixed`'
@@ -3323,12 +3305,6 @@ file = "src/Inventory/State/PriceListProvider.php"
 code = "docblock-type-mismatch"
 message = 'Docblock return type `ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|iterable<mixed, object>|null|object` is incompatible with native return type `array<array-key, mixed>|null|object`.'
 count = 1
-
-[[issues]]
-file = "src/Inventory/State/PriceListProvider.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 3
 
 [[issues]]
 file = "src/Inventory/State/StockEntryProcessor.php"
