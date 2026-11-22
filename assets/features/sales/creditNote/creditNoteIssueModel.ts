@@ -14,8 +14,6 @@ export const CREDIT_NOTE_REASONS = [
   { value: '12', text: 'Ajustes afectos al IVAP' },
 ] as const;
 
-export const FREQUENT_REASON_CODES = ['01', '06', '07', '05', '03'] as const;
-
 const ANNULLING_CODES: readonly string[] = ['01', '02', '06'];
 
 export const annulsDocument = (code: string) => ANNULLING_CODES.includes(code);
@@ -34,8 +32,17 @@ export interface OriginLine {
   [key: string]: unknown;
 }
 
-/** quantity by lineNumber, as the decimal text the user typed. */
-export type Returns = Record<number, string>;
+/** What the user chose to return of one line: the decimal text typed, and whether it goes back to stock. */
+export interface ReturnChoice {
+  quantity: string;
+  restock: boolean;
+}
+
+/** Choices by lineNumber; a missing key means the line is not returned. */
+export type Returns = Record<number, ReturnChoice>;
+
+/** SUNAT reason 07 is the physical return where the user decides what re-enters the warehouse. */
+export const choosesRestock = (code: string) => code === '07';
 
 const MICRO = 6;
 
@@ -71,8 +78,8 @@ export function isValidReturnQuantity(line: OriginLine, quantity: string): boole
 
 export function selectedLines(lines: readonly OriginLine[], returns: Returns) {
   return lines.filter((line) => {
-    const qty = returns[line.lineNumber];
-    return qty !== undefined && isValidReturnQuantity(line, qty);
+    const choice = returns[line.lineNumber];
+    return choice !== undefined && isValidReturnQuantity(line, choice.quantity);
   });
 }
 
@@ -95,7 +102,9 @@ export function creditNoteBlockedReason(origin: {
 }
 
 export function returnAllLines(lines: readonly OriginLine[]): Returns {
-  return Object.fromEntries(lines.map((line) => [line.lineNumber, line.quantity]));
+  return Object.fromEntries(
+    lines.map((line) => [line.lineNumber, { quantity: line.quantity, restock: true }]),
+  );
 }
 
 /**
@@ -106,7 +115,7 @@ export function returnSummary(lines: readonly OriginLine[], returns: Returns) {
   let total = 0n;
   let taxable = 0n;
   for (const line of selectedLines(lines, returns)) {
-    const cents = lineReturnCents(line, returns[line.lineNumber]!) ?? 0n;
+    const cents = lineReturnCents(line, returns[line.lineNumber]!.quantity) ?? 0n;
     const percent = toMicro(line.taxPercentage ?? '0') ?? 0n;
     const divisor = 100n * 10n ** BigInt(MICRO) + percent;
     const base = (cents * 100n * 10n ** BigInt(MICRO) * 2n + divisor) / (divisor * 2n);
@@ -143,7 +152,8 @@ export function buildCreditNotePayload(input: CreditNotePayloadInput) {
       const copy = Object.fromEntries(
         Object.entries(line).filter(([key]) => !OMITTED_LINE_FIELDS.includes(key)),
       );
-      return { ...copy, quantity: input.returns[line.lineNumber]! };
+      const choice = input.returns[line.lineNumber]!;
+      return { ...copy, quantity: choice.quantity, restock: choice.restock };
     }),
   };
 }
@@ -162,3 +172,28 @@ export function creditNoteIssueErrors(input: {
     errors.lines = 'Marca al menos un ítem con una cantidad válida.';
   return errors;
 }
+
+/** The compact form the draft and preview endpoints take: choices only, never amounts. */
+export function buildReturnChoices(lines: readonly OriginLine[], returns: Returns) {
+  return selectedLines(lines, returns).map((line) => ({
+    lineNumber: line.lineNumber,
+    quantity: returns[line.lineNumber]!.quantity,
+    restock: returns[line.lineNumber]!.restock,
+  }));
+}
+
+/** Restores the choices of a saved draft onto the lines the origin document has today. */
+export function returnsFromDraft(
+  lines: readonly OriginLine[],
+  saved: readonly { lineNumber: number; quantity: string; restock: boolean }[],
+): Returns {
+  const known = new Set(lines.map((line) => line.lineNumber));
+  return Object.fromEntries(
+    saved
+      .filter((row) => known.has(row.lineNumber))
+      .map((row) => [row.lineNumber, { quantity: row.quantity, restock: row.restock }]),
+  );
+}
+
+/** Zero-pads the correlative the way it is printed: 58 → 00000058. */
+export const padNumber = (number: string) => number.padStart(8, '0');

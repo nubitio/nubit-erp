@@ -11,6 +11,8 @@ use App\Billing\Dto\SeriesResultDto;
 use App\Billing\Entity\TaxDocument;
 use App\Billing\Entity\TaxDocumentLine;
 use App\Billing\Repository\TaxDocumentRepository;
+use App\Billing\Service\CreditNoteLinePreparer;
+use App\Billing\Service\CreditNoteReturnSelector;
 use App\Billing\Service\CreditNoteStockReverserInterface;
 use App\Billing\State\TaxDocumentProcessor;
 use App\Identity\Auth\BranchContextService;
@@ -368,7 +370,14 @@ final class TaxDocumentProcessorTest extends TestCase
         );
         $tenantSettings = $this->createStub(TenantSettingsService::class);
         $tenantSettings->method('getIgv')->willReturn(18.0);
-        $reflection->getProperty('tenantSettingsService')->setValue($processor, $tenantSettings);
+        $reflection->getProperty('creditNoteLinePreparer')->setValue(
+            $processor,
+            new CreditNoteLinePreparer(
+                $this->taxDocumentRepository,
+                $tenantSettings,
+                new CreditNoteReturnSelector($this->taxDocumentRepository),
+            ),
+        );
 
         return $processor;
     }

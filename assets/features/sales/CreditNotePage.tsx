@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/refs -- CRUD toolbar action handlers intentionally read Grid/Form refs inside callbacks, not during render. */
 import { useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 
 const API = getCoreApiBaseUrl();
@@ -11,7 +12,9 @@ import {
   type GridHandle,
 } from '@nubitio/crud';
 import { CreditNoteDetailFields, CreditNoteFields } from './CreditNoteFields';
+import { CreditNoteTabs } from './creditNote/CreditNoteTabs';
 import toast from '@shared/lib/SharedUtils';
+import { hasPermission } from '@shared/permissions';
 import { useEvents } from '@nubitio/core';
 import type { CreditNoteRow } from './lib/creditNoteActions';
 import {
@@ -50,6 +53,7 @@ const CREDIT_NOTE_COLUMN_PRESETS = [
 
 export const CreditNotePage = () => {
   const [on] = useEvents();
+  const navigate = useNavigate();
   const gridRef = useRef<GridHandle | null>(null);
   const formRef = useRef<FormHandle | null>(null);
   const { editDisabled, deleteDisabled, handleSelectionChanged } = useCreditNoteSelectionState();
@@ -117,8 +121,21 @@ export const CreditNotePage = () => {
           allowUpdating: true,
           required: true,
         },
-        permissions: { canAdd: true, canEdit: true, canDelete: true },
+        // Issuing happens on its own screen, which re-derives every amount from the affected
+        // document, so the generic "Nuevo" form is replaced by a button that opens it.
+        permissions: { canAdd: false, canEdit: true, canDelete: true },
         toolbar: {
+          primary: hasPermission('sales.void')
+            ? [
+                {
+                  key: 'issue',
+                  text: 'Nueva nota',
+                  icon: 'ph-plus',
+                  type: 'primary',
+                  onClick: () => navigate('/billing/credit-notes/new'),
+                },
+              ]
+            : [],
           selection: [
             {
               text: 'Ver',
@@ -158,17 +175,20 @@ export const CreditNotePage = () => {
           ],
         },
       }),
-    [actionDeps],
+    [actionDeps, navigate],
   );
 
   return (
-    <SchemaCrudPage
-      resource={resource}
-      formRef={formRef}
-      gridRef={gridRef}
-      editDisabled={editDisabled}
-      deleteDisabled={deleteDisabled}
-      onSelectionChanged={handleSelectionChanged}
-    />
+    <>
+      <CreditNoteTabs active="history" />
+      <SchemaCrudPage
+        resource={resource}
+        formRef={formRef}
+        gridRef={gridRef}
+        editDisabled={editDisabled}
+        deleteDisabled={deleteDisabled}
+        onSelectionChanged={handleSelectionChanged}
+      />
+    </>
   );
 };

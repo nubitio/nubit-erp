@@ -153,6 +153,12 @@ class TaxDocumentLine
     #[ORM\Column(name: 'tax_type', type: Types::STRING, length: 4, nullable: true)]
     private ?string $taxType = null;
 
+    /** Credit-note lines only: whether the returned goods go back into the warehouse stock. */
+    #[Groups(['tax_document_line:read', 'creditnote:write'])]
+    #[ApiProperty(openapiContext: ['x-crud' => ['showInForm' => false, 'hideInGrid' => true]])]
+    #[ORM\Column(name: 'restock', type: Types::BOOLEAN, options: ['default' => true])]
+    private bool $restock = true;
+
     #[Groups(['tax_document_line:read'])]
     #[ApiProperty(description: 'tax_document_line.total.label', openapiContext: ['x-crud' => [
         'order' => 4,
@@ -332,6 +338,18 @@ class TaxDocumentLine
     public function setTaxPercentage(?string $taxPercentage): static
     {
         $this->taxPercentage = $taxPercentage;
+
+        return $this;
+    }
+
+    public function isRestock(): bool
+    {
+        return $this->restock;
+    }
+
+    public function setRestock(bool $restock): static
+    {
+        $this->restock = $restock;
 
         return $this;
     }

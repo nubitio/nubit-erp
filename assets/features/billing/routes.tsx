@@ -53,6 +53,7 @@ export const billingRoutes: AppRouteDefinition[] = [
       { path: 'price-review', element: PriceReviewPage },
       { path: 'documents', element: InvoicePage },
       { path: 'documents/:id?', element: InvoicePage },
+      { path: 'credit-notes/new', element: CreditNoteIssuePage },
       { path: 'credit-notes/new/:documentId', element: CreditNoteIssuePage },
       { path: 'credit-notes', element: CreditNotePage },
       { path: 'credit-notes/:id?', element: CreditNotePage },

@@ -13799,6 +13799,11 @@ export interface components {
              * @default 0.000000
              */
             unitPrice: string;
+            /**
+             * @description Credit-note lines only: whether the returned goods go back into the warehouse stock.
+             * @default true
+             */
+            restock: boolean;
         };
         "TaxDocumentLine-tax_document_line.read": {
             readonly id?: number;
@@ -13834,6 +13839,11 @@ export interface components {
             taxPercentage?: string | null;
             /** @description tax_document_line.tax_type.label */
             taxType?: string | null;
+            /**
+             * @description Credit-note lines only: whether the returned goods go back into the warehouse stock.
+             * @default true
+             */
+            restock: boolean;
             /**
              * @description tax_document_line.total.label
              * @default 0.00
@@ -13879,6 +13889,11 @@ export interface components {
             taxPercentage?: string | null;
             /** @description tax_document_line.tax_type.label */
             taxType?: string | null;
+            /**
+             * @description Credit-note lines only: whether the returned goods go back into the warehouse stock.
+             * @default true
+             */
+            restock: boolean;
             /**
              * @description tax_document_line.total.label
              * @default 0.00

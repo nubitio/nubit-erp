@@ -8,17 +8,13 @@ use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Billing\Entity\TaxDocument;
-use App\Billing\Entity\TaxDocumentLine;
 use App\Billing\Repository\TaxDocumentRepository;
+use App\Billing\Service\CreditNoteLinePreparer;
 use App\Billing\Service\CreditNoteStockReverserInterface;
-use App\Billing\Service\InvoiceCalculator;
-use App\Billing\Service\InvoiceLineInput;
 use App\Billing\Shared\Enum\CreditNoteReason;
 use App\Identity\Auth\BranchContextService;
 use App\Organization\Repository\BranchRepository;
 use App\Sales\State\SalesWriteGateway;
-use App\Settings\Service\TenantSettingsService;
-use Brick\Math\Exception\MathException;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Nubit\Platform\Exception\ServiceException;
@@ -45,7 +41,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         private SalesWriteGateway $salesWriteGateway,
         private EntityManagerInterface $entityManager,
         private CreditNoteStockReverserInterface $creditNoteStockReverser,
-        private TenantSettingsService $tenantSettingsService,
+        private CreditNoteLinePreparer $creditNoteLinePreparer,
     ) {}
 
     /**
@@ -123,7 +119,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
                 }
                 $data->setSeries($seriesResult->series);
                 $data->setNumber((string) $number);
-                $this->prepareCreditNoteLines($data);
+                $this->creditNoteLinePreparer->prepare($data);
 
                 // Propagate sale reference from related document to new credit note
                 if ($related->getSaleRecord() !== null) {
@@ -169,151 +165,6 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
                 $connection->fetchOne('SELECT RELEASE_LOCK(:lockName)', ['lockName' => $lockName]);
             }
         }
-    }
-
-    /**
-     * @throws ServiceException
-     * @throws MathException
-     */
-    private function prepareCreditNoteLines(TaxDocument $data): void
-    {
-        $related = $data->getRelatedTaxDocument();
-        if ($related === null) {
-            throw new ServiceException('Debe seleccionar el comprobante afectado.');
-        }
-
-        $requestedLines = [];
-        foreach ($data->getLines() as $line) {
-            $lineNumber = $line->getLineNumber();
-            $requestedLines[$lineNumber] ??= ['lineNumber' => $lineNumber, 'quantity' => 0.0];
-            $requestedLines[$lineNumber]['quantity'] += (float) $line->getQuantity();
-        }
-        $requestedLines = array_values($requestedLines);
-
-        foreach ($data->getLines()->toArray() as $line) {
-            $data->removeLine($line);
-        }
-
-        if ($requestedLines === []) {
-            throw new ServiceException('Debe seleccionar al menos un ítem para la nota de crédito.');
-        }
-
-        $originalLines = $related->getLines();
-
-        if ($originalLines->isEmpty()) {
-            throw new ServiceException('El comprobante afectado no tiene ítems registrados.');
-        }
-
-        $originalByLine = [];
-        foreach ($originalLines as $line) {
-            $originalByLine[$line->getLineNumber()] = $line;
-        }
-
-        $selected = [];
-        foreach ($requestedLines as $req) {
-            $lineNumber = (int) $req['lineNumber'];
-            $requestedQty = (float) $req['quantity'];
-            if ($requestedQty <= 0) {
-                continue;
-            }
-            $original = $originalByLine[$lineNumber] ?? null;
-            if (!$original instanceof TaxDocumentLine) {
-                throw new ServiceException('El ítem seleccionado no existe en el comprobante afectado.');
-            }
-            $originalQty = (float) $original->getQuantity();
-            $alreadyReturned = in_array($data->getReasonCode(), ['01', '02', '06', '07'], true)
-                ? $this->taxDocumentRepository->getReturnedQuantity($related, $lineNumber)
-                : 0.0;
-            if (($requestedQty + $alreadyReturned) > $originalQty) {
-                throw new ServiceException('La cantidad a devolver no puede exceder la cantidad del comprobante.');
-            }
-            $selected[] = [
-                'original' => $original,
-                'quantity' => $requestedQty,
-            ];
-        }
-
-        if ($selected === []) {
-            throw new ServiceException('Debe seleccionar al menos un ítem para la nota de crédito.');
-        }
-
-        // Source percentages from related TaxDocument (v2-authoritative path)
-        $discountPercent = $related->getDiscountPercent() ?? '0';
-        $firstLine = $related->getLines()->first();
-        $taxPercent =
-            ($firstLine !== false ? $firstLine->getTaxPercentage() : null)
-            ?? (string) $this->tenantSettingsService->getIgv();
-        $chargesPercent = '0';
-
-        $lineInputs = array_map(
-            static fn(array $item): InvoiceLineInput => new InvoiceLineInput(
-                quantity: (string) $item['quantity'],
-                unitPrice: (string) $item['original']->getUnitPrice(),
-            ),
-            $selected,
-        );
-
-        $calculator = new InvoiceCalculator($lineInputs, $discountPercent, $taxPercent, $chargesPercent);
-        $amounts = $calculator->calculate();
-        $amountLines = $amounts->getLines();
-
-        foreach ($selected as $index => $item) {
-            $amountLine = $amountLines[$index] ?? null;
-            if ($amountLine === null) {
-                continue;
-            }
-            $original = $item['original'];
-            $line = new TaxDocumentLine();
-            $line->setLineNumber($original->getLineNumber());
-            $line->setProductId($original->getProductId());
-            $line->setProductCode($original->getProductCode());
-            $line->setProductName($original->getProductName());
-            $line->setProductUom($original->getProductUom());
-            $line->setQuantity($amountLine->quantity);
-            $line->setUnitPrice($amountLine->unitPrice);
-            $line->setUnitValue($amountLine->unitValue);
-            $line->setDiscountAmount($amountLine->discountAmount);
-            $line->setTaxedAmount($amountLine->taxableAmount);
-            $line->setTaxAmount($amountLine->taxAmount);
-            $line->setTaxPercentage($taxPercent);
-            $line->setTaxType($original->getTaxType() ?? '10');
-            $line->setTotal($amountLine->totalAmount);
-            $data->addLine($line);
-        }
-
-        $data->setTotal($amounts->getTotal());
-
-        // Source currency: prefer related TaxDocument columns; fall back to sales table lookup
-        $saleId = $related->getCanonicalSaleId();
-        $saleCurrencyData = $this->taxDocumentRepository->getSalesCurrencyForSaleId($saleId);
-        $currency = $related->getCurrency() ?? $saleCurrencyData['currency'] ?? 'PEN';
-        $exchangeRate = $related->getExchangeRate() ?? $saleCurrencyData['exchange_rate'];
-        if ($currency === 'PEN') {
-            $exchangeRate = '1.000000';
-        }
-        if ($currency !== 'PEN' && ($exchangeRate === null || $exchangeRate === '')) {
-            throw new ServiceException('No se pudo determinar el tipo de cambio para el documento');
-        }
-        $data->setCurrency($currency);
-        $data->setExchangeRate($exchangeRate);
-
-        // Source remaining fields from related TaxDocument (v2-authoritative path)
-        $data->setPaymentMethod($related->getPaymentMethod());
-        $data->setDiscountPercent($related->getDiscountPercent() ?? '0');
-        $data->setOperationType($related->getOperationType());
-        $data->setDetractionCode($related->getDetractionCode());
-        $data->setDetractionPercent($related->getDetractionPercent());
-        $data->setDetractionAmount($related->getDetractionAmount());
-        $data->setDetractionPaymentMethod($related->getDetractionPaymentMethod());
-        $data->setDetractionValueRef($related->getDetractionValueRef());
-
-        $data->setSubtotal($amounts->getSubtotal());
-        $data->setTaxableAmount($amounts->getTaxedAmount());
-        $data->setIgvAmount($amounts->getTax());
-        $data->setRcAmount($amounts->getChargesAmount());
-        $data->setDiscountAmount($amounts->getDiscountAmount());
-
-        return;
     }
 
     /**
