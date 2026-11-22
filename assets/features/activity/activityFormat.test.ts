@@ -4,6 +4,7 @@ import {
   activityIcon,
   buildActivityQuery,
   DEFAULT_FILTERS,
+  filtersFromUrl,
   formatTime,
   groupByDay,
   rangeToDates,
@@ -124,5 +125,23 @@ describe('summaryTone', () => {
   it('flags failures and leaves the rest neutral', () => {
     expect(summaryTone('auth.login_failed')).toBe('danger');
     expect(summaryTone('auth.login')).toBe('default');
+  });
+});
+
+describe('filtersFromUrl', () => {
+  it('presets the filters a link carries', () => {
+    expect(filtersFromUrl(new URLSearchParams('actor=ana&type=all&range=all'))).toEqual({
+      ...DEFAULT_FILTERS,
+      actor: 'ana',
+      type: 'all',
+      range: 'all',
+    });
+  });
+
+  it('keeps the defaults for a missing or unknown value', () => {
+    expect(filtersFromUrl(new URLSearchParams(''))).toEqual(DEFAULT_FILTERS);
+    expect(filtersFromUrl(new URLSearchParams('type=nonsense&range=yesterday'))).toEqual(
+      DEFAULT_FILTERS,
+    );
   });
 });

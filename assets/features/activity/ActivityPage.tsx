@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Alert,
   AppDropdown,
@@ -7,6 +8,9 @@ import {
   Cluster,
   EmptyState,
   KpiMetricRow,
+  Page,
+  PageHeader,
+  Section,
   Skeleton,
   Stack,
   Text,
@@ -15,7 +19,7 @@ import {
 
 import { ActivityEntry } from './ActivityEntry';
 import {
-  DEFAULT_FILTERS,
+  filtersFromUrl,
   groupByDay,
   RANGE_OPTIONS,
   summaryTone,
@@ -45,9 +49,10 @@ function useDebounced<T>(value: T, delay: number): T {
   return debounced;
 }
 
-/** "Usuarios y permisos › Actividad": who did what, newest first. Read-only. */
+/** "Administración › Actividad": who did what, newest first. Read-only. */
 export function ActivityPage() {
-  const [filters, setFilters] = useState<ActivityFilters>(DEFAULT_FILTERS);
+  const [params] = useSearchParams();
+  const [filters, setFilters] = useState<ActivityFilters>(() => filtersFromUrl(params));
   const [searchText, setSearchText] = useState('');
   const search = useDebounced(searchText, SEARCH_DEBOUNCE_MS);
   const effective = useMemo(() => ({ ...filters, search }), [filters, search]);
@@ -74,126 +79,134 @@ export function ActivityPage() {
   const summaryItems = summary.data?.items ?? [];
 
   return (
-    <Stack gap={4} fill data-testid="activity-page">
+    <Page wide gap={4} data-testid="activity-page">
+      <PageHeader
+        title="Actividad"
+        subtitle="Quién hizo qué en el sistema, de lo más reciente a lo más antiguo."
+        actions={
+          <Button
+            variant="secondary"
+            icon="ph ph-download-simple"
+            onClick={() => window.location.assign(activityExportUrl(effective))}
+          >
+            Exportar
+          </Button>
+        }
+      />
+
       <section aria-label="Resumen de la semana" data-testid="activity-summary">
-        <Text tone="muted" className="activity-eyebrow">
-          Esta semana
-        </Text>
-        {summary.isPending || summaryItems.length > 0 ? (
-          <KpiMetricRow
-            layout="strip"
-            density="compact"
-            loading={summary.isPending}
-            items={summaryItems.map((entry) => ({
-              label: entry.label,
-              value: entry.count,
-              tone: summaryTone(entry.type),
-            }))}
-          />
-        ) : (
-          <Text tone="muted">Sin actividad registrada esta semana.</Text>
-        )}
+        <Section title="Esta semana" variant="panel">
+          {summary.isPending || summaryItems.length > 0 ? (
+            <KpiMetricRow
+              layout="cards"
+              density="compact"
+              loading={summary.isPending}
+              items={summaryItems.map((entry) => ({
+                label: entry.label,
+                value: entry.count,
+                tone: summaryTone(entry.type),
+              }))}
+            />
+          ) : (
+            <Text tone="muted">Sin actividad registrada esta semana.</Text>
+          )}
+        </Section>
       </section>
 
-      <Cluster gap={2}>
-        <div className="activity-search">
-          <TextField
-            type="search"
-            aria-label="Buscar en la actividad"
-            placeholder="Buscar por usuario, rol o palabra"
-            value={searchText}
-            onChange={(event) => setSearchText(event.target.value)}
-          />
-        </div>
-        <AppDropdown
-          variant="toolbar"
-          ariaLabel="Tipo"
-          icon="ph ph-funnel"
-          value={filters.type}
-          options={TYPE_OPTIONS.map((option) => ({
-            ...option,
-            selectedLabel: `Tipo: ${option.label}`,
-          }))}
-          onChange={(value) => set('type', value as ActivityTypeFilter)}
-        />
-        <AppDropdown
-          variant="toolbar"
-          ariaLabel="Usuario"
-          icon="ph ph-user"
-          value={filters.actor}
-          options={actorOptions}
-          onChange={(value) => set('actor', value)}
-        />
-        <AppDropdown
-          variant="toolbar"
-          ariaLabel="Fecha"
-          icon="ph ph-calendar-blank"
-          value={filters.range}
-          options={RANGE_OPTIONS}
-          onChange={(value) => set('range', value as ActivityRange)}
-        />
-        <Button
-          variant="secondary"
-          icon="ph ph-download-simple"
-          onClick={() => window.location.assign(activityExportUrl(effective))}
-        >
-          Exportar
-        </Button>
-      </Cluster>
-
       <Card variant="panel">
-        <section aria-label="Actividad" className="activity-feed">
-          {list.isError ? (
-            <Alert tone="danger">
-              No se pudo cargar la actividad.{' '}
-              <Button variant="secondary" size="sm" onClick={() => void list.refetch()}>
-                Reintentar
-              </Button>
-            </Alert>
-          ) : list.isPending ? (
-            <div role="status" aria-label="Cargando actividad">
-              <Skeleton variant="text" lines={6} />
-            </div>
-          ) : groups.length === 0 ? (
-            <div data-testid="activity-empty">
-              <EmptyState
-                icon="clock-counter-clockwise"
-                title="No hay actividad con estos filtros"
-                description="Prueba con otro tipo, otro usuario o un rango de fechas más amplio."
-                size="sm"
+        <Stack gap={4}>
+          <Cluster gap={2} className="activity-filters">
+            <div className="activity-search">
+              <TextField
+                type="search"
+                aria-label="Buscar en la actividad"
+                placeholder="Buscar por usuario, rol o palabra"
+                value={searchText}
+                onChange={(event) => setSearchText(event.target.value)}
               />
             </div>
-          ) : (
-            groups.map((group) => (
-              <div key={group.key} className="activity-day">
-                <h3 className="activity-day__heading">{group.heading}</h3>
-                <ul className="activity-list">
-                  {group.items.map((entry) => (
-                    <ActivityEntry key={entry.id} entry={entry} />
-                  ))}
-                </ul>
+            <AppDropdown
+              variant="toolbar"
+              ariaLabel="Tipo"
+              icon="ph ph-funnel"
+              value={filters.type}
+              options={TYPE_OPTIONS.map((option) => ({
+                ...option,
+                selectedLabel: `Tipo: ${option.label}`,
+              }))}
+              onChange={(value) => set('type', value as ActivityTypeFilter)}
+            />
+            <AppDropdown
+              variant="toolbar"
+              ariaLabel="Usuario"
+              icon="ph ph-user"
+              value={filters.actor}
+              options={actorOptions}
+              onChange={(value) => set('actor', value)}
+            />
+            <AppDropdown
+              variant="toolbar"
+              ariaLabel="Fecha"
+              icon="ph ph-calendar-blank"
+              value={filters.range}
+              options={RANGE_OPTIONS}
+              onChange={(value) => set('range', value as ActivityRange)}
+            />
+          </Cluster>
+
+          <section aria-label="Actividad" className="activity-feed">
+            {list.isError ? (
+              <Alert tone="danger">
+                No se pudo cargar la actividad.{' '}
+                <Button variant="secondary" size="sm" onClick={() => void list.refetch()}>
+                  Reintentar
+                </Button>
+              </Alert>
+            ) : list.isPending ? (
+              <div role="status" aria-label="Cargando actividad">
+                <Skeleton variant="text" lines={6} />
               </div>
-            ))
-          )}
+            ) : groups.length === 0 ? (
+              <div data-testid="activity-empty">
+                <EmptyState
+                  icon="clock-counter-clockwise"
+                  title="No hay actividad con estos filtros"
+                  description="Prueba con otro tipo, otro usuario o un rango de fechas más amplio."
+                  size="sm"
+                />
+              </div>
+            ) : (
+              groups.map((group) => (
+                <div key={group.key} className="activity-day">
+                  <h3 className="activity-day__heading">{group.heading}</h3>
+                  <ul className="activity-list">
+                    {group.items.map((entry) => (
+                      <ActivityEntry key={entry.id} entry={entry} />
+                    ))}
+                  </ul>
+                </div>
+              ))
+            )}
 
-          {list.hasNextPage ? (
-            <div className="activity-more">
-              <Button
-                variant="secondary"
-                loading={list.isFetchingNextPage}
-                onClick={() => void list.fetchNextPage()}
-              >
-                Ver más ({total - items.length} restantes)
-              </Button>
-            </div>
-          ) : null}
+            {list.hasNextPage ? (
+              <div className="activity-more">
+                <Button
+                  variant="secondary"
+                  loading={list.isFetchingNextPage}
+                  onClick={() => void list.fetchNextPage()}
+                >
+                  Ver más ({total - items.length} restantes)
+                </Button>
+              </div>
+            ) : null}
 
-          <Text tone="muted" className="activity-note">
-            <i className="ph ph-shield-check" aria-hidden="true" /> Este registro no se puede editar
-            ni borrar desde el sistema.
-          </Text>
-        </section>
+            <Text tone="muted" className="activity-note">
+              <i className="ph ph-shield-check" aria-hidden="true" /> Este registro no se puede
+              editar ni borrar desde el sistema.
+            </Text>
+          </section>
+        </Stack>
       </Card>
-    </Stack>
+    </Page>
   );
 }

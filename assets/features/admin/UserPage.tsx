@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ResourceStoreProvider,
@@ -46,10 +47,12 @@ export const UserPage = () => {
 
 const UsersGrid = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const gridRef = useRef<GridHandle>(null);
   const { ask, ConfirmHost } = useConfirm();
   const canReset = Boolean(window.app_identity) && hasPermission('users.edit');
   const canInvite = Boolean(window.app_identity) && hasPermission('users.create');
+  const canSeeActivity = hasPermission('activity.view');
   const [inviteOpen, setInviteOpen] = useState(false);
   const { resend, revoke, busy } = usePendingInvitationActions(() => gridRef.current?.refresh());
 
@@ -124,27 +127,52 @@ const UsersGrid = () => {
               ]
             : [];
         }
-        return canReset && row.username && withSecondFactor?.includes(row.username)
-          ? [
-              {
-                key: 'reset-2fa',
-                text: 'Restablecer 2FA',
-                icon: 'ph-shield-slash',
-                type: 'warning',
-                onClick: () =>
-                  ask({
-                    title: 'Restablecer verificación en dos pasos',
-                    message: `${row.username} podrá entrar solo con su contraseña y tendrá que activarla de nuevo. Úsalo si perdió su teléfono y sus códigos de recuperación.`,
-                    variant: 'warning',
-                    confirmLabel: 'Restablecer',
-                    onConfirm: () => reset.mutate(row),
-                  }),
-              },
-            ]
-          : [];
+        const username = row.username;
+        if (!username) return [];
+        const actions = [];
+        if (canSeeActivity) {
+          actions.push({
+            key: 'activity',
+            text: 'Ver actividad',
+            icon: 'ph-clock-counter-clockwise',
+            // Everything this user did, not only the sensitive events of the last week.
+            onClick: () =>
+              navigate(
+                `/config/activity?${new URLSearchParams({ actor: username, type: 'all', range: 'all' })}`,
+              ),
+          });
+        }
+        if (canReset && withSecondFactor?.includes(username)) {
+          actions.push({
+            key: 'reset-2fa',
+            text: 'Restablecer 2FA',
+            icon: 'ph-shield-slash',
+            type: 'warning',
+            onClick: () =>
+              ask({
+                title: 'Restablecer verificación en dos pasos',
+                message: `${username} podrá entrar solo con su contraseña y tendrá que activarla de nuevo. Úsalo si perdió su teléfono y sus códigos de recuperación.`,
+                variant: 'warning',
+                confirmLabel: 'Restablecer',
+                onConfirm: () => reset.mutate(row),
+              }),
+          });
+        }
+        return actions;
       },
     }),
-    [canReset, canInvite, withSecondFactor, ask, reset, resend, revoke, busy],
+    [
+      canReset,
+      canInvite,
+      canSeeActivity,
+      navigate,
+      withSecondFactor,
+      ask,
+      reset,
+      resend,
+      revoke,
+      busy,
+    ],
   );
 
   return (
