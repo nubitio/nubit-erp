@@ -32,6 +32,18 @@ export const DEFAULT_FILTERS: ActivityFilters = {
   search: '',
 };
 
+/** The filters a link can preset: `?actor=ana&type=all&range=30d`. Anything unknown keeps the default. */
+export function filtersFromUrl(params: URLSearchParams): ActivityFilters {
+  const pick = <T extends string>(value: string | null, options: { value: T }[], fallback: T): T =>
+    options.find((option) => option.value === value)?.value ?? fallback;
+  return {
+    ...DEFAULT_FILTERS,
+    actor: params.get('actor') ?? DEFAULT_FILTERS.actor,
+    type: pick(params.get('type'), TYPE_OPTIONS, DEFAULT_FILTERS.type),
+    range: pick(params.get('range'), RANGE_OPTIONS, DEFAULT_FILTERS.range),
+  };
+}
+
 export const TYPE_OPTIONS: { value: ActivityTypeFilter; label: string }[] = [
   { value: 'sensitive', label: 'Solo sensibles' },
   { value: 'all', label: 'Todos' },
