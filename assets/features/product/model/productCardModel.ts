@@ -45,6 +45,8 @@ export function productCardModel(row: Readonly<Record<string, unknown>>) {
           : 'Sin SKU',
     price: formatMoney(row.salePrice, String(row.currency ?? 'PEN')),
     stockLabel,
+    /** False when the payload carries no usable quantity: the card then omits the stock line. */
+    showStock: tracksStock && stock !== null,
     tone: tone as 'secondary' | 'danger' | 'warning' | 'success',
   };
 }

@@ -4,37 +4,98 @@
   width: 100%;
 }
 
-.product-catalog-card {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  color: var(--text-primary);
-  gap: var(--space-2);
+// Horizontal card: square image on the left, text on the right, and a footer
+// row (price + stock) under a divider. The grid library wraps media and copy in
+// one button, so both wrappers are flattened (display: contents) and every piece
+// is placed on that button's grid.
+.nb-datagrid__card-open:has(.product-catalog-card) {
+  align-items: center;
+  column-gap: var(--space-3);
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  padding: var(--space-3);
+  row-gap: var(--space-1);
 
-  &__category,
-  &__code {
-    color: var(--text-secondary);
-    font-size: var(--font-size-xs);
+  .nb-datagrid__card-copy,
+  .product-catalog-card {
+    display: contents;
   }
+
+  // Photos of any proportion fill the square; the placeholder icon stays contained.
+  .nb-datagrid__card-media > img {
+    height: 100%;
+    object-fit: cover;
+    width: 100%;
+  }
+
+  .nb-datagrid__card-media {
+    aspect-ratio: 1;
+    border-radius: var(--radius-lg);
+    grid-column: 1;
+    grid-row: 1 / span 3;
+    height: auto;
+    width: 100%;
+  }
+}
+
+.nb-datagrid__card--media .nb-datagrid__card-copy {
+  padding: 0;
+}
+
+.product-catalog-card {
+  color: var(--text-primary);
 
   &__category {
     background: var(--surface-2);
     border-radius: var(--radius-pill);
-    padding: var(--space-1) var(--space-2);
+    color: var(--text-secondary);
     font-size: var(--font-size-xs);
+    grid-column: 2;
+    justify-self: start;
     max-width: 100%;
-    overflow-wrap: anywhere;
+    overflow: hidden;
+    padding: 0 var(--space-2);
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__name {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-md);
     font-weight: var(--font-weight-semibold);
-    line-height: var(--line-height-normal);
+    grid-column: 2;
+    line-height: var(--line-height-tight);
+    overflow-wrap: anywhere;
+    padding-right: var(--space-6);
+  }
+
+  &__code {
+    align-items: center;
+    color: var(--text-secondary);
+    display: flex;
+    font-size: var(--font-size-xs);
+    gap: var(--space-1);
+    grid-column: 2;
+    min-width: 0;
     overflow-wrap: anywhere;
   }
+
+  &__footer {
+    align-items: center;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    gap: var(--space-3);
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+  }
+
   &__price {
-    font-size: var(--font-size-xl);
-    line-height: var(--line-height-normal);
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-lg);
+    line-height: var(--line-height-tight);
+    padding: var(--space-1) var(--space-3);
   }
 
   &__stock {
@@ -47,10 +108,13 @@
   &__stock--warning {
     color: var(--status-warning-text);
   }
+  &__stock--success {
+    color: var(--status-success-text, var(--text-secondary));
+  }
 
   &__placeholder {
-    display: flex;
     align-items: center;
+    display: flex;
     justify-content: center;
   }
 }
