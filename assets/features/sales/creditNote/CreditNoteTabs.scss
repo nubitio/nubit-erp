@@ -1,9 +1,0 @@
-.credit-note-tabs {
-  // Pull the title below closer: the tab line and the title divider read as one header.
-  margin-bottom: calc(-1 * var(--space-3));
-
-  // A Page already pads its content; the CRUD grid starts at the shell's 2rem gutter.
-  &--grid {
-    padding: var(--space-3) 2rem 0;
-  }
-}

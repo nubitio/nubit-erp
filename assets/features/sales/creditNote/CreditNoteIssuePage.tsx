@@ -5,6 +5,7 @@ import {
   Alert,
   Badge,
   Button,
+  ButtonLink,
   Card,
   Checkbox,
   Combobox,
@@ -18,7 +19,6 @@ import {
   QuantityStepper,
   Section,
   TextAreaField,
-  Toggle,
   type ComboboxOption,
   type DataTableColumn,
 } from '@nubitio/ui';
@@ -30,7 +30,6 @@ import { hydraMembers, type HydraCollection } from '@shared/api/hydraCollection'
 import { hasPermission } from '@shared/permissions';
 import toast from '@shared/lib/SharedUtils';
 import { sunatStatus } from '../sunat/sunatStatus';
-import { CreditNoteTabs } from './CreditNoteTabs';
 import {
   deleteDraft,
   fetchDraft,
@@ -193,8 +192,6 @@ export function CreditNoteIssuePage() {
   const showRestock = choosesRestock(reasonCode);
   const errors = creditNoteIssueErrors({ reasonCode, reasonDescription, lines, returns });
   const summary = returnSummary(lines, returns);
-  const chosen = Object.values(returns);
-  const allRestock = chosen.length > 0 && chosen.every((choice) => choice.restock);
 
   const loadDocuments = async (query: string, { signal }: { signal: AbortSignal }) => ({
     options: (await searchEligibleDocuments(query, signal)).map(documentOption),
@@ -228,12 +225,6 @@ export function CreditNoteIssuePage() {
       current[line.lineNumber]
         ? { ...current, [line.lineNumber]: { ...current[line.lineNumber]!, restock } }
         : current,
-    );
-  const setAllRestock = (restock: boolean) =>
-    setReturns((current) =>
-      Object.fromEntries(
-        Object.entries(current).map(([key, choice]) => [key, { ...choice, restock }]),
-      ),
     );
 
   const issue = useMutation({
@@ -318,8 +309,12 @@ export function CreditNoteIssuePage() {
 
   const header = (
     <>
-      <CreditNoteTabs active="issue" />
       <PageHeader
+        actions={
+          <ButtonLink as={Link} to="/billing/credit-notes" variant="secondary">
+            Ver historial
+          </ButtonLink>
+        }
         title="Emitir nota de crédito"
         subtitle="Anula, corrige o devuelve un comprobante de venta con una nota de crédito electrónica (SUNAT)."
       />
@@ -650,21 +645,10 @@ export function CreditNoteIssuePage() {
             )}
             {submitted && errors.lines && <Alert tone="danger">{errors.lines}</Alert>}
             {showRestock && (
-              <div className="credit-note-issue__restock">
-                <Toggle
-                  checked={allRestock}
-                  disabled={chosen.length === 0}
-                  onChange={setAllRestock}
-                  aria-label="Reintegrar stock"
-                />
-                <span>
-                  <strong>Reintegrar stock</strong>
-                  <small>
-                    Los productos devueltos se reingresarán al inventario del almacén de origen.
-                    Desmarca los que no deben volver (dañados o descartados).
-                  </small>
-                </span>
-              </div>
+              <p className="credit-note-issue__hint">
+                Los productos marcados vuelven al inventario del almacén de origen. Desmarca los que
+                no deben volver (dañados o descartados).
+              </p>
             )}
             {annulsDocument(reasonCode) && (
               <div className="credit-note-issue__restock">
@@ -676,39 +660,39 @@ export function CreditNoteIssuePage() {
             )}
           </Section>
         </Card>
+        <div className="credit-note-issue__footer">
+          <Button
+            variant="secondary"
+            icon="ph ph-floppy-disk"
+            loading={saving.isPending}
+            onClick={() => saving.mutate()}
+            data-testid="credit-note-save-draft"
+          >
+            Guardar borrador
+          </Button>
+          <span className="credit-note-issue__footer-spacer" />
+          <Button
+            variant="secondary"
+            icon="ph ph-eye"
+            loading={previewing.isPending}
+            disabled={!previewable}
+            onClick={() => previewing.mutate()}
+            data-testid="credit-note-preview"
+          >
+            Vista previa
+          </Button>
+          <Button
+            variant="primary"
+            icon="ph ph-paper-plane-tilt"
+            loading={issue.isPending}
+            disabled={Boolean(blocked) || numberQuery.isError}
+            onClick={submit}
+            data-testid="credit-note-submit"
+          >
+            Emitir nota de crédito
+          </Button>
+        </div>
       </DetailLayout>
-      <div className="credit-note-issue__footer">
-        <Button
-          variant="secondary"
-          icon="ph ph-floppy-disk"
-          loading={saving.isPending}
-          onClick={() => saving.mutate()}
-          data-testid="credit-note-save-draft"
-        >
-          Guardar borrador
-        </Button>
-        <span className="credit-note-issue__footer-spacer" />
-        <Button
-          variant="secondary"
-          icon="ph ph-eye"
-          loading={previewing.isPending}
-          disabled={!previewable}
-          onClick={() => previewing.mutate()}
-          data-testid="credit-note-preview"
-        >
-          Vista previa
-        </Button>
-        <Button
-          variant="primary"
-          icon="ph ph-paper-plane-tilt"
-          loading={issue.isPending}
-          disabled={Boolean(blocked) || numberQuery.isError}
-          onClick={submit}
-          data-testid="credit-note-submit"
-        >
-          Emitir nota de crédito
-        </Button>
-      </div>
       <ConfirmDialog
         open={confirmingAnnul}
         title="Anular la venta"

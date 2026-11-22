@@ -12,7 +12,6 @@ import {
   type GridHandle,
 } from '@nubitio/crud';
 import { CreditNoteDetailFields, CreditNoteFields } from './CreditNoteFields';
-import { CreditNoteTabs } from './creditNote/CreditNoteTabs';
 import toast from '@shared/lib/SharedUtils';
 import { hasPermission } from '@shared/permissions';
 import { useEvents } from '@nubitio/core';
@@ -179,16 +178,13 @@ export const CreditNotePage = () => {
   );
 
   return (
-    <>
-      <CreditNoteTabs active="history" inset="grid" />
-      <SchemaCrudPage
-        resource={resource}
-        formRef={formRef}
-        gridRef={gridRef}
-        editDisabled={editDisabled}
-        deleteDisabled={deleteDisabled}
-        onSelectionChanged={handleSelectionChanged}
-      />
-    </>
+    <SchemaCrudPage
+      resource={resource}
+      formRef={formRef}
+      gridRef={gridRef}
+      editDisabled={editDisabled}
+      deleteDisabled={deleteDisabled}
+      onSelectionChanged={handleSelectionChanged}
+    />
   );
 };

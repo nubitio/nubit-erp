@@ -90,7 +90,7 @@ test('issues a credit note from its own screen: search, reason, quantities, rest
   await login(page, seed.username, seed.password);
   await page.goto(`${getE2EBaseUrl()}/billing/credit-notes/new`);
 
-  await expect(page.getByRole('tab', { name: 'Emitir nota' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Emitir nota de crédito' })).toBeVisible();
   await expect(page.getByTestId('credit-note-submit')).toHaveCount(0);
 
   // 1. Pick the affected voucher; its data and the next number appear.
@@ -109,9 +109,6 @@ test('issues a credit note from its own screen: search, reason, quantities, rest
   await page.getByTestId('credit-note-reason').click();
   await page.getByRole('option', { name: /07/ }).click();
   await page.getByTestId('credit-note-detail').fill('Devolución de un producto defectuoso');
-  await expect(
-    page.getByRole('checkbox', { name: 'Reintegrar stock', exact: true }),
-  ).toBeDisabled();
 
   // 3. Return one unit: totals follow the chosen quantity.
   await page
@@ -122,9 +119,6 @@ test('issues a credit note from its own screen: search, reason, quantities, rest
   const restock = page.getByRole('checkbox', { name: /Reingresar .* a inventario/ });
   await expect(restock).toBeChecked();
   await restock.uncheck();
-  await expect(
-    page.getByRole('checkbox', { name: 'Reintegrar stock', exact: true }),
-  ).not.toBeChecked();
 
   // 4. Draft and preview send only the choices, never amounts.
   await page.getByTestId('credit-note-save-draft').click();

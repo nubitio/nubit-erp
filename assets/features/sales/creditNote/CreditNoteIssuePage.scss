@@ -1,7 +1,7 @@
 .credit-note-issue {
   overflow-y: auto;
   max-height: 100%;
-  padding-bottom: 5rem;
+  padding-bottom: 2rem;
 
   &__origin {
     display: grid;
@@ -113,17 +113,14 @@
       color: var(--text-secondary);
     }
   }
+  // Closes the form column: secondary actions left, the commit actions right. Not floating,
+  // so it never covers the lines it sits under.
   &__footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 2;
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--space-3);
-    padding: var(--space-3) var(--space-4);
-    background: var(--surface-1);
-    border: 1px solid var(--border-subtle, var(--border-color));
-    border-radius: var(--radius-md);
+    padding-top: var(--space-2);
   }
   &__footer-spacer {
     flex: 1;
