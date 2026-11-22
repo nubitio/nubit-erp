@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast, { getIRI } from '@shared/lib/SharedUtils';
 import { getCoreApiBaseUrl } from '@nubitio/core';
+import { reconcileCartPrices } from './lib/reconcileCartPrices';
 
 const API = getCoreApiBaseUrl();
 import type { CartItem, CustomerOption, PaymentMethodOption, PosItem } from './types';
@@ -62,6 +63,8 @@ type UsePosCheckoutParams = {
   enforceStockCheck: boolean;
   warnOnNegativeStock?: boolean;
   visibleProducts: PosItem[];
+  /** The whole catalogue at the prices now in force (price list applied), not only what is on screen. */
+  pricedCatalog: PosItem[];
   isOnline: boolean;
   useWarehouseStockChecks?: boolean;
   onQueuedSaleCreated: () => Promise<void>;
@@ -84,6 +87,7 @@ export const usePosCheckout = ({
   enforceStockCheck,
   warnOnNegativeStock = false,
   visibleProducts,
+  pricedCatalog,
   isOnline,
   useWarehouseStockChecks = true,
   onQueuedSaleCreated,
@@ -207,33 +211,15 @@ export const usePosCheckout = ({
   };
 
   const syncCartPricesFromCatalog = useCallback(() => {
-    setCart((previousCart) => {
-      if (previousCart.length === 0) {
-        return previousCart;
-      }
+    const { changes } = reconcileCartPrices(cartRef.current, pricedCatalog);
+    setCart((previousCart) => reconcileCartPrices(previousCart, pricedCatalog).cart);
 
-      let changed = false;
-      const nextCart = previousCart.map((cartItem) => {
-        const catalogItem = visibleProducts.find((product) => product.id === cartItem.id);
-        if (!catalogItem) {
-          return cartItem;
-        }
-
-        const nextPrice = catalogItem.salePrice;
-        if (cartItem.salePrice === nextPrice) {
-          return cartItem;
-        }
-
-        changed = true;
-        return {
-          ...cartItem,
-          salePrice: nextPrice,
-        };
-      });
-
-      return changed ? nextCart : previousCart;
-    });
-  }, [visibleProducts]);
+    if (changes.length > 0) {
+      const shown = changes.slice(0, 3).map((c) => `${c.name} ${c.from} → ${c.to}`);
+      const more = changes.length > 3 ? ` y ${changes.length - 3} más` : '';
+      toast(`Precios actualizados en el pedido: ${shown.join(', ')}${more}`, 'info');
+    }
+  }, [pricedCatalog]);
 
   const addToCart = async (item: PosItem) => {
     const tracksInventory = item.trackInventory !== false;
@@ -313,7 +299,10 @@ export const usePosCheckout = ({
         );
       }
 
-      return [...prevCart, { ...item, stock: effectiveStock, quantity: initialQuantity }];
+      return [
+        ...prevCart,
+        { ...item, stock: effectiveStock, quantity: initialQuantity, quotedPrice: item.salePrice },
+      ];
     });
 
     if (isWeighted && scaleReady) {

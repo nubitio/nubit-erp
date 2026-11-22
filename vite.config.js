@@ -141,9 +141,14 @@ export default defineConfig({
           {
             urlPattern: ({ url, request }) =>
               request.method === 'GET' && url.pathname.includes('/api/products'),
-            handler: 'StaleWhileRevalidate',
+            // NetworkFirst, not StaleWhileRevalidate: the POS reads prices (and the
+            // customer's price list) from this response once per load. SWR answered
+            // with the previous copy, so a till could sell at a price changed days
+            // ago. Offline still falls back to this cache (and to IndexedDB).
+            handler: 'NetworkFirst',
             options: {
               cacheName: 'api-products',
+              networkTimeoutSeconds: 4,
               cacheableResponse: {
                 statuses: [0, 200],
               },
@@ -152,9 +157,14 @@ export default defineConfig({
           {
             urlPattern: ({ url, request }) =>
               request.method === 'GET' && url.pathname.includes('/api/customers'),
-            handler: 'StaleWhileRevalidate',
+            // NetworkFirst, not StaleWhileRevalidate: the POS reads prices (and the
+            // customer's price list) from this response once per load. SWR answered
+            // with the previous copy, so a till could sell at a price changed days
+            // ago. Offline still falls back to this cache (and to IndexedDB).
+            handler: 'NetworkFirst',
             options: {
               cacheName: 'api-customers',
+              networkTimeoutSeconds: 4,
               cacheableResponse: {
                 statuses: [0, 200],
               },

@@ -94,6 +94,7 @@ export const usePosCatalogData = ({ currentBranchId, runtimeConfig }: UsePosCata
     usingOfflineCatalog,
     lastUpdatedAt,
     updateProductPrice,
+    refresh: refreshCatalog,
   } = useOfflineCatalog();
 
   // ── Payment methods ──────────────────────────────────────────────────────────
@@ -130,6 +131,7 @@ export const usePosCatalogData = ({ currentBranchId, runtimeConfig }: UsePosCata
     usingOfflineCatalog,
     lastUpdatedAt,
     updateProductPrice,
+    refreshCatalog,
     paymentMethods,
     selectedPaymentMethodId,
     setSelectedPaymentMethodId,

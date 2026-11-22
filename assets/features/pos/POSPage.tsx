@@ -25,7 +25,9 @@ import { productService } from '@features/product/services/productService';
 import { usePosCustomers } from './usePosCustomers';
 import { usePosCheckout } from './usePosCheckout';
 import { usePosCatalogData } from './usePosCatalogData';
-import { normalizeText, toMoneyString, toNumber } from './posHelpers';
+import { usePosPriceSync } from './usePosPriceSync';
+import { parsePriceListOverrides } from './lib/parsePriceListOverrides';
+import { normalizeText, toNumber } from './posHelpers';
 import { useConnectivity } from '@offline/hooks/useConnectivity';
 import { useOutboxSync } from '@offline/hooks/useOutboxSync';
 import { AppDialog, Button, ConfirmDialog } from '@nubitio/ui';
@@ -113,6 +115,7 @@ const POSPage = () => {
     selectedWarehouseId,
     setSelectedWarehouseId,
     updateProductPrice,
+    refreshCatalog,
   } = usePosCatalogData({ currentBranchId: branchId, runtimeConfig });
 
   const customersState = usePosCustomers();
@@ -123,9 +126,17 @@ const POSPage = () => {
   // GET /api/price-lists/{id}/apply and overlay them onto the catalog.
   // The base catalog (menuData / offline DB) is never mutated.
   const [priceListOverrides, setPriceListOverrides] = useState<Map<string, string>>(new Map());
+  // Bumped when a price list changes (Mercure / polling) to re-read the tariff in use.
+  const [priceListRefreshTick, setPriceListRefreshTick] = useState(0);
+  const priceListKeyRef = useRef('');
 
   useEffect(() => {
     const priceListId = customersState.priceListId;
+    const key = `${customersState.selectedCustomerId ?? ''}:${priceListId ?? ''}`;
+    // A refresh of the same tariff keeps the prices on screen if it fails; only a
+    // change of customer or tariff starts from scratch.
+    const isRefresh = priceListKeyRef.current === key;
+    priceListKeyRef.current = key;
 
     if (!priceListId) {
       setPriceListOverrides(new Map());
@@ -141,46 +152,43 @@ const POSPage = () => {
       })
       .then((response) => {
         if (cancelled) return;
-        const raw = response.data;
-        const items: Array<{ id: string; price: string }> = Array.isArray(raw)
-          ? (raw as Array<{ id: string; price: string }>)
-          : (((raw as Record<string, unknown>).member as
-              Array<{ id: string; price: string }> | undefined) ??
-            ((raw as Record<string, unknown>)['hydra:member'] as
-              Array<{ id: string; price: string }> | undefined) ??
-            []);
-        const map = new Map<string, string>();
-        for (const item of items) {
-          const price = toMoneyString(item.price, '');
-          if (price !== '') map.set(String(item.id), price);
-        }
-        setPriceListOverrides(map);
+        setPriceListOverrides(parsePriceListOverrides(response.data));
       })
       .catch(() => {
-        if (!cancelled) setPriceListOverrides(new Map());
+        if (!cancelled && !isRefresh) setPriceListOverrides(new Map());
       });
 
     return () => {
       cancelled = true;
       controller.abort();
     };
-  }, [customersState.selectedCustomerId, customersState.priceListId]);
+  }, [customersState.selectedCustomerId, customersState.priceListId, priceListRefreshTick]);
 
-  const filteredMenu = menuData
-    .filter((item) => {
-      const matchesCategory = !activeCategory || item.category.id === activeCategory;
-      if (!matchesCategory) return false;
-      const query = normalizeText(searchQuery);
-      if (!query) return true;
-      const fields = [item.name, item.sku ?? '', item.barcode ?? ''];
-      return fields.some((value) => normalizeText(value).includes(query));
-    })
-    .map((item) => {
-      const override = priceListOverrides.get(item.id);
-      return override !== undefined ? { ...item, salePrice: override } : item;
-    });
+  // The whole catalogue at the prices in force for the selected customer. The cart is
+  // reconciled against this (not against what the search filter happens to show).
+  const pricedMenu = useMemo(
+    () =>
+      menuData.map((item) => {
+        const override = priceListOverrides.get(item.id);
+        return override !== undefined ? { ...item, salePrice: override } : item;
+      }),
+    [menuData, priceListOverrides],
+  );
+
+  const filteredMenu = pricedMenu.filter((item) => {
+    const matchesCategory = !activeCategory || item.category.id === activeCategory;
+    if (!matchesCategory) return false;
+    const query = normalizeText(searchQuery);
+    if (!query) return true;
+    const fields = [item.name, item.sku ?? '', item.barcode ?? ''];
+    return fields.some((value) => normalizeText(value).includes(query));
+  });
 
   const { isOnline } = useConnectivity();
+  usePosPriceSync(() => {
+    void refreshCatalog();
+    setPriceListRefreshTick((tick) => tick + 1);
+  }, isOnline);
   const { pendingSalesCount, isSyncing, recentSales, retrySale, refresh, processNow } =
     useOutboxSync();
 
@@ -246,6 +254,7 @@ const POSPage = () => {
     enforceStockCheck,
     warnOnNegativeStock: stockPolicy === 'WARNING_ONLY',
     visibleProducts: filteredMenu,
+    pricedCatalog: pricedMenu,
     isOnline,
     useWarehouseStockChecks: runtimeConfig?.ui.inventory.showWarehouseSelector === true,
     onQueuedSaleCreated: async () => {
@@ -317,7 +326,7 @@ const POSPage = () => {
 
   useEffect(() => {
     syncCartPricesFromCatalog();
-  }, [priceListOverrides, syncCartPricesFromCatalog]);
+  }, [syncCartPricesFromCatalog]);
 
   const formatMoney = (value: number) =>
     NumberUtils.formatCurrency(Number(toNumber(value).toFixed(2)), currency);
