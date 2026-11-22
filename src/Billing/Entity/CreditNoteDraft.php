@@ -15,8 +15,8 @@ use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
  * only happens when the user issues the real note.
  */
 #[ORM\Entity(repositoryClass: CreditNoteDraftRepository::class)]
-#[ORM\Table(name: 'credit_note_draft')]
-#[ORM\Index(name: 'IDX_CN_DRAFT_OWNER', columns: ['branch_id', 'user_id', 'updated_at'])]
+#[ORM\Table(name: 'billing_credit_note_draft')]
+#[ORM\Index(name: 'IDX_BILLING_CN_DRAFT_OWNER', columns: ['branch_id', 'user_id', 'updated_at'])]
 class CreditNoteDraft
 {
     #[ORM\Id]
