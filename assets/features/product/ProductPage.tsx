@@ -200,6 +200,11 @@ const productResource = defineResource<ProductRecord>(API + 'products', {
   title: 'Productos',
   gridAppearance: 'page',
   quickFilterFields: ['category'],
+  quickSearch: {
+    searchExpr: ['name', 'code', 'sku', 'barcode'],
+    showIn: 'both',
+    placeholder: 'Buscar por nombre, código, SKU o código de barras',
+  },
   permissions: {
     canView: () => hasPermission('catalog.view'),
     canAdd: () => hasPermission('catalog.create'),
@@ -444,6 +449,7 @@ export function ProductPage() {
       },
       auditTrail: {
         enabled: true,
+        toolbarButton: false,
         apiUrl: (id: string | number) => `/api/audit-trail/product/${id}`,
         recordSubtitle: (row: DataRecord) => {
           const name = typeof row.name === 'string' ? row.name : null;
@@ -456,12 +462,14 @@ export function ProductPage() {
         utility: [
           {
             text: 'Exportar productos',
+            iconOnly: true,
             icon: 'ph-download-simple',
             hint: 'Exportar productos',
             onClick: () => window.open('/api/v1/products/export', '_blank'),
           },
           {
             text: 'Importar productos',
+            iconOnly: true,
             visible: hasPermission('catalog.create'),
             icon: 'ph-upload-simple',
             hint: 'Importar productos',
