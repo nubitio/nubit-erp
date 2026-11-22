@@ -15,6 +15,9 @@ use App\Contacts\Repository\CustomerRepository;
 use App\Efact\Domain\ActiveReferenceGuard;
 use App\Efact\Domain\Money;
 use App\Identity\Auth\BranchContextService;
+use App\Identity\Offline\InvalidOfflineSignature;
+use App\Identity\Offline\OfflineActor;
+use App\Identity\Offline\OfflineActors;
 use App\Identity\Security\Security;
 use App\Inventory\Domain\PriceListPricing;
 use App\Inventory\Entity\PriceListItem;
@@ -80,6 +83,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private ActiveReferenceGuard $activeReferenceGuard,
         private ?MessageBusInterface $messageBus = null,
         private ?SalePaymentsTreasury $paymentsTreasury = null,
+        private ?OfflineActors $offlineActors = null,
     ) {}
 
     /**
@@ -136,7 +140,16 @@ readonly class SaleProcessor implements ProcessorInterface
                 'remote_addr' => $request->getClientIp(),
             ]);
         }
-        if ($isOfflineSale && !$this->security->hasPermission('pos.offline_sale')) {
+        // A signed offline sale belongs to whoever signed it, not to whoever's session delivers it:
+        // seller, cash session, treasury movement and permissions are theirs. Unsigned ones (a till
+        // without Web Crypto, or queued before signing existed) fall back to the signed-in user.
+        $offlineActor = $isOfflineSale ? $this->resolveOfflineActor($request, $idempotencyKey, $user->userId) : null;
+        $actingUserId = $offlineActor === null ? $user->userId : $offlineActor->userId;
+        $can = fn(string $permission): bool => $offlineActor instanceof OfflineActor
+            ? $offlineActor->can($permission)
+            : $this->security->hasPermission($permission);
+
+        if ($isOfflineSale && !$can('pos.offline_sale')) {
             throw new AccessDeniedException('Permission "pos.offline_sale" is required to synchronize offline sales.');
         }
 
@@ -212,7 +225,7 @@ readonly class SaleProcessor implements ProcessorInterface
                             WHERE cs.openedBy = :userId
                               AND cs.status = :status
                             DQL)
-                        ->setParameter('userId', $user->userId)
+                        ->setParameter('userId', $actingUserId)
                         ->setParameter('status', 'OPEN')
                         ->getSingleScalarResult() > 0;
 
@@ -237,7 +250,7 @@ readonly class SaleProcessor implements ProcessorInterface
         }
 
         if ($isOperationalSale) {
-            $this->validateCommercialControls($data, $isOfflineSale);
+            $this->validateCommercialControls($data, $isOfflineSale, $can);
         }
 
         $this->logger->info('Calculating sale totals');
@@ -295,7 +308,10 @@ readonly class SaleProcessor implements ProcessorInterface
         if ($isNew) {
             $this->logger->info('Creating new sale record with timestamp');
             $data->setDateCreated(new DateTimeImmutable());
-            $data->setCreatedBy($user->userId);
+            $data->setCreatedBy($actingUserId);
+            if ($actingUserId !== $user->userId) {
+                $data->setSyncedByUserId($user->userId);
+            }
             if ($isUuidIdempotencyKey) {
                 $data->setOfflineRetryKey($idempotencyKey);
             }
@@ -381,7 +397,7 @@ readonly class SaleProcessor implements ProcessorInterface
                         $this->salesWriteGateway->writeCashSaleMovement(
                             saleId: (string) $data->getId(),
                             cashSessionId: $resolvedCashSessionId,
-                            createdBy: $user->userId,
+                            createdBy: $actingUserId,
                             amount: $cashCollected,
                             categoryId: null,
                             paymentMethodId: \App\Catalog\Entity\PaymentMethod::CASH,
@@ -412,7 +428,7 @@ readonly class SaleProcessor implements ProcessorInterface
             // Non-cash payments, after the sale is stored; never refuses the sale (see SalePaymentsTreasury).
             // isset(): tests build this class without its constructor, so the property may be uninitialized.
             if (isset($this->paymentsTreasury)) {
-                $this->paymentsTreasury->record($data, $user->userId);
+                $this->paymentsTreasury->record($data, $actingUserId);
             }
         }
 
@@ -652,7 +668,33 @@ readonly class SaleProcessor implements ProcessorInterface
         return $items;
     }
 
-    private function validateCommercialControls(SaleRecord $sale, bool $isOfflineSale): void
+    /**
+     * Who made an offline sale, when it carries a signature (null: unsigned, the signed-in user is
+     * taken). A signature that does not hold refuses the sale.
+     *
+     * @throws AccessDeniedException
+     */
+    private function resolveOfflineActor(mixed $request, string $idempotencyKey, int $deliveredByUserId): ?OfflineActor
+    {
+        if (!$request instanceof Request || $this->offlineActors === null) {
+            return null;
+        }
+
+        try {
+            return $this->offlineActors->resolve($request, $idempotencyKey);
+        } catch (InvalidOfflineSignature $exception) {
+            $this->logger->warning('Offline sale refused: invalid signature', [
+                'user_id' => $deliveredByUserId,
+                'idempotency_key' => $idempotencyKey,
+                'reason' => $exception->getMessage(),
+            ]);
+
+            throw new AccessDeniedException($exception->getMessage(), $exception);
+        }
+    }
+
+    /** @param callable(string): bool $can whether the person the sale belongs to holds a permission */
+    private function validateCommercialControls(SaleRecord $sale, bool $isOfflineSale, callable $can): void
     {
         $globalDiscount = $sale->getDescuento() ?? '0';
         if (!is_numeric($globalDiscount) || (float) $globalDiscount < 0 || (float) $globalDiscount > 100) {
@@ -689,10 +731,10 @@ readonly class SaleProcessor implements ProcessorInterface
             }
         }
 
-        if ($hasDiscount && !$this->security->hasPermission('pos.discount')) {
+        if ($hasDiscount && !$can('pos.discount')) {
             throw new AccessDeniedException('Permission "pos.discount" is required to apply discounts.');
         }
-        if ($hasPriceOverride && !$this->security->hasPermission('pos.price_override')) {
+        if ($hasPriceOverride && !$can('pos.price_override')) {
             throw new AccessDeniedException('Permission "pos.price_override" is required to modify prices.');
         }
     }

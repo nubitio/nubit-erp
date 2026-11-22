@@ -14,6 +14,10 @@ describe('belongsToAnotherUser', () => {
     expect(belongsToAnotherUser({}, '9')).toBe(false);
   });
 
+  it('lets any session deliver a sale signed by its owner: the server knows who made it', () => {
+    expect(belongsToAnotherUser({ ownerUserId: '7', signed: true }, '9')).toBe(false);
+  });
+
   it('does not hold anything back when the signed-in user cannot be determined', () => {
     expect(belongsToAnotherUser({ ownerUserId: '7' }, null)).toBe(false);
   });

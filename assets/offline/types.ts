@@ -45,12 +45,16 @@ export interface LocalSale {
   numericErrorCode?: number;
   /** User who made the sale (see outboxOwnership.ts). */
   ownerUserId?: string;
+  /** Signed by its owner, so any session may deliver it. */
+  signed?: boolean;
 }
 
 export interface OutboxRequest {
   method: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   url: string;
   body?: unknown;
+  /** The exact text that is sent and was signed; `body` is the same, parsed. */
+  rawBody?: string;
   headers?: Record<string, string>;
 }
 
@@ -66,8 +70,10 @@ export interface OutboxItem {
   lastNumericErrorCode?: number;
   createdAt: string;
   nextRetryAt?: string;
-  /** User who made the sale; it is only sent from their session. See outboxOwnership.ts. */
+  /** User who made the sale; an unsigned one is only sent from their session. See outboxOwnership.ts. */
   ownerUserId?: string;
+  /** Carries a signature from its owner, so any session may deliver it. See offlineCredential.ts. */
+  signed?: boolean;
 }
 
 export interface SyncLog {

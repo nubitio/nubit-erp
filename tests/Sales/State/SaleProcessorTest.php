@@ -144,6 +144,8 @@ final class SaleProcessorTest extends TestCase
     /** @var list<string> */
     private array $grantedPermissions;
 
+    private ?\App\Identity\Offline\OfflineActors $offlineActors = null;
+
     protected function setUp(): void
     {
         $this->persistProcessor = $this->createMock(ProcessorInterface::class);
@@ -398,6 +400,97 @@ final class SaleProcessorTest extends TestCase
         $this->expectExceptionMessage('pos.offline_sale');
 
         $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $this->offlineRequest()]);
+    }
+
+    /** @param \Closure(): ?\App\Identity\Offline\OfflineActor $resolve */
+    private function actorsReturning(\Closure $resolve): \App\Identity\Offline\OfflineActors
+    {
+        return new class($resolve) implements \App\Identity\Offline\OfflineActors {
+            /** @param \Closure(): ?\App\Identity\Offline\OfflineActor $resolve */
+            public function __construct(
+                private readonly \Closure $resolve,
+            ) {}
+
+            public function resolve(Request $request, string $idempotencyKey): ?\App\Identity\Offline\OfflineActor
+            {
+                /** @var ?\App\Identity\Offline\OfflineActor $actor */
+                $actor = ($this->resolve)();
+
+                return $actor;
+            }
+        };
+    }
+
+    /** @param list<string> $permissions */
+    private function seller(int $userId, array $permissions): \App\Identity\Offline\OfflineActor
+    {
+        return new \App\Identity\Offline\OfflineActor($userId, static fn(string $p): bool => in_array(
+            $p,
+            $permissions,
+            true,
+        ));
+    }
+
+    public function testASignedOfflineSaleBelongsToItsSellerNotToWhoeverDeliversIt(): void
+    {
+        // Cashier 42 signed in on the shared till and has nothing granted; the sale was made by 7.
+        $this->grantedPermissions = [];
+        $this->offlineActors = $this->actorsReturning(fn() => $this->seller(7, ['pos.offline_sale']));
+        $sale = $this->buildSaleWithLineAt('9.80', '10.10');
+
+        $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $this->offlineRequest()]);
+
+        self::assertSame(7, $sale->getCreatedBy(), 'attributed to the seller');
+        self::assertSame(42, $sale->getSyncedByUserId(), 'and the session that delivered it is recorded');
+    }
+
+    public function testTheSellersPermissionsDecideNotTheDeliverers(): void
+    {
+        // The deliverer may sync offline sales; the seller may not.
+        $this->grantedPermissions = ['pos.offline_sale'];
+        $this->offlineActors = $this->actorsReturning(fn() => $this->seller(7, []));
+        $sale = $this->buildSaleWithLineAt('10.10', '10.10');
+
+        $this->expectException(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class);
+        $this->expectExceptionMessage('pos.offline_sale');
+
+        $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $this->offlineRequest()]);
+    }
+
+    public function testASaleWhoseSignatureDoesNotHoldIsRefused(): void
+    {
+        $this->offlineActors = $this->actorsReturning(
+            static fn() => throw new \App\Identity\Offline\InvalidOfflineSignature(
+                'La firma de la venta no corresponde a su contenido.',
+            ),
+        );
+        $sale = $this->buildSaleWithLineAt('10.10', '10.10');
+
+        $this->expectException(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class);
+        $this->expectExceptionMessage('no corresponde a su contenido');
+
+        $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $this->offlineRequest()]);
+    }
+
+    public function testAnUnsignedOfflineSaleFallsBackToTheSignedInUser(): void
+    {
+        $this->offlineActors = $this->actorsReturning(static fn() => null);
+        $sale = $this->buildSaleWithLineAt('10.10', '10.10');
+
+        $this->buildAndRunProcessor($sale, new Post(), context: ['request' => $this->offlineRequest()]);
+
+        self::assertSame(42, $sale->getCreatedBy());
+        self::assertNull($sale->getSyncedByUserId());
+    }
+
+    public function testAnOnlineSaleIgnoresAnyOfflineActor(): void
+    {
+        $this->offlineActors = $this->actorsReturning(fn() => $this->seller(7, ['*']));
+        $sale = $this->buildSaleWithLineAt('10.10', '10.10');
+
+        $this->buildAndRunProcessor($sale, new Post());
+
+        self::assertSame(42, $sale->getCreatedBy());
     }
 
     // -------------------------------------------------------------------------
@@ -1294,6 +1387,7 @@ final class SaleProcessorTest extends TestCase
         $inj('customerRepository', $this->customerRepository);
         $inj('activeReferenceGuard', new \App\Efact\Domain\ActiveReferenceGuard());
         $inj('messageBus', null);
+        $inj('offlineActors', $this->offlineActors);
 
         return $processor;
     }

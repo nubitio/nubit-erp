@@ -26,6 +26,7 @@ import { usePosCustomers } from './usePosCustomers';
 import { usePosCheckout } from './usePosCheckout';
 import { usePosCatalogData } from './usePosCatalogData';
 import { usePosPriceSync } from './usePosPriceSync';
+import { refreshOfflineCredential } from '@offline/offlineCredential';
 import { parsePriceListOverrides } from './lib/parsePriceListOverrides';
 import { normalizeText, toNumber } from './posHelpers';
 import { useConnectivity } from '@offline/hooks/useConnectivity';
@@ -188,7 +189,14 @@ const POSPage = () => {
   usePosPriceSync(() => {
     void refreshCatalog();
     setPriceListRefreshTick((tick) => tick + 1);
+    // Keeps the key offline sales are signed with from running out while online (cheap: it only
+    // asks the server when none is held or the one held is about to expire).
+    void refreshOfflineCredential();
   }, isOnline);
+
+  useEffect(() => {
+    if (isOnline) void refreshOfflineCredential();
+  }, [isOnline]);
   const { pendingSalesCount, isSyncing, recentSales, retrySale, refresh, processNow } =
     useOutboxSync();
 

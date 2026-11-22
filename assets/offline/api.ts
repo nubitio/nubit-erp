@@ -5,6 +5,8 @@ export interface ApiRequestConfig {
   url: string;
   headers?: Record<string, string>;
   body?: unknown;
+  /** Sent as is when given (it is what a signature covers); otherwise `body` is serialized. */
+  rawBody?: string;
 }
 
 export interface ApiResult {
@@ -89,7 +91,8 @@ export const sendApiRequest = async (config: ApiRequestConfig): Promise<ApiResul
         method: config.method,
         headers,
         credentials: 'include',
-        body: config.body === undefined ? undefined : JSON.stringify(config.body),
+        body:
+          config.rawBody ?? (config.body === undefined ? undefined : JSON.stringify(config.body)),
       },
       'offline-runtime',
     );
