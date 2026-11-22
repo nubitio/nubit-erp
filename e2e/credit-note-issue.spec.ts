@@ -176,7 +176,9 @@ test('an annulling reason returns everything, locks the quantities and asks befo
   await expect(page.getByTestId('credit-note-reason')).toHaveValue(/06/);
   await page.getByTestId('credit-note-detail').fill('Cliente desistió de la compra');
   await expect(page.getByTestId('credit-note-total')).toContainText('111.23');
-  await expect(page.getByText('Stock repuesto automáticamente')).toBeVisible();
+  await expect(
+    page.getByText('devuelve todos los ítems completos y repone su stock'),
+  ).toBeVisible();
 
   await page.getByTestId('credit-note-submit').click();
   const confirm = page.getByRole('alertdialog', { name: 'Anular la venta' });

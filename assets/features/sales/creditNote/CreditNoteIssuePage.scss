@@ -1,14 +1,31 @@
 .credit-note-issue {
   overflow-y: auto;
   max-height: 100%;
-  padding-bottom: 2rem;
+  padding-bottom: var(--space-4);
 
+  // Summary column stays in view while the form column scrolls under it.
+  &__layout {
+    grid-template-columns: minmax(0, 1fr) 21rem;
+    align-items: start;
+    > .nb-detail-layout__aside {
+      position: sticky;
+      top: var(--space-2);
+      align-self: start;
+    }
+    @media (max-width: 1000px) {
+      grid-template-columns: minmax(0, 1fr);
+      > .nb-detail-layout__aside {
+        position: static;
+      }
+    }
+  }
+  // Voucher facts on one line: label above value, items side by side.
   &__origin {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-    gap: var(--space-4);
-    margin: var(--space-4) 0 0;
-    padding: var(--space-3) var(--space-4);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-6);
+    margin: var(--space-3) 0 var(--space-4);
+    padding: var(--space-2) var(--space-4);
     background: var(--surface-2);
     border-radius: var(--radius-md);
     > div {
@@ -21,6 +38,14 @@
     dd {
       margin: 0;
       font-weight: 600;
+      white-space: nowrap;
+    }
+  }
+  &__origin-wide {
+    flex: 1 1 12rem;
+    dd {
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
   &__option {
@@ -32,28 +57,49 @@
   }
   &__fields {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-    gap: var(--space-4);
-    margin-bottom: var(--space-4);
+    grid-template-columns: minmax(14rem, 1fr) minmax(16rem, 1.4fr);
+    gap: var(--space-3) var(--space-4);
+  }
+  // The detail is a sentence or two: same height as the reason picker, growable by hand.
+  &__fields textarea {
+    min-height: 2.75rem;
+    height: 2.75rem;
+    resize: vertical;
+  }
+  &__reason-hint {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: var(--space-3) 0 0;
+    padding: var(--space-2) var(--space-3);
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  &__lines-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-1) var(--space-4);
+    margin-bottom: var(--space-3);
+    h3 {
+      margin: 0;
+      font-size: var(--font-size-lg, 1rem);
+    }
+    span {
+      color: var(--text-secondary);
+      font-size: var(--font-size-xs);
+    }
   }
   &__product {
     display: flex;
     flex-direction: column;
     small {
-      color: var(--text-secondary);
-    }
-  }
-  &__restock {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    margin-top: var(--space-4);
-    padding: var(--space-3) var(--space-4);
-    background: var(--surface-2);
-    border: 1px solid var(--border-subtle, var(--border-color));
-    border-radius: var(--radius-md);
-    small {
-      display: block;
       color: var(--text-secondary);
     }
   }
@@ -113,16 +159,19 @@
       color: var(--text-secondary);
     }
   }
-  // Closes the form column: secondary actions left, the commit actions right. Not floating,
-  // so it never covers the lines it sits under.
-  &__footer {
+  &__actions {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-3);
-    padding-top: var(--space-2);
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    .nb-button {
+      width: 100%;
+      justify-content: center;
+    }
   }
-  &__footer-spacer {
-    flex: 1;
+  &__actions-secondary {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
   }
 }

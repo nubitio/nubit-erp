@@ -104,12 +104,11 @@ const documentOption = (doc: EligibleDocument): ComboboxOption => ({
 function reasonHint(code: string): string | null {
   const reason = CREDIT_NOTE_REASONS.find((item) => item.value === code);
   if (!reason) return null;
-  const name = `“${reason.value} — ${reason.text}”`;
-  if (annulsDocument(code))
-    return `El motivo ${name} anula el comprobante completo y repone todo su stock.`;
+  const name = `${reason.value} — ${reason.text}`;
+  if (annulsDocument(code)) return `${name}: anula el comprobante completo y repone todo su stock.`;
   if (choosesRestock(code))
-    return `El motivo ${name} permite anular el importe de uno o más productos del comprobante.`;
-  return `El motivo ${name} acredita el importe de los ítems marcados; no repone stock.`;
+    return `${name}: permite anular el importe de uno o más productos del comprobante.`;
+  return `${name}: acredita el importe de los ítems indicados; no repone stock.`;
 }
 
 export function CreditNoteIssuePage() {
@@ -321,81 +320,42 @@ export function CreditNoteIssuePage() {
     </>
   );
 
-  const picker = (
-    <Card variant="panel">
-      <Section variant="panel" title="Comprobante de referencia">
-        <p className="credit-note-issue__hint">
-          Selecciona el comprobante de venta que será afectado por la nota de crédito.
-        </p>
-        <FormField label="Comprobante" required>
-          <Combobox
-            aria-label="Buscar comprobante"
-            placeholder="Busca por serie-número, cliente o RUC"
-            value={documentId || null}
-            options={
-              origin && documentId
-                ? [
-                    documentOption({
-                      id: documentId,
-                      fullNumber: originNumber,
-                      documentType: (origin.documentType as '01' | '03') ?? '01',
-                      issueDate: origin.issueDate ?? '',
-                      customerName: origin.customer?.businessName ?? null,
-                      customerDocument: origin.customer?.ruc ?? null,
-                      currency,
-                      total: origin.total ?? '0',
-                    }),
-                  ]
-                : []
-            }
-            loadOptions={loadDocuments}
-            minSearchLength={0}
-            emptyMessage="No hay comprobantes aceptados que coincidan."
-            onChange={pickDocument}
-            data-testid="credit-note-document-picker"
-          />
-        </FormField>
-        {origin && (
-          <dl className="credit-note-issue__origin">
-            <div>
-              <dt>{DOCUMENT_LABEL[origin.documentType ?? ''] ?? 'Comprobante'}</dt>
-              <dd>
-                {originNumber}{' '}
-                <Badge
-                  pill
-                  variant={
-                    sunatStatus(origin.sunatStatus).stage === 'accepted' ? 'success' : 'warning'
-                  }
-                >
-                  {sunatStatus(origin.sunatStatus).label}
-                </Badge>
-              </dd>
-            </div>
-            <div>
-              <dt>Fecha de emisión</dt>
-              <dd>
-                {origin.issueDate ? DateTime.fromISO(origin.issueDate).toFormat('dd/MM/yyyy') : '—'}
-              </dd>
-            </div>
-            <div>
-              <dt>Cliente</dt>
-              <dd>{origin.customer?.businessName || 'Cliente no registrado'}</dd>
-            </div>
-            <div>
-              <dt>{origin.customer?.ruc?.length === 11 ? 'RUC' : 'Documento'}</dt>
-              <dd>{origin.customer?.ruc || '—'}</dd>
-            </div>
-          </dl>
-        )}
-      </Section>
-    </Card>
+  const pickerField = (
+    <FormField label="Comprobante de referencia" required>
+      <Combobox
+        aria-label="Buscar comprobante"
+        placeholder="Busca por serie-número, cliente o RUC"
+        value={documentId || null}
+        options={
+          origin && documentId
+            ? [
+                documentOption({
+                  id: documentId,
+                  fullNumber: originNumber,
+                  documentType: (origin.documentType as '01' | '03') ?? '01',
+                  issueDate: origin.issueDate ?? '',
+                  customerName: origin.customer?.businessName ?? null,
+                  customerDocument: origin.customer?.ruc ?? null,
+                  currency,
+                  total: origin.total ?? '0',
+                }),
+              ]
+            : []
+        }
+        loadOptions={loadDocuments}
+        minSearchLength={0}
+        emptyMessage="No hay comprobantes aceptados que coincidan."
+        onChange={pickDocument}
+        data-testid="credit-note-document-picker"
+      />
+    </FormField>
   );
 
   if (!documentId)
     return (
       <Page className="credit-note-issue">
         {header}
-        {picker}
+        <Card variant="panel">{pickerField}</Card>
         {draftsQuery.data && draftsQuery.data.length > 0 && (
           <Card variant="panel">
             <Section variant="panel" title="Borradores">
@@ -530,11 +490,11 @@ export function CreditNoteIssuePage() {
     <Page className="credit-note-issue" aria-busy={issue.isPending}>
       {header}
       <DetailLayout
+        className="credit-note-issue__layout"
         asideLabel="Resumen de la nota"
         aside={
           <Card variant="panel">
             <Section variant="panel" title="Resumen de nota de crédito">
-              <p className="credit-note-issue__hint">Detalle del comprobante que se emitirá.</p>
               <dl className="credit-note-issue__totals">
                 <div>
                   <dt>Serie y número</dt>
@@ -563,13 +523,9 @@ export function CreditNoteIssuePage() {
                   <dd data-testid="credit-note-total">{formatMoney(summary.total, currency)}</dd>
                 </div>
               </dl>
-              <p className="credit-note-issue__hint">
-                La serie corresponde al comprobante afectado y el número es correlativo: se confirma
-                al emitir.
-              </p>
               {annulsDocument(reasonCode) && (
                 <Alert tone="warning">
-                  Este motivo anula la venta y repone el stock. No se puede deshacer.
+                  Anula la venta y repone todo el stock. No se puede deshacer.
                 </Alert>
               )}
               {numberQuery.isError && (
@@ -579,119 +535,142 @@ export function CreditNoteIssuePage() {
               )}
               {issue.isError && <Alert tone="danger">{issue.error.message}</Alert>}
               {blocked && <Alert tone="danger">{blocked}</Alert>}
+              <div className="credit-note-issue__actions">
+                <Button
+                  variant="primary"
+                  icon="ph ph-paper-plane-tilt"
+                  loading={issue.isPending}
+                  disabled={Boolean(blocked) || numberQuery.isError}
+                  onClick={submit}
+                  data-testid="credit-note-submit"
+                >
+                  Emitir nota de crédito
+                </Button>
+                <div className="credit-note-issue__actions-secondary">
+                  <Button
+                    variant="secondary"
+                    icon="ph ph-eye"
+                    loading={previewing.isPending}
+                    disabled={!previewable}
+                    onClick={() => previewing.mutate()}
+                    data-testid="credit-note-preview"
+                  >
+                    Vista previa
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    icon="ph ph-floppy-disk"
+                    loading={saving.isPending}
+                    onClick={() => saving.mutate()}
+                    data-testid="credit-note-save-draft"
+                  >
+                    Guardar borrador
+                  </Button>
+                </div>
+              </div>
             </Section>
           </Card>
         }
       >
-        {picker}
         <Card variant="panel">
-          <Section variant="panel" title="Motivo de la nota">
-            <div className="credit-note-issue__fields">
-              <FormField
-                label="Motivo de emisión (SUNAT)"
-                required
-                error={submitted ? errors.reason : undefined}
-              >
-                <Combobox
-                  aria-label="Motivo de emisión (SUNAT)"
-                  placeholder="Selecciona un motivo"
-                  options={REASON_OPTIONS}
-                  value={reasonCode || null}
-                  invalid={submitted && Boolean(errors.reason)}
-                  onChange={chooseReason}
-                  data-testid="credit-note-reason"
-                />
-              </FormField>
-              <FormField
-                label="Detalle del motivo"
-                required
-                helpText="Aparece impreso en la nota"
-                error={submitted ? errors.description : undefined}
-              >
-                <TextAreaField
-                  rows={3}
-                  value={reasonDescription}
-                  maxLength={250}
-                  required
-                  invalid={submitted && Boolean(errors.description)}
-                  onChange={(event) => setReasonDescription(event.target.value)}
-                  data-testid="credit-note-detail"
-                />
-              </FormField>
+          {pickerField}
+          <dl className="credit-note-issue__origin">
+            <div>
+              <dt>{DOCUMENT_LABEL[origin.documentType ?? ''] ?? 'Comprobante'}</dt>
+              <dd>
+                {originNumber}{' '}
+                <Badge
+                  pill
+                  variant={
+                    sunatStatus(origin.sunatStatus).stage === 'accepted' ? 'success' : 'warning'
+                  }
+                >
+                  {status.label}
+                </Badge>
+              </dd>
             </div>
-            {hint && <Alert tone="info">{hint}</Alert>}
-          </Section>
+            <div>
+              <dt>Fecha de emisión</dt>
+              <dd>
+                {origin.issueDate ? DateTime.fromISO(origin.issueDate).toFormat('dd/MM/yyyy') : '—'}
+              </dd>
+            </div>
+            <div className="credit-note-issue__origin-wide">
+              <dt>Cliente</dt>
+              <dd title={origin.customer?.businessName ?? undefined}>
+                {origin.customer?.businessName || 'Cliente no registrado'}
+              </dd>
+            </div>
+            <div>
+              <dt>{origin.customer?.ruc?.length === 11 ? 'RUC' : 'Documento'}</dt>
+              <dd>{origin.customer?.ruc || '—'}</dd>
+            </div>
+          </dl>
+          <div className="credit-note-issue__fields">
+            <FormField
+              label="Motivo de emisión (SUNAT)"
+              required
+              error={submitted ? errors.reason : undefined}
+            >
+              <Combobox
+                aria-label="Motivo de emisión (SUNAT)"
+                placeholder="Selecciona un motivo"
+                options={REASON_OPTIONS}
+                value={reasonCode || null}
+                invalid={submitted && Boolean(errors.reason)}
+                onChange={chooseReason}
+                data-testid="credit-note-reason"
+              />
+            </FormField>
+            <FormField
+              label="Detalle del motivo (se imprime en la nota)"
+              required
+              error={submitted ? errors.description : undefined}
+            >
+              <TextAreaField
+                rows={1}
+                value={reasonDescription}
+                maxLength={250}
+                required
+                invalid={submitted && Boolean(errors.description)}
+                onChange={(event) => setReasonDescription(event.target.value)}
+                data-testid="credit-note-detail"
+              />
+            </FormField>
+          </div>
+          {hint && (
+            <p className="credit-note-issue__reason-hint">
+              <i className="ph ph-info" aria-hidden="true" /> {hint}
+            </p>
+          )}
         </Card>
         <Card variant="panel">
-          <Section variant="panel" title="Productos afectados">
-            <p className="credit-note-issue__hint">
+          <div className="credit-note-issue__lines-head">
+            <h3>Productos afectados</h3>
+            <span>
               {locked
-                ? 'Este motivo devuelve todos los ítems completos.'
-                : 'Selecciona los productos y cantidades que se anularán con la nota de crédito.'}
-            </p>
-            {linesQuery.isPending ? (
-              <p role="status">Cargando ítems…</p>
-            ) : linesQuery.isError ? (
-              <Button onClick={() => void linesQuery.refetch()}>Reintentar ítems</Button>
-            ) : (
-              <DataTable
-                variant="flush"
-                testId="credit-note-lines"
-                columns={columns}
-                rows={lines}
-                getRowKey={(line) => line.lineNumber}
-                emptyMessage="El comprobante no tiene ítems."
-              />
-            )}
-            {submitted && errors.lines && <Alert tone="danger">{errors.lines}</Alert>}
-            {showRestock && (
-              <p className="credit-note-issue__hint">
-                Los productos marcados vuelven al inventario del almacén de origen. Desmarca los que
-                no deben volver (dañados o descartados).
-              </p>
-            )}
-            {annulsDocument(reasonCode) && (
-              <div className="credit-note-issue__restock">
-                <span>
-                  <strong>Stock repuesto automáticamente</strong>
-                  <small>Al anular el comprobante, todo el stock vendido vuelve al almacén.</small>
-                </span>
-              </div>
-            )}
-          </Section>
+                ? 'Este motivo devuelve todos los ítems completos y repone su stock.'
+                : showRestock
+                  ? 'Desmarca “Reingresar” en los productos que no deben volver al inventario.'
+                  : 'Indica las cantidades que se acreditarán.'}
+            </span>
+          </div>
+          {linesQuery.isPending ? (
+            <p role="status">Cargando ítems…</p>
+          ) : linesQuery.isError ? (
+            <Button onClick={() => void linesQuery.refetch()}>Reintentar ítems</Button>
+          ) : (
+            <DataTable
+              variant="flush"
+              testId="credit-note-lines"
+              columns={columns}
+              rows={lines}
+              getRowKey={(line) => line.lineNumber}
+              emptyMessage="El comprobante no tiene ítems."
+            />
+          )}
+          {submitted && errors.lines && <Alert tone="danger">{errors.lines}</Alert>}
         </Card>
-        <div className="credit-note-issue__footer">
-          <Button
-            variant="secondary"
-            icon="ph ph-floppy-disk"
-            loading={saving.isPending}
-            onClick={() => saving.mutate()}
-            data-testid="credit-note-save-draft"
-          >
-            Guardar borrador
-          </Button>
-          <span className="credit-note-issue__footer-spacer" />
-          <Button
-            variant="secondary"
-            icon="ph ph-eye"
-            loading={previewing.isPending}
-            disabled={!previewable}
-            onClick={() => previewing.mutate()}
-            data-testid="credit-note-preview"
-          >
-            Vista previa
-          </Button>
-          <Button
-            variant="primary"
-            icon="ph ph-paper-plane-tilt"
-            loading={issue.isPending}
-            disabled={Boolean(blocked) || numberQuery.isError}
-            onClick={submit}
-            data-testid="credit-note-submit"
-          >
-            Emitir nota de crédito
-          </Button>
-        </div>
       </DetailLayout>
       <ConfirmDialog
         open={confirmingAnnul}
