@@ -59,11 +59,11 @@ final class TenantRuntimeConfigProviderTest extends TestCase
         static::assertTrue($on['ui']['pos']['pieceCountEnabled']);
     }
 
-    public function testDerivesBasicNavigationTierForSingleLocationTenant(): void
+    public function testEvenASingleLocationTenantGetsTheFullDayToDayNavigation(): void
     {
         $config = $this->createProviderForVertical(RetailPreset::KEY)->getConfig();
 
-        self::assertSame('basic', $config['profile']['navigationTier']);
+        self::assertSame('standard', $config['profile']['navigationTier']);
     }
 
     public function testDerivesStandardNavigationTierForMultiBranchTenant(): void

@@ -14,7 +14,7 @@ function runtimeConfig(
     profile: {
       preset: 'retail',
       vertical: 'retail',
-      simpleStoreMode: navigationTier === 'basic',
+      simpleStoreMode: false,
       navigationTier,
       onboardingCompleted: true,
     },
@@ -76,13 +76,21 @@ describe('normalizeMenuDestinations', () => {
 });
 
 describe('filterMenuByRuntimeConfig', () => {
-  it('keeps only basic menu entries for basic tenants', () => {
+  it('gives every plan the full day-to-day menu and keeps the specialised areas out', () => {
     const filtered = filterMenuByRuntimeConfig(
       menu(['dashboard', 'pos', 'billing', 'catalog', 'purchases', 'inventory', 'ple', 'config']),
-      runtimeConfig('basic'),
+      runtimeConfig('standard'),
     );
 
-    expect(visiblePaths(filtered)).toEqual(['dashboard', 'pos', 'billing', 'catalog', 'config']);
+    expect(visiblePaths(filtered)).toEqual([
+      'dashboard',
+      'pos',
+      'billing',
+      'catalog',
+      'inventory',
+      'purchases',
+      'config',
+    ]);
   });
 
   it('puts the actions an owner performs every day before specialised areas', () => {
@@ -149,7 +157,7 @@ describe('filterMenuByRuntimeConfig', () => {
           items: [{ path: 'reports' }, { path: 'billing' }] as AdminMenuItem['items'],
         } as AdminMenuItem,
       ],
-      runtimeConfig('basic'),
+      runtimeConfig('standard'),
     );
 
     expect(filtered).toHaveLength(1);
@@ -203,14 +211,8 @@ describe('filterMenuByRuntimeConfig', () => {
     expect(visiblePaths(filtered)).toEqual(['accounts-receivable']);
   });
 
-  it('turns Facturación into a group with its hub sections, gated by tier', () => {
+  it('turns Facturación into a group with all its hub sections, on every plan', () => {
     const billing: AdminMenuItem[] = [{ text: 'Facturación', path: 'billing', items: [] }];
-
-    const basic = filterMenuByRuntimeConfig(billing, runtimeConfig('basic'));
-    expect(basic[0].items?.map((item) => item.path)).toEqual([
-      '/billing/sales',
-      '/billing/documents',
-    ]);
 
     const standard = filterMenuByRuntimeConfig(billing, runtimeConfig('standard'));
     expect(standard[0].items?.map((item) => item.path)).toEqual([
@@ -228,15 +230,19 @@ describe('filterMenuByRuntimeConfig', () => {
       { text: 'Caja', path: 'cashbox', items: [] },
     ];
 
-    const basic = filterMenuByRuntimeConfig(menu, runtimeConfig('basic'));
-    const paths = (key: string) =>
-      basic.find((item) => item.path === key)?.items?.map((child) => child.path);
-    expect(paths('catalog')).toEqual(['/catalog/products']);
-    // Inventory itself needs the standard tier, so basic tenants never see it.
-    expect(paths('inventory')).toBeUndefined();
-    expect(paths('cashbox')).toHaveLength(3);
-
     const standard = filterMenuByRuntimeConfig(menu, runtimeConfig('standard'));
+    const paths = (key: string) =>
+      standard.find((item) => item.path === key)?.items?.map((child) => child.path);
+    // Catalog setup is part of every plan: a shop must be able to define its categories, units and prices.
+    expect(paths('catalog')).toEqual([
+      '/catalog/products',
+      '/catalog/categories',
+      '/catalog/units',
+      '/catalog/prices',
+      '/catalog/suppliers',
+      '/catalog/payment-methods',
+    ]);
+    expect(paths('cashbox')).toHaveLength(3);
     expect(
       standard.find((item) => item.path === 'inventory')?.items?.map((child) => child.path),
     ).toEqual([
@@ -269,8 +275,10 @@ describe('Administración group', () => {
   ] as unknown as AdminMenuItem[];
   const childPaths = (items: AdminMenuItem[]) => items[0]?.items?.map((child) => child.path);
 
-  it('is hidden for basic tenants, which have no administration screens', () => {
-    expect(filterMenuByRuntimeConfig(administration, runtimeConfig('basic'))).toEqual([]);
+  it('is part of every plan, for whoever holds the permissions', () => {
+    expect(
+      childPaths(filterMenuByRuntimeConfig(administration, runtimeConfig('standard'))),
+    ).toEqual(['/config/users', '/config/roles', '/config/activity']);
   });
 
   it('offers each page only to who holds its permission', () => {

@@ -49,20 +49,16 @@ const MENU_VIEW_PERMISSION: Record<string, string> = {
 };
 
 const NAVIGATION_TIER_RANK: Record<TenantRuntimeConfig['profile']['navigationTier'], number> = {
-  basic: 0,
-  standard: 1,
-  advanced: 2,
+  standard: 0,
+  advanced: 1,
 };
 
+// Every plan gets the full day-to-day navigation (catalog setup, inventory, credit notes,
+// administration). Only the specialised areas below need the advanced tier.
 const MENU_MIN_TIER = new Map<string, TenantRuntimeConfig['profile']['navigationTier']>([
-  ['purchases', 'standard'],
-  ['inventory', 'standard'],
   ['ple', 'advanced'],
   ['subscriptions', 'advanced'],
   ['expense-reports', 'advanced'],
-  ['config/users', 'standard'],
-  ['config/roles', 'standard'],
-  ['config/activity', 'standard'],
 ]);
 
 const MENU_REQUIRED_CAPABILITY: Record<string, string> = {
@@ -126,24 +122,20 @@ type HubSubmenuEntry = {
   when?: (runtimeConfig: TenantRuntimeConfig) => boolean;
 };
 
-const atLeastStandard = (runtimeConfig: TenantRuntimeConfig) =>
-  NAVIGATION_TIER_RANK[runtimeConfig.profile.navigationTier ?? 'basic'] >=
-  NAVIGATION_TIER_RANK.standard;
-
 const HUB_SUBMENUS: Record<string, HubSubmenuEntry[]> = {
   billing: [
     { text: 'Ventas', path: '/billing/sales' },
-    { text: 'Consultas', path: '/billing/consult', when: atLeastStandard },
+    { text: 'Consultas', path: '/billing/consult' },
     { text: 'Comprobantes', path: '/billing/documents' },
-    { text: 'Notas de crédito', path: '/billing/credit-notes', when: atLeastStandard },
+    { text: 'Notas de crédito', path: '/billing/credit-notes' },
   ],
   catalog: [
     { text: 'Productos', path: '/catalog/products' },
-    { text: 'Categorías', path: '/catalog/categories', when: atLeastStandard },
-    { text: 'Unidades', path: '/catalog/units', when: atLeastStandard },
-    { text: 'Precios', path: '/catalog/prices', when: atLeastStandard },
-    { text: 'Proveedores', path: '/catalog/suppliers', when: atLeastStandard },
-    { text: 'Métodos de pago', path: '/catalog/payment-methods', when: atLeastStandard },
+    { text: 'Categorías', path: '/catalog/categories' },
+    { text: 'Unidades', path: '/catalog/units' },
+    { text: 'Precios', path: '/catalog/prices' },
+    { text: 'Proveedores', path: '/catalog/suppliers' },
+    { text: 'Métodos de pago', path: '/catalog/payment-methods' },
   ],
   cashbox: [
     { text: 'Cajas', path: '/cashbox/dashboard' },
@@ -152,7 +144,7 @@ const HUB_SUBMENUS: Record<string, HubSubmenuEntry[]> = {
   ],
   inventory: [
     { text: 'Existencias', path: '/inventory/stock' },
-    { text: 'Movimientos', path: '/inventory/movements', when: atLeastStandard },
+    { text: 'Movimientos', path: '/inventory/movements' },
     { text: 'Operaciones', path: '/inventory/operations' },
     { text: 'Reorden', path: '/inventory/reorder' },
     {
@@ -194,7 +186,7 @@ export function normalizeMenuDestinations<T extends { path?: string; items?: T[]
 
 function isAllowedMenuPath(path: string, runtimeConfig: TenantRuntimeConfig): boolean {
   const minTier = MENU_MIN_TIER.get(path);
-  const currentTier = runtimeConfig.profile.navigationTier ?? 'basic';
+  const currentTier = runtimeConfig.profile.navigationTier ?? 'standard';
 
   if (minTier && NAVIGATION_TIER_RANK[currentTier] < NAVIGATION_TIER_RANK[minTier]) {
     return false;
