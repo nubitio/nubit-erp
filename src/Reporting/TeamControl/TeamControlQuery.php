@@ -148,10 +148,10 @@ final readonly class TeamControlQuery extends TeamControlSql
         );
 
         $cashDifferences = $this->cashDifferences($params);
-        $names = $this->names(array_values(array_merge(
+        $names = $this->names(array_merge(
             array_filter(array_keys($byUser), static fn(int|string $key): bool => $key !== 'none'),
             array_map(static fn(array $d): int => $d['userId'], $cashDifferences),
-        )));
+        ));
 
         $members = [];
         foreach ($byUser as $key => $metrics) {
