@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { applyServerErrors, GENERIC_SAVE_ERROR } from './formErrors';
+import { applyServerErrors, GENERIC_SAVE_ERROR, serverErrorMessage } from './formErrors';
 
 type Values = { ruc: string; businessName: string; email: string };
 const FIELDS = ['ruc', 'businessName', 'email'] as const;
@@ -118,5 +118,23 @@ describe('applyServerErrors', () => {
     );
 
     expect(setError).toHaveBeenCalledWith('ruc', expect.anything(), expect.anything());
+  });
+});
+
+describe('serverErrorMessage', () => {
+  it('shows the API explanation of a domain error', () => {
+    expect(
+      serverErrorMessage({ status: 409, data: { detail: 'Esta caja ya tiene un turno abierto.' } }),
+    ).toBe('Esta caja ya tiene un turno abierto.');
+  });
+
+  it('hides the detail of a server fault', () => {
+    expect(serverErrorMessage({ status: 500, data: { detail: 'SQLSTATE[HY000]' } }, 'Falló')).toBe(
+      'Falló',
+    );
+  });
+
+  it('falls back when the error carries no message', () => {
+    expect(serverErrorMessage(new Error('Network Error'), 'Sin respuesta')).toBe('Sin respuesta');
   });
 });

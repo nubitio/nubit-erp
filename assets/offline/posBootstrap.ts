@@ -10,6 +10,8 @@ const BOOTSTRAP_QUERIES = new Set([
   'api-doc-discovery',
   'pos-payment-methods',
   'warehouses',
+  // The user's own open session, so the POS can start offline; revalidated as soon as it reconnects.
+  'cash-pos-state',
 ]);
 
 function getScope(): string | null {

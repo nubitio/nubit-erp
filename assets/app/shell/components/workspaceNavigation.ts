@@ -37,9 +37,9 @@ export function workspaceSectionTitle(
 ): string {
   const sections: Array<[string, string]> = [
     ['/config', 'Administración'],
-    ['/cashbox', 'Caja'],
-    ['/cash-session', 'Caja'],
-    ['/cash-register', 'Caja'],
+    ['/cashbox', 'Finanzas'],
+    ['/cash-session', 'Finanzas'],
+    ['/cash-register', 'Finanzas'],
     ['/accounts-payable', 'Finanzas'],
     ['/accounts-receivable', 'Finanzas'],
     ['/supplier-bill', 'Finanzas'],

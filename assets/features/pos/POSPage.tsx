@@ -1,14 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect -- POS initialization synchronizes branch and cash-session state */
-import React, {
-  lazy,
-  Suspense,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { lazy, Suspense, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import './POSPage.scss';
 import './POSDesign.scss';
 import './HardwareAgentDialog.scss';
@@ -43,12 +34,30 @@ import {
 import { useFeature, useTenantRuntimeConfig } from '@shared/hooks';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
-import { OpenCajaDialog } from './OpenCajaDialog';
+import { useCashSession } from '@features/cashRegister/hooks/useCashSession';
+import { CashOpenDialog } from '@features/cashRegister/components/CashOpenDialog';
 import { hasPermission } from '@shared/permissions';
+import { useSettingsDialog } from '@app/profile';
 
 const Assistant = lazy(() => import('@features/assistant/Assistant'));
+// Counting the drawer and the cut are used once a shift: they are not worth the first paint.
+const CashCloseDialog = lazy(() =>
+  import('@features/cashRegister/components/CashCloseDialog').then((module) => ({
+    default: module.CashCloseDialog,
+  })),
+);
+const CashMovementsDialog = lazy(() =>
+  import('@features/cashRegister/components/CashMovementsDialog').then((module) => ({
+    default: module.CashMovementsDialog,
+  })),
+);
 
-const POSPage = () => {
+interface POSPageProps {
+  /** Ends the session. Injected by the app, which owns authentication. */
+  onSignOut?: () => void;
+}
+
+const POSPage = ({ onSignOut }: POSPageProps) => {
   const themeContext = useContext(ThemeContext);
   const resolvedTheme = themeContext?.theme ?? 'light';
 
@@ -67,11 +76,14 @@ const POSPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const stockPolicy = runtimeConfig?.settings.negativeStockPolicy ?? 'STRICT';
   const enforceStockCheck = stockPolicy === 'STRICT';
-  const [cajaAbierta, setCajaAbiertaState] = useState(
-    () => localStorage.getItem('pos_caja_abierta') !== 'false',
-  );
-  const [cashRegisterId, setCashRegisterId] = useState<number | null>(null);
+  // The cash session is the server's to decide: sales are tied to the one this user opened.
+  const cashSession = useCashSession();
+  const { open: openSettings } = useSettingsDialog();
+  const cajaAbierta = cashSession.session !== null;
+  const cajaOpenedAt = cashSession.session?.openedAt ?? null;
   const [openCajaDialogOpen, setOpenCajaDialogOpen] = useState(false);
+  const [closeCajaDialogOpen, setCloseCajaDialogOpen] = useState(false);
+  const [cashMovementsOpen, setCashMovementsOpen] = useState(false);
   const [quickMode, setQuickMode] = useState(false);
   const [focusCustomerTrigger, setFocusCustomerTrigger] = useState(0);
   // Counters the checkout panel reacts to: it owns the dialog / the line being edited.
@@ -271,7 +283,8 @@ const POSPage = () => {
     },
     printSaleInvoice: (saleId: string) => invoicePrinterRef.current.printSaleInvoice(saleId),
     onCashSessionRequired: () => {
-      setCajaAbierta(false);
+      // The server says this user has no open session: learn it, and show the closed state.
+      void cashSession.refresh();
       setActivePanel('cart');
     },
     autoInvoice: runtimeConfig?.settings.autoInvoice !== false,
@@ -357,79 +370,6 @@ const POSPage = () => {
       setCatalogPriceUpdatingId(null);
     }
   };
-
-  // ── Caja session timestamp ────────────────────────────────────────────────────────────────
-  const [cajaOpenedAt, setCajaOpenedAt] = useState<string | null>(() => {
-    if (localStorage.getItem('pos_caja_abierta') === 'false') {
-      return null;
-    }
-
-    const existing = localStorage.getItem('pos_caja_opened_at');
-    if (existing) {
-      return existing;
-    }
-
-    const now = new Date().toISOString();
-    localStorage.setItem('pos_caja_opened_at', now);
-    return now;
-  });
-
-  const setCajaAbierta = useCallback(
-    (nextOpen: boolean) => {
-      setCajaAbiertaState(nextOpen);
-      localStorage.setItem('pos_caja_abierta', String(nextOpen));
-
-      if (!nextOpen) {
-        localStorage.removeItem('pos_caja_opened_at');
-        setCajaOpenedAt(null);
-        return;
-      }
-
-      const openedAt = localStorage.getItem('pos_caja_opened_at') ?? new Date().toISOString();
-      localStorage.setItem('pos_caja_opened_at', openedAt);
-      setCajaOpenedAt(openedAt);
-    },
-    [setCajaOpenedAt],
-  );
-
-  // ── Sync caja state with server on mount ─────────────────────────────────────────────────
-  // localStorage defaults to 'open'; verify against the real cash-registers/dashboard so
-  // the POS header always reflects actual server state.
-  useEffect(() => {
-    httpClient
-      .get<{ id: number; status: string; openedAt?: string | null }[]>(
-        getCoreApiBaseUrl() + 'cash-registers/dashboard',
-      )
-      .then((response) => {
-        const rows = response.data;
-        if (!Array.isArray(rows) || rows.length === 0) return;
-        // Always store the first register id so "Abrir caja" knows which register to open.
-        setCashRegisterId(rows[0].id);
-        const openRow = rows.find((r) => r.status === 'open');
-        if (openRow) {
-          setCashRegisterId(openRow.id);
-          if (!cajaAbierta) {
-            setCajaAbiertaState(true);
-            localStorage.setItem('pos_caja_abierta', 'true');
-          }
-          if (openRow.openedAt) {
-            localStorage.setItem('pos_caja_opened_at', openRow.openedAt);
-            setCajaOpenedAt(openRow.openedAt);
-          }
-        } else {
-          // No open session on the server — correct the local state.
-          setCajaAbiertaState(false);
-          localStorage.setItem('pos_caja_abierta', 'false');
-          localStorage.removeItem('pos_caja_opened_at');
-          setCajaOpenedAt(null);
-        }
-      })
-      .catch(() => {
-        // Network error: keep the localStorage value rather than flipping state.
-      });
-    // Run once on mount only.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // ── Notify once if a draft cart was restored ──────────────────────────────────────────────
   const draftNotifiedRef = useRef(false);
@@ -657,7 +597,8 @@ const POSPage = () => {
       selectedWarehouseId={selectedWarehouseId}
       setSelectedWarehouseId={setSelectedWarehouseId}
       cajaAbierta={cajaAbierta}
-      setCajaAbierta={setCajaAbierta}
+      cajaChecking={cashSession.isLoading}
+      cajaName={cashSession.session?.cashRegisterName ?? null}
       cajaOpenedAt={cajaOpenedAt}
       cartItemsCount={cartItemsCount}
       hasCartItems={cart.length > 0}
@@ -672,6 +613,10 @@ const POSPage = () => {
         runtimeConfig?.ui.inventory.showWarehouseSelector ?? warehouses.length > 1
       }
       onOpenCaja={() => setOpenCajaDialogOpen(true)}
+      onCloseCaja={() => setCloseCajaDialogOpen(true)}
+      onCashMovements={() => setCashMovementsOpen(true)}
+      onOpenProfile={() => openSettings('account')}
+      onSignOut={onSignOut}
       assistantEnabled={assistantEnabled}
       onAssistantClick={() => setAssistantOpen((open) => !open)}
       heldSalesCount={heldSales.length}
@@ -697,8 +642,14 @@ const POSPage = () => {
         <div>
           <p className="pos-mobile-heading__status">
             <span className={`pos-mobile-heading__dot${!isOnline ? ' is-offline' : ''}`} />
-            {isOnline ? (cajaAbierta ? 'Turno abierto' : 'Caja cerrada') : 'Sin conexión'} ·{' '}
-            {currentBranchName || 'Sucursal'}
+            {isOnline
+              ? cashSession.isLoading
+                ? 'Verificando caja'
+                : cajaAbierta
+                  ? 'Turno abierto'
+                  : 'Caja cerrada'
+              : 'Sin conexión'}{' '}
+            · {currentBranchName || 'Sucursal'}
           </p>
           <div className="pos-mobile-heading__title">
             {activePanel === 'cart' && (
@@ -941,17 +892,38 @@ const POSPage = () => {
         }}
         onCancel={() => setConfirmClearCartOpen(false)}
       />
-      {openCajaDialogOpen && cashRegisterId !== null && (
-        <OpenCajaDialog
-          cashRegisterId={cashRegisterId}
-          onSuccess={(openedAt) => {
-            setOpenCajaDialogOpen(false);
-            setCajaAbierta(true);
-            localStorage.setItem('pos_caja_opened_at', openedAt);
-            setCajaOpenedAt(openedAt);
-          }}
-          onCancel={() => setOpenCajaDialogOpen(false)}
-        />
+      <CashOpenDialog
+        open={openCajaDialogOpen}
+        registers={cashSession.availableRegisters}
+        busyRegisters={cashSession.busyRegisters}
+        onClose={() => setOpenCajaDialogOpen(false)}
+        onOpened={async () => {
+          await cashSession.refresh();
+          setOpenCajaDialogOpen(false);
+        }}
+      />
+      {cashSession.session && (
+        <Suspense fallback={null}>
+          {closeCajaDialogOpen && (
+            <CashCloseDialog
+              open
+              sessionId={cashSession.session.id}
+              onClose={() => setCloseCajaDialogOpen(false)}
+              onClosed={async () => {
+                setCloseCajaDialogOpen(false);
+                await cashSession.refresh();
+              }}
+            />
+          )}
+          {cashMovementsOpen && (
+            <CashMovementsDialog
+              open
+              sessionId={cashSession.session.id}
+              registerName={cashSession.session.cashRegisterName}
+              onClose={() => setCashMovementsOpen(false)}
+            />
+          )}
+        </Suspense>
       )}
     </div>
   );

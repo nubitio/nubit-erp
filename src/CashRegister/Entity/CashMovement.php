@@ -65,6 +65,7 @@ class CashMovement
     #[ApiProperty(description: 'cash_movement.description.label')]
     private string $description;
 
+    #[Groups(['cash_movement:read'])]
     private DateTimeImmutable $createdAt;
 
     #[Groups(['cash_movement:read'])]

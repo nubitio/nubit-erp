@@ -281,6 +281,13 @@
     color: var(--pos-danger);
     border-color: var(--pos-danger-soft);
   }
+
+  // The server has not answered yet: neither open nor closed.
+  &.is-checking {
+    background: transparent;
+    color: var(--text-muted);
+    border-color: var(--border-subtle);
+  }
 }
 
 .pos-caja-badge__dot {
@@ -294,6 +301,9 @@
   }
   .is-closed & {
     background: var(--pos-danger);
+  }
+  .is-checking & {
+    background: var(--text-muted);
   }
 }
 
