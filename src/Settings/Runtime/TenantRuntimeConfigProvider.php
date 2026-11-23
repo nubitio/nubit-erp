@@ -41,13 +41,7 @@ final readonly class TenantRuntimeConfigProvider
         $excelExport = $this->isFeatureEnabled($entitlements, 'excel_export');
 
         $simpleStoreMode = $branchCount <= 1 && !$multiWarehouse;
-        $navigationTier = $this->resolveNavigationTier(
-            multiWarehouse: $multiWarehouse,
-            branchCount: $branchCount,
-            warehouseCount: $warehouseCount,
-            advancedReports: $advancedReports,
-            excelExport: $excelExport,
-        );
+        $navigationTier = $this->resolveNavigationTier($advancedReports, $excelExport);
 
         // The vertical is the persisted onboarding choice (source of truth),
         // validated against the known presets; topology stays a separate axis.
@@ -123,21 +117,13 @@ final readonly class TenantRuntimeConfigProvider
         return $entitlements[$featureKey]['enabled'] ?? false;
     }
 
-    private function resolveNavigationTier(
-        bool $multiWarehouse,
-        int $branchCount,
-        int $warehouseCount,
-        bool $advancedReports,
-        bool $excelExport,
-    ): string {
-        if ($advancedReports || $excelExport) {
-            return 'advanced';
-        }
-
-        if ($multiWarehouse || $branchCount > 1 || $warehouseCount > 1) {
-            return 'standard';
-        }
-
-        return 'basic';
+    /**
+     * Every plan includes the full day-to-day navigation (catalog setup, stock movements, credit notes,
+     * administration): there is no "simple store" tier any more. The advanced tier only adds the
+     * specialised areas that need an entitlement (PLE, subscriptions, expense reports).
+     */
+    private function resolveNavigationTier(bool $advancedReports, bool $excelExport): string
+    {
+        return $advancedReports || $excelExport ? 'advanced' : 'standard';
     }
 }

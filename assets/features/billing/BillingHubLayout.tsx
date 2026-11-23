@@ -1,13 +1,8 @@
 import { Outlet, useMatch } from 'react-router-dom';
 import { FeatureHubLayout } from '@nubitio/admin';
-import { useTenantRuntimeConfig } from '@shared/hooks';
 import { hasPermission } from '@shared/permissions';
 
 export const BillingHubLayout = () => {
-  const { data: runtimeConfig } = useTenantRuntimeConfig();
-  const navigationTier = runtimeConfig?.profile.navigationTier ?? 'basic';
-  const showOperationalReviewTabs = navigationTier === 'standard' || navigationTier === 'advanced';
-
   const saleDetail = useMatch('/billing/sales/:id');
   if (saleDetail) return <Outlet />;
 
@@ -33,14 +28,14 @@ export const BillingHubLayout = () => {
           label: 'Consultas',
           path: '/billing/consult',
           icon: 'ph-chart-line-up',
-          visible: showOperationalReviewTabs,
+          visible: true,
         },
         {
           key: 'price-review',
           label: 'Precios a revisar',
           path: '/billing/price-review',
           icon: 'ph-seal-warning',
-          visible: showOperationalReviewTabs && hasPermission('reports.view'),
+          visible: hasPermission('reports.view'),
         },
         {
           key: 'documents',
@@ -54,7 +49,7 @@ export const BillingHubLayout = () => {
           label: 'Notas de crédito',
           path: '/billing/credit-notes',
           icon: 'ph-file-minus',
-          visible: showOperationalReviewTabs,
+          visible: true,
         },
       ]}
     />

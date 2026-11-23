@@ -11,10 +11,8 @@ export interface SettingsTab {
  * The tenant's settings pages, each edited inside the account settings dialog ("Organización").
  * Users, roles, invitations and activity are lists of records, so they are pages of their own
  * under the "Administración" menu group instead.
- *
- * `showAdminTabs`: the tenant's navigation tier includes the administration screens.
  */
-export function settingsTabs({ showAdminTabs }: { showAdminTabs: boolean }): SettingsTab[] {
+export function settingsTabs(): SettingsTab[] {
   return [
     {
       key: 'company',
@@ -36,14 +34,14 @@ export function settingsTabs({ showAdminTabs }: { showAdminTabs: boolean }): Set
       label: 'Sucursales',
       path: '/config/branches',
       icon: 'ph-map-pin',
-      visible: showAdminTabs,
+      visible: true,
     },
     {
       key: 'integrations',
       label: 'Integraciones',
       path: '/config/integrations',
       icon: 'ph-plugs-connected',
-      visible: showAdminTabs,
+      visible: true,
     },
     {
       key: 'general',
