@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Identity\Auth;
 
+use App\Identity\Auth\MercureAudience;
 use App\Identity\Auth\MercureCookieDecorator;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
@@ -28,6 +29,7 @@ final class MercureCookieDecoratorTest extends TestCase
             new MercureSubscriberTokenService($signingKey, 900, $issuer),
             new CookieFactory(cookieSecure: false),
             $tenantContext,
+            new MercureAudience(),
         );
         $response = new JsonResponse();
         $request = Request::create('https://demo.example.test/login');
@@ -54,5 +56,36 @@ final class MercureCookieDecoratorTest extends TestCase
         static::assertStringContainsString('"aud":"https://demo.example.test/.well-known/mercure"', $claims);
         static::assertStringContainsString('"match":"https://demo.example.test/api/*"', $claims);
         static::assertStringContainsString('"match_type":"urlpattern"', $claims);
+    }
+
+    /**
+     * Behind a proxy that terminates TLS the request can be seen as plain HTTP while the hub, or the browser, is on
+     * HTTPS: the token must carry the audience the hub was pinned to, not the one the request suggests.
+     */
+    public function testThePinnedAudienceReplacesTheOneTheRequestSuggests(): void
+    {
+        $signingKey = hash(algo: 'sha256', data: 'Mercure cookie decorator test signing key');
+        $tenantContext = new TenantContext();
+        $tenantContext->setTenant(1, 'demo', 'demo.example.test', 'request-1');
+        $decorator = new MercureCookieDecorator(
+            new MercureSubscriberTokenService($signingKey, 900, 'https://mercure.example.test'),
+            new CookieFactory(cookieSecure: false),
+            $tenantContext,
+            new MercureAudience('https://nubit.pe/.well-known/mercure'),
+        );
+        $response = new JsonResponse();
+
+        $decorator->decorate(
+            $response,
+            $this->createStub(UserInterface::class),
+            new TokenPair('access', 'refresh', time() + 300, time() + 3600, []),
+            Request::create('http://demo.example.test/login'),
+        );
+
+        $claims = (array) JWT::decode(
+            (string) $response->headers->getCookies()[0]->getValue(),
+            new Key($signingKey, 'HS256'),
+        );
+        static::assertSame('https://nubit.pe/.well-known/mercure', $claims['aud']);
     }
 }

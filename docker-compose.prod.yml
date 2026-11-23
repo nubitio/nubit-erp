@@ -207,6 +207,10 @@ services:
       # Mercure hub — contenedor separado dunglas/mercure, proxiado por Caddy en /.well-known/mercure
       MERCURE_URL: 'http://mercure/.well-known/mercure'
       MERCURE_PUBLIC_URL: ${MERCURE_PUBLIC_URL:?set MERCURE_PUBLIC_URL in .env.prod}
+      # The `aud` of the subscriber token, pinned to the same value the hub is told below (resource_identifier).
+      # Left to be derived from the request, PHP and the hub can disagree on the scheme behind a TLS-terminating
+      # proxy, and the hub then answers 401 to every subscription.
+      MERCURE_AUDIENCE: ${MERCURE_PUBLIC_URL}
       MERCURE_JWT_SECRET: ${MERCURE_JWT_SECRET:?set MERCURE_JWT_SECRET in .env.prod}
     volumes:
       - app-var:/app/var
@@ -335,6 +339,10 @@ services:
         # at all (cookie-based subscriber auth is opt-in in Mercure.rocks v1+)
         # and every EventSource subscription gets a bare 401 challenge.
         cookie_name mercureAuthorization
+        # The hub derives the audience a token must carry from each request, so behind a TLS-terminating proxy it
+        # expects `http://` while the app signs `https://` (or the reverse). Pin the same canonical value the app
+        # signs (MERCURE_AUDIENCE), whatever scheme or host the request arrives with.
+        resource_identifier ${MERCURE_PUBLIC_URL:?set MERCURE_PUBLIC_URL in .env.prod}
     command: /usr/bin/caddy run --config /etc/caddy/Caddyfile
     mem_limit: 256m
     cpus: 0.5
