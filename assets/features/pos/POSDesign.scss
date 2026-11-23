@@ -86,9 +86,20 @@ html[data-visual-style='nubit'] .pos-shell {
   }
   .pos-grid,
   .pos-skeleton-grid {
-    grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
     padding: 1px;
+  }
+  .pos-skeleton-card__top {
+    display: block;
+  }
+  .pos-skeleton-card__media {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+  .pos-skeleton-card__stock {
+    display: none;
   }
   .pos-product-card {
     padding: 0;
@@ -123,22 +134,25 @@ html[data-visual-style='nubit'] .pos-shell {
     border-color: var(--nb-color-border-focus);
     box-shadow: 0 0 0 1px var(--nb-color-border-focus);
   }
+  // The photo leads the card: a 4:3 frame filled edge to edge (object-fit: cover).
   .pos-product-card__thumb {
     width: 100%;
-    height: 56px;
-    flex: 0 0 56px;
-    margin: 0;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    flex: 0 0 auto;
+    margin: 0 0 4px;
     border-radius: 8px;
     background: var(--pos-card-alt);
-    font-size: 20px;
+    font-size: 40px;
     color: var(--pos-muted);
   }
   .pos-product-card__image {
-    object-fit: contain;
+    object-fit: cover;
+    object-position: center;
   }
   .pos-product-card__title {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 17px;
     height: 34px;
     margin: 0;
@@ -564,9 +578,12 @@ html[data-visual-style='nubit'] .pos-shell {
   // The catalog price editor is an exception, not part of the selling path.
   .pos-product-card__edit-price {
     opacity: 0;
-    top: 6px;
+    top: 12px;
     bottom: auto;
-    right: 6px;
+    right: 12px;
+    // Sits over the photo, so it needs its own surface to stay legible.
+    background: color-mix(in srgb, var(--pos-card) 88%, transparent);
+    box-shadow: 0 1px 3px color-mix(in srgb, #000 22%, transparent);
     transition: opacity 120ms ease;
   }
   .pos-product-card:hover .pos-product-card__edit-price,
