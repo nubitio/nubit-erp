@@ -37,6 +37,7 @@ import { getCoreApiBaseUrl } from '@nubitio/core';
 import { useCashSession } from '@features/cashRegister/hooks/useCashSession';
 import { CashOpenDialog } from '@features/cashRegister/components/CashOpenDialog';
 import { hasPermission } from '@shared/permissions';
+import { useSettingsDialog } from '@app/profile';
 
 const Assistant = lazy(() => import('@features/assistant/Assistant'));
 // Counting the drawer and the cut are used once a shift: they are not worth the first paint.
@@ -51,7 +52,12 @@ const CashMovementsDialog = lazy(() =>
   })),
 );
 
-const POSPage = () => {
+interface POSPageProps {
+  /** Ends the session. Injected by the app, which owns authentication. */
+  onSignOut?: () => void;
+}
+
+const POSPage = ({ onSignOut }: POSPageProps) => {
   const themeContext = useContext(ThemeContext);
   const resolvedTheme = themeContext?.theme ?? 'light';
 
@@ -72,6 +78,7 @@ const POSPage = () => {
   const enforceStockCheck = stockPolicy === 'STRICT';
   // The cash session is the server's to decide: sales are tied to the one this user opened.
   const cashSession = useCashSession();
+  const { open: openSettings } = useSettingsDialog();
   const cajaAbierta = cashSession.session !== null;
   const cajaOpenedAt = cashSession.session?.openedAt ?? null;
   const [openCajaDialogOpen, setOpenCajaDialogOpen] = useState(false);
@@ -608,6 +615,8 @@ const POSPage = () => {
       onOpenCaja={() => setOpenCajaDialogOpen(true)}
       onCloseCaja={() => setCloseCajaDialogOpen(true)}
       onCashMovements={() => setCashMovementsOpen(true)}
+      onOpenProfile={() => openSettings('account')}
+      onSignOut={onSignOut}
       assistantEnabled={assistantEnabled}
       onAssistantClick={() => setAssistantOpen((open) => !open)}
       heldSalesCount={heldSales.length}

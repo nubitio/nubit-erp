@@ -68,7 +68,14 @@ async function closeCajaFromPos(page: Page, countedCash?: string) {
 
   const confirm = page.getByRole('alertdialog', { name: 'Cerrar caja' });
   await expect(confirm).toContainText('El conteo coincide con lo esperado');
+  const closeResponse = page.waitForResponse(
+    (response) =>
+      /\/api\/cash-sessions\/\d+\/close$/.test(response.url()) &&
+      response.request().method() === 'POST',
+  );
   await confirm.getByRole('button', { name: 'Sí' }).click();
+  const closed = await closeResponse;
+  expect(closed.ok(), `cierre: ${closed.status()} ${await closed.text()}`).toBeTruthy();
   await expect(dialog).toBeHidden({ timeout: 20_000 });
   await waitForCajaState(page, 'Cerrada');
 }
@@ -167,10 +174,12 @@ test('un estado de caja desactualizado se corrige: el POS cierra lo que el servi
       })),
     },
   });
-  expect(close.ok(), 'el cierre por API debe funcionar').toBeTruthy();
+  expect(close.ok(), `cierre por API: ${close.status()} ${await close.text()}`).toBeTruthy();
 
-  // Returning to the tab revalidates: the POS must not keep claiming the caja is open.
-  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  // Coming back to the tab (visibilitychange) revalidates: the POS must not keep claiming the caja is open.
+  await page.evaluate(() =>
+    document.dispatchEvent(new Event('visibilitychange', { bubbles: true })),
+  );
   await waitForCajaState(page, 'Cerrada');
   await expect(page.getByTestId('pos-open-payment-btn')).toBeDisabled();
 
@@ -187,7 +196,7 @@ test('Cajas y turnos vive en Finanzas, no como ítem suelto', async ({ page }) =
   await expect(sidebar.getByRole('button', { name: 'Finanzas', exact: true })).toBeVisible({
     timeout: 25_000,
   });
-  await expect(sidebar.getByRole('link', { name: 'Caja', exact: true })).toHaveCount(0);
+  await expect(sidebar.getByRole('button', { name: 'Caja', exact: true })).toHaveCount(0);
 
   const finance = sidebar.getByRole('button', { name: 'Finanzas', exact: true });
   await expect(async () => {
@@ -195,10 +204,10 @@ test('Cajas y turnos vive en Finanzas, no como ítem suelto', async ({ page }) =
     await expect(finance).toHaveAttribute('aria-expanded', 'true', { timeout: 1_000 });
   }).toPass({ timeout: 10_000 });
 
-  await sidebar.getByRole('link', { name: 'Cajas y turnos' }).click();
+  await sidebar.getByRole('button', { name: 'Cajas y turnos' }).click();
   await expect(page).toHaveURL(/\/cashbox\/dashboard/);
   // The sections stay reachable from the page itself: they are not sidebar sub-items.
   for (const section of ['Cajas', 'Registros', 'Categorías']) {
-    await expect(page.getByRole('link', { name: section, exact: true }).first()).toBeVisible();
+    await expect(page.getByText(section, { exact: true }).first()).toBeVisible();
   }
 });

@@ -38,12 +38,20 @@ readonly class CashPosStateProvider implements ProviderInterface
             throw new UnauthorizedHttpException('Bearer', 'Usuario no autenticado.');
         }
 
-        $row = $this->connection->fetchAssociative("SELECT cs.id, cs.cash_register_id, cr.name, cs.opened_at, cs.opening_amount
+        // The POS works on one branch: a user who also has a session open in another branch must not get
+        // that one here (closing it is scoped to the current branch and would answer 404).
+        $branchId = $this->branchContext->getCurrentBranchId();
+        $row = $this->connection->fetchAssociative(
+            "SELECT cs.id, cs.cash_register_id, cr.name, cs.opened_at, cs.opening_amount
              FROM cash_sessions cs
              JOIN cash_register cr ON cr.id = cs.cash_register_id
-             WHERE cs.opened_by = ? AND cs.status = 'OPEN'
+             WHERE cs.opened_by = ? AND cs.status = 'OPEN'"
+            . ($branchId === null ? '' : ' AND cr.branch_id = ?')
+            . '
              ORDER BY cs.opened_at DESC, cs.id DESC
-             LIMIT 1", [$user->userId]);
+             LIMIT 1',
+            $branchId === null ? [$user->userId] : [$user->userId, $branchId],
+        );
 
         $session = $row === false
             ? null
@@ -58,7 +66,6 @@ readonly class CashPosStateProvider implements ProviderInterface
                 )->__toString(),
             ];
 
-        $branchId = $this->branchContext->getCurrentBranchId();
         $available = [];
         $busy = [];
         if ($session === null && $branchId !== null) {

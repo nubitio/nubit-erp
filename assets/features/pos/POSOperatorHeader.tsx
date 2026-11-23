@@ -48,6 +48,10 @@ interface POSOperatorHeaderProps {
   onCloseCaja?: () => void;
   /** Opens the partial cut (Reporte X) and the cash in/out of the shift. */
   onCashMovements?: () => void;
+  /** Opens the user's own settings (profile, password, appearance) over the POS. */
+  onOpenProfile?: () => void;
+  /** Ends the user's session. A shift left open stays open on the server. */
+  onSignOut?: () => void;
   assistantEnabled?: boolean;
   onAssistantClick?: () => void;
   heldSalesCount?: number;
@@ -77,6 +81,8 @@ export function POSOperatorHeader({
   onOpenCaja,
   onCloseCaja,
   onCashMovements,
+  onOpenProfile,
+  onSignOut,
   assistantEnabled = false,
   onAssistantClick,
   heldSalesCount = 0,
@@ -91,6 +97,7 @@ export function POSOperatorHeader({
   const [warehouseConfirmOpen, setWarehouseConfirmOpen] = useState(false);
   const pendingWarehouseIdRef = useRef<string | null>(null);
   const [closeCajaConfirmOpen, setCloseCajaConfirmOpen] = useState(false);
+  const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
   const { mode: themeMode, switchTheme } = useTheme();
 
   useEffect(() => {
@@ -114,6 +121,25 @@ export function POSOperatorHeader({
     }
     onCloseCaja?.();
   }
+
+  // Signing out is not closing the shift, and the cart draft belongs to the till, not to the user:
+  // say so before leaving either behind for whoever signs in next.
+  function requestSignOut() {
+    if (cajaAbierta || cartItemsCount > 0) {
+      setSignOutConfirmOpen(true);
+      return;
+    }
+    onSignOut?.();
+  }
+
+  const signOutMessage = [
+    cartItemsCount > 0 ? 'Hay productos en el carrito y quien entre después los verá.' : null,
+    cajaAbierta
+      ? 'Tu caja sigue abierta: cerrar sesión no cierra el turno. Si terminaste, ciérrala antes.'
+      : null,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   function handleWarehouseChange(newId: string) {
     if (hasCartItems && newId !== selectedWarehouseId) {
@@ -191,6 +217,19 @@ export function POSOperatorHeader({
       icon: 'ph ph-question',
       onClick: onShowShortcuts,
     },
+    ...(onOpenProfile
+      ? [{ label: 'Mi perfil', icon: 'ph ph-user-circle', onClick: onOpenProfile, separator: true }]
+      : []),
+    ...(onSignOut
+      ? [
+          {
+            label: 'Cerrar sesión',
+            icon: 'ph ph-sign-out',
+            onClick: requestSignOut,
+            separator: !onOpenProfile,
+          },
+        ]
+      : []),
   ];
 
   const dialogs = (
@@ -216,6 +255,21 @@ export function POSOperatorHeader({
           setWarehouseConfirmOpen(false);
           pendingWarehouseIdRef.current = null;
         }}
+      />
+
+      {/* ── Sign out confirmation ── */}
+      <ConfirmDialog
+        open={signOutConfirmOpen}
+        title="Cerrar sesión"
+        message={`${signOutMessage} ¿Cerrar sesión igualmente?`}
+        confirmLabel="Cerrar sesión"
+        cancelLabel="Cancelar"
+        variant="warning"
+        onConfirm={() => {
+          setSignOutConfirmOpen(false);
+          onSignOut?.();
+        }}
+        onCancel={() => setSignOutConfirmOpen(false)}
       />
 
       {/* ── Close caja confirmation ── */}

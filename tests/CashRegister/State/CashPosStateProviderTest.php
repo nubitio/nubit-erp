@@ -134,4 +134,22 @@ final class CashPosStateProviderTest extends TestCase
 
         static::assertSame([], $state->busyRegisters);
     }
+
+    public function testOnlyLooksForTheSessionOfTheCurrentBranch(): void
+    {
+        $security = $this->createStub(Security::class);
+        $security->method('connectedUser')->willReturn(new AuthUserDto(userId: 7, username: 'cajero'));
+        $branch = $this->createStub(BranchContextServiceInterface::class);
+        $branch->method('getCurrentBranchId')->willReturn('branch-1');
+
+        $connection = $this->createMock(Connection::class);
+        $connection
+            ->expects($this->once())
+            ->method('fetchAssociative')
+            ->with(static::stringContains('cr.branch_id = ?'), [7, 'branch-1'])
+            ->willReturn(false);
+        $connection->method('fetchAllAssociative')->willReturn([]);
+
+        new CashPosStateProvider($connection, $security, $branch)->provide(new Get());
+    }
 }

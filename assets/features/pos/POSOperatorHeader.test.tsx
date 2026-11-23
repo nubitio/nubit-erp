@@ -117,6 +117,53 @@ describe('POSOperatorHeader bar', () => {
   });
 });
 
+describe('POSOperatorHeader session', () => {
+  it('opens the user profile from the menu', async () => {
+    const onOpenProfile = vi.fn();
+    renderHeader({ onOpenProfile });
+    await userEvent.click(screen.getByRole('button', { name: 'Más opciones' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: /Mi perfil/ }));
+    expect(onOpenProfile).toHaveBeenCalledTimes(1);
+  });
+
+  it('signs out at once when there is no shift open and no cart to leave behind', async () => {
+    const onSignOut = vi.fn();
+    renderHeader({ onSignOut, cajaAbierta: false });
+    await userEvent.click(screen.getByRole('button', { name: 'Más opciones' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: /Cerrar sesión/ }));
+    expect(onSignOut).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+  });
+
+  it('warns that signing out does not close the shift, and signs out only when confirmed', async () => {
+    const onSignOut = vi.fn();
+    renderHeader({ onSignOut, cajaAbierta: true });
+    await userEvent.click(screen.getByRole('button', { name: 'Más opciones' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: /Cerrar sesión/ }));
+
+    const dialog = await screen.findByRole('alertdialog');
+    expect(dialog.textContent).toMatch(/no cierra el turno/);
+    expect(onSignOut).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
+    expect(onSignOut).toHaveBeenCalledTimes(1);
+  });
+
+  it('warns that the next person will see the cart', async () => {
+    renderHeader({ onSignOut: vi.fn(), cajaAbierta: false, cartItemsCount: 2, hasCartItems: true });
+    await userEvent.click(screen.getByRole('button', { name: 'Más opciones' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: /Cerrar sesión/ }));
+
+    expect((await screen.findByRole('alertdialog')).textContent).toMatch(/quien entre después/);
+  });
+
+  it('lists profile and sign out as buttons in the options panel', () => {
+    renderHeader({ variant: 'panel', onOpenProfile: vi.fn(), onSignOut: vi.fn() });
+    expect(screen.getByRole('button', { name: 'Mi perfil' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeTruthy();
+  });
+});
+
 describe('POSOperatorHeader shortcuts', () => {
   it('delegates "Atajos de teclado" to the page', async () => {
     const onShowShortcuts = vi.fn();
