@@ -45,6 +45,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Index(name: 'IDX_TAX_DOCUMENT_CUSTOMER', columns: ['customer_id'])]
 #[ORM\Index(name: 'IDX_TAX_DOCUMENT_SALE_ID', columns: ['sale_id'])]
 #[ORM\Index(name: 'idx_tax_document_sunat_status', columns: ['sunat_status'])]
+#[ORM\Index(name: 'IDX_TAX_DOCUMENT_CREATED_BY', columns: ['created_by_user_id', 'created_at'])]
 #[Auditable]
 #[ApiResource(
     operations: [
@@ -287,6 +288,10 @@ class TaxDocument
 
     #[ORM\Column(name: 'updated_at', type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $updatedAt;
+
+    /** Who issued the document. NULL for documents issued before the author was recorded. */
+    #[ORM\Column(name: 'created_by_user_id', type: Types::INTEGER, nullable: true)]
+    private ?int $createdByUserId = null;
 
     public function __construct()
     {
@@ -723,6 +728,18 @@ class TaxDocument
     public function setCdrPath(?string $cdrPath): self
     {
         $this->cdrPath = $cdrPath;
+
+        return $this;
+    }
+
+    public function getCreatedByUserId(): ?int
+    {
+        return $this->createdByUserId;
+    }
+
+    public function setCreatedByUserId(?int $createdByUserId): self
+    {
+        $this->createdByUserId = $createdByUserId;
 
         return $this;
     }

@@ -48,6 +48,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(name: 'idx_sales_device_synced', columns: ['device_id', 'synced_at'])]
 #[ORM\Index(name: 'idx_sales_serie_numero', columns: ['series', 'number'])]
 #[ORM\Index(name: 'idx_sales_issued_date_branch', columns: ['issued_date', 'branch_id', 'status'])]
+#[ORM\Index(name: 'IDX_SALES_VOIDED', columns: ['voided_at', 'voided_by_user_id'])]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     shortName: 'Sale',
@@ -175,6 +176,16 @@ class SaleRecord
     private ?int $syncedByUserId = null;
 
     #[Groups(['sale_record:read'])]
+    /** Who voided the sale. NULL for sales voided before the author was recorded. */
+    #[ORM\Column(name: 'voided_by_user_id', type: 'integer', nullable: true)]
+    private ?int $voidedByUserId = null;
+
+    #[ORM\Column(name: 'voided_at', type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?DateTimeInterface $voidedAt = null;
+
+    #[ORM\Column(name: 'void_reason', type: 'string', length: 255, nullable: true)]
+    private ?string $voidReason = null;
+
     #[ORM\Column(name: 'status', type: 'string', length: 30, options: ['default' => 'COMPLETED'])]
     #[ApiProperty(description: 'sale_record.status.label')]
     private string $status = 'COMPLETED';
@@ -635,6 +646,31 @@ class SaleRecord
     public function getSellerUserId(): ?int
     {
         return $this->sellerUserId;
+    }
+
+    public function getVoidedByUserId(): ?int
+    {
+        return $this->voidedByUserId;
+    }
+
+    public function getVoidedAt(): ?DateTimeInterface
+    {
+        return $this->voidedAt;
+    }
+
+    public function getVoidReason(): ?string
+    {
+        return $this->voidReason;
+    }
+
+    public function recordVoid(?int $userId, DateTimeInterface $at, ?string $reason): static
+    {
+        $this->voidedByUserId = $userId;
+        $this->voidedAt = $at;
+        $reason = $reason === null ? null : mb_substr(trim($reason), 0, 255);
+        $this->voidReason = $reason === '' ? null : $reason;
+
+        return $this;
     }
 
     public function getSyncedByUserId(): ?int

@@ -400,7 +400,7 @@ readonly class SalesWriteGateway
         );
     }
 
-    public function markVoided(SaleRecord $sale, ?string $reason = null): void
+    public function markVoided(SaleRecord $sale, ?string $reason = null, ?int $voidedByUserId = null): void
     {
         $saleId = $sale->getId();
         if ($saleId === null) {
@@ -418,6 +418,9 @@ readonly class SalesWriteGateway
                 UPDATE sales
                 SET
                     status = 'VOIDED',
+                    voided_by_user_id = COALESCE(voided_by_user_id, :voided_by),
+                    voided_at = COALESCE(voided_at, :updated_at),
+                    void_reason = COALESCE(void_reason, :void_reason),
                     updated_at = :updated_at,
                     sync_status = 'SYNCED',
                     synced_at = :updated_at,
@@ -428,6 +431,8 @@ readonly class SalesWriteGateway
             [
                 'id' => $saleId,
                 'updated_at' => $updatedAt->format('Y-m-d H:i:s'),
+                'voided_by' => $voidedByUserId,
+                'void_reason' => mb_substr($voidReason, 0, 255),
             ],
         );
 

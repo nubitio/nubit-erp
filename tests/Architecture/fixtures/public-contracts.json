@@ -11,6 +11,10 @@
     "App\\Efact\\Domain\\ActivatableInterface": [
         "getIsActive(): bool"
     ],
+    "App\\Identity\\Activity\\SalesActivityInterface": [
+        "creditNoteIssued(string $creditNote, ?string $affectedDocument, ?string $reason): void",
+        "saleVoided(string $document, string $total, string $reason): void"
+    ],
     "App\\Identity\\Auth\\BranchContextServiceInterface": [
         "getCurrentBranchId(): ?string",
         "hasBranch(): bool"

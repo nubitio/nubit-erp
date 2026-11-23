@@ -7,6 +7,7 @@ namespace App\Billing\Sale;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Sale\Void\CashRefundRegistrar;
 use App\Billing\Sale\Void\ReceivableVoidReverser;
+use App\Billing\Sale\Void\SaleVoidActivity;
 use App\Billing\Sale\Void\StockVoidReverserInterface;
 use App\Billing\Sale\Void\SunatVoidService;
 use App\Billing\Sale\Void\TaxDocumentVoidUpdater;
@@ -40,6 +41,7 @@ readonly class SaleVoidUseCase
         private SaleV2Loader $saleV2Loader,
         private StockVoidReverserInterface $stockVoidReverser,
         private ReceivableVoidReverser $receivableVoidReverser,
+        private SaleVoidActivity $voidActivity,
         private ?TreasuryRefunds $treasuryRefunds = null,
     ) {}
 
@@ -99,7 +101,7 @@ readonly class SaleVoidUseCase
                 $this->treasuryRefunds?->reverseNonCashPayments($sale, $userId);
                 $this->receivableVoidReverser->reverse($sale);
                 $this->salesWriteGateway->zeroReceivableBalance($saleId);
-                $this->syncVoidToSalesV2($sale, $reason);
+                $this->syncVoidToSalesV2($sale, $reason, $userId);
 
                 if ($restoreStock) {
                     $this->stockVoidReverser->reverse($sale);
@@ -121,6 +123,7 @@ readonly class SaleVoidUseCase
                 'message' => ErrorMessages::VOID_SUCCESSFUL,
                 'restore_stock' => $restoreStock,
             ]);
+            $this->voidActivity->voided($sale, $reason);
 
             return new ApiResponse(true, ErrorMessages::VOID_SUCCESSFUL);
         }
@@ -162,7 +165,7 @@ readonly class SaleVoidUseCase
             $this->salesWriteGateway->zeroReceivableBalance($saleId);
 
             $this->entityManager->flush();
-            $this->syncVoidToSalesV2($sale, $reason);
+            $this->syncVoidToSalesV2($sale, $reason, $userId);
 
             if ($restoreStock) {
                 $this->stockVoidReverser->reverse($sale);
@@ -180,6 +183,7 @@ readonly class SaleVoidUseCase
                 'success' => $sunatResponse->success,
                 'message' => $message,
             ]);
+            $this->voidActivity->voided($sale, $reason, confirmed: $sunatResponse->success);
 
             return new ApiResponse($sunatResponse->success, $message);
         } catch (\Throwable $throwable) {
@@ -194,10 +198,10 @@ readonly class SaleVoidUseCase
         }
     }
 
-    private function syncVoidToSalesV2(SaleRecord $sale, string $reason): void
+    private function syncVoidToSalesV2(SaleRecord $sale, string $reason, int $userId): void
     {
         try {
-            $this->salesWriteGateway->markVoided($sale, $reason);
+            $this->salesWriteGateway->markVoided($sale, $reason, $userId);
         } catch (\Throwable $exception) {
             $this->auditLogger->log('sale.void.sales_v2_sync_failed', [
                 'sale_id' => $sale->getId(),

@@ -12,13 +12,16 @@ use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Service\CreditNoteLinePreparer;
 use App\Billing\Service\CreditNoteStockReverserInterface;
 use App\Billing\Shared\Enum\CreditNoteReason;
+use App\Identity\Activity\SalesActivityInterface;
 use App\Identity\Auth\BranchContextService;
+use App\Identity\Entity\User;
 use App\Organization\Repository\BranchRepository;
 use App\Sales\State\SalesWriteGateway;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Nubit\Platform\Exception\ServiceException;
 use Override;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
@@ -42,6 +45,8 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private CreditNoteStockReverserInterface $creditNoteStockReverser,
         private CreditNoteLinePreparer $creditNoteLinePreparer,
+        private Security $security,
+        private SalesActivityInterface $activity,
     ) {}
 
     /**
@@ -129,6 +134,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
 
             if ($isNew) {
                 $data->setCreatedAt(new DateTime());
+                $data->setCreatedByUserId($this->currentUserId());
 
                 // Set the branch from the current user's session
                 $branchId = $this->branchContextService->getCurrentBranchId();
@@ -152,6 +158,10 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
             }
 
             $transactionConnection?->commit();
+
+            if ($isNew && $data->getReasonCode() !== null) {
+                $this->recordCreditNoteActivity($data);
+            }
 
             return $result;
         } catch (\Throwable $exception) {
@@ -189,15 +199,33 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         }
 
         $now = new \DateTimeImmutable();
+        $voidReason = 'Nota de crédito: ' . $creditNote->getFullNumber();
         $saleRecord->setStatus('VOIDED');
         $saleRecord->setDateUpdated($now);
+        $saleRecord->recordVoid($this->currentUserId(), $now, $voidReason);
         $this->entityManager->flush();
 
         try {
-            $this->salesWriteGateway->markVoided($saleRecord, 'Nota de crédito: ' . $creditNote->getFullNumber());
+            $this->salesWriteGateway->markVoided($saleRecord, $voidReason, $this->currentUserId());
         } catch (\Throwable) {
             // V2 sync failure is non-fatal here; the ORM entity is already updated.
         }
+    }
+
+    private function currentUserId(): ?int
+    {
+        $user = $this->security->getUser();
+
+        return $user instanceof User ? $user->getId() : null;
+    }
+
+    private function recordCreditNoteActivity(TaxDocument $creditNote): void
+    {
+        $this->activity->creditNoteIssued(
+            $creditNote->getFullNumber(),
+            $creditNote->getAffectedDocument(),
+            $creditNote->getReasonDescription(),
+        );
     }
 
     private function acquireCreditNoteLock(?TaxDocument $document): ?string

@@ -10,6 +10,7 @@ use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Sale\SaleVoidUseCase;
 use App\Billing\Sale\Void\CashRefundRegistrar;
 use App\Billing\Sale\Void\ReceivableVoidReverser;
+use App\Billing\Sale\Void\SaleVoidActivity;
 use App\Billing\Sale\Void\StockVoidReverserInterface;
 use App\Billing\Sale\Void\SunatVoidResponse;
 use App\Billing\Sale\Void\SunatVoidService;
@@ -517,7 +518,10 @@ final class SaleVoidUseCaseTest extends TestCase
         $saleV2Loader->method('loadAsSale')->willReturn($sale);
 
         $salesWriteGateway = $this->createMock(SalesWriteGateway::class);
-        $salesWriteGateway->expects(self::once())->method('markVoided')->with($sale, 'sync-reason');
+        $salesWriteGateway
+            ->expects(self::once())
+            ->method('markVoided')
+            ->with($sale, 'sync-reason', self::isType('int'));
 
         $useCase = $this->buildUseCase(
             $em,
@@ -1121,6 +1125,7 @@ final class SaleVoidUseCaseTest extends TestCase
             saleV2Loader: $saleV2Loader,
             stockVoidReverser: $this->createMock(StockVoidReverserInterface::class),
             receivableVoidReverser: $receivableVoidReverser,
+            voidActivity: $this->createMock(SaleVoidActivity::class),
         );
     }
 

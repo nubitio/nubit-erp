@@ -15,7 +15,7 @@ export interface ActivityItem {
   ip: string | null;
 }
 
-export type ActivityTypeFilter = 'sensitive' | 'all' | 'auth' | 'user' | 'role';
+export type ActivityTypeFilter = 'sensitive' | 'all' | 'auth' | 'user' | 'role' | 'sale';
 export type ActivityRange = 'today' | '7d' | '30d' | 'all';
 
 export interface ActivityFilters {
@@ -50,6 +50,7 @@ export const TYPE_OPTIONS: { value: ActivityTypeFilter; label: string }[] = [
   { value: 'auth', label: 'Ingresos y seguridad' },
   { value: 'user', label: 'Usuarios' },
   { value: 'role', label: 'Roles y permisos' },
+  { value: 'sale', label: 'Ventas y comprobantes' },
 ];
 
 export const RANGE_OPTIONS: { value: ActivityRange; label: string }[] = [
@@ -141,6 +142,10 @@ export function activityIcon(type: string): string {
       return 'ph ph-shield-check';
     case 'role.permissions_changed':
       return 'ph ph-user-gear';
+    case 'sale.voided':
+      return 'ph ph-prohibit';
+    case 'sale.credit_note_issued':
+      return 'ph ph-receipt-x';
     default:
       return type.startsWith('auth.') ? 'ph ph-key' : 'ph ph-user';
   }

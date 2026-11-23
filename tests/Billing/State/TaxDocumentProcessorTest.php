@@ -15,6 +15,7 @@ use App\Billing\Service\CreditNoteLinePreparer;
 use App\Billing\Service\CreditNoteReturnSelector;
 use App\Billing\Service\CreditNoteStockReverserInterface;
 use App\Billing\State\TaxDocumentProcessor;
+use App\Identity\Activity\SalesActivityInterface;
 use App\Identity\Auth\BranchContextService;
 use App\Organization\Entity\Branch;
 use App\Organization\Repository\BranchRepository;
@@ -368,6 +369,8 @@ final class TaxDocumentProcessorTest extends TestCase
             $processor,
             $this->createMock(CreditNoteStockReverserInterface::class),
         );
+        $reflection->getProperty('security')->setValue($processor, $this->createStub(SecurityComponent::class));
+        $reflection->getProperty('activity')->setValue($processor, $this->createStub(SalesActivityInterface::class));
         $tenantSettings = $this->createStub(TenantSettingsService::class);
         $tenantSettings->method('getIgv')->willReturn(18.0);
         $reflection->getProperty('creditNoteLinePreparer')->setValue(
