@@ -24,6 +24,7 @@ final class PermissionCatalog
                 'label' => 'Ventas',
                 'permissions' => [
                     'sales.view' => 'Ver comprobantes',
+                    'sales.view_own' => 'Ver los comprobantes de sus propias ventas',
                     'sales.create' => 'Emitir comprobantes',
                     'sales.void' => 'Anular comprobantes',
                     'sales.export' => 'Exportar ventas',

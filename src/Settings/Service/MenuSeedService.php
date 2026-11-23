@@ -7,9 +7,26 @@ namespace App\Settings\Service;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\ParameterType;
 
 class MenuSeedService
 {
+    /** The Cajero role of every tenant (`InitialSetupService`); the web app also lands it on the POS. */
+    public const int CASHIER_ROLE_ID = 3;
+
+    public const int POS_MENU_ID = 201;
+
+    /**
+     * Roles that see only part of the menu, by role id and the menu ids they get. A cashier's whole day is
+     * the point of sale (shift, profile and sign-out are in its menu), so the sidebar has nothing else to
+     * offer. The API permissions are a separate matter: they stay what the POS needs to work.
+     *
+     * @var array<int, list<int>>
+     */
+    public const array ROLE_MENUS = [
+        self::CASHIER_ROLE_ID => [self::POS_MENU_ID],
+    ];
+
     /**
      * Menú operativo agrupado: uso diario sin acordeón, y tres grupos
      * colapsables (Compras, Finanzas, Cumplimiento) que unifican pantallas
@@ -418,9 +435,15 @@ class MenuSeedService
             $this->upsertMenu($menu);
         }
 
-        // Grant all roles access to all menus (role-level filtering handled elsewhere).
-        $this->connection->executeStatement('INSERT INTO menu_rol (menu_id, role_id)
-             SELECT m.id, r.rol_id FROM menu m CROSS JOIN rol r');
+        // Every role gets every menu (what each one finally sees is refined by permissions), except the
+        // roles that have a menu of their own.
+        $this->connection->executeStatement(
+            'INSERT INTO menu_rol (menu_id, role_id)
+             SELECT m.id, r.rol_id FROM menu m CROSS JOIN rol r WHERE r.rol_id NOT IN (?)',
+            [array_keys(self::ROLE_MENUS)],
+            [ArrayParameterType::INTEGER],
+        );
+        $this->grantRoleMenus();
     }
 
     /**
@@ -456,10 +479,29 @@ class MenuSeedService
         );
         $this->connection->executeStatement(
             'INSERT IGNORE INTO menu_rol (menu_id, role_id)
-             SELECT m.id, r.rol_id FROM menu m CROSS JOIN rol r WHERE m.id IN (?)',
-            [$menuIds],
-            [ArrayParameterType::INTEGER],
+             SELECT m.id, r.rol_id FROM menu m CROSS JOIN rol r WHERE m.id IN (?) AND r.rol_id NOT IN (?)',
+            [$menuIds, array_keys(self::ROLE_MENUS)],
+            [ArrayParameterType::INTEGER, ArrayParameterType::INTEGER],
         );
+        $this->grantRoleMenus();
+    }
+
+    /**
+     * Gives the roles with a menu of their own exactly that menu. It only adds: a menu the tenant took away
+     * from them stays removed, and nothing else is ever backfilled for them.
+     *
+     * @throws Exception
+     */
+    private function grantRoleMenus(): void
+    {
+        foreach (self::ROLE_MENUS as $roleId => $menuIds) {
+            $this->connection->executeStatement(
+                'INSERT IGNORE INTO menu_rol (menu_id, role_id)
+                 SELECT m.id, r.rol_id FROM menu m JOIN rol r ON r.rol_id = ? WHERE m.id IN (?)',
+                [$roleId, $menuIds],
+                [ParameterType::INTEGER, ArrayParameterType::INTEGER],
+            );
+        }
     }
 
     /**

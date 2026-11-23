@@ -195,8 +195,12 @@ readonly class InitialSetupService
             ]);
         }
 
+        // What the point of sale needs and nothing else. `sales.view_own` instead of `sales.view`: after a
+        // sale the POS prints the ticket, shows its SUNAT state and e-mails it, all on the cashier's own
+        // sales, without opening the branch's sales ledger. Catalogue, customers and stock are read by the
+        // POS itself (products, customer picker, stock per warehouse).
         $cashierPermissions = [
-            'sales.view',
+            'sales.view_own',
             'sales.create',
             'sales.collect',
             'pos.access',
@@ -204,6 +208,9 @@ readonly class InitialSetupService
             'cash.view',
             'cash.open',
             'cash.close',
+            // Asks for and hands over change, pays a small expense, takes the surplus to the safe. The reasons
+            // it can pick are only the manual ones (see CashMovementCategory::isManual).
+            'cash.movement',
             'inventory.view',
             'catalog.view',
             'customers.view',

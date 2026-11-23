@@ -7,6 +7,7 @@ namespace App\Billing\Controller\Api;
 use App\Billing\Invoice\Domain\InvoiceConsultUseCase;
 use App\Billing\Repository\TaxDocumentRepository;
 use App\Billing\Service\CreditNoteService;
+use App\Sales\Security\SaleReadAccess;
 use Exception;
 use League\Flysystem\FilesystemException;
 use Nubit\Platform\Exception\ServiceException;
@@ -21,11 +22,13 @@ class ConsultInvoice extends AbstractController
         private readonly InvoiceConsultUseCase $invoiceConsultUseCase,
         private readonly CreditNoteService $creditNoteService,
         private readonly TaxDocumentRepository $taxDocumentRepository,
+        private readonly SaleReadAccess $access,
     ) {}
 
     public function __invoke(Request $request): Response
     {
         $id = $request->get('id');
+        $this->access->assertCanReadTaxDocument((string) $id);
 
         $taxDocument = $this->taxDocumentRepository->find($id);
 

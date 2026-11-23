@@ -119,7 +119,7 @@ final class SaleQuoteAuthorizationTest extends TestCase
             'sale_quotes.void',
         ];
         $cashier = [
-            'sales.view',
+            'sales.view_own',
             'sales.create',
             'sales.collect',
             'pos.access',

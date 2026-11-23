@@ -83,7 +83,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             controller: ConsultInvoice::class,
             read: false,
             deserialize: false,
-            security: "is_granted('perm:sales.view')",
+            security: "is_granted('perm:sales.view') or is_granted('perm:sales.view_own')",
         ),
         new Post(
             uriTemplate: '/tax-documents/{id}/validate',
@@ -104,7 +104,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
             controller: SendInvoiceEmail::class,
             read: false,
             deserialize: false,
-            security: "is_granted('perm:sales.view')",
+            security: "is_granted('perm:sales.view') or is_granted('perm:sales.view_own')",
         ),
     ],
     normalizationContext: ['groups' => ['invoice:read', 'creditnote:read']],
