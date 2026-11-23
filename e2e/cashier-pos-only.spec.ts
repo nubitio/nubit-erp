@@ -161,6 +161,42 @@ test('el cajero entra al POS, vende y solo ve sus propios comprobantes', async (
     expect(forbidden, 'ninguna llamada del POS puede dar 403').toEqual([]);
   });
 
+  await test.step('registra un gasto menor a mano, pero no una venta en efectivo', async () => {
+    const sessionId = (
+      (await (
+        await page.request.get(`${BASE}/api/cash-pos-state`, {
+          headers: { Accept: 'application/json' },
+        })
+      ).json()) as { session?: { id: number } | null }
+    ).session?.id;
+    expect(sessionId, 'tiene su caja abierta').toBeTruthy();
+
+    type Category = { id: number; code: string; manual: boolean };
+    const body = (await (
+      await page.request.get(`${BASE}/api/cash-movement-categories?itemsPerPage=100`, {
+        headers: { Accept: 'application/json' },
+      })
+    ).json()) as Category[] | { member?: Category[] };
+    const categories = Array.isArray(body) ? body : (body.member ?? []);
+    const pettyCash = categories.find((category) => category.code === 'petty_cash_expense');
+    const cashSale = categories.find((category) => category.code === 'cash_sale');
+
+    const register = async (categoryId: number) =>
+      page.request.post(`${BASE}/api/cash-movements`, {
+        data: {
+          cashSession: `/api/cash-sessions/${sessionId}`,
+          category: `/api/cash-movement-categories/${categoryId}`,
+          amount: '1.00',
+          description: 'Prueba e2e del cajero',
+        },
+        headers: await csrf(page.request),
+      });
+
+    expect((await register(pettyCash!.id)).status(), 'gasto de caja chica').toBe(201);
+    const refused = await register(cashSale!.id);
+    expect(refused.status(), 'una venta en efectivo la registra el sistema').toBe(422);
+  });
+
   await test.step('no lee las ventas de otros ni el libro de ventas', async () => {
     const others = await page.request.get(`${BASE}/api/sales/${adminSaleId}/print-invoice`);
     expect(others.status(), 'imprimir la venta de otro').toBe(403);
