@@ -8,6 +8,8 @@ use App\Identity\Entity\Role;
 use App\Identity\Entity\User;
 use App\Identity\Repository\RoleRepository;
 use App\Identity\Repository\UserRepository;
+use App\Setup\Demo\Minimarket\MinimarketDemoSeeder;
+use App\Setup\Demo\Minimarket\MinimarketPlan;
 use App\Setup\InitialSetupService;
 use App\Setup\Service\PresentationDemoSeeder;
 use Doctrine\ORM\EntityManagerInterface;
@@ -35,10 +37,14 @@ final class SeedPresentationDemoCommand extends PerTenantCommand
 {
     private const string USERNAME = 'demo@empresa.pe';
     private const string DEFAULT_PASSWORD = 'Demo.2026!';
+    private const string STORY_TRADER = 'comercializadora';
+    private const string STORY_MINIMARKET = 'minimarket';
 
     public function __construct(
         private readonly InitialSetupService $initialSetupService,
         private readonly PresentationDemoSeeder $presentationDemoSeeder,
+        private readonly MinimarketDemoSeeder $minimarketDemoSeeder,
+        private readonly MinimarketPlan $minimarketPlan,
         private readonly ConnectionRegistry $connectionRegistry,
         private readonly UserRepository $userRepository,
         private readonly RoleRepository $roleRepository,
@@ -51,26 +57,40 @@ final class SeedPresentationDemoCommand extends PerTenantCommand
     protected function configure(): void
     {
         parent::configure();
-        $this->addOption(
-            'password',
-            null,
-            InputOption::VALUE_OPTIONAL,
-            'Password for demo@empresa.pe',
-            self::DEFAULT_PASSWORD,
-        )->setHelp(<<<'HELP'
-            Creates an owner account and a concise mini-ERP dataset for a product demonstration:
-            catalog, sales, purchases, receivables/payables, quotes, payroll, banks, assets and ledger.
+        $this
+            ->addOption(
+                'password',
+                null,
+                InputOption::VALUE_OPTIONAL,
+                'Password for demo@empresa.pe',
+                self::DEFAULT_PASSWORD,
+            )
+            ->addOption(
+                'story',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Story to tell: "minimarket" (a neighbourhood shop, two cashiers) or "comercializadora" (the original mini-ERP)',
+                self::STORY_TRADER,
+            )
+            ->setHelp(<<<'HELP'
+                Creates an owner account and a concise mini-ERP dataset for a product demonstration:
+                catalog, sales, purchases, receivables/payables, quotes, payroll, banks, assets and ledger.
 
-            The command is idempotent: once a tenant has products or sales it stops without changing
-            operational data. Use it only on a fresh, dedicated presentation tenant.
+                The command is idempotent: once a tenant has products or sales it stops without changing
+                operational data. Use it only on a fresh, dedicated presentation tenant.
 
-            Example:
-              php bin/console app:demo:seed --tenant=demo --no-interaction
+                Example:
+                  php bin/console app:demo:seed --tenant=demo --no-interaction
+                  php bin/console app:demo:seed --tenant=demo --story=minimarket --no-interaction
 
-            Login after seeding:
-              usuario: demo@empresa.pe
-              contraseña: Demo.2026! (or the value passed with --password)
-            HELP);
+                The minimarket profile tells the story of a neighbourhood shop: two cashiers (maria.cajera,
+                luis.cajero, same password) and 45 days of sales, with the signals the "Control de caja" view
+                is built to show. Nothing in it is random: the story is the same on every run.
+
+                Login after seeding:
+                  usuario: demo@empresa.pe
+                  contraseña: Demo.2026! (or the value passed with --password)
+                HELP);
     }
 
     protected function executeTenantCommand(InputInterface $input, OutputInterface $output): int
@@ -121,6 +141,18 @@ final class SeedPresentationDemoCommand extends PerTenantCommand
             return Command::FAILURE;
         }
 
+        $story = (string) $input->getOption('story');
+        if (!in_array($story, [self::STORY_TRADER, self::STORY_MINIMARKET], true)) {
+            $io->error(sprintf(
+                'Historia desconocida «%s». Use «%s» o «%s».',
+                $story,
+                self::STORY_MINIMARKET,
+                self::STORY_TRADER,
+            ));
+
+            return Command::FAILURE;
+        }
+
         $password = (string) $input->getOption('password');
         if (mb_strlen($password) < 8) {
             $io->error('La contraseña de demo debe tener al menos 8 caracteres.');
@@ -130,6 +162,10 @@ final class SeedPresentationDemoCommand extends PerTenantCommand
 
         $demoUser = $this->upsertDemoAdministrator($password);
         $this->initialSetupService->ensureDefaultVoucherSeriesForAllBranches();
+
+        if ($story === self::STORY_MINIMARKET) {
+            return $this->seedMinimarket($io, $demoUser, $password, (string) $input->getOption('tenant'));
+        }
 
         $io->section('Creando una historia comercial de mini ERP…');
         $stats = $this->presentationDemoSeeder->seed($demoUser);
@@ -148,6 +184,40 @@ final class SeedPresentationDemoCommand extends PerTenantCommand
         $io->note(
             'También incluye cotizaciones, bancos, activos fijos, asientos contables y caja abierta para el POS.',
         );
+
+        return Command::SUCCESS;
+    }
+
+    private function seedMinimarket(
+        SymfonyStyle $io,
+        User $owner,
+        #[\SensitiveParameter]
+        string $password,
+        string $tenant,
+    ): int {
+        if ($this->minimarketPlan->ensure($tenant)) {
+            $io->note(sprintf(
+                'El tenant pasó al plan «%s»: es el que muestra la configuración y el inventario completos.',
+                MinimarketPlan::PLAN,
+            ));
+        }
+
+        $io->section('Abriendo el minimarket…');
+        $stats = $this->minimarketDemoSeeder->seed($owner, $password);
+
+        $io->success('Tenant listo: minimarket de barrio con 45 días de historia.');
+        $io->table(['Incluye', 'Cantidad'], [
+            ['Productos', $stats['products']],
+            ['Clientes con cuenta o factura', $stats['customers']],
+            ['Proveedores', $stats['suppliers']],
+            ['Turnos de caja', $stats['shifts']],
+            ['Ventas registradas', $stats['sales']],
+            ['  de ellas anuladas', $stats['voided']],
+            ['Notas de crédito', $stats['creditNotes']],
+            ['Compras de reposición', $stats['purchases']],
+        ]);
+        $io->writeln(sprintf('<info>Dueña/o: %s / %s</info>', self::USERNAME, $password));
+        $io->writeln(sprintf('<info>Cajeros: maria.cajera y luis.cajero / %s</info>', $password));
 
         return Command::SUCCESS;
     }
