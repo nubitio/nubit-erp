@@ -28,6 +28,9 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
  */
 readonly class CashRegisterCloseProcessor implements ProcessorInterface
 {
+    /** The cash payment method; the one the drawer holds. */
+    private const int CASH_PAYMENT_METHOD_ID = 1;
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private Security $security,
@@ -55,7 +58,13 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
                 if (!is_numeric($countedAmount) || (float) $countedAmount < 0) {
                     throw new UnprocessableEntityHttpException('El monto contado debe ser un número positivo.');
                 }
-                $countedTotal = $countedTotal->plus(BigDecimal::of($countedAmount));
+                // Only the cash in the drawer is compared with what the drawer should hold. The other methods
+                // (Yape, a card...) are checked against the terminal or the bank; adding them here would turn
+                // every digital sale into a surplus.
+                // An item that names no method is a legacy one-line closure: it counts.
+                if (!isset($item['paymentMethod']) || $this->isCash($item['paymentMethod'])) {
+                    $countedTotal = $countedTotal->plus(BigDecimal::of($countedAmount));
+                }
                 if (!empty($item['note'])) {
                     $notes[] = trim((string) $item['note']);
                 }
@@ -133,5 +142,18 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         }
 
         return new CashRegisterCloseResponseDto(success: true, message: 'Caja cerrada correctamente');
+    }
+
+    /** The closure item's `paymentMethod` is an IRI (`/api/payment-methods/1`) or a bare id. */
+    private function isCash(mixed $paymentMethod): bool
+    {
+        if (is_array($paymentMethod)) {
+            $paymentMethod = $paymentMethod['id'] ?? null;
+        }
+        if (!is_string($paymentMethod) && !is_int($paymentMethod)) {
+            return false;
+        }
+
+        return (int) basename((string) $paymentMethod) === self::CASH_PAYMENT_METHOD_ID;
     }
 }

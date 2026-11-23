@@ -51,18 +51,23 @@ Menú **⋯** del POS → **Ventas del turno**. Lista las ventas de tu turno abi
 
 Úsalo cuando el conteo no cuadre: busca la venta con el método equivocado, un cobro duplicado o un vuelto mal dado. Solo ves **tu** turno; el registro de ventas de toda la sucursal es de supervisión (ver sección 3).
 
+**Ventas por método y a crédito.** Bajo el resumen ves cuánto se vendió con cada método (Efectivo, Yape, Plin, tarjeta…). Una **venta a crédito** cuenta como vendida pero **no es dinero todavía**: aparece aparte como *A crédito · por cobrar* y no está en ningún método ni en el efectivo de la caja. Cuando el cliente pague, el cobro entra en el turno en que se cobre.
+
 ### 1.3 Movimientos de caja (ingresos y egresos manuales)
 
 Menú **⋯** → **Movimientos y reporte X**:
 
-- **Reporte X:** corte parcial (apertura, ventas por método, ingresos, egresos y saldo en caja). No cierra el turno.
-- **Registrar un ingreso o egreso:** elige la categoría, el monto y una descripción. Ingreso: fondos que entran y no son ventas (ej. sencillo que deja el supervisor). Egreso: fondos que salen (ej. pago a un proveedor, gastos menores). Requiere el permiso `cash.movement`; el rol Cajero por defecto **no** lo tiene, así que lo registra un supervisor.
+- **Reporte X:** corte parcial (apertura, ventas por método y a crédito, ingresos, egresos y saldo en caja). No cierra el turno. Siempre muestra los datos al momento de abrirlo. El saldo en caja solo cuenta el efectivo: Yape, tarjeta y crédito no entran al cajón.
+- **Registrar un ingreso o egreso:** elige el motivo, el monto y una descripción. Requiere el permiso `cash.movement`, que el rol Cajero por defecto tiene.
+  - **Ingresos:** *Reposición de caja* (sencillo que deja el supervisor) y *Otros ingresos*.
+  - **Egresos:** *Gasto de caja chica* (bolsas, cinta, una propina), *Pago a proveedor* (el que cobra en efectivo en la puerta) y *Retiro de efectivo* (pasar el excedente a la caja fuerte).
+  - Solo aparecen los motivos que decide una persona. Las ventas, los cobros de crédito, las devoluciones y las diferencias de cierre los registra el sistema: no se pueden elegir a mano porque se contarían dos veces. El administrador puede añadir motivos en Finanzas › Cajas y turnos › Categorías.
 - Saldo en caja = apertura + ingresos − egresos + ventas en efectivo del turno.
 
 ### 1.4 Cerrar una caja
 
 1. Menú **⋯** → **Cerrar caja**.
-2. El cierre muestra las **ventas del turno por método**, con el número de operaciones y el importe de cada uno, y el **cuadre de efectivo** (apertura + ventas en efectivo + ingresos − egresos = esperado).
+2. El cierre muestra las **ventas del turno por método**, con el número de operaciones y el importe de cada uno (lo vendido a crédito, aparte y como informativo), y el **cuadre de efectivo** (apertura + ventas en efectivo + ingresos − egresos = esperado).
 3. **Efectivo:** cuenta el cajón (por billetes y monedas o ingresando el importe). El sistema calcula el faltante o sobrante.
 4. **Pagos digitales (tarjeta, Yape, transferencia…):** no se cuentan en el cajón. Contrasta cada importe con tu terminal, aplicación o banco y márcalo como verificado.
 5. Si hay diferencia, explica el motivo; es obligatorio para poder cerrar.

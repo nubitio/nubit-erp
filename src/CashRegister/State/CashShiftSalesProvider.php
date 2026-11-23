@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Dto\CashShiftSalesDto;
 use App\CashRegister\Service\OpenCashSessionLocator;
+use App\CashRegister\Service\SessionSalesBreakdown;
 use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Security\Security;
 use Brick\Math\BigDecimal;
@@ -30,6 +31,7 @@ readonly class CashShiftSalesProvider implements ProviderInterface
         private Security $security,
         private BranchContextServiceInterface $branchContext,
         private OpenCashSessionLocator $sessions,
+        private SessionSalesBreakdown $breakdown,
     ) {}
 
     #[Override]
@@ -42,14 +44,14 @@ readonly class CashShiftSalesProvider implements ProviderInterface
 
         $session = $this->sessions->locate($user->userId, $this->branchContext->getCurrentBranchId());
         if ($session === null) {
-            return new CashShiftSalesDto(null, 0, '0.00', []);
+            return new CashShiftSalesDto(null, 0, '0.00', [], [], ['amount' => '0.00', 'operations' => 0]);
         }
         $sessionId = (int) $session['id'];
 
         // The document is the latest one issued for the sale (a rejected one is replaced by another), and
         // credit notes (reason_code) are not the sale's own receipt.
         $rows = $this->connection->fetchAllAssociative(
-            'SELECT s.id, s.issued_at, s.status, s.grand_total,
+            'SELECT s.id, s.issued_at, s.status, s.grand_total, s.receivable_account,
                     td.document_type, td.series, td.number, td.sunat_status
              FROM sales s
              LEFT JOIN tax_document td ON td.tax_document_id = (
@@ -76,6 +78,16 @@ readonly class CashShiftSalesProvider implements ProviderInterface
                 ++$count;
             }
 
+            $payments = $paymentsBySale[$id] ?? [];
+            $paid = BigDecimal::zero();
+            foreach ($payments as $payment) {
+                $paid = $paid->plus(BigDecimal::of($payment['amount']));
+            }
+            // What was left on credit when it was rung up; later collections are not part of it.
+            $receivable = (int) $row['receivable_account'] === 1
+                ? BigDecimal::of((string) $row['grand_total'])->minus($paid)
+                : BigDecimal::zero();
+
             $sales[] = [
                 'id' => $id,
                 'issuedAt' => $row['issued_at'] === null
@@ -91,15 +103,22 @@ readonly class CashShiftSalesProvider implements ProviderInterface
                     ? null
                     : (string) $row['series'] . '-' . (string) $row['number'],
                 'sunatStatus' => $row['sunat_status'] === null ? null : (string) $row['sunat_status'],
-                'payments' => $paymentsBySale[$id] ?? [],
+                'payments' => $payments,
+                'receivable' => ($receivable->isNegative() ? BigDecimal::zero() : $receivable)
+                    ->toScale(2, RoundingMode::HALF_UP)
+                    ->__toString(),
             ];
         }
+
+        $sold = $this->breakdown->forSession($sessionId);
 
         return new CashShiftSalesDto(
             $sessionId,
             $count,
             $total->toScale(2, RoundingMode::HALF_UP)->__toString(),
             $sales,
+            $sold['methods'],
+            $sold['receivable'],
         );
     }
 
@@ -117,7 +136,7 @@ readonly class CashShiftSalesProvider implements ProviderInterface
             'SELECT sp.sale_id, pm.name, sp.amount
              FROM sale_payments sp
              LEFT JOIN payment_method pm ON pm.id = sp.payment_method_id
-             WHERE sp.sale_id IN (?)
+             WHERE sp.sale_id IN (?) AND sp.idempotency_key IS NOT NULL
              ORDER BY sp.id',
             [$saleIds],
             [ArrayParameterType::STRING],

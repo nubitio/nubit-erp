@@ -40,6 +40,12 @@ export interface CashMovementCategoryOption {
   type: 'income' | 'expense';
 }
 
+/** What the API returns; `manual` marks the reasons a person may pick (the rest are the system's own). */
+interface CashMovementCategoryRecord extends CashMovementCategoryOption {
+  active: boolean;
+  manual: boolean;
+}
+
 export interface CashSessionMovement {
   id: number;
   type: 'income' | 'expense';
@@ -55,6 +61,8 @@ export interface CashShiftSale {
   /** `VOIDED` sales are listed but do not count towards the shift. */
   status: string;
   total: string;
+  /** What was left on credit when it was rung up (not money yet); "0.00" if none. */
+  receivable: string;
   documentType?: string | null;
   /** Series and number of the receipt, e.g. `B001-12`; null while the sale has none. */
   documentNumber?: string | null;
@@ -67,8 +75,12 @@ export interface CashShiftSales {
   sessionId: number | null;
   /** Sales that count (not voided) and their sum. */
   count: number;
+  /** What the shift sold, credit included. */
   total: string;
   sales: CashShiftSale[];
+  /** The same sales by the way they were paid; credit is in `receivable`, apart from the methods. */
+  byMethod: { id: number; name: string; amount: string; operations: number }[];
+  receivable: { amount: string; operations: number };
 }
 
 export const cashSessionService = {
@@ -98,10 +110,11 @@ export const cashSessionService = {
 
   getMovementCategories: (): Promise<CashMovementCategoryOption[]> =>
     httpClient
-      .get<(CashMovementCategoryOption & { active: boolean })[]>(API + 'cash-movement-categories', {
+      .get<CashMovementCategoryRecord[]>(API + 'cash-movement-categories', {
         errorPresentation: 'inline',
       })
-      .then((response) => response.data.filter((category) => category.active)),
+      // The server refuses the others too: a sale or a collection recorded by hand would count twice.
+      .then((response) => response.data.filter((category) => category.active && category.manual)),
 
   addMovement: (input: {
     sessionId: number;

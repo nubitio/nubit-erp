@@ -6,6 +6,7 @@ namespace App\Tests\CashRegister\State;
 
 use ApiPlatform\Metadata\Get;
 use App\CashRegister\Dto\CashSessionXReportDto;
+use App\CashRegister\Service\SessionSalesBreakdown;
 use App\CashRegister\State\CashSessionClosureSummaryProvider;
 use App\CashRegister\State\CashSessionXReportProvider;
 use Doctrine\DBAL\Connection;
@@ -25,16 +26,27 @@ final class CashSessionXReportProviderTest extends TestCase
     protected function setUp(): void
     {
         $this->connection = $this->createMock(Connection::class);
-        $this->provider = new CashSessionXReportProvider($this->connection);
+        $breakdown = $this->createStub(SessionSalesBreakdown::class);
+        $breakdown
+            ->method('forSession')
+            ->willReturn([
+                'methods' => [
+                    ['id' => 1, 'name' => 'Efectivo', 'amount' => '300.00', 'operations' => 4],
+                    ['id' => 2, 'name' => 'Tarjeta', 'amount' => '200.00', 'operations' => 2],
+                ],
+                'receivable' => ['amount' => '40.00', 'operations' => 1],
+                'total' => '540.00',
+            ]);
+        $this->provider = new CashSessionXReportProvider($this->connection, $breakdown);
     }
 
     /**
      * TC-7: X-report calculates all monetary values correctly using brick/math.
      *
      * opening_amount = 200.00
-     * V2 SALE_IN total = 500.00 (cash 300.00 + card 200.00)
+     * drawer SALE_IN = 300.00 (only cash moves the drawer); the shift sold 540.00: cash 300 + card 200 + credit 40
      * V2 CASH_IN = 50.00, CASH_OUT = 20.00
-     * current balance = 200 + 500 + 50 - 20 = 730.00
+     * current balance (the drawer) = 200 + 300 + 50 - 20 = 530.00
      * shiftDurationMinutes: provided as fixed 60 by mock
      */
     public function test_x_report_calculates_correctly(): void
@@ -53,7 +65,7 @@ final class CashSessionXReportProviderTest extends TestCase
             ->willReturnCallback(static function (string $sql, array $params): string|int {
                 // SALE_IN total
                 if (str_contains($sql, "movement_type = 'SALE_IN'")) {
-                    return '500.00';
+                    return '300.00';
                 }
                 // CASH_IN total
                 if (str_contains($sql, "movement_type = 'CASH_IN'")) {
@@ -82,10 +94,12 @@ final class CashSessionXReportProviderTest extends TestCase
 
         $this->assertInstanceOf(CashSessionXReportDto::class, $result);
         $this->assertSame('200.00', $result->openingBalance);
-        $this->assertSame('500.00', $result->totalSales);
+        $this->assertSame('540.00', $result->totalSales, 'what the shift sold, credit included');
+        $this->assertSame('40.00', $result->receivableTotal);
+        $this->assertSame(1, $result->receivableOperations);
         $this->assertSame('50.00', $result->cashIn);
         $this->assertSame('20.00', $result->cashOut);
-        $this->assertSame('730.00', $result->currentBalance);
+        $this->assertSame('530.00', $result->currentBalance, 'the drawer, built from cash only');
         $this->assertSame(60, $result->shiftDurationMinutes);
 
         $this->assertCount(2, $result->salesByPaymentMethod);
@@ -110,9 +124,22 @@ final class CashSessionXReportProviderTest extends TestCase
         $db->executeStatement('CREATE TABLE payment_method (id INTEGER, name TEXT)');
         $db->executeStatement("INSERT INTO cash_sessions VALUES (1, 200.00, '2026-10-29 08:00:00')");
         $db->executeStatement("INSERT INTO payment_method VALUES (1, 'Efectivo'), (2, 'Tarjeta')");
+        // The shift sold 540: 300 in cash, 200 by card, 40 on credit (15 of it collected later, in another shift's
+        // hands), and a voided 50 by card that counts nowhere. Only the cash reached the drawer.
+        $db->executeStatement(
+            'CREATE TABLE sales (id TEXT, cash_session_id INTEGER, grand_total NUMERIC, status TEXT, deleted_at TEXT, receivable_account INTEGER)',
+        );
+        $db->executeStatement(
+            'CREATE TABLE sale_payments (id INTEGER PRIMARY KEY, sale_id TEXT, payment_method_id INTEGER, amount NUMERIC, idempotency_key TEXT)',
+        );
+        $db->executeStatement("INSERT INTO sales VALUES ('a', 1, 300, 'COMPLETED', NULL, 0), ('b', 1, 200, 'COMPLETED', NULL, 0),
+                ('c', 1, 50, 'VOIDED', NULL, 0), ('d', 1, 40, 'COMPLETED', NULL, 1)");
+        $db->executeStatement(
+            "INSERT INTO sale_payments (sale_id, payment_method_id, amount, idempotency_key) VALUES
+                ('a', 1, 300, 'k-a'), ('b', 2, 200, 'k-b'), ('c', 2, 50, 'k-c'), ('d', 1, 15, NULL)",
+        );
         foreach ([
             [1, 'SALE_IN',    '300.00'],
-            [2, 'SALE_IN',    '200.00'],
             [1, 'CASH_IN',    '50.00'],
             [1, 'CASH_OUT',   '20.00'],
             [1, 'REFUND_OUT', '10.00'],
@@ -141,8 +168,9 @@ final class CashSessionXReportProviderTest extends TestCase
         )
                 ? 60
                 : $db->fetchOne($sql, self::named($params)));
-        $report = new CashSessionXReportProvider($connection)->provide(new Get(), ['id' => 1]);
-        $closure = new CashSessionClosureSummaryProvider($connection)->provide(new Get(), ['id' => 1]);
+        $breakdown = new SessionSalesBreakdown($connection);
+        $report = new CashSessionXReportProvider($connection, $breakdown)->provide(new Get(), ['id' => 1]);
+        $closure = new CashSessionClosureSummaryProvider($connection, $breakdown)->provide(new Get(), ['id' => 1]);
         self::assertSame('290.00', $report->cashSalesNet);
         self::assertSame('20.00', $report->cashAdjustmentsOut);
         self::assertSame('60.00', $report->cashOut);
@@ -156,7 +184,15 @@ final class CashSessionXReportProviderTest extends TestCase
                 ->toScale(2)
                 ->__toString(),
         );
-        self::assertSame('170.00', $closure[1]->expectedAmount);
+        self::assertSame('200.00', $closure[1]->expectedAmount, 'the card: what the shift sold with it');
+        self::assertCount(2, $closure, 'the voided card sale adds no row of its own');
+        self::assertSame('540.00', $report->totalSales);
+        self::assertSame(
+            '40.00',
+            $report->receivableTotal,
+            'the later collection of 15 is not part of what was left on credit',
+        );
+        self::assertSame(1, $report->receivableOperations);
         self::assertSame(
             [1, 1],
             array_map(static fn($row): int => $row->operations, $report->salesByPaymentMethod),

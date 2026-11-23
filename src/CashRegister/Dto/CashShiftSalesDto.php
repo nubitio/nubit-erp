@@ -32,7 +32,9 @@ final readonly class CashShiftSalesDto
      * @param int|null $sessionId the open session the sales belong to; null when the user has none
      * @param int $count sales that count towards the shift (voided ones are listed but not counted)
      * @param string $total sum of those sales
-     * @param list<array{id: string, issuedAt: string|null, status: string, total: string, documentType: string|null, documentNumber: string|null, sunatStatus: string|null, payments: list<array{method: string, amount: string}>}> $sales
+     * @param list<array{id: string, issuedAt: string|null, status: string, total: string, receivable: string, documentType: string|null, documentNumber: string|null, sunatStatus: string|null, payments: list<array{method: string, amount: string}>}> $sales
+     * @param list<array{id: int, name: string, amount: string, operations: int}> $byMethod what the shift sold, by the way it was paid
+     * @param array{amount: string, operations: int} $receivable what was left on credit: not money yet
      */
     public function __construct(
         #[Groups(['cash_shift_sales:read'])]
@@ -52,6 +54,7 @@ final readonly class CashShiftSalesDto
                     'issuedAt' => ['type' => 'string', 'format' => 'date-time', 'nullable' => true],
                     'status' => ['type' => 'string'],
                     'total' => ['type' => 'string'],
+                    'receivable' => ['type' => 'string'],
                     'documentType' => ['type' => 'string', 'nullable' => true],
                     'documentNumber' => ['type' => 'string', 'nullable' => true],
                     'sunatStatus' => ['type' => 'string', 'nullable' => true],
@@ -64,9 +67,31 @@ final readonly class CashShiftSalesDto
                         ],
                     ],
                 ],
-                'required' => ['id', 'status', 'total', 'payments'],
+                'required' => ['id', 'status', 'total', 'receivable', 'payments'],
             ],
         ])]
         public array $sales,
+        #[Groups(['cash_shift_sales:read'])]
+        #[ApiProperty(openapiContext: [
+            'type' => 'array',
+            'items' => [
+                'type' => 'object',
+                'properties' => [
+                    'id' => ['type' => 'integer'],
+                    'name' => ['type' => 'string'],
+                    'amount' => ['type' => 'string'],
+                    'operations' => ['type' => 'integer'],
+                ],
+                'required' => ['id', 'name', 'amount', 'operations'],
+            ],
+        ])]
+        public array $byMethod,
+        #[Groups(['cash_shift_sales:read'])]
+        #[ApiProperty(openapiContext: [
+            'type' => 'object',
+            'properties' => ['amount' => ['type' => 'string'], 'operations' => ['type' => 'integer']],
+            'required' => ['amount', 'operations'],
+        ])]
+        public array $receivable,
     ) {}
 }

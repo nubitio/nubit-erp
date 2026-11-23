@@ -10,6 +10,9 @@ use Symfony\Component\Serializer\Attribute\Groups;
 final readonly class CashSessionXReportDto
 {
     /**
+     * `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+     * left on credit. The drawer's own balance is `currentBalance`.
+     *
      * @param list<CashSessionPaymentMethodSalesDto> $salesByPaymentMethod
      */
     public function __construct(
@@ -44,5 +47,10 @@ final readonly class CashSessionXReportDto
         public ?string $cashSalesNet = null,
         #[Groups(['cash_x_report:read'])]
         public ?string $cashAdjustmentsOut = null,
+        /** Sold in the shift and left on credit: not money yet, so it is in no payment method. */
+        #[Groups(['cash_x_report:read'])]
+        public string $receivableTotal = '0.00',
+        #[Groups(['cash_x_report:read'])]
+        public int $receivableOperations = 0,
     ) {}
 }

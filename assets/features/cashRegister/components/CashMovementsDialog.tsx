@@ -53,11 +53,16 @@ export function CashMovementsDialog({ open, sessionId, registerName, onClose }: 
         .getXReport(sessionId)
         .then((response) => response.data),
     enabled: open,
+    // A cut is only worth something if it is current: never show the one from the last time it was opened.
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
   const movements = useQuery({
     queryKey: ['cash-session-movements', sessionId],
     queryFn: () => cashSessionService.getMovements(sessionId),
     enabled: open,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
   const categories = useQuery({
     queryKey: ['cash-movement-categories'],
@@ -150,17 +155,29 @@ export function CashMovementsDialog({ open, sessionId, registerName, onClose }: 
                   },
                 ]}
               />
-              {report.data.salesByPaymentMethod.length > 0 && (
+              {(report.data.salesByPaymentMethod.length > 0 ||
+                Number(report.data.receivableTotal ?? 0) > 0) && (
                 <ul className="cash-movements-dialog__methods" aria-label="Ventas por método">
                   {report.data.salesByPaymentMethod.map((row) => (
                     <li key={row.paymentMethodId}>
                       <span>
                         {row.paymentMethod}
-                        {row.operations != null && ` · ${row.operations}`}
+                        {row.operations != null &&
+                          ` · ${row.operations} ${row.operations === 1 ? 'venta' : 'ventas'}`}
                       </span>
                       <span>{money(row.amount)}</span>
                     </li>
                   ))}
+                  {Number(report.data.receivableTotal ?? 0) > 0 && (
+                    <li>
+                      <span>
+                        A crédito (por cobrar)
+                        {report.data.receivableOperations != null &&
+                          ` · ${report.data.receivableOperations} ${report.data.receivableOperations === 1 ? 'venta' : 'ventas'}`}
+                      </span>
+                      <span>{money(report.data.receivableTotal ?? 0)}</span>
+                    </li>
+                  )}
                 </ul>
               )}
             </>

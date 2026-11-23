@@ -49,12 +49,18 @@ function SaleState({ sale }: { sale: CashShiftSale }) {
   );
 }
 
-const paymentsLabel = (sale: CashShiftSale) =>
-  sale.payments.length === 0
-    ? '—'
-    : sale.payments.length === 1
-      ? sale.payments[0].method
-      : sale.payments.map((payment) => `${payment.method} ${money(payment.amount)}`).join(' · ');
+const hasAmount = (value: string) => Number(value) > 0;
+
+/** How it was paid, and what was left on credit, which is not a payment. */
+const paymentsLabel = (sale: CashShiftSale) => {
+  const parts = sale.payments.map((payment) =>
+    sale.payments.length === 1 ? payment.method : `${payment.method} ${money(payment.amount)}`,
+  );
+  if (hasAmount(sale.receivable)) {
+    parts.push(parts.length === 0 ? 'A crédito' : `A crédito ${money(sale.receivable)}`);
+  }
+  return parts.length === 0 ? '—' : parts.join(' · ');
+};
 
 /**
  * The sales of the shift in progress, so a cashier whose count does not match can find the sale
@@ -100,6 +106,22 @@ export function CashShiftSalesDialog({ open, sessionId, onClose, onReprint }: Pr
               <strong>{money(data.total)}</strong>
               <small>Las anuladas se listan pero no suman.</small>
             </p>
+            {(data.byMethod.length > 0 || hasAmount(data.receivable.amount)) && (
+              <ul className="cash-shift-sales__methods" aria-label="Ventas por método de pago">
+                {data.byMethod.map((method) => (
+                  <li key={method.id}>
+                    <span>{method.name}</span>
+                    <strong>{money(method.amount)}</strong>
+                  </li>
+                ))}
+                {hasAmount(data.receivable.amount) && (
+                  <li className="cash-shift-sales__methods-credit">
+                    <span>A crédito · por cobrar</span>
+                    <strong>{money(data.receivable.amount)}</strong>
+                  </li>
+                )}
+              </ul>
+            )}
             {data.sales.length === 0 ? (
               <p className="cash-shift-sales__muted">Todavía no hay ventas en este turno.</p>
             ) : (

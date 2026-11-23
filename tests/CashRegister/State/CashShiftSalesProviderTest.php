@@ -6,6 +6,7 @@ namespace App\Tests\CashRegister\State;
 
 use ApiPlatform\Metadata\Get;
 use App\CashRegister\Service\OpenCashSessionLocator;
+use App\CashRegister\Service\SessionSalesBreakdown;
 use App\CashRegister\State\CashShiftSalesProvider;
 use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Dto\AuthUserDto;
@@ -43,7 +44,27 @@ final class CashShiftSalesProviderTest extends TestCase
                 ? $paymentRows
                 : $saleRows);
 
-        return new CashShiftSalesProvider($connection, $security, $branch, new OpenCashSessionLocator($connection));
+        return new CashShiftSalesProvider(
+            $connection,
+            $security,
+            $branch,
+            new OpenCashSessionLocator($connection),
+            $this->breakdown(),
+        );
+    }
+
+    private function breakdown(): SessionSalesBreakdown
+    {
+        $breakdown = $this->createStub(SessionSalesBreakdown::class);
+        $breakdown
+            ->method('forSession')
+            ->willReturn([
+                'methods' => [['id' => 1, 'name' => 'Efectivo', 'amount' => '55.50', 'operations' => 2]],
+                'receivable' => ['amount' => '0.00', 'operations' => 0],
+                'total' => '55.50',
+            ]);
+
+        return $breakdown;
     }
 
     /** @return array<string, string> */
@@ -68,6 +89,7 @@ final class CashShiftSalesProviderTest extends TestCase
             'issued_at' => '2026-11-23 09:15:00',
             'status' => $status,
             'grand_total' => $total,
+            'receivable_account' => 0,
             'document_type' => $number === null ? null : '03',
             'series' => 'B001',
             'number' => $number,
@@ -138,9 +160,13 @@ final class CashShiftSalesProviderTest extends TestCase
             ->with(static::stringContains('cr.branch_id = ?'), [7, 'branch-1'])
             ->willReturn(false);
 
-        new CashShiftSalesProvider($connection, $security, $branch, new OpenCashSessionLocator($connection))->provide(
-            new Get(),
-        );
+        new CashShiftSalesProvider(
+            $connection,
+            $security,
+            $branch,
+            new OpenCashSessionLocator($connection),
+            $this->breakdown(),
+        )->provide(new Get());
     }
 
     /**
@@ -150,22 +176,23 @@ final class CashShiftSalesProviderTest extends TestCase
     {
         $db = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
         $db->executeStatement(
-            'CREATE TABLE sales (id TEXT, cash_session_id INTEGER, issued_at TEXT, created_at TEXT, status TEXT, grand_total NUMERIC, deleted_at TEXT)',
+            'CREATE TABLE sales (id TEXT, cash_session_id INTEGER, issued_at TEXT, created_at TEXT, status TEXT, grand_total NUMERIC, deleted_at TEXT, receivable_account INTEGER)',
         );
         $db->executeStatement(
             'CREATE TABLE tax_document (tax_document_id TEXT, sale_id TEXT, document_type TEXT, series TEXT, number TEXT, sunat_status TEXT, reason_code TEXT, created_at TEXT)',
         );
         $db->executeStatement(
-            'CREATE TABLE sale_payments (id INTEGER PRIMARY KEY, sale_id TEXT, payment_method_id INTEGER, amount NUMERIC)',
+            'CREATE TABLE sale_payments (id INTEGER PRIMARY KEY, sale_id TEXT, payment_method_id INTEGER, amount NUMERIC, idempotency_key TEXT)',
         );
         $db->executeStatement('CREATE TABLE payment_method (id INTEGER, name TEXT)');
         $db->executeStatement("INSERT INTO payment_method VALUES (1, 'Efectivo'), (2, 'Yape')");
         $db->executeStatement(
             "INSERT INTO sales VALUES
-                ('a', 42, '2026-11-23 09:00:00', '2026-11-23 09:00:00', 'COMPLETED', 30, NULL),
-                ('b', 42, '2026-11-23 10:00:00', '2026-11-23 10:00:00', 'COMPLETED', 20, NULL),
-                ('c', 42, '2026-11-23 11:00:00', '2026-11-23 11:00:00', 'COMPLETED', 5, '2026-11-23 11:05:00'),
-                ('x', 99, '2026-11-23 12:00:00', '2026-11-23 12:00:00', 'COMPLETED', 700, NULL)",
+                ('a', 42, '2026-11-23 09:00:00', '2026-11-23 09:00:00', 'COMPLETED', 30, NULL, 0),
+                ('b', 42, '2026-11-23 10:00:00', '2026-11-23 10:00:00', 'COMPLETED', 20, NULL, 0),
+                ('c', 42, '2026-11-23 11:00:00', '2026-11-23 11:00:00', 'COMPLETED', 5, '2026-11-23 11:05:00', 0),
+                ('x', 99, '2026-11-23 12:00:00', '2026-11-23 12:00:00', 'COMPLETED', 700, NULL, 0),
+                ('e', 42, '2026-11-23 12:30:00', '2026-11-23 12:30:00', 'COMPLETED', 18, NULL, 1)",
         );
         $db->executeStatement(
             "INSERT INTO tax_document VALUES
@@ -174,11 +201,22 @@ final class CashShiftSalesProviderTest extends TestCase
                 ('d3', 'a', '07', 'BC01', '1', '0', 'CORRECTION', '2026-11-23 09:30:00')",
         );
         $db->executeStatement(
-            "INSERT INTO sale_payments (sale_id, payment_method_id, amount) VALUES ('a', 1, 10), ('a', 2, 20), ('b', 1, 20)",
+            "INSERT INTO sale_payments (sale_id, payment_method_id, amount, idempotency_key) VALUES
+                ('a', 1, 10, 'k1'), ('a', 2, 20, 'k2'), ('b', 1, 20, 'k3'), ('e', 1, 5, NULL)",
         );
 
+        $session = $this->session();
         $connection = $this->createStub(Connection::class);
-        $connection->method('fetchAssociative')->willReturn($this->session());
+        $connection->method('fetchAssociative')->willReturnCallback(static fn(
+            string $sql,
+            array $params = [],
+        ) => str_contains($sql, 'cash_sessions') ? $session : $db->fetchAssociative($sql, array_values($params)));
+        $connection
+            ->method('fetchOne')
+            ->willReturnCallback(static fn(string $sql, array $params = []) => $db->fetchOne(
+                $sql,
+                array_values($params),
+            ));
         $connection
             ->method('fetchAllAssociative')
             ->willReturnCallback(static fn(
@@ -186,7 +224,7 @@ final class CashShiftSalesProviderTest extends TestCase
                 array $params = [],
                 array $types = [],
             ): array => $db->fetchAllAssociative(
-                str_contains($sql, 'IN (?)') ? str_replace('IN (?)', "IN ('a', 'b')", $sql) : $sql,
+                str_contains($sql, 'IN (?)') ? str_replace('IN (?)', "IN ('a', 'b', 'e')", $sql) : $sql,
                 str_contains($sql, 'IN (?)') ? [] : array_values($params),
             ));
         $security = $this->createStub(Security::class);
@@ -199,18 +237,29 @@ final class CashShiftSalesProviderTest extends TestCase
             $security,
             $branch,
             new OpenCashSessionLocator($connection),
+            new SessionSalesBreakdown($connection),
         )->provide(new Get());
 
-        static::assertSame(['b', 'a'], array_column($result->sales, 'id'), 'only the shift\'s own, undeleted sales');
+        static::assertSame(
+            ['e', 'b', 'a'],
+            array_column($result->sales, 'id'),
+            'only the shift\'s own, undeleted sales',
+        );
         static::assertSame(
             'B001-2',
-            $result->sales[1]['documentNumber'],
+            $result->sales[2]['documentNumber'],
             'the replacement, not the rejected one nor the credit note',
         );
-        static::assertSame('0', $result->sales[1]['sunatStatus']);
-        static::assertNull($result->sales[0]['documentNumber']);
-        static::assertSame('50.00', $result->total);
-        static::assertCount(2, $result->sales[1]['payments']);
+        static::assertSame('0', $result->sales[2]['sunatStatus']);
+        static::assertNull($result->sales[1]['documentNumber']);
+        static::assertSame('68.00', $result->total, 'the credit sale counts as sold');
+        static::assertCount(2, $result->sales[2]['payments']);
+        static::assertSame([], $result->sales[0]['payments'], 'a later collection is not a payment of the sale');
+        static::assertSame('18.00', $result->sales[0]['receivable'], 'all of it was left on credit when rung up');
+        static::assertSame('0.00', $result->sales[1]['receivable']);
+        static::assertSame(['Efectivo', 'Yape'], array_column($result->byMethod, 'name'));
+        static::assertSame(['30.00', '20.00'], array_column($result->byMethod, 'amount'));
+        static::assertSame(['amount' => '18.00', 'operations' => 1], $result->receivable);
         $db->close();
     }
 }

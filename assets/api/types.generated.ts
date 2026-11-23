@@ -5242,6 +5242,13 @@ export interface components {
             type?: "income" | "expense";
             /** @default true */
             isSystem: boolean;
+            /**
+             * @description Whether a person may pick it when registering cash that came in or went out by hand. The others describe
+             *     what the system itself records (a sale, a collection, a refund, a count difference, a treasury transfer):
+             *     offering them would count the same money twice.
+             * @default false
+             */
+            manual: boolean;
             /** @default true */
             active: boolean;
             readonly system?: boolean;
@@ -5271,6 +5278,13 @@ export interface components {
             type?: "income" | "expense";
             /** @default true */
             isSystem: boolean;
+            /**
+             * @description Whether a person may pick it when registering cash that came in or went out by hand. The others describe
+             *     what the system itself records (a sale, a collection, a refund, a count difference, a treasury transfer):
+             *     offering them would count the same money twice.
+             * @default false
+             */
+            manual: boolean;
             /** @default true */
             active: boolean;
             readonly system?: boolean;
@@ -5288,6 +5302,13 @@ export interface components {
             type?: "income" | "expense";
             /** @default true */
             isSystem: boolean;
+            /**
+             * @description Whether a person may pick it when registering cash that came in or went out by hand. The others describe
+             *     what the system itself records (a sale, a collection, a refund, a count difference, a treasury transfer):
+             *     offering them would count the same money twice.
+             * @default false
+             */
+            manual: boolean;
             /** @default true */
             active: boolean;
             readonly system?: boolean;
@@ -5766,36 +5787,122 @@ export interface components {
             expectedAmount?: string;
         };
         "CashSession.CashSessionXReportDto-cash_x_report.read": {
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             openingBalance?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             totalSales?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashIn?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashOut?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             currentBalance?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             shiftDurationMinutes?: number;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             salesByPaymentMethod?: {
                 paymentMethodId: number;
                 paymentMethod: string;
                 amount: string;
                 operations: number;
             }[];
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashSalesNet?: string | null;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashAdjustmentsOut?: string | null;
+            /** @description Sold in the shift and left on credit: not money yet, so it is in no payment method. */
+            receivableTotal?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
+            receivableOperations?: number;
         };
         "CashSession.CashSessionXReportDto.jsonld-cash_x_report.read": components["schemas"]["HydraItemBaseSchema"] & {
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             openingBalance?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             totalSales?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashIn?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashOut?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             currentBalance?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             shiftDurationMinutes?: number;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             salesByPaymentMethod?: {
                 paymentMethodId: number;
                 paymentMethod: string;
                 amount: string;
                 operations: number;
             }[];
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashSalesNet?: string | null;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashAdjustmentsOut?: string | null;
+            /** @description Sold in the shift and left on credit: not money yet, so it is in no payment method. */
+            receivableTotal?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
+            receivableOperations?: number;
         };
         "CashSession.jsonld-cash_session.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
@@ -5880,6 +5987,7 @@ export interface components {
                 issuedAt?: string | null;
                 status: string;
                 total: string;
+                receivable: string;
                 documentType?: string | null;
                 documentNumber?: string | null;
                 sunatStatus?: string | null;
@@ -5888,6 +5996,18 @@ export interface components {
                     amount: string;
                 }[];
             }[];
+            /** @description what the shift sold, by the way it was paid */
+            byMethod?: {
+                id: number;
+                name: string;
+                amount: string;
+                operations: number;
+            }[];
+            /** @description what was left on credit: not money yet */
+            receivable?: {
+                amount: string;
+                operations: number;
+            };
         };
         /**
          * @description The sales rung up in the shift the signed-in user has open, newest first, so the cashier can trace a
@@ -5907,6 +6027,7 @@ export interface components {
                 issuedAt?: string | null;
                 status: string;
                 total: string;
+                receivable: string;
                 documentType?: string | null;
                 documentNumber?: string | null;
                 sunatStatus?: string | null;
@@ -5915,6 +6036,18 @@ export interface components {
                     amount: string;
                 }[];
             }[];
+            /** @description what the shift sold, by the way it was paid */
+            byMethod?: {
+                id: number;
+                name: string;
+                amount: string;
+                operations: number;
+            }[];
+            /** @description what was left on credit: not money yet */
+            receivable?: {
+                amount: string;
+                operations: number;
+            };
         };
         "Category-category.read": {
             readonly id?: string;

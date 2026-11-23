@@ -41,6 +41,22 @@ class CashMovementCategory
 
     public const string SHORTAGE_ADJUSTMENT = 'shortage_adjustment';
 
+    public const string SUPPLIER_PAYMENT = 'supplier_payment';
+
+    /**
+     * The reasons a person decides on: change from the supervisor, other income, a small expense, a supplier paid
+     * at the door, cash taken to the safe. Seeded as manual; the others are what the system records itself.
+     *
+     * @var list<string>
+     */
+    public const array MANUAL_CODES = [
+        self::CASH_REPLENISHMENT,
+        self::OTHER_INCOME,
+        self::PETTY_CASH_EXPENSE,
+        self::SUPPLIER_PAYMENT,
+        self::MANAGER_WITHDRAWAL,
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -64,6 +80,14 @@ class CashMovementCategory
 
     #[ORM\Column(name: 'is_system', options: ['default' => true])]
     private bool $isSystem = true;
+
+    /**
+     * Whether a person may pick it when registering cash that came in or went out by hand. The others describe
+     * what the system itself records (a sale, a collection, a refund, a count difference, a treasury transfer):
+     * offering them would count the same money twice.
+     */
+    #[ORM\Column(name: 'is_manual', options: ['default' => false])]
+    private bool $manual = false;
 
     #[ORM\Column(options: ['default' => true])]
     private bool $active = true;
@@ -117,6 +141,18 @@ class CashMovementCategory
     public function setIsSystem(bool $isSystem): static
     {
         $this->isSystem = $isSystem;
+
+        return $this;
+    }
+
+    public function isManual(): bool
+    {
+        return $this->manual;
+    }
+
+    public function setManual(bool $manual): static
+    {
+        $this->manual = $manual;
 
         return $this;
     }

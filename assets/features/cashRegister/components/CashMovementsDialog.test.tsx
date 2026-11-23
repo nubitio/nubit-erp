@@ -86,6 +86,23 @@ describe('CashMovementsDialog', () => {
     expect(methods.getByText('S/ 23.50')).toBeTruthy();
   });
 
+  it('shows what was left on credit apart from the payment methods, and always asks for a fresh cut', async () => {
+    getXReport.mockResolvedValue({
+      data: { ...report, receivableTotal: '19.90', receivableOperations: 1 },
+    });
+    renderDialog();
+
+    const methods = within(await screen.findByLabelText('Ventas por método'));
+    expect(methods.getByText(/A crédito \(por cobrar\)/)).toBeTruthy();
+    expect(methods.getByText('S/ 19.90')).toBeTruthy();
+
+    // A cut cached from the last time the dialog was open must not be shown as current.
+    cleanup();
+    renderDialog();
+    await screen.findByLabelText('Ventas por método');
+    expect(getXReport).toHaveBeenCalledTimes(2);
+  });
+
   it('lists the cash moved by hand and leaves out the opening and the sales, which the cut counts', async () => {
     renderDialog();
 

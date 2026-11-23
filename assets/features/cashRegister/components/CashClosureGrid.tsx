@@ -413,11 +413,20 @@ export const CashClosureGrid = forwardRef<CashClosureGridHandle, Props>(function
                       </td>
                     </tr>
                   ))}
-                  {report.salesByPaymentMethod.length === 0 && (
+                  {Number(report.receivableTotal ?? 0) > 0 && (
                     <tr>
-                      <td colSpan={4}>Sin ventas registradas en este turno.</td>
+                      <th scope="row">A crédito</th>
+                      <td>{report.receivableOperations ?? '—'}</td>
+                      <td>{money(report.receivableTotal ?? 0)}</td>
+                      <td>Por cobrar: no entra a caja</td>
                     </tr>
                   )}
+                  {report.salesByPaymentMethod.length === 0 &&
+                    Number(report.receivableTotal ?? 0) <= 0 && (
+                      <tr>
+                        <td colSpan={4}>Sin ventas registradas en este turno.</td>
+                      </tr>
+                    )}
                 </tbody>
               </table>
               {onViewSales && (

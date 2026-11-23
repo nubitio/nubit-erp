@@ -14,14 +14,31 @@ const getShiftSales = vi.mocked(cashSessionService.getShiftSales);
 
 const shift: CashShiftSales = {
   sessionId: 371,
-  count: 2,
-  total: '55.50',
+  count: 3,
+  total: '75.40',
+  byMethod: [
+    { id: 1, name: 'Efectivo', amount: '35.50', operations: 2 },
+    { id: 2, name: 'Yape', amount: '20.00', operations: 1 },
+  ],
+  receivable: { amount: '19.90', operations: 1 },
   sales: [
+    {
+      id: 's-4',
+      issuedAt: '2026-11-23T14:30:00+00:00',
+      status: 'COMPLETED',
+      total: '19.90',
+      receivable: '19.90',
+      documentType: '03',
+      documentNumber: 'B001-13',
+      sunatStatus: null,
+      payments: [],
+    },
     {
       id: 's-3',
       issuedAt: '2026-11-23T14:15:00+00:00',
       status: 'COMPLETED',
       total: '30.00',
+      receivable: '0.00',
       documentType: '03',
       documentNumber: 'B001-12',
       sunatStatus: '0',
@@ -35,6 +52,7 @@ const shift: CashShiftSales = {
       issuedAt: '2026-11-23T14:05:00+00:00',
       status: 'VOIDED',
       total: '999.00',
+      receivable: '0.00',
       documentNumber: 'B001-11',
       sunatStatus: '0',
       payments: [{ method: 'Efectivo', amount: '999.00' }],
@@ -44,6 +62,7 @@ const shift: CashShiftSales = {
       issuedAt: '2026-11-23T13:50:00+00:00',
       status: 'COMPLETED',
       total: '25.50',
+      receivable: '0.00',
       documentNumber: 'B001-10',
       sunatStatus: '2000',
       payments: [{ method: 'Efectivo', amount: '25.50' }],
@@ -53,6 +72,7 @@ const shift: CashShiftSales = {
       issuedAt: '2026-11-23T13:40:00+00:00',
       status: 'COMPLETED',
       total: '1.00',
+      receivable: '0.00',
       documentNumber: null,
       sunatStatus: null,
       payments: [],
@@ -80,18 +100,25 @@ describe('CashShiftSalesDialog', () => {
     renderDialog();
 
     const list = await screen.findByTestId('cash-shift-sales-list');
-    expect(screen.getByRole('status').textContent).toContain('2 ventas');
-    expect(screen.getByRole('status').textContent).toMatch(/55[.,]50/);
+    expect(screen.getByRole('status').textContent).toContain('3 ventas');
+    expect(screen.getByRole('status').textContent).toMatch(/75[.,]40/);
 
     const rows = within(list).getAllByRole('listitem');
-    expect(rows).toHaveLength(4);
-    expect(within(rows[0]).getByText('B001-12')).toBeTruthy();
-    expect(within(rows[0]).getByText(/Efectivo.*10.*Yape.*20/)).toBeTruthy();
-    expect(within(rows[0]).getByText('Aceptada por SUNAT')).toBeTruthy();
-    expect(within(rows[1]).getByText('Anulada')).toBeTruthy();
-    expect(within(rows[2]).getByText('Rechazada por SUNAT')).toBeTruthy();
-    expect(within(rows[3]).getByText('Sin comprobante')).toBeTruthy();
-    expect(within(rows[3]).queryByText(/SUNAT/)).toBeNull();
+    expect(rows).toHaveLength(5);
+    expect(within(rows[0]).getByText('A crédito')).toBeTruthy();
+    expect(within(rows[0]).queryByText('Pendiente de envío')).toBeTruthy();
+
+    const methods = within(screen.getByRole('list', { name: 'Ventas por método de pago' }));
+    expect(methods.getByText('Efectivo')).toBeTruthy();
+    expect(methods.getByText('Yape')).toBeTruthy();
+    expect(methods.getByText('A crédito · por cobrar')).toBeTruthy();
+    expect(within(rows[1]).getByText('B001-12')).toBeTruthy();
+    expect(within(rows[1]).getByText(/Efectivo.*10.*Yape.*20/)).toBeTruthy();
+    expect(within(rows[1]).getByText('Aceptada por SUNAT')).toBeTruthy();
+    expect(within(rows[2]).getByText('Anulada')).toBeTruthy();
+    expect(within(rows[3]).getByText('Rechazada por SUNAT')).toBeTruthy();
+    expect(within(rows[4]).getByText('Sin comprobante')).toBeTruthy();
+    expect(within(rows[4]).queryByText(/SUNAT/)).toBeNull();
   });
 
   it('reprints a sale but not a voided one', async () => {
@@ -100,8 +127,8 @@ describe('CashShiftSalesDialog', () => {
     renderDialog(onReprint);
 
     const buttons = await screen.findAllByRole('button', { name: 'Reimprimir' });
-    expect(buttons).toHaveLength(3);
-    await userEvent.click(buttons[0]);
+    expect(buttons).toHaveLength(4);
+    await userEvent.click(buttons[1]);
     expect(onReprint).toHaveBeenCalledWith('s-3');
   });
 
@@ -114,7 +141,14 @@ describe('CashShiftSalesDialog', () => {
   });
 
   it('says so when the shift has no sales yet', async () => {
-    getShiftSales.mockResolvedValue({ sessionId: 371, count: 0, total: '0.00', sales: [] });
+    getShiftSales.mockResolvedValue({
+      sessionId: 371,
+      count: 0,
+      total: '0.00',
+      sales: [],
+      byMethod: [],
+      receivable: { amount: '0.00', operations: 0 },
+    });
     renderDialog();
 
     expect(await screen.findByText('Todavía no hay ventas en este turno.')).toBeTruthy();
