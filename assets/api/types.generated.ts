@@ -11197,7 +11197,11 @@ export interface components {
             customer?: components["schemas"]["Customer-sale_record.read"] | null;
             /** @description sale_record.seller_user_id.label */
             sellerUserId?: number | null;
-            readonly voidedByUserId?: number | null;
+            /**
+             * @description sale_record.status.label
+             * @default COMPLETED
+             */
+            status: string;
             /**
              * @description sale_record.currency.label
              * @default PEN
@@ -11445,7 +11449,11 @@ export interface components {
             customer?: components["schemas"]["Customer.jsonld-sale_record.read"] | null;
             /** @description sale_record.seller_user_id.label */
             sellerUserId?: number | null;
-            readonly voidedByUserId?: number | null;
+            /**
+             * @description sale_record.status.label
+             * @default COMPLETED
+             */
+            status: string;
             /**
              * @description sale_record.currency.label
              * @default PEN
@@ -11857,7 +11865,11 @@ export interface components {
             customer?: components["schemas"]["Customer-sale_record.read"] | null;
             /** @description sale_record.seller_user_id.label */
             sellerUserId?: number | null;
-            readonly voidedByUserId?: number | null;
+            /**
+             * @description sale_record.status.label
+             * @default COMPLETED
+             */
+            status: string;
             /**
              * @description sale_record.currency.label
              * @default PEN
@@ -12007,7 +12019,11 @@ export interface components {
             customer?: components["schemas"]["Customer.jsonld-sale_record.read"] | null;
             /** @description sale_record.seller_user_id.label */
             sellerUserId?: number | null;
-            readonly voidedByUserId?: number | null;
+            /**
+             * @description sale_record.status.label
+             * @default COMPLETED
+             */
+            status: string;
             /**
              * @description sale_record.currency.label
              * @default PEN
