@@ -15,6 +15,11 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 
 final class CashPosStateProviderTest extends TestCase
 {
+    /**
+     * @param array<string, mixed>|false $sessionRow
+     * @param list<array<string, mixed>> $freeRegisters
+     * @param list<array<string, mixed>> $busyRegisters
+     */
     private function provider(
         ?AuthUserDto $user,
         array|false $sessionRow,
@@ -57,11 +62,12 @@ final class CashPosStateProviderTest extends TestCase
             'opening_amount' => '150.5',
         ])->provide(new Get());
 
-        static::assertSame(42, $state->session['id'] ?? null);
-        static::assertSame(3, $state->session['cashRegisterId'] ?? null);
-        static::assertSame('Caja 3', $state->session['cashRegisterName'] ?? null);
-        static::assertSame('150.50', $state->session['openingAmount'] ?? null);
-        static::assertStringStartsWith('2026-11-23T08:30:00', $state->session['openedAt'] ?? '');
+        static::assertNotNull($state->session);
+        static::assertSame(42, $state->session['id']);
+        static::assertSame(3, $state->session['cashRegisterId']);
+        static::assertSame('Caja 3', $state->session['cashRegisterName']);
+        static::assertSame('150.50', $state->session['openingAmount']);
+        static::assertStringStartsWith('2026-11-23T08:30:00', $state->session['openedAt']);
         static::assertSame([], $state->availableRegisters);
     }
 
