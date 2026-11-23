@@ -208,6 +208,9 @@ readonly class InitialSetupService
             'cash.view',
             'cash.open',
             'cash.close',
+            // Asks for and hands over change, pays a small expense, takes the surplus to the safe. The reasons
+            // it can pick are only the manual ones (see CashMovementCategory::isManual).
+            'cash.movement',
             'inventory.view',
             'catalog.view',
             'customers.view',

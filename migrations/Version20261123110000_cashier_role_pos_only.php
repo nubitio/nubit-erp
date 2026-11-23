@@ -9,7 +9,9 @@ use Doctrine\Migrations\AbstractMigration;
 
 /**
  * The stock Cajero role becomes what a cashier is: someone who sells. It reads its own sales' receipts
- * (`sales.view_own`) instead of the branch's whole ledger (`sales.view`), and its menu is the point of sale.
+ * (`sales.view_own`) instead of the branch's whole ledger (`sales.view`), it can register the cash that comes
+ * in or goes out of its drawer by hand (`cash.movement`: change, a small expense, a withdrawal to the safe),
+ * and its menu is the point of sale.
  *
  * Only a role that is still exactly the stock one is touched. A tenant that gave its cashiers more (or
  * less) keeps its choice: its permissions and its menu were decided by someone.
@@ -37,7 +39,7 @@ final class Version20261123110000_cashier_role_pos_only extends AbstractMigratio
 
     public function getDescription(): string
     {
-        return 'Stock Cajero role: sales.view becomes sales.view_own and the menu is the point of sale only';
+        return 'Stock Cajero role: sales.view becomes sales.view_own, it may register cash movements and its menu is the point of sale only';
     }
 
     public function up(Schema $schema): void
@@ -46,7 +48,7 @@ final class Version20261123110000_cashier_role_pos_only extends AbstractMigratio
 
         $this->addSql('DELETE FROM role_permission WHERE role_id = ' . self::CASHIER_ROLE . " AND permission = 'sales.view'");
         $this->addSql(
-            'INSERT IGNORE INTO role_permission (role_id, permission) VALUES (' . self::CASHIER_ROLE . ", 'sales.view_own')",
+            'INSERT IGNORE INTO role_permission (role_id, permission) VALUES (' . self::CASHIER_ROLE . ", 'sales.view_own'), (" . self::CASHIER_ROLE . ", 'cash.movement')",
         );
         $this->addSql('DELETE FROM menu_rol WHERE role_id = ' . self::CASHIER_ROLE . ' AND menu_id <> ' . self::POS_MENU);
         $this->addSql(
@@ -57,7 +59,9 @@ final class Version20261123110000_cashier_role_pos_only extends AbstractMigratio
 
     public function down(Schema $schema): void
     {
-        $this->addSql('DELETE FROM role_permission WHERE role_id = ' . self::CASHIER_ROLE . " AND permission = 'sales.view_own'");
+        $this->addSql(
+            'DELETE FROM role_permission WHERE role_id = ' . self::CASHIER_ROLE . " AND permission IN ('sales.view_own', 'cash.movement')",
+        );
         $this->addSql(
             'INSERT IGNORE INTO role_permission (role_id, permission) VALUES (' . self::CASHIER_ROLE . ", 'sales.view')",
         );
