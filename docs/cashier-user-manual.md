@@ -183,6 +183,8 @@ Los atajos no actúan mientras escribes en un campo de texto ni cuando hay un di
 
 Accede desde el menú → **Ventas** → **Registro de ventas** (`/sale`).
 
+> **Quién lo ve:** el Registro de ventas muestra las ventas de toda la sucursal y requiere el permiso `sales.view` (Supervisor y Administrador). El rol **Cajero** por defecto no lo tiene: su menú es solo el POS, y desde allí imprime, consulta el estado y envía por correo los comprobantes de **sus propias** ventas (permiso `sales.view_own`). Anular una venta (`sales.void`) también es de supervisión.
+
 ### 3.1 Lista de ventas
 
 Columnas visibles por defecto: Fecha, Cliente, Comprobante, Método de pago, Total, Estado.

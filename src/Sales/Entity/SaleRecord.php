@@ -82,7 +82,8 @@ use Symfony\Component\Validator\Constraints as Assert;
             uriTemplate: '/sales/{id}/print-invoice',
             controller: PrintSaleInvoice::class,
             read: false,
-            security: "is_granted('perm:sales.view')",
+            // The cashier prints their own sales; the controller limits `sales.view_own` to them.
+            security: "is_granted('perm:sales.view') or is_granted('perm:sales.view_own')",
             name: 'sale_print_invoice',
         ),
         new Post(

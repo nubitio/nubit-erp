@@ -6,6 +6,7 @@ namespace App\Billing\Controller\Api;
 
 use App\Billing\Invoice\Domain\InvoiceEmailException;
 use App\Billing\Invoice\Domain\InvoiceEmailUseCase;
+use App\Sales\Security\SaleReadAccess;
 use Exception;
 use League\Flysystem\FilesystemException;
 use Nubit\Platform\Http\ApiResponse;
@@ -20,6 +21,7 @@ class SendInvoiceEmail extends AbstractController
     public function __construct(
         private readonly InvoiceEmailUseCase $emailUseCase,
         private readonly LoggerInterface $logger,
+        private readonly SaleReadAccess $access,
     ) {}
 
     /** Optional `{"email": "..."}` body: lets the cashier send to an address the customer just gave. */
@@ -46,8 +48,11 @@ class SendInvoiceEmail extends AbstractController
 
     public function __invoke(Request $request): Response
     {
+        $id = $request->get('id');
+        // Outside the try: a refusal is a 403, not an "Error al enviar el email" answer.
+        $this->access->assertCanReadTaxDocument((string) $id);
+
         try {
-            $id = $request->get('id');
             $this->emailUseCase->__invoke($id, $this->recipient($request));
 
             return new ApiResponse(true, 'Email enviado');
