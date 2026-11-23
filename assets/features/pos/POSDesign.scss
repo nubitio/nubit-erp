@@ -727,12 +727,17 @@ html[data-visual-style='nubit'] .pos-shell {
 }
 .pos-payment-dialog__footer {
   display: flex;
+  // On a phone "Cobrar y emitir boleta · S/ 20.00" does not fit beside "Volver": the charge button drops to its own
+  // full-width row instead of running off the edge of the screen.
+  flex-wrap: wrap;
   gap: 12px;
   justify-content: space-between;
   width: 100%;
 
   > :last-child {
-    flex: 1 1 auto;
+    flex: 1 1 14rem;
+    min-width: 0;
+    white-space: normal;
   }
 }
 

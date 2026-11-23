@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect -- the selected period is synchronized from loaded periods */
 import { useEffect, useMemo, useState } from 'react';
-import { Badge, SelectField } from '@nubitio/ui';
+import { Badge, Combobox } from '@nubitio/ui';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { ErpModuleBanner } from '@features/shared/ErpModuleBanner';
@@ -170,30 +170,26 @@ export function AccountingPage() {
           <label className="acc-period">
             Periodo
             <span className="acc-period__fields">
-              <SelectField
+              <Combobox
                 aria-label="Mes"
+                clearable={false}
+                options={MONTH_OPTIONS.map((name, index) => ({
+                  value: String(index + 1).padStart(2, '0'),
+                  label: name,
+                }))}
                 value={period.slice(4, 6)}
-                onChange={(event) => setPeriod(`${period.slice(0, 4)}${event.target.value}`)}
-              >
-                {MONTH_OPTIONS.map((name, index) => (
-                  <option key={name} value={String(index + 1).padStart(2, '0')}>
-                    {name}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField
+                onChange={(month) => month && setPeriod(`${period.slice(0, 4)}${month}`)}
+              />
+              <Combobox
                 aria-label="Año"
+                clearable={false}
+                options={Array.from({ length: 6 }, (_, index) => {
+                  const year = String(new Date().getFullYear() - 3 + index);
+                  return { value: year, label: year };
+                })}
                 value={period.slice(0, 4)}
-                onChange={(event) => setPeriod(`${event.target.value}${period.slice(4, 6)}`)}
-              >
-                {Array.from({ length: 6 }, (_, index) =>
-                  String(new Date().getFullYear() - 3 + index),
-                ).map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </SelectField>
+                onChange={(year) => year && setPeriod(`${year}${period.slice(4, 6)}`)}
+              />
             </span>
           </label>
         </div>
@@ -223,17 +219,16 @@ export function AccountingPage() {
             <div className="acc-toolbar">
               <label>
                 Cuenta
-                <SelectField
+                <Combobox
                   aria-label="Cuenta"
+                  clearable={false}
+                  options={LEDGER_ACCOUNTS.map((item) => ({
+                    value: item.code,
+                    label: `${item.code} · ${item.name}`,
+                  }))}
                   value={account}
-                  onChange={(event) => setAccount(event.target.value)}
-                >
-                  {LEDGER_ACCOUNTS.map((item) => (
-                    <option key={item.code} value={item.code}>
-                      {item.code} · {item.name}
-                    </option>
-                  ))}
-                </SelectField>
+                  onChange={(code) => code && setAccount(code)}
+                />
               </label>
               {ledger?.account && (
                 <div className="acc-balances">

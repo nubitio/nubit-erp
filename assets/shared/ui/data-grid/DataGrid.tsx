@@ -4,7 +4,7 @@ import {
   EmptyState,
   Pagination,
   RowActions,
-  SelectField,
+  Combobox,
   Skeleton,
   type ContextMenuItem,
 } from '@nubitio/ui';
@@ -128,17 +128,13 @@ function Footer({ pagination }: { pagination: GridPagination }) {
       />
       <label className="erp-grid__page-size">
         <span>{ES.rowsPerPage}</span>
-        <SelectField
-          value={pageSize}
-          onChange={(event) => onPageSizeChange(Number(event.target.value))}
+        <Combobox
           aria-label={ES.rowsPerPage}
-        >
-          {sizes.map((size) => (
-            <option key={size} value={size}>
-              {size}
-            </option>
-          ))}
-        </SelectField>
+          clearable={false}
+          options={sizes.map((size) => ({ value: String(size), label: String(size) }))}
+          value={String(pageSize)}
+          onChange={(size) => size && onPageSizeChange(Number(size))}
+        />
       </label>
     </footer>
   );

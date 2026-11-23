@@ -10,6 +10,10 @@ const PNG = Buffer.from(
   'base64',
 );
 
+// The second factor (and the session list) only exist with the identity module, which is off unless the stack
+// enables it (see identity-module.spec.ts).
+const identityOff = process.env.IDENTITY_MODULE_ENABLED !== '1';
+
 /** Signs in and opens "Ajustes" from the user menu. */
 async function openSettings(page: Page) {
   const seed = await getE2ESeed();
@@ -66,6 +70,7 @@ const twoStepRow = (dialog: ReturnType<Page['locator']>) =>
 test('Seguridad holds the password and two-step entries, and says whether two-step is on', async ({
   page,
 }) => {
+  test.skip(identityOff, 'two-step verification needs the identity module');
   const dialog = await openSettings(page);
   await dialog
     .getByRole('navigation', { name: 'Secciones de ajustes' })
@@ -83,6 +88,7 @@ test('Seguridad holds the password and two-step entries, and says whether two-st
 });
 
 test('once two-step is on, the row says Activada and offers Administrar', async ({ page }) => {
+  test.skip(identityOff, 'two-step verification needs the identity module');
   // Only the status read is faked; nothing is enrolled on the account.
   await page.route('**/api/auth/totp', (route) =>
     route.request().method() === 'GET'
@@ -122,15 +128,16 @@ test('the settings list shows the account pages and, to an admin, plan and organ
   await expect(dialog.getByRole('heading', { name: 'Uso', exact: true })).toBeVisible();
   await expect(dialog.locator('.settings-row').filter({ hasText: 'Usuarios' })).toBeVisible();
 
-  // The company is edited inside the dialog; the other organization pages leave it behind.
+  // The company is edited inside the dialog.
   await nav.getByRole('button', { name: 'Empresa' }).click();
   await expect(page).toHaveURL(/[?&]settings=company/);
   await expect(dialog.getByRole('heading', { name: 'Empresa', exact: true })).toBeVisible();
   await expect(dialog.locator('#company-ruc')).toBeVisible();
 
-  await nav.getByRole('link', { name: 'Usuarios' }).click();
-  await expect(page).toHaveURL(/\/config\/users/);
-  await expect(page.getByRole('dialog', { name: 'Ajustes' })).toHaveCount(0);
+  // The other organization pages open inside the dialog as well: none of them takes the user away from it.
+  await nav.getByRole('button', { name: 'SUNAT' }).click();
+  await expect(page).toHaveURL(/[?&]settings=sunat/);
+  await expect(page.getByRole('dialog', { name: 'Ajustes' })).toBeVisible();
 });
 
 test('the profile name is saved, shown in the user menu and can be restored', async ({ page }) => {
@@ -197,6 +204,7 @@ test('a photo can be uploaded, is shown, and removed', async ({ page }) => {
 });
 
 test.describe('two-step verification setup', () => {
+  test.skip(identityOff, 'two-step verification needs the identity module');
   // The QR is decoded in the page with jsQR, which is injected inline: the page's CSP would refuse it.
   test.use({ bypassCSP: true });
 

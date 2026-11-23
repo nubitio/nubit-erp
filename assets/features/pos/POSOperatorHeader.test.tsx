@@ -133,6 +133,34 @@ describe('POSOperatorHeader bar', () => {
 });
 
 describe('POSOperatorHeader back button', () => {
+  it('offers the way out in the phone panel only when there is somewhere to go', async () => {
+    const { container, unmount } = render(
+      <MemoryRouter initialEntries={['/pos']}>
+        <ThemeProvider>
+          <Routes>
+            <Route
+              path="/pos"
+              element={<POSOperatorHeader {...base} variant="panel" exitTo="/dashboard" />}
+            />
+            <Route path="/dashboard" element={<p>Inicio</p>} />
+          </Routes>
+        </ThemeProvider>
+      </MemoryRouter>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Salir del POS' }));
+    expect(container.textContent).toContain('Inicio');
+    unmount();
+
+    render(
+      <MemoryRouter>
+        <ThemeProvider>
+          <POSOperatorHeader {...base} variant="panel" exitTo={null} />
+        </ThemeProvider>
+      </MemoryRouter>,
+    );
+    expect(screen.queryByRole('button', { name: 'Salir del POS' })).toBeNull();
+  });
+
   it('goes to the given destination instead of back in the history', async () => {
     const { container } = render(
       <MemoryRouter initialEntries={['/pos']}>

@@ -6,8 +6,8 @@ import {
   Card,
   Code,
   EmptyState,
+  Combobox,
   FormField,
-  SelectField,
   TextAreaField,
   TextField,
   Toggle,
@@ -154,26 +154,31 @@ export const FeaturesTab = ({ tenantId, isAdmin }: FeaturesTabProps) => {
           >
             {!editingKey && (
               <FormField label={S.featureKey}>
-                <SelectField
-                  value={form.featureKey}
+                <Combobox
+                  aria-label={S.featureKey}
+                  placeholder={S.selectFeature}
                   required
-                  onChange={(e) => setForm((f) => ({ ...f, featureKey: e.target.value }))}
-                >
-                  <option value="">{S.selectFeature}</option>
-                  {Object.entries(features.data.categories).map(([categoryKey, categoryLabel]) => {
-                    const group = features.data.features.filter((f) => f.category === categoryKey);
-                    if (group.length === 0) return null;
-                    return (
-                      <optgroup key={categoryKey} label={categoryLabel}>
-                        {group.map((feature) => (
-                          <option key={feature.key} value={feature.key}>
-                            {feature.label} ({feature.key})
-                          </option>
-                        ))}
-                      </optgroup>
-                    );
-                  })}
-                </SelectField>
+                  // No option groups in a combobox: the category is shown beside each feature and kept in
+                  // the order of the categories, so the list still reads grouped.
+                  options={Object.entries(features.data.categories).flatMap(
+                    ([categoryKey, categoryLabel]) =>
+                      features.data.features
+                        .filter((f) => f.category === categoryKey)
+                        .map((feature) => ({
+                          value: feature.key,
+                          label: `${feature.label} (${feature.key})`,
+                          content: (
+                            <span>
+                              {feature.label} ({feature.key}) <small>· {categoryLabel}</small>
+                            </span>
+                          ),
+                        })),
+                  )}
+                  value={form.featureKey === '' ? null : form.featureKey}
+                  onChange={(featureKey) =>
+                    setForm((f) => ({ ...f, featureKey: featureKey ?? '' }))
+                  }
+                />
               </FormField>
             )}
             <Toggle

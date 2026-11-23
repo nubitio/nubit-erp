@@ -1,3 +1,4 @@
+import userEvent from '@testing-library/user-event';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DataGrid, type DataGridProps, type GridColumn } from './DataGrid';
@@ -220,13 +221,12 @@ describe('DataGrid', () => {
       expect(screen.getByRole('button', { name: '2' }).getAttribute('aria-current')).toBe('page');
     });
 
-    it('reports a new page size', () => {
+    it('reports a new page size', async () => {
       const onPageSizeChange = vi.fn();
       renderGrid({ pagination: { ...paged, onPageSizeChange } });
 
-      fireEvent.change(screen.getByRole('combobox', { name: 'Filas por página' }), {
-        target: { value: '50' },
-      });
+      await userEvent.click(screen.getByRole('combobox', { name: 'Filas por página' }));
+      await userEvent.click(await screen.findByRole('option', { name: '50' }));
 
       expect(onPageSizeChange).toHaveBeenCalledWith(50);
     });
