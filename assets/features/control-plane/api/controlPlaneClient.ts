@@ -7,6 +7,17 @@ import type {
   TenantNotificationsPayload,
 } from '../types';
 
+const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+
+function csrfHeaders(method: string | undefined): Record<string, string> {
+  if (!MUTATING_METHODS.has((method ?? 'GET').toUpperCase())) return {};
+
+  const cookie = document.cookie.split('; ').find((item) => item.startsWith('CSRF_TOKEN='));
+  if (!cookie) return {};
+
+  return { 'X-CSRF-Token': decodeURIComponent(cookie.slice('CSRF_TOKEN='.length)) };
+}
+
 export interface ControlPlaneSession {
   user: string | null;
   roles: string[];
@@ -107,13 +118,14 @@ async function cpFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await exceptionalFetch(
     path,
     {
+      ...init,
       credentials: 'include',
       headers: {
         Accept: 'application/json',
+        ...csrfHeaders(init?.method),
         ...(!isFormData && init?.body ? { 'Content-Type': 'application/json' } : {}),
         ...init?.headers,
       },
-      ...init,
     },
     'api-documentation',
   );
