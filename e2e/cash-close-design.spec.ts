@@ -51,20 +51,17 @@ for (const mobile of [false, true])
     await login(page, seed.username, seed.password);
     const url = `${getE2EBaseUrl()}/cash-session/${id}/close`;
     await page.goto(url);
-    await expect(page.getByRole('heading', { name: 'Cierre de caja', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /^Cerrar turno/ })).toBeVisible();
     const close = page.getByTestId('cash-close-btn');
     await expect(close).toBeDisabled();
     await page.getByRole('spinbutton', { name: 'Cantidad de S/ 200.00', exact: true }).fill('2');
     await page.getByRole('spinbutton', { name: 'Cantidad de S/ 0.10', exact: true }).fill('3');
     await page.getByRole('spinbutton', { name: 'Cantidad de S/ 0.20', exact: true }).fill('1');
-    await expect(
-      page.getByRole('spinbutton', { name: 'Monto contado de Efectivo', exact: true }),
-    ).toHaveValue('400.50');
+    await expect(page.getByTestId('cash-counted-total')).toContainText('400.50');
     await expect(page.getByRole('status').filter({ hasText: 'Faltante' })).toContainText('1.00');
-    await page.getByRole('checkbox', { name: /Yape/ }).check();
     await expect(close).toBeDisabled();
     await page
-      .getByRole('textbox', { name: 'Motivo de la diferencia de Efectivo', exact: true })
+      .getByRole('textbox', { name: 'Motivo de la diferencia', exact: true })
       .fill('Moneda faltante en el turno');
     await expect(close).toBeEnabled();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
@@ -75,18 +72,14 @@ for (const mobile of [false, true])
       fullPage: true,
       animations: 'disabled',
     });
-    await page
-      .getByRole('button', { name: 'Guardar conteo y seguir vendiendo', exact: true })
-      .click();
-    await expect(page).toHaveURL(/\/pos$/);
+    await page.getByRole('button', { name: 'Guardar conteo', exact: true }).click();
+    await expect(page.getByText('Conteo guardado en este equipo.', { exact: false })).toBeVisible();
     await page.goto(url);
     // A full reload: bundle, session refresh and the summary request all come before the draft is restored.
     await expect(page.getByText('Conteo recuperado de este equipo.', { exact: true })).toBeVisible({
       timeout: 20_000,
     });
-    await expect(
-      page.getByRole('spinbutton', { name: 'Monto contado de Efectivo', exact: true }),
-    ).toHaveValue('400.50');
+    await expect(page.getByTestId('cash-counted-total')).toContainText('400.50');
     await expect(close).toBeEnabled();
     await close.click();
     const confirm = page.getByRole('alertdialog', { name: 'Cerrar caja', exact: true });
@@ -97,14 +90,16 @@ for (const mobile of [false, true])
     await close.click();
     await confirm.getByRole('button', { name: 'Sí', exact: true }).click();
     await expect.poll(() => submitted).toBeDefined();
+    // How the cash was counted and that the fund stays are recorded with the closing.
     expect(submitted).toMatchObject({
+      denominations: { '20000': 2, '10': 3, '20': 1 },
+      fundKept: true,
       closureItems: [
         {
           paymentMethod: '/api/payment-methods/1',
           countedAmount: '400.50',
           note: 'Moneda faltante en el turno',
         },
-        { paymentMethod: '/api/payment-methods/7', countedAmount: '23.50' },
       ],
     });
     await expect(page).toHaveURL(/\/cashbox\/dashboard$/);
@@ -115,7 +110,5 @@ for (const mobile of [false, true])
     ).toBeVisible();
     summaryStatus = 200;
     await page.getByRole('button', { name: 'Reintentar resumen', exact: true }).click();
-    await expect(
-      page.getByRole('spinbutton', { name: 'Monto contado de Efectivo', exact: true }),
-    ).toHaveValue('');
+    await expect(page.getByTestId('cash-counted-total')).toHaveText('Pendiente');
   });

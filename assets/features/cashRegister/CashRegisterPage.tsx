@@ -44,7 +44,7 @@ export const CashRegisterPage = () => {
             groupLabel: 'Navegación',
             onClick: () => {
               if (!selectedRow) return;
-              navigate(`/cash-register/${selectedRow.id}/shifts`);
+              navigate(`/cashbox/shifts?caja=${selectedRow.id}`);
             },
           },
         ],

@@ -34,17 +34,8 @@ export interface CashPosState {
   busyRegisters?: CashBusyRegister[];
 }
 
-export interface CashMovementCategoryOption {
-  id: number;
-  name: string;
-  type: 'income' | 'expense';
-}
-
-/** What the API returns; `manual` marks the reasons a person may pick (the rest are the system's own). */
-interface CashMovementCategoryRecord extends CashMovementCategoryOption {
-  active: boolean;
-  manual: boolean;
-}
+/** What a person registers by hand: money in, money out, or cash taken to the safe. */
+export type CashMovementKind = 'income' | 'expense' | 'withdrawal';
 
 export interface CashSessionMovement {
   id: number;
@@ -83,7 +74,107 @@ export interface CashShiftSales {
   receivable: { amount: string; operations: number };
 }
 
+export type CashLedgerKind = 'opening' | 'sale' | 'income' | 'expense' | 'withdrawal';
+
+export interface CashLedgerEntry {
+  id: string;
+  /** ISO date-time. */
+  at: string;
+  kind: CashLedgerKind;
+  /** Series and number of the receipt, e.g. `B001-4512`. */
+  document: string | null;
+  paymentMethod: string | null;
+  description: string;
+  /** Signed: what leaves the drawer is negative. */
+  amount: string;
+}
+
+/** A shift and everything that happened in it, newest first. */
+export interface CashSessionLedger {
+  id: number;
+  cashRegisterId: number;
+  cashRegisterName: string;
+  cashier: string | null;
+  openedAt: string;
+  closedAt: string | null;
+  status: 'open' | 'closed';
+  openingAmount: string;
+  entries: CashLedgerEntry[];
+}
+
+/** What the X cut and the Z report of a shift print, as the server reads it. Amounts are decimal strings. */
+export interface ShiftReportData {
+  company: { name: string | null; ruc: string | null; branch: string | null };
+  shift: {
+    id: number;
+    status: 'open' | 'closed';
+    registerName: string;
+    cashier: string | null;
+    closedBy: string | null;
+    openedAt: string | null;
+    closedAt: string | null;
+  };
+  documents: {
+    rows: {
+      type: string;
+      label: string;
+      count: number;
+      ranges: string[];
+      taxable: string;
+      igv: string;
+      total: string;
+    }[];
+    count: number;
+    taxable: string;
+    igv: string;
+    total: string;
+  };
+  sales: {
+    total: string;
+    byMethod: { name: string; operations: number; amount: string; percent: string }[];
+    credit: { amount: string; operations: number; percent: string };
+  };
+  cash: {
+    opening: string;
+    cashSales: string;
+    income: string;
+    expenses: string;
+    withdrawals: string;
+    expected: string;
+    counted: string | null;
+    difference: string | null;
+    /** Denomination in cents => quantity; null when the total was typed or the shift predates the record. */
+    denominations: Record<string, number> | null;
+    fundKept: boolean | null;
+    withdrawnAtClose: string | null;
+    note: string | null;
+  };
+  outflows: { at: string; kind: 'expense' | 'withdrawal'; description: string; amount: string }[];
+}
+
 export const cashSessionService = {
+  /** The report of a shift as ESC/POS bytes for the till printer, like the sale ticket. */
+  printReport: (sessionId: number | string) =>
+    httpClient
+      .get<ArrayBuffer>(API + `cash-sessions/${sessionId}/print-report`, {
+        responseType: 'arraybuffer',
+      })
+      .then((response) => response.data),
+
+  getReport: (sessionId: number | string) =>
+    httpClient
+      .get<ShiftReportData>(API + `cash-sessions/${sessionId}/report`, {
+        errorPresentation: 'inline',
+      })
+      .then((response) => response.data),
+
+  getLedger: (sessionId: number | string) =>
+    httpClient
+      .get<CashSessionLedger>(API + `cash-sessions/${sessionId}/ledger`, {
+        errorPresentation: 'inline',
+      })
+      .then((response) => response.data),
+
   getPosState: () =>
     httpClient
       .get<CashPosState>(API + 'cash-pos-state', { errorPresentation: 'inline' })
@@ -108,17 +199,9 @@ export const cashSessionService = {
       })
       .then((response) => response.data),
 
-  getMovementCategories: (): Promise<CashMovementCategoryOption[]> =>
-    httpClient
-      .get<CashMovementCategoryRecord[]>(API + 'cash-movement-categories', {
-        errorPresentation: 'inline',
-      })
-      // The server refuses the others too: a sale or a collection recorded by hand would count twice.
-      .then((response) => response.data.filter((category) => category.active && category.manual)),
-
   addMovement: (input: {
     sessionId: number;
-    categoryId: number;
+    kind: CashMovementKind;
     amount: number;
     description: string;
   }) =>
@@ -126,7 +209,7 @@ export const cashSessionService = {
       API + 'cash-movements',
       {
         cashSession: API + `cash-sessions/${input.sessionId}`,
-        category: API + `cash-movement-categories/${input.categoryId}`,
+        kind: input.kind,
         amount: input.amount.toFixed(2),
         description: input.description,
       },

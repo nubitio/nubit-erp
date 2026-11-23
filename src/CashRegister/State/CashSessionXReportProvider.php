@@ -90,6 +90,30 @@ readonly class CashSessionXReportProvider implements ProviderInterface
             [$sessionId],
         );
 
+        $withdrawalsRaw = $this->connection->fetchOne(
+            "SELECT COALESCE(SUM(cm.amount), 0) FROM cash_movements cm
+             JOIN cash_movement_category cmc ON cmc.id = cm.category_id
+             WHERE cm.cash_session_id = ? AND cm.movement_type = 'CASH_OUT'
+               AND cmc.code IN ('manager_withdrawal', 'bank_deposit')",
+            [$sessionId],
+        );
+
+        // Receipts of the shift's sales that count: voided sales are left out, as in the rest of the report.
+        $documentRows = $this->connection->fetchAllAssociative("SELECT td.document_type, COUNT(*) AS total
+             FROM tax_document td
+             JOIN sales s ON s.id = td.sale_id
+             WHERE s.cash_session_id = ? AND s.deleted_at IS NULL AND s.status <> 'VOIDED'
+             GROUP BY td.document_type", [$sessionId]);
+        $documents = ['boletas' => 0, 'facturas' => 0, 'creditNotes' => 0];
+        foreach ($documentRows as $documentRow) {
+            match ((string) $documentRow['document_type']) {
+                '03' => $documents['boletas'] = (int) $documentRow['total'],
+                '01' => $documents['facturas'] = (int) $documentRow['total'],
+                '07' => $documents['creditNotes'] = (int) $documentRow['total'],
+                default => null,
+            };
+        }
+
         $currentBalance = $openingBalance->plus($cashSalesIn)->plus($cashIn)->minus($cashOut);
 
         $salesByPaymentMethod = array_map(
@@ -120,6 +144,11 @@ readonly class CashSessionXReportProvider implements ProviderInterface
             )->__toString(),
             receivableTotal: $sold['receivable']['amount'],
             receivableOperations: $sold['receivable']['operations'],
+            withdrawalsOut: BigDecimal::of((string) ($withdrawalsRaw ?: '0'))->toScale(
+                2,
+                RoundingMode::HALF_UP,
+            )->__toString(),
+            documents: $documents,
         );
     }
 }

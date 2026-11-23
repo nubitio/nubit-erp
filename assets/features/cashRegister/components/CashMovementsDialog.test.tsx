@@ -7,9 +7,11 @@ import { cashSessionService } from '../services/cashSessionService';
 import { CashMovementsDialog } from './CashMovementsDialog';
 
 const getXReport = vi.fn();
+const printReport = vi.fn();
 
 vi.mock('@shared/lib/SharedUtils', () => ({ default: vi.fn() }));
 vi.mock('@shared/permissions', () => ({ hasPermission: vi.fn() }));
+vi.mock('../hooks/useShiftReportPrinter', () => ({ useShiftReportPrinter: () => printReport }));
 vi.mock('../services/cashRegisterService', () => ({
   default: () => ({ getXReport }),
 }));
@@ -17,7 +19,6 @@ vi.mock('../services/cashSessionService', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../services/cashSessionService')>()),
   cashSessionService: {
     getMovements: vi.fn(),
-    getMovementCategories: vi.fn(),
     addMovement: vi.fn(),
   },
 }));
@@ -48,10 +49,6 @@ const movements = [
     category: { id: 6, name: 'Gasto de caja chica', type: 'expense' as const },
   },
 ];
-const categories = [
-  { id: 4, name: 'Otros ingresos', type: 'income' as const },
-  { id: 6, name: 'Gasto de caja chica', type: 'expense' as const },
-];
 
 let client: QueryClient;
 const renderDialog = () =>
@@ -65,7 +62,6 @@ beforeEach(() => {
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   getXReport.mockReset().mockResolvedValue({ data: report });
   service.getMovements.mockReset().mockResolvedValue(movements);
-  service.getMovementCategories.mockReset().mockResolvedValue(categories);
   service.addMovement.mockReset().mockResolvedValue({ data: {} } as never);
   can.mockReset().mockReturnValue(true);
 });
@@ -108,7 +104,6 @@ describe('CashMovementsDialog', () => {
 
     const list = await screen.findByTestId('cash-movements-list');
 
-    expect(within(list).getByText('Gasto de caja chica')).toBeTruthy();
     expect(within(list).getByText('Bolsas')).toBeTruthy();
     expect(within(list).getByText(/12\.50/)).toBeTruthy();
     expect(within(list).queryByText('Saldo inicial')).toBeNull();
@@ -120,16 +115,15 @@ describe('CashMovementsDialog', () => {
     service.getMovements.mockClear();
     getXReport.mockClear();
 
-    await userEvent.click(screen.getByRole('combobox', { name: 'Categoría' }));
-    await userEvent.click(await screen.findByRole('option', { name: /Gasto de caja chica/ }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Egreso' }));
     await userEvent.type(screen.getByLabelText(/Monto/), '8.40');
-    await userEvent.type(screen.getByLabelText(/Descripción/), 'Cinta');
+    await userEvent.type(screen.getByLabelText(/Motivo/), 'Cinta');
     await userEvent.click(screen.getByTestId('cash-movement-submit-btn'));
 
     await waitFor(() =>
       expect(service.addMovement).toHaveBeenCalledWith({
         sessionId: 371,
-        categoryId: 6,
+        kind: 'expense',
         amount: 8.4,
         description: 'Cinta',
       }),
@@ -146,26 +140,24 @@ describe('CashMovementsDialog', () => {
     renderDialog();
     await screen.findByTestId('cash-movements-list');
 
-    await userEvent.click(screen.getByRole('combobox', { name: 'Categoría' }));
-    await userEvent.click(await screen.findByRole('option', { name: /Otros ingresos/ }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Ingreso' }));
     await userEvent.type(screen.getByLabelText(/Monto/), '5');
-    await userEvent.type(screen.getByLabelText(/Descripción/), 'Aporte');
+    await userEvent.type(screen.getByLabelText(/Motivo/), 'Aporte');
     await userEvent.click(screen.getByTestId('cash-movement-submit-btn'));
 
     expect(await screen.findByText('La sesión de caja no existe o está cerrada.')).toBeTruthy();
-    expect((screen.getByLabelText(/Descripción/) as HTMLInputElement).value).toBe('Aporte');
+    expect((screen.getByLabelText(/Motivo/) as HTMLInputElement).value).toBe('Aporte');
   });
 
-  it('does not submit without category, a positive amount and a description', async () => {
+  it('does not submit without a kind, a positive amount and a reason', async () => {
     renderDialog();
     await screen.findByTestId('cash-movements-list');
     const submit = screen.getByTestId('cash-movement-submit-btn') as HTMLButtonElement;
     expect(submit.disabled).toBe(true);
 
-    await userEvent.click(screen.getByRole('combobox', { name: 'Categoría' }));
-    await userEvent.click(await screen.findByRole('option', { name: /Otros ingresos/ }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Ingreso' }));
     await userEvent.type(screen.getByLabelText(/Monto/), '0');
-    await userEvent.type(screen.getByLabelText(/Descripción/), 'Aporte');
+    await userEvent.type(screen.getByLabelText(/Motivo/), 'Aporte');
     expect(submit.disabled).toBe(true);
   });
 
@@ -175,7 +167,15 @@ describe('CashMovementsDialog', () => {
 
     expect(await screen.findByTestId('cash-movements-list')).toBeTruthy();
     expect(screen.queryByTestId('cash-movement-submit-btn')).toBeNull();
-    expect(service.getMovementCategories).not.toHaveBeenCalled();
+  });
+
+  it('prints the X cut of the shift on the till printer', async () => {
+    renderDialog();
+    await screen.findByTestId('cash-movements-list');
+
+    await userEvent.click(screen.getByTestId('cash-print-x'));
+
+    expect(printReport).toHaveBeenCalledWith(371);
   });
 
   it('says there is nothing to show when no money was moved by hand', async () => {

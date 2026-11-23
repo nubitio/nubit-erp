@@ -119,8 +119,11 @@ final class CashSessionXReportProviderTest extends TestCase
         $db = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
         $db->executeStatement('CREATE TABLE cash_sessions (id INTEGER, opening_amount NUMERIC, opened_at TEXT)');
         $db->executeStatement(
-            'CREATE TABLE cash_movements (cash_session_id INTEGER, payment_method_id INTEGER, movement_type TEXT, amount NUMERIC)',
+            'CREATE TABLE cash_movements (cash_session_id INTEGER, category_id INTEGER, payment_method_id INTEGER, movement_type TEXT, amount NUMERIC)',
         );
+        $db->executeStatement('CREATE TABLE cash_movement_category (id INTEGER, code TEXT)');
+        $db->executeStatement("INSERT INTO cash_movement_category VALUES (1, 'manager_withdrawal')");
+        $db->executeStatement('CREATE TABLE tax_document (tax_document_id INTEGER, sale_id TEXT, document_type TEXT)');
         $db->executeStatement('CREATE TABLE payment_method (id INTEGER, name TEXT)');
         $db->executeStatement("INSERT INTO cash_sessions VALUES (1, 200.00, '2026-10-29 08:00:00')");
         $db->executeStatement("INSERT INTO payment_method VALUES (1, 'Efectivo'), (2, 'Tarjeta')");
@@ -152,6 +155,10 @@ final class CashSessionXReportProviderTest extends TestCase
                 'amount' => $amount,
             ]);
         }
+        // A withdrawal to the safe (the 20.00 CASH_OUT) and the receipts of the shift: a boleta and a factura count,
+        // the one of the voided sale does not.
+        $db->executeStatement("UPDATE cash_movements SET category_id = 1 WHERE movement_type = 'CASH_OUT'");
+        $db->executeStatement("INSERT INTO tax_document VALUES (1, 'a', '03'), (2, 'b', '01'), (3, 'c', '03')");
         $connection = $this->createMock(Connection::class);
         $connection
             ->method('fetchAssociative')
@@ -174,6 +181,8 @@ final class CashSessionXReportProviderTest extends TestCase
         self::assertSame('290.00', $report->cashSalesNet);
         self::assertSame('20.00', $report->cashAdjustmentsOut);
         self::assertSame('60.00', $report->cashOut);
+        self::assertSame('20.00', $report->withdrawalsOut, 'what went to the safe, inside cashOut');
+        self::assertSame(['boletas' => 1, 'facturas' => 1, 'creditNotes' => 0], $report->documents);
         self::assertSame('520.00', $closure[0]->expectedAmount);
         self::assertSame(
             $closure[0]->expectedAmount,

@@ -28,6 +28,9 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
  */
 readonly class CashRegisterCloseProcessor implements ProcessorInterface
 {
+    /** The denominations of the till, in cents: S/ 200, 100, 50, 20, 10, 5, 2, 1, 0.50, 0.20 and 0.10. */
+    private const array DENOMINATIONS_IN_CENTS = [20_000, 10_000, 5_000, 2_000, 1_000, 500, 200, 100, 50, 20, 10];
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private Security $security,
@@ -94,6 +97,17 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
             $cashSession->setExpectedAmount($expectedStr);
             $cashSession->setDifferenceAmount($differenceStr);
             $cashSession->setCloseNote($notes !== [] ? implode('; ', $notes) : null);
+            $cashSession->setCountedDenominations(self::cleanDenominations($data->denominations));
+            $cashSession->setOpeningFundKept($data->fundKept);
+            if ($data->fundKept !== null) {
+                $stays = $data->fundKept ? BigDecimal::of($cashSession->getOpeningAmount()) : BigDecimal::zero();
+                $taken = $countedTotal->minus($stays);
+                $cashSession->setCashWithdrawnAtClose(
+                    ($taken->isNegative() ? BigDecimal::zero() : $taken)
+                        ->toScale(2, RoundingMode::HALF_UP)
+                        ->__toString(),
+                );
+            }
             $cashSession->setStatus('CLOSED');
             $cashSession->setClosedBy($userRef instanceof User ? $userRef : null);
             $cashSession->setClosedAt(new DateTimeImmutable());
@@ -109,5 +123,32 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         }
 
         return new CashRegisterCloseResponseDto(success: true, message: 'Caja cerrada correctamente');
+    }
+
+    /**
+     * Only whole, positive quantities of the denominations the till knows are kept: the count is a record, never
+     * something that moves the totals.
+     *
+     * @param array<array-key, mixed>|null $denominations
+     * @return array<int|string, int>|null
+     */
+    private static function cleanDenominations(?array $denominations): ?array
+    {
+        if ($denominations === null) {
+            return null;
+        }
+
+        $clean = [];
+        foreach ($denominations as $cents => $quantity) {
+            if (
+                in_array((int) $cents, self::DENOMINATIONS_IN_CENTS, strict: true)
+                && is_numeric($quantity)
+                && (int) $quantity > 0
+            ) {
+                $clean[(int) $cents] = (int) $quantity;
+            }
+        }
+
+        return $clean === [] ? null : $clean;
     }
 }

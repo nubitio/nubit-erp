@@ -71,6 +71,64 @@ final class CashRegisterCloseProcessorTest extends TestCase
         $this->assertTrue($response->success);
     }
 
+    /** What the closing records besides the totals: the count by denomination and where the cash goes. */
+    public function testTheClosingKeepsTheDenominationCountAndTheCashTakenOut(): void
+    {
+        $cashSession = new CashSession();
+        $openedBy = new User();
+        new \ReflectionProperty(User::class, 'id')->setValue($openedBy, 1);
+        $cashSession->setOpenedBy($openedBy);
+        $cashSession->setOpeningAmount('200.00');
+        $this->entityManager->method('find')->willReturn($cashSession);
+        $this->entityManager->method('getReference')->willReturn(new User());
+        $this->entityManager->method('persist')->willReturnCallback(fn() => null);
+        $this->entityManager->method('flush')->willReturnCallback(fn() => null);
+        $connection = $this->createStub(Connection::class);
+        $connection->method('fetchOne')->willReturn('1645.30');
+        $this->entityManager->method('getConnection')->willReturn($connection);
+
+        $dto = new CashRegisterCloseDto();
+        $dto->closureItems = [[
+            'paymentMethod' => '/api/payment-methods/1',
+            'countedAmount' => '1840.30',
+            'note' => '',
+        ]];
+        // 8 x S/ 200, 2 x S/ 100... and a denomination the till does not have, which is dropped.
+        $dto->denominations = ['20000' => 8, '10000' => 2, '10' => 3, '777' => 4, '5000' => 0];
+        $dto->fundKept = true;
+
+        $this->buildProcessor()->process($dto, new Put(), ['id' => 1]);
+
+        $this->assertSame(['20000' => 8, '10000' => 2, '10' => 3], $cashSession->getCountedDenominations());
+        $this->assertTrue($cashSession->getOpeningFundKept());
+        $this->assertSame('1640.30', $cashSession->getCashWithdrawnAtClose(), 'counted less the fund that stays');
+    }
+
+    public function testWhenTheFundDoesNotStayAllTheCountedCashIsTakenOut(): void
+    {
+        $cashSession = new CashSession();
+        $openedBy = new User();
+        new \ReflectionProperty(User::class, 'id')->setValue($openedBy, 1);
+        $cashSession->setOpenedBy($openedBy);
+        $cashSession->setOpeningAmount('200.00');
+        $this->entityManager->method('find')->willReturn($cashSession);
+        $this->entityManager->method('getReference')->willReturn(new User());
+        $this->entityManager->method('persist')->willReturnCallback(fn() => null);
+        $this->entityManager->method('flush')->willReturnCallback(fn() => null);
+        $connection = $this->createStub(Connection::class);
+        $connection->method('fetchOne')->willReturn('100.00');
+        $this->entityManager->method('getConnection')->willReturn($connection);
+
+        $dto = new CashRegisterCloseDto();
+        $dto->closureItems = [['paymentMethod' => '/api/payment-methods/1', 'countedAmount' => '300.00', 'note' => '']];
+        $dto->fundKept = false;
+
+        $this->buildProcessor()->process($dto, new Put(), ['id' => 1]);
+
+        $this->assertNull($cashSession->getCountedDenominations());
+        $this->assertSame('300.00', $cashSession->getCashWithdrawnAtClose());
+    }
+
     /**
      * Yape, a card and the like never enter the drawer: what the cashier checks against the terminal must not be
      * added to the cash count, or every digital sale would show up as a surplus.

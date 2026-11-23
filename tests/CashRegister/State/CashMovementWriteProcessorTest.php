@@ -11,6 +11,7 @@ use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Entity\CashMovementCategory;
 use App\CashRegister\Entity\CashSession;
 use App\CashRegister\Enum\CashMovementType;
+use App\CashRegister\Service\MovementCategoryResolver;
 use App\CashRegister\State\CashMovementWriteProcessor;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Security\Security;
@@ -53,7 +54,7 @@ final class CashMovementWriteProcessorTest extends TestCase
         $conn->expects(self::never())->method('executeStatement');
 
         $security = $this->createStub(Security::class);
-        $processor = new CashMovementWriteProcessor($conn, $security);
+        $processor = new CashMovementWriteProcessor($conn, $security, new MovementCategoryResolver($conn));
 
         $this->expectException(MethodNotAllowedHttpException::class);
         $processor->process($this->makeMovement(), new Delete(), ['id' => '42']);
@@ -65,7 +66,7 @@ final class CashMovementWriteProcessorTest extends TestCase
         $conn->expects(self::never())->method('executeStatement');
 
         $security = $this->createStub(Security::class);
-        $processor = new CashMovementWriteProcessor($conn, $security);
+        $processor = new CashMovementWriteProcessor($conn, $security, new MovementCategoryResolver($conn));
 
         $this->expectException(MethodNotAllowedHttpException::class);
         $processor->process($this->makeMovement(), new Patch(), ['id' => '5']);
@@ -79,7 +80,7 @@ final class CashMovementWriteProcessorTest extends TestCase
         $security = $this->createStub(Security::class);
         $security->method('connectedUser')->willReturn(null);
 
-        $processor = new CashMovementWriteProcessor($conn, $security);
+        $processor = new CashMovementWriteProcessor($conn, $security, new MovementCategoryResolver($conn));
 
         $this->expectException(UnauthorizedHttpException::class);
         $processor->process($this->makeMovement(), new Post());
@@ -93,7 +94,7 @@ final class CashMovementWriteProcessorTest extends TestCase
         $security = $this->createStub(Security::class);
         $security->method('connectedUser')->willReturn(new AuthUserDto(1, 'admin'));
 
-        $processor = new CashMovementWriteProcessor($conn, $security);
+        $processor = new CashMovementWriteProcessor($conn, $security, new MovementCategoryResolver($conn));
 
         $movement = new CashMovement();
         $movement->setType(CashMovementType::INCOME);
@@ -123,7 +124,7 @@ final class CashMovementWriteProcessorTest extends TestCase
         $security = $this->createStub(Security::class);
         $security->method('connectedUser')->willReturn(new AuthUserDto(1, 'admin'));
 
-        $processor = new CashMovementWriteProcessor($conn, $security);
+        $processor = new CashMovementWriteProcessor($conn, $security, new MovementCategoryResolver($conn));
         $movement = $this->makeMovement(CashMovementType::INCOME);
 
         $result = $processor->process($movement, new Post());
@@ -140,11 +141,77 @@ final class CashMovementWriteProcessorTest extends TestCase
         $security = $this->createStub(Security::class);
         $security->method('connectedUser')->willReturn(new AuthUserDto(1, 'admin'));
 
-        $processor = new CashMovementWriteProcessor($conn, $security);
+        $processor = new CashMovementWriteProcessor($conn, $security, new MovementCategoryResolver($conn));
 
         $this->expectException(UnprocessableEntityHttpException::class);
         $this->expectExceptionMessage('lo registra el sistema');
         $processor->process($this->makeMovement(manual: false), new Post());
+    }
+
+    private function movementOfKind(?string $kind): CashMovement
+    {
+        $session = new CashSession();
+        new \ReflectionProperty(CashSession::class, 'id')->setValue($session, 7);
+
+        return new CashMovement()
+            ->setCashSession($session)
+            ->setAmount('50.00')
+            ->setDescription('Pago de movilidad')
+            ->setKind($kind);
+    }
+
+    public function testAMovementOfAKindIsFiledUnderTheSystemsOwnReason(): void
+    {
+        foreach ([
+            'income' => 'other_income',
+            'expense' => 'petty_cash_expense',
+            'withdrawal' => 'manager_withdrawal',
+        ] as $kind => $code) {
+            $conn = $this->createMock(Connection::class);
+            $conn->expects(self::once())->method('fetchOne')->with(self::anything(), [$code])->willReturn('11');
+            $conn->method('fetchAssociative')->willReturnOnConsecutiveCalls(['status' => 'OPEN', 'opened_by' => 1], [
+                'type' => $kind === 'income' ? 'income' : 'expense',
+                'active' => 1,
+            ]);
+            $conn
+                ->expects(self::once())
+                ->method('executeStatement')
+                ->with(
+                    self::stringContains('INSERT INTO cash_movements'),
+                    self::callback(
+                        static fn(array $p): bool => (
+                            $p[1] === ($kind === 'income' ? 'CASH_IN' : 'CASH_OUT')
+                            && $p[2] === 11
+                        ),
+                    ),
+                );
+            $conn->method('lastInsertId')->willReturn('5');
+            $security = $this->createStub(Security::class);
+            $security->method('connectedUser')->willReturn(new AuthUserDto(1, 'admin'));
+
+            $result = new CashMovementWriteProcessor($conn, $security, new MovementCategoryResolver($conn))->process(
+                $this->movementOfKind($kind),
+                new Post(),
+            );
+
+            self::assertNotNull($result);
+            self::assertSame(5, $result->getId());
+        }
+    }
+
+    public function testWithoutCategoryNorKnownKindItIsRefused(): void
+    {
+        $conn = $this->createMock(Connection::class);
+        $conn->expects(self::never())->method('executeStatement');
+        $security = $this->createStub(Security::class);
+        $security->method('connectedUser')->willReturn(new AuthUserDto(1, 'admin'));
+
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->expectExceptionMessage('Indica el tipo de movimiento');
+        new CashMovementWriteProcessor($conn, $security, new MovementCategoryResolver($conn))->process(
+            $this->movementOfKind('refund'),
+            new Post(),
+        );
     }
 
     public function testPostMapsExpenseTypeToCAShOut(): void
@@ -171,7 +238,7 @@ final class CashMovementWriteProcessorTest extends TestCase
         $security = $this->createStub(Security::class);
         $security->method('connectedUser')->willReturn(new AuthUserDto(1, 'admin'));
 
-        $processor = new CashMovementWriteProcessor($conn, $security);
+        $processor = new CashMovementWriteProcessor($conn, $security, new MovementCategoryResolver($conn));
         $processor->process($this->makeMovement(CashMovementType::EXPENSE), new Post());
 
         self::assertStringContainsString('INSERT', $capturedSql);

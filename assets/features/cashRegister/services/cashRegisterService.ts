@@ -15,6 +15,10 @@ export interface XReportDto {
   /** Sold in the shift and left on credit: not money yet, so it is in no payment method. */
   receivableTotal?: string;
   receivableOperations?: number;
+  /** Of `cashOut`, what went to the safe or the bank rather than being spent. */
+  withdrawalsOut?: string;
+  /** Receipts issued in the shift. */
+  documents?: { boletas: number; facturas: number; creditNotes: number };
   salesByPaymentMethod: Array<{
     paymentMethodId: number;
     paymentMethod: string;
@@ -44,11 +48,20 @@ const cashRegisterService = () => {
     });
   };
 
-  const closeCashRegister = (id: string, closureData: CashRegisterClosureItem[]) => {
+  /** How the cash was counted and where it goes, recorded with the closing for its report. */
+  const closeCashRegister = (
+    id: string,
+    closureData: CashRegisterClosureItem[],
+    details: { denominations?: Record<string, number> | null; fundKept?: boolean | null } = {},
+  ) => {
     return httpClient.post<CashRegisterMutationResponse>(
       API + `cash-sessions/${id}/close`,
       {
         closureItems: closureData,
+        ...(details.denominations ? { denominations: details.denominations } : {}),
+        ...(details.fundKept === null || details.fundKept === undefined
+          ? {}
+          : { fundKept: details.fundKept }),
       },
       { errorPresentation: 'inline' },
     );
