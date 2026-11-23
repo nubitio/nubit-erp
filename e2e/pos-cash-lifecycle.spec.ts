@@ -124,7 +124,8 @@ test('el cajero abre, mueve efectivo y cierra la caja sin salir del POS', async 
     const dialog = page.getByRole('dialog', { name: 'Movimientos de caja' });
     await expect(dialog.getByText('Saldo en caja')).toBeVisible({ timeout: 15_000 });
 
-    await dialog.getByLabel(/Categoría/).selectOption({ label: 'Gasto de caja chica' });
+    await dialog.getByRole('combobox', { name: 'Categoría' }).click();
+    await page.getByRole('option', { name: /Gasto de caja chica/ }).click();
     await dialog.getByLabel(/Monto/).fill('12.50');
     await dialog.getByLabel(/Descripción/).fill('Bolsas y cinta de embalaje');
     await dialog.getByTestId('cash-movement-submit-btn').click();
