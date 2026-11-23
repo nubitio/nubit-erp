@@ -9,6 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Dto\CashRegisterCloseResponseDto;
 use App\CashRegister\Entity\CashSession;
+use App\CashRegister\Service\ClosureCount;
 use App\Identity\Entity\User;
 use App\Identity\Security\Security;
 use Brick\Math\BigDecimal;
@@ -21,16 +22,12 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * @implements ProcessorInterface<CashRegisterCloseDto, CashRegisterCloseResponseDto>
  */
 readonly class CashRegisterCloseProcessor implements ProcessorInterface
 {
-    /** The cash payment method; the one the drawer holds. */
-    private const int CASH_PAYMENT_METHOD_ID = 1;
-
     public function __construct(
         private EntityManagerInterface $entityManager,
         private Security $security,
@@ -48,37 +45,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = [],
     ): CashRegisterCloseResponseDto {
-        $closureItems = $data->closureItems;
-        $notes = [];
-
-        $countedTotal = BigDecimal::zero();
-        if (!empty($closureItems)) {
-            foreach ($closureItems as $item) {
-                $countedAmount = $item['countedAmount'] ?? '0';
-                if (!is_numeric($countedAmount) || (float) $countedAmount < 0) {
-                    throw new UnprocessableEntityHttpException('El monto contado debe ser un número positivo.');
-                }
-                // Only the cash in the drawer is compared with what the drawer should hold. The other methods
-                // (Yape, a card...) are checked against the terminal or the bank; adding them here would turn
-                // every digital sale into a surplus.
-                // An item that names no method is a legacy one-line closure: it counts.
-                if (!isset($item['paymentMethod']) || $this->isCash($item['paymentMethod'])) {
-                    $countedTotal = $countedTotal->plus(BigDecimal::of($countedAmount));
-                }
-                if (!empty($item['note'])) {
-                    $notes[] = trim((string) $item['note']);
-                }
-            }
-        } else {
-            $countedAmount = $data->countedAmount ?? '0';
-            if (!is_numeric($countedAmount) || (float) $countedAmount < 0) {
-                throw new UnprocessableEntityHttpException('El monto contado debe ser un número positivo.');
-            }
-            $countedTotal = BigDecimal::of($countedAmount);
-            if (!empty($data->note)) {
-                $notes[] = trim((string) $data->note);
-            }
-        }
+        ['counted' => $countedTotal, 'notes' => $notes] = ClosureCount::of($data);
 
         try {
             $cashSession = $this->entityManager->find(CashSession::class, $uriVariables['id']);
@@ -142,18 +109,5 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         }
 
         return new CashRegisterCloseResponseDto(success: true, message: 'Caja cerrada correctamente');
-    }
-
-    /** The closure item's `paymentMethod` is an IRI (`/api/payment-methods/1`) or a bare id. */
-    private function isCash(mixed $paymentMethod): bool
-    {
-        if (is_array($paymentMethod)) {
-            $paymentMethod = $paymentMethod['id'] ?? null;
-        }
-        if (!is_string($paymentMethod) && !is_int($paymentMethod)) {
-            return false;
-        }
-
-        return (int) basename((string) $paymentMethod) === self::CASH_PAYMENT_METHOD_ID;
     }
 }
