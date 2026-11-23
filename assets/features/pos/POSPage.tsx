@@ -46,6 +46,11 @@ const CashCloseDialog = lazy(() =>
     default: module.CashCloseDialog,
   })),
 );
+const CashShiftSalesDialog = lazy(() =>
+  import('@features/cashRegister/components/CashShiftSalesDialog').then((module) => ({
+    default: module.CashShiftSalesDialog,
+  })),
+);
 const CashMovementsDialog = lazy(() =>
   import('@features/cashRegister/components/CashMovementsDialog').then((module) => ({
     default: module.CashMovementsDialog,
@@ -86,6 +91,7 @@ const POSPage = ({ onSignOut, exitTo = null }: POSPageProps) => {
   const [openCajaDialogOpen, setOpenCajaDialogOpen] = useState(false);
   const [closeCajaDialogOpen, setCloseCajaDialogOpen] = useState(false);
   const [cashMovementsOpen, setCashMovementsOpen] = useState(false);
+  const [shiftSalesOpen, setShiftSalesOpen] = useState(false);
   const [quickMode, setQuickMode] = useState(false);
   const [focusCustomerTrigger, setFocusCustomerTrigger] = useState(0);
   // Counters the checkout panel reacts to: it owns the dialog / the line being edited.
@@ -616,6 +622,7 @@ const POSPage = ({ onSignOut, exitTo = null }: POSPageProps) => {
       }
       onOpenCaja={() => setOpenCajaDialogOpen(true)}
       onCloseCaja={() => setCloseCajaDialogOpen(true)}
+      onShiftSales={() => setShiftSalesOpen(true)}
       onCashMovements={() => setCashMovementsOpen(true)}
       onOpenProfile={() => openSettings('account')}
       onSignOut={onSignOut}
@@ -911,11 +918,20 @@ const POSPage = ({ onSignOut, exitTo = null }: POSPageProps) => {
             <CashCloseDialog
               open
               sessionId={cashSession.session.id}
+              onViewSales={() => setShiftSalesOpen(true)}
               onClose={() => setCloseCajaDialogOpen(false)}
               onClosed={async () => {
                 setCloseCajaDialogOpen(false);
                 await cashSession.refresh();
               }}
+            />
+          )}
+          {shiftSalesOpen && (
+            <CashShiftSalesDialog
+              open
+              sessionId={cashSession.session.id}
+              onClose={() => setShiftSalesOpen(false)}
+              onReprint={(saleId) => void invoicePrinterRef.current.printSaleInvoice(saleId)}
             />
           )}
           {cashMovementsOpen && (

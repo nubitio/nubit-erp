@@ -1,6 +1,12 @@
 import { expect, test, type Page } from '@playwright/test';
 import { login } from './helpers/auth';
+import {
+  completePosCashPayment,
+  selectPosPaymentMethod,
+  waitForPosCheckoutReady,
+} from './helpers/pos';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
+import { E2E_SEED } from './support/seedConstants';
 
 const BASE_URL = getE2EBaseUrl();
 
@@ -122,7 +128,8 @@ test('el cajero abre, mueve efectivo y cierra la caja sin salir del POS', async 
     const dialog = page.getByRole('dialog', { name: 'Movimientos de caja' });
     await expect(dialog.getByText('Saldo en caja')).toBeVisible({ timeout: 15_000 });
 
-    await dialog.getByLabel(/Categoría/).selectOption({ label: 'Gasto de caja chica' });
+    await dialog.getByRole('combobox', { name: 'Categoría' }).click();
+    await page.getByRole('option', { name: /Gasto de caja chica/ }).click();
     await dialog.getByLabel(/Monto/).fill('12.50');
     await dialog.getByLabel(/Descripción/).fill('Bolsas y cinta de embalaje');
     await dialog.getByTestId('cash-movement-submit-btn').click();
@@ -184,6 +191,170 @@ test('un estado de caja desactualizado se corrige: el POS cierra lo que el servi
   await expect(page.getByTestId('pos-open-payment-btn')).toBeDisabled();
 
   await openCajaFromPos(page, '100');
+});
+
+type ShiftSales = {
+  sessionId: number | null;
+  count: number;
+  total: string;
+  sales: Array<{ id: string; status: string; total: string; payments: unknown[] }>;
+};
+
+async function shiftSales(page: Page): Promise<ShiftSales> {
+  const response = await page.request.get(`${BASE_URL}/api/cash-pos-state/sales`, {
+    headers: { Accept: 'application/json' },
+  });
+  expect(response.ok(), 'cash-pos-state/sales debe responder 2xx').toBeTruthy();
+  return (await response.json()) as ShiftSales;
+}
+
+test('el cajero ve las ventas de su turno, las reimprime y las encuentra al cerrar', async ({
+  page,
+}) => {
+  const seed = await getE2ESeed();
+  await login(page, seed.username, seed.password);
+  await openPos(page);
+  if ((await posState(page)).session == null) await openCajaFromPos(page, '100');
+  await waitForCajaState(page, 'Abierta');
+
+  const before = await shiftSales(page);
+  expect(before.sessionId).toBe((await posState(page)).session?.id);
+
+  await test.step('vende en efectivo y la venta entra al turno', async () => {
+    await page
+      .getByTestId('pos-product-card')
+      .filter({ hasText: E2E_SEED.productName })
+      .filter({ hasNotText: E2E_SEED.product2Name })
+      .first()
+      .click();
+    await completePosCashPayment(page);
+    await waitForPosCheckoutReady(page);
+    const sold = page.waitForResponse(
+      (response) =>
+        /\/api\/sales(?:\?.*)?$/.test(response.url()) && response.request().method() === 'POST',
+    );
+    await page.getByTestId('pos-checkout-btn').click();
+    expect((await sold).ok()).toBeTruthy();
+    // The cashier dismisses the "comprobante emitido" dialog to start the next sale.
+    await page.getByRole('button', { name: /Nueva venta/ }).click();
+
+    await expect.poll(async () => (await shiftSales(page)).count).toBe(before.count + 1);
+  });
+
+  await test.step('vende con un método digital: el reporte X lo cuenta aparte del efectivo, sin recargar', async () => {
+    const countedBefore = (await shiftSales(page)).count;
+    await page
+      .getByTestId('pos-product-card')
+      .filter({ hasText: E2E_SEED.productName })
+      .filter({ hasNotText: E2E_SEED.product2Name })
+      .first()
+      .click();
+    await selectPosPaymentMethod(page, /yape|plin|tarjeta|transferencia/i);
+    await waitForPosCheckoutReady(page);
+    const sold = page.waitForResponse(
+      (response) =>
+        /\/api\/sales(?:\?.*)?$/.test(response.url()) && response.request().method() === 'POST',
+    );
+    await page.getByTestId('pos-checkout-btn').click();
+    expect((await sold).ok()).toBeTruthy();
+    await page.getByRole('button', { name: /Nueva venta/ }).click();
+    await expect.poll(async () => (await shiftSales(page)).count).toBe(countedBefore + 1);
+
+    // The drawer only holds the cash; the cut still has to show what was paid another way.
+    const sessionId = (await posState(page)).session?.id;
+    const report = await page.request.get(`${BASE_URL}/api/cash-sessions/${sessionId}/x-report`, {
+      headers: { Accept: 'application/json' },
+    });
+    const cut = (await report.json()) as {
+      totalSales: string;
+      salesByPaymentMethod: Array<{ paymentMethodId: number; amount: string }>;
+    };
+    expect(cut.salesByPaymentMethod.length).toBeGreaterThanOrEqual(2);
+    expect(cut.salesByPaymentMethod.some((row) => row.paymentMethodId !== 1)).toBeTruthy();
+    // One number for the shift's sales, wherever it is read.
+    expect(Number(cut.totalSales)).toBeCloseTo(Number((await shiftSales(page)).total), 2);
+
+    // Open the cut: it shows the new sales without the page being reloaded.
+    await openMenu(page, /Movimientos y reporte X/);
+    const dialog = page.getByRole('dialog', { name: 'Movimientos de caja' });
+    const methods = dialog.getByLabel('Ventas por método');
+    await expect(methods.locator('li')).toHaveCount(cut.salesByPaymentMethod.length, {
+      timeout: 15_000,
+    });
+    await dialog.getByRole('button', { name: 'Cerrar', exact: true }).last().click();
+    await expect(dialog).toBeHidden();
+  });
+
+  await test.step('el menú del POS muestra la venta con su método de pago', async () => {
+    await openMenu(page, /Ventas del turno/);
+    const dialog = page.getByRole('dialog', { name: 'Ventas del turno' });
+    await expect(dialog.getByRole('status')).toContainText(`${before.count + 2} venta`, {
+      timeout: 15_000,
+    });
+    const list = dialog.getByTestId('cash-shift-sales-list');
+    await expect(list.getByText('Efectivo').first()).toBeVisible();
+    await expect(list.getByRole('button', { name: 'Reimprimir' }).first()).toBeVisible();
+    await dialog.getByRole('button', { name: 'Cerrar', exact: true }).last().click();
+    await expect(dialog).toBeHidden();
+  });
+
+  await test.step('al cerrar, el cierre cuenta las operaciones y deja ver las ventas', async () => {
+    await openMenu(page, /Cerrar caja/);
+    const close = page.getByRole('dialog', { name: 'Cerrar caja' });
+    const methods = close.getByRole('table').first();
+    await expect(methods.getByRole('columnheader', { name: 'Operaciones' })).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(methods.getByRole('row', { name: /Efectivo/ })).toBeVisible();
+
+    await close.getByTestId('cash-close-view-sales').click();
+    const sales = page.getByRole('dialog', { name: 'Ventas del turno' });
+    await expect(sales.getByTestId('cash-shift-sales-list')).toBeVisible({ timeout: 15_000 });
+    await sales.getByRole('button', { name: 'Cerrar', exact: true }).last().click();
+    await expect(sales).toBeHidden();
+    // The count dialog is still there: the cashier goes back to it and keeps selling.
+    await expect(close).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(close).toBeHidden();
+  });
+});
+
+test('un motivo que registra el sistema no se puede elegir a mano', async ({ page }) => {
+  const seed = await getE2ESeed();
+  await login(page, seed.username, seed.password);
+  await openPos(page);
+  if ((await posState(page)).session == null) await openCajaFromPos(page, '100');
+  const sessionId = (await posState(page)).session?.id;
+
+  const categories = (await (
+    await page.request.get(`${BASE_URL}/api/cash-movement-categories?itemsPerPage=100`, {
+      headers: { Accept: 'application/json' },
+    })
+  ).json()) as
+    | Array<{ id: number; code: string; manual: boolean }>
+    | { member?: Array<{ id: number; code: string; manual: boolean }> };
+  const list = Array.isArray(categories) ? categories : (categories.member ?? []);
+  const sale = list.find((category) => category.code === 'cash_sale');
+  const expense = list.find((category) => category.code === 'petty_cash_expense');
+  expect(sale?.manual, 'una venta la registra el sistema').toBe(false);
+  expect(expense?.manual, 'un gasto menor lo registra una persona').toBe(true);
+
+  const csrf = (await page.context().cookies()).find((cookie) => cookie.name === 'CSRF_TOKEN');
+  const post = (categoryId: number) =>
+    page.request.post(`${BASE_URL}/api/cash-movements`, {
+      headers: { 'X-CSRF-Token': decodeURIComponent(csrf?.value ?? '') },
+      data: {
+        cashSession: `/api/cash-sessions/${sessionId}`,
+        category: `/api/cash-movement-categories/${categoryId}`,
+        amount: '1.00',
+        description: 'Prueba e2e',
+      },
+    });
+
+  const refused = await post(sale!.id);
+  expect(refused.status()).toBe(422);
+  expect(await refused.text()).toContain('lo registra el sistema');
+  expect((await post(expense!.id)).status()).toBe(201);
 });
 
 test('Cajas y turnos vive en Finanzas, no como ítem suelto', async ({ page }) => {

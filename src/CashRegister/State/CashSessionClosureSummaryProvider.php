@@ -7,6 +7,7 @@ namespace App\CashRegister\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Dto\CashSessionClosureSummaryDto;
+use App\CashRegister\Service\SessionSalesBreakdown;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Connection;
@@ -24,6 +25,7 @@ readonly class CashSessionClosureSummaryProvider implements ProviderInterface
 
     public function __construct(
         private Connection $connection,
+        private SessionSalesBreakdown $breakdown,
     ) {}
 
     /**
@@ -94,18 +96,17 @@ readonly class CashSessionClosureSummaryProvider implements ProviderInterface
             ),
         ];
 
-        foreach ($salesMap as $pmId => $total) {
-            if ($pmId === self::CASH_PAYMENT_METHOD_ID) {
+        // The other methods never touch the drawer, so their expected amount is what the shift sold with them
+        // (to be checked against the terminal, the app or the bank), not what the drawer holds.
+        foreach ($this->breakdown->forSession($sessionId)['methods'] as $method) {
+            if ($method['id'] === self::CASH_PAYMENT_METHOD_ID) {
                 continue;
             }
 
-            $pmName = $this->connection->fetchOne('SELECT name FROM payment_method WHERE id = ?', [$pmId])
-            ?: 'Desconocido';
-
             $dtos[] = new CashSessionClosureSummaryDto(
-                paymentMethodId: $pmId,
-                paymentMethod: (string) $pmName,
-                expectedAmount: $total->toScale(2, RoundingMode::HALF_UP)->__toString(),
+                paymentMethodId: $method['id'],
+                paymentMethod: $method['name'],
+                expectedAmount: $method['amount'],
             );
         }
 

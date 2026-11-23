@@ -7,6 +7,7 @@ namespace App\CashRegister\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Dto\CashPosStateDto;
+use App\CashRegister\Service\OpenCashSessionLocator;
 use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Security\Security;
 use Brick\Math\BigDecimal;
@@ -28,6 +29,7 @@ readonly class CashPosStateProvider implements ProviderInterface
         private Connection $connection,
         private Security $security,
         private BranchContextServiceInterface $branchContext,
+        private OpenCashSessionLocator $sessions,
     ) {}
 
     #[Override]
@@ -41,19 +43,9 @@ readonly class CashPosStateProvider implements ProviderInterface
         // The POS works on one branch: a user who also has a session open in another branch must not get
         // that one here (closing it is scoped to the current branch and would answer 404).
         $branchId = $this->branchContext->getCurrentBranchId();
-        $row = $this->connection->fetchAssociative(
-            "SELECT cs.id, cs.cash_register_id, cr.name, cs.opened_at, cs.opening_amount
-             FROM cash_sessions cs
-             JOIN cash_register cr ON cr.id = cs.cash_register_id
-             WHERE cs.opened_by = ? AND cs.status = 'OPEN'"
-            . ($branchId === null ? '' : ' AND cr.branch_id = ?')
-            . '
-             ORDER BY cs.opened_at DESC, cs.id DESC
-             LIMIT 1',
-            $branchId === null ? [$user->userId] : [$user->userId, $branchId],
-        );
+        $row = $this->sessions->locate($user->userId, $branchId);
 
-        $session = $row === false
+        $session = $row === null
             ? null
             : [
                 'id' => (int) $row['id'],

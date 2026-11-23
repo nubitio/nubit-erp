@@ -65,10 +65,18 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
             throw new UnprocessableEntityHttpException('El campo cashSession es obligatorio.');
         }
 
-        $categoryId = $data->getCategory()?->getId();
+        $category = $data->getCategory();
         $amount = $data->getAmount() ?? '0.00';
-        if ($categoryId === null) {
+        if ($category === null || $category->getId() === null) {
             throw new UnprocessableEntityHttpException('El campo category es obligatorio.');
+        }
+        $categoryId = $category->getId();
+        // Sales, collections, refunds and count differences are recorded by the system itself; letting a person
+        // pick them would count the same money twice.
+        if (!$category->isManual()) {
+            throw new UnprocessableEntityHttpException(
+                'Ese motivo lo registra el sistema. Elige un ingreso o egreso manual.',
+            );
         }
         if (!is_numeric($amount) || (float) $amount <= 0) {
             throw new UnprocessableEntityHttpException('El monto debe ser un número mayor que cero.');

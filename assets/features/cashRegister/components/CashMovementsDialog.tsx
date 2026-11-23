@@ -7,11 +7,12 @@ import {
   Button,
   DescriptionList,
   EmptyState,
+  Combobox,
   FormField,
-  SelectField,
   Skeleton,
   Stack,
   TextField,
+  type ComboboxOption,
 } from '@nubitio/ui';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
@@ -52,11 +53,16 @@ export function CashMovementsDialog({ open, sessionId, registerName, onClose }: 
         .getXReport(sessionId)
         .then((response) => response.data),
     enabled: open,
+    // A cut is only worth something if it is current: never show the one from the last time it was opened.
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
   const movements = useQuery({
     queryKey: ['cash-session-movements', sessionId],
     queryFn: () => cashSessionService.getMovements(sessionId),
     enabled: open,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
   const categories = useQuery({
     queryKey: ['cash-movement-categories'],
@@ -92,8 +98,23 @@ export function CashMovementsDialog({ open, sessionId, registerName, onClose }: 
   const amountInvalid = amount.trim() === '' || !Number.isFinite(amountNumber) || amountNumber <= 0;
   const canSubmit =
     categoryId !== '' && !amountInvalid && description.trim() !== '' && !register.isPending;
-  const income = (categories.data ?? []).filter((category) => category.type === 'income');
-  const expense = (categories.data ?? []).filter((category) => category.type === 'expense');
+  // Income first, then expenses; the kind is in the option so two categories never look alike.
+  const categoryOptions: ComboboxOption[] = [...(categories.data ?? [])]
+    .sort((a, b) =>
+      a.type === b.type ? a.name.localeCompare(b.name) : a.type === 'income' ? -1 : 1,
+    )
+    .map((category) => ({
+      value: String(category.id),
+      label: category.name,
+      content: (
+        <span className="cash-movements-dialog__option">
+          {category.name}
+          <Badge variant={category.type === 'income' ? 'success' : 'warning'} size="sm" outlined>
+            {category.type === 'income' ? 'Ingreso' : 'Egreso'}
+          </Badge>
+        </span>
+      ),
+    }));
   // Sales and the opening carry no category: the cut already counts them.
   const manual: CashSessionMovement[] = [...(movements.data ?? [])]
     .filter((movement) => movement.category != null)
@@ -134,14 +155,29 @@ export function CashMovementsDialog({ open, sessionId, registerName, onClose }: 
                   },
                 ]}
               />
-              {report.data.salesByPaymentMethod.length > 0 && (
+              {(report.data.salesByPaymentMethod.length > 0 ||
+                Number(report.data.receivableTotal ?? 0) > 0) && (
                 <ul className="cash-movements-dialog__methods" aria-label="Ventas por método">
                   {report.data.salesByPaymentMethod.map((row) => (
                     <li key={row.paymentMethodId}>
-                      <span>{row.paymentMethod}</span>
+                      <span>
+                        {row.paymentMethod}
+                        {row.operations != null &&
+                          ` · ${row.operations} ${row.operations === 1 ? 'venta' : 'ventas'}`}
+                      </span>
                       <span>{money(row.amount)}</span>
                     </li>
                   ))}
+                  {Number(report.data.receivableTotal ?? 0) > 0 && (
+                    <li>
+                      <span>
+                        A crédito (por cobrar)
+                        {report.data.receivableOperations != null &&
+                          ` · ${report.data.receivableOperations} ${report.data.receivableOperations === 1 ? 'venta' : 'ventas'}`}
+                      </span>
+                      <span>{money(report.data.receivableTotal ?? 0)}</span>
+                    </li>
+                  )}
                 </ul>
               )}
             </>
@@ -169,32 +205,15 @@ export function CashMovementsDialog({ open, sessionId, registerName, onClose }: 
                   <Alert tone="warning">No se pudieron cargar las categorías.</Alert>
                 )}
                 <FormField label="Categoría" required htmlFor="cash-movement-category">
-                  <SelectField
+                  <Combobox
                     id="cash-movement-category"
+                    aria-label="Categoría"
                     required
-                    value={categoryId}
-                    onChange={(event) => setCategoryId(event.target.value)}
-                  >
-                    <option value="">Selecciona una categoría</option>
-                    {income.length > 0 && (
-                      <optgroup label="Ingresos">
-                        {income.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                    {expense.length > 0 && (
-                      <optgroup label="Egresos">
-                        {expense.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                  </SelectField>
+                    placeholder="Selecciona una categoría"
+                    options={categoryOptions}
+                    value={categoryId === '' ? null : categoryId}
+                    onChange={(value) => setCategoryId(value ?? '')}
+                  />
                 </FormField>
                 <div className="cash-movements-dialog__pair">
                   <FormField label="Monto (S/)" required htmlFor="cash-movement-amount">

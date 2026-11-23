@@ -9,6 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Dto\CashRegisterCloseResponseDto;
 use App\CashRegister\Entity\CashSession;
+use App\CashRegister\Service\ClosureCount;
 use App\Identity\Entity\User;
 use App\Identity\Security\Security;
 use Brick\Math\BigDecimal;
@@ -21,7 +22,6 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 /**
  * @implements ProcessorInterface<CashRegisterCloseDto, CashRegisterCloseResponseDto>
@@ -45,31 +45,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         array $uriVariables = [],
         array $context = [],
     ): CashRegisterCloseResponseDto {
-        $closureItems = $data->closureItems;
-        $notes = [];
-
-        $countedTotal = BigDecimal::zero();
-        if (!empty($closureItems)) {
-            foreach ($closureItems as $item) {
-                $countedAmount = $item['countedAmount'] ?? '0';
-                if (!is_numeric($countedAmount) || (float) $countedAmount < 0) {
-                    throw new UnprocessableEntityHttpException('El monto contado debe ser un número positivo.');
-                }
-                $countedTotal = $countedTotal->plus(BigDecimal::of($countedAmount));
-                if (!empty($item['note'])) {
-                    $notes[] = trim((string) $item['note']);
-                }
-            }
-        } else {
-            $countedAmount = $data->countedAmount ?? '0';
-            if (!is_numeric($countedAmount) || (float) $countedAmount < 0) {
-                throw new UnprocessableEntityHttpException('El monto contado debe ser un número positivo.');
-            }
-            $countedTotal = BigDecimal::of($countedAmount);
-            if (!empty($data->note)) {
-                $notes[] = trim((string) $data->note);
-            }
-        }
+        ['counted' => $countedTotal, 'notes' => $notes] = ClosureCount::of($data);
 
         try {
             $cashSession = $this->entityManager->find(CashSession::class, $uriVariables['id']);

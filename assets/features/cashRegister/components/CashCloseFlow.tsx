@@ -30,13 +30,21 @@ interface Props {
   onClosed: () => void;
   /** The count was saved to this device and the cashier goes back to selling. */
   onContinue: () => void;
+  /** Only where the signed-in user owns the session: the list shows their own shift. */
+  onViewSales?: () => void;
 }
 
 /**
  * Count the drawer and close a cash session. One flow for the full page (`/cash-session/:id/close`)
  * and for the dialog inside the POS, so the count, the draft and the confirmation never diverge.
  */
-export function CashCloseFlow({ sessionId, embedded = false, onClosed, onContinue }: Props) {
+export function CashCloseFlow({
+  sessionId,
+  embedded = false,
+  onClosed,
+  onContinue,
+  onViewSales,
+}: Props) {
   const gridRef = useRef<CashClosureGridHandle | null>(null);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
@@ -158,6 +166,7 @@ export function CashCloseFlow({ sessionId, embedded = false, onClosed, onContinu
           setAttempt((value) => value + 1);
         }}
         onContinue={onContinue}
+        onViewSales={onViewSales}
         closing={isClosing}
         onCloseRequest={() => {
           setCloseError(null);

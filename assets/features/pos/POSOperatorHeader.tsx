@@ -48,6 +48,8 @@ interface POSOperatorHeaderProps {
   onCloseCaja?: () => void;
   /** Opens the partial cut (Reporte X) and the cash in/out of the shift. */
   onCashMovements?: () => void;
+  /** Opens the sales of the shift in progress. */
+  onShiftSales?: () => void;
   /** Opens the user's own settings (profile, password, appearance) over the POS. */
   onOpenProfile?: () => void;
   /** Ends the user's session. A shift left open stays open on the server. */
@@ -86,6 +88,7 @@ export function POSOperatorHeader({
   onOpenCaja,
   onCloseCaja,
   onCashMovements,
+  onShiftSales,
   onOpenProfile,
   onSignOut,
   exitTo = null,
@@ -175,6 +178,15 @@ export function POSOperatorHeader({
   const menuItems: ContextMenuItem[] = [
     ...(cajaAbierta
       ? [
+          ...(onShiftSales
+            ? [
+                {
+                  label: 'Ventas del turno',
+                  icon: 'ph ph-receipt',
+                  onClick: onShiftSales,
+                },
+              ]
+            : []),
           ...(onCashMovements
             ? [
                 {
@@ -200,7 +212,7 @@ export function POSOperatorHeader({
       label: isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa',
       icon: isFullscreen ? 'ph ph-arrows-in' : 'ph ph-arrows-out',
       onClick: toggleFullscreen,
-      separator: cajaAbierta && Boolean(onCashMovements || onCloseCaja),
+      separator: cajaAbierta && Boolean(onShiftSales || onCashMovements || onCloseCaja),
     },
     {
       label:

@@ -12,10 +12,15 @@ export interface XReportDto {
   shiftDurationMinutes: number;
   cashSalesNet?: string | null;
   cashAdjustmentsOut?: string | null;
+  /** Sold in the shift and left on credit: not money yet, so it is in no payment method. */
+  receivableTotal?: string;
+  receivableOperations?: number;
   salesByPaymentMethod: Array<{
     paymentMethodId: number;
     paymentMethod: string;
     amount: string;
+    /** Sales operations behind the amount (a sale paid with two methods counts once in each). */
+    operations?: number;
   }>;
 }
 

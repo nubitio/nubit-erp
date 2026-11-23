@@ -48,7 +48,8 @@ describe('CashOpenDialog', () => {
       { id: 2, name: 'Caja 2' },
     ]);
 
-    await userEvent.selectOptions(screen.getByLabelText('Caja'), 'Caja 2');
+    await userEvent.click(screen.getByRole('combobox', { name: 'Caja' }));
+    await userEvent.click(await screen.findByRole('option', { name: 'Caja 2' }));
     await userEvent.click(screen.getByTestId('cash-open-submit-btn'));
 
     await waitFor(() => expect(open).toHaveBeenCalledWith(2, 0));

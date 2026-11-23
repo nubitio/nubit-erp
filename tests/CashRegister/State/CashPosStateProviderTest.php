@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\CashRegister\State;
 
 use ApiPlatform\Metadata\Get;
+use App\CashRegister\Service\OpenCashSessionLocator;
 use App\CashRegister\State\CashPosStateProvider;
 use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Dto\AuthUserDto;
@@ -42,7 +43,7 @@ final class CashPosStateProviderTest extends TestCase
                 ? $busyRegisters
                 : $freeRegisters);
 
-        return new CashPosStateProvider($connection, $security, $branch);
+        return new CashPosStateProvider($connection, $security, $branch, new OpenCashSessionLocator($connection));
     }
 
     public function testRejectsAnonymousUsers(): void
@@ -150,6 +151,8 @@ final class CashPosStateProviderTest extends TestCase
             ->willReturn(false);
         $connection->method('fetchAllAssociative')->willReturn([]);
 
-        new CashPosStateProvider($connection, $security, $branch)->provide(new Get());
+        new CashPosStateProvider($connection, $security, $branch, new OpenCashSessionLocator($connection))->provide(
+            new Get(),
+        );
     }
 }

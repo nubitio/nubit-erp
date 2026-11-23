@@ -792,6 +792,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cash-pos-state/sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a CashShiftSales resource.
+         * @description Retrieves a CashShiftSales resource.
+         */
+        get: operations["api_cash-pos-statesales_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/categories": {
         parameters: {
             query?: never;
@@ -5222,6 +5242,13 @@ export interface components {
             type?: "income" | "expense";
             /** @default true */
             isSystem: boolean;
+            /**
+             * @description Whether a person may pick it when registering cash that came in or went out by hand. The others describe
+             *     what the system itself records (a sale, a collection, a refund, a count difference, a treasury transfer):
+             *     offering them would count the same money twice.
+             * @default false
+             */
+            manual: boolean;
             /** @default true */
             active: boolean;
             readonly system?: boolean;
@@ -5251,6 +5278,13 @@ export interface components {
             type?: "income" | "expense";
             /** @default true */
             isSystem: boolean;
+            /**
+             * @description Whether a person may pick it when registering cash that came in or went out by hand. The others describe
+             *     what the system itself records (a sale, a collection, a refund, a count difference, a treasury transfer):
+             *     offering them would count the same money twice.
+             * @default false
+             */
+            manual: boolean;
             /** @default true */
             active: boolean;
             readonly system?: boolean;
@@ -5268,6 +5302,13 @@ export interface components {
             type?: "income" | "expense";
             /** @default true */
             isSystem: boolean;
+            /**
+             * @description Whether a person may pick it when registering cash that came in or went out by hand. The others describe
+             *     what the system itself records (a sale, a collection, a refund, a count difference, a treasury transfer):
+             *     offering them would count the same money twice.
+             * @default false
+             */
+            manual: boolean;
             /** @default true */
             active: boolean;
             readonly system?: boolean;
@@ -5746,34 +5787,122 @@ export interface components {
             expectedAmount?: string;
         };
         "CashSession.CashSessionXReportDto-cash_x_report.read": {
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             openingBalance?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             totalSales?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashIn?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashOut?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             currentBalance?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             shiftDurationMinutes?: number;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             salesByPaymentMethod?: {
                 paymentMethodId: number;
                 paymentMethod: string;
                 amount: string;
+                operations: number;
             }[];
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashSalesNet?: string | null;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashAdjustmentsOut?: string | null;
+            /** @description Sold in the shift and left on credit: not money yet, so it is in no payment method. */
+            receivableTotal?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
+            receivableOperations?: number;
         };
         "CashSession.CashSessionXReportDto.jsonld-cash_x_report.read": components["schemas"]["HydraItemBaseSchema"] & {
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             openingBalance?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             totalSales?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashIn?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashOut?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             currentBalance?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             shiftDurationMinutes?: number;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             salesByPaymentMethod?: {
                 paymentMethodId: number;
                 paymentMethod: string;
                 amount: string;
+                operations: number;
             }[];
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashSalesNet?: string | null;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
             cashAdjustmentsOut?: string | null;
+            /** @description Sold in the shift and left on credit: not money yet, so it is in no payment method. */
+            receivableTotal?: string;
+            /**
+             * @description `totalSales` is what the shift sold (voided sales excluded): the sum of the payment methods plus what was
+             *     left on credit. The drawer's own balance is `currentBalance`.
+             */
+            receivableOperations?: number;
         };
         "CashSession.jsonld-cash_session.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
@@ -5839,6 +5968,86 @@ export interface components {
              * @description cash_session.updated_at.label
              */
             updatedAt?: string | null;
+        };
+        /**
+         * @description The sales rung up in the shift the signed-in user has open, newest first, so the cashier can trace a
+         *     cash difference to the sale that caused it. It is deliberately not a view of the branch's sales: the
+         *     user only ever sees their own shift, whatever else they are allowed to read.
+         */
+        "CashShiftSales-cash_shift_sales.read": {
+            /** @description the open session the sales belong to; null when the user has none */
+            sessionId?: number | null;
+            /** @description sales that count towards the shift (voided ones are listed but not counted) */
+            count?: number;
+            /** @description sum of those sales */
+            total?: string;
+            sales?: {
+                id: string;
+                /** Format: date-time */
+                issuedAt?: string | null;
+                status: string;
+                total: string;
+                receivable: string;
+                documentType?: string | null;
+                documentNumber?: string | null;
+                sunatStatus?: string | null;
+                payments: {
+                    method: string;
+                    amount: string;
+                }[];
+            }[];
+            /** @description what the shift sold, by the way it was paid */
+            byMethod?: {
+                id: number;
+                name: string;
+                amount: string;
+                operations: number;
+            }[];
+            /** @description what was left on credit: not money yet */
+            receivable?: {
+                amount: string;
+                operations: number;
+            };
+        };
+        /**
+         * @description The sales rung up in the shift the signed-in user has open, newest first, so the cashier can trace a
+         *     cash difference to the sale that caused it. It is deliberately not a view of the branch's sales: the
+         *     user only ever sees their own shift, whatever else they are allowed to read.
+         */
+        "CashShiftSales.jsonld-cash_shift_sales.read": components["schemas"]["HydraItemBaseSchema"] & {
+            /** @description the open session the sales belong to; null when the user has none */
+            sessionId?: number | null;
+            /** @description sales that count towards the shift (voided ones are listed but not counted) */
+            count?: number;
+            /** @description sum of those sales */
+            total?: string;
+            sales?: {
+                id: string;
+                /** Format: date-time */
+                issuedAt?: string | null;
+                status: string;
+                total: string;
+                receivable: string;
+                documentType?: string | null;
+                documentNumber?: string | null;
+                sunatStatus?: string | null;
+                payments: {
+                    method: string;
+                    amount: string;
+                }[];
+            }[];
+            /** @description what the shift sold, by the way it was paid */
+            byMethod?: {
+                id: number;
+                name: string;
+                amount: string;
+                operations: number;
+            }[];
+            /** @description what was left on credit: not money yet */
+            receivable?: {
+                amount: string;
+                operations: number;
+            };
         };
         "Category-category.read": {
             readonly id?: string;
@@ -17754,6 +17963,49 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CashSession.CashSessionXReportDto-cash_x_report.read"];
                     "application/ld+json": components["schemas"]["CashSession.CashSessionXReportDto.jsonld-cash_x_report.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_cash-pos-statesales_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CashShiftSales resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashShiftSales-cash_shift_sales.read"];
+                    "application/ld+json": components["schemas"]["CashShiftSales.jsonld-cash_shift_sales.read"];
                 };
             };
             /** @description Forbidden */

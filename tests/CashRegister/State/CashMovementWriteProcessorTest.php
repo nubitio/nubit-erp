@@ -22,7 +22,7 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 final class CashMovementWriteProcessorTest extends TestCase
 {
-    private function makeMovement(CashMovementType $type = CashMovementType::INCOME): CashMovement
+    private function makeMovement(CashMovementType $type = CashMovementType::INCOME, bool $manual = true): CashMovement
     {
         $session = new CashSession();
         $ref = new \ReflectionProperty(CashSession::class, 'id');
@@ -32,6 +32,7 @@ final class CashMovementWriteProcessorTest extends TestCase
         $catRef = new \ReflectionProperty(CashMovementCategory::class, 'id');
         $catRef->setValue($category, 2);
         $category->setType(CashMovementType::INCOME); // required: no default on typed property
+        $category->setManual($manual);
 
         $movement = new CashMovement();
         $movement->setCashSession($session);
@@ -129,6 +130,21 @@ final class CashMovementWriteProcessorTest extends TestCase
 
         self::assertSame($movement, $result);
         self::assertSame(99, $result->getId());
+    }
+
+    public function testARefusedCategoryIsOneTheSystemRecordsItself(): void
+    {
+        $conn = $this->createMock(Connection::class);
+        $conn->expects(self::never())->method('beginTransaction');
+        $conn->expects(self::never())->method('executeStatement');
+        $security = $this->createStub(Security::class);
+        $security->method('connectedUser')->willReturn(new AuthUserDto(1, 'admin'));
+
+        $processor = new CashMovementWriteProcessor($conn, $security);
+
+        $this->expectException(UnprocessableEntityHttpException::class);
+        $this->expectExceptionMessage('lo registra el sistema');
+        $processor->process($this->makeMovement(manual: false), new Post());
     }
 
     public function testPostMapsExpenseTypeToCAShOut(): void

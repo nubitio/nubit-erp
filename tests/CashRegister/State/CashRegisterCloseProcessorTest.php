@@ -72,6 +72,40 @@ final class CashRegisterCloseProcessorTest extends TestCase
     }
 
     /**
+     * Yape, a card and the like never enter the drawer: what the cashier checks against the terminal must not be
+     * added to the cash count, or every digital sale would show up as a surplus.
+     */
+    public function testOnlyTheCashItemIsComparedWithTheDrawer(): void
+    {
+        $cashSession = new CashSession();
+        $openedBy = new User();
+        new \ReflectionProperty(User::class, 'id')->setValue($openedBy, 1);
+        $cashSession->setOpenedBy($openedBy);
+        $cashSession->setOpeningAmount('100.00');
+        $this->entityManager->method('find')->willReturn($cashSession);
+        $this->entityManager->method('getReference')->willReturn(new User());
+        $this->entityManager->method('persist')->willReturnCallback(fn() => null);
+        $this->entityManager->method('flush')->willReturnCallback(fn() => null);
+        $connection = $this->createStub(Connection::class);
+        $connection->method('fetchOne')->willReturn('37.50');
+        $this->entityManager->method('getConnection')->willReturn($connection);
+
+        $dto = new CashRegisterCloseDto();
+        $dto->closureItems = [
+            ['paymentMethod' => '/api/payment-methods/1', 'countedAmount' => '137.50', 'note' => ''],
+            ['paymentMethod' => '/api/payment-methods/7', 'countedAmount' => '30.60', 'note' => 'Yape verificado'],
+        ];
+
+        $response = $this->buildProcessor()->process($dto, new Put(), ['id' => 1]);
+
+        $this->assertSame('137.50', $cashSession->getExpectedAmount());
+        $this->assertSame('137.50', $cashSession->getCountedAmount());
+        $this->assertSame('0.00', $cashSession->getDifferenceAmount());
+        $this->assertSame('Yape verificado', $cashSession->getCloseNote());
+        $this->assertTrue($response->success);
+    }
+
+    /**
      * TC-4: Direct expectedAmount/countedAmount strings must produce an exact difference.
      */
     public function testSingleAmountPathUsesExactScale(): void

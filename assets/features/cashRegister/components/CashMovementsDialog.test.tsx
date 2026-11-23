@@ -86,6 +86,23 @@ describe('CashMovementsDialog', () => {
     expect(methods.getByText('S/ 23.50')).toBeTruthy();
   });
 
+  it('shows what was left on credit apart from the payment methods, and always asks for a fresh cut', async () => {
+    getXReport.mockResolvedValue({
+      data: { ...report, receivableTotal: '19.90', receivableOperations: 1 },
+    });
+    renderDialog();
+
+    const methods = within(await screen.findByLabelText('Ventas por método'));
+    expect(methods.getByText(/A crédito \(por cobrar\)/)).toBeTruthy();
+    expect(methods.getByText('S/ 19.90')).toBeTruthy();
+
+    // A cut cached from the last time the dialog was open must not be shown as current.
+    cleanup();
+    renderDialog();
+    await screen.findByLabelText('Ventas por método');
+    expect(getXReport).toHaveBeenCalledTimes(2);
+  });
+
   it('lists the cash moved by hand and leaves out the opening and the sales, which the cut counts', async () => {
     renderDialog();
 
@@ -103,7 +120,8 @@ describe('CashMovementsDialog', () => {
     service.getMovements.mockClear();
     getXReport.mockClear();
 
-    await userEvent.selectOptions(screen.getByLabelText(/Categoría/), 'Gasto de caja chica');
+    await userEvent.click(screen.getByRole('combobox', { name: 'Categoría' }));
+    await userEvent.click(await screen.findByRole('option', { name: /Gasto de caja chica/ }));
     await userEvent.type(screen.getByLabelText(/Monto/), '8.40');
     await userEvent.type(screen.getByLabelText(/Descripción/), 'Cinta');
     await userEvent.click(screen.getByTestId('cash-movement-submit-btn'));
@@ -128,7 +146,8 @@ describe('CashMovementsDialog', () => {
     renderDialog();
     await screen.findByTestId('cash-movements-list');
 
-    await userEvent.selectOptions(screen.getByLabelText(/Categoría/), 'Otros ingresos');
+    await userEvent.click(screen.getByRole('combobox', { name: 'Categoría' }));
+    await userEvent.click(await screen.findByRole('option', { name: /Otros ingresos/ }));
     await userEvent.type(screen.getByLabelText(/Monto/), '5');
     await userEvent.type(screen.getByLabelText(/Descripción/), 'Aporte');
     await userEvent.click(screen.getByTestId('cash-movement-submit-btn'));
@@ -143,7 +162,8 @@ describe('CashMovementsDialog', () => {
     const submit = screen.getByTestId('cash-movement-submit-btn') as HTMLButtonElement;
     expect(submit.disabled).toBe(true);
 
-    await userEvent.selectOptions(screen.getByLabelText(/Categoría/), 'Otros ingresos');
+    await userEvent.click(screen.getByRole('combobox', { name: 'Categoría' }));
+    await userEvent.click(await screen.findByRole('option', { name: /Otros ingresos/ }));
     await userEvent.type(screen.getByLabelText(/Monto/), '0');
     await userEvent.type(screen.getByLabelText(/Descripción/), 'Aporte');
     expect(submit.disabled).toBe(true);

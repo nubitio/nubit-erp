@@ -27,46 +27,54 @@
 
 ## 1. Caja registradora
 
-### 1.1 Ver el estado de cajas
+El cajero abre, mueve y cierra su caja **sin salir del POS**. La supervisión (historial de turnos, cajas, categorías y control del equipo) está en **Finanzas › Cajas y turnos** y es de los roles con permisos de supervisión.
 
-Navega a **Caja** (`/cashbox`). Se muestra una tarjeta por caja registradora con:
+### 1.1 Abrir una caja
 
-- Nombre de la caja
-- Estado: **abierta** (verde) o **cerrada** (gris)
-- Cajero que la abrió
-- Balance actual (apertura + ingresos − egresos + ventas en efectivo)
-- Total de ventas del día
-
-### 1.2 Abrir una caja
-
-1. En el panel de cajas, haz clic en el botón **Abrir** de la caja correspondiente.
-2. Ingresa el **saldo inicial** (monto físico contado al empezar el turno). Debe ser mayor o igual a cero.
-3. Confirma. El sistema registra un movimiento de apertura y la sesión queda en estado `OPEN`.
+1. En el POS, pulsa **Abrir caja** (barra superior).
+2. Si la sucursal tiene más de una caja libre, elige cuál. Si hay una sola, el diálogo dice cuál se abrirá.
+3. Ingresa el **efectivo inicial**: el dinero contado con el que empieza el turno (cero o más).
+4. Confirma. El sistema registra la apertura y la caja queda en estado **Abierta**.
 
 **Reglas del sistema:**
-- Solo puede existir **una sesión abierta** por caja a la vez. Si intentas abrir una caja ya abierta recibirás el error: *"Esta caja ya tiene un turno abierto."*
-- Si el tenant tiene la configuración `Require Cash Register` activa, no puedes registrar ventas sin una caja abierta.
+- Solo puede haber **un turno abierto por caja**. Si todas las cajas de la sucursal están ocupadas, el diálogo muestra quién tiene cada una y desde qué hora; pide a esa persona que cierre su turno, o a un supervisor que lo cierre desde Finanzas › Cajas y turnos.
+- Las ventas se registran en **tu** turno: sin caja abierta, el POS no deja cobrar.
+
+### 1.2 Ver las ventas del turno
+
+Menú **⋯** del POS → **Ventas del turno**. Lista las ventas de tu turno abierto, la más reciente primero:
+
+- Hora, número de comprobante y método(s) de pago (en un pago mixto se ve cada método con su importe).
+- Total y estado del comprobante: aceptado, rechazado o pendiente de envío a SUNAT. Las ventas **anuladas** aparecen tachadas y no suman.
+- El resumen de arriba cuenta las ventas válidas y su total.
+- El botón de la impresora **reimprime** el comprobante.
+
+Úsalo cuando el conteo no cuadre: busca la venta con el método equivocado, un cobro duplicado o un vuelto mal dado. Solo ves **tu** turno; el registro de ventas de toda la sucursal es de supervisión (ver sección 3).
+
+**Ventas por método y a crédito.** Bajo el resumen ves cuánto se vendió con cada método (Efectivo, Yape, Plin, tarjeta…). Una **venta a crédito** cuenta como vendida pero **no es dinero todavía**: aparece aparte como *A crédito · por cobrar* y no está en ningún método ni en el efectivo de la caja. Cuando el cliente pague, el cobro entra en el turno en que se cobre.
 
 ### 1.3 Movimientos de caja (ingresos y egresos manuales)
 
-Dentro de una sesión abierta, en el menú de movimientos (`/cash-session/{id}/movements`):
+Menú **⋯** → **Movimientos y reporte X**:
 
-- **Agregar ingreso:** tipo `income` — fondos que entran que no son ventas (ej. préstamo de caja).
-- **Agregar egreso:** tipo `expense` — fondos que salen (ej. pago de proveedor, gastos menores).
-- El balance visible en pantalla = apertura + ingresos − egresos + ventas en efectivo del turno.
+- **Reporte X:** corte parcial (apertura, ventas por método y a crédito, ingresos, egresos y saldo en caja). No cierra el turno. Siempre muestra los datos al momento de abrirlo. El saldo en caja solo cuenta el efectivo: Yape, tarjeta y crédito no entran al cajón.
+- **Registrar un ingreso o egreso:** elige el motivo, el monto y una descripción. Requiere el permiso `cash.movement`, que el rol Cajero por defecto tiene.
+  - **Ingresos:** *Reposición de caja* (sencillo que deja el supervisor) y *Otros ingresos*.
+  - **Egresos:** *Gasto de caja chica* (bolsas, cinta, una propina), *Pago a proveedor* (el que cobra en efectivo en la puerta) y *Retiro de efectivo* (pasar el excedente a la caja fuerte).
+  - Solo aparecen los motivos que decide una persona. Las ventas, los cobros de crédito, las devoluciones y las diferencias de cierre los registra el sistema: no se pueden elegir a mano porque se contarían dos veces. El administrador puede añadir motivos en Finanzas › Cajas y turnos › Categorías.
+- Saldo en caja = apertura + ingresos − egresos + ventas en efectivo del turno.
 
 ### 1.4 Cerrar una caja
 
-1. Desde los movimientos de la sesión, haz clic en **Cerrar Caja**.
-2. El sistema calcula el monto esperado por método de pago:
-   - **Efectivo:** apertura + ingresos manuales − egresos + ventas cobradas en efectivo
-   - **Otros métodos (tarjeta, transferencia, etc.):** total de ventas cobradas con ese método
-3. Ingresa el **monto contado** para cada método de pago.
-4. El sistema calcula automáticamente la **diferencia** (monto esperado − monto contado).
-5. Confirma en el diálogo de cierre.
-6. La sesión pasa a estado `CLOSED`.
+1. Menú **⋯** → **Cerrar caja**.
+2. El cierre muestra las **ventas del turno por método**, con el número de operaciones y el importe de cada uno (lo vendido a crédito, aparte y como informativo), y el **cuadre de efectivo** (apertura + ventas en efectivo + ingresos − egresos = esperado).
+3. **Efectivo:** cuenta el cajón (por billetes y monedas o ingresando el importe). El sistema calcula el faltante o sobrante.
+4. **Pagos digitales (tarjeta, Yape, transferencia…):** no se cuentan en el cajón. Contrasta cada importe con tu terminal, aplicación o banco y márcalo como verificado.
+5. Si hay diferencia, explica el motivo; es obligatorio para poder cerrar.
+6. En el cierre puedes abrir **Ver ventas del turno** para buscar el origen de una diferencia, y **Guardar conteo y seguir vendiendo** si aún no terminas: el conteo queda en este equipo.
+7. Confirma en el diálogo. La sesión pasa a **Cerrada**.
 
-**Importante:** No se pueden eliminar ni modificar movimientos una vez cerrada la sesión.
+**Importante:** no se pueden eliminar ni modificar movimientos una vez cerrada la sesión.
 
 ---
 

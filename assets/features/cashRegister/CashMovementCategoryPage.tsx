@@ -20,6 +20,7 @@ interface CashMovementCategoryRecord extends DataRecord {
   name: string;
   type: 'income' | 'expense';
   system: boolean;
+  manual: boolean;
   active: boolean;
 }
 
@@ -60,12 +61,16 @@ const typePatch = toPatch(
     .build(),
 );
 
-const booleanSwitchPatch = (name: 'system' | 'active', label: string) =>
+const booleanSwitchPatch = (
+  name: 'system' | 'manual' | 'active',
+  label: string,
+  defaultValue = true,
+) =>
   toPatch(
     switchField()
       .name(name)
       .label(label)
-      .defaultValue(true)
+      .defaultValue(defaultValue)
       .formatter((cell) => SharedUtils.booleanFormatter(cell.value as boolean))
       .build(),
   );
@@ -79,7 +84,7 @@ const CASH_MOVEMENT_CATEGORY_COLUMN_PRESETS = [
   {
     key: 'full',
     label: 'Completo',
-    columns: ['code', 'name', 'type', 'active'],
+    columns: ['code', 'name', 'type', 'manual', 'active'],
   },
 ];
 
@@ -92,7 +97,7 @@ const CASH_MOVEMENT_CATEGORY_FORM_LAYOUT = {
     },
     {
       label: 'Estado',
-      fields: ['system', 'active'],
+      fields: ['manual', 'system', 'active'],
     },
   ],
 };
@@ -118,13 +123,23 @@ const resource = defineResource<CashMovementCategoryRecord>(API + 'cash-movement
       { kind: 'override', key: 'type', patch: { ...typePatch, order: 2, layoutHint: 'short' } },
       {
         kind: 'override',
+        key: 'manual',
+        patch: {
+          ...booleanSwitchPatch('manual', 'Lo elige el cajero'),
+          order: 3,
+          layoutHint: 'short',
+        },
+      },
+      {
+        // A reason the administrator creates stays editable: only the seeded ones are the system's.
+        kind: 'override',
         key: 'system',
-        patch: { ...booleanSwitchPatch('system', 'Sistema'), order: 3, layoutHint: 'short' },
+        patch: { ...booleanSwitchPatch('system', 'Sistema', false), order: 4, layoutHint: 'short' },
       },
       {
         kind: 'override',
         key: 'active',
-        patch: { ...booleanSwitchPatch('active', 'Activo'), order: 4, layoutHint: 'short' },
+        patch: { ...booleanSwitchPatch('active', 'Activo'), order: 5, layoutHint: 'short' },
       },
     ],
   }),

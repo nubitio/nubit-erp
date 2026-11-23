@@ -6,6 +6,7 @@ namespace App\Tests\CashRegister\State;
 
 use ApiPlatform\Metadata\GetCollection;
 use App\CashRegister\Dto\CashSessionClosureSummaryDto;
+use App\CashRegister\Service\SessionSalesBreakdown;
 use App\CashRegister\State\CashSessionClosureSummaryProvider;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -24,7 +25,19 @@ final class CashSessionClosureSummaryProviderTest extends TestCase
     protected function setUp(): void
     {
         $this->connection = $this->createMock(Connection::class);
-        $this->provider = new CashSessionClosureSummaryProvider($this->connection);
+        // The card was sold in the shift; only cash moves the drawer, so it is not in the movements below.
+        $breakdown = $this->createStub(SessionSalesBreakdown::class);
+        $breakdown
+            ->method('forSession')
+            ->willReturn([
+                'methods' => [
+                    ['id' => 1, 'name' => 'Efectivo', 'amount' => '200.00', 'operations' => 3],
+                    ['id' => 2, 'name' => 'Tarjeta', 'amount' => '150.00', 'operations' => 2],
+                ],
+                'receivable' => ['amount' => '0.00', 'operations' => 0],
+                'total' => '350.00',
+            ]);
+        $this->provider = new CashSessionClosureSummaryProvider($this->connection, $breakdown);
     }
 
     /**

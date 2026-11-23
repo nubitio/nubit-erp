@@ -28,6 +28,15 @@ describe('cashSessionService', () => {
     expect(state.availableRegisters).toEqual([{ id: 3, name: 'Caja 3' }]);
   });
 
+  it('reads the sales of the shift the user has open', async () => {
+    get.mockResolvedValue(reply({ sessionId: 7, count: 1, total: '30.00', sales: [] }));
+
+    const shift = await cashSessionService.getShiftSales();
+
+    expect(get).toHaveBeenCalledWith('/api/cash-pos-state/sales', { errorPresentation: 'inline' });
+    expect(shift.count).toBe(1);
+  });
+
   it('opens a register with the opening cash rounded to cents', async () => {
     post.mockResolvedValue(reply({}));
 
@@ -62,16 +71,17 @@ describe('cashSessionService', () => {
     );
   });
 
-  it('offers only active categories', async () => {
+  it('offers only the active reasons a person may pick, never the ones the system records itself', async () => {
     get.mockResolvedValue(
       reply([
-        { id: 1, name: 'Activa', type: 'income', active: true },
-        { id: 2, name: 'Inactiva', type: 'expense', active: false },
+        { id: 1, name: 'Gasto menor', type: 'expense', active: true, manual: true },
+        { id: 2, name: 'Inactiva', type: 'expense', active: false, manual: true },
+        { id: 3, name: 'Venta en efectivo', type: 'income', active: true, manual: false },
       ]),
     );
 
     const categories = await cashSessionService.getMovementCategories();
 
-    expect(categories.map((category) => category.name)).toEqual(['Activa']);
+    expect(categories.map((category) => category.name)).toEqual(['Gasto menor']);
   });
 });

@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Dto\CashSessionPaymentMethodSalesDto;
 use App\CashRegister\Dto\CashSessionXReportDto;
+use App\CashRegister\Service\SessionSalesBreakdown;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Connection;
@@ -22,6 +23,7 @@ readonly class CashSessionXReportProvider implements ProviderInterface
 {
     public function __construct(
         private Connection $connection,
+        private SessionSalesBreakdown $breakdown,
     ) {}
 
     /**
@@ -44,12 +46,16 @@ readonly class CashSessionXReportProvider implements ProviderInterface
         $sessionId = (int) $session['id'];
         $openingBalance = BigDecimal::of((string) $session['opening_amount']);
 
-        $totalSalesRaw = $this->connection->fetchOne(
+        // What went into the drawer from sales. The balance of the drawer is built from this, not from what the
+        // shift sold: only cash moves it.
+        $cashSalesRaw = $this->connection->fetchOne(
             "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
              WHERE cash_session_id = ? AND movement_type = 'SALE_IN'",
             [$sessionId],
         );
-        $totalSales = BigDecimal::of((string) ($totalSalesRaw ?: '0'));
+        $cashSalesIn = BigDecimal::of((string) ($cashSalesRaw ?: '0'));
+        $sold = $this->breakdown->forSession($sessionId);
+        $totalSales = BigDecimal::of($sold['total']);
 
         $cashInRaw = $this->connection->fetchOne(
             "SELECT COALESCE(SUM(amount), 0) FROM cash_movements
@@ -64,15 +70,6 @@ readonly class CashSessionXReportProvider implements ProviderInterface
             [$sessionId],
         );
         $cashOut = BigDecimal::of((string) ($cashOutRaw ?: '0'));
-
-        $salesRows = $this->connection->fetchAllAssociative(
-            "SELECT pm.id AS paymentMethodId, pm.name AS paymentMethod, COALESCE(SUM(cm.amount), 0) AS amount
-             FROM cash_movements cm
-             JOIN payment_method pm ON pm.id = cm.payment_method_id
-             WHERE cm.cash_session_id = ? AND cm.movement_type = 'SALE_IN'
-             GROUP BY cm.payment_method_id, pm.name",
-            [$sessionId],
-        );
 
         $shiftDurationMinutes = (int) (
             $this->connection->fetchOne('SELECT TIMESTAMPDIFF(MINUTE, opened_at, NOW()) FROM cash_sessions WHERE id = ?', [
@@ -93,15 +90,16 @@ readonly class CashSessionXReportProvider implements ProviderInterface
             [$sessionId],
         );
 
-        $currentBalance = $openingBalance->plus($totalSales)->plus($cashIn)->minus($cashOut);
+        $currentBalance = $openingBalance->plus($cashSalesIn)->plus($cashIn)->minus($cashOut);
 
         $salesByPaymentMethod = array_map(
-            static fn(array $row): CashSessionPaymentMethodSalesDto => new CashSessionPaymentMethodSalesDto(
-                paymentMethodId: (int) $row['paymentMethodId'],
-                paymentMethod: (string) $row['paymentMethod'],
-                amount: BigDecimal::of((string) $row['amount'])->toScale(2, RoundingMode::HALF_UP)->__toString(),
+            static fn(array $method): CashSessionPaymentMethodSalesDto => new CashSessionPaymentMethodSalesDto(
+                paymentMethodId: $method['id'],
+                paymentMethod: $method['name'],
+                amount: $method['amount'],
+                operations: $method['operations'],
             ),
-            $salesRows,
+            $sold['methods'],
         );
 
         return new CashSessionXReportDto(
@@ -120,6 +118,8 @@ readonly class CashSessionXReportProvider implements ProviderInterface
                 2,
                 RoundingMode::HALF_UP,
             )->__toString(),
+            receivableTotal: $sold['receivable']['amount'],
+            receivableOperations: $sold['receivable']['operations'],
         );
     }
 }

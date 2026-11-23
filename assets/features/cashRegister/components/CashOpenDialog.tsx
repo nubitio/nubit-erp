@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, AppDialog, Button, FormField, SelectField, Stack, TextField } from '@nubitio/ui';
+import { Alert, AppDialog, Button, Combobox, FormField, Stack, TextField } from '@nubitio/ui';
 import toast from '@shared/lib/SharedUtils';
 import { serverErrorMessage } from '@shared/lib/formErrors';
 import { hasPermission } from '@shared/permissions';
@@ -122,18 +122,17 @@ export function CashOpenDialog({ open, registers, busyRegisters = [], onClose, o
             {error && <Alert tone="danger">{error}</Alert>}
             {registers.length > 1 ? (
               <FormField label="Caja" required htmlFor="cash-open-register">
-                <SelectField
+                <Combobox
                   id="cash-open-register"
-                  value={selectedId}
+                  aria-label="Caja"
                   required
-                  onChange={(event) => setRegisterId(event.target.value)}
-                >
-                  {registers.map((register) => (
-                    <option key={register.id} value={register.id}>
-                      {register.name}
-                    </option>
-                  ))}
-                </SelectField>
+                  options={registers.map((register) => ({
+                    value: String(register.id),
+                    label: register.name,
+                  }))}
+                  value={selectedId}
+                  onChange={(value) => setRegisterId(value ?? '')}
+                />
               </FormField>
             ) : (
               <p>

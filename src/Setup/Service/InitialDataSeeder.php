@@ -291,6 +291,7 @@ readonly class InitialDataSeeder
             ->setName($name)
             ->setType($type)
             ->setIsSystem(true)
+            ->setManual(in_array($code, CashMovementCategory::MANUAL_CODES, true))
             ->setActive(true);
 
         $this->entityManager->persist($category);
