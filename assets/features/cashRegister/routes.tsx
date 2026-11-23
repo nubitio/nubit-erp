@@ -15,6 +15,7 @@ const CashMovementCategoryPage = lazyNamed(
   () => import('./CashMovementCategoryPage'),
   'CashMovementCategoryPage',
 );
+const TeamControlPage = lazyNamed(() => import('./teamControl/TeamControlPage'), 'TeamControlPage');
 const CashRegisterShiftsPage = lazyNamed(
   () => import('./CashRegisterShiftsPage'),
   'CashRegisterShiftsPage',
@@ -44,6 +45,7 @@ export const cashRegisterRoutes: AppRouteDefinition[] = [
       { path: 'dashboard', element: CashRegisterDashboard },
       { path: 'registers', element: CashRegisterPage },
       { path: 'categories', element: CashMovementCategoryPage },
+      { path: 'control', element: TeamControlPage },
     ],
   },
 ];

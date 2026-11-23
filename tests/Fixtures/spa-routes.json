@@ -32,6 +32,7 @@
     "/cash-shift/:id/movements",
     "/cashbox",
     "/cashbox/categories",
+    "/cashbox/control",
     "/cashbox/dashboard",
     "/cashbox/registers",
     "/catalog",
