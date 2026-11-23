@@ -10075,6 +10075,18 @@ message = "Inconsistent assertions style."
 count = 10
 
 [[issues]]
+file = "tests/Setup/Demo/Minimarket/MinimarketStoryControlSignalsTest.php"
+code = "kan-defect"
+message = "Class has a high kan defect score."
+count = 1
+
+[[issues]]
+file = "tests/Setup/Demo/Minimarket/MinimarketStoryTest.php"
+code = "kan-defect"
+message = "Class has a high kan defect score."
+count = 1
+
+[[issues]]
 file = "tests/Setup/Command/TestResetE2eCommandTest.php"
 code = "assertion-style"
 message = "Inconsistent assertions style."
