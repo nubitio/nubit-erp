@@ -118,6 +118,11 @@ services:
       MYSQL_USER: efact
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-changeme}
       TZ: UTC
+    # Match production: MariaDB 11.4 defaults to utf8mb4_uca1400_ai_ci, which
+    # DBAL's schema introspection cannot resolve (migrations die on assert).
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
     ports:
       - '3306:3306'
     volumes:
