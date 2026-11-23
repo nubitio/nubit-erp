@@ -30,7 +30,10 @@ interface POSOperatorHeaderProps {
   selectedWarehouseId: string;
   setSelectedWarehouseId: (id: string) => void;
   cajaAbierta: boolean;
-  setCajaAbierta: (v: boolean) => void;
+  /** The server has not answered yet, so "open" or "closed" would be a guess. */
+  cajaChecking?: boolean;
+  /** Name of the register the cashier has open, shown in the status pill. */
+  cajaName?: string | null;
   cajaOpenedAt: string | null;
   cartItemsCount: number;
   hasCartItems: boolean;
@@ -41,6 +44,10 @@ interface POSOperatorHeaderProps {
   onRetrySale: (saleId: string) => void;
   showWarehouseSelector: boolean;
   onOpenCaja?: () => void;
+  /** Starts the count and closing of the cashier's session. */
+  onCloseCaja?: () => void;
+  /** Opens the partial cut (Reporte X) and the cash in/out of the shift. */
+  onCashMovements?: () => void;
   assistantEnabled?: boolean;
   onAssistantClick?: () => void;
   heldSalesCount?: number;
@@ -56,7 +63,8 @@ export function POSOperatorHeader({
   selectedWarehouseId,
   setSelectedWarehouseId,
   cajaAbierta,
-  setCajaAbierta,
+  cajaChecking = false,
+  cajaName = null,
   cajaOpenedAt,
   cartItemsCount,
   hasCartItems,
@@ -67,6 +75,8 @@ export function POSOperatorHeader({
   onRetrySale,
   showWarehouseSelector,
   onOpenCaja,
+  onCloseCaja,
+  onCashMovements,
   assistantEnabled = false,
   onAssistantClick,
   heldSalesCount = 0,
@@ -102,7 +112,7 @@ export function POSOperatorHeader({
       setCloseCajaConfirmOpen(true);
       return;
     }
-    setCajaAbierta(false);
+    onCloseCaja?.();
   }
 
   function handleWarehouseChange(newId: string) {
@@ -131,10 +141,34 @@ export function POSOperatorHeader({
 
   // Secondary actions: a menu on the bar, a list of buttons in the options panel.
   const menuItems: ContextMenuItem[] = [
+    ...(cajaAbierta
+      ? [
+          ...(onCashMovements
+            ? [
+                {
+                  label: 'Movimientos y reporte X',
+                  icon: 'ph ph-arrows-left-right',
+                  onClick: onCashMovements,
+                },
+              ]
+            : []),
+          ...(onCloseCaja
+            ? [
+                {
+                  label: 'Cerrar caja',
+                  icon: 'ph ph-lock-key',
+                  danger: true,
+                  onClick: requestCloseCaja,
+                },
+              ]
+            : []),
+        ]
+      : []),
     {
       label: isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa',
       icon: isFullscreen ? 'ph ph-arrows-in' : 'ph ph-arrows-out',
       onClick: toggleFullscreen,
+      separator: cajaAbierta && Boolean(onCashMovements || onCloseCaja),
     },
     {
       label:
@@ -157,17 +191,6 @@ export function POSOperatorHeader({
       icon: 'ph ph-question',
       onClick: onShowShortcuts,
     },
-    ...(cajaAbierta
-      ? [
-          {
-            label: 'Cerrar caja',
-            icon: 'ph ph-lock-key',
-            danger: true,
-            separator: true,
-            onClick: requestCloseCaja,
-          },
-        ]
-      : []),
   ];
 
   const dialogs = (
@@ -199,13 +222,13 @@ export function POSOperatorHeader({
       <ConfirmDialog
         open={closeCajaConfirmOpen}
         title="Cerrar caja"
-        message="Hay productos en el carrito. ¿Cerrar caja igualmente?"
+        message="Hay productos en el carrito. Se conservan para el próximo turno. ¿Cerrar caja igualmente?"
         confirmLabel="Cerrar caja"
         cancelLabel="Cancelar"
-        variant="danger"
+        variant="warning"
         onConfirm={() => {
           setCloseCajaConfirmOpen(false);
-          setCajaAbierta(false);
+          onCloseCaja?.();
         }}
         onCancel={() => setCloseCajaConfirmOpen(false)}
       />
@@ -248,8 +271,9 @@ export function POSOperatorHeader({
         />
 
         <Row gap={2} wrap>
-          <Badge variant={cajaAbierta ? 'success' : 'danger'}>
-            {cajaAbierta ? 'Caja abierta' : 'Caja cerrada'}
+          <Badge variant={cajaChecking ? 'warning' : cajaAbierta ? 'success' : 'danger'}>
+            {cajaChecking ? 'Verificando caja' : cajaAbierta ? 'Caja abierta' : 'Caja cerrada'}
+            {cajaAbierta && cajaName ? ` · ${cajaName}` : ''}
             {cajaTime ? ` · ${cajaTime}` : ''}
           </Badge>
           <Badge variant={isSyncing ? 'warning' : isOnline ? 'success' : 'danger'} outlined>
@@ -277,12 +301,8 @@ export function POSOperatorHeader({
           />
         )}
 
-        {!cajaAbierta && (
-          <Button
-            variant="primary"
-            fullWidth
-            onClick={() => (onOpenCaja ? onOpenCaja() : setCajaAbierta(true))}
-          >
+        {!cajaAbierta && !cajaChecking && (
+          <Button variant="primary" fullWidth onClick={onOpenCaja}>
             Abrir caja
           </Button>
         )}
@@ -334,9 +354,18 @@ export function POSOperatorHeader({
         <div className="pos-operator-header__sep" />
 
         {/* Caja status pill */}
-        <div className={`pos-caja-badge ${cajaAbierta ? 'is-open' : 'is-closed'}`}>
+        <div
+          className={`pos-caja-badge ${cajaChecking ? 'is-checking' : cajaAbierta ? 'is-open' : 'is-closed'}`}
+          data-testid="pos-caja-badge"
+        >
           <span className="pos-caja-badge__dot" />
-          <span>{cajaAbierta ? 'Abierta' : 'Cerrada'}</span>
+          <span>
+            {cajaChecking
+              ? 'Verificando'
+              : cajaAbierta
+                ? `Abierta${cajaName ? ` · ${cajaName}` : ''}`
+                : 'Cerrada'}
+          </span>
           {cajaAbierta && cajaOpenedAt && (
             <span className="pos-caja-badge__time">
               {new Date(cajaOpenedAt).toLocaleTimeString('es-PE', {
@@ -416,12 +445,8 @@ export function POSOperatorHeader({
           </button>
         )}
 
-        {!cajaAbierta && (
-          <button
-            type="button"
-            className="pos-caja-action-btn is-open"
-            onClick={() => (onOpenCaja ? onOpenCaja() : setCajaAbierta(true))}
-          >
+        {!cajaAbierta && !cajaChecking && (
+          <button type="button" className="pos-caja-action-btn is-open" onClick={onOpenCaja}>
             Abrir caja
           </button>
         )}

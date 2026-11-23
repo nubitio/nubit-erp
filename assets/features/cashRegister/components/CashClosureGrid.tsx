@@ -6,6 +6,7 @@ import {
   DescriptionList,
   DetailLayout,
   PageHeader,
+  Row,
   Section,
 } from '@nubitio/ui';
 import NumberUtils from '@shared/lib/NumberUtils';
@@ -37,6 +38,8 @@ export interface CashClosureGridHandle {
   clearDraft: () => void;
 }
 type Props = {
+  /** Inside a dialog that already titles the screen: no page header, no print. */
+  embedded?: boolean;
   closing?: boolean;
   onCloseRequest: () => void;
   onContinue?: () => void;
@@ -80,6 +83,7 @@ function readDraft(key?: string): Draft | null {
 
 export const CashClosureGrid = forwardRef<CashClosureGridHandle, Props>(function CashClosureGrid(
   {
+    embedded = false,
     closing = false,
     onCloseRequest,
     onContinue,
@@ -228,24 +232,33 @@ export const CashClosureGrid = forwardRef<CashClosureGridHandle, Props>(function
     ) : null;
   return (
     <section className="cash-close">
-      <PageHeader
-        title="Cierre de caja"
-        subtitle={context || 'Revisa el turno y cuenta el dinero antes de cerrar.'}
-        metadata={
+      {embedded ? (
+        <Row gap={3} align="center" wrap>
           <Badge variant="success" pill>
             Turno abierto
           </Badge>
-        }
-        actions={
-          <Button
-            variant="secondary"
-            onClick={() => window.print()}
-            disabled={loading || Boolean(error)}
-          >
-            Imprimir pre-cierre
-          </Button>
-        }
-      />
+          {context && <span className="cash-close__hint">{context}</span>}
+        </Row>
+      ) : (
+        <PageHeader
+          title="Cierre de caja"
+          subtitle={context || 'Revisa el turno y cuenta el dinero antes de cerrar.'}
+          metadata={
+            <Badge variant="success" pill>
+              Turno abierto
+            </Badge>
+          }
+          actions={
+            <Button
+              variant="secondary"
+              onClick={() => window.print()}
+              disabled={loading || Boolean(error)}
+            >
+              Imprimir pre-cierre
+            </Button>
+          }
+        />
+      )}
       {draftMessage && <Alert tone={draftError ? 'warning' : 'info'}>{draftMessage}</Alert>}
       {error ? (
         <Alert tone="warning">

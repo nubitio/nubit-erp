@@ -26,7 +26,6 @@ const MENU_VIEW_PERMISSION: Record<string, string> = {
   catalog: 'catalog.view',
   inventory: 'inventory.view',
   customer: 'customers.view',
-  cashbox: 'cash.view',
   subscriptions: 'subscriptions.view',
   'accounts-payable': 'accounts_payable.view',
   // Receivables are outstanding customer sales, not supplier payables.
@@ -46,6 +45,19 @@ const MENU_VIEW_PERMISSION: Record<string, string> = {
   'config/users': 'users.view',
   'config/roles': 'users.view',
   'config/activity': 'activity.view',
+};
+
+// Some entries are for supervising, not for operating: the cashier opens, moves and closes the
+// drawer from the POS, so a menu entry that only repeats the cash screens would be noise for them.
+// A role that cannot reach the POS keeps the entry: it is its only way to open a register.
+const MENU_VISIBLE_WHEN: Record<string, () => boolean> = {
+  cashbox: () =>
+    hasPermission('cash.view') &&
+    (hasPermission('cash.manage') ||
+      hasPermission('cash.close_any') ||
+      hasPermission('cash.movement_any') ||
+      hasPermission('treasury.view') ||
+      !hasPermission('pos.access')),
 };
 
 const NAVIGATION_TIER_RANK: Record<TenantRuntimeConfig['profile']['navigationTier'], number> = {
@@ -80,7 +92,6 @@ const MENU_REQUIRED_CAPABILITY: Record<string, string> = {
 const DAILY_OPERATION_ORDER = [
   'dashboard',
   'pos',
-  'cashbox',
   'billing',
   'customer',
   'catalog',
@@ -136,12 +147,6 @@ const HUB_SUBMENUS: Record<string, HubSubmenuEntry[]> = {
     { text: 'Precios', path: '/catalog/prices' },
     { text: 'Proveedores', path: '/catalog/suppliers' },
     { text: 'Métodos de pago', path: '/catalog/payment-methods' },
-  ],
-  cashbox: [
-    { text: 'Cajas', path: '/cashbox/dashboard' },
-    { text: 'Registros', path: '/cashbox/registers' },
-    { text: 'Categorías', path: '/cashbox/categories' },
-    { text: 'Control', path: '/cashbox/control', when: () => hasPermission('activity.view') },
   ],
   inventory: [
     { text: 'Existencias', path: '/inventory/stock' },
@@ -211,6 +216,11 @@ function isAllowedMenuPath(path: string, runtimeConfig: TenantRuntimeConfig): bo
 
   const requiredCapability = MENU_REQUIRED_CAPABILITY[path];
   if (requiredCapability && runtimeConfig.capabilities[requiredCapability]?.enabled !== true) {
+    return false;
+  }
+
+  const visibleWhen = MENU_VISIBLE_WHEN[path];
+  if (visibleWhen && getSessionUser() && !visibleWhen()) {
     return false;
   }
 

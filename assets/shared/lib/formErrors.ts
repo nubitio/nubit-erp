@@ -23,6 +23,18 @@ function messageOf(data: Record<string, unknown> | undefined): string | null {
 }
 
 /**
+ * The sentence to show for a failed request that is not a field-by-field form: the API's own
+ * explanation for a domain error (a register already open, a session closed), a generic one for a
+ * server fault, whose `detail` can carry internals.
+ */
+export function serverErrorMessage(error: unknown, fallback: string = GENERIC_SAVE_ERROR): string {
+  const status = (error as { status?: unknown } | null)?.status;
+  if (typeof status === 'number' && status >= 500) return fallback;
+
+  return messageOf(dataOf(error)) ?? fallback;
+}
+
+/**
  * Puts the violations of a failed save back on the form's fields.
  *
  * A 422 from API Platform lists `violations: [{ propertyPath, message }]`; each one becomes a

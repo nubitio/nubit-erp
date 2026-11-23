@@ -95,18 +95,11 @@ describe('filterMenuByRuntimeConfig', () => {
 
   it('puts the actions an owner performs every day before specialised areas', () => {
     const filtered = filterMenuByRuntimeConfig(
-      menu(['config', 'catalog', 'billing', 'cashbox', 'pos', 'dashboard']),
+      menu(['config', 'catalog', 'billing', 'pos', 'dashboard']),
       runtimeConfig('advanced'),
     );
 
-    expect(visiblePaths(filtered)).toEqual([
-      'dashboard',
-      'pos',
-      'cashbox',
-      'billing',
-      'catalog',
-      'config',
-    ]);
+    expect(visiblePaths(filtered)).toEqual(['dashboard', 'pos', 'billing', 'catalog', 'config']);
   });
 
   it('uses the first daily action of a menu group to order that group', () => {
@@ -211,6 +204,43 @@ describe('filterMenuByRuntimeConfig', () => {
     expect(visiblePaths(filtered)).toEqual(['accounts-receivable']);
   });
 
+  describe('cash screens (Cajas y turnos)', () => {
+    const cashMenu = () => menu(['cashbox']);
+    const asUser = (permissions: string[]) =>
+      localStorage.setItem('user', JSON.stringify({ username: 'u', permissions }));
+
+    it('hides them from a cashier: they open, move and close the drawer from the POS', () => {
+      asUser(['cash.view', 'cash.open', 'cash.close', 'pos.access']);
+      expect(
+        visiblePaths(filterMenuByRuntimeConfig(cashMenu(), runtimeConfig('standard'))),
+      ).toEqual([]);
+    });
+
+    it.each([['cash.manage'], ['cash.close_any'], ['cash.movement_any'], ['treasury.view']])(
+      'shows them to whoever supervises the drawers (%s)',
+      (supervisory) => {
+        asUser(['cash.view', 'pos.access', supervisory]);
+        expect(
+          visiblePaths(filterMenuByRuntimeConfig(cashMenu(), runtimeConfig('standard'))),
+        ).toEqual(['cashbox']);
+      },
+    );
+
+    it('keeps them for a role that cannot reach the POS, which has no other way to open a register', () => {
+      asUser(['cash.view', 'cash.open']);
+      expect(
+        visiblePaths(filterMenuByRuntimeConfig(cashMenu(), runtimeConfig('standard'))),
+      ).toEqual(['cashbox']);
+    });
+
+    it('hides them from whoever cannot view the cash at all', () => {
+      asUser(['treasury.view']);
+      expect(
+        visiblePaths(filterMenuByRuntimeConfig(cashMenu(), runtimeConfig('standard'))),
+      ).toEqual([]);
+    });
+  });
+
   it('turns Facturación into a group with all its hub sections, on every plan', () => {
     const billing: AdminMenuItem[] = [{ text: 'Facturación', path: 'billing', items: [] }];
 
@@ -227,7 +257,6 @@ describe('filterMenuByRuntimeConfig', () => {
     const menu: AdminMenuItem[] = [
       { text: 'Catálogo', path: 'catalog', items: [] },
       { text: 'Inventario', path: 'inventory', items: [] },
-      { text: 'Caja', path: 'cashbox', items: [] },
     ];
 
     const standard = filterMenuByRuntimeConfig(menu, runtimeConfig('standard'));
@@ -242,7 +271,6 @@ describe('filterMenuByRuntimeConfig', () => {
       '/catalog/suppliers',
       '/catalog/payment-methods',
     ]);
-    expect(paths('cashbox')).toHaveLength(3);
     expect(
       standard.find((item) => item.path === 'inventory')?.items?.map((child) => child.path),
     ).toEqual([

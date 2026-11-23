@@ -29,6 +29,20 @@ describe('POS bootstrap persistence', () => {
     clients.splice(0).forEach((client) => client.clear());
   });
 
+  it("restores the cashier's own cash session across reloads, stale so it is revalidated", () => {
+    const first = install();
+    const state = {
+      session: { id: 42, cashRegisterId: 3, cashRegisterName: 'Caja 3' },
+      availableRegisters: [],
+    };
+    first.setQueryData(['cash-pos-state', 1, 'branch-1'], state);
+
+    const reloaded = install();
+
+    expect(reloaded.getQueryData(['cash-pos-state', 1, 'branch-1'])).toEqual(state);
+    expect(reloaded.getQueryState(['cash-pos-state', 1, 'branch-1'])?.dataUpdatedAt).toBe(0);
+  });
+
   it('restores successful bootstrap data across reloads but leaves it stale for reconnection', () => {
     const first = install();
     first.setQueryData(['tenant-runtime-config'], {

@@ -16,7 +16,6 @@ const base = {
   selectedWarehouseId: '1',
   setSelectedWarehouseId: vi.fn(),
   cajaAbierta: true,
-  setCajaAbierta: vi.fn(),
   cajaOpenedAt: null,
   cartItemsCount: 0,
   hasCartItems: false,
@@ -58,29 +57,63 @@ describe('POSOperatorHeader bar', () => {
     expect(screen.getByTestId('pos-held-sales-btn').textContent).toMatch(/\(3\)/);
   });
 
-  it('keeps "Cerrar caja" out of the bar and reachable from the menu', async () => {
-    const setCajaAbierta = vi.fn();
-    renderHeader({ setCajaAbierta });
+  it('keeps "Cerrar caja" out of the bar and starts the closing from the menu', async () => {
+    const onCloseCaja = vi.fn();
+    renderHeader({ onCloseCaja });
     expect(screen.queryByRole('button', { name: 'Cerrar caja' })).toBeNull();
 
     await userEvent.click(screen.getByRole('button', { name: 'Más opciones' }));
     await userEvent.click(await screen.findByRole('menuitem', { name: /Cerrar caja/ }));
-    expect(setCajaAbierta).toHaveBeenCalledWith(false);
+    expect(onCloseCaja).toHaveBeenCalledTimes(1);
   });
 
   it('asks for confirmation before closing the caja with items in the cart', async () => {
-    const setCajaAbierta = vi.fn();
-    renderHeader({ setCajaAbierta, cartItemsCount: 2, hasCartItems: true });
+    const onCloseCaja = vi.fn();
+    renderHeader({ onCloseCaja, cartItemsCount: 2, hasCartItems: true });
 
     await userEvent.click(screen.getByRole('button', { name: 'Más opciones' }));
     await userEvent.click(await screen.findByRole('menuitem', { name: /Cerrar caja/ }));
-    expect(setCajaAbierta).not.toHaveBeenCalled();
+    expect(onCloseCaja).not.toHaveBeenCalled();
     expect(await screen.findByRole('alertdialog')).toBeTruthy();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar caja' }));
+    expect(onCloseCaja).toHaveBeenCalledTimes(1);
   });
 
-  it('offers "Abrir caja" in the bar while the caja is closed', () => {
-    renderHeader({ cajaAbierta: false });
-    expect(screen.getByRole('button', { name: 'Abrir caja' })).toBeTruthy();
+  it('opens the movements and the partial cut from the menu', async () => {
+    const onCashMovements = vi.fn();
+    renderHeader({ onCashMovements });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Más opciones' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: /Movimientos y reporte X/ }));
+    expect(onCashMovements).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers no cash actions while the caja is closed', async () => {
+    renderHeader({ cajaAbierta: false, onCloseCaja: vi.fn(), onCashMovements: vi.fn() });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Más opciones' }));
+    expect(await screen.findByRole('menuitem', { name: /Atajos de teclado/ })).toBeTruthy();
+    expect(screen.queryByRole('menuitem', { name: /Cerrar caja/ })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: /Movimientos y reporte X/ })).toBeNull();
+  });
+
+  it('opens the caja from the bar while it is closed', async () => {
+    const onOpenCaja = vi.fn();
+    renderHeader({ cajaAbierta: false, onOpenCaja });
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir caja' }));
+    expect(onOpenCaja).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not claim open or closed until the server answers', () => {
+    renderHeader({ cajaAbierta: false, cajaChecking: true });
+    expect(screen.queryByRole('button', { name: 'Abrir caja' })).toBeNull();
+    expect(screen.getByTestId('pos-caja-badge').textContent).toMatch(/Verificando/);
+  });
+
+  it('names the register the cashier has open', () => {
+    renderHeader({ cajaName: 'Caja 2' });
+    expect(screen.getByTestId('pos-caja-badge').textContent).toMatch(/Abierta · Caja 2/);
   });
 });
 
@@ -96,8 +129,15 @@ describe('POSOperatorHeader shortcuts', () => {
 
 describe('POSOperatorHeader panel', () => {
   it('lists every action as a full-width button for the options dialog', () => {
-    renderHeader({ variant: 'panel', onAssistantClick: vi.fn(), assistantEnabled: true });
+    renderHeader({
+      variant: 'panel',
+      onAssistantClick: vi.fn(),
+      assistantEnabled: true,
+      onCloseCaja: vi.fn(),
+      onCashMovements: vi.fn(),
+    });
     expect(screen.getByRole('button', { name: 'Cerrar caja' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Movimientos y reporte X' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Atajos de teclado' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Hardware local' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Asistente de IA' })).toBeTruthy();

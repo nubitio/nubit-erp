@@ -116,15 +116,6 @@ class MenuSeedService
             'parent_id' => null,
         ],
         [
-            'id' => 206,
-            'order_index' => 7,
-            'key_name' => 'Caja',
-            'type' => 'route',
-            'route' => '/cashbox',
-            'icon' => 'ph ph-cash-register',
-            'parent_id' => null,
-        ],
-        [
             'id' => 750,
             'order_index' => 8,
             'key_name' => 'Suscripciones',
@@ -134,7 +125,7 @@ class MenuSeedService
             'parent_id' => null,
         ],
 
-        // ── Grupo: Finanzas (cuentas por pagar/cobrar + conciliación) ──────
+        // ── Grupo: Finanzas (cuentas por pagar/cobrar, cajas y turnos, conciliación) ──────
         [
             'id' => 790,
             'order_index' => 9,
@@ -181,8 +172,17 @@ class MenuSeedService
             'parent_id' => 790,
         ],
         [
-            'id' => 770,
+            'id' => 206,
             'order_index' => 4,
+            'key_name' => 'Cajas y turnos',
+            'type' => 'route',
+            'route' => '/cashbox',
+            'icon' => 'ph ph-cash-register',
+            'parent_id' => 790,
+        ],
+        [
+            'id' => 770,
+            'order_index' => 5,
             'key_name' => 'Conciliación bancaria',
             'type' => 'route',
             'route' => '/bank-reconciliation',
@@ -191,7 +191,7 @@ class MenuSeedService
         ],
         [
             'id' => 785,
-            'order_index' => 5,
+            'order_index' => 6,
             'key_name' => 'Reportes financieros',
             'type' => 'route',
             'route' => '/financial-reports',
@@ -200,7 +200,7 @@ class MenuSeedService
         ],
         [
             'id' => 799,
-            'order_index' => 6,
+            'order_index' => 7,
             'key_name' => 'Gastos de personal',
             'type' => 'route',
             'route' => '/expense-reports',
@@ -209,7 +209,7 @@ class MenuSeedService
         ],
         [
             'id' => 800,
-            'order_index' => 7,
+            'order_index' => 8,
             'key_name' => 'Activos fijos',
             'type' => 'route',
             'route' => '/fixed-assets',
@@ -218,7 +218,7 @@ class MenuSeedService
         ],
         [
             'id' => 788,
-            'order_index' => 8,
+            'order_index' => 9,
             'key_name' => 'Contabilidad',
             'type' => 'route',
             'route' => '/accounting',

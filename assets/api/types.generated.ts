@@ -520,6 +520,26 @@ export interface paths {
         patch: operations["api_cash-movement-categories_id_patch"];
         trace?: never;
     };
+    "/api/cash-pos-state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a CashPosState resource.
+         * @description Retrieves a CashPosState resource.
+         */
+        get: operations["api_cash-pos-state_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cash-registers": {
         parameters: {
             query?: never;
@@ -5138,6 +5158,8 @@ export interface components {
             amount: string;
             /** @description cash_movement.description.label */
             description?: string;
+            /** Format: date-time */
+            createdAt?: string;
             /**
              * Format: iri-reference
              * @description cash_movement.branch.label
@@ -5178,6 +5200,8 @@ export interface components {
             amount: string;
             /** @description cash_movement.description.label */
             description?: string;
+            /** Format: date-time */
+            createdAt?: string;
             /**
              * Format: iri-reference
              * @description cash_movement.branch.label
@@ -5259,6 +5283,62 @@ export interface components {
              * @enum {string}
              */
             type?: "income" | "expense";
+        };
+        /**
+         * @description What the point of sale needs to decide whether the signed-in user can sell: the cash session they
+         *     have open, if any, and the registers of the current branch they could open one on.
+         */
+        "CashPosState-cash_pos_state.read": {
+            /** @description the user's open session */
+            session?: {
+                id?: number;
+                cashRegisterId?: number;
+                cashRegisterName?: string;
+                /** Format: date-time */
+                openedAt?: string;
+                openingAmount?: string;
+            } | null;
+            /** @description registers of the branch with no open session */
+            availableRegisters?: {
+                id: number;
+                name: string;
+            }[];
+            /** @description registers of the branch somebody else has open, so the cashier knows whom to wait for */
+            busyRegisters?: {
+                id: number;
+                name: string;
+                cashier?: string | null;
+                /** Format: date-time */
+                openedAt: string;
+            }[];
+        };
+        /**
+         * @description What the point of sale needs to decide whether the signed-in user can sell: the cash session they
+         *     have open, if any, and the registers of the current branch they could open one on.
+         */
+        "CashPosState.jsonld-cash_pos_state.read": components["schemas"]["HydraItemBaseSchema"] & {
+            /** @description the user's open session */
+            session?: {
+                id?: number;
+                cashRegisterId?: number;
+                cashRegisterName?: string;
+                /** Format: date-time */
+                openedAt?: string;
+                openingAmount?: string;
+            } | null;
+            /** @description registers of the branch with no open session */
+            availableRegisters?: {
+                id: number;
+                name: string;
+            }[];
+            /** @description registers of the branch somebody else has open, so the cashier knows whom to wait for */
+            busyRegisters?: {
+                id: number;
+                name: string;
+                cashier?: string | null;
+                /** Format: date-time */
+                openedAt: string;
+            }[];
         };
         CashRegister: {
             readonly id?: number;
@@ -5596,6 +5676,8 @@ export interface components {
             amount: string;
             /** @description cash_movement.description.label */
             description?: string;
+            /** Format: date-time */
+            createdAt?: string;
             /**
              * Format: iri-reference
              * @description cash_movement.branch.label
@@ -5625,6 +5707,8 @@ export interface components {
             amount: string;
             /** @description cash_movement.description.label */
             description?: string;
+            /** Format: date-time */
+            createdAt?: string;
             /**
              * Format: iri-reference
              * @description cash_movement.branch.label
@@ -11113,11 +11197,7 @@ export interface components {
             customer?: components["schemas"]["Customer-sale_record.read"] | null;
             /** @description sale_record.seller_user_id.label */
             sellerUserId?: number | null;
-            /**
-             * @description sale_record.status.label
-             * @default COMPLETED
-             */
-            status: string;
+            readonly voidedByUserId?: number | null;
             /**
              * @description sale_record.currency.label
              * @default PEN
@@ -11365,11 +11445,7 @@ export interface components {
             customer?: components["schemas"]["Customer.jsonld-sale_record.read"] | null;
             /** @description sale_record.seller_user_id.label */
             sellerUserId?: number | null;
-            /**
-             * @description sale_record.status.label
-             * @default COMPLETED
-             */
-            status: string;
+            readonly voidedByUserId?: number | null;
             /**
              * @description sale_record.currency.label
              * @default PEN
@@ -11781,11 +11857,7 @@ export interface components {
             customer?: components["schemas"]["Customer-sale_record.read"] | null;
             /** @description sale_record.seller_user_id.label */
             sellerUserId?: number | null;
-            /**
-             * @description sale_record.status.label
-             * @default COMPLETED
-             */
-            status: string;
+            readonly voidedByUserId?: number | null;
             /**
              * @description sale_record.currency.label
              * @default PEN
@@ -11935,11 +12007,7 @@ export interface components {
             customer?: components["schemas"]["Customer.jsonld-sale_record.read"] | null;
             /** @description sale_record.seller_user_id.label */
             sellerUserId?: number | null;
-            /**
-             * @description sale_record.status.label
-             * @default COMPLETED
-             */
-            status: string;
+            readonly voidedByUserId?: number | null;
             /**
              * @description sale_record.currency.label
              * @default PEN
@@ -16863,6 +16931,49 @@ export interface operations {
                     "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
                     "application/problem+json": components["schemas"]["ConstraintViolation"];
                     "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_cash-pos-state_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CashPosState resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashPosState-cash_pos_state.read"];
+                    "application/ld+json": components["schemas"]["CashPosState.jsonld-cash_pos_state.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };

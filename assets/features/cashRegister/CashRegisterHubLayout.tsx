@@ -5,9 +5,8 @@ export const CashRegisterHubLayout = () => {
   return (
     <FeatureHubLayout
       density="compact"
-      className="hub-in-sidebar"
-      title="Caja"
-      subtitle="Abre el turno, cobra y cierra con arqueo. Si el efectivo no cuadra, se ve aquí."
+      title="Cajas y turnos"
+      subtitle="Supervisa las cajas, revisa los turnos y las diferencias de arqueo. El cajero abre y cierra desde el punto de venta."
       basePath="/cashbox"
       defaultPath="/cashbox/dashboard"
       tabsAriaLabel="Secciones de caja"

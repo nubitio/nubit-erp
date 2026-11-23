@@ -34,7 +34,9 @@ production build, without a concurrent Vite build or another PWA test.
 The POS must have been opened online in the same tab and committed auth session
 before it can reopen offline. `assets/offline/posBootstrap.ts` persists successful
 read-only bootstrap queries in sessionStorage: tenant runtime config, API schema,
-payment methods and warehouses. It does not persist credentials or business rows.
+payment methods, warehouses and the cashier's own cash session (`cash-pos-state`, so
+the POS knows offline whether the caja is open). It does not persist credentials or
+business rows.
 The snapshot is scoped to origin, user, branch and permissions, discarded on
 session changes, and restored as stale so the API revalidates it on reconnection.
 The product catalog and pending sales continue to use their existing IndexedDB
