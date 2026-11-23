@@ -22,12 +22,14 @@ final class ActivityType
     public const string EMAIL_CHANGED = 'user.email_changed';
     public const string USER_DELETED = 'user.deleted';
     public const string ROLE_PERMISSIONS_CHANGED = 'role.permissions_changed';
+    public const string SALE_VOIDED = 'sale.voided';
+    public const string CREDIT_NOTE_ISSUED = 'sale.credit_note_issued';
 
     /** Routine events: shown under "Todos" but not flagged as sensitive. */
     private const array ROUTINE = [self::LOGIN, self::PASSWORD_RESET_REQUESTED];
 
     /** Filter values the API accepts besides "sensitive" and "all". */
-    public const array GROUPS = ['auth', 'user', 'role'];
+    public const array GROUPS = ['auth', 'user', 'role', 'sale'];
 
     /** @return list<string> */
     public static function all(): array
@@ -48,6 +50,8 @@ final class ActivityType
             self::EMAIL_CHANGED,
             self::USER_DELETED,
             self::ROLE_PERMISSIONS_CHANGED,
+            self::SALE_VOIDED,
+            self::CREDIT_NOTE_ISSUED,
         ];
     }
 
@@ -79,6 +83,8 @@ final class ActivityType
             self::EMAIL_CHANGED => 'Correos cambiados',
             self::USER_DELETED => 'Usuarios eliminados',
             self::ROLE_PERMISSIONS_CHANGED => 'Cambios de permisos de rol',
+            self::SALE_VOIDED => 'Ventas anuladas',
+            self::CREDIT_NOTE_ISSUED => 'Notas de crédito emitidas',
             default => $type,
         };
     }

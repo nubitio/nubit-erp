@@ -81,6 +81,7 @@ contexts:
     publicContracts:
       - App\Identity\Auth\BranchContextServiceInterface
       - App\Identity\Notification\UserNotificationServiceInterface
+      - App\Identity\Activity\SalesActivityInterface
     ownsTables: [usuario, rol, role_permission, user_notification, identity_activity_event, identity_offline_credential]
 
   Organization:
@@ -241,7 +242,7 @@ contexts:
   Reporting:
     namespace: App\Reporting
     layer: ErpCore
-    dependsOn: [Accounting, ControlPlane, Efact, Organization, Settings]
+    dependsOn: [Accounting, ControlPlane, Efact, Identity, Organization, Settings]
     publicContracts: []
     ownsTables: [summary, time_dimension]
 

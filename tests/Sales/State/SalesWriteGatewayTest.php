@@ -635,6 +635,28 @@ class SalesWriteGatewayTest extends TestCase
         $this->assertSame('VOID', $capturedParams[1]['reason_text']);
     }
 
+    public function testMarkVoidedRecordsWhoVoidedAndWhy(): void
+    {
+        $sale = new SaleRecord();
+        $sale->setId('sale-void-3');
+
+        $capturedSql = [];
+        $capturedParams = [];
+        $this->connection
+            ->method('executeStatement')
+            ->willReturnCallback(function (string $sql, array $params = []) use (&$capturedSql, &$capturedParams): int {
+                $capturedSql[] = $sql;
+                $capturedParams[] = $params;
+                return 1;
+            });
+
+        $this->gateway->markVoided($sale, 'Cliente se arrepintió', 42);
+
+        $this->assertStringContainsString('voided_by_user_id', $capturedSql[0]);
+        $this->assertSame(42, $capturedParams[0]['voided_by']);
+        $this->assertSame('Cliente se arrepintió', $capturedParams[0]['void_reason']);
+    }
+
     // ── writeCashSaleMovement() ───────────────────────────────────────────────
 
     public function testWriteCashSaleMovementExecutesInsert(): void
