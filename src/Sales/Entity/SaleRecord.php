@@ -175,7 +175,6 @@ class SaleRecord
     #[ORM\Column(name: 'synced_by_user_id', type: 'integer', nullable: true)]
     private ?int $syncedByUserId = null;
 
-    #[Groups(['sale_record:read'])]
     /** Who voided the sale. NULL for sales voided before the author was recorded. */
     #[ORM\Column(name: 'voided_by_user_id', type: 'integer', nullable: true)]
     private ?int $voidedByUserId = null;
@@ -186,6 +185,7 @@ class SaleRecord
     #[ORM\Column(name: 'void_reason', type: 'string', length: 255, nullable: true)]
     private ?string $voidReason = null;
 
+    #[Groups(['sale_record:read'])]
     #[ORM\Column(name: 'status', type: 'string', length: 30, options: ['default' => 'COMPLETED'])]
     #[ApiProperty(description: 'sale_record.status.label')]
     private string $status = 'COMPLETED';
