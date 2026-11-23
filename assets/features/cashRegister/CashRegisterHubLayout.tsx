@@ -1,4 +1,5 @@
 import { FeatureHubLayout } from '@nubitio/admin';
+import { hasPermission } from '@shared/permissions';
 
 export const CashRegisterHubLayout = () => {
   return (
@@ -31,6 +32,13 @@ export const CashRegisterHubLayout = () => {
           path: '/cashbox/categories',
           icon: 'ph-folders',
           visible: true,
+        },
+        {
+          key: 'control',
+          label: 'Control',
+          path: '/cashbox/control',
+          icon: 'ph-eye',
+          visible: hasPermission('activity.view'),
         },
       ]}
     />

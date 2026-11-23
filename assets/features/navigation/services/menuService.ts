@@ -141,6 +141,7 @@ const HUB_SUBMENUS: Record<string, HubSubmenuEntry[]> = {
     { text: 'Cajas', path: '/cashbox/dashboard' },
     { text: 'Registros', path: '/cashbox/registers' },
     { text: 'Categorías', path: '/cashbox/categories' },
+    { text: 'Control', path: '/cashbox/control', when: () => hasPermission('activity.view') },
   ],
   inventory: [
     { text: 'Existencias', path: '/inventory/stock' },
