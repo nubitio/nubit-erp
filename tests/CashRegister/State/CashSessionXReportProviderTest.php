@@ -74,8 +74,8 @@ final class CashSessionXReportProviderTest extends TestCase
         $this->connection
             ->method('fetchAllAssociative')
             ->willReturn([
-                ['paymentMethodId' => 1, 'paymentMethod' => 'Efectivo', 'amount' => '300.00'],
-                ['paymentMethodId' => 2, 'paymentMethod' => 'Tarjeta', 'amount' => '200.00'],
+                ['paymentMethodId' => 1, 'paymentMethod' => 'Efectivo', 'amount' => '300.00', 'operations' => '4'],
+                ['paymentMethodId' => 2, 'paymentMethod' => 'Tarjeta', 'amount' => '200.00', 'operations' => '2'],
             ]);
 
         $result = $this->provider->provide(new Get(uriTemplate: '/cash-shifts/{id}/x-report'), ['id' => $cashShiftId]);
@@ -93,6 +93,7 @@ final class CashSessionXReportProviderTest extends TestCase
         $this->assertSame(1, $result->salesByPaymentMethod[0]->paymentMethodId);
         $this->assertSame('Efectivo', $result->salesByPaymentMethod[0]->paymentMethod);
         $this->assertSame('300.00', $result->salesByPaymentMethod[0]->amount);
+        $this->assertSame(4, $result->salesByPaymentMethod[0]->operations);
 
         $this->assertSame(2, $result->salesByPaymentMethod[1]->paymentMethodId);
         $this->assertSame('Tarjeta', $result->salesByPaymentMethod[1]->paymentMethod);
@@ -156,6 +157,11 @@ final class CashSessionXReportProviderTest extends TestCase
                 ->__toString(),
         );
         self::assertSame('170.00', $closure[1]->expectedAmount);
+        self::assertSame(
+            [1, 1],
+            array_map(static fn($row): int => $row->operations, $report->salesByPaymentMethod),
+            'refunds and cash movements are not counted as sales operations',
+        );
         $db->close();
     }
 

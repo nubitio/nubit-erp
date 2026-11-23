@@ -28,6 +28,15 @@ describe('cashSessionService', () => {
     expect(state.availableRegisters).toEqual([{ id: 3, name: 'Caja 3' }]);
   });
 
+  it('reads the sales of the shift the user has open', async () => {
+    get.mockResolvedValue(reply({ sessionId: 7, count: 1, total: '30.00', sales: [] }));
+
+    const shift = await cashSessionService.getShiftSales();
+
+    expect(get).toHaveBeenCalledWith('/api/cash-pos-state/sales', { errorPresentation: 'inline' });
+    expect(shift.count).toBe(1);
+  });
+
   it('opens a register with the opening cash rounded to cents', async () => {
     post.mockResolvedValue(reply({}));
 

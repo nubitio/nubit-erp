@@ -66,7 +66,7 @@ readonly class CashSessionXReportProvider implements ProviderInterface
         $cashOut = BigDecimal::of((string) ($cashOutRaw ?: '0'));
 
         $salesRows = $this->connection->fetchAllAssociative(
-            "SELECT pm.id AS paymentMethodId, pm.name AS paymentMethod, COALESCE(SUM(cm.amount), 0) AS amount
+            "SELECT pm.id AS paymentMethodId, pm.name AS paymentMethod, COALESCE(SUM(cm.amount), 0) AS amount, COUNT(*) AS operations
              FROM cash_movements cm
              JOIN payment_method pm ON pm.id = cm.payment_method_id
              WHERE cm.cash_session_id = ? AND cm.movement_type = 'SALE_IN'
@@ -100,6 +100,7 @@ readonly class CashSessionXReportProvider implements ProviderInterface
                 paymentMethodId: (int) $row['paymentMethodId'],
                 paymentMethod: (string) $row['paymentMethod'],
                 amount: BigDecimal::of((string) $row['amount'])->toScale(2, RoundingMode::HALF_UP)->__toString(),
+                operations: (int) ($row['operations'] ?? 0),
             ),
             $salesRows,
         );

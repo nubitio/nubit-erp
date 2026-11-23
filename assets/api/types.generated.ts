@@ -792,6 +792,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cash-pos-state/sales": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a CashShiftSales resource.
+         * @description Retrieves a CashShiftSales resource.
+         */
+        get: operations["api_cash-pos-statesales_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/categories": {
         parameters: {
             query?: never;
@@ -5756,6 +5776,7 @@ export interface components {
                 paymentMethodId: number;
                 paymentMethod: string;
                 amount: string;
+                operations: number;
             }[];
             cashSalesNet?: string | null;
             cashAdjustmentsOut?: string | null;
@@ -5771,6 +5792,7 @@ export interface components {
                 paymentMethodId: number;
                 paymentMethod: string;
                 amount: string;
+                operations: number;
             }[];
             cashSalesNet?: string | null;
             cashAdjustmentsOut?: string | null;
@@ -5839,6 +5861,60 @@ export interface components {
              * @description cash_session.updated_at.label
              */
             updatedAt?: string | null;
+        };
+        /**
+         * @description The sales rung up in the shift the signed-in user has open, newest first, so the cashier can trace a
+         *     cash difference to the sale that caused it. It is deliberately not a view of the branch's sales: the
+         *     user only ever sees their own shift, whatever else they are allowed to read.
+         */
+        "CashShiftSales-cash_shift_sales.read": {
+            /** @description the open session the sales belong to; null when the user has none */
+            sessionId?: number | null;
+            /** @description sales that count towards the shift (voided ones are listed but not counted) */
+            count?: number;
+            /** @description sum of those sales */
+            total?: string;
+            sales?: {
+                id: string;
+                /** Format: date-time */
+                issuedAt?: string | null;
+                status: string;
+                total: string;
+                documentType?: string | null;
+                documentNumber?: string | null;
+                sunatStatus?: string | null;
+                payments: {
+                    method: string;
+                    amount: string;
+                }[];
+            }[];
+        };
+        /**
+         * @description The sales rung up in the shift the signed-in user has open, newest first, so the cashier can trace a
+         *     cash difference to the sale that caused it. It is deliberately not a view of the branch's sales: the
+         *     user only ever sees their own shift, whatever else they are allowed to read.
+         */
+        "CashShiftSales.jsonld-cash_shift_sales.read": components["schemas"]["HydraItemBaseSchema"] & {
+            /** @description the open session the sales belong to; null when the user has none */
+            sessionId?: number | null;
+            /** @description sales that count towards the shift (voided ones are listed but not counted) */
+            count?: number;
+            /** @description sum of those sales */
+            total?: string;
+            sales?: {
+                id: string;
+                /** Format: date-time */
+                issuedAt?: string | null;
+                status: string;
+                total: string;
+                documentType?: string | null;
+                documentNumber?: string | null;
+                sunatStatus?: string | null;
+                payments: {
+                    method: string;
+                    amount: string;
+                }[];
+            }[];
         };
         "Category-category.read": {
             readonly id?: string;
@@ -17754,6 +17830,49 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["CashSession.CashSessionXReportDto-cash_x_report.read"];
                     "application/ld+json": components["schemas"]["CashSession.CashSessionXReportDto.jsonld-cash_x_report.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    "api_cash-pos-statesales_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CashShiftSales resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashShiftSales-cash_shift_sales.read"];
+                    "application/ld+json": components["schemas"]["CashShiftSales.jsonld-cash_shift_sales.read"];
                 };
             };
             /** @description Forbidden */

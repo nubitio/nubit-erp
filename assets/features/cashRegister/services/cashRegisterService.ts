@@ -16,6 +16,8 @@ export interface XReportDto {
     paymentMethodId: number;
     paymentMethod: string;
     amount: string;
+    /** Sales operations behind the amount (a sale paid with two methods counts once in each). */
+    operations?: number;
   }>;
 }
 

@@ -43,6 +43,8 @@ type Props = {
   closing?: boolean;
   onCloseRequest: () => void;
   onContinue?: () => void;
+  /** Opens the shift's sales; absent when the signed-in user does not own the session. */
+  onViewSales?: () => void;
   draftKey?: string;
   report?: XReportDto | null;
   context?: string;
@@ -87,6 +89,7 @@ export const CashClosureGrid = forwardRef<CashClosureGridHandle, Props>(function
     closing = false,
     onCloseRequest,
     onContinue,
+    onViewSales,
     draftKey,
     report,
     context,
@@ -392,6 +395,7 @@ export const CashClosureGrid = forwardRef<CashClosureGridHandle, Props>(function
                 <thead>
                   <tr>
                     <th>Método</th>
+                    <th>Operaciones</th>
                     <th>Monto</th>
                     <th>Dónde se controla</th>
                   </tr>
@@ -400,6 +404,7 @@ export const CashClosureGrid = forwardRef<CashClosureGridHandle, Props>(function
                   {report.salesByPaymentMethod.map((row) => (
                     <tr key={row.paymentMethodId}>
                       <th scope="row">{row.paymentMethod}</th>
+                      <td>{row.operations ?? '—'}</td>
                       <td>{money(row.amount)}</td>
                       <td>
                         {row.paymentMethodId === CASH_METHOD_ID
@@ -410,11 +415,20 @@ export const CashClosureGrid = forwardRef<CashClosureGridHandle, Props>(function
                   ))}
                   {report.salesByPaymentMethod.length === 0 && (
                     <tr>
-                      <td colSpan={3}>Sin ventas registradas en este turno.</td>
+                      <td colSpan={4}>Sin ventas registradas en este turno.</td>
                     </tr>
                   )}
                 </tbody>
               </table>
+              {onViewSales && (
+                <Button
+                  variant="secondary"
+                  onClick={onViewSales}
+                  data-testid="cash-close-view-sales"
+                >
+                  Ver ventas del turno
+                </Button>
+              )}
             </>
           ) : (
             <p className="cash-close__hint">

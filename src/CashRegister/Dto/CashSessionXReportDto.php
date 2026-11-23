@@ -34,8 +34,9 @@ final readonly class CashSessionXReportDto
                     'paymentMethodId' => ['type' => 'integer'],
                     'paymentMethod' => ['type' => 'string'],
                     'amount' => ['type' => 'string'],
+                    'operations' => ['type' => 'integer'],
                 ],
-                'required' => ['paymentMethodId', 'paymentMethod', 'amount'],
+                'required' => ['paymentMethodId', 'paymentMethod', 'amount', 'operations'],
             ],
         ])]
         public array $salesByPaymentMethod,

@@ -49,10 +49,37 @@ export interface CashSessionMovement {
   category?: { id: number; name: string; type: 'income' | 'expense' } | null;
 }
 
+export interface CashShiftSale {
+  id: string;
+  issuedAt?: string | null;
+  /** `VOIDED` sales are listed but do not count towards the shift. */
+  status: string;
+  total: string;
+  documentType?: string | null;
+  /** Series and number of the receipt, e.g. `B001-12`; null while the sale has none. */
+  documentNumber?: string | null;
+  sunatStatus?: string | null;
+  payments: { method: string; amount: string }[];
+}
+
+/** The sales of the shift the signed-in user has open, newest first. */
+export interface CashShiftSales {
+  sessionId: number | null;
+  /** Sales that count (not voided) and their sum. */
+  count: number;
+  total: string;
+  sales: CashShiftSale[];
+}
+
 export const cashSessionService = {
   getPosState: () =>
     httpClient
       .get<CashPosState>(API + 'cash-pos-state', { errorPresentation: 'inline' })
+      .then((response) => response.data),
+
+  getShiftSales: () =>
+    httpClient
+      .get<CashShiftSales>(API + 'cash-pos-state/sales', { errorPresentation: 'inline' })
       .then((response) => response.data),
 
   open: (cashRegisterId: number, openingBalance: number) =>

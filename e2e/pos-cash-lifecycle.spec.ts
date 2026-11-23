@@ -1,6 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { login } from './helpers/auth';
+import { completePosCashPayment, waitForPosCheckoutReady } from './helpers/pos';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
+import { E2E_SEED } from './support/seedConstants';
 
 const BASE_URL = getE2EBaseUrl();
 
@@ -184,6 +186,88 @@ test('un estado de caja desactualizado se corrige: el POS cierra lo que el servi
   await expect(page.getByTestId('pos-open-payment-btn')).toBeDisabled();
 
   await openCajaFromPos(page, '100');
+});
+
+type ShiftSales = {
+  sessionId: number | null;
+  count: number;
+  total: string;
+  sales: Array<{ id: string; status: string; total: string; payments: unknown[] }>;
+};
+
+async function shiftSales(page: Page): Promise<ShiftSales> {
+  const response = await page.request.get(`${BASE_URL}/api/cash-pos-state/sales`, {
+    headers: { Accept: 'application/json' },
+  });
+  expect(response.ok(), 'cash-pos-state/sales debe responder 2xx').toBeTruthy();
+  return (await response.json()) as ShiftSales;
+}
+
+test('el cajero ve las ventas de su turno, las reimprime y las encuentra al cerrar', async ({
+  page,
+}) => {
+  const seed = await getE2ESeed();
+  await login(page, seed.username, seed.password);
+  await openPos(page);
+  if ((await posState(page)).session == null) await openCajaFromPos(page, '100');
+  await waitForCajaState(page, 'Abierta');
+
+  const before = await shiftSales(page);
+  expect(before.sessionId).toBe((await posState(page)).session?.id);
+
+  await test.step('vende en efectivo y la venta entra al turno', async () => {
+    await page
+      .getByTestId('pos-product-card')
+      .filter({ hasText: E2E_SEED.productName })
+      .filter({ hasNotText: E2E_SEED.product2Name })
+      .first()
+      .click();
+    await completePosCashPayment(page);
+    await waitForPosCheckoutReady(page);
+    const sold = page.waitForResponse(
+      (response) =>
+        /\/api\/sales(?:\?.*)?$/.test(response.url()) && response.request().method() === 'POST',
+    );
+    await page.getByTestId('pos-checkout-btn').click();
+    expect((await sold).ok()).toBeTruthy();
+    // The cashier dismisses the "comprobante emitido" dialog to start the next sale.
+    await page.getByRole('button', { name: /Nueva venta/ }).click();
+
+    await expect.poll(async () => (await shiftSales(page)).count).toBe(before.count + 1);
+  });
+
+  await test.step('el menú del POS muestra la venta con su método de pago', async () => {
+    await openMenu(page, /Ventas del turno/);
+    const dialog = page.getByRole('dialog', { name: 'Ventas del turno' });
+    await expect(dialog.getByRole('status')).toContainText(`${before.count + 1} venta`, {
+      timeout: 15_000,
+    });
+    const list = dialog.getByTestId('cash-shift-sales-list');
+    await expect(list.getByText('Efectivo').first()).toBeVisible();
+    await expect(list.getByRole('button', { name: 'Reimprimir' }).first()).toBeVisible();
+    await dialog.getByRole('button', { name: 'Cerrar', exact: true }).last().click();
+    await expect(dialog).toBeHidden();
+  });
+
+  await test.step('al cerrar, el cierre cuenta las operaciones y deja ver las ventas', async () => {
+    await openMenu(page, /Cerrar caja/);
+    const close = page.getByRole('dialog', { name: 'Cerrar caja' });
+    const methods = close.getByRole('table').first();
+    await expect(methods.getByRole('columnheader', { name: 'Operaciones' })).toBeVisible({
+      timeout: 20_000,
+    });
+    await expect(methods.getByRole('row', { name: /Efectivo/ })).toBeVisible();
+
+    await close.getByTestId('cash-close-view-sales').click();
+    const sales = page.getByRole('dialog', { name: 'Ventas del turno' });
+    await expect(sales.getByTestId('cash-shift-sales-list')).toBeVisible({ timeout: 15_000 });
+    await sales.getByRole('button', { name: 'Cerrar', exact: true }).last().click();
+    await expect(sales).toBeHidden();
+    // The count dialog is still there: the cashier goes back to it and keeps selling.
+    await expect(close).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(close).toBeHidden();
+  });
 });
 
 test('Cajas y turnos vive en Finanzas, no como ítem suelto', async ({ page }) => {

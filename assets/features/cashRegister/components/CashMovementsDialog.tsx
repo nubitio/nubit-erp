@@ -138,7 +138,10 @@ export function CashMovementsDialog({ open, sessionId, registerName, onClose }: 
                 <ul className="cash-movements-dialog__methods" aria-label="Ventas por método">
                   {report.data.salesByPaymentMethod.map((row) => (
                     <li key={row.paymentMethodId}>
-                      <span>{row.paymentMethod}</span>
+                      <span>
+                        {row.paymentMethod}
+                        {row.operations != null && ` · ${row.operations}`}
+                      </span>
                       <span>{money(row.amount)}</span>
                     </li>
                   ))}

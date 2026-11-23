@@ -89,13 +89,28 @@ describe('POSOperatorHeader bar', () => {
     expect(onCashMovements).toHaveBeenCalledTimes(1);
   });
 
+  it('opens the sales of the shift from the menu', async () => {
+    const onShiftSales = vi.fn();
+    renderHeader({ onShiftSales });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Más opciones' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: /Ventas del turno/ }));
+    expect(onShiftSales).toHaveBeenCalledTimes(1);
+  });
+
   it('offers no cash actions while the caja is closed', async () => {
-    renderHeader({ cajaAbierta: false, onCloseCaja: vi.fn(), onCashMovements: vi.fn() });
+    renderHeader({
+      cajaAbierta: false,
+      onCloseCaja: vi.fn(),
+      onCashMovements: vi.fn(),
+      onShiftSales: vi.fn(),
+    });
 
     await userEvent.click(screen.getByRole('button', { name: 'Más opciones' }));
     expect(await screen.findByRole('menuitem', { name: /Atajos de teclado/ })).toBeTruthy();
     expect(screen.queryByRole('menuitem', { name: /Cerrar caja/ })).toBeNull();
     expect(screen.queryByRole('menuitem', { name: /Movimientos y reporte X/ })).toBeNull();
+    expect(screen.queryByRole('menuitem', { name: /Ventas del turno/ })).toBeNull();
   });
 
   it('opens the caja from the bar while it is closed', async () => {
