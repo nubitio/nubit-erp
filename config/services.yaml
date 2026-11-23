@@ -93,6 +93,11 @@ services:
       $mercureJwtSecret: '%env(MERCURE_JWT_SECRET)%'
       $tokenTtl: '%jwt_access_token_ttl%'
       $issuer: '%env(default:mercure_default_trusted_issuer:MERCURE_TRUSTED_ISSUERS)%'
+  # Pinned `aud` of the subscriber token; empty keeps it derived from the request. Must equal the hub's
+  # `resource_identifier` (docker-compose.prod.yml sets both from MERCURE_PUBLIC_URL).
+  App\Identity\Auth\MercureAudience:
+    arguments:
+      $pinned: '%env(default::MERCURE_AUDIENCE)%'
   Aws\S3\S3Client:
     arguments:
       - version: 'latest'

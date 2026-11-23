@@ -25,6 +25,7 @@ final readonly class MercureJsonResponseCookieListener
         private MercureSubscriberTokenService $mercureTokenService,
         private CookieFactory $cookieFactory,
         private TenantContext $tenantContext,
+        private MercureAudience $audience,
     ) {}
 
     public function __invoke(ResponseEvent $event): void
@@ -49,7 +50,7 @@ final readonly class MercureJsonResponseCookieListener
         }
 
         $tenantOrigin = null !== $this->tenantContext->getTenantDomain() ? $request->getSchemeAndHttpHost() : '';
-        $audience = $request->getSchemeAndHttpHost() . '/.well-known/mercure';
+        $audience = $this->audience->forRequest($request);
 
         $response->headers->setCookie($this->cookieFactory->createSecureCookie(
             MercureCookieDecorator::MERCURE_COOKIE,

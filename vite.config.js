@@ -1,5 +1,4 @@
 import { fileURLToPath, URL } from 'node:url';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { defineConfig } from 'vite';
 import symfonyPlugin from '@symfony/reprise/vite';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -71,17 +70,11 @@ export default defineConfig({
       // precache build/registerSW.js, which is not served in this Symfony setup.
       injectRegister: false,
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'robots.txt'],
-      manifest: {
-        name: 'efact POS',
-        short_name: 'efact',
-        theme_color: '#1463ff',
-        background_color: '#ffffff',
-        display: 'standalone',
-        // Real path since ADR-020. Installed PWAs keep the old `/#/pos` until they update;
-        // the legacy-hash normaliser in assets/app.tsx maps it.
-        start_url: '/pos',
-      },
+      // Do not let the plugin generate `manifest.webmanifest`: the production image only ships `public/build`,
+      // `public/themes`, `sw.js` and the workbox runtime, so a precache entry for it answers 404 and makes the
+      // service worker's install fail. The worker then never takes over and the offline POS does not work.
+      // `scripts/verify-sw-precache.mjs` fails the build if anything outside `build/` is precached.
+      manifest: false,
       workbox: {
         globPatterns: ['build/**/*.{js,css,woff,woff2,png,ico,svg}'],
         // Some vendor chunks can exceed Workbox's default precache limit (2 MiB).
@@ -176,32 +169,6 @@ export default defineConfig({
         enabled: false,
       },
     }),
-    // vite-plugin-pwa injects some helper/root-level entries into Workbox's
-    // additionalManifestEntries (which runs after manifestTransforms, so they
-    // cannot be filtered there).
-    // In this Symfony-served app those URLs are not served at
-    // the paths Workbox precaches, so SW install fails with
-    // bad-precaching-response. Strip them from the generated sw.js after build.
-    {
-      name: 'pwa-strip-manifest-from-precache',
-      apply: 'build',
-      enforce: 'post',
-      closeBundle() {
-        const swPath = new URL('./public/sw.js', import.meta.url).pathname;
-        if (!existsSync(swPath)) return;
-        const before = readFileSync(swPath, 'utf8');
-        const after = before
-          .replace(/,\s*\{url:"manifest\.webmanifest",revision:"[^"]*"\}/g, '')
-          .replace(/,\s*\{url:"build\/registerSW\.js",revision:"[^"]*"\}/g, '');
-        if (before !== after) {
-          writeFileSync(swPath, after, 'utf8');
-          // eslint-disable-next-line no-console -- build plugin status message is intentional CLI output.
-          console.log(
-            '✓ pwa-strip-manifest-from-precache: removed manifest.webmanifest from sw.js precache list',
-          );
-        }
-      },
-    },
   ],
   css: {
     preprocessorOptions: {

@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <link rel="icon" href="{{ logo() }}"/>
+    {# A tenant without a logo has none to show: fall back to the app's own icon, or the browser asks for /favicon.ico (404). #}
+    {% set app_icon = logo() ?: asset('assets/images/nubit-icon.png') %}
+    <link rel="icon" href="{{ app_icon }}"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <meta name="theme-color" content="#000000"/>
     <meta name="description" content="Nubit ERP para vender, facturar y controlar tu negocio en Perú"/>
-    <link rel="apple-touch-icon" href="{{ logo() }}"/>
+    <link rel="apple-touch-icon" href="{{ app_icon }}"/>
     {#
     <link rel="manifest" href="{{ asset('assets/manifest.json') }}"/>
     #}

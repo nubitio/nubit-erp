@@ -26,6 +26,7 @@ final readonly class MercureCookieDecorator implements LoginResponseDecoratorInt
         private MercureSubscriberTokenService $mercureTokenService,
         private CookieFactory $cookieFactory,
         private TenantContext $tenantContext,
+        private MercureAudience $audience,
     ) {}
 
     public function decorate(JsonResponse $response, UserInterface $user, TokenPair $tokenPair, Request $request): void
@@ -36,7 +37,7 @@ final readonly class MercureCookieDecorator implements LoginResponseDecoratorInt
         // subscription with a silent 401.
         $tenantDomain = $this->tenantContext->getTenantDomain() ?? '';
         $tenantOrigin = '' !== $tenantDomain ? $request->getSchemeAndHttpHost() : '';
-        $audience = $request->getSchemeAndHttpHost() . '/.well-known/mercure';
+        $audience = $this->audience->forRequest($request);
 
         $response->headers->setCookie($this->cookieFactory->createSecureCookie(
             self::MERCURE_COOKIE,
