@@ -55,9 +55,11 @@ const CashMovementsDialog = lazy(() =>
 interface POSPageProps {
   /** Ends the session. Injected by the app, which owns authentication. */
   onSignOut?: () => void;
+  /** Where the header's back button goes; null when the user has nowhere else to go. */
+  exitTo?: string | null;
 }
 
-const POSPage = ({ onSignOut }: POSPageProps) => {
+const POSPage = ({ onSignOut, exitTo = null }: POSPageProps) => {
   const themeContext = useContext(ThemeContext);
   const resolvedTheme = themeContext?.theme ?? 'light';
 
@@ -617,6 +619,7 @@ const POSPage = ({ onSignOut }: POSPageProps) => {
       onCashMovements={() => setCashMovementsOpen(true)}
       onOpenProfile={() => openSettings('account')}
       onSignOut={onSignOut}
+      exitTo={exitTo}
       assistantEnabled={assistantEnabled}
       onAssistantClick={() => setAssistantOpen((open) => !open)}
       heldSalesCount={heldSales.length}

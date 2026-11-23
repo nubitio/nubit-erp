@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   mobileWorkspaceDestinations,
+  posExitPath,
   workspaceDestinations,
   workspaceSectionTitle,
 } from './workspaceNavigation';
@@ -71,4 +72,27 @@ it('uses the actual section for grouped routes and keeps dashboard naming unchan
   }
   expect(workspaceSectionTitle('/dashboard', menu, 'ERP')).toBe('Inicio');
   expect(workspaceSectionTitle('/other', menu, 'ERP')).toBe('ERP');
+});
+
+describe('posExitPath', () => {
+  const item = (path: string, items?: Array<{ text: string; path: string }>) =>
+    ({ text: path, path, items }) as never;
+
+  it('prefers Inicio when the user has it', () => {
+    expect(posExitPath([item('/pos'), item('/billing'), item('/dashboard')])).toBe('/dashboard');
+  });
+
+  it('falls back to the first other destination, grouped ones included', () => {
+    expect(
+      posExitPath([
+        item('/pos'),
+        { text: 'Finanzas', items: [{ text: 'A', path: '/treasury' }] } as never,
+      ]),
+    ).toBe('/treasury');
+  });
+
+  it('is null when the POS is all the user can reach', () => {
+    expect(posExitPath([item('/pos')])).toBeNull();
+    expect(posExitPath([])).toBeNull();
+  });
 });

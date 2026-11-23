@@ -1,6 +1,6 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ThemeProvider } from '@nubitio/ui';
 import { POSOperatorHeader } from './POSOperatorHeader';
@@ -114,6 +114,35 @@ describe('POSOperatorHeader bar', () => {
   it('names the register the cashier has open', () => {
     renderHeader({ cajaName: 'Caja 2' });
     expect(screen.getByTestId('pos-caja-badge').textContent).toMatch(/Abierta · Caja 2/);
+  });
+});
+
+describe('POSOperatorHeader back button', () => {
+  it('goes to the given destination instead of back in the history', async () => {
+    const { container } = render(
+      <MemoryRouter initialEntries={['/pos']}>
+        <ThemeProvider>
+          <Routes>
+            <Route path="/pos" element={<POSOperatorHeader {...base} exitTo="/dashboard" />} />
+            <Route path="/dashboard" element={<p>Inicio</p>} />
+          </Routes>
+        </ThemeProvider>
+      </MemoryRouter>,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Salir del POS' }));
+
+    expect(container.textContent).toContain('Inicio');
+  });
+
+  it('is not offered to a user who can only reach the POS', () => {
+    renderHeader({ exitTo: null });
+    expect(screen.queryByRole('button', { name: 'Salir del POS' })).toBeNull();
+  });
+
+  it('is not offered while it is unknown where it would go', () => {
+    renderHeader();
+    expect(screen.queryByRole('button', { name: 'Salir del POS' })).toBeNull();
   });
 });
 
