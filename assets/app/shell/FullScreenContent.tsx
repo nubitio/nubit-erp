@@ -2,7 +2,9 @@ import React, { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { useAuth } from '@app/contexts/auth';
 import { SettingsDialog } from '@app/profile';
+import { useWorkspaceMenu } from '@features/navigation';
 import { FULLSCREEN_ROUTE_PATHS } from './routePaths';
+import { posExitPath } from './components/workspaceNavigation';
 import { RouteErrorBoundary } from '../../shared/components/RouteErrorBoundary';
 
 const POSPage = lazy(() => import('@features/pos/POSPage'));
@@ -15,6 +17,9 @@ const FullScreenRouteLoading = () => (
 
 export const FullScreenContent = () => {
   const { signOut } = useAuth();
+  const menu = useWorkspaceMenu();
+  // Unknown while the menu loads: no button yet, rather than one that vanishes for a cashier.
+  const exitTo = menu.isLoading ? null : posExitPath(menu.items);
 
   return (
     <>
@@ -24,7 +29,7 @@ export const FullScreenContent = () => {
           element={
             <RouteErrorBoundary>
               <Suspense fallback={<FullScreenRouteLoading />}>
-                <POSPage onSignOut={signOut} />
+                <POSPage onSignOut={signOut} exitTo={exitTo} />
               </Suspense>
             </RouteErrorBoundary>
           }

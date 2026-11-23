@@ -52,6 +52,11 @@ interface POSOperatorHeaderProps {
   onOpenProfile?: () => void;
   /** Ends the user's session. A shift left open stays open on the server. */
   onSignOut?: () => void;
+  /**
+   * Where the back button goes. Without it there is no button: a user who can only reach the POS has
+   * nowhere to go back to, and their way out is the menu (profile, sign out).
+   */
+  exitTo?: string | null;
   assistantEnabled?: boolean;
   onAssistantClick?: () => void;
   heldSalesCount?: number;
@@ -83,6 +88,7 @@ export function POSOperatorHeader({
   onCashMovements,
   onOpenProfile,
   onSignOut,
+  exitTo = null,
   assistantEnabled = false,
   onAssistantClick,
   heldSalesCount = 0,
@@ -388,16 +394,20 @@ export function POSOperatorHeader({
     <header className="pos-operator-header pos-operator-header--bar">
       {/* ── Left: context data ── */}
       <div className="pos-operator-header__left">
-        <button
-          type="button"
-          className="pos-operator-header__back"
-          onClick={() => navigate(-1)}
-          aria-label="Salir del POS"
-        >
-          <i className="ph ph-arrow-left" aria-hidden="true" />
-        </button>
+        {exitTo && (
+          <>
+            <button
+              type="button"
+              className="pos-operator-header__back"
+              onClick={() => navigate(exitTo)}
+              aria-label="Salir del POS"
+            >
+              <i className="ph ph-arrow-left" aria-hidden="true" />
+            </button>
 
-        <div className="pos-operator-header__sep" />
+            <div className="pos-operator-header__sep" />
+          </>
+        )}
 
         <div className="pos-operator-header__ctx pos-operator-header__ctx--branch">
           <i className="ph ph-storefront" aria-hidden="true" />

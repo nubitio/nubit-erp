@@ -18,6 +18,16 @@ export function workspaceDestinations(menu: AdminMenuItem[]): AdminBottomNavigat
   return [...result.values()];
 }
 
+/**
+ * Where "leave the POS" goes: Inicio when the user has it, else the first other destination of their
+ * menu. `null` when the POS is all they can reach (a cashier), so there is nowhere to leave to and
+ * the POS offers no such button.
+ */
+export function posExitPath(menu: AdminMenuItem[]): string | null {
+  const others = workspaceDestinations(menu).filter((item) => item.path !== '/pos');
+  return others.find((item) => item.path === '/dashboard')?.path ?? others[0]?.path ?? null;
+}
+
 export function mobileWorkspaceDestinations(menu: AdminMenuItem[]): AdminBottomNavigationItem[] {
   const allowed = workspaceDestinations(menu);
   return ['/dashboard', '/pos', '/billing', '/customer', '/catalog'].flatMap((path) =>

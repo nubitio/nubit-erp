@@ -9,9 +9,9 @@
  */
 import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { AdminShell, AdminBottomNavigation, type AdminMenuItem } from '@nubitio/admin';
+import { AdminShell, AdminBottomNavigation } from '@nubitio/admin';
 import { userInformation } from '@app/userInformation';
-import { menuService } from '@features/navigation';
+import { useWorkspaceMenu } from '@features/navigation';
 import { useNotifications } from '@features/notifications';
 import { Drawer } from '@nubitio/ui';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
@@ -41,7 +41,7 @@ interface EfactAdminShellProps {
 export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShellProps) => {
   // Committed branch changes also refresh the auth context.
   const { user } = useAuth();
-  const [menuItems, setMenuItems] = useState<AdminMenuItem[]>([]);
+  const { items: menuItems } = useWorkspaceMenu();
   const [showBranchPicker, setShowBranchPicker] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [assistantOpen, setAssistantOpen] = useState(false);
@@ -81,19 +81,6 @@ export const EfactAdminShell = ({ title = 'Nubit ERP', children }: EfactAdminShe
     window.addEventListener('efact:assistant-open', onOpen);
     return () => window.removeEventListener('efact:assistant-open', onOpen);
   }, [assistantEnabled]);
-
-  useEffect(() => {
-    if (!runtimeConfig && !runtimeConfigError) {
-      return;
-    }
-
-    const roleId = userInformation().currentUserRoleId ?? 0;
-    const menuRequest = runtimeConfig
-      ? menuService.getMenuByRoleIdForRuntimeConfig(roleId, runtimeConfig)
-      : menuService.getMenuByRoleId(roleId);
-
-    menuRequest.then((response) => setMenuItems(response.data)).catch(() => setMenuItems([]));
-  }, [runtimeConfig, runtimeConfigError]);
 
   return (
     <>
