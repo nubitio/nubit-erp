@@ -348,6 +348,6 @@ contexts:
   Restaurant:
     namespace: App\Restaurant
     layer: Vertical
-    dependsOn: [Catalog]
+    dependsOn: [Catalog, Settings]
     publicContracts: []
     ownsTables: [restaurant_tables, restaurant_orders, restaurant_order_items, restaurant_areas]

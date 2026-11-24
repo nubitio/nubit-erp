@@ -191,6 +191,15 @@ export function normalizeMenuDestinations<T extends { path?: string; items?: T[]
 }
 
 function isAllowedMenuPath(path: string, runtimeConfig: TenantRuntimeConfig): boolean {
+  // The restaurant entitlement makes the module commercially available; it
+  // must still be selected as this tenant's vertical before its routes appear.
+  if (path.startsWith('restaurant/')) {
+    return (
+      runtimeConfig.profile.vertical === 'restaurant' &&
+      runtimeConfig.capabilities['restaurant.table_management']?.enabled === true
+    );
+  }
+
   const minTier = MENU_MIN_TIER.get(path);
   const currentTier = runtimeConfig.profile.navigationTier ?? 'standard';
 

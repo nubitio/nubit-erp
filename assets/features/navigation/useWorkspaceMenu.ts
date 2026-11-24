@@ -26,10 +26,12 @@ export function useWorkspaceMenu(): WorkspaceMenu {
     queryKey: ['workspace-menu', roleId, runtimeConfig ?? null],
     enabled: ready,
     queryFn: async () => {
+      // The raw role menu is broader than a tenant's commercial and vertical
+      // access. Never expose it when the config that narrows it is unavailable.
+      if (!runtimeConfig) return NO_ITEMS;
+
       try {
-        const response = runtimeConfig
-          ? await menuService.getMenuByRoleIdForRuntimeConfig(roleId, runtimeConfig)
-          : await menuService.getMenuByRoleId(roleId);
+        const response = await menuService.getMenuByRoleIdForRuntimeConfig(roleId, runtimeConfig);
         return response.data;
       } catch {
         return NO_ITEMS;

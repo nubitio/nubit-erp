@@ -6,9 +6,11 @@ namespace App\Settings\State;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
+use App\Settings\Capability\TenantMenuAvailabilityPolicy;
 use App\Settings\Dto\MenuDto;
 use App\Settings\Dto\SubMenuDto;
 use App\Settings\Entity\Menu;
+use App\Settings\Runtime\TenantRuntimeConfigProvider;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 
@@ -19,6 +21,8 @@ readonly class MenuProvider implements ProviderInterface
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
+        private ?TenantRuntimeConfigProvider $runtimeConfigProvider = null,
+        private TenantMenuAvailabilityPolicy $availabilityPolicy = new TenantMenuAvailabilityPolicy(),
     ) {}
 
     /**
@@ -27,14 +31,20 @@ readonly class MenuProvider implements ProviderInterface
     #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
     {
-        return $this->buildMenuForRole(intval($uriVariables['roleId']));
+        // Never return the raw role menu when commercial/vertical policy cannot
+        // be resolved. A broad role assignment is not an authorization policy.
+        if ($this->runtimeConfigProvider === null) {
+            return [];
+        }
+
+        return $this->buildMenuForRole(intval($uriVariables['roleId']), $this->runtimeConfigProvider->getConfig());
     }
 
     /**
      * @return iterable<MenuDTO>
-     *
+     * @param array<string, mixed>|null $runtimeConfig
      */
-    public function buildMenuForRole(int $roleId): iterable
+    public function buildMenuForRole(int $roleId, ?array $runtimeConfig = null): iterable
     {
         $menus = $this->getMenuForRole($roleId);
 
@@ -44,13 +54,27 @@ readonly class MenuProvider implements ProviderInterface
                 $items = [];
 
                 foreach ($menus as $child) {
-                    if ($child->getParent()?->getId() === $parent->getId()) {
+                    if (
+                        $child->getParent()?->getId() === $parent->getId()
+                        && (
+                            $runtimeConfig === null
+                            || $this->availabilityPolicy->allows((string) $child->getRoute(), $runtimeConfig)
+                        )
+                    ) {
                         $items[] = new SubMenuDto($child->getKeyName(), $this->absolutePath($child->getRoute()));
                     }
                 }
 
+                if ($items === []) {
+                    continue;
+                }
+
                 yield new MenuDto($parent->getKeyName(), $parent->getIcon() ?? '', '', $items);
-            } elseif ($parent->getParent() === null && is_string($route)) {
+            } elseif (
+                $parent->getParent() === null
+                && is_string($route)
+                && ($runtimeConfig === null || $this->availabilityPolicy->allows($route, $runtimeConfig))
+            ) {
                 yield new MenuDto($parent->getKeyName(), $parent->getIcon() ?? '', $this->absolutePath($route));
             }
         }
