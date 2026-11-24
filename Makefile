@@ -39,6 +39,8 @@ help:
 	@printf "  make test             Run backend and frontend tests\n"
 	@printf "  make test-core        Run sales/inventory/purchase kernel tests\n"
 	@printf "  make e2e-ci           Replicate the CI e2e job locally in Docker (isolated stack)\n"
+	@printf "  make api-types        Regenerate assets/api/types.generated.ts (run after API changes)\n"
+	@printf "  make api-types-check  Fail if the committed API types are stale (also runs in CI)\n"
 	@printf "  make logs             Tail web/vite/database/redis/otel logs\n"
 	@printf "  make shell-web        Open shell in web container\n"
 	@printf "  make shell-vite       Open shell in vite container\n"
@@ -74,6 +76,14 @@ migrate-control-plane:
 
 migrate-tenants:
 	$(EXEC_WEB) 'cd /app && $(PHP_DEV) bin/console app:tenants:migrate --no-interaction'
+
+# Regenerate / verify assets/api/types.generated.ts from the API. Run after changing
+# any ApiResource, DTO, State provider or route; CI fails PRs that forget.
+api-types:
+	bash scripts/api/app-types.sh
+
+api-types-check:
+	bash scripts/api/app-types.sh --check
 
 cache-clear:
 	$(EXEC_WEB) 'cd /app && $(PHP_DEV) bin/console cache:clear'
