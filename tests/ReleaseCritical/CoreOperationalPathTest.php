@@ -120,6 +120,46 @@ final class CoreOperationalPathTest extends KernelTestCase
             self::fail('The persisted sale has no ID.');
         }
         self::assertStringStartsWith($saleId, (string) $movement['source_id']);
+
+        $gateway = static::getContainer()->get(SalesWriteGateway::class);
+        static::assertInstanceOf(SalesWriteGateway::class, $gateway);
+        $failingGateway = $this->createMock(SalesWriteGateway::class);
+        $failingGateway
+            ->method('requireLockedOpenCashSessionForUser')
+            ->willReturnCallback(static function (int $sessionId, int $userId) use ($gateway): void {
+                $gateway->requireLockedOpenCashSessionForUser($sessionId, $userId);
+            });
+        $failingGateway
+            ->method('write')
+            ->willReturnCallback(static function (SaleRecord $sale, ?int $sessionId) use ($gateway): void {
+                $gateway->write($sale, $sessionId);
+            });
+        $failingGateway
+            ->expects(static::once())
+            ->method('writeCashSaleMovement')
+            ->willThrowException(new \RuntimeException('Drawer write failed after the sale was flushed.'));
+        $this->entityManager->clear();
+        $world = $this->fixture->seed('18.000000');
+        $failedSale = $this->newOperationalSale($world, PaymentMethod::CASH, '1');
+        try {
+            $this->processor($world, $failingGateway)->process($failedSale, new Post());
+            static::fail('A failed drawer write must abort the sale.');
+        } catch (ServiceException $e) {
+            static::assertStringContainsString(
+                'movimiento de caja',
+                $e->getMessage(),
+                $e->getPrevious()?->getMessage() ?? '',
+            );
+            static::assertEqualsWithDelta(
+                18.0,
+                (float) $this->fixture->onHand($world->warehouse, $world->product),
+                0.001,
+            );
+            static::assertSame(
+                0,
+                (int) $this->entityManager->getConnection()->fetchOne('SELECT COUNT(*) FROM sales WHERE id = ?', [$failedSale->getId()]),
+            );
+        }
     }
 
     public function testIdempotentReplayDoesNotDoubleStockOrCash(): void
@@ -448,14 +488,42 @@ final class CoreOperationalPathTest extends KernelTestCase
         self::assertSame(0, $count);
     }
 
-    public function testSaleWithoutOpenCashSessionIsRejected(): void
+    public function testOnlineCashSaleRequiresAnOpenDrawerAndCannotWriteToAnotherOperatorsDrawer(): void
     {
-        $world = $this->fixture->seed();
-        $this->fixture->closeSession($world->cashSession);
+        $world = $this->fixture->seed('10.000000');
+        $other = $this->fixture->seed('10.000000');
+        $connection = $this->entityManager->getConnection();
+        $connection->update(
+            'cash_sessions',
+            ['opened_by' => $other->user->getId()],
+            ['id' => $world->cashSession->getId()],
+        );
+        $connection->update(
+            'cash_sessions',
+            ['opened_by' => $world->user->getId()],
+            ['id' => $other->cashSession->getId()],
+        );
 
+        $sale = $this->newOperationalSale($world, PaymentMethod::CASH, '1');
+        try {
+            $this->processor($world)->process($sale, new Post());
+            static::fail('A POS sale must not post cash in a drawer opened by another operator.');
+        } catch (ConflictHttpException) {
+            static::assertEqualsWithDelta(
+                10.0,
+                (float) $this->fixture->onHand($world->warehouse, $world->product),
+                0.001,
+            );
+            static::assertSame(
+                0,
+                (int) $connection->fetchOne('SELECT COUNT(*) FROM sales WHERE id = ?', [$sale->getId()]),
+            );
+            static::assertSame(0, $this->fixture->cashMovementCount((string) $sale->getId()));
+        }
+
+        $this->fixture->closeSession($other->cashSession);
         $this->expectException(DomainProblemException::class);
         $this->expectExceptionMessageMatches('/caja abierta/');
-
         $this->processor($world)->process($this->newOperationalSale($world, PaymentMethod::CASH, '1'), new Post());
     }
 
@@ -502,7 +570,7 @@ final class CoreOperationalPathTest extends KernelTestCase
         return $sale;
     }
 
-    private function processor(CoreSaleWorld $world): SaleProcessor
+    private function processor(CoreSaleWorld $world, ?SalesWriteGateway $gateway = null): SaleProcessor
     {
         $container = static::getContainer();
 
@@ -541,7 +609,7 @@ final class CoreOperationalPathTest extends KernelTestCase
             $container->get(LoggerInterface::class),
             new BranchContextService($symfonySecurity, $jwt),
             $container->get(BranchRepository::class),
-            $container->get(SalesWriteGateway::class),
+            $gateway ?? $container->get(SalesWriteGateway::class),
             $container->get(CashSessionResolverInterface::class),
             $container->get(SaleSettlementPlanService::class),
             $container->get(DetractionCalculatorInterface::class),
