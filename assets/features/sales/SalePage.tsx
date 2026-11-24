@@ -405,6 +405,17 @@ export const SalePage = () => {
     documentsEnabled,
     canCreate: hasPermission('sales.create'),
   });
+  toolbar.selection = [];
+  toolbar.primary = hasPermission('sales.create')
+    ? [
+        {
+          text: 'Nueva venta',
+          icon: 'ph-plus',
+          type: 'primary',
+          onClick: () => navigate('/billing/sales/new'),
+        },
+      ]
+    : [];
 
   const rowActions = (row: DataRecord) => {
     const saleId = row.id != null ? String(row.id) : undefined;
@@ -437,6 +448,24 @@ export const SalePage = () => {
             addEventName: saleEvents.ADD,
             loadingEventName: FORM_EVENTS.LOADING,
           }),
+      },
+      {
+        text: 'Generar comprobante',
+        visible: hasPermission('sales.create'),
+        icon: 'ph-receipt',
+        onClick: () => makeInvoice(saleId),
+      },
+      {
+        text: 'Comprobantes',
+        visible: documentsEnabled,
+        icon: 'ph-files',
+        onClick: () => setDocumentsDialogSaleId(saleId),
+      },
+      {
+        text: 'Reemitir',
+        visible: hasPermission('sales.create') && replaceEnabled,
+        icon: 'ph-arrow-clockwise',
+        onClick: () => replaceRejected(saleId),
       },
       {
         text: 'Anular',
@@ -493,7 +522,7 @@ export const SalePage = () => {
             filterPresets={saleFilterPresets()}
             url={API_URL}
             fields={fields}
-            allowAdd={hasPermission('sales.create')}
+            allowAdd={false}
             toolbar={toolbar}
             rowActions={rowActions}
             detailUrl={saleEndpoints.items('{id}')}
