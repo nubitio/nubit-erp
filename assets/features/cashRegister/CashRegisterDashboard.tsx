@@ -1,50 +1,42 @@
 import './CashRegisterDashboard.scss';
-import cashRegisterDashboardFields from './components/fields/cashRegisterDashboardFields';
-import { DataGridView, type GridHandle } from '@nubitio/crud';
-import { getCoreApiBaseUrl } from '@nubitio/core';
-
-const API = getCoreApiBaseUrl();
 import { useNavigate } from 'react-router-dom';
-import { useRef } from 'react';
+import { Alert, EmptyState } from '@nubitio/ui';
+import { RegisterCard } from './components/RegisterCard';
+import { RecentShiftsTable } from './components/RecentShiftsTable';
+import { useCashboxRegisters } from './hooks/useCashboxOverview';
+import { summarizeRegisters } from './model/registersSummary';
 
+/** "Cajas" tab: a card per register and the latest shifts under them. */
 export const CashRegisterDashboard = () => {
-  const url = API + 'cash-registers/dashboard';
   const navigate = useNavigate();
-  const gridRef = useRef<GridHandle | null>(null);
-  const fields = cashRegisterDashboardFields(navigate);
-
-  const EVENTS = {};
-
-  const TOOLBAR = {
-    utility: [
-      {
-        text: 'Nueva caja',
-        icon: 'ph-plus-circle',
-        hint: 'Crear una caja para esta sucursal',
-        onClick: () => navigate('/cashbox/registers'),
-      },
-    ],
-  };
+  const { data, isLoading, isError } = useCashboxRegisters();
+  const registers = data ?? [];
+  const staleIds = new Set(summarizeRegisters(registers).stale.map((register) => register.id));
 
   return (
-    <div className="cash-register-dashboard-page">
-      <DataGridView
-        ref={gridRef}
-        id="cashbox"
-        title="Cajas"
-        url={url}
-        fields={fields}
-        events={EVENTS}
-        toolbar={TOOLBAR}
-        paging={false}
-        filterRow={false}
-        emptyState={{
-          title: 'Sin cajas',
-          description:
-            'Crea una caja para abrir turno, cobrar en efectivo y cerrar al final del día.',
-          icon: 'cash-register',
-        }}
-      />
+    <div className="cashbox-dashboard" data-testid="cashbox-dashboard">
+      {isError && <Alert tone="danger">No se pudieron cargar las cajas. Intenta actualizar.</Alert>}
+
+      {!isLoading && !isError && registers.length === 0 ? (
+        <EmptyState
+          title="Sin cajas"
+          description="Crea una caja en Configuración de cajas para abrir turno, cobrar en efectivo y cerrar al final del día."
+          icon="cash-register"
+        />
+      ) : (
+        <div className="cashbox-grid">
+          {registers.map((register) => (
+            <RegisterCard
+              key={register.id}
+              register={register}
+              stale={staleIds.has(register.id)}
+              onNavigate={navigate}
+            />
+          ))}
+        </div>
+      )}
+
+      <RecentShiftsTable limit={5} />
     </div>
   );
 };

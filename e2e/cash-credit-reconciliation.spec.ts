@@ -170,9 +170,13 @@ test('María: crédito 13.88, abono 3.88, Excel y cierre coinciden sin sumar deu
   const expectedAmount = (openingExpected + 3.88).toFixed(2);
   const cashPanel = page
     .locator('section')
-    .filter({ has: page.getByRole('heading', { name: 'Cuadre de efectivo', exact: true }) })
+    .filter({
+      has: page.getByRole('heading', { name: 'Efectivo esperado según el sistema', exact: true }),
+    })
     .last();
   await expect(cashPanel).toContainText(expectedAmount);
+  // The page counts by denomination; the exact total is typed in the "solo el total" mode.
+  await page.getByRole('button', { name: 'Prefiero ingresar solo el total' }).click();
   await page
     .getByRole('spinbutton', { name: 'Monto contado de Efectivo', exact: true })
     .fill(expectedAmount);

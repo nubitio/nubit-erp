@@ -14,6 +14,7 @@ final readonly class CashSessionXReportDto
      * left on credit. The drawer's own balance is `currentBalance`.
      *
      * @param list<CashSessionPaymentMethodSalesDto> $salesByPaymentMethod
+     * @param array{boletas: int, facturas: int, creditNotes: int} $documents
      */
     public function __construct(
         #[Groups(['cash_x_report:read'])]
@@ -52,5 +53,19 @@ final readonly class CashSessionXReportDto
         public string $receivableTotal = '0.00',
         #[Groups(['cash_x_report:read'])]
         public int $receivableOperations = 0,
+        /** Of `cashOut`, what went to the safe or the bank (withdrawals) rather than being spent. */
+        #[Groups(['cash_x_report:read'])]
+        public string $withdrawalsOut = '0.00',
+        /** Receipts issued in the shift: `boletas`, `facturas` and `creditNotes`. */
+        #[Groups(['cash_x_report:read'])]
+        #[ApiProperty(openapiContext: [
+            'type' => 'object',
+            'properties' => [
+                'boletas' => ['type' => 'integer'],
+                'facturas' => ['type' => 'integer'],
+                'creditNotes' => ['type' => 'integer'],
+            ],
+        ])]
+        public array $documents = ['boletas' => 0, 'facturas' => 0, 'creditNotes' => 0],
     ) {}
 }

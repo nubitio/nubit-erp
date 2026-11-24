@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Alert, ConfirmDialog } from '@nubitio/ui';
+import { formatDate, formatTime, shiftCode } from '../model/format';
 import { httpClient } from '@shared/api/HttpClient';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import toast from '@shared/lib/SharedUtils';
@@ -32,6 +34,8 @@ interface Props {
   onContinue: () => void;
   /** Only where the signed-in user owns the session: the list shows their own shift. */
   onViewSales?: () => void;
+  /** The full page's "Cancelar": back to the shift. Not used inside the POS dialog. */
+  onCancel?: () => void;
 }
 
 /**
@@ -44,6 +48,7 @@ export function CashCloseFlow({
   onClosed,
   onContinue,
   onViewSales,
+  onCancel,
 }: Props) {
   const gridRef = useRef<CashClosureGridHandle | null>(null);
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
@@ -87,7 +92,7 @@ export function CashCloseFlow({
 
     setIsClosing(true);
     cashRegisterService()
-      .closeCashRegister(sessionId, data)
+      .closeCashRegister(sessionId, data, gridRef.current?.getCloseDetails())
       .then((response) => {
         const result = response.data as { success?: boolean; message?: string };
         if (result?.success === false)
@@ -129,10 +134,9 @@ export function CashCloseFlow({
           setSessionContext(
             [
               session?.name,
-              currentBranchName,
               session?.cashier,
               session?.openedAt
-                ? `Abierta ${new Date(session.openedAt).toLocaleString('es-PE')}`
+                ? `Abierto el ${formatDate(session.openedAt)} a las ${formatTime(session.openedAt)}`
                 : null,
             ]
               .filter(Boolean)
@@ -167,6 +171,23 @@ export function CashCloseFlow({
         }}
         onContinue={onContinue}
         onViewSales={onViewSales}
+        pageHeader={
+          embedded || !onCancel
+            ? undefined
+            : {
+                title: `Cerrar turno ${shiftCode(sessionId)}`,
+                onCancel,
+                breadcrumb: (
+                  <nav aria-label="Ruta" className="cash-close__crumbs">
+                    <Link to="/cashbox/dashboard">Cajas y turnos</Link> /{' '}
+                    <Link to={`/cash-session/${sessionId}/movements`}>
+                      Turno {shiftCode(sessionId)}
+                    </Link>{' '}
+                    / <span>Cerrar turno</span>
+                  </nav>
+                ),
+              }
+        }
         closing={isClosing}
         onCloseRequest={() => {
           setCloseError(null);

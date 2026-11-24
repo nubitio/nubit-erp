@@ -72,9 +72,28 @@ class CashMovement
     #[ApiProperty(description: 'cash_movement.branch.label')]
     private ?Branch $branch = null;
 
+    /**
+     * What a person registers by hand, instead of a category: `income`, `expense` or `withdrawal` (cash taken to the
+     * safe). The system files it under its own reason; the person only writes the description. Input only.
+     */
+    #[ApiProperty(writable: true, readable: false)]
+    private ?string $kind = null;
+
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getKind(): ?string
+    {
+        return $this->kind;
+    }
+
+    public function setKind(?string $kind): static
+    {
+        $this->kind = $kind;
+
+        return $this;
     }
 
     public function getCashSession(): ?CashSession

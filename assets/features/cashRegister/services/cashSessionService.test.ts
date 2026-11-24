@@ -49,12 +49,12 @@ describe('cashSessionService', () => {
     );
   });
 
-  it('registers a movement against the session and the category by IRI, the amount as a decimal string', async () => {
+  it('registers a movement against the session by its kind, the amount as a decimal string', async () => {
     post.mockResolvedValue(reply({}));
 
     await cashSessionService.addMovement({
       sessionId: 371,
-      categoryId: 6,
+      kind: 'expense',
       amount: 12.5,
       description: 'Bolsas',
     });
@@ -63,25 +63,11 @@ describe('cashSessionService', () => {
       '/api/cash-movements',
       {
         cashSession: '/api/cash-sessions/371',
-        category: '/api/cash-movement-categories/6',
+        kind: 'expense',
         amount: '12.50',
         description: 'Bolsas',
       },
       { errorPresentation: 'inline' },
     );
-  });
-
-  it('offers only the active reasons a person may pick, never the ones the system records itself', async () => {
-    get.mockResolvedValue(
-      reply([
-        { id: 1, name: 'Gasto menor', type: 'expense', active: true, manual: true },
-        { id: 2, name: 'Inactiva', type: 'expense', active: false, manual: true },
-        { id: 3, name: 'Venta en efectivo', type: 'income', active: true, manual: false },
-      ]),
-    );
-
-    const categories = await cashSessionService.getMovementCategories();
-
-    expect(categories.map((category) => category.name)).toEqual(['Gasto menor']);
   });
 });

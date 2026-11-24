@@ -1,0 +1,113 @@
+// Finanzas > Cajas y turnos: custom layout (header, figures, warning, tabs) around the library components.
+.cashbox-hub {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-4) var(--page-padding) var(--page-padding);
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  &__crumbs {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+
+    span {
+      color: var(--text-primary);
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.02em;
+    color: var(--text-primary);
+  }
+
+  &__date {
+    margin: 0;
+    font-size: var(--font-size-md);
+    color: var(--text-secondary);
+  }
+
+  &__content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+}
+
+.cashbox-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+
+.cashbox-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+
+  &__label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+  }
+
+  &__value {
+    font-size: var(--font-size-3xl, 2rem);
+    font-weight: var(--font-weight-bold);
+    line-height: 1.15;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+
+    &.is-danger {
+      color: var(--status-danger-text, #b42121);
+    }
+  }
+
+  &__hint {
+    min-height: 1.25em;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+  }
+}
+
+.cashbox-tabs {
+  display: flex;
+  gap: var(--space-5);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border-subtle);
+
+  &__tab {
+    flex-shrink: 0;
+    margin-bottom: -1px;
+    padding: var(--space-2) 0;
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-medium, 500);
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+
+    &.is-active {
+      color: var(--accent-color);
+      font-weight: var(--font-weight-semibold);
+      border-bottom-color: var(--accent-color);
+    }
+  }
+}

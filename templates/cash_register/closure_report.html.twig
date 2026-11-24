@@ -1,102 +1,176 @@
+{# The closing report of a shift (Z): two pages. Everything comes from App\CashRegister\Service\ShiftReport. #}
+{% macro money(value) %}{{ value|number_format(2, '.', ',') }}{% endmacro %}
+{% macro treatment(name) %}
+    {%- set key = name|lower -%}
+    {%- if 'efectivo' in key -%}Entra a caja y se cuenta en el arqueo
+    {%- elseif 'tarjeta' in key -%}Se concilia con el cierre de lote del POS
+    {%- elseif 'yape' in key or 'plin' in key -%}Se concilia con el reporte de la app
+    {%- elseif 'transfer' in key or 'dep' in key -%}Se verifica en el extracto bancario
+    {%- else -%}Se concilia con el terminal, la app o el banco{%- endif -%}
+{% endmacro %}
+{% import _self as fmt %}
+{% set shift = report.shift %}
+{% set cash = report.cash %}
+{% set diff = cash.difference is not null ? cash.difference + 0 : null %}
+{% set outcome = diff is null ? 'Cerrado' : (diff == 0 ? 'Cerrado · cuadrado' : (diff < 0 ? 'Cerrado · faltante' : 'Cerrado · sobrante')) %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de cierre de caja</title>
+    <title>Reporte de turno T-{{ '%04d'|format(shift.id) }}</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 24px; color: #111; }
-        h1 { font-size: 20px; margin-bottom: 8px; }
-        h2 { font-size: 16px; margin: 12px 0 6px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-        th, td { padding: 6px 8px; border: 1px solid #ccc; font-size: 12px; }
-        th { background: #f5f5f5; text-align: left; }
-        .right { text-align: right; }
-        .muted { color: #666; font-size: 11px; }
-        .summary { margin-top: 12px; }
+        @page { size: A4; margin: 18mm 16mm 20mm; @bottom-left { content: "Generado por Nubit ERP el {{ 'now'|date('d/m/Y \\a \\l\\a\\s H:i') }}"; font-size: 8pt; color: #666; } @bottom-right { content: "Página " counter(page) " de " counter(pages); font-size: 8pt; color: #666; } }
+        body { font-family: Helvetica, Arial, sans-serif; color: #111; font-size: 9.5pt; }
+        h1 { font-size: 22pt; margin: 6mm 0 2mm; }
+        h2 { font-size: 12pt; margin: 7mm 0 2mm; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 8.5pt; padding: 2mm 2mm; border-bottom: 1.5px solid #111; }
+        td { padding: 2mm; border-bottom: 1px solid #ddd; }
+        .r { text-align: right; }
+        .mono { font-family: "Courier New", monospace; font-size: 8.5pt; }
+        .total td { border-top: 1.5px solid #111; font-weight: bold; }
+        .head { width: 100%; border-bottom: 2px solid #111; padding-bottom: 3mm; }
+        .head td { border: 0; padding: 0; }
+        .company { font-size: 13pt; font-weight: bold; }
+        .muted { color: #666; font-size: 8.5pt; }
+        .pill { display: inline-block; padding: 1mm 3mm; border: 1px solid #a7e0c4; background: #e6f6ee; color: #18794e; border-radius: 4mm; font-size: 9pt; vertical-align: middle; }
+        .pill.bad { border-color: #f3b6b6; background: #fdeaea; color: #b42121; }
+        .meta td { border: 0; padding: 1mm 2mm 1mm 0; width: 33%; vertical-align: top; }
+        .meta b { display: block; font-size: 10pt; }
+        .cards { margin: 5mm 0; }
+        .cards td { border: 1px solid #ccc; border-radius: 2mm; padding: 3mm; width: 25%; }
+        .cards b { display: block; font-size: 15pt; margin-top: 1mm; }
+        .twocol > tbody > tr > td { border: 0; vertical-align: top; width: 50%; padding: 0 3mm 0 0; }
+        .sign td { border: 0; text-align: center; padding-top: 22mm; width: 50%; }
+        .sign span { display: block; border-top: 1px solid #111; margin: 0 6mm 1mm; }
+        .page2 { page-break-before: always; }
     </style>
 </head>
 <body>
-    <h1>Reporte de cierre de caja</h1>
-    <div class="muted">
-        <div>Caja: {{ cashRegister.name }}</div>
-        <div>Turno: {{ cashShift.id }}</div>
-        <div>Abierto: {{ cashShift.openedAt|date('d/m/Y H:i') }}</div>
-        <div>Cerrado: {{ cashShift.closedAt ? cashShift.closedAt|date('d/m/Y H:i') : '—' }}</div>
-        <div>Cajero: {{ cashShift.openedBy }}</div>
-    </div>
+    <table class="head"><tr>
+        <td>
+            <div class="company">{{ report.company.name ?? 'Nubit ERP' }}</div>
+            <div class="muted">{% if report.company.ruc %}RUC {{ report.company.ruc }}{% endif %}{% if report.company.branch %} · {{ report.company.branch }}{% endif %}</div>
+        </td>
+        <td class="r muted">REPORTE Z<br><b class="mono" style="font-size:11pt;color:#111">Z-{{ '%07d'|format(shift.id) }}</b></td>
+    </tr></table>
 
-    <div class="summary">
-        <h2>Resumen</h2>
-        <table>
-            <tr>
-                <th>Saldo inicial</th>
-                <th>Ingresos</th>
-                <th>Egresos</th>
-                <th>Esperado</th>
-                <th>Contado</th>
-                <th>Diferencia</th>
-            </tr>
-            <tr>
-                <td class="right">{{ openingBalance|number_format(2, '.', ',') }}</td>
-                <td class="right">{{ income|number_format(2, '.', ',') }}</td>
-                <td class="right">{{ expense|number_format(2, '.', ',') }}</td>
-                <td class="right">{{ expectedAmount|number_format(2, '.', ',') }}</td>
-                <td class="right">{{ countedAmount|number_format(2, '.', ',') }}</td>
-                <td class="right">{{ difference|number_format(2, '.', ',') }}</td>
-            </tr>
-        </table>
-    </div>
+    <h1>Reporte de turno T-{{ '%04d'|format(shift.id) }} <span class="pill{{ diff is not null and diff != 0 ? ' bad' : '' }}">{{ outcome }}</span></h1>
 
-    {% if salesByPaymentMethod is defined and salesByPaymentMethod|length > 0 %}
-    <div class="section">
-      <h2>Ventas por forma de pago</h2>
-      <table>
-        <thead><tr><th>Forma de pago</th><th style="text-align:right">Total</th></tr></thead>
+    <table class="meta">
+        <tr>
+            <td><span class="muted">Caja</span><b>{{ shift.registerName }}</b></td>
+            <td><span class="muted">Cajero</span><b>{{ shift.cashier ?? '—' }}</b></td>
+            <td><span class="muted">{{ shift.closedBy ? 'Cerrado por' : 'Estado' }}</span><b>{{ shift.closedBy ?? (shift.status == 'closed' ? 'Cerrado' : 'Abierto') }}</b></td>
+        </tr>
+        <tr>
+            <td><span class="muted">Apertura</span><b>{{ shift.openedAt ? shift.openedAt|date('d/m/Y H:i') : '—' }}</b></td>
+            <td><span class="muted">Cierre</span><b>{{ shift.closedAt ? shift.closedAt|date('d/m/Y H:i') : '—' }}</b></td>
+            <td><span class="muted">Duración</span><b>{% if shift.openedAt and shift.closedAt %}{% set minutes = ((shift.closedAt|date('U')) - (shift.openedAt|date('U'))) // 60 %}{{ minutes // 60 }} h {{ minutes % 60 }} min{% else %}—{% endif %}</b></td>
+        </tr>
+    </table>
+
+    <table class="cards"><tr>
+        <td><span class="muted">Ventas del turno</span><b>S/ {{ fmt.money(report.sales.total) }}</b></td>
+        <td><span class="muted">Comprobantes emitidos</span><b>{{ report.documents.count }}</b></td>
+        <td><span class="muted">Efectivo esperado</span><b>S/ {{ fmt.money(cash.expected) }}</b></td>
+        <td><span class="muted">Diferencia total</span><b>S/ {{ diff is not null ? fmt.money(diff) : '—' }}</b></td>
+    </tr></table>
+
+    <h2>1. Ventas por comprobante</h2>
+    <table>
+        <thead><tr><th>Comprobante</th><th class="r">Cant.</th><th>Rango de numeración</th><th class="r">Op. gravada</th><th class="r">IGV (18 %)</th><th class="r">Total</th></tr></thead>
         <tbody>
-          {% for row in salesByPaymentMethod %}
-          <tr>
-            <td>{{ row.paymentMethod }}</td>
-            <td style="text-align:right">S/ {{ row.total }}</td>
-          </tr>
-          {% endfor %}
+        {% for row in report.documents.rows %}
+            <tr>
+                <td>{{ row.label }}</td><td class="r">{{ row.count }}</td>
+                <td class="mono">{{ row.ranges|join(' · ') }}</td>
+                <td class="r">{{ fmt.money(row.taxable) }}</td><td class="r">{{ fmt.money(row.igv) }}</td><td class="r">{{ fmt.money(row.total) }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6" class="muted">Sin comprobantes en este turno.</td></tr>
+        {% endfor %}
+            <tr class="total"><td>Total ventas</td><td class="r">{{ report.documents.count }}</td><td></td>
+                <td class="r">{{ fmt.money(report.documents.taxable) }}</td><td class="r">{{ fmt.money(report.documents.igv) }}</td><td class="r">{{ fmt.money(report.documents.total) }}</td></tr>
         </tbody>
-      </table>
-    </div>
-    {% endif %}
+    </table>
 
-    <div class="summary">
-        <h2>Movimientos</h2>
+    <h2>2. Ventas por medio de pago</h2>
+    <table>
+        <thead><tr><th>Medio de pago</th><th class="r">Oper.</th><th class="r">Importe</th><th class="r">% del total</th><th>Tratamiento en el cierre</th></tr></thead>
+        <tbody>
+        {% for method in report.sales.byMethod %}
+            <tr><td>{{ method.name }}</td><td class="r">{{ method.operations }}</td><td class="r">{{ fmt.money(method.amount) }}</td><td class="r">{{ method.percent }} %</td><td>{{ fmt.treatment(method.name) }}</td></tr>
+        {% endfor %}
+        {% if report.sales.credit.amount + 0 > 0 %}
+            <tr><td>Crédito</td><td class="r">{{ report.sales.credit.operations }}</td><td class="r">{{ fmt.money(report.sales.credit.amount) }}</td><td class="r">{{ report.sales.credit.percent }} %</td><td>No entra a caja; pasa a cuentas por cobrar</td></tr>
+        {% endif %}
+            <tr class="total"><td>Total</td><td></td><td class="r">{{ fmt.money(report.sales.total) }}</td><td class="r">100.0 %</td><td></td></tr>
+        </tbody>
+    </table>
+    <p class="muted">Los importes incluyen IGV. Solo el efectivo se cuenta en la caja; tarjeta, billeteras y transferencias se concilian con el terminal, la app o el banco.</p>
+
+    <div class="page2">
+        <h2 style="margin-top:0">3. Arqueo de efectivo</h2>
+        <table class="twocol"><tr>
+            <td>
+                <table>
+                    <tr><td>Fondo inicial</td><td class="r">S/ {{ fmt.money(cash.opening) }}</td></tr>
+                    <tr><td>+ Ventas en efectivo</td><td class="r">S/ {{ fmt.money(cash.cashSales) }}</td></tr>
+                    <tr><td>+ Ingresos</td><td class="r">S/ {{ fmt.money(cash.income) }}</td></tr>
+                    <tr><td>− Egresos</td><td class="r">S/ {{ fmt.money(cash.expenses) }}</td></tr>
+                    <tr><td>− Retiros de efectivo</td><td class="r">S/ {{ fmt.money(cash.withdrawals) }}</td></tr>
+                    <tr class="total"><td>Efectivo esperado</td><td class="r">S/ {{ fmt.money(cash.expected) }}</td></tr>
+                    {% if cash.counted is not null %}<tr class="total"><td>Efectivo contado</td><td class="r">S/ {{ fmt.money(cash.counted) }}</td></tr>{% endif %}
+                    {% if diff is not null %}<tr class="total"><td>Diferencia</td><td class="r">S/ {{ fmt.money(diff) }}{{ diff == 0 ? ' · cuadrado' : (diff < 0 ? ' · faltante' : ' · sobrante') }}</td></tr>{% endif %}
+                </table>
+                {% if cash.fundKept is not null and cash.withdrawnAtClose is not null %}
+                    <h2>Destino del efectivo</h2>
+                    <table>
+                        <tr><td>Fondo para el siguiente turno</td><td class="r">S/ {{ fmt.money(cash.fundKept ? cash.opening : 0) }}</td></tr>
+                        <tr class="total"><td>Retirado de la caja</td><td class="r">S/ {{ fmt.money(cash.withdrawnAtClose) }}</td></tr>
+                    </table>
+                {% endif %}
+            </td>
+            <td>
+                {% if cash.denominations %}
+                    <h2 style="margin-top:0">Conteo por denominación</h2>
+                    <table>
+                        <thead><tr><th>Denominación</th><th class="r">Cant.</th><th class="r">Subtotal</th></tr></thead>
+                        {% set counted = 0 %}
+                        {% for cents in cash.denominations|keys|sort|reverse %}
+                            {% set quantity = cash.denominations[cents] %}
+                            {% set value = cents / 100 %}
+                            {% set counted = counted + value * quantity %}
+                            <tr><td>{{ value >= 10 ? 'Billete' : 'Moneda' }} S/ {{ value == value|round ? value|round : value|number_format(2, '.', '') }}</td><td class="r">{{ quantity }}</td><td class="r">{{ fmt.money(value * quantity) }}</td></tr>
+                        {% endfor %}
+                        <tr class="total"><td>Total contado</td><td></td><td class="r">{{ fmt.money(counted) }}</td></tr>
+                    </table>
+                {% endif %}
+            </td>
+        </tr></table>
+
+        <h2>4. Egresos y retiros de efectivo</h2>
         <table>
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Categoría</th>
-                    <th>Tipo</th>
-                    <th>Descripción</th>
-                    <th class="right">Monto</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Hora</th><th>Tipo</th><th>Descripción</th><th class="r">Importe</th></tr></thead>
             <tbody>
-            {% for movement in movements %}
-                <tr>
-                    <td>{{ movement.createdAt|date('d/m/Y H:i') }}</td>
-                    <td>{{ movement.category.name ?? movement.category }}</td>
-                    <td>{{ movement.type == 'income' ? 'Ingreso' : 'Egreso' }}</td>
-                    <td>{{ movement.description }}</td>
-                    <td class="right">{{ movement.amount|number_format(2, '.', ',') }}</td>
-                </tr>
+            {% set outTotal = 0 %}
+            {% for row in report.outflows %}
+                {% set outTotal = outTotal + row.amount %}
+                <tr><td>{{ row.at|date('H:i') }}</td><td>{{ row.kind == 'withdrawal' ? 'Retiro' : 'Egreso' }}</td><td>{{ row.description }}</td><td class="r">−{{ fmt.money(row.amount) }}</td></tr>
             {% else %}
-                <tr><td colspan="5" class="muted">Sin movimientos.</td></tr>
+                <tr><td colspan="4" class="muted">Sin egresos ni retiros en este turno.</td></tr>
             {% endfor %}
+                <tr class="total"><td colspan="3">Total</td><td class="r">−{{ fmt.money(outTotal) }}</td></tr>
             </tbody>
         </table>
-    </div>
 
-    {% if note %}
-        <div class="summary">
-            <h2>Notas</h2>
-            <div>{{ note }}</div>
-        </div>
-    {% endif %}
+        <p><b>Observaciones del cierre:</b> {{ cash.note ?: 'sin observaciones' }}.</p>
+
+        <table class="sign"><tr>
+            <td><span></span><b>{{ shift.cashier ?? 'Cajero' }}</b><br><span class="muted" style="border:0">Cajero</span></td>
+            <td><span></span><b>{{ shift.closedBy ?? ' ' }}</b><br><span class="muted" style="border:0">Supervisor</span></td>
+        </tr></table>
+    </div>
 </body>
 </html>

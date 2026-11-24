@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Post;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Dto\CashRegisterCloseResponseDto;
 use App\CashRegister\Dto\CashRegisterOpenDto;
+use App\CashRegister\Dto\CashRegisterSummaryDto;
 use App\CashRegister\Entity\CashSession;
 use App\CashRegister\Repository\CashRegisterRepository;
 use App\CashRegister\State\CashRegisterCloseProcessor;
@@ -22,6 +23,7 @@ use App\CashRegister\State\CashRegisterDashboardProvider;
 use App\CashRegister\State\CashRegisterOpenProcessor;
 use App\CashRegister\State\CashRegistersByBranchProvider;
 use App\CashRegister\State\CashRegisterShiftsProvider;
+use App\CashRegister\State\CashRegisterSummaryProvider;
 use App\Efact\Domain\ActivatableInterface;
 use App\Organization\Entity\Branch;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -39,6 +41,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
             paginationEnabled: false,
             normalizationContext: ['groups' => ['cash_register_dashboard:read']],
             provider: CashRegisterDashboardProvider::class,
+            security: "is_granted('perm:cash.view')",
+        ),
+        new Get(
+            uriTemplate: '/cash-registers/summary',
+            normalizationContext: ['groups' => ['cash_register_summary:read']],
+            output: CashRegisterSummaryDto::class,
+            provider: CashRegisterSummaryProvider::class,
             security: "is_granted('perm:cash.view')",
         ),
         new Post(

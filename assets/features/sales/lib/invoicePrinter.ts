@@ -4,6 +4,8 @@ import { createLocalAgentInvoicePrinter } from './localAgentInvoicePrinter';
 
 export type InvoicePrinter = {
   initialize: () => Promise<void>;
+  /** Sends ESC/POS bytes, however the server builds them (a sale ticket, a shift report...). */
+  printDocument: (load: () => Promise<ArrayBuffer>) => Promise<void>;
   printSaleInvoice: (saleId: string) => Promise<void>;
 };
 
@@ -40,6 +42,10 @@ export const createInvoicePrinter = (): InvoicePrinter => {
     initialize: async () => {
       const printer = await getPrinter();
       await printer.initialize();
+    },
+    printDocument: async (load: () => Promise<ArrayBuffer>) => {
+      const printer = await getPrinter();
+      await printer.printDocument(load);
     },
     printSaleInvoice: async (saleId: string) => {
       const printer = await getPrinter();
