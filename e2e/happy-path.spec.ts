@@ -140,30 +140,6 @@ async function clickGridToolbarButton(page: Page, buttonText: string) {
 }
 
 /**
- * Hace click en un botón del diálogo CRUD visible.
- */
-async function clickDialogButton(page: Page, buttonText: string) {
-  const alternatives: Record<string, RegExp> = {
-    Guardar: /^(Guardar|Save)$/i,
-    Cancelar: /^(Cancelar|Cancel)$/i,
-  };
-  const text = alternatives[buttonText] ?? new RegExp(`^${buttonText}$`, 'i');
-  const btn = page.getByRole('dialog').last().getByRole('button', { name: text });
-  await btn.waitFor({ state: 'visible', timeout: 8000 });
-  await btn.click();
-}
-
-function crudDialog(page: Page, name: RegExp = /nuevo|new|editar|edit/i) {
-  return page.getByRole('dialog', { name }).or(page.getByRole('region', { name })).last();
-}
-
-function crudDialogBody(page: Page, name?: RegExp) {
-  return crudDialog(page, name).locator(
-    '.crud-drawer__body, .nb-crud-page-shell__body, .nb-dialog__body, .nb-crud-dialog__body',
-  );
-}
-
-/**
  * Filtra el DxDataGrid activo por la columna "Nombre" usando el FilterRow.
  * El FilterRow de DX usa textboxes — encontramos el que corresponde a la columna Nombre
  * buscando la celda de filtro que está debajo del columnheader "Columna Nombre".
@@ -502,14 +478,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
     await gotoProtectedRoute(page, 'cashbox');
     await waitForGridLoad(page);
     // Check that the nb-datagrid toolbar with "Cajas" title is visible
-    await expect(
-      page.locator('.nb-datagrid__toolbar').filter({ hasText: /caja/i }).first(),
-    ).toBeVisible({
-      timeout: 15000,
-    });
-
-    // Wait for at least one data row to appear before checking button state
-    await page.locator('.nb-datagrid__row').first().waitFor({ state: 'visible', timeout: 15000 });
+    // Wait for at least one register card to appear before checking button state
+    await expect(page.getByTestId('cashbox-card').first()).toBeVisible({ timeout: 15000 });
 
     // Check if there is a closed cash register (Abrir button) or an open one (Ver Movimientos)
     const openBtn = page.getByTestId('cash-btn-open').first();
@@ -579,10 +549,8 @@ test.describe('Happy Path — flujo completo de venta', () => {
     openedCashSessionId = match ? match[1] : null;
     expect(openedCashSessionId).not.toBeNull();
 
-    // Verify we are on the movements page
-    await expect(
-      page.locator('.nb-datagrid__toolbar').filter({ hasText: 'Movimientos de caja' }).first(),
-    ).toBeVisible({ timeout: 10000 });
+    // Verify we are on the shift detail page
+    await expect(page.getByTestId('shift-detail')).toBeVisible({ timeout: 10000 });
   });
 
   // ───────────────────────────────────────────────────────────────────────────
@@ -943,70 +911,34 @@ test.describe('Happy Path — flujo completo de venta', () => {
         await page.goto(`${BASE_URL}/cash-session/${openedCashSessionId}/movements`);
         await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
       }
-      await waitForGridLoad(page);
-      // Check nb-datagrid toolbar for movements title
-      await expect(
-        page.locator('.nb-datagrid__toolbar').filter({ hasText: 'Movimientos de caja' }).first(),
-      ).toBeVisible({ timeout: 15000 });
+      // La pantalla del turno muestra los movimientos y los paneles de efectivo.
+      await expect(page.getByTestId('shift-detail')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('shift-ledger')).toBeVisible({ timeout: 15000 });
     });
 
-    await test.step('Abrir formulario de nuevo movimiento', async () => {
-      await clickGridToolbarButton(page, 'Nuevo');
-      // DxDialog opens in ADD mode with title 'Nuevo' (DxDialog.tsx line 65: payload?.title ?? 'Nuevo')
-      // The title prop "Movimiento de caja" in CashMovements.tsx is the initial state only.
-      await expect(crudDialog(page, /nuevo|new/i)).toBeVisible({ timeout: 12000 });
-    });
-
-    await test.step('Llenar campos del movimiento', async () => {
-      const dialogBody = crudDialogBody(page, /nuevo|new/i);
-      // cashMovementsFields: name('category').label('Categoría') — DxSelectBox ENTITY required
-      // Requiere categorías de movimiento en BD (seed de datos de prueba)
-      await test.step('Seleccionar categoría de movimiento', async () => {
-        // NativeFormView: entity field renders NativeEntitySelect with id="nb-form-category"
-        const categoryInput = dialogBody
-          .locator('#nb-form-category, input[role="combobox"]')
-          .first();
-        await categoryInput.waitFor({ state: 'visible', timeout: 5000 });
-        await categoryInput.click();
-
-        // NativeEntitySelect dropdown — wait for options to load
-        const firstOption = page.locator('[role="option"]').first();
-        await firstOption.waitFor({ state: 'visible', timeout: 8000 });
-        await firstOption.click();
+    await test.step('Abrir formulario de ingreso', async () => {
+      await page.getByTestId('shift-register-income').click();
+      await expect(page.getByRole('dialog', { name: 'Registrar ingreso' })).toBeVisible({
+        timeout: 12000,
       });
-
-      // cashMovementsFields: name('type').label('Tipo') — DxSelectBox ENUM
-      // visibleOnForm(false) en el código... verifiquemos si realmente se muestra
-      // Nota: en cashMovementsFields.tsx el campo type tiene .visibleOnForm(false) en false,
-      // por lo que NO aparece en el formulario. DX lo envía con un valor por defecto o null.
-
-      // cashMovementsFields: name('description').label('Descripcion') — DxTextArea required
-      const movementDescription = `Movimiento test ${ts}`;
-      createdMovementRowText = movementDescription; // guardamos para el paso 8
-
-      // NativeFormView: textarea with id="nb-form-description" (label Descripcion)
-      const descInput = dialogBody
-        .locator('#nb-form-description, [aria-label="Descripcion"]')
-        .first();
-      await descInput.waitFor({ state: 'visible', timeout: 6000 });
-      await descInput.fill(movementDescription);
-      await page.keyboard.press('Tab');
-
-      // NativeFormView: number input with id="nb-form-amount"
-      const montoInput = dialogBody.locator('#nb-form-amount, input[aria-label="Monto"]').first();
-      await montoInput.fill('50');
-      await page.keyboard.press('Tab');
     });
 
-    await test.step('Guardar movimiento y verificar en la lista', async () => {
-      await clickDialogButton(page, 'Guardar');
+    const dialog = page.getByRole('dialog', { name: 'Registrar ingreso' });
+    await test.step('Llenar campos del ingreso', async () => {
+      const movementDescription = `Movimiento test ${ts}`;
+      createdMovementRowText = movementDescription; // guardamos para el paso 9
+      await dialog.getByLabel('Motivo').fill(movementDescription);
+      await dialog.getByLabel('Monto (S/)').fill('50');
+    });
 
-      await expect(crudDialog(page, /nuevo|new/i)).toBeHidden({ timeout: 15000 });
-      await waitForGridLoad(page);
+    await test.step('Guardar ingreso y verificar en la lista', async () => {
+      await dialog.getByTestId('cash-movement-submit-btn').click();
+      await expect(dialog).toBeHidden({ timeout: 15000 });
 
-      // Verificar que el movimiento aparece en el grid
       await expect(
-        page.locator('.nb-datagrid__row').filter({ hasText: createdMovementRowText! }),
+        page
+          .getByTestId('shift-ledger')
+          .getByRole('row', { name: new RegExp(createdMovementRowText!) }),
       ).toBeVisible({ timeout: 15000 });
     });
   });
@@ -1015,32 +947,17 @@ test.describe('Happy Path — flujo completo de venta', () => {
   // PASO 9 — Movimientos append-only (sin edición)
   // ───────────────────────────────────────────────────────────────────────────
   test('09 - Movimientos de caja son append-only', async () => {
+    const movementRow = page
+      .getByTestId('shift-ledger')
+      .getByRole('row', { name: new RegExp(createdMovementRowText!) });
+
     await test.step('El movimiento creado sigue visible con el monto original', async () => {
-      const movementRow = page
-        .locator('.nb-datagrid__row')
-        .filter({ hasText: createdMovementRowText! });
-      await movementRow.waitFor({ state: 'visible', timeout: 10000 });
+      await expect(movementRow).toBeVisible({ timeout: 10000 });
       await expect(movementRow).toContainText('50');
     });
 
-    await test.step('No hay acción Editar en el menú de fila', async () => {
-      const movementRow = page
-        .locator('.nb-datagrid__row')
-        .filter({ hasText: createdMovementRowText! });
-      await movementRow.click();
-
-      const rowActionsButton = movementRow.locator('.nb-datagrid__row-actions button').first();
-      const hasActions = await rowActionsButton.isVisible({ timeout: 3000 }).catch(() => false);
-      if (!hasActions) {
-        return;
-      }
-
-      await rowActionsButton.click();
-      const editBtn = page
-        .locator('.nb-datagrid__row-actions-popover button')
-        .filter({ hasText: /editar|edit/i });
-      await expect(editBtn).toHaveCount(0);
-      await page.keyboard.press('Escape');
+    await test.step('No hay acción Editar ni Eliminar en la fila', async () => {
+      await expect(movementRow.getByRole('button', { name: /editar|eliminar/i })).toHaveCount(0);
     });
   });
 
@@ -1056,17 +973,20 @@ test.describe('Happy Path — flujo completo de venta', () => {
       }
       expect(openedCashSessionId, 'cashSessionId debe estar disponible del paso 4').not.toBeNull();
       await page.goto(`${BASE_URL}/cash-session/${openedCashSessionId}/close`);
-      // CashRegisterClose renders an h1.cash-close__title (custom component, not a CRUD grid)
-      await expect(page.getByRole('heading', { name: 'Cierre de caja', exact: true })).toBeVisible({
+      // CashRegisterClose renders the page header "Cerrar turno T-xxxx" (custom component, not a CRUD grid)
+      await expect(page.getByRole('heading', { name: /^Cerrar turno/ })).toBeVisible({
         timeout: 20000,
       });
     });
 
     await test.step('Ingresar montos contados y justificar diferencias', async () => {
-      const counts = page.locator('input.cash-close__input--num');
+      await page.getByRole('button', { name: 'Prefiero ingresar solo el total' }).click();
+      const counts = page.getByRole('spinbutton', { name: /^Monto contado de / });
       await expect(counts.first()).toBeVisible();
       for (const input of await counts.all()) await input.fill('0');
-      for (const reason of await page.getByPlaceholder('Explica el sobrante o faltante').all())
+      // One reason covers the whole difference, and only shows up when there is one.
+      const reason = page.getByRole('textbox', { name: 'Motivo de la diferencia', exact: true });
+      if (await reason.isVisible({ timeout: 2000 }).catch(() => false))
         await reason.fill('Diferencia de prueba E2E');
       await expect(page.getByTestId('cash-close-btn')).toBeEnabled();
     });
@@ -1114,19 +1034,14 @@ test.describe('Happy Path — flujo completo de venta', () => {
         )
         .catch(() => {});
       await waitForGridLoad(page);
-      // Check nb-datagrid toolbar for cashbox dashboard
-      await expect(
-        page.locator('.nb-datagrid__toolbar').filter({ hasText: /caja/i }).first(),
-      ).toBeVisible({
-        timeout: 15000,
-      });
+      // Cada caja es una tarjeta en el dashboard de cajas.
+      await expect(page.getByTestId('cashbox-card').first()).toBeVisible({ timeout: 15000 });
 
       // Verificación best-effort del estado final en dashboard.
-      await waitForGridLoad(page);
       await expect(
         page
-          .locator('.nb-datagrid__row')
-          .filter({ hasText: /cerrada|abierta|ci e2e branch|caja/i })
+          .getByTestId('cashbox-card')
+          .filter({ hasText: /cerrada|abierta|arqueo pendiente|ci e2e branch|caja/i })
           .first(),
       ).toBeVisible({ timeout: 15000 });
     });

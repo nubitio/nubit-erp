@@ -8,25 +8,20 @@ type CashRegisterDashboardRow = {
 };
 
 async function waitForCashboxGrid(page: Page) {
-  await expect(
-    page.locator('.nb-datagrid__toolbar').filter({ hasText: /caja/i }).first(),
-  ).toBeVisible({
-    timeout: 15000,
-  });
-  await page.locator('.nb-datagrid__row').first().waitFor({ state: 'visible', timeout: 15000 });
+  await expect(page.getByTestId('cashbox-card').first()).toBeVisible({ timeout: 15000 });
 }
 
 function cashOpenButton(page: Page) {
   return page
     .getByTestId('cash-btn-open')
-    .or(page.locator('.nb-datagrid__row').getByRole('button', { name: /^Abrir$/i }))
+    .or(page.getByTestId('cashbox-card').getByRole('button', { name: /^Abrir turno$/i }))
     .first();
 }
 
 function cashMovementsButton(page: Page) {
   return page
     .getByTestId('cash-btn-movements')
-    .or(page.locator('.nb-datagrid__row').getByRole('button', { name: /movimientos/i }))
+    .or(page.getByTestId('cashbox-card').getByRole('button', { name: /^Ver turno$/i }))
     .first();
 }
 

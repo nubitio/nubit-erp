@@ -116,7 +116,7 @@ it('returns a 404 when the session does not exist', function (): void {
     expect($response->getStatusCode())->toBe(Response::HTTP_NOT_FOUND);
 });
 
-it('aggregates income/expense and exports the rendered closure report as a PDF', function (): void {
+it('reads the shift from the shared report and exports the rendered closure report as a PDF', function (): void {
     $sessionId = insertClosureReportFixtures($this->connection);
 
     $capturedContent = null;
@@ -152,5 +152,7 @@ it('aggregates income/expense and exports the rendered closure report as a PDF',
         ->and($capturedContent)
         ->toContain('20.00') // expense
         ->and($capturedContent)
-        ->toContain('Efectivo test');
+        ->toContain('Sucursal de prueba') // the branch, from the session
+        ->and($capturedContent)
+        ->toContain('Retiro de prueba'); // the expense listed on the second page
 });

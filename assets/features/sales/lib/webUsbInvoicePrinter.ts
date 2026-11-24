@@ -17,6 +17,8 @@ const THERMAL_PRINTER_FILTERS: USBDeviceFilter[] = [
 
 type WebUsbInvoicePrinter = {
   initialize: () => Promise<void>;
+  /** Sends ESC/POS bytes, however the server builds them (a sale ticket, a shift report...). */
+  printDocument: (load: () => Promise<ArrayBuffer>) => Promise<void>;
   printSaleInvoice: (saleId: string) => Promise<void>;
 };
 
@@ -121,17 +123,16 @@ export const createWebUsbInvoicePrinter = (): WebUsbInvoicePrinter => {
     // No paired device found → do nothing. The picker will appear on first print.
   };
 
-  const printSaleInvoice = async (saleId: string): Promise<void> => {
+  const printDocument = async (load: () => Promise<ArrayBuffer>): Promise<void> => {
     const d = await getOrRequestDevice();
     await openDevice(d);
     const endpointNumber = getEndpointNumber(d);
 
     await new Promise<void>((resolve, reject) => {
-      saleService
-        .printInvoice(saleId)
-        .then(async (response) => {
+      load()
+        .then(async (bytes) => {
           try {
-            const data = new Uint8Array(response.data);
+            const data = new Uint8Array(bytes);
             // Split into chunks to avoid USB transfer size limits (~16 KB)
             const CHUNK_SIZE = 16384;
             for (let offset = 0; offset < data.length; offset += CHUNK_SIZE) {
@@ -147,5 +148,8 @@ export const createWebUsbInvoicePrinter = (): WebUsbInvoicePrinter => {
     });
   };
 
-  return { initialize, printSaleInvoice };
+  const printSaleInvoice = (saleId: string): Promise<void> =>
+    printDocument(() => saleService.printInvoice(saleId).then((response) => response.data));
+
+  return { initialize, printDocument, printSaleInvoice };
 };

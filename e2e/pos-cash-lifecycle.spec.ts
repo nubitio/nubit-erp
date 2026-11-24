@@ -128,10 +128,9 @@ test('el cajero abre, mueve efectivo y cierra la caja sin salir del POS', async 
     const dialog = page.getByRole('dialog', { name: 'Movimientos de caja' });
     await expect(dialog.getByText('Saldo en caja')).toBeVisible({ timeout: 15_000 });
 
-    await dialog.getByRole('combobox', { name: 'Categoría' }).click();
-    await page.getByRole('option', { name: /Gasto de caja chica/ }).click();
+    await dialog.getByRole('radio', { name: 'Egreso' }).check();
     await dialog.getByLabel(/Monto/).fill('12.50');
-    await dialog.getByLabel(/Descripción/).fill('Bolsas y cinta de embalaje');
+    await dialog.getByLabel(/Motivo/).fill('Bolsas y cinta de embalaje');
     await dialog.getByTestId('cash-movement-submit-btn').click();
 
     await expect(dialog.getByTestId('cash-movements-list')).toContainText('Bolsas y cinta');
@@ -378,7 +377,7 @@ test('Cajas y turnos vive en Finanzas, no como ítem suelto', async ({ page }) =
   await sidebar.getByRole('button', { name: 'Cajas y turnos' }).click();
   await expect(page).toHaveURL(/\/cashbox\/dashboard/);
   // The sections stay reachable from the page itself: they are not sidebar sub-items.
-  for (const section of ['Cajas', 'Registros', 'Categorías']) {
+  for (const section of ['Cajas', 'Historial de turnos', 'Configuración de cajas']) {
     await expect(page.getByText(section, { exact: true }).first()).toBeVisible();
   }
 });

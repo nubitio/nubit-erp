@@ -10,6 +10,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Accounting\Message\EconomicEvent;
 use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Enum\CashMovementType;
+use App\CashRegister\Service\MovementCategoryResolver;
 use App\Identity\Security\Security;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
@@ -34,6 +35,7 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
     public function __construct(
         private Connection $connection,
         private Security $security,
+        private MovementCategoryResolver $categories,
         private ?MessageBusInterface $messageBus = null,
     ) {}
 
@@ -65,19 +67,8 @@ readonly class CashMovementWriteProcessor implements ProcessorInterface
             throw new UnprocessableEntityHttpException('El campo cashSession es obligatorio.');
         }
 
-        $category = $data->getCategory();
         $amount = $data->getAmount() ?? '0.00';
-        if ($category === null || $category->getId() === null) {
-            throw new UnprocessableEntityHttpException('El campo category es obligatorio.');
-        }
-        $categoryId = $category->getId();
-        // Sales, collections, refunds and count differences are recorded by the system itself; letting a person
-        // pick them would count the same money twice.
-        if (!$category->isManual()) {
-            throw new UnprocessableEntityHttpException(
-                'Ese motivo lo registra el sistema. Elige un ingreso o egreso manual.',
-            );
-        }
+        $categoryId = $this->categories->resolve($data);
         if (!is_numeric($amount) || (float) $amount <= 0) {
             throw new UnprocessableEntityHttpException('El monto debe ser un número mayor que cero.');
         }

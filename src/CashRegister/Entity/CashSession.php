@@ -13,11 +13,15 @@ use ApiPlatform\Metadata\Post;
 use App\CashRegister\Dto\CashRegisterCloseDto;
 use App\CashRegister\Dto\CashRegisterCloseResponseDto;
 use App\CashRegister\Dto\CashSessionClosureSummaryDto;
+use App\CashRegister\Dto\CashSessionLedgerDto;
+use App\CashRegister\Dto\CashSessionRecentDto;
 use App\CashRegister\Dto\CashSessionXReportDto;
 use App\CashRegister\Repository\CashSessionRepository;
 use App\CashRegister\State\CashRegisterCloseProcessor;
 use App\CashRegister\State\CashSessionClosureSummaryProvider;
+use App\CashRegister\State\CashSessionLedgerProvider;
 use App\CashRegister\State\CashSessionMovementsProvider;
+use App\CashRegister\State\CashSessionRecentProvider;
 use App\CashRegister\State\CashSessionXReportProvider;
 use App\Identity\Entity\User;
 use App\Organization\Entity\Branch;
@@ -31,8 +35,23 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Table(name: 'cash_sessions')]
 #[ApiResource(
     operations: [
+        new GetCollection(
+            uriTemplate: '/cash-sessions/recent',
+            paginationEnabled: false,
+            normalizationContext: ['groups' => ['cash_session_recent:read']],
+            output: CashSessionRecentDto::class,
+            provider: CashSessionRecentProvider::class,
+            security: "is_granted('perm:cash.view')",
+        ),
         new GetCollection(security: "is_granted('perm:cash.view')"),
         new Get(security: "is_granted('perm:cash.view')"),
+        new Get(
+            uriTemplate: '/cash-sessions/{id}/ledger',
+            normalizationContext: ['groups' => ['cash_session_ledger:read']],
+            output: CashSessionLedgerDto::class,
+            provider: CashSessionLedgerProvider::class,
+            security: "is_granted('perm:cash.view')",
+        ),
         new GetCollection(
             uriTemplate: '/cash-sessions/{id}/movements',
             uriVariables: [
@@ -148,6 +167,22 @@ class CashSession
     #[ORM\Column(length: 255, nullable: true)]
     #[ApiProperty(description: 'cash_session.close_note.label')]
     private ?string $closeNote = null;
+
+    /**
+     * How the cash was counted at the closing: denomination in cents => quantity. Null when the total was typed.
+     *
+     * @var array<int|string, int>|null
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $countedDenominations = null;
+
+    /** Whether the opening fund stayed in the drawer for the next shift; null when it was not asked. */
+    #[ORM\Column(nullable: true)]
+    private ?bool $openingFundKept = null;
+
+    /** Cash taken out of the drawer at the closing (what was counted, less the fund that stayed). */
+    #[ORM\Column(type: Types::DECIMAL, precision: 12, scale: 2, nullable: true)]
+    private ?string $cashWithdrawnAtClose = null;
 
     #[Groups(['cash_session:read'])]
     #[ORM\Column]
@@ -304,6 +339,44 @@ class CashSession
     public function setCloseNote(?string $closeNote): static
     {
         $this->closeNote = $closeNote;
+
+        return $this;
+    }
+
+    /** @return array<int|string, int>|null */
+    public function getCountedDenominations(): ?array
+    {
+        return $this->countedDenominations;
+    }
+
+    /** @param array<int|string, int>|null $countedDenominations */
+    public function setCountedDenominations(?array $countedDenominations): static
+    {
+        $this->countedDenominations = $countedDenominations;
+
+        return $this;
+    }
+
+    public function getOpeningFundKept(): ?bool
+    {
+        return $this->openingFundKept;
+    }
+
+    public function setOpeningFundKept(?bool $openingFundKept): static
+    {
+        $this->openingFundKept = $openingFundKept;
+
+        return $this;
+    }
+
+    public function getCashWithdrawnAtClose(): ?string
+    {
+        return $this->cashWithdrawnAtClose;
+    }
+
+    public function setCashWithdrawnAtClose(?string $cashWithdrawnAtClose): static
+    {
+        $this->cashWithdrawnAtClose = $cashWithdrawnAtClose;
 
         return $this;
     }

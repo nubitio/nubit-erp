@@ -104,9 +104,9 @@ final readonly class CspNonceListener
         $response->headers->set('Content-Security-Policy', implode('; ', [
             "default-src 'self'",
             "script-src 'self' 'nonce-{$nonce}' https://cdn.jsdelivr.net",
-            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://fonts.googleapis.com",
             $imgSrc,
-            "font-src 'self' data: https://cdn.jsdelivr.net",
+            "font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com https://unpkg.com",
             // 'self' for API calls; tenant host (both schemes) for Mercure SSE;
             // localhost HTTP for efact-hardware-agent;
             // localhost ws/wss for QZ Tray desktop print agent.

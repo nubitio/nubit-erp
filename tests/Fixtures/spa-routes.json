@@ -35,6 +35,7 @@
     "/cashbox/control",
     "/cashbox/dashboard",
     "/cashbox/registers",
+    "/cashbox/shifts",
     "/catalog",
     "/catalog/categories",
     "/catalog/payment-methods",

@@ -36,8 +36,8 @@ export const createLocalAgentInvoicePrinter = (): InvoicePrinter => {
     if (!ok) throw new LocalAgentNotAvailableError();
   };
 
-  const printSaleInvoice = async (saleId: string): Promise<void> => {
-    const response = await saleService.printInvoice(saleId).then((r) => r.data);
+  const printDocument = async (load: () => Promise<ArrayBuffer>): Promise<void> => {
+    const response = await load();
 
     let res: Response;
     try {
@@ -61,5 +61,8 @@ export const createLocalAgentInvoicePrinter = (): InvoicePrinter => {
     }
   };
 
-  return { initialize, printSaleInvoice };
+  const printSaleInvoice = (saleId: string): Promise<void> =>
+    printDocument(() => saleService.printInvoice(saleId).then((r) => r.data));
+
+  return { initialize, printDocument, printSaleInvoice };
 };

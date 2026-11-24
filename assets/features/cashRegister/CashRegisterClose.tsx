@@ -60,6 +60,7 @@ export const CashRegisterClose = () => {
       sessionId={sessionId}
       onClosed={() => navigate('/cashbox/dashboard')}
       onContinue={() => navigate('/pos')}
+      onCancel={() => navigate(`/cash-session/${sessionId}/movements`)}
     />
   );
 };

@@ -7,19 +7,24 @@ import {
   Button,
   DescriptionList,
   EmptyState,
-  Combobox,
   FormField,
+  RadioGroup,
   Skeleton,
   Stack,
   TextField,
-  type ComboboxOption,
 } from '@nubitio/ui';
 import toast from '@shared/lib/SharedUtils';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { serverErrorMessage } from '@shared/lib/formErrors';
 import { hasPermission } from '@shared/permissions';
 import cashRegisterService from '../services/cashRegisterService';
-import { cashSessionService, type CashSessionMovement } from '../services/cashSessionService';
+import {
+  cashSessionService,
+  type CashMovementKind,
+  type CashSessionMovement,
+} from '../services/cashSessionService';
+import { MOVEMENT_KIND_OPTIONS } from '../model/movementKind';
+import { useShiftReportPrinter } from '../hooks/useShiftReportPrinter';
 import './CashMovementsDialog.scss';
 
 interface Props {
@@ -40,8 +45,9 @@ const time = (value?: string) =>
  */
 export function CashMovementsDialog({ open, sessionId, registerName, onClose }: Props) {
   const queryClient = useQueryClient();
+  const printReport = useShiftReportPrinter();
   const canRegister = hasPermission('cash.movement');
-  const [categoryId, setCategoryId] = useState('');
+  const [kind, setKind] = useState<CashMovementKind | ''>('');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
@@ -64,24 +70,17 @@ export function CashMovementsDialog({ open, sessionId, registerName, onClose }: 
     staleTime: 0,
     refetchOnMount: 'always',
   });
-  const categories = useQuery({
-    queryKey: ['cash-movement-categories'],
-    queryFn: () => cashSessionService.getMovementCategories(),
-    enabled: open && canRegister,
-    staleTime: 5 * 60_000,
-  });
-
   const register = useMutation({
     mutationFn: () =>
       cashSessionService.addMovement({
         sessionId,
-        categoryId: Number(categoryId),
+        kind: kind as CashMovementKind,
         amount: Number(amount),
         description: description.trim(),
       }),
     onSuccess: async () => {
       toast('Movimiento registrado', 'success');
-      setCategoryId('');
+      setKind('');
       setAmount('');
       setDescription('');
       setFormError(null);
@@ -97,24 +96,7 @@ export function CashMovementsDialog({ open, sessionId, registerName, onClose }: 
   const amountNumber = Number(amount);
   const amountInvalid = amount.trim() === '' || !Number.isFinite(amountNumber) || amountNumber <= 0;
   const canSubmit =
-    categoryId !== '' && !amountInvalid && description.trim() !== '' && !register.isPending;
-  // Income first, then expenses; the kind is in the option so two categories never look alike.
-  const categoryOptions: ComboboxOption[] = [...(categories.data ?? [])]
-    .sort((a, b) =>
-      a.type === b.type ? a.name.localeCompare(b.name) : a.type === 'income' ? -1 : 1,
-    )
-    .map((category) => ({
-      value: String(category.id),
-      label: category.name,
-      content: (
-        <span className="cash-movements-dialog__option">
-          {category.name}
-          <Badge variant={category.type === 'income' ? 'success' : 'warning'} size="sm" outlined>
-            {category.type === 'income' ? 'Ingreso' : 'Egreso'}
-          </Badge>
-        </span>
-      ),
-    }));
+    kind !== '' && !amountInvalid && description.trim() !== '' && !register.isPending;
   // Sales and the opening carry no category: the cut already counts them.
   const manual: CashSessionMovement[] = [...(movements.data ?? [])]
     .filter((movement) => movement.category != null)
@@ -128,9 +110,19 @@ export function CashMovementsDialog({ open, sessionId, registerName, onClose }: 
       width={880}
       maxWidth="96vw"
       footer={
-        <Button variant="secondary" onClick={onClose}>
-          Cerrar
-        </Button>
+        <>
+          <Button
+            variant="secondary"
+            icon="ph ph-printer"
+            data-testid="cash-print-x"
+            onClick={() => void printReport(sessionId)}
+          >
+            Imprimir reporte X
+          </Button>
+          <Button variant="secondary" onClick={onClose}>
+            Cerrar
+          </Button>
+        </>
       }
     >
       <div className="cash-movements-dialog">
@@ -201,20 +193,15 @@ export function CashMovementsDialog({ open, sessionId, registerName, onClose }: 
             >
               <Stack gap={3}>
                 {formError && <Alert tone="danger">{formError}</Alert>}
-                {categories.isError && (
-                  <Alert tone="warning">No se pudieron cargar las categorías.</Alert>
-                )}
-                <FormField label="Categoría" required htmlFor="cash-movement-category">
-                  <Combobox
-                    id="cash-movement-category"
-                    aria-label="Categoría"
-                    required
-                    placeholder="Selecciona una categoría"
-                    options={categoryOptions}
-                    value={categoryId === '' ? null : categoryId}
-                    onChange={(value) => setCategoryId(value ?? '')}
-                  />
-                </FormField>
+                <RadioGroup<CashMovementKind | ''>
+                  label="Tipo de movimiento"
+                  name="cash-movement-kind"
+                  required
+                  orientation="horizontal"
+                  value={kind}
+                  options={MOVEMENT_KIND_OPTIONS}
+                  onChange={setKind}
+                />
                 <div className="cash-movements-dialog__pair">
                   <FormField label="Monto (S/)" required htmlFor="cash-movement-amount">
                     <TextField
@@ -229,12 +216,12 @@ export function CashMovementsDialog({ open, sessionId, registerName, onClose }: 
                       onChange={(event) => setAmount(event.target.value)}
                     />
                   </FormField>
-                  <FormField label="Descripción" required htmlFor="cash-movement-description">
+                  <FormField label="Motivo" required htmlFor="cash-movement-description">
                     <TextField
                       id="cash-movement-description"
                       required
                       maxLength={200}
-                      placeholder="Por qué entra o sale este dinero"
+                      placeholder="Por qué entra o sale este dinero, por ejemplo: cambio del supervisor"
                       value={description}
                       onChange={(event) => setDescription(event.target.value)}
                     />
@@ -275,8 +262,7 @@ export function CashMovementsDialog({ open, sessionId, registerName, onClose }: 
                     {movement.type === 'income' ? 'Ingreso' : 'Egreso'}
                   </Badge>
                   <span className="cash-movements-dialog__what">
-                    <strong>{movement.category?.name}</strong>
-                    <span>{movement.description}</span>
+                    <strong>{movement.description}</strong>
                   </span>
                   <span className="cash-movements-dialog__when">{time(movement.createdAt)}</span>
                   <strong className="cash-movements-dialog__amount">

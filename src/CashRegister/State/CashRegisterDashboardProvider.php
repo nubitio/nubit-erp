@@ -54,7 +54,13 @@ readonly class CashRegisterDashboardProvider implements ProviderInterface
                 + COALESCE(SUM(IF(cm.movement_type = 'SALE_IN',  cm.amount, 0)), 0)
                 AS balance,
                 IF(cs.id IS NOT NULL AND cs.status = 'OPEN', 'open', 'closed') AS status,
-                COALESCE(SUM(IF(cm.movement_type = 'SALE_IN', cm.amount, 0)), 0) AS today_sales
+                COALESCE(SUM(IF(cm.movement_type = 'SALE_IN', cm.amount, 0)), 0) AS today_sales,
+                (SELECT last.closed_at FROM cash_sessions last
+                    WHERE last.cash_register_id = c.id AND last.status = 'CLOSED'
+                    ORDER BY last.closed_at DESC, last.id DESC LIMIT 1) AS lastClosedAt,
+                (SELECT last.difference_amount FROM cash_sessions last
+                    WHERE last.cash_register_id = c.id AND last.status = 'CLOSED'
+                    ORDER BY last.closed_at DESC, last.id DESC LIMIT 1) AS lastDifference
             FROM cash_register c
             LEFT JOIN cash_sessions cs ON cs.cash_register_id = c.id AND cs.status = 'OPEN'
             LEFT JOIN cash_movements cm ON cm.cash_session_id = cs.id
@@ -81,6 +87,12 @@ readonly class CashRegisterDashboardProvider implements ProviderInterface
                     2,
                     RoundingMode::HALF_UP,
                 )->__toString(),
+                lastClosedAt: ($row['lastClosedAt'] ?? null) !== null
+                    ? new DateTimeImmutable((string) $row['lastClosedAt'])
+                    : null,
+                lastDifference: ($row['lastDifference'] ?? null) === null
+                    ? null
+                    : BigDecimal::of((string) $row['lastDifference'])->toScale(2, RoundingMode::HALF_UP)->__toString(),
             ),
             $data,
         );
