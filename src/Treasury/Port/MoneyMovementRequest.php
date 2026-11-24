@@ -32,5 +32,7 @@ final readonly class MoneyMovementRequest
         /** Explicit account chosen at payment time; wins over the payment-method mapping. */
         public ?string $accountId = null,
         public string $origin = 'live',
+        /** External collections must use the branch's bank mapping, never a drawer or suspense account. */
+        public bool $requireMappedBankAccount = false,
     ) {}
 }
