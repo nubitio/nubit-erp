@@ -53,15 +53,15 @@ describe('useWorkspaceMenu', () => {
     expect(result.current.items).toEqual([{ text: 'Punto de venta', path: '/pos' }]);
   });
 
-  it('falls back to the role menu when the runtime config failed to load', async () => {
+  it('fails closed when the runtime config failed to load', async () => {
     config.mockReturnValue({ data: undefined, isError: true } as never);
-    plain.mockResolvedValue(reply([{ text: 'Inicio', path: '/dashboard' }]));
     const { result } = renderHook(() => useWorkspaceMenu(), { wrapper });
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(plain).toHaveBeenCalledWith(3);
-    expect(result.current.items).toHaveLength(1);
+    expect(plain).not.toHaveBeenCalled();
+    expect(forConfig).not.toHaveBeenCalled();
+    expect(result.current.items).toEqual([]);
   });
 
   it('leaves an empty menu, not an eternal spinner, when the request fails', async () => {

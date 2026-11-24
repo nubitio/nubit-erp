@@ -187,6 +187,67 @@ describe('filterMenuByRuntimeConfig', () => {
     expect(visiblePaths(filtered)).toEqual(['pos', 'employees', 'payroll-runs']);
   });
 
+  it('hides restaurant navigation from retail tenants even when their plan includes the module', () => {
+    const restaurantGroup: AdminMenuItem[] = [
+      {
+        text: 'Restaurante',
+        path: '',
+        items: [
+          { text: 'Mesas', path: '/restaurant/mesas' },
+          { text: 'Cocina', path: '/restaurant/kds' },
+        ],
+      },
+    ];
+    const retailConfig = {
+      ...runtimeConfig(
+        'standard',
+        {},
+        {
+          'restaurant.table_management': { enabled: true, config: {} },
+        },
+      ),
+      profile: {
+        ...runtimeConfig('standard').profile,
+        vertical: 'retail',
+        preset: 'retail',
+      },
+    };
+
+    expect(filterMenuByRuntimeConfig(restaurantGroup, retailConfig)).toEqual([]);
+  });
+
+  it('shows restaurant navigation only for the restaurant vertical with its capability enabled', () => {
+    const restaurantGroup: AdminMenuItem[] = [
+      {
+        text: 'Restaurante',
+        path: '',
+        items: [
+          { text: 'Mesas', path: '/restaurant/mesas' },
+          { text: 'Cocina', path: '/restaurant/kds' },
+        ],
+      },
+    ];
+    const baseConfig = runtimeConfig(
+      'standard',
+      {},
+      {
+        'restaurant.table_management': { enabled: true, config: {} },
+      },
+    );
+    const restaurantConfig = {
+      ...baseConfig,
+      profile: { ...baseConfig.profile, vertical: 'restaurant', preset: 'restaurant' },
+    };
+
+    expect(filterMenuByRuntimeConfig(restaurantGroup, restaurantConfig)[0]?.items).toHaveLength(2);
+    expect(
+      filterMenuByRuntimeConfig(restaurantGroup, {
+        ...restaurantConfig,
+        capabilities: {},
+      }),
+    ).toEqual([]);
+  });
+
   it('treats receivables as sales and keeps supplier payables separately authorized', () => {
     localStorage.setItem(
       'user',
