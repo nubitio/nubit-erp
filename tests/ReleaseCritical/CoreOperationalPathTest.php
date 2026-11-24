@@ -54,6 +54,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Uid\Uuid;
 
@@ -312,10 +313,29 @@ final class CoreOperationalPathTest extends KernelTestCase
         $this->closeWithExpectedCount($world, '50.00');
     }
 
-    public function testClosingUsesSessionOpeningEvenWhenHistoricalOpeningMovementIsMissing(): void
+    public function testClosingUsesSessionOpeningAndRejectsASecondCloseFromAStaleEntity(): void
     {
         $world = $this->fixture->seed();
         $this->closeWithExpectedCount($world, '50.00');
+
+        $sessionId = $world->cashSession->getId();
+        // Simulate a request whose identity map was populated before the first close committed.
+        $world->cashSession->setStatus('OPEN');
+
+        $dto = new CashRegisterCloseDto();
+        $dto->countedAmount = '99.00';
+        $processor = new CashRegisterCloseProcessor(
+            $this->entityManager,
+            $this->securityStub((int) $world->user->getId()),
+        );
+        try {
+            $processor->process($dto, new Put(), ['id' => $sessionId]);
+            static::fail('A second close must not overwrite the persisted cut.');
+        } catch (ConflictHttpException) {
+            static::assertSame('50.00', $this->entityManager->getConnection()->fetchOne('SELECT counted_amount FROM cash_sessions WHERE id = ?', [
+                $sessionId,
+            ]));
+        }
     }
 
     private function recordOpeningMovement(CoreSaleWorld $world): void

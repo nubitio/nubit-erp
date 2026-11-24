@@ -15,6 +15,8 @@ use App\Identity\Security\Security;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use DateTimeImmutable;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Override;
@@ -49,71 +51,18 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         array $context = [],
     ): CashRegisterCloseResponseDto {
         ['counted' => $countedTotal, 'notes' => $notes] = ClosureCount::of($data);
+        $sessionId = (int) $uriVariables['id'];
+        $connection = $this->entityManager->getConnection();
 
         try {
-            $cashSession = $this->entityManager->find(CashSession::class, $uriVariables['id']);
-
-            if (!$cashSession instanceof CashSession) {
-                throw new NotFoundHttpException('Sesión de caja no encontrada.');
-            }
-
-            $authUser = $this->security->connectedUser();
-            if ($authUser === null) {
-                throw new UnauthorizedHttpException('Bearer', 'Usuario no autenticado.');
-            }
-            if ($cashSession->getStatus() !== 'OPEN') {
-                throw new ConflictHttpException('La sesión de caja ya está cerrada.');
-            }
-            if (
-                $cashSession->getOpenedBy()->getId() !== $authUser->userId
-                && !$this->security->hasPermission('cash.close_any')
-            ) {
-                throw new AccessDeniedHttpException('No puedes cerrar la sesión de caja de otro usuario.');
-            }
-
-            $expectedAmount = $this->entityManager->getConnection()->fetchOne(
-                <<<'SQL'
-                    SELECT COALESCE(SUM(CASE
-                        WHEN movement_type IN ('SALE_IN', 'CASH_IN') THEN amount
-                        WHEN movement_type IN ('REFUND_OUT', 'CASH_OUT') THEN -amount
-                        ELSE 0
-                    END), 0)
-                    FROM cash_movements
-                    WHERE cash_session_id = :sessionId
-                    SQL,
-                ['sessionId' => $cashSession->getId()],
-            );
-            // The session owns the opening amount. OPENING is its audit row,
-            // which may be absent in older sessions and must not be counted twice.
-            $expectedTotal = BigDecimal::of($cashSession->getOpeningAmount())->plus((string) $expectedAmount);
-            $differenceTotal = $countedTotal->minus($expectedTotal);
-            $expectedStr = $expectedTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
-            $countedStr = $countedTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
-            $differenceStr = $differenceTotal->toScale(2, RoundingMode::HALF_UP)->__toString();
-
-            $userRef = $this->entityManager->getReference(User::class, $authUser->userId);
-
-            $cashSession->setCountedAmount($countedStr);
-            $cashSession->setExpectedAmount($expectedStr);
-            $cashSession->setDifferenceAmount($differenceStr);
-            $cashSession->setCloseNote($notes !== [] ? implode('; ', $notes) : null);
-            $cashSession->setCountedDenominations(self::cleanDenominations($data->denominations));
-            $cashSession->setOpeningFundKept($data->fundKept);
-            if ($data->fundKept !== null) {
-                $stays = $data->fundKept ? BigDecimal::of($cashSession->getOpeningAmount()) : BigDecimal::zero();
-                $taken = $countedTotal->minus($stays);
-                $cashSession->setCashWithdrawnAtClose(
-                    ($taken->isNegative() ? BigDecimal::zero() : $taken)
-                        ->toScale(2, RoundingMode::HALF_UP)
-                        ->__toString(),
-                );
-            }
-            $cashSession->setStatus('CLOSED');
-            $cashSession->setClosedBy($userRef instanceof User ? $userRef : null);
-            $cashSession->setClosedAt(new DateTimeImmutable());
-
-            $this->entityManager->persist($cashSession);
-            $this->entityManager->flush();
+            $connection->transactional(function (Connection $connection) use (
+                $sessionId,
+                $data,
+                $countedTotal,
+                $notes,
+            ): void {
+                $this->close($connection, $sessionId, $data, $countedTotal, $notes);
+            });
         } catch (ORMException $ormException) {
             return new CashRegisterCloseResponseDto(
                 success: false,
@@ -123,6 +72,71 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         }
 
         return new CashRegisterCloseResponseDto(success: true, message: 'Caja cerrada correctamente');
+    }
+
+    /** @param list<string> $notes */
+    private function close(
+        Connection $connection,
+        int $sessionId,
+        CashRegisterCloseDto $data,
+        BigDecimal $countedTotal,
+        array $notes,
+    ): void {
+        // Take the same session row lock as manual movements before reading the ledger.
+        // A concurrent close also rereads the current status rather than trusting the identity map.
+        $cashSession = $this->entityManager->find(CashSession::class, $sessionId, LockMode::PESSIMISTIC_WRITE);
+        if (!$cashSession instanceof CashSession) {
+            throw new NotFoundHttpException('Sesión de caja no encontrada.');
+        }
+
+        $authUser = $this->security->connectedUser();
+        if ($authUser === null) {
+            throw new UnauthorizedHttpException('Bearer', 'Usuario no autenticado.');
+        }
+        if ($cashSession->getStatus() !== 'OPEN') {
+            throw new ConflictHttpException('La sesión de caja ya está cerrada.');
+        }
+        if (
+            $cashSession->getOpenedBy()->getId() !== $authUser->userId
+            && !$this->security->hasPermission('cash.close_any')
+        ) {
+            throw new AccessDeniedHttpException('No puedes cerrar la sesión de caja de otro usuario.');
+        }
+
+        $expectedAmount = $connection->fetchOne(
+            <<<'SQL'
+                SELECT COALESCE(SUM(CASE
+                    WHEN movement_type IN ('SALE_IN', 'CASH_IN') THEN amount
+                    WHEN movement_type IN ('REFUND_OUT', 'CASH_OUT') THEN -amount
+                    ELSE 0
+                END), 0)
+                FROM cash_movements
+                WHERE cash_session_id = :sessionId
+                SQL,
+            ['sessionId' => $cashSession->getId()],
+        );
+        // OPENING is an audit row and must not be counted twice.
+        $expectedTotal = BigDecimal::of($cashSession->getOpeningAmount())->plus((string) $expectedAmount);
+        $differenceTotal = $countedTotal->minus($expectedTotal);
+        $userRef = $this->entityManager->getReference(User::class, $authUser->userId);
+
+        $cashSession->setCountedAmount((string) $countedTotal->toScale(2, RoundingMode::HALF_UP));
+        $cashSession->setExpectedAmount((string) $expectedTotal->toScale(2, RoundingMode::HALF_UP));
+        $cashSession->setDifferenceAmount((string) $differenceTotal->toScale(2, RoundingMode::HALF_UP));
+        $cashSession->setCloseNote($notes !== [] ? implode('; ', $notes) : null);
+        $cashSession->setCountedDenominations(self::cleanDenominations($data->denominations));
+        $cashSession->setOpeningFundKept($data->fundKept);
+        if ($data->fundKept !== null) {
+            $stays = $data->fundKept ? BigDecimal::of($cashSession->getOpeningAmount()) : BigDecimal::zero();
+            $taken = $countedTotal->minus($stays);
+            $withdrawn = $taken->isNegative() ? BigDecimal::zero() : $taken;
+            $cashSession->setCashWithdrawnAtClose((string) $withdrawn->toScale(2, RoundingMode::HALF_UP));
+        }
+        $cashSession->setStatus('CLOSED');
+        $cashSession->setClosedBy($userRef instanceof User ? $userRef : null);
+        $cashSession->setClosedAt(new DateTimeImmutable());
+
+        $this->entityManager->flush();
     }
 
     /**
