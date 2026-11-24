@@ -21,6 +21,7 @@
     "/billing/price-review",
     "/billing/sales",
     "/billing/sales/:id",
+    "/billing/sales/new",
     "/branch",
     "/cash-movement-category",
     "/cash-register",
