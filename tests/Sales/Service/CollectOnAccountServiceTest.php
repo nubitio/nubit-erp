@@ -58,18 +58,18 @@ final class CollectOnAccountServiceTest extends TestCase
             ->method('recordPayment')
             ->willReturn($this->createStub(CustomerAccountEntry::class));
 
-        $insideTransaction = false;
+        $cashWrite = static::once();
+        $this->gateway->expects($cashWrite)->method('writeOnAccountCollectionMovement');
         $em = $this->createMock(EntityManagerInterface::class);
         $em
             ->expects(static::once())
             ->method('wrapInTransaction')
-            ->willReturnCallback(static function (callable $operation) use (&$insideTransaction): mixed {
-                $insideTransaction = true;
-                try {
-                    return $operation();
-                } finally {
-                    $insideTransaction = false;
-                }
+            ->willReturnCallback(static function (callable $operation) use ($cashWrite): mixed {
+                static::assertFalse($cashWrite->hasBeenInvoked(), 'No drawer entry may precede the transaction.');
+                $result = $operation();
+                static::assertTrue($cashWrite->hasBeenInvoked(), 'The drawer entry must commit with the applications.');
+
+                return $result;
             });
         $persisted = [];
         $em->method('persist')->willReturnCallback(static function (object $o) use (&$persisted): void {
@@ -79,13 +79,6 @@ final class CollectOnAccountServiceTest extends TestCase
         $this->salePaymentService->expects(self::exactly(2))->method('appendPayment');
         $this->gateway->method('findOpenCashSessionIdForUser')->willReturn(42);
         $this->gateway->expects(static::once())->method('requireLockedOpenCashSessionForUser')->with(42, 0);
-        $this->gateway
-            ->expects(self::once())
-            ->method('writeOnAccountCollectionMovement')
-            ->willReturnCallback(static function () use (&$insideTransaction): void {
-                static::assertTrue($insideTransaction, 'The drawer entry must commit with the applications.');
-            });
-
         $result = $this->service($em, $sales, $ledger)->collect(
             customerId: 9,
             paymentMethod: $this->method(PaymentMethod::CASH),
