@@ -584,6 +584,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cash-registers/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a CashRegister resource.
+         * @description Retrieves a CashRegister resource.
+         */
+        get: operations["api_cash-registerssummary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cash-registers/{id}": {
         parameters: {
             query?: never;
@@ -692,6 +712,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cash-sessions/recent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of CashSession resources.
+         * @description Retrieves the collection of CashSession resources.
+         */
+        get: operations["api_cash-sessionsrecent_get_collection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cash-sessions/{id}": {
         parameters: {
             query?: never;
@@ -726,6 +766,26 @@ export interface paths {
          * @description Creates a CashSession resource.
          */
         post: operations["api_cash-sessions_idclose_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cash-sessions/{id}/ledger": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves a CashSession resource.
+         * @description Retrieves a CashSession resource.
+         */
+        get: operations["api_cash-sessions_idledger_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -5144,6 +5204,11 @@ export interface components {
              * @example https://example.com/
              */
             branch?: string | null;
+            /**
+             * @description What a person registers by hand, instead of a category: `income`, `expense` or `withdrawal` (cash taken to the
+             *     safe). The system files it under its own reason; the person only writes the description. Input only.
+             */
+            kind?: string | null;
         };
         /**
          * @description Not a Doctrine entity — a read/write shape for the v2 `cash_movements`
@@ -5434,6 +5499,10 @@ export interface components {
             countedAmount?: string | null;
             difference?: string | null;
             note?: string | null;
+            /** @description How the cash was counted: denomination in cents => quantity. Absent when the total was typed. */
+            denominations?: number[] | null;
+            /** @description Whether the opening fund stays in the drawer for the next shift. */
+            fundKept?: boolean | null;
             closureItems?: {
                 [key: string]: string;
             }[];
@@ -5451,6 +5520,30 @@ export interface components {
         "CashRegister.CashRegisterOpenDto": {
             id?: number;
             openingBalance?: number | string;
+        };
+        "CashRegister.CashRegisterSummaryDto-cash_register_summary.read": {
+            /** @description Sold today in the branch's shifts (voided sales excluded), whatever the payment method. */
+            salesToday?: string;
+            /** @description Registers that had a shift open at some point today, or still have one open. */
+            registersWithShiftToday?: number;
+            /** @description Net of the closing differences of the last 7 days: negative is missing cash. */
+            closureDifference7Days?: string;
+            /** @description Closed shifts of the last 7 days that closed with missing cash. */
+            shortageShifts7Days?: number;
+            /** @description Every shift the branch has had, for the paging of the history. */
+            shiftsTotal?: number;
+        };
+        "CashRegister.CashRegisterSummaryDto.jsonld-cash_register_summary.read": components["schemas"]["HydraItemBaseSchema"] & {
+            /** @description Sold today in the branch's shifts (voided sales excluded), whatever the payment method. */
+            salesToday?: string;
+            /** @description Registers that had a shift open at some point today, or still have one open. */
+            registersWithShiftToday?: number;
+            /** @description Net of the closing differences of the last 7 days: negative is missing cash. */
+            closureDifference7Days?: string;
+            /** @description Closed shifts of the last 7 days that closed with missing cash. */
+            shortageShifts7Days?: number;
+            /** @description Every shift the branch has had, for the paging of the history. */
+            shiftsTotal?: number;
         };
         "CashRegister.CashSession-cash_session.read": {
             readonly id?: number;
@@ -5762,6 +5855,10 @@ export interface components {
             countedAmount?: string | null;
             difference?: string | null;
             note?: string | null;
+            /** @description How the cash was counted: denomination in cents => quantity. Absent when the total was typed. */
+            denominations?: number[] | null;
+            /** @description Whether the opening fund stays in the drawer for the next shift. */
+            fundKept?: boolean | null;
             closureItems?: {
                 [key: string]: string;
             }[];
@@ -5785,6 +5882,148 @@ export interface components {
             paymentMethodId?: number;
             paymentMethod?: string;
             expectedAmount?: string;
+        };
+        "CashSession.CashSessionLedgerDto-cash_session_ledger.read": {
+            /**
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            id?: number;
+            /**
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            cashRegisterId?: number;
+            /**
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            cashRegisterName?: string;
+            /**
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            cashier?: string | null;
+            /**
+             * Format: date-time
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            openedAt?: string;
+            /**
+             * Format: date-time
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            closedAt?: string | null;
+            /** @description `open` or `closed`. */
+            status?: string;
+            /**
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            openingAmount?: string;
+            /**
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            entries?: {
+                id?: string;
+                at?: string;
+                kind?: string;
+                document?: string | null;
+                paymentMethod?: string | null;
+                description?: string;
+                amount?: string;
+            }[];
+        };
+        "CashSession.CashSessionLedgerDto.jsonld-cash_session_ledger.read": components["schemas"]["HydraItemBaseSchema"] & {
+            /**
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            id?: number;
+            /**
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            cashRegisterId?: number;
+            /**
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            cashRegisterName?: string;
+            /**
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            cashier?: string | null;
+            /**
+             * Format: date-time
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            openedAt?: string;
+            /**
+             * Format: date-time
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            closedAt?: string | null;
+            /** @description `open` or `closed`. */
+            status?: string;
+            /**
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            openingAmount?: string;
+            /**
+             * @description `kind` is one of `opening`, `sale`, `income`, `expense`, `withdrawal`; `amount` is signed (what leaves the
+             *     drawer is negative). `paymentMethod` and `document` are null where they do not apply.
+             */
+            entries?: {
+                id?: string;
+                at?: string;
+                kind?: string;
+                document?: string | null;
+                paymentMethod?: string | null;
+                description?: string;
+                amount?: string;
+            }[];
+        };
+        "CashSession.CashSessionRecentDto-cash_session_recent.read": {
+            id?: number;
+            cashRegisterId?: number;
+            cashRegisterName?: string;
+            cashier?: string | null;
+            /** Format: date-time */
+            openedAt?: string;
+            /** Format: date-time */
+            closedAt?: string | null;
+            /** @description `open` or `closed`. */
+            status?: string;
+            openingAmount?: string;
+            /** @description What the shift sold (voided sales excluded), credit included. */
+            sales?: string;
+            /** @description Counted minus expected at the closing; null while the shift is open or if it was never counted. */
+            difference?: string | null;
+        };
+        "CashSession.CashSessionRecentDto.jsonld-cash_session_recent.read": components["schemas"]["HydraItemBaseSchema"] & {
+            id?: number;
+            cashRegisterId?: number;
+            cashRegisterName?: string;
+            cashier?: string | null;
+            /** Format: date-time */
+            openedAt?: string;
+            /** Format: date-time */
+            closedAt?: string | null;
+            /** @description `open` or `closed`. */
+            status?: string;
+            openingAmount?: string;
+            /** @description What the shift sold (voided sales excluded), credit included. */
+            sales?: string;
+            /** @description Counted minus expected at the closing; null while the shift is open or if it was never counted. */
+            difference?: string | null;
         };
         "CashSession.CashSessionXReportDto-cash_x_report.read": {
             /**
@@ -5844,6 +6083,14 @@ export interface components {
              *     left on credit. The drawer's own balance is `currentBalance`.
              */
             receivableOperations?: number;
+            /** @description Of `cashOut`, what went to the safe or the bank (withdrawals) rather than being spent. */
+            withdrawalsOut?: string;
+            /** @description Receipts issued in the shift: `boletas`, `facturas` and `creditNotes`. */
+            documents?: {
+                boletas?: number;
+                facturas?: number;
+                creditNotes?: number;
+            };
         };
         "CashSession.CashSessionXReportDto.jsonld-cash_x_report.read": components["schemas"]["HydraItemBaseSchema"] & {
             /**
@@ -5903,6 +6150,14 @@ export interface components {
              *     left on credit. The drawer's own balance is `currentBalance`.
              */
             receivableOperations?: number;
+            /** @description Of `cashOut`, what went to the safe or the bank (withdrawals) rather than being spent. */
+            withdrawalsOut?: string;
+            /** @description Receipts issued in the shift: `boletas`, `facturas` and `creditNotes`. */
+            documents?: {
+                boletas?: number;
+                facturas?: number;
+                creditNotes?: number;
+            };
         };
         "CashSession.jsonld-cash_session.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
@@ -17354,6 +17609,49 @@ export interface operations {
             };
         };
     };
+    "api_cash-registerssummary_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CashRegister resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashRegister.CashRegisterSummaryDto-cash_register_summary.read"];
+                    "application/ld+json": components["schemas"]["CashRegister.CashRegisterSummaryDto.jsonld-cash_register_summary.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     "api_cash-registers_id_get": {
         parameters: {
             query?: never;
@@ -17741,6 +18039,49 @@ export interface operations {
             };
         };
     };
+    "api_cash-sessionsrecent_get_collection": {
+        parameters: {
+            query?: {
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CashSession collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashSession.CashSessionRecentDto-cash_session_recent.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchemaNoPagination"] & {
+                        member: components["schemas"]["CashSession.CashSessionRecentDto.jsonld-cash_session_recent.read"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     "api_cash-sessions_id_get": {
         parameters: {
             query?: never;
@@ -17847,6 +18188,52 @@ export interface operations {
                     "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
                     "application/problem+json": components["schemas"]["ConstraintViolation"];
                     "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    "api_cash-sessions_idledger_get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description CashSession identifier */
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description CashSession resource */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashSession.CashSessionLedgerDto-cash_session_ledger.read"];
+                    "application/ld+json": components["schemas"]["CashSession.CashSessionLedgerDto.jsonld-cash_session_ledger.read"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
