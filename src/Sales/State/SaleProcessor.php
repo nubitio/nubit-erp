@@ -15,6 +15,7 @@ use App\Contacts\Repository\CustomerRepository;
 use App\Efact\Domain\ActiveReferenceGuard;
 use App\Efact\Domain\Money;
 use App\Identity\Auth\BranchContextService;
+use App\Identity\Dto\AuthUserDto;
 use App\Identity\Offline\InvalidOfflineSignature;
 use App\Identity\Offline\OfflineActor;
 use App\Identity\Offline\OfflineActors;
@@ -123,7 +124,6 @@ readonly class SaleProcessor implements ProcessorInterface
         }
 
         $isOperationalSale = $data->getTipoId() === 2;
-        $resolvedCashSessionId = null;
         $requireOpenSession = false;
         $request = $context['request'] ?? null;
         // Offline mode marks an idempotent outbox replay; it never weakens stock or commercial validation.
@@ -303,8 +303,6 @@ readonly class SaleProcessor implements ProcessorInterface
             $data->setHasInvoice(false);
         }
 
-        $this->inventoryOrchestrator->process($data, $user, false);
-
         if ($isNew) {
             $this->logger->info('Creating new sale record with timestamp');
             $data->setDateCreated(new DateTimeImmutable());
@@ -339,89 +337,10 @@ readonly class SaleProcessor implements ProcessorInterface
         ]);
 
         if ($isOperationalSale) {
-            // Resolve cash session and back-propagate IDs onto $data BEFORE the ORM flush so
-            // that seller_user_id, cash_register_id, and cash_session_id are non-null on INSERT.
-            try {
-                $cashSessionId = $requireOpenSession
-                    ? $this->cashSessionResolver->resolveForSale($data)
-                    : $this->cashSessionResolver->tryResolveForSale($data);
-                $resolvedCashSessionId = $cashSessionId;
-
-                // Back-propagate cash_register_id from the resolved V2 session onto SaleRecord.
-                if ($cashSessionId !== null && $data->getCajaId() === null) {
-                    $resolvedRegisterId = $this->cashSessionResolver->resolveRegisterIdForSession($cashSessionId);
-                    if ($resolvedRegisterId !== null) {
-                        $data->setCashRegisterId($resolvedRegisterId);
-                    }
-                }
-
-                // write() populates all V2 fields on $data (seller_user_id, sync fields, etc.)
-                // and calls entityManager->flush() — so persistProcessor is not needed for
-                // operational sales.
-                $this->salesWriteGateway->write($data, $cashSessionId);
-            } catch (\Throwable $exception) {
-                $this->logger->error('Sales V2 write failed', [
-                    'sale_id' => $data->getId(),
-                    'branch_id' => $data->getBranch()?->getId() ?? $data->getAlmacen()?->getBranch()?->getId(),
-                    'warehouse_id' => $data->getAlmacen()?->getId(),
-                    'cash_register_id' => $data->getCajaId(),
-                    'resolved_cash_session_id' => $resolvedCashSessionId,
-                    'issued_at' => ($data->getFecha() ?? $data->getDateCreated())?->format('Y-m-d H:i:s'),
-                    'item_count' => count($data->getSaleItemRecords()),
-                    'total' => $data->getTotal(),
-                    ...$this->buildThrowableContext($exception),
-                ]);
-
-                throw new ServiceException(
-                    'No se pudo sincronizar la venta con Sales V2. Operación cancelada.',
-                    0,
-                    $exception,
-                );
-            }
+            $this->persistOperationalSale($data, $user, $actingUserId, $requireOpenSession, $isNew, $isOfflineSale);
         } else {
-            // Non-operational sales: use the standard API Platform persist processor.
+            $this->inventoryOrchestrator->process($data, $user, false);
             $this->persistProcessor->process($data, $operation, $uriVariables, $context);
-        }
-
-        if ($isNew && $isOperationalSale) {
-            $cashCollected = $this->saleSettlementPlanService->resolveCashCollectedAmount(
-                $data,
-                $data->getTotal() ?? '0.00',
-            );
-            if (Money::money($cashCollected)->isGreaterThan(BigDecimal::zero())) {
-                if ($resolvedCashSessionId !== null) {
-                    try {
-                        $serie = $data->getSerie() ?? '';
-                        $numero = $data->getNumero() ?? '';
-                        $saleRef = $serie !== '' && $numero !== '' ? "{$serie}-{$numero}" : null;
-                        $this->salesWriteGateway->writeCashSaleMovement(
-                            saleId: (string) $data->getId(),
-                            cashSessionId: $resolvedCashSessionId,
-                            createdBy: $actingUserId,
-                            amount: $cashCollected,
-                            categoryId: null,
-                            paymentMethodId: \App\Catalog\Entity\PaymentMethod::CASH,
-                            createdAt: $data->getFecha() !== null
-                                ? \DateTimeImmutable::createFromInterface($data->getFecha())
-                                : new DateTimeImmutable(),
-                            description: $saleRef !== null ? "Venta {$saleRef}" : 'Venta en efectivo',
-                        );
-                    } catch (\Throwable $exception) {
-                        $this->logger->error('Sales V2 cash movement write failed', [
-                            'sale_id' => $data->getId(),
-                            'cash_session_id' => $resolvedCashSessionId,
-                            'amount' => $cashCollected,
-                            ...$this->buildThrowableContext($exception),
-                        ]);
-
-                        throw new ServiceException(
-                            'No se pudo registrar el movimiento de caja en Sales V2. Operación cancelada.',
-                            0,
-                            $exception,
-                        );
-                    }
-                }
-            }
         }
 
         if ($isNew && $isOperationalSale) {
@@ -494,6 +413,115 @@ readonly class SaleProcessor implements ProcessorInterface
         ]);
 
         return $data;
+    }
+
+    private function persistOperationalSale(
+        SaleRecord $sale,
+        AuthUserDto $user,
+        int $actingUserId,
+        bool $requireOpenSession,
+        bool $isNew,
+        bool $isOfflineSale,
+    ): void {
+        $cashSessionId = null;
+        try {
+            $cashSessionId = $requireOpenSession
+                ? $this->cashSessionResolver->resolveForSale($sale)
+                : $this->cashSessionResolver->tryResolveForSale($sale);
+
+            if ($cashSessionId !== null && $sale->getCajaId() === null) {
+                $sale->setCashRegisterId($this->cashSessionResolver->resolveRegisterIdForSession($cashSessionId));
+            }
+        } catch (\Throwable $exception) {
+            throw $this->saleWriteFailed($sale, $cashSessionId, $exception);
+        }
+
+        $cashCollected = $isNew && $cashSessionId !== null
+            ? $this->saleSettlementPlanService->resolveCashCollectedAmount($sale, $sale->getTotal() ?? '0.00')
+            : '0.00';
+        $write = function () use ($sale, $user, $cashSessionId, $actingUserId, $cashCollected): void {
+            $this->inventoryOrchestrator->process($sale, $user, false);
+            try {
+                $this->salesWriteGateway->write($sale, $cashSessionId);
+            } catch (\Throwable $exception) {
+                throw $this->saleWriteFailed($sale, $cashSessionId, $exception);
+            }
+            if ($cashSessionId !== null && Money::money($cashCollected)->isGreaterThan(BigDecimal::zero())) {
+                $this->writeDrawerMovement($sale, $cashSessionId, $actingUserId, $cashCollected);
+            }
+        };
+
+        // A queued offline sale may belong to a historical shift. Leave its policy unchanged.
+        if (
+            $isOfflineSale
+            || $cashSessionId === null
+            || !Money::money($cashCollected)->isGreaterThan(BigDecimal::zero())
+        ) {
+            $write();
+
+            return;
+        }
+
+        $this->entityManager
+            ->getConnection()
+            ->transactional(function () use ($cashSessionId, $actingUserId, $write): void {
+                $this->salesWriteGateway->requireLockedOpenCashSessionForUser($cashSessionId, $actingUserId);
+                $write();
+            });
+    }
+
+    private function saleWriteFailed(SaleRecord $sale, ?int $cashSessionId, \Throwable $exception): ServiceException
+    {
+        $this->logger->error('Sales V2 write failed', [
+            'sale_id' => $sale->getId(),
+            'branch_id' => $sale->getBranch()?->getId() ?? $sale->getAlmacen()?->getBranch()?->getId(),
+            'warehouse_id' => $sale->getAlmacen()?->getId(),
+            'cash_register_id' => $sale->getCajaId(),
+            'resolved_cash_session_id' => $cashSessionId,
+            'issued_at' => ($sale->getFecha() ?? $sale->getDateCreated())?->format('Y-m-d H:i:s'),
+            'item_count' => count($sale->getSaleItemRecords()),
+            'total' => $sale->getTotal(),
+            ...$this->buildThrowableContext($exception),
+        ]);
+
+        return new ServiceException(
+            'No se pudo sincronizar la venta con Sales V2. Operación cancelada.',
+            0,
+            $exception,
+        );
+    }
+
+    private function writeDrawerMovement(SaleRecord $sale, int $cashSessionId, int $userId, string $cashCollected): void
+    {
+        $serie = $sale->getSerie() ?? '';
+        $numero = $sale->getNumero() ?? '';
+        $saleRef = $serie !== '' && $numero !== '' ? "{$serie}-{$numero}" : null;
+        try {
+            $this->salesWriteGateway->writeCashSaleMovement(
+                saleId: (string) $sale->getId(),
+                cashSessionId: $cashSessionId,
+                createdBy: $userId,
+                amount: $cashCollected,
+                paymentMethodId: PaymentMethod::CASH,
+                createdAt: $sale->getFecha() !== null
+                    ? DateTimeImmutable::createFromInterface($sale->getFecha())
+                    : new DateTimeImmutable(),
+                description: $saleRef !== null ? "Venta {$saleRef}" : 'Venta en efectivo',
+            );
+        } catch (\Throwable $exception) {
+            $this->logger->error('Sales V2 cash movement write failed', [
+                'sale_id' => $sale->getId(),
+                'cash_session_id' => $cashSessionId,
+                'amount' => $cashCollected,
+                ...$this->buildThrowableContext($exception),
+            ]);
+
+            throw new ServiceException(
+                'No se pudo registrar el movimiento de caja en Sales V2. Operación cancelada.',
+                0,
+                $exception,
+            );
+        }
     }
 
     private function dispatchSaleConfirmed(SaleRecord $sale): void

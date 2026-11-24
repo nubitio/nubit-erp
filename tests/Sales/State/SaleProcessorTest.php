@@ -164,6 +164,9 @@ final class SaleProcessorTest extends TestCase
                 true,
             ));
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $connection = $this->createStub(Connection::class);
+        $connection->method('transactional')->willReturnCallback(static fn(callable $write): mixed => $write());
+        $this->entityManager->method('getConnection')->willReturn($connection);
         $this->saleInvoicing = $this->createMock(InvoiceCreatorInterface::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->saleUtils = $this->createMock(SaleUtils::class);
@@ -589,7 +592,7 @@ final class SaleProcessorTest extends TestCase
         //  - a stock-tracked item with cantidad=5 so validateStock() runs
         // The ledger service returns stock=0 (connection returns false), causing
         // the BLOCK policy to throw ServiceException('Stock insuficiente...').
-        $sale = $this->buildNewSale(tipoId: 2);
+        $sale = $this->buildNewSaleWithBranch(tipoId: 2);
 
         $warehouse = new Warehouse();
         new ReflectionClass(Warehouse::class)
@@ -891,6 +894,7 @@ final class SaleProcessorTest extends TestCase
         $this->saleSettlementPlanService = $this->buildSaleSettlementPlanServiceStub();
 
         $this->salesWriteGateway->expects($this->once())->method('write');
+        $this->salesWriteGateway->expects($this->once())->method('requireLockedOpenCashSessionForUser')->with(77, 42);
 
         $this->salesWriteGateway
             ->expects($this->once())
