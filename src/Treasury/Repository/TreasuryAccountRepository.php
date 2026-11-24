@@ -85,6 +85,22 @@ final readonly class TreasuryAccountRepository
         return $id === false ? null : (string) $id;
     }
 
+    public function mappedBankAccount(string $branchId, ?int $paymentMethodId, string $currency): ?TreasuryAccount
+    {
+        $id = $this->connection->fetchOne(
+            <<<'SQL'
+                SELECT a.id FROM treasury_payment_method_account m
+                JOIN treasury_account a ON a.id = m.account_id
+                WHERE m.branch_id = :branch AND m.payment_method_id = :method AND m.currency = :currency
+                  AND a.kind = 'bank' AND a.active = 1 AND a.currency = m.currency
+                  AND (a.branch_id IS NULL OR a.branch_id = m.branch_id)
+                SQL,
+            ['branch' => $branchId, 'method' => $paymentMethodId, 'currency' => $currency],
+        );
+
+        return is_string($id) ? $this->find($id) : null;
+    }
+
     /** @return list<array{branchId: string, paymentMethodId: int, currency: string, accountId: string}> */
     public function mappings(): array
     {

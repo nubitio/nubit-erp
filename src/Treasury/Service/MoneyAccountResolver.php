@@ -29,6 +29,19 @@ final readonly class MoneyAccountResolver
     /** @return array{account: TreasuryAccount, warning: ?string} */
     public function resolve(MoneyMovementRequest $request): array
     {
+        if ($request->requireMappedBankAccount) {
+            return [
+                'account' => $this->accounts->mappedBankAccount(
+                    $request->branchId,
+                    $request->paymentMethodId,
+                    $request->currency,
+                ) ?? throw new TreasuryException(
+                    'Configura una cuenta bancaria activa para el medio de pago y la sucursal.',
+                ),
+                'warning' => null,
+            ];
+        }
+
         if ($request->accountId !== null) {
             $account = $this->accounts->find($request->accountId);
             if ($account === null || !$account->active) {

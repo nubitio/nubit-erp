@@ -12,6 +12,8 @@
 
 **Primer corte de API comercial:** `POST /api/v1/sales` conecta ese ingreso a `ConfirmIntegrationCredit`. Es un piloto de crédito en PEN, con referencias y precios del ERP, saldo por cobrar y salida inmediata. Valida el stock disponible neto de reservas bajo bloqueo y agrupa la demanda por producto antes de descontar. No habilita cobros, emisión SUNAT, pedidos pendientes, ni corrige por sí solo las carreras de otros escritores de stock legados.
 
+**Cobro bancario externo (interno):** `ExternalBankCollection` aplica una referencia de cobro confirmada a una venta del mismo cliente API y sucursal, sin caja. Bloquea la venta y confirma abono, aplicación, movimiento bancario y asiento juntos. Tesorería activa y mapeo bancario por medio/sucursal/moneda son obligatorios; no se usa suspenso. La referencia se deduplica por cliente API y una repetición se rechaza con conflicto. El adaptador aún debe verificar la captura con su proveedor antes de invocar esta operación. Pasarelas con fondos por liquidar, comisiones y endpoint público siguen pendientes.
+
 ## Resumen ejecutivo
 
 **Propuesta:** mantener `SaleRecord` (`sales`) y profundizar el módulo de confirmación de ventas detrás de una interfaz común para POS, administración e integraciones. Conservar el turno de origen como dato histórico cuando exista; atribuir el cobro a su propio turno y el dinero a su cuenta o custodio real. Reutilizar Treasury, el ledger de clientes, Billing y el contexto Integration. No crear un segundo modelo de venta, una caja virtual ni usuarios ficticios.

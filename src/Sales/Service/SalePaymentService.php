@@ -153,6 +153,22 @@ readonly class SalePaymentService
         return $this->persistPaymentRow($sale, $paymentMethod, $amount, $paidAt, $reference);
     }
 
+    /** Called inside the authorized external collection transaction, with the sale already locked. */
+    public function appendExternalPayment(
+        SaleRecord $sale,
+        PaymentMethod $method,
+        string $amount,
+        DateTimeImmutable $paidAt,
+        string $reference,
+        string $captureKey,
+    ): SalePayment {
+        $this->assertCollectable($method, $sale);
+        $payment = $this->persistPaymentRow($sale, $method, $amount, $paidAt, $reference, $captureKey);
+        $this->recordOnCustomerLedger($sale, $payment, Money::money($amount), $paidAt);
+
+        return $payment;
+    }
+
     /**
      * A `sale_payments` row funded by a customer advance being applied to this
      * sale (#382). Same debt-side effect as {@see appendPayment()} — recomputes
@@ -188,6 +204,7 @@ readonly class SalePaymentService
         string $amount,
         DateTimeImmutable $paidAt,
         ?string $reference,
+        ?string $captureKey = null,
     ): SalePayment {
         $amountMoney = Money::money($amount);
         if ($amountMoney->isLessThanOrEqualTo(0)) {
@@ -210,6 +227,7 @@ readonly class SalePaymentService
             ->setCurrency($sale->getCurrency() !== '' ? $sale->getCurrency() : 'PEN')
             ->setPaidAt(\DateTime::createFromImmutable($paidAt))
             ->setReference($reference)
+            ->setIdempotencyKey($captureKey)
             ->setCreatedAt(\DateTime::createFromImmutable(new DateTimeImmutable()));
 
         $newPaidTotal = Money::money($sale->getPaidTotal())->plus($amountMoney);
