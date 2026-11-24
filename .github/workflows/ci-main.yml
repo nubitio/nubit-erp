@@ -110,6 +110,7 @@ jobs:
               - 'analyzer-baseline.toml'
               - 'scripts/architecture/**'
               - 'scripts/ci/**'
+              - 'scripts/api/**'
               - 'scripts/quality-check.sh'
               - 'Dockerfile'
               - 'docker-compose.yml'
@@ -204,6 +205,10 @@ jobs:
       - name: Check versioned public API contract
         if: needs.changes.outputs.backend == 'true'
         run: docker compose exec -T web php scripts/api/check-public-contract.php
+
+      - name: Check frontend API types are in sync with the backend
+        if: needs.changes.outputs.backend == 'true'
+        run: bash scripts/api/app-types.sh --check
 
       - name: Run architecture rules (AR-001…AR-010)
         if: needs.changes.outputs.backend == 'true'
