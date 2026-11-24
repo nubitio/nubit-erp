@@ -31,6 +31,9 @@ class ApiClient
     #[ORM\Column(length: 120)]
     private string $name;
 
+    #[ORM\Column(name: 'sales_branch_id', length: 255, nullable: true)]
+    private ?string $salesBranchId = null;
+
     /** @var list<string> */
     #[ORM\Column(type: 'json')]
     private array $scopes = [];
@@ -61,6 +64,11 @@ class ApiClient
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function assignSalesBranch(string $branchId): void
+    {
+        $this->salesBranchId = $branchId;
     }
 
     /** @return list<string> */

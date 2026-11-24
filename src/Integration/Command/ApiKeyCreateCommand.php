@@ -6,8 +6,10 @@ namespace App\Integration\Command;
 
 use App\Integration\Entity\ApiClient;
 use App\Integration\Entity\ApiKey;
+use App\Integration\Sales\SalesClientAccess;
 use App\Integration\Security\ApiClientUser;
 use App\Integration\Security\ApiKeyGenerator;
+use App\Organization\Entity\Branch;
 use Doctrine\ORM\EntityManagerInterface;
 use Nubit\Platform\Tenant\Contract\TenantConnectionSwitcherInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -51,6 +53,7 @@ final class ApiKeyCreateCommand extends Command
                 'Scope, repeatable',
                 [],
             )
+            ->addOption('sales-branch', null, InputOption::VALUE_REQUIRED, 'Branch ID for the sales:write scope')
             ->addOption('test', null, InputOption::VALUE_NONE, 'Mint a test key (nb_test_…) instead of live');
     }
 
@@ -77,6 +80,12 @@ final class ApiKeyCreateCommand extends Command
 
             return Command::INVALID;
         }
+        $salesBranchId = trim((string) $input->getOption('sales-branch'));
+        if (in_array(SalesClientAccess::WRITE_SCOPE, $scopes, strict: true) !== ($salesBranchId !== '')) {
+            $io->error('--scope=sales:write and --sales-branch must be provided together.');
+
+            return Command::INVALID;
+        }
 
         try {
             $this->tenantSwitcher->switchConnection($tenant);
@@ -86,9 +95,18 @@ final class ApiKeyCreateCommand extends Command
             return Command::FAILURE;
         }
 
-        $material = $this->keys->generate($tenant, true === $input->getOption('test'));
-
         $client = new ApiClient($name, $scopes);
+        if ($salesBranchId !== '') {
+            $branch = $this->entityManager->find(Branch::class, $salesBranchId);
+            if (!$branch instanceof Branch || !$branch->getIsActive() || ($branchId = $branch->getId()) === null) {
+                $io->error('The tenant has no active branch with that ID.');
+
+                return Command::INVALID;
+            }
+            $client->assignSalesBranch($branchId);
+        }
+
+        $material = $this->keys->generate($tenant, true === $input->getOption('test'));
         new ApiKey($client, $material->prefix, $material->tokenHash);
 
         $this->entityManager->persist($client);
