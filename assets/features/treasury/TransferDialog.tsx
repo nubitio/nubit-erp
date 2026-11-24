@@ -1,4 +1,4 @@
-import { AppDialog, Button, FormField, SelectField, TextField } from '@nubitio/ui';
+import { AppDialog, Button, Combobox, FormField, TextField } from '@nubitio/ui';
 import { useMemo, useState } from 'react';
 import toast from '@shared/lib/SharedUtils';
 import { treasuryErrorMessage, useTransfer, type TreasuryAccount } from './api/treasuryApi';
@@ -82,19 +82,19 @@ export const TransferDialog = ({ accounts, fromId, onClose }: Props) => {
       }
     >
       <FormField label="Desde">
-        <SelectField
-          value={from}
-          onChange={(e) => {
-            setFrom(e.target.value);
+        <Combobox
+          aria-label="Desde"
+          clearable={false}
+          options={movable.map((a) => ({
+            value: String(a.id),
+            label: `${a.name} (${a.currency})`,
+          }))}
+          value={from === '' ? null : from}
+          onChange={(accountId) => {
+            setFrom(accountId ?? '');
             setTo('');
           }}
-        >
-          {movable.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name} ({a.currency})
-            </option>
-          ))}
-        </SelectField>
+        />
       </FormField>
       <FormField
         label="Hacia"
@@ -104,14 +104,13 @@ export const TransferDialog = ({ accounts, fromId, onClose }: Props) => {
             : 'Solo cuentas en la misma moneda: no se convierte automáticamente.'
         }
       >
-        <SelectField value={to} onChange={(e) => setTo(e.target.value)}>
-          <option value="">Elige una cuenta</option>
-          {destinations.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name}
-            </option>
-          ))}
-        </SelectField>
+        <Combobox
+          aria-label="Hacia"
+          placeholder="Elige una cuenta"
+          options={destinations.map((a) => ({ value: String(a.id), label: a.name }))}
+          value={to === '' ? null : to}
+          onChange={(accountId) => setTo(accountId ?? '')}
+        />
       </FormField>
       <FormField label={`Monto${origin ? ` en ${origin.currency}` : ''}`}>
         <TextField inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />

@@ -385,6 +385,17 @@ export function POSOperatorHeader({
           </Button>
         )}
 
+        {exitTo && (
+          <Button
+            variant="secondary"
+            fullWidth
+            icon="ph ph-arrow-left"
+            onClick={() => navigate(exitTo)}
+          >
+            Salir del POS
+          </Button>
+        )}
+
         {menuItems.map((item) => (
           <Button
             key={item.label}

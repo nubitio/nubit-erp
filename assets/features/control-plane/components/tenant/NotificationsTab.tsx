@@ -6,8 +6,8 @@ import {
   Button,
   Card,
   Code,
+  Combobox,
   EmptyState,
-  SelectField,
   TextAreaField,
   Toggle,
 } from '@nubitio/ui';
@@ -127,17 +127,14 @@ export const NotificationsTab = ({ tenantId, isAdmin }: NotificationsTabProps) =
                 id: 'severity',
                 header: S.colSeverity,
                 render: (channel) => (
-                  <SelectField
+                  <Combobox
+                    aria-label={`${S.colSeverity} ${channel}`}
+                    clearable={false}
+                    options={SEVERITIES.map((severity) => ({ value: severity, label: severity }))}
                     value={matrix[eventKey][channel].severity}
                     disabled={!isAdmin}
-                    onChange={(e) => updateRow(eventKey, channel, { severity: e.target.value })}
-                  >
-                    {SEVERITIES.map((severity) => (
-                      <option key={severity} value={severity}>
-                        {severity}
-                      </option>
-                    ))}
-                  </SelectField>
+                    onChange={(severity) => severity && updateRow(eventKey, channel, { severity })}
+                  />
                 ),
               },
               {

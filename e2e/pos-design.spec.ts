@@ -6,10 +6,13 @@ for (const theme of ['light', 'dark'] as const) {
   test(`POS mobile follows the catalog and checkout design in ${theme}`, async ({ page }, info) => {
     const seed = await getE2ESeed();
     const unexpectedWrites: string[] = [];
+    // Looking at the catalogue must not change business data. What the shell itself writes on load is let
+    // through: the till's offline credential (POS) and the user's own appearance preference (profile).
+    const housekeeping = /\/api\/(auth\/|pos\/offline-credential$|profile$)/;
     await page.route('**/api/**', (route) => {
       if (
         ['GET', 'HEAD', 'OPTIONS'].includes(route.request().method()) ||
-        route.request().url().includes('/api/auth/')
+        housekeeping.test(route.request().url())
       )
         return route.fallback();
       unexpectedWrites.push(route.request().url());
@@ -23,8 +26,10 @@ for (const theme of ['light', 'dark'] as const) {
     const add = page.locator('.pos-product-card__select:not(:disabled)').first();
     await expect(add).toBeVisible({ timeout: 30000 });
     const media = add.locator('.pos-product-card__thumb');
-    expect((await media.boundingBox())!.height).toBe(84);
-    expect((await media.boundingBox())!.width).toBeGreaterThan(140);
+    // The photo leads the card: a 4:3 frame (POSDesign.scss), not a fixed-height strip.
+    const frame = (await media.boundingBox())!;
+    expect(frame.width).toBeGreaterThan(140);
+    expect(frame.height / frame.width).toBeCloseTo(0.75, 1);
     await add.click();
     await add.focus();
     await page.keyboard.press('Enter');

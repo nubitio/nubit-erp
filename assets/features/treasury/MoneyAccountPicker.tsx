@@ -1,4 +1,4 @@
-import { FormField, SelectField, Text } from '@nubitio/ui';
+import { Combobox, FormField, Text } from '@nubitio/ui';
 import { useTenantRuntimeConfig } from '@shared/hooks/useTenantRuntimeConfig';
 import { CASH_METHOD_ID } from '../cashRegister/components/cashCountModel';
 import { useTreasuryPosition } from './api/treasuryApi';
@@ -53,19 +53,15 @@ export const MoneyAccountPicker = ({
       htmlFor="money-account-picker"
       helpText="Por defecto se usa la cuenta asignada a este método de pago."
     >
-      <SelectField
+      <Combobox
         id="money-account-picker"
-        value={value}
+        placeholder="Automática (según el método)"
+        clearable
+        options={options.map((account) => ({ value: String(account.id), label: account.name }))}
+        value={value === '' ? null : value}
         disabled={disabled || position.isPending}
-        onChange={(event) => onChange(event.target.value)}
-      >
-        <option value="">Automática (según el método)</option>
-        {options.map((account) => (
-          <option key={account.id} value={account.id}>
-            {account.name}
-          </option>
-        ))}
-      </SelectField>
+        onChange={(accountId) => onChange(accountId ?? '')}
+      />
     </FormField>
   );
 };

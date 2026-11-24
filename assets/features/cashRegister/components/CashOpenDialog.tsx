@@ -125,6 +125,7 @@ export function CashOpenDialog({ open, registers, busyRegisters = [], onClose, o
                 <Combobox
                   id="cash-open-register"
                   aria-label="Caja"
+                  clearable={false}
                   required
                   options={registers.map((register) => ({
                     value: String(register.id),

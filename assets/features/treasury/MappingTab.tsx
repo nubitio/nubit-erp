@@ -1,4 +1,4 @@
-import { Alert, Button, EmptyState, SelectField, Skeleton, Text } from '@nubitio/ui';
+import { Alert, Button, Combobox, EmptyState, Skeleton, Text } from '@nubitio/ui';
 import toast from '@shared/lib/SharedUtils';
 import { hasPermission } from '@shared/permissions';
 import {
@@ -98,24 +98,23 @@ export const MappingTab = () => {
                   <th scope="row">{method.name}</th>
                   {currencies.map((currency) => (
                     <td key={currency}>
-                      <SelectField
+                      <Combobox
                         aria-label={`${method.name} en ${currency}, ${branch.name}`}
+                        placeholder="Sin asignar"
+                        clearable
+                        options={mappableAccounts(accounts, currency).map((account) => ({
+                          value: String(account.id),
+                          label: account.name,
+                        }))}
                         value={
                           mappedAccountId(mapping.data.mappings, branch.id, method.id, currency) ??
-                          ''
+                          null
                         }
                         disabled={!canManage || setMapping.isPending}
-                        onChange={(event) =>
-                          change(branch.id, method.id, currency, event.target.value)
+                        onChange={(accountId) =>
+                          change(branch.id, method.id, currency, accountId ?? '')
                         }
-                      >
-                        <option value="">Sin asignar</option>
-                        {mappableAccounts(accounts, currency).map((account) => (
-                          <option key={account.id} value={account.id}>
-                            {account.name}
-                          </option>
-                        ))}
-                      </SelectField>
+                      />
                     </td>
                   ))}
                 </tr>

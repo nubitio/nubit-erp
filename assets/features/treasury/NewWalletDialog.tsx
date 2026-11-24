@@ -1,4 +1,4 @@
-import { AppDialog, Button, FormField, SelectField, TextField } from '@nubitio/ui';
+import { AppDialog, Button, Combobox, FormField, TextField } from '@nubitio/ui';
 import { useState } from 'react';
 import toast from '@shared/lib/SharedUtils';
 import { treasuryErrorMessage, useCreateWallet } from './api/treasuryApi';
@@ -58,13 +58,13 @@ export const NewWalletDialog = ({ onClose }: Props) => {
         />
       </FormField>
       <FormField label="Moneda">
-        <SelectField value={currency} onChange={(e) => setCurrency(e.target.value)}>
-          {CURRENCIES.map((code) => (
-            <option key={code} value={code}>
-              {code}
-            </option>
-          ))}
-        </SelectField>
+        <Combobox
+          aria-label="Moneda"
+          clearable={false}
+          options={CURRENCIES.map((code) => ({ value: code, label: code }))}
+          value={currency}
+          onChange={(code) => code && setCurrency(code)}
+        />
       </FormField>
     </AppDialog>
   );
