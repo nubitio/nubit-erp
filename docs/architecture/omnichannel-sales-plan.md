@@ -8,6 +8,8 @@
 
 **Atribución técnica:** `sales.integration_client_id` referencia al `ApiClient` de la misma base tenant. Una venta conserva un solo actor de origen: vendedor humano o cliente API sin caja/turno; las ventas históricas no se reasignan. `SalesWriteGateway::writeIntegrationCredit` es persistencia interna para crédito y no está expuesta. La autorización de sucursal, el procesamiento comercial y la idempotencia de la API técnica siguen pendientes. La migración debe desplegarse antes del código que lee la columna y el rollback de esquema se bloquea cuando ya hay ventas técnicas.
 
+**Ingreso técnico protegido:** `SalesIntake` exige `sales:write`, tenant autenticado y sucursal activa asignada al cliente antes de reservar una clave de idempotencia. La clave es única por cliente; misma sucursal y mismo hash recuperan la venta; contenido o sucursal distintos devuelven conflicto. La reserva y los efectos comerciales locales deben compartir la conexión y la transacción. Provisionar clientes piloto con `app:integration:api-key:create --scope=sales:write --sales-branch=<id>` además de tenant y nombre. No se conceden permisos a clientes existentes por defecto. Falta conectar la confirmación comercial y exponer el endpoint.
+
 ## Resumen ejecutivo
 
 **Propuesta:** mantener `SaleRecord` (`sales`) y profundizar el módulo de confirmación de ventas detrás de una interfaz común para POS, administración e integraciones. Conservar el turno de origen como dato histórico cuando exista; atribuir el cobro a su propio turno y el dinero a su cuenta o custodio real. Reutilizar Treasury, el ledger de clientes, Billing y el contexto Integration. No crear un segundo modelo de venta, una caja virtual ni usuarios ficticios.

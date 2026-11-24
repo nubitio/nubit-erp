@@ -310,6 +310,7 @@ contexts:
     ownsTables:
       - integration_api_client
       - integration_api_key
+      - integration_sales_request
       - integration_document
       - integration_event
       - integration_webhook_endpoint
