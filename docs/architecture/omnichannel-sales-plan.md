@@ -6,6 +6,8 @@
 
 **Primer caso comercial sin caja:** `POST /api/sales/administrative-credit` es una operación interna JWT (`sales.create` y `sales.view`), no la API pública de integración. Usa el mismo procesamiento y la sucursal seleccionada, requiere almacén de esa sucursal y una única liquidación `RECEIVABLE` por el total. Deja caja, turno y pagos vacíos; mantiene vendedor humano, inventario y saldo por cobrar. No cambia `POST /api/sales` ni habilita órdenes, cobros externos o identidades de servicio.
 
+**Atribución técnica:** `sales.integration_client_id` referencia al `ApiClient` de la misma base tenant. Una venta conserva un solo actor de origen: vendedor humano o cliente API sin caja/turno; las ventas históricas no se reasignan. `SalesWriteGateway::writeIntegrationCredit` es persistencia interna para crédito y no está expuesta. La autorización de sucursal, el procesamiento comercial y la idempotencia de la API técnica siguen pendientes. La migración debe desplegarse antes del código que lee la columna y el rollback de esquema se bloquea cuando ya hay ventas técnicas.
+
 ## Resumen ejecutivo
 
 **Propuesta:** mantener `SaleRecord` (`sales`) y profundizar el módulo de confirmación de ventas detrás de una interfaz común para POS, administración e integraciones. Conservar el turno de origen como dato histórico cuando exista; atribuir el cobro a su propio turno y el dinero a su cuenta o custodio real. Reutilizar Treasury, el ledger de clientes, Billing y el contexto Integration. No crear un segundo modelo de venta, una caja virtual ni usuarios ficticios.

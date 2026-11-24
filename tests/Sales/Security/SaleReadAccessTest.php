@@ -60,6 +60,13 @@ final class SaleReadAccessTest extends TestCase
         $this->access(['sales.view_own'], 7, ['8'])->assertCanReadSale('sale-of-someone-else');
     }
 
+    public function testACashierDoesNotOwnASaleWithoutAHumanSeller(): void
+    {
+        $this->expectException(AccessDeniedException::class);
+
+        $this->access(['sales.view_own'], 7, [null])->assertCanReadSale('integration-sale');
+    }
+
     public function testACashierCannotReadTheDocumentOfAnotherUsersSale(): void
     {
         $this->expectException(AccessDeniedException::class);

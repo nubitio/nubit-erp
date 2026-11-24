@@ -52,6 +52,7 @@ final readonly class TeamControlQuery extends TeamControlSql
                   AND s.issued_date BETWEEN :from_date AND :to_date
                   AND s.status <> 'VOIDED'
                   AND s.deleted_at IS NULL
+                  AND s.integration_client_id IS NULL
                 GROUP BY s.seller_user_id
                 SQL,
             $params,
