@@ -163,6 +163,7 @@ contexts:
       [Accounting, AccountsPayable, AI, Billing, CashRegister, Catalog, Contacts, Efact, Identity, Inventory, Organization, Settings, Treasury]
     publicContracts:
       - App\Sales\Port\InvoiceCreatorInterface
+      - App\Sales\Port\ConfirmIntegrationCredit
       - App\Sales\Port\SaleInvoicePrinterInterface
       - App\Sales\Port\SaleVoiderInterface
       - App\Sales\Port\RejectedDocumentReplacerInterface
@@ -305,7 +306,7 @@ contexts:
   Integration:
     namespace: App\Integration
     layer: ErpCore
-    dependsOn: [Billing, ControlPlane, Organization]
+    dependsOn: [Billing, ControlPlane, Organization, Sales]
     publicContracts: []
     ownsTables:
       - integration_api_client

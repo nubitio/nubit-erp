@@ -13,3 +13,9 @@ Run `yarn generate:api-types` to generate the public TypeScript types into `asse
 - A breaking change requires an explicit ADR and a new versioned prefix (for example `/api/v2`) plus a migration and sunset plan for the prior version.
 - API keys are tenant-scoped bearer keys. `external_id` is the caller-owned idempotency key for document submission; reusing it with a different payload returns `409`. Webhook receivers must deduplicate `Nb-Event-Id` and verify `Nb-Signature` as described in ADR-017.
 - Lycet is an implementation dependency of the fiscal pipeline, not a public contract owner. Its adapter may change without changing this document; any provider-induced contract change requires the versioning policy above.
+
+## Credit sales pilot
+
+`POST /api/v1/sales` requires `sales:write`, an active branch assigned to the API client and an `Idempotency-Key`. Send existing branch, warehouse, customer and product IDs; the warehouse must belong to the authorized branch. Quantities and unit prices are decimal strings; `total_minor` is the expected total in céntimos. The server validates prices and the total before confirming the sale. First confirmation returns `201`; identical replay returns `200` with the same `sale_id`. A changed command under the same key returns `409`.
+
+This endpoint only confirms unpaid credit sales in PEN. It reduces available inventory and creates the receivable without recording a cash or bank movement or issuing a SUNAT document. It does not handle reservations for unconfirmed orders, payments, or WooCommerce synchronization. Do not use it as a substitute for an applicable fiscal issuance workflow.

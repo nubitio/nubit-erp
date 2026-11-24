@@ -22,6 +22,9 @@ interface SalesInventoryPortInterface
      */
     public function getStockForProductInWarehouse(Product $product, Warehouse $warehouse): float;
 
+    /** @return numeric-string Available stock (net of reservations), locked until the caller commits. */
+    public function lockAvailableStock(Product $product, Warehouse $warehouse): string;
+
     /**
      * @throws Exception
      * @throws ServiceException

@@ -157,6 +157,18 @@ final class InventoryService
         return '0';
     }
 
+    /** @return numeric-string */
+    public function lockAvailableStock(string $warehouseId, string $productId): string
+    {
+        $quantity =
+            (string) $this->connection->fetchOne('SELECT qty_on_hand - qty_reserved FROM stock_items WHERE warehouse_id = ? AND product_id = ? FOR UPDATE', [
+                $warehouseId,
+                $productId,
+            ]);
+
+        return is_numeric($quantity) ? $quantity : '0';
+    }
+
     /**
      * Reserve stock (increment qty_reserved), used for pending orders.
      *

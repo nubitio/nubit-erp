@@ -1570,6 +1570,11 @@ final class SaleProcessorTest extends TestCase
         $stub = $rc->newInstanceWithoutConstructor();
 
         $salesInventory = new class() implements SalesInventoryPortInterface {
+            public function lockAvailableStock(Product $product, Warehouse $warehouse): string
+            {
+                return '0';
+            }
+
             public function getStockForProductInWarehouse(Product $product, Warehouse $warehouse): float
             {
                 return 0.0;
