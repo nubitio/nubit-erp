@@ -27,6 +27,7 @@ final class CashRegisterCloseProcessorTest extends TestCase
     /** @var Security&MockObject */
     private Security $security;
 
+    /** @var Connection&MockObject */
     private Connection $connection;
 
     protected function setUp(): void
@@ -34,9 +35,9 @@ final class CashRegisterCloseProcessorTest extends TestCase
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->security = $this->createMock(Security::class);
         $this->connection = $this->createMock(Connection::class);
-        $this->connection->method('transactional')->willReturnCallback(
-            fn (\Closure $operation) => $operation($this->connection),
-        );
+        $this->connection
+            ->method('transactional')
+            ->willReturnCallback(fn(\Closure $operation) => $operation($this->connection));
         $this->entityManager->method('getConnection')->willReturn($this->connection);
 
         $authUser = new AuthUserDto(userId: 1, username: 'cajero');
@@ -211,7 +212,8 @@ final class CashRegisterCloseProcessorTest extends TestCase
     {
         $cashSession = new CashSession()->setStatus('CLOSED');
         $this->connection->expects(self::once())->method('transactional');
-        $this->entityManager->expects(self::once())
+        $this->entityManager
+            ->expects(self::once())
             ->method('find')
             ->with(CashSession::class, 5, LockMode::PESSIMISTIC_WRITE)
             ->willReturn($cashSession);

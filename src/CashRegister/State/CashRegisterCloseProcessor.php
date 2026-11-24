@@ -51,11 +51,18 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         array $context = [],
     ): CashRegisterCloseResponseDto {
         ['counted' => $countedTotal, 'notes' => $notes] = ClosureCount::of($data);
+        $sessionId = (int) $uriVariables['id'];
+        $connection = $this->entityManager->getConnection();
 
         try {
-            $this->entityManager->getConnection()->transactional(
-                fn (Connection $connection) => $this->close($connection, $uriVariables['id'], $data, $countedTotal, $notes),
-            );
+            $connection->transactional(function (Connection $connection) use (
+                $sessionId,
+                $data,
+                $countedTotal,
+                $notes,
+            ): void {
+                $this->close($connection, $sessionId, $data, $countedTotal, $notes);
+            });
         } catch (ORMException $ormException) {
             return new CashRegisterCloseResponseDto(
                 success: false,
@@ -70,7 +77,7 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
     /** @param list<string> $notes */
     private function close(
         Connection $connection,
-        int|string $sessionId,
+        int $sessionId,
         CashRegisterCloseDto $data,
         BigDecimal $countedTotal,
         array $notes,
@@ -122,9 +129,8 @@ readonly class CashRegisterCloseProcessor implements ProcessorInterface
         if ($data->fundKept !== null) {
             $stays = $data->fundKept ? BigDecimal::of($cashSession->getOpeningAmount()) : BigDecimal::zero();
             $taken = $countedTotal->minus($stays);
-            $cashSession->setCashWithdrawnAtClose(
-                (string) ($taken->isNegative() ? BigDecimal::zero() : $taken)->toScale(2, RoundingMode::HALF_UP),
-            );
+            $withdrawn = $taken->isNegative() ? BigDecimal::zero() : $taken;
+            $cashSession->setCashWithdrawnAtClose((string) $withdrawn->toScale(2, RoundingMode::HALF_UP));
         }
         $cashSession->setStatus('CLOSED');
         $cashSession->setClosedBy($userRef instanceof User ? $userRef : null);

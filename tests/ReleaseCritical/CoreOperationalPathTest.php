@@ -313,33 +313,28 @@ final class CoreOperationalPathTest extends KernelTestCase
         $this->closeWithExpectedCount($world, '50.00');
     }
 
-    public function testClosingUsesSessionOpeningEvenWhenHistoricalOpeningMovementIsMissing(): void
+    public function testClosingUsesSessionOpeningAndRejectsASecondCloseFromAStaleEntity(): void
     {
         $world = $this->fixture->seed();
         $this->closeWithExpectedCount($world, '50.00');
-    }
 
-    public function testClosingDoesNotOverwriteAnAlreadyPersistedCutWhenTheEntityIsStale(): void
-    {
-        $world = $this->fixture->seed();
         $sessionId = $world->cashSession->getId();
-        $this->entityManager->getConnection()->update('cash_sessions', [
-            'status' => 'CLOSED',
-            'counted_amount' => '53.00',
-        ], ['id' => $sessionId]);
-        self::assertSame('OPEN', $world->cashSession->getStatus(), 'The ORM still holds the pre-close entity.');
+        // Simulate a request whose identity map was populated before the first close committed.
+        $world->cashSession->setStatus('OPEN');
 
         $dto = new CashRegisterCloseDto();
         $dto->countedAmount = '99.00';
-        $processor = new CashRegisterCloseProcessor($this->entityManager, $this->securityStub((int) $world->user->getId()));
+        $processor = new CashRegisterCloseProcessor(
+            $this->entityManager,
+            $this->securityStub((int) $world->user->getId()),
+        );
         try {
             $processor->process($dto, new Put(), ['id' => $sessionId]);
-            self::fail('A second close must not overwrite the persisted cut.');
+            static::fail('A second close must not overwrite the persisted cut.');
         } catch (ConflictHttpException) {
-            self::assertSame('53.00', $this->entityManager->getConnection()->fetchOne(
-                'SELECT counted_amount FROM cash_sessions WHERE id = ?',
-                [$sessionId],
-            ));
+            static::assertSame('50.00', $this->entityManager->getConnection()->fetchOne('SELECT counted_amount FROM cash_sessions WHERE id = ?', [
+                $sessionId,
+            ]));
         }
     }
 
