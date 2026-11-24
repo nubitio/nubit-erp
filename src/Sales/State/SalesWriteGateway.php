@@ -21,6 +21,7 @@ use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 /**
  * Gateway for writes on the new sales schema.
@@ -585,6 +586,20 @@ readonly class SalesWriteGateway
         );
 
         return $id === false || $id === null ? null : (int) $id;
+    }
+
+    /** Recheck the selected drawer under the same row lock used by close. The caller owns the transaction. */
+    public function requireLockedOpenCashSessionForUser(int $cashSessionId, int $userId): void
+    {
+        $id = $this->connection->fetchOne("SELECT id FROM cash_sessions WHERE id = :id AND opened_by = :userId AND status = 'OPEN' FOR UPDATE", [
+            'id' => $cashSessionId,
+            'userId' => $userId,
+        ]);
+        if ($id === false) {
+            throw new ConflictHttpException(
+                'El turno de caja ya no está abierto. Vuelve a intentar con un turno activo.',
+            );
+        }
     }
 
     /**

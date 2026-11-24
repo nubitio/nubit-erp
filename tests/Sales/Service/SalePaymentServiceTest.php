@@ -21,6 +21,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -148,19 +149,22 @@ final class SalePaymentServiceTest extends TestCase
     {
         $em = $this->createMock(EntityManagerInterface::class);
         $this->writeGateway->method('findOpenCashSessionIdForUser')->willReturn(42);
+        $this->writeGateway->expects(static::once())->method('requireLockedOpenCashSessionForUser')->with(42, 7);
         $this->writeGateway
             ->expects(self::once())
             ->method('writeReceivableCollectionMovement')
             ->with(self::anything(), self::anything(), 42, self::anything(), '40.00', PaymentMethod::CASH);
 
         $sale = $this->creditSale();
+        $operator = new User();
+        new \ReflectionProperty(User::class, 'id')->setValue($operator, 7);
         $payment = $this->service($em)->registerPayment(
             $sale,
             $this->collectedMethod(PaymentMethod::CASH),
             '40.00',
             new DateTimeImmutable('2026-09-08'),
             null,
-            new User(),
+            $operator,
         );
 
         self::assertSame('50.00', $sale->getPaidTotal());
@@ -172,10 +176,41 @@ final class SalePaymentServiceTest extends TestCase
         self::assertSame('40.00', $this->dispatched[0]->total);
     }
 
+    public function testCashCollectionDoesNotBookWhenTheSelectedSessionClosesBeforeTheLock(): void
+    {
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(static::never())->method('persist');
+        $em->expects(static::never())->method('flush');
+        $this->writeGateway->method('findOpenCashSessionIdForUser')->willReturn(42);
+        $this->writeGateway
+            ->expects(static::once())
+            ->method('requireLockedOpenCashSessionForUser')
+            ->willThrowException(new ConflictHttpException());
+        $this->writeGateway->expects(static::never())->method('writeReceivableCollectionMovement');
+        $sale = $this->creditSale();
+
+        try {
+            $this->service($em)->registerPayment(
+                $sale,
+                $this->collectedMethod(PaymentMethod::CASH),
+                '40.00',
+                new DateTimeImmutable('2026-09-08'),
+                null,
+                new User(),
+            );
+            static::fail('A collection must not land in a drawer that has already closed.');
+        } catch (ConflictHttpException) {
+            static::assertSame('90.00', $sale->getBalanceDue());
+            static::assertCount(0, $sale->getSalePayments());
+            static::assertSame([], $this->dispatched);
+        }
+    }
+
     public function testNonCashCollectionSkipsDrawerAndBooksBankEvent(): void
     {
         $em = $this->createMock(EntityManagerInterface::class);
         $this->writeGateway->expects(self::never())->method('findOpenCashSessionIdForUser');
+        $this->writeGateway->expects(static::never())->method('requireLockedOpenCashSessionForUser');
         $this->writeGateway->expects(self::never())->method('writeReceivableCollectionMovement');
 
         $sale = $this->creditSale();
