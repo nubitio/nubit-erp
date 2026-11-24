@@ -22,14 +22,17 @@ use App\Identity\Offline\OfflineActors;
 use App\Identity\Security\Security;
 use App\Inventory\Domain\PriceListPricing;
 use App\Inventory\Entity\PriceListItem;
+use App\Inventory\Entity\Warehouse;
 use App\Organization\Repository\BranchRepository;
 use App\Sales\Domain\AuthorizedPrice;
+use App\Sales\Domain\IntegrationSaleActor;
 use App\Sales\Domain\PriceSource;
 use App\Sales\Domain\SaleSettlementType;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SaleRecord;
 use App\Sales\Event\SaleConfirmed;
 use App\Sales\Event\SaleConfirmedLine;
+use App\Sales\Port\ConfirmIntegrationCredit;
 use App\Sales\Port\InvoiceCreatorInterface;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Sales\Service\SalePaymentsTreasury;
@@ -56,7 +59,7 @@ use Symfony\Component\Uid\Uuid;
 /**
  * @implements ProcessorInterface<mixed, mixed>
  */
-readonly class SaleProcessor implements ProcessorInterface
+readonly class SaleProcessor implements ProcessorInterface, ConfirmIntegrationCredit
 {
     public const string ADMINISTRATIVE_CREDIT = 'sale_administrative_credit';
 
@@ -88,6 +91,7 @@ readonly class SaleProcessor implements ProcessorInterface
         private ?MessageBusInterface $messageBus = null,
         private ?SalePaymentsTreasury $paymentsTreasury = null,
         private ?OfflineActors $offlineActors = null,
+        private ?IntegrationSaleStock $integrationStock = null,
     ) {}
 
     /**
@@ -274,35 +278,7 @@ readonly class SaleProcessor implements ProcessorInterface
             $this->validateCommercialControls($data, $isOfflineSale, $can);
         }
 
-        $this->logger->info('Calculating sale totals');
-        $subtotal = BigDecimal::zero();
-        $itemCount = 0;
-
-        /** @var SaleItemRecord $item */
-        foreach ($data->getSaleItemRecords() as $item) {
-            $itemCount++;
-            $item->setSaleRecord($data);
-            $subtotal = $subtotal->plus(Money::money($item->getNetAmount()));
-
-            $this->logger->debug('Processed sale item', [
-                'item_number' => $itemCount,
-                'product_id' => $item->getProduct()?->getId(),
-                'quantity' => $item->getQty(),
-                'price' => $item->getUnitPrice(),
-                'total' => $item->getNetAmount(),
-            ]);
-        }
-
-        $data->setSubtotal(Money::toString($subtotal));
-        $discountRate = Money::rate($data->getDescuento());
-        $discountAmount = Money::money($subtotal->multipliedBy($discountRate));
-        $totalBeforeCashRounding = Money::money($subtotal->minus($discountAmount));
-        $cashRoundingAdjustment = $this->resolveCashRoundingAdjustment($data, $totalBeforeCashRounding, $request);
-        $total = Money::money($totalBeforeCashRounding->minus($cashRoundingAdjustment));
-        $data->setTotal(Money::toString($total));
-        $data->setCashRoundingAdjustment(Money::toString($cashRoundingAdjustment));
-        $data->setStatus('COMPLETED');
-        $this->detractionCalculator->applyFromItems($data);
+        $this->calculateTotals($data, $request instanceof Request ? $request : null);
         if ($isOperationalSale) {
             $settlements = $this->saleSettlementPlanService->resolveForWrite(
                 $data,
@@ -310,16 +286,16 @@ readonly class SaleProcessor implements ProcessorInterface
                 $data->getTotal() ?? '0.00',
             );
             if ($administrativeCredit) {
-                $this->saleSettlementPlanService->assertFullReceivable($settlements, Money::toString($total));
+                $this->saleSettlementPlanService->assertFullReceivable($settlements, $data->getTotal() ?? '0.00');
             }
         }
 
         $this->logger->info('Sale totals calculated', [
-            'item_count' => $itemCount,
-            'subtotal' => Money::toString($subtotal),
+            'item_count' => count($data->getSaleItemRecords()),
+            'subtotal' => $data->getSubtotal(),
             'discount_percentage' => $data->getDescuento(),
-            'cash_rounding_adjustment' => Money::toString($cashRoundingAdjustment),
-            'total' => Money::toString($total),
+            'cash_rounding_adjustment' => $data->getCashRoundingAdjustment(),
+            'total' => $data->getTotal(),
         ]);
 
         if ($isNew) {
@@ -445,6 +421,90 @@ readonly class SaleProcessor implements ProcessorInterface
         ]);
 
         return $data;
+    }
+
+    #[Override]
+    public function confirmIntegrationCredit(
+        string $clientId,
+        string $branchId,
+        string $warehouseId,
+        int $customerId,
+        array $items,
+        string $expectedTotal,
+    ): string {
+        if (!$this->entityManager->getConnection()->isTransactionActive()) {
+            throw new \LogicException('Integration sales need an active intake transaction.');
+        }
+        $actor = new IntegrationSaleActor($clientId);
+        $warehouse = $this->entityManager->find(Warehouse::class, $warehouseId);
+        $branch = $warehouse?->getBranch();
+        if (
+            !$warehouse instanceof Warehouse
+            || $branch === null
+            || $branch->getId() !== $branchId
+            || !$branch->getIsActive()
+        ) {
+            throw ValidationException::withErrors(['warehouse_id' => [
+                'Selecciona un almacén de la sucursal autorizada.',
+            ]]);
+        }
+        $customer = $this->customerRepository->find($customerId);
+        if (!$customer instanceof Customer) {
+            throw ValidationException::withErrors(['customer_id' => ['El cliente indicado no existe.']]);
+        }
+        $this->activeReferenceGuard->assertActiveOnCreate($warehouse, 'warehouse_id', 'El almacén');
+        $this->activeReferenceGuard->assertActiveOnCreate($customer, 'customer_id', 'El cliente');
+        $saleId = Uuid::v7()->toRfc4122();
+        $sale = new SaleRecord()
+            ->setId($saleId)
+            ->setCurrency('PEN')
+            ->setWarehouse($warehouse)
+            ->setBranch($branch)
+            ->setCustomer($customer)
+            ->setDateCreated(new DateTimeImmutable())
+            ->setSettlements([['type' => SaleSettlementType::RECEIVABLE->value, 'amount' => $expectedTotal]]);
+
+        $this->saleUtils->fillSaleValues($sale);
+        foreach ($this->buildSaleItems($items) as $item) {
+            $product = $item->getProduct();
+            if (!$product instanceof Product || !$product->isActive()) {
+                throw ValidationException::withErrors(['lines' => ['Cada línea debe indicar un producto activo.']]);
+            }
+            $sale->addSaleItemRecord($item);
+        }
+
+        $this->validateCommercialControls($sale, false, static fn(string $permission): bool => false);
+        $this->calculateTotals($sale, null);
+        $total = $sale->getTotal() ?? '0.00';
+        $settlements = $this->saleSettlementPlanService->resolveForWrite($sale, 'PEN', $total);
+        $this->saleSettlementPlanService->assertFullReceivable($settlements, $total);
+        ($this->integrationStock ?? throw new \LogicException('Missing integration stock service.'))->record(
+            $sale,
+            $warehouse,
+        );
+        $this->salesWriteGateway->writeIntegrationCredit($sale, $actor);
+        $this->dispatchSaleToLedger($sale);
+        $this->dispatchSaleConfirmed($sale);
+
+        return $saleId;
+    }
+
+    private function calculateTotals(SaleRecord $sale, ?Request $request): void
+    {
+        $subtotal = BigDecimal::zero();
+        foreach ($sale->getSaleItemRecords() as $item) {
+            $item->setSaleRecord($sale);
+            $subtotal = $subtotal->plus(Money::money($item->getNetAmount()));
+        }
+
+        $sale->setSubtotal(Money::toString($subtotal));
+        $discount = Money::money($subtotal->multipliedBy(Money::rate($sale->getDescuento())));
+        $beforeRounding = Money::money($subtotal->minus($discount));
+        $rounding = $this->resolveCashRoundingAdjustment($sale, $beforeRounding, $request);
+        $sale->setTotal(Money::toString($beforeRounding->minus($rounding)));
+        $sale->setCashRoundingAdjustment(Money::toString($rounding));
+        $sale->setStatus('COMPLETED');
+        $this->detractionCalculator->applyFromItems($sale);
     }
 
     private function assertAdministrativeCreditContext(SaleRecord $sale, bool $isNewOperational, bool $offline): string

@@ -4033,12 +4033,6 @@ message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
 
 [[issues]]
-file = "src/Sales/State/SaleProcessor.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$item`."
-count = 1
-
-[[issues]]
 file = "src/Sales/State/SaleProvider.php"
 code = "docblock-type-mismatch"
 message = 'Docblock return type `ApiPlatform\State\Pagination\PartialPaginatorInterface<object>|iterable<mixed, object>|null|object` is incompatible with native return type `array<array-key, mixed>|null|object`.'

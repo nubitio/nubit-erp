@@ -25,10 +25,7 @@ final class Version20261124160000_sale_integration_actor extends AbstractMigrati
                     REFERENCES integration_api_client (id) ON DELETE RESTRICT,
                 ADD CONSTRAINT CHK_SALES_ORIGIN_ACTOR CHECK (
                     (seller_user_id IS NOT NULL AND integration_client_id IS NULL)
-                    OR (
-                        seller_user_id IS NULL AND integration_client_id IS NOT NULL
-                        AND cash_register_id IS NULL AND cash_session_id IS NULL
-                    )
+                    OR (seller_user_id IS NULL AND integration_client_id IS NOT NULL)
                 )
             SQL);
     }

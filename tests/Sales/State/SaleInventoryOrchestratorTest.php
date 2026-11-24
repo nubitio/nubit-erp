@@ -487,6 +487,11 @@ final class SaleInventoryOrchestratorTest extends TestCase
 
 final readonly class TestSalesInventoryPort implements SalesInventoryPortInterface
 {
+    public function lockAvailableStock(Product $product, Warehouse $warehouse): string
+    {
+        return '0';
+    }
+
     public function __construct(
         private Connection $connection,
     ) {}

@@ -33,6 +33,11 @@ final readonly class InventoryServiceSalesInventoryPort implements SalesInventor
         return (float) $this->inventoryService->getOnHand((string) $warehouse->getId(), (string) $product->getId());
     }
 
+    public function lockAvailableStock(Product $product, Warehouse $warehouse): string
+    {
+        return $this->inventoryService->lockAvailableStock((string) $warehouse->getId(), (string) $product->getId());
+    }
+
     /**
      * @throws Exception
      * @throws ServiceException
