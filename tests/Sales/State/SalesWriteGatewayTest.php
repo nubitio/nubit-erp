@@ -10,6 +10,7 @@ use App\Catalog\Entity\UnitOfMeasure;
 use App\Contacts\Entity\Customer;
 use App\Inventory\Entity\Warehouse;
 use App\Organization\Entity\Branch;
+use App\Sales\Domain\IntegrationSaleActor;
 use App\Sales\Entity\SaleItemRecord;
 use App\Sales\Entity\SalePayment;
 use App\Sales\Entity\SaleRecord;
@@ -233,6 +234,46 @@ class SalesWriteGatewayTest extends TestCase
     }
 
     // ── write() happy path ────────────────────────────────────────────────────
+
+    public function testIntegrationCreditStoresTheClientInsteadOfAHumanOrDrawer(): void
+    {
+        $sale = $this->buildMinimalSale();
+        $sale->setCreatedBy(null);
+        $sale->setSettlements([['type' => 'RECEIVABLE', 'amount' => '100.00']]);
+        $this->stubCurrencyResolver();
+        $settings = $this->createStub(TenantSettingsService::class);
+        $settings->method('get')->willReturn(new \App\Settings\Entity\TenantSettings());
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->expects(static::once())->method('persist')->with($sale);
+        $em->expects(static::once())->method('flush');
+        $gateway = new SalesWriteGateway(
+            $this->connection,
+            $em,
+            $this->currencyResolver,
+            new SaleSettlementPlanService(),
+            $this->createStub(DashboardRepository::class),
+            $settings,
+        );
+        $actor = new IntegrationSaleActor('019AB06D-A149-71EB-B66B-3C39D0FFD94D');
+        $gateway->writeIntegrationCredit($sale, $actor);
+
+        static::assertSame('019ab06d-a149-71eb-b66b-3c39d0ffd94d', $sale->getIntegrationClientId());
+        static::assertNull($sale->getSellerUserId());
+        static::assertNull($sale->getCashRegisterId());
+        static::assertNull($sale->getCashSessionId());
+        static::assertSame('100.00', $sale->getBalanceDue());
+        static::assertCount(0, $sale->getSalePayments());
+
+        $this->expectException(\LogicException::class);
+        $gateway->writeIntegrationCredit($sale, new IntegrationSaleActor('019ab06d-a149-71eb-b66b-3c39d0ffd94e'));
+    }
+
+    public function testIntegrationCreditRejectsHumanAttribution(): void
+    {
+        $sale = $this->buildMinimalSale();
+        $this->expectException(\LogicException::class);
+        $this->gateway->writeIntegrationCredit($sale, new IntegrationSaleActor('019ab06d-a149-71eb-b66b-3c39d0ffd94d'));
+    }
 
     public function testWriteHappyPathCallsEntityManagerPersistAndFlush(): void
     {

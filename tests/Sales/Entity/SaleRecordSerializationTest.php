@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Sales\Entity;
 
+use App\Sales\Domain\IntegrationSaleActor;
 use App\Sales\Entity\SaleRecord;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
@@ -32,5 +33,16 @@ final class SaleRecordSerializationTest extends TestCase
         self::assertArrayNotHasKey('voidedByUserId', $payload);
         self::assertArrayNotHasKey('voidedAt', $payload);
         self::assertArrayNotHasKey('voidReason', $payload);
+    }
+
+    public function testIntegrationAttributionDoesNotAppearInTheHumanSalesPayload(): void
+    {
+        $sale = new SaleRecord();
+        $sale->attributeToIntegration(new IntegrationSaleActor('019ab06d-a149-71eb-b66b-3c39d0ffd94d'));
+        $serializer = new Serializer([new ObjectNormalizer(new ClassMetadataFactory(new AttributeLoader()))]);
+        $payload = $serializer->normalize($sale, null, ['groups' => ['sale_record:read']]);
+
+        static::assertIsArray($payload);
+        static::assertArrayNotHasKey('integrationClientId', $payload);
     }
 }

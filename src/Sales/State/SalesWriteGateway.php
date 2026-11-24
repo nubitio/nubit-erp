@@ -6,6 +6,7 @@ namespace App\Sales\State;
 
 use App\Catalog\Entity\PaymentMethod;
 use App\Efact\Domain\Money;
+use App\Sales\Domain\IntegrationSaleActor;
 use App\Sales\Domain\SaleSettlementType;
 use App\Sales\Entity\SaleDiscount;
 use App\Sales\Entity\SaleItemRecord;
@@ -48,6 +49,26 @@ readonly class SalesWriteGateway
      */
     public function write(SaleRecord $sale, ?int $cashSessionId, bool $withoutDrawer = false): void
     {
+        $this->persist($sale, $cashSessionId, $withoutDrawer, integration: null);
+    }
+
+    /**
+     * Persists a prepared credit sale. The caller authorizes the integration and location
+     * and owns the transaction that coordinates the shared commercial effects.
+     *
+     * @throws Exception
+     */
+    public function writeIntegrationCredit(SaleRecord $sale, IntegrationSaleActor $actor): void
+    {
+        $this->persist($sale, cashSessionId: null, withoutDrawer: true, integration: $actor);
+    }
+
+    private function persist(
+        SaleRecord $sale,
+        ?int $cashSessionId,
+        bool $withoutDrawer,
+        ?IntegrationSaleActor $integration,
+    ): void {
         $saleId = $sale->getId();
         $warehouseId = $sale->getAlmacen()?->getId();
         $cashRegisterId = $sale->getCajaId();
@@ -70,9 +91,7 @@ readonly class SalesWriteGateway
                 $saleId,
             ));
         }
-        if ($sellerUserId === null) {
-            throw new \RuntimeException(sprintf('New schema write aborted: seller user is null for sale %s.', $saleId));
-        }
+        $this->assertOriginActor($sale, $sellerUserId, $integration);
 
         $subtotal = Money::money($sale->getSubtotal());
         $discountPercent = Money::of($sale->getDescuento() ?? '0');
@@ -168,6 +187,9 @@ readonly class SalesWriteGateway
         $sale->setExchangeRate((string) $currencyData['exchange_rate']);
         $sale->setBranch($branch);
         $sale->setSellerUserId($sellerUserId);
+        if ($integration !== null) {
+            $sale->attributeToIntegration($integration);
+        }
         $sale->setCashSessionId($cashSessionId);
         $sale->setStatus($sale->getEstado() === 0 ? 'VOIDED' : 'COMPLETED');
 
@@ -332,6 +354,30 @@ readonly class SalesWriteGateway
             } catch (\Throwable) {
                 // Best-effort cache invalidation — never break sale write.
             }
+        }
+    }
+
+    private function assertOriginActor(SaleRecord $sale, ?int $sellerUserId, ?IntegrationSaleActor $integration): void
+    {
+        if ($integration === null) {
+            if ($sellerUserId === null) {
+                throw new \RuntimeException(sprintf(
+                    'New schema write aborted: seller user is null for sale %s.',
+                    $sale->getId(),
+                ));
+            }
+            if ($sale->getIntegrationClientId() !== null) {
+                throw new \LogicException('An integration sale cannot be reassigned to a human seller.');
+            }
+
+            return;
+        }
+
+        if ($sellerUserId !== null || $sale->getSellerUserId() !== null) {
+            throw new \LogicException('An integration sale cannot have a human seller.');
+        }
+        if ($sale->getIntegrationClientId() !== null && $sale->getIntegrationClientId() !== $integration->clientId) {
+            throw new \LogicException('An integration sale cannot be reassigned to another API client.');
         }
     }
 

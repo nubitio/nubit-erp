@@ -19,6 +19,7 @@ use App\Sales\Controller\Api\MakeSaleInvoice;
 use App\Sales\Controller\Api\PrintSaleInvoice;
 use App\Sales\Controller\Api\ReplaceRejectedSaleDocument;
 use App\Sales\Controller\Api\VoidSale;
+use App\Sales\Domain\IntegrationSaleActor;
 use App\Sales\Domain\RequestedVoucherType;
 use App\Sales\Dto\SaleCollectPaymentDto;
 use App\Sales\Dto\VoidSaleDto;
@@ -44,6 +45,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(name: 'idx_sales_cash_session_issued', columns: ['cash_session_id', 'issued_at'])]
 #[ORM\Index(name: 'idx_sales_customer_issued', columns: ['customer_id', 'issued_at'])]
 #[ORM\Index(name: 'idx_sales_status_created', columns: ['status', 'created_at'])]
+#[ORM\Index(name: 'IDX_SALES_INTEGRATION_CLIENT', columns: ['integration_client_id'])]
 #[ORM\Index(name: 'idx_sales_sync_status_synced', columns: ['sync_status', 'synced_at'])]
 #[ORM\Index(name: 'idx_sales_device_synced', columns: ['device_id', 'synced_at'])]
 #[ORM\Index(name: 'idx_sales_serie_numero', columns: ['series', 'number'])]
@@ -176,6 +178,10 @@ class SaleRecord
     #[ORM\Column(name: 'seller_user_id', type: 'integer', nullable: true)]
     #[ApiProperty(description: 'sale_record.seller_user_id.label')]
     private ?int $sellerUserId = null;
+
+    // Written by trusted server code only, never denormalized from a sale request.
+    #[ORM\Column(name: 'integration_client_id', length: 255, nullable: true)]
+    private ?string $integrationClientId = null;
 
     /** Who delivered the sale when that is not who made it (an offline sale sent from another cashier's session). */
     #[ORM\Column(name: 'synced_by_user_id', type: 'integer', nullable: true)]
@@ -652,6 +658,16 @@ class SaleRecord
     public function getSellerUserId(): ?int
     {
         return $this->sellerUserId;
+    }
+
+    public function getIntegrationClientId(): ?string
+    {
+        return $this->integrationClientId;
+    }
+
+    public function attributeToIntegration(IntegrationSaleActor $actor): void
+    {
+        $this->integrationClientId = $actor->clientId;
     }
 
     public function getVoidedByUserId(): ?int
