@@ -63,6 +63,11 @@ use Symfony\Component\Validator\Constraints as Assert;
         ),
         new Post(security: "is_granted('perm:sales.create')"),
         new Post(
+            uriTemplate: '/sales/administrative-credit',
+            security: "is_granted('perm:sales.create') and is_granted('perm:sales.view')",
+            name: SaleProcessor::ADMINISTRATIVE_CREDIT,
+        ),
+        new Post(
             uriTemplate: '/sales/{id}/invoice',
             controller: MakeSaleInvoice::class,
             security: "is_granted('perm:sales.create')",

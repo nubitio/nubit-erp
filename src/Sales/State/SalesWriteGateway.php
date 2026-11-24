@@ -46,7 +46,7 @@ readonly class SalesWriteGateway
     /**
      * @throws Exception
      */
-    public function write(SaleRecord $sale, ?int $cashSessionId): void
+    public function write(SaleRecord $sale, ?int $cashSessionId, bool $withoutDrawer = false): void
     {
         $saleId = $sale->getId();
         $warehouseId = $sale->getAlmacen()?->getId();
@@ -64,7 +64,7 @@ readonly class SalesWriteGateway
         if ($warehouseId === null) {
             throw new \RuntimeException(sprintf('New schema write aborted: warehouse is null for sale %s.', $saleId));
         }
-        if ($cashRegisterId === null) {
+        if ($cashRegisterId === null && !$withoutDrawer) {
             throw new \RuntimeException(sprintf(
                 'New schema write aborted: cash register is null for sale %s.',
                 $saleId,
@@ -86,6 +86,11 @@ readonly class SalesWriteGateway
             $currencyData['currency'],
             Money::toString($grandTotal),
         );
+        if ($withoutDrawer) {
+            $this->saleSettlementPlanService->assertFullReceivable($settlements, Money::toString($grandTotal));
+            $sale->setCashRegisterId(null);
+            $cashSessionId = null;
+        }
         $paidTotal = BigDecimal::zero();
         $balanceDue = BigDecimal::zero();
         $changeTotal = BigDecimal::zero();

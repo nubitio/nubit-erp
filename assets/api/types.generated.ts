@@ -3237,6 +3237,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sales/administrative-credit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Creates a Sale resource.
+         * @description Creates a Sale resource.
+         */
+        post: operations["sale_administrative_credit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sales/{id}": {
         parameters: {
             query?: never;
@@ -27690,6 +27710,67 @@ export interface operations {
         };
     };
     api_sales_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description The new Sale resource */
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Sale-sale_record.write"];
+                "application/ld+json": components["schemas"]["Sale-sale_record.write"];
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": components["schemas"]["Sale-sale_record.write"];
+            };
+        };
+        responses: {
+            /** @description Sale resource created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Sale-sale_record.read"];
+                    "application/ld+json": components["schemas"]["Sale.jsonld-sale_record.read"];
+                };
+            };
+            /** @description Invalid input */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description An error occurred */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
+                    "application/problem+json": components["schemas"]["ConstraintViolation"];
+                    "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    sale_administrative_credit: {
         parameters: {
             query?: never;
             header?: never;

@@ -50,6 +50,7 @@ use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
 use Nubit\AdminBundle\Auth\JWTManagerInterface;
 use Nubit\Platform\Exception\DomainProblemException;
 use Nubit\Platform\Exception\ServiceException;
+use Nubit\Platform\Exception\ValidationException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
@@ -191,18 +192,44 @@ final class CoreOperationalPathTest extends KernelTestCase
         self::assertSame(1, $this->fixture->cashMovementCount((string) $first->getId()));
     }
 
-    public function testCreditSaleDoesNotWriteCashAndLeavesBalanceDue(): void
+    public function testAdministrativeCreditSaleDoesNotNeedADrawerAndLeavesBalanceDue(): void
     {
         $world = $this->fixture->seed('10.000000');
-        $result = $this->processor($world)->process(
-            $this->newOperationalSale($world, PaymentMethod::CREDIT, '1'),
-            new Post(),
-        );
+        $this->fixture->closeSession($world->cashSession);
+        $operation = new Post(name: SaleProcessor::ADMINISTRATIVE_CREDIT);
+        $processor = $this->processor($world);
+
+        $cash = $this->newOperationalSale($world, PaymentMethod::CASH, '1');
+        $cash->setSettlements([['type' => 'PAYMENT', 'payment_method_id' => PaymentMethod::CASH, 'amount' => '10.00']]);
+        try {
+            $processor->process($cash, $operation);
+            static::fail('The administrative credit operation cannot collect cash.');
+        } catch (ValidationException) {
+            static::assertEqualsWithDelta(
+                10.0,
+                (float) $this->fixture->onHand($world->warehouse, $world->product),
+                0.001,
+            );
+        }
+
+        $credit = $this->newOperationalSale($world, PaymentMethod::CREDIT, '1');
+        $credit->setCashRegisterId(null);
+        $credit->setPaymentMethod(null);
+        $request = Request::create('/api/sales/administrative-credit', 'POST');
+        $request->headers->set('Idempotency-Key', Uuid::v7()->toRfc4122());
+        $result = $processor->process($credit, $operation, context: ['request' => $request]);
 
         self::assertInstanceOf(SaleRecord::class, $result);
         self::assertSame('10.00', $result->getBalanceDue());
         self::assertTrue($result->isReceivableAccount());
+        static::assertNull($result->getCashRegisterId());
+        static::assertNull($result->getCashSessionId());
+        static::assertCount(0, $result->getSalePayments());
         self::assertSame(0, $this->fixture->cashMovementCount((string) $result->getId()));
+        $retriedCredit = $this->newOperationalSale($world, PaymentMethod::CREDIT, '1');
+        $replayed = $processor->process($retriedCredit, $operation, context: ['request' => $request]);
+        static::assertInstanceOf(SaleRecord::class, $replayed);
+        static::assertSame($result->getId(), $replayed->getId());
         self::assertEqualsWithDelta(9.0, (float) $this->fixture->onHand($world->warehouse, $world->product), 0.001);
     }
 

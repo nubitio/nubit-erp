@@ -59,6 +59,22 @@ final readonly class SaleSettlementPlanService
         return Money::toString(Money::money($cash));
     }
 
+    /** @param array<int, array{type: string, amount: string, ...}> $settlements */
+    public function assertFullReceivable(array $settlements, string $total): void
+    {
+        $settlement = reset($settlements);
+        if (
+            count($settlements) !== 1
+            || $settlement === false
+            || $settlement['type'] !== SaleSettlementType::RECEIVABLE->value
+            || $settlement['amount'] !== $total
+        ) {
+            throw \Nubit\Platform\Exception\ValidationException::withErrors([
+                'settlements' => ['La venta administrativa debe quedar totalmente al crédito, sin cobros.'],
+            ]);
+        }
+    }
+
     /**
      * @param array<int, array<string, mixed>> $settlements
      */
