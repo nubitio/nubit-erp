@@ -48,6 +48,7 @@ use Override;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Uid\Uuid;
@@ -57,6 +58,8 @@ use Symfony\Component\Uid\Uuid;
  */
 readonly class SaleProcessor implements ProcessorInterface
 {
+    public const string ADMINISTRATIVE_CREDIT = 'sale_administrative_credit';
+
     /**
      * @param ProcessorInterface<mixed, mixed> $persistProcessor
      * @param ProcessorInterface<mixed, mixed> $removeProcessor
@@ -124,6 +127,7 @@ readonly class SaleProcessor implements ProcessorInterface
         }
 
         $isOperationalSale = $data->getTipoId() === 2;
+        $administrativeCredit = $operation->getName() === self::ADMINISTRATIVE_CREDIT;
         $requireOpenSession = false;
         $request = $context['request'] ?? null;
         // Offline mode marks an idempotent outbox replay; it never weakens stock or commercial validation.
@@ -133,6 +137,20 @@ readonly class SaleProcessor implements ProcessorInterface
         $isUuidIdempotencyKey =
             preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $idempotencyKey) === 1;
         $isOfflineSale = $offlineSaleHeader && $isUuidIdempotencyKey;
+        $administrativeBranchId = null;
+        if ($administrativeCredit) {
+            $administrativeBranchId = $this->assertAdministrativeCreditContext(
+                $data,
+                $isNew && $isOperationalSale,
+                $offlineSaleHeader,
+            );
+            if ($isUuidIdempotencyKey) {
+                $idempotencyKey = Uuid::v5(
+                    Uuid::fromString($idempotencyKey),
+                    self::ADMINISTRATIVE_CREDIT . ':' . $administrativeBranchId,
+                )->toRfc4122();
+            }
+        }
         if ($offlineSaleHeader && !$isOfflineSale) {
             $this->logger->warning('X-Offline-Sale header rejected: missing or malformed Idempotency-Key', [
                 'user_id' => $user->userId,
@@ -160,6 +178,9 @@ readonly class SaleProcessor implements ProcessorInterface
         if ($isNew && $isUuidIdempotencyKey) {
             $existingSale = $this->saleRecordRepository->findByOfflineRetryKey($idempotencyKey);
             if ($existingSale instanceof SaleRecord) {
+                if ($administrativeCredit && $existingSale->getBranch()?->getId() !== $administrativeBranchId) {
+                    throw new ConflictHttpException('Esta clave de idempotencia ya está en uso.');
+                }
                 $this->logger->info('Sale replay detected via Idempotency-Key — returning existing sale', [
                     'sale_id' => $existingSale->getId(),
                     'idempotency_key' => $idempotencyKey,
@@ -205,12 +226,12 @@ readonly class SaleProcessor implements ProcessorInterface
             }
         }
 
-        if ($isNew && $data->getTipoPago()) {
+        if ($isNew && ($administrativeCredit || $data->getTipoPago() !== null)) {
             $this->logger->info('Processing new sale with payment method', [
-                'payment_method' => $data->getTipoPago()->getId(),
+                'payment_method' => $data->getTipoPago()?->getId(),
             ]);
 
-            $requireOpenSession = $this->tenantSettings->isRequireCashRegister();
+            $requireOpenSession = !$administrativeCredit && $this->tenantSettings->isRequireCashRegister();
 
             // Check for an open V2 cash session. Only cash_sessions (V2) is checked here because
             // CashSessionResolver also only resolves against cash_sessions — accepting a legacy
@@ -283,11 +304,14 @@ readonly class SaleProcessor implements ProcessorInterface
         $data->setStatus('COMPLETED');
         $this->detractionCalculator->applyFromItems($data);
         if ($isOperationalSale) {
-            $this->saleSettlementPlanService->resolveForWrite(
+            $settlements = $this->saleSettlementPlanService->resolveForWrite(
                 $data,
                 strtoupper(trim($data->getCurrency())) ?: 'PEN',
                 $data->getTotal() ?? '0.00',
             );
+            if ($administrativeCredit) {
+                $this->saleSettlementPlanService->assertFullReceivable($settlements, Money::toString($total));
+            }
         }
 
         $this->logger->info('Sale totals calculated', [
@@ -337,7 +361,15 @@ readonly class SaleProcessor implements ProcessorInterface
         ]);
 
         if ($isOperationalSale) {
-            $this->persistOperationalSale($data, $user, $actingUserId, $requireOpenSession, $isNew, $isOfflineSale);
+            $this->persistOperationalSale(
+                $data,
+                $user,
+                $actingUserId,
+                $requireOpenSession,
+                $isNew,
+                $isOfflineSale,
+                $administrativeCredit,
+            );
         } else {
             $this->inventoryOrchestrator->process($data, $user, false);
             $this->persistProcessor->process($data, $operation, $uriVariables, $context);
@@ -415,6 +447,22 @@ readonly class SaleProcessor implements ProcessorInterface
         return $data;
     }
 
+    private function assertAdministrativeCreditContext(SaleRecord $sale, bool $isNewOperational, bool $offline): string
+    {
+        if (!$isNewOperational || $offline || $sale->getSettlements() === []) {
+            throw ValidationException::withErrors([
+                'settlements' => ['Esta operación solo admite ventas nuevas con liquidación al crédito explícita.'],
+            ]);
+        }
+
+        $branchId = $this->branchContextService->getCurrentBranchId();
+        if ($branchId === null || $sale->getWarehouse()?->getBranch()?->getId() !== $branchId) {
+            throw ValidationException::withErrors(['warehouse' => ['Selecciona un almacén de la sucursal activa.']]);
+        }
+
+        return $branchId;
+    }
+
     private function persistOperationalSale(
         SaleRecord $sale,
         AuthUserDto $user,
@@ -422,12 +470,15 @@ readonly class SaleProcessor implements ProcessorInterface
         bool $requireOpenSession,
         bool $isNew,
         bool $isOfflineSale,
+        bool $administrativeCredit,
     ): void {
         $cashSessionId = null;
         try {
-            $cashSessionId = $requireOpenSession
-                ? $this->cashSessionResolver->resolveForSale($sale)
-                : $this->cashSessionResolver->tryResolveForSale($sale);
+            $cashSessionId = match (true) {
+                $administrativeCredit => null,
+                $requireOpenSession => $this->cashSessionResolver->resolveForSale($sale),
+                default => $this->cashSessionResolver->tryResolveForSale($sale),
+            };
 
             if ($cashSessionId !== null && $sale->getCajaId() === null) {
                 $sale->setCashRegisterId($this->cashSessionResolver->resolveRegisterIdForSession($cashSessionId));
@@ -439,10 +490,17 @@ readonly class SaleProcessor implements ProcessorInterface
         $cashCollected = $isNew && $cashSessionId !== null
             ? $this->saleSettlementPlanService->resolveCashCollectedAmount($sale, $sale->getTotal() ?? '0.00')
             : '0.00';
-        $write = function () use ($sale, $user, $cashSessionId, $actingUserId, $cashCollected): void {
+        $write = function () use (
+            $sale,
+            $user,
+            $cashSessionId,
+            $actingUserId,
+            $cashCollected,
+            $administrativeCredit,
+        ): void {
             $this->inventoryOrchestrator->process($sale, $user, false);
             try {
-                $this->salesWriteGateway->write($sale, $cashSessionId);
+                $this->salesWriteGateway->write($sale, $cashSessionId, withoutDrawer: $administrativeCredit);
             } catch (\Throwable $exception) {
                 throw $this->saleWriteFailed($sale, $cashSessionId, $exception);
             }
@@ -450,6 +508,12 @@ readonly class SaleProcessor implements ProcessorInterface
                 $this->writeDrawerMovement($sale, $cashSessionId, $actingUserId, $cashCollected);
             }
         };
+
+        if ($administrativeCredit) {
+            $this->entityManager->getConnection()->transactional($write);
+
+            return;
+        }
 
         // A queued offline sale may belong to a historical shift. Leave its policy unchanged.
         if (

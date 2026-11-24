@@ -4022,12 +4022,6 @@ count = 2
 
 [[issues]]
 file = "src/Sales/State/SaleProcessor.php"
-code = "possible-method-access-on-null"
-message = "Attempting to call a method on `null`."
-count = 1
-
-[[issues]]
-file = "src/Sales/State/SaleProcessor.php"
 code = "possibly-null-argument"
 message = "Argument #1 of method `DateTimeImmutable::createFromInterface` is possibly `null`, but parameter type `DateTimeInterface` does not accept it."
 count = 1

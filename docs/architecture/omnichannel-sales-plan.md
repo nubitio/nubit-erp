@@ -4,6 +4,8 @@
 
 **Avance inicial:** el diagnóstico describe la línea base. La primera entrega de caja ejecuta el cierre en una transacción y bloquea la fila del turno antes de leer el ledger. Esto coordina el cierre con movimientos manuales y evita sobrescribir un Z ya persistido. Queda pendiente aplicar una política común a las escrituras POS, abonos y reembolsos, incluido el replay offline que llega después del cierre. Hay regresiones de unidad y MariaDB para el cierre; no se ejecutaron migraciones.
 
+**Primer caso comercial sin caja:** `POST /api/sales/administrative-credit` es una operación interna JWT (`sales.create` y `sales.view`), no la API pública de integración. Usa el mismo procesamiento y la sucursal seleccionada, requiere almacén de esa sucursal y una única liquidación `RECEIVABLE` por el total. Deja caja, turno y pagos vacíos; mantiene vendedor humano, inventario y saldo por cobrar. No cambia `POST /api/sales` ni habilita órdenes, cobros externos o identidades de servicio.
+
 ## Resumen ejecutivo
 
 **Propuesta:** mantener `SaleRecord` (`sales`) y profundizar el módulo de confirmación de ventas detrás de una interfaz común para POS, administración e integraciones. Conservar el turno de origen como dato histórico cuando exista; atribuir el cobro a su propio turno y el dinero a su cuenta o custodio real. Reutilizar Treasury, el ledger de clientes, Billing y el contexto Integration. No crear un segundo modelo de venta, una caja virtual ni usuarios ficticios.
