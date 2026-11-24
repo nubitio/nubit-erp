@@ -19,6 +19,22 @@
       }
     }
   }
+  &__form-section {
+    min-width: 0;
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--border-subtle);
+
+    &:first-child {
+      padding-top: 0;
+    }
+  }
+  &__products-section {
+    border-bottom: 0;
+  }
+  &__form-section > h2 {
+    margin: 0 0 var(--space-3);
+    font-size: var(--font-size-lg, 1rem);
+  }
   // Voucher facts on one line: label above value, items side by side.
   &__origin {
     display: flex;

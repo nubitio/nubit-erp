@@ -374,43 +374,42 @@ export function CreditNoteIssuePage() {
     return (
       <Page className="credit-note-issue">
         {header}
-        <Card variant="panel">{pickerField}</Card>
+        <section className="credit-note-issue__form-section">{pickerField}</section>
         {draftsQuery.data && draftsQuery.data.length > 0 && (
-          <Card variant="panel">
-            <Section variant="panel" title="Borradores">
-              <p className="credit-note-issue__hint">Notas que dejaste a medias.</p>
-              <ul className="credit-note-issue__drafts">
-                {draftsQuery.data.map((draft) => (
-                  <li key={draft.id}>
-                    <span>
-                      <strong>{draft.relatedFullNumber ?? 'Comprobante'}</strong>
-                      <small>
-                        {[
-                          CREDIT_NOTE_REASONS.find((r) => r.value === draft.reasonCode)?.text,
-                          DateTime.fromISO(draft.updatedAt).toFormat('dd/MM/yyyy HH:mm'),
-                        ]
-                          .filter(Boolean)
-                          .join(' · ')}
-                      </small>
-                    </span>
-                    <Button
-                      variant="secondary"
-                      onClick={() => navigate(`/billing/credit-notes/new?draft=${draft.id}`)}
-                    >
-                      Continuar
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      loading={removeDraft.isPending && removeDraft.variables === draft.id}
-                      onClick={() => removeDraft.mutate(draft.id)}
-                    >
-                      Eliminar
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            </Section>
-          </Card>
+          <section className="credit-note-issue__form-section">
+            <h2>Borradores</h2>
+            <p className="credit-note-issue__hint">Notas que dejaste a medias.</p>
+            <ul className="credit-note-issue__drafts">
+              {draftsQuery.data.map((draft) => (
+                <li key={draft.id}>
+                  <span>
+                    <strong>{draft.relatedFullNumber ?? 'Comprobante'}</strong>
+                    <small>
+                      {[
+                        CREDIT_NOTE_REASONS.find((r) => r.value === draft.reasonCode)?.text,
+                        DateTime.fromISO(draft.updatedAt).toFormat('dd/MM/yyyy HH:mm'),
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </small>
+                  </span>
+                  <Button
+                    variant="secondary"
+                    onClick={() => navigate(`/billing/credit-notes/new?draft=${draft.id}`)}
+                  >
+                    Continuar
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    loading={removeDraft.isPending && removeDraft.variables === draft.id}
+                    onClick={() => removeDraft.mutate(draft.id)}
+                  >
+                    Eliminar
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </section>
         )}
       </Page>
     );
@@ -612,13 +611,22 @@ export function CreditNoteIssuePage() {
                   >
                     Guardar borrador
                   </Button>
+                  <ButtonLink
+                    as={Link}
+                    to="/billing/credit-notes"
+                    variant="secondary"
+                    icon="ph ph-x"
+                    data-testid="credit-note-cancel"
+                  >
+                    Cancelar
+                  </ButtonLink>
                 </div>
               </div>
             </Section>
           </Card>
         }
       >
-        <Card variant="panel">
+        <section className="credit-note-issue__form-section">
           {pickerField}
           <dl className="credit-note-issue__origin">
             <div>
@@ -689,8 +697,8 @@ export function CreditNoteIssuePage() {
               <i className="ph ph-info" aria-hidden="true" /> {hint}
             </p>
           )}
-        </Card>
-        <Card variant="panel">
+        </section>
+        <section className="credit-note-issue__form-section credit-note-issue__products-section">
           <div className="credit-note-issue__lines-head">
             <h3>Productos afectados</h3>
             {locked ? (
@@ -739,7 +747,7 @@ export function CreditNoteIssuePage() {
             </span>
             <strong>{formatMoney(summary.total, currency)}</strong>
           </div>
-        </Card>
+        </section>
       </DetailLayout>
       <ConfirmDialog
         open={confirmingAnnul}
