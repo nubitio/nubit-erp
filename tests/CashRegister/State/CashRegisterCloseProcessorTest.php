@@ -12,10 +12,11 @@ use App\Identity\Dto\AuthUserDto;
 use App\Identity\Entity\User;
 use App\Identity\Security\Security;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class CashRegisterCloseProcessorTest extends TestCase
@@ -26,10 +27,17 @@ final class CashRegisterCloseProcessorTest extends TestCase
     /** @var Security&MockObject */
     private Security $security;
 
+    private Connection $connection;
+
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->security = $this->createMock(Security::class);
+        $this->connection = $this->createMock(Connection::class);
+        $this->connection->method('transactional')->willReturnCallback(
+            fn (\Closure $operation) => $operation($this->connection),
+        );
+        $this->entityManager->method('getConnection')->willReturn($this->connection);
 
         $authUser = new AuthUserDto(userId: 1, username: 'cajero');
         $this->security->method('connectedUser')->willReturn($authUser);
@@ -49,9 +57,7 @@ final class CashRegisterCloseProcessorTest extends TestCase
         $this->entityManager->method('getReference')->willReturn(new User());
         $this->entityManager->method('persist')->willReturnCallback(fn() => null);
         $this->entityManager->method('flush')->willReturnCallback(fn() => null);
-        $connection = $this->createStub(Connection::class);
-        $connection->method('fetchOne')->willReturn('0.20');
-        $this->entityManager->method('getConnection')->willReturn($connection);
+        $this->connection->method('fetchOne')->willReturn('0.20');
 
         $dto = new CashRegisterCloseDto();
         $dto->closureItems = [
@@ -83,9 +89,7 @@ final class CashRegisterCloseProcessorTest extends TestCase
         $this->entityManager->method('getReference')->willReturn(new User());
         $this->entityManager->method('persist')->willReturnCallback(fn() => null);
         $this->entityManager->method('flush')->willReturnCallback(fn() => null);
-        $connection = $this->createStub(Connection::class);
-        $connection->method('fetchOne')->willReturn('1645.30');
-        $this->entityManager->method('getConnection')->willReturn($connection);
+        $this->connection->method('fetchOne')->willReturn('1645.30');
 
         $dto = new CashRegisterCloseDto();
         $dto->closureItems = [[
@@ -115,9 +119,7 @@ final class CashRegisterCloseProcessorTest extends TestCase
         $this->entityManager->method('getReference')->willReturn(new User());
         $this->entityManager->method('persist')->willReturnCallback(fn() => null);
         $this->entityManager->method('flush')->willReturnCallback(fn() => null);
-        $connection = $this->createStub(Connection::class);
-        $connection->method('fetchOne')->willReturn('100.00');
-        $this->entityManager->method('getConnection')->willReturn($connection);
+        $this->connection->method('fetchOne')->willReturn('100.00');
 
         $dto = new CashRegisterCloseDto();
         $dto->closureItems = [['paymentMethod' => '/api/payment-methods/1', 'countedAmount' => '300.00', 'note' => '']];
@@ -144,9 +146,7 @@ final class CashRegisterCloseProcessorTest extends TestCase
         $this->entityManager->method('getReference')->willReturn(new User());
         $this->entityManager->method('persist')->willReturnCallback(fn() => null);
         $this->entityManager->method('flush')->willReturnCallback(fn() => null);
-        $connection = $this->createStub(Connection::class);
-        $connection->method('fetchOne')->willReturn('37.50');
-        $this->entityManager->method('getConnection')->willReturn($connection);
+        $this->connection->method('fetchOne')->willReturn('37.50');
 
         $dto = new CashRegisterCloseDto();
         $dto->closureItems = [
@@ -176,9 +176,7 @@ final class CashRegisterCloseProcessorTest extends TestCase
         $this->entityManager->method('getReference')->willReturn(new User());
         $this->entityManager->method('persist')->willReturnCallback(fn() => null);
         $this->entityManager->method('flush')->willReturnCallback(fn() => null);
-        $connection = $this->createStub(Connection::class);
-        $connection->method('fetchOne')->willReturn('123.456');
-        $this->entityManager->method('getConnection')->willReturn($connection);
+        $this->connection->method('fetchOne')->willReturn('123.456');
 
         $dto = new CashRegisterCloseDto();
         $dto->expectedAmount = '123.456';
@@ -207,6 +205,23 @@ final class CashRegisterCloseProcessorTest extends TestCase
         $dto = new CashRegisterCloseDto();
         $dto->countedAmount = '10.00';
         $this->buildProcessor()->process($dto, new Put(), ['id' => 3]);
+    }
+
+    public function testClosingLocksTheSessionAndDoesNotRecalculateAnAlreadyClosedCut(): void
+    {
+        $cashSession = new CashSession()->setStatus('CLOSED');
+        $this->connection->expects(self::once())->method('transactional');
+        $this->entityManager->expects(self::once())
+            ->method('find')
+            ->with(CashSession::class, 5, LockMode::PESSIMISTIC_WRITE)
+            ->willReturn($cashSession);
+        $this->connection->expects(self::never())->method('fetchOne');
+        $this->entityManager->expects(self::never())->method('flush');
+
+        $dto = new CashRegisterCloseDto();
+        $dto->countedAmount = '10.00';
+        $this->expectException(ConflictHttpException::class);
+        $this->buildProcessor()->process($dto, new Put(), ['id' => 5]);
     }
 
     private function buildProcessor(): CashRegisterCloseProcessor

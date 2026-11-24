@@ -54,6 +54,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Uid\Uuid;
 
@@ -316,6 +317,30 @@ final class CoreOperationalPathTest extends KernelTestCase
     {
         $world = $this->fixture->seed();
         $this->closeWithExpectedCount($world, '50.00');
+    }
+
+    public function testClosingDoesNotOverwriteAnAlreadyPersistedCutWhenTheEntityIsStale(): void
+    {
+        $world = $this->fixture->seed();
+        $sessionId = $world->cashSession->getId();
+        $this->entityManager->getConnection()->update('cash_sessions', [
+            'status' => 'CLOSED',
+            'counted_amount' => '53.00',
+        ], ['id' => $sessionId]);
+        self::assertSame('OPEN', $world->cashSession->getStatus(), 'The ORM still holds the pre-close entity.');
+
+        $dto = new CashRegisterCloseDto();
+        $dto->countedAmount = '99.00';
+        $processor = new CashRegisterCloseProcessor($this->entityManager, $this->securityStub((int) $world->user->getId()));
+        try {
+            $processor->process($dto, new Put(), ['id' => $sessionId]);
+            self::fail('A second close must not overwrite the persisted cut.');
+        } catch (ConflictHttpException) {
+            self::assertSame('53.00', $this->entityManager->getConnection()->fetchOne(
+                'SELECT counted_amount FROM cash_sessions WHERE id = ?',
+                [$sessionId],
+            ));
+        }
     }
 
     private function recordOpeningMovement(CoreSaleWorld $world): void
