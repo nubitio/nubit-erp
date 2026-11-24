@@ -87,7 +87,9 @@ readonly class CashRegisterDashboardProvider implements ProviderInterface
                     2,
                     RoundingMode::HALF_UP,
                 )->__toString(),
-                lastClosedAt: $row['lastClosedAt'] ?? null ? new DateTimeImmutable($row['lastClosedAt']) : null,
+                lastClosedAt: ($row['lastClosedAt'] ?? null) !== null
+                    ? new DateTimeImmutable((string) $row['lastClosedAt'])
+                    : null,
                 lastDifference: ($row['lastDifference'] ?? null) === null
                     ? null
                     : BigDecimal::of((string) $row['lastDifference'])->toScale(2, RoundingMode::HALF_UP)->__toString(),

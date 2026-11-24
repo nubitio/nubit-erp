@@ -41,7 +41,7 @@ readonly class MovementCategoryResolver
                 );
             }
 
-            return $category->getId();
+            return (int) $category->getId();
         }
 
         $code = self::KIND_CATEGORIES[$movement->getKind() ?? ''] ?? null;

@@ -6,14 +6,19 @@ namespace App\CashRegister\Service;
 
 use Mike42\Escpos\Printer;
 
-/** The cash half of the shift ticket: what the drawer holds, the count, and how the report ends. */
+/**
+ * The cash half of the shift ticket: what the drawer holds, the count, and how the report ends.
+ *
+ * @phpstan-import-type ShiftReportData from ShiftReport
+ * @phpstan-import-type ShiftCashData from ShiftReport
+ */
 readonly class ShiftDrawerEscPos
 {
     public function __construct(
         private TicketText $text = new TicketText(),
     ) {}
 
-    /** @param array<string, mixed> $report */
+    /** @param ShiftReportData $report */
     public function drawer(Printer $printer, array $report, int $width, bool $closed, string $dashes): void
     {
         $cash = $report['cash'];
@@ -35,11 +40,11 @@ readonly class ShiftDrawerEscPos
         $printer->text($dashes);
     }
 
-    /** @param array<string, mixed> $cash */
+    /** @param ShiftCashData $cash */
     private function counted(Printer $printer, array $cash, int $width): void
     {
-        $this->text->strong($printer, $this->text->row('Contado', $this->text->num($cash['counted']), $width));
-        $difference = (float) $cash['difference'];
+        $this->text->strong($printer, $this->text->row('Contado', $this->text->num($cash['counted'] ?? '0'), $width));
+        $difference = (float) ($cash['difference'] ?? '0');
         $label = $difference === 0.0 ? 'CUADRADO' : ($difference < 0 ? 'FALTANTE' : 'SOBRANTE');
         $this->text->strong($printer, $this->text->row(
             'DIFERENCIA',
@@ -51,7 +56,7 @@ readonly class ShiftDrawerEscPos
         }
     }
 
-    /** @param array<string, mixed> $report */
+    /** @param ShiftReportData $report */
     public function closingFooter(Printer $printer, array $report, int $width, string $dashes): void
     {
         $cash = $report['cash'];
@@ -79,7 +84,7 @@ readonly class ShiftDrawerEscPos
         }
 
         $printer->feed(3);
-        $half = intdiv($width - 2, 2);
+        $half = max(1, intdiv($width - 2, 2));
         $printer->text(str_repeat('_', $half) . '  ' . str_repeat('_', $half) . "\n");
         $printer->text(
             str_pad('Cajero', $half, ' ', STR_PAD_BOTH) . '  ' . str_pad('Supervisor', $half, ' ', STR_PAD_BOTH) . "\n",

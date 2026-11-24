@@ -12,6 +12,8 @@ use Mike42\Escpos\Printer;
  * The X cut and the Z report of a shift as ESC/POS commands for the till printer, the same way the sale ticket is
  * built: the browser sends the bytes to the thermal printer (WebUSB or the local agent). It prints exactly what the
  * on-screen ticket shows, from the same data (`ShiftReport`).
+ *
+ * @phpstan-import-type ShiftReportData from ShiftReport
  */
 readonly class ShiftReportEscPos
 {
@@ -21,7 +23,7 @@ readonly class ShiftReportEscPos
     ) {}
 
     /**
-     * @param array<string, mixed> $report The result of `ShiftReport::forSession()`.
+     * @param ShiftReportData $report The result of `ShiftReport::forSession()`.
      * @param int $width Characters per line: 32 for 58 mm paper, 48 for 80 mm.
      */
     public function commands(array $report, int $width): string
@@ -48,7 +50,7 @@ readonly class ShiftReportEscPos
         return $data;
     }
 
-    /** @param array<string, mixed> $report */
+    /** @param ShiftReportData $report */
     private function header(Printer $printer, array $report, int $width, bool $closed, string $dashes): void
     {
         $shift = $report['shift'];
@@ -84,7 +86,7 @@ readonly class ShiftReportEscPos
         $printer->text($dashes);
     }
 
-    /** @param array<string, mixed> $report */
+    /** @param ShiftReportData $report */
     private function receipts(Printer $printer, array $report, int $width, bool $closed, string $dashes): void
     {
         $documents = $report['documents'];
@@ -114,7 +116,7 @@ readonly class ShiftReportEscPos
         $printer->text($dashes);
     }
 
-    /** @param array<string, mixed> $report */
+    /** @param ShiftReportData $report */
     private function methods(Printer $printer, array $report, int $width, string $dashes): void
     {
         $this->text->title($printer, 'VENTAS POR MEDIO DE PAGO');

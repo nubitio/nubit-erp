@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests\CashRegister\Service;
 
+use App\CashRegister\Service\ShiftReport;
 use App\CashRegister\Service\ShiftReportEscPos;
 use PHPUnit\Framework\TestCase;
 
+/** @phpstan-import-type ShiftReportData from ShiftReport */
 final class ShiftReportEscPosTest extends TestCase
 {
-    /** @return array<string, mixed> */
+    /** @return ShiftReportData */
     private function report(bool $closed): array
     {
         return [

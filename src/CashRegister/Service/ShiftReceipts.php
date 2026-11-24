@@ -23,7 +23,10 @@ readonly class ShiftReceipts
      * Receipts of the shift by type, with the numbering range of each series. A credit note takes away from what
      * the shift sold, so it carries a negative sign.
      *
-     * @return array{rows: list<array<string, mixed>>, count: int, taxable: string, igv: string, total: string}
+     * @return array{
+     *     rows: list<array{type: string, label: string, count: int, ranges: list<string>, taxable: string, igv: string, total: string}>,
+     *     count: int, taxable: string, igv: string, total: string
+     * }
      * @throws Exception
      */
     public function forSession(int $sessionId): array
@@ -53,9 +56,9 @@ readonly class ShiftReceipts
                 'total' => BigDecimal::zero(),
             ];
             $byType[$type]['count'] += (int) $row['quantity'];
-            $first = sprintf('%s-%08d', $row['series'], (int) $row['first_number']);
+            $first = sprintf('%s-%08d', (string) $row['series'], (int) $row['first_number']);
             $last = sprintf('%08d', (int) $row['last_number']);
-            $byType[$type]['ranges'][] = $first === sprintf('%s-%s', $row['series'], $last)
+            $byType[$type]['ranges'][] = $first === sprintf('%s-%s', (string) $row['series'], $last)
                 ? $first
                 : sprintf('%s a %s', $first, $last);
             foreach (['taxable', 'igv', 'total'] as $field) {

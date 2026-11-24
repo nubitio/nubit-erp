@@ -91,7 +91,7 @@ readonly class CashSessionLedgerProvider implements ProviderInterface
 
         foreach ($digitalPayments as $row) {
             $entries[] = [
-                'id' => 'p' . $row['id'],
+                'id' => 'p' . (string) $row['id'],
                 'at' => (string) ($row['paid_at'] ?? $row['created_at']),
                 'kind' => 'sale',
                 'document' => $this->document($row),
@@ -151,7 +151,7 @@ readonly class CashSessionLedgerProvider implements ProviderInterface
                 : (string) ($row['category_name'] ?? 'Movimiento de caja');
 
         return [
-            'id' => 'm' . $row['id'],
+            'id' => 'm' . (string) $row['id'],
             'at' => (string) $row['created_at'],
             'kind' => $kind,
             'document' => $this->document($row),

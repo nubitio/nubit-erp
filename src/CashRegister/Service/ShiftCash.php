@@ -23,7 +23,7 @@ readonly class ShiftCash
      * withdrawals, giving the expected cash; plus what was counted and the difference once closed.
      *
      * @param array<string, mixed> $session
-     * @return array<string, mixed>
+     * @return array{opening: string, cashSales: string, income: string, expenses: string, withdrawals: string, expected: string, counted: ?string, difference: ?string}
      * @throws Exception
      */
     public function summary(int $sessionId, array $session): array
@@ -56,7 +56,7 @@ readonly class ShiftCash
     /**
      * The cash that left the drawer by hand (expenses and withdrawals), oldest first.
      *
-     * @return list<array<string, string>>
+     * @return list<array{at: string, kind: string, description: string, amount: string}>
      * @throws Exception
      */
     public function outflows(int $sessionId): array

@@ -14,6 +14,27 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * Everything the reports of a shift show, from one place: the X cut (partial, while the shift is open), the Z
  * report (the closing) and the PDF all read this, so they cannot disagree about the same shift. Amounts are decimal
  * strings; what the system has no data for (a shift closed before the closing was recorded in detail) is null.
+ *
+ * @phpstan-type ShiftCashData array{
+ *     opening: string, cashSales: string, income: string, expenses: string, withdrawals: string, expected: string,
+ *     counted: ?string, difference: ?string, denominations: ?array<int|string, int>, fundKept: ?bool,
+ *     withdrawnAtClose: ?string, note: ?string
+ * }
+ * @phpstan-type ShiftReportData array{
+ *     company: array{name: ?string, ruc: ?string, branch: ?string},
+ *     shift: array{id: int, status: string, registerName: string, cashier: ?string, closedBy: ?string, openedAt: ?string, closedAt: ?string},
+ *     documents: array{
+ *         rows: list<array{type: string, label: string, count: int, ranges: list<string>, taxable: string, igv: string, total: string}>,
+ *         count: int, taxable: string, igv: string, total: string
+ *     },
+ *     sales: array{
+ *         total: string,
+ *         byMethod: list<array{name: string, operations: int, amount: string, percent: string}>,
+ *         credit: array{amount: string, operations: int, percent: string}
+ *     },
+ *     cash: ShiftCashData,
+ *     outflows: list<array{at: string, kind: string, description: string, amount: string}>
+ * }
  */
 readonly class ShiftReport
 {
@@ -25,7 +46,7 @@ readonly class ShiftReport
     ) {}
 
     /**
-     * @return array<string, mixed>
+     * @return ShiftReportData
      * @throws Exception
      */
     public function forSession(int $sessionId): array
@@ -54,9 +75,7 @@ readonly class ShiftReport
         $cash = $this->drawer->summary($sessionId, $session);
         $isClosed = $session['status'] !== 'OPEN';
 
-        $denominations = $session['counted_denominations'] === null
-            ? null
-            : json_decode((string) $session['counted_denominations'], associative: true);
+        $denominations = $this->denominations($session['counted_denominations']);
 
         return [
             'company' => [
@@ -70,7 +89,10 @@ readonly class ShiftReport
                 'registerName' => (string) $session['register_name'],
                 'cashier' => $session['cashier'] === null ? null : (string) $session['cashier'],
                 // Shown only when somebody other than the cashier closed it.
-                'closedBy' => $isClosed && $session['closed_by'] !== $session['cashier'] ? $session['closed_by'] : null,
+                'closedBy' =>
+                    $isClosed && $session['closed_by'] !== null && $session['closed_by'] !== $session['cashier']
+                        ? (string) $session['closed_by']
+                        : null,
                 'openedAt' => $this->iso($session['opened_at']),
                 'closedAt' => $this->iso($session['closed_at']),
             ],
@@ -88,8 +110,10 @@ readonly class ShiftReport
             ],
             'cash' => $cash
                 + [
-                    'denominations' => is_array($denominations) ? $denominations : null,
-                    'fundKept' => $session['opening_fund_kept'] === null ? null : (bool) $session['opening_fund_kept'],
+                    'denominations' => $denominations,
+                    'fundKept' => $session['opening_fund_kept'] === null
+                        ? null
+                        : (bool) (int) $session['opening_fund_kept'],
                     'withdrawnAtClose' => $session['cash_withdrawn_at_close'] === null
                         ? null
                         : $this->money($session['cash_withdrawn_at_close']),
@@ -97,6 +121,28 @@ readonly class ShiftReport
                 ],
             'outflows' => $this->drawer->outflows($sessionId),
         ];
+    }
+
+    /**
+     * @return array<int|string, int>|null
+     */
+    private function denominations(mixed $stored): ?array
+    {
+        if (!is_string($stored) || $stored === '') {
+            return null;
+        }
+
+        $decoded = json_decode($stored, associative: true);
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        $quantities = [];
+        foreach ($decoded as $cents => $quantity) {
+            $quantities[$cents] = is_numeric($quantity) ? (int) $quantity : 0;
+        }
+
+        return $quantities;
     }
 
     private function percent(string $amount, string $total): string

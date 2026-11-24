@@ -68,7 +68,7 @@ readonly class TicketText
 
     public function num(string $value): string
     {
-        return number_format((float) $value, 2, '.', ',');
+        return number_format(is_numeric($value) ? (float) $value : 0.0, 2, '.', ',');
     }
 
     public function date(?string $iso): string
