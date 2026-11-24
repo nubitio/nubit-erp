@@ -100,6 +100,13 @@ readonly class SalePaymentService
             $cashSessionId,
             $amountMoney,
         ): SalePayment {
+            if ($cashSessionId !== null) {
+                $this->salesWriteGateway->requireLockedOpenCashSessionForUser(
+                    $cashSessionId,
+                    (int) $createdBy->getId(),
+                );
+            }
+
             $payment = $this->appendPayment($sale, $paymentMethod, $amount, $paidAt, $reference);
 
             $customer = $sale->getCustomer();

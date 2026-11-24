@@ -58,7 +58,19 @@ final class CollectOnAccountServiceTest extends TestCase
             ->method('recordPayment')
             ->willReturn($this->createStub(CustomerAccountEntry::class));
 
-        $em = $this->em();
+        $cashWrite = static::once();
+        $this->gateway->expects($cashWrite)->method('writeOnAccountCollectionMovement');
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em
+            ->expects(static::once())
+            ->method('wrapInTransaction')
+            ->willReturnCallback(static function (callable $operation) use ($cashWrite): mixed {
+                static::assertFalse($cashWrite->hasBeenInvoked(), 'No drawer entry may precede the transaction.');
+                $result = $operation();
+                static::assertTrue($cashWrite->hasBeenInvoked(), 'The drawer entry must commit with the applications.');
+
+                return $result;
+            });
         $persisted = [];
         $em->method('persist')->willReturnCallback(static function (object $o) use (&$persisted): void {
             $persisted[] = $o;
@@ -66,8 +78,7 @@ final class CollectOnAccountServiceTest extends TestCase
 
         $this->salePaymentService->expects(self::exactly(2))->method('appendPayment');
         $this->gateway->method('findOpenCashSessionIdForUser')->willReturn(42);
-        $this->gateway->expects(self::once())->method('writeOnAccountCollectionMovement');
-
+        $this->gateway->expects(static::once())->method('requireLockedOpenCashSessionForUser')->with(42, 0);
         $result = $this->service($em, $sales, $ledger)->collect(
             customerId: 9,
             paymentMethod: $this->method(PaymentMethod::CASH),
@@ -237,6 +248,34 @@ final class CollectOnAccountServiceTest extends TestCase
             [],
             new User(),
         );
+    }
+
+    public function testCashCollectionCannotApplyPaymentsAfterItsDrawerCloses(): void
+    {
+        $this->gateway->method('findOpenCashSessionIdForUser')->willReturn(42);
+        $this->gateway
+            ->expects(static::once())
+            ->method('requireLockedOpenCashSessionForUser')
+            ->willThrowException(new ConflictHttpException());
+        $this->gateway->expects(static::never())->method('writeOnAccountCollectionMovement');
+        $this->salePaymentService->expects(static::never())->method('appendPayment');
+        $ledger = $this->createMock(CustomerAccountLedger::class);
+        $ledger->expects(static::never())->method('recordPayment');
+
+        try {
+            $this->service($this->em(), $this->salesRepo([$this->sale('s1', '90.00')]), $ledger)->collect(
+                9,
+                $this->method(PaymentMethod::CASH),
+                '90.00',
+                new DateTimeImmutable(),
+                null,
+                [],
+                new User(),
+            );
+            static::fail('The collection was accepted after the drawer had closed.');
+        } catch (ConflictHttpException) {
+            static::assertSame([], $this->dispatched);
+        }
     }
 
     private function service(

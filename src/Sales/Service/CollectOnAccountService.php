@@ -108,7 +108,7 @@ readonly class CollectOnAccountService
         $collectionId ??= Uuid::v4()->toRfc4122();
         $description = sprintf('Cobro a cuenta cliente #%d', $customerId);
 
-        $lines = $this->applyPlan(
+        $lines = $this->entityManager->wrapInTransaction(function () use (
             $plan,
             $paymentMethod,
             $paidAt,
@@ -119,18 +119,48 @@ readonly class CollectOnAccountService
             $amountMoney,
             $createdBy,
             $moneyAccountId,
-        );
-
-        $this->bookMoney(
-            $collectionId,
-            $amountMoney,
-            $currency,
-            $isCash,
             $cashSessionId,
-            $paidAt,
             $description,
-            $createdBy,
-        );
+        ): array {
+            if ($cashSessionId !== null) {
+                $this->salesWriteGateway->requireLockedOpenCashSessionForUser(
+                    $cashSessionId,
+                    (int) $createdBy->getId(),
+                );
+                $this->salesWriteGateway->writeOnAccountCollectionMovement(
+                    collectionId: $collectionId,
+                    cashSessionId: $cashSessionId,
+                    createdBy: (int) $createdBy->getId(),
+                    amount: Money::toString($amountMoney),
+                    paymentMethodId: PaymentMethod::CASH,
+                    createdAt: $paidAt,
+                    description: $description,
+                );
+            }
+
+            $lines = $this->applyPlan(
+                $plan,
+                $paymentMethod,
+                $paidAt,
+                $reference,
+                $customerId,
+                $currency,
+                $collectionId,
+                $amountMoney,
+                $createdBy,
+                $moneyAccountId,
+            );
+            $this->bookAccountingEvent(
+                $collectionId,
+                $amountMoney,
+                $currency,
+                $cashSessionId !== null,
+                $paidAt,
+                $description,
+            );
+
+            return $lines;
+        });
 
         $this->operationLog->record('sales', 'receivable.collected_on_account', $collectionId, [
             'customer_id' => $customerId,
@@ -231,7 +261,7 @@ readonly class CollectOnAccountService
 
     /**
      * The debt side: one `sale_payments` row, one ledger `payment` entry and one
-     * `customer_payment_applications` row per sale, in a single transaction.
+     * `customer_payment_applications` row per sale, in the caller's transaction.
      *
      * @param list<PlanRow> $plan
      *
@@ -249,107 +279,77 @@ readonly class CollectOnAccountService
         User $createdBy,
         ?string $moneyAccountId,
     ): array {
-        return $this->entityManager->wrapInTransaction(function () use (
-            $plan,
-            $paymentMethod,
-            $paidAt,
-            $reference,
-            $customerId,
-            $currency,
-            $collectionId,
-            $total,
-            $createdBy,
-            $moneyAccountId,
-        ): array {
-            $out = [];
-            foreach ($plan as $row) {
-                $sale = $row['sale'];
-                $applyAmount = Money::toString($row['amount']);
-                $label = CollectOnAccountPlanner::documentLabel($sale);
+        $out = [];
+        foreach ($plan as $row) {
+            $sale = $row['sale'];
+            $applyAmount = Money::toString($row['amount']);
+            $label = CollectOnAccountPlanner::documentLabel($sale);
 
-                $payment = $this->salePaymentService->appendPayment(
-                    $sale,
-                    $paymentMethod,
-                    $applyAmount,
-                    $paidAt,
-                    $reference,
-                );
+            $payment = $this->salePaymentService->appendPayment(
+                $sale,
+                $paymentMethod,
+                $applyAmount,
+                $paidAt,
+                $reference,
+            );
 
-                $entry = $this->ledger->recordPayment(
-                    customerId: $customerId,
-                    occurredOn: $paidAt,
-                    amount: $applyAmount,
-                    currency: $currency,
-                    saleId: (string) $sale->getId(),
-                    source: 'on_account_collect',
-                    sourceId: $collectionId,
-                    description: $label,
-                );
-
-                $this->entityManager->persist(new CustomerPaymentApplication(
-                    accountEntry: $entry,
-                    saleId: (string) $sale->getId(),
-                    appliedAmount: $applyAmount,
-                    currency: $currency,
-                    appliedAt: $paidAt,
-                    salePaymentId: (int) $payment->getId(),
-                ));
-
-                $out[] = new CollectOnAccountApplication(
-                    saleId: (string) $sale->getId(),
-                    document: $label,
-                    applied: $applyAmount,
-                    balanceDueAfter: $sale->getBalanceDue(),
-                );
-            }
-
-            // The money of the whole collection, once, in the same transaction as the N payment rows.
-            $this->treasuryReceipts?->record(new TreasuryReceipt(
-                source: MovementSource::ReceivableCollection,
-                sourceId: $collectionId,
-                amount: Money::toString($total),
+            $entry = $this->ledger->recordPayment(
+                customerId: $customerId,
+                occurredOn: $paidAt,
+                amount: $applyAmount,
                 currency: $currency,
-                paymentMethod: $paymentMethod,
-                paidAt: $paidAt,
-                userId: $createdBy->getId(),
-                branchId: $plan[0]['sale']->getBranch()?->getId(),
-                customerId: (string) $customerId,
-                reference: $reference,
-                description: sprintf('Cobro a cuenta cliente #%d', $customerId),
-                moneyAccountId: $moneyAccountId,
-            ));
-            $this->entityManager->flush();
+                saleId: (string) $sale->getId(),
+                source: 'on_account_collect',
+                sourceId: $collectionId,
+                description: $label,
+            );
 
-            return $out;
-        });
+            $this->entityManager->persist(new CustomerPaymentApplication(
+                accountEntry: $entry,
+                saleId: (string) $sale->getId(),
+                appliedAmount: $applyAmount,
+                currency: $currency,
+                appliedAt: $paidAt,
+                salePaymentId: (int) $payment->getId(),
+            ));
+
+            $out[] = new CollectOnAccountApplication(
+                saleId: (string) $sale->getId(),
+                document: $label,
+                applied: $applyAmount,
+                balanceDueAfter: $sale->getBalanceDue(),
+            );
+        }
+
+        // Post to Treasury once for the whole collection, not once per payment row.
+        $this->treasuryReceipts?->record(new TreasuryReceipt(
+            source: MovementSource::ReceivableCollection,
+            sourceId: $collectionId,
+            amount: Money::toString($total),
+            currency: $currency,
+            paymentMethod: $paymentMethod,
+            paidAt: $paidAt,
+            userId: $createdBy->getId(),
+            branchId: $plan[0]['sale']->getBranch()?->getId(),
+            customerId: (string) $customerId,
+            reference: $reference,
+            description: sprintf('Cobro a cuenta cliente #%d', $customerId),
+            moneyAccountId: $moneyAccountId,
+        ));
+        $this->entityManager->flush();
+
+        return $out;
     }
 
-    /**
-     * Books the money once: the cash-drawer movement (cash only) and the
-     * EconomicEvent for the whole amount.
-     */
-    private function bookMoney(
+    /** Emits one accounting event for the whole amount. */
+    private function bookAccountingEvent(
         string $collectionId,
         BigDecimal $amount,
         string $currency,
         bool $isCash,
-        ?int $cashSessionId,
         DateTimeImmutable $paidAt,
         string $description,
-        User $createdBy,
     ): void {
-        if ($cashSessionId !== null) {
-            $this->salesWriteGateway->writeOnAccountCollectionMovement(
-                collectionId: $collectionId,
-                cashSessionId: $cashSessionId,
-                createdBy: (int) $createdBy->getId(),
-                amount: Money::toString($amount),
-                paymentMethodId: PaymentMethod::CASH,
-                createdAt: $paidAt,
-                description: $description,
-            );
-        }
-
         $this->messageBus->dispatch(new EconomicEvent(
             source: EconomicEvent::SOURCE_RECEIVABLE_COLLECT,
             sourceId: $collectionId,
