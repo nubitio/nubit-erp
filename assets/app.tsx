@@ -28,27 +28,26 @@ clearLegacyAccentColor();
 // Ensure all luxon DateTime operations default to Peru timezone (UTC-5, no DST)
 Settings.defaultZone = 'America/Lima';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 30_000,
-    },
-  },
-});
-
-installPosBootstrapCache(queryClient);
-
 // URLs from the hash-router era (`/#/billing/sales`) are mapped to real paths before
 // the router mounts, so e-mailed links, bookmarks and installed PWAs keep working
 // (ADR-020, D5). A no-op for every real-path URL.
 normalizeLegacyHashUrl();
 
-window.addEventListener('load', () => {
+function bootstrap() {
+  const container = document.getElementById('root');
+  // Vite can evaluate the entry under both plain and timestamped URLs. A second
+  // auth fetch interceptor would try to acquire the session lock it already holds.
+  if (!container || container.dataset.nubitMounted === 'true') return;
+  container.dataset.nubitMounted = 'true';
+
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
+  });
+  installPosBootstrapCache(queryClient);
   installAuthRecovery();
   startAppUpdates();
 
-  const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+  const root = ReactDOM.createRoot(container);
   root.render(
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>
@@ -58,25 +57,27 @@ window.addEventListener('load', () => {
             <EfactApp />
           </ErrorBoundary>
         </UiStringsProvider>
-        {import.meta.env.DEV && import.meta.env.VITE_SHOW_DEVTOOLS === 'true' && (
+        {ReactQueryDevtools && (
           <React.Suspense fallback={null}>
-            <DevtoolsLoader />
+            <ReactQueryDevtools initialIsOpen={false} />
           </React.Suspense>
         )}
       </QueryClientProvider>
     </React.StrictMode>,
   );
-});
+}
 
 // Lazy-load devtools only in dev to keep production bundle clean
-const ReactQueryDevtools = import.meta.env.DEV
-  ? React.lazy(async () => {
-      const mod = await import('@tanstack/react-query-devtools');
-      return { default: mod.ReactQueryDevtools };
-    })
-  : null;
+const ReactQueryDevtools =
+  import.meta.env.DEV && import.meta.env.VITE_SHOW_DEVTOOLS === 'true'
+    ? React.lazy(async () => {
+        const mod = await import('@tanstack/react-query-devtools');
+        return { default: mod.ReactQueryDevtools };
+      })
+    : null;
 
-function DevtoolsLoader() {
-  if (!ReactQueryDevtools) return null;
-  return <ReactQueryDevtools initialIsOpen={false} />;
+if (document.readyState === 'complete') {
+  bootstrap();
+} else {
+  window.addEventListener('load', bootstrap, { once: true });
 }

@@ -66,6 +66,31 @@ async function sessionLock<T>(operation: () => Promise<T>): Promise<T> {
   return navigator.locks ? navigator.locks.request(SESSION_LOCK, operation) : operation();
 }
 
+async function loginSessionLock(operation: () => Promise<Response>): Promise<Response> {
+  if (!navigator.locks) return operation();
+
+  // Bound the wait for another tab without stealing its lock or timing out the request itself.
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), 5000);
+  try {
+    return await navigator.locks.request(SESSION_LOCK, { signal: controller.signal }, () => {
+      window.clearTimeout(timer);
+      return operation();
+    });
+  } catch (error) {
+    if (!controller.signal.aborted) throw error;
+    return Response.json(
+      {
+        message:
+          'Otra pestaña está usando la sesión. Cierra las otras pestañas e inténtalo de nuevo.',
+      },
+      { status: 409 },
+    );
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
 function normalizeToken(data: Record<string, unknown>) {
   if (typeof data.token === 'string' && data.token !== '')
     StorageUtils.setItem('auth_token', data.token);
@@ -235,7 +260,8 @@ export function installAuthRecovery(): void {
     if (CREDENTIAL_PATHS.has(path) || path === '/api/auth/select-branch') {
       if (path === '/api/auth/refresh') return send(dynamicRequest(template, false));
       if (path === '/api/auth/logout') endAuthSession('logout');
-      return sessionLock(async () => {
+      const lock = path === '/api/auth/login' ? loginSessionLock : sessionLock;
+      return lock(async () => {
         let response = await send(dynamicRequest(template, false));
         if (path === '/api/auth/select-branch' && response.status === 401) {
           await renewInLock(snapshot(), original);
