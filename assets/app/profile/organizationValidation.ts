@@ -43,10 +43,14 @@ export const normalizeSeries = (value: string): string =>
     .slice(0, 4);
 
 /**
- * Rules for a voucher series. `others` are the series already registered (without the one being
- * edited): the same series for the same branch and type would make two correlatives collide.
+ * The issuer reserves the same type and series across its branches. Unchanged legacy
+ * series can still be edited (e.g. disabled) without assigning their code again.
  */
-export function validateSeries(draft: SeriesDraft, others: VoucherSeries[]): SeriesIssues {
+export function validateSeries(
+  draft: SeriesDraft,
+  registered: VoucherSeries[],
+  editing: VoucherSeries | null = null,
+): SeriesIssues {
   const issues: SeriesIssues = {};
   if (!draft.branchId) issues.branchId = 'Elige la sucursal.';
   if (!draft.typeCode) issues.typeCode = 'Elige el tipo de comprobante.';
@@ -54,14 +58,20 @@ export function validateSeries(draft: SeriesDraft, others: VoucherSeries[]): Ser
   if (!SERIES_PATTERN.test(draft.series)) {
     issues.series = 'La serie lleva 4 letras o números, por ejemplo F001.';
   } else if (
-    others.some(
-      (other) =>
-        other.series === draft.series &&
-        other.branch.id === draft.branchId &&
-        other.voucherType.code === draft.typeCode,
-    )
+    !editing ||
+    editing.series !== draft.series ||
+    editing.branch.id !== draft.branchId ||
+    editing.voucherType.code !== draft.typeCode
   ) {
-    issues.series = 'Esa serie ya existe para esta sucursal y tipo de comprobante.';
+    const duplicate = registered.find(
+      (other) =>
+        other.id !== editing?.id &&
+        other.series.trim().toUpperCase() === draft.series &&
+        other.voucherType.code === draft.typeCode,
+    );
+    if (duplicate) {
+      issues.series = `La serie ${draft.series} ya está registrada en ${duplicate.branch.name} para este tipo de comprobante. Usa otro código.`;
+    }
   }
 
   if (draft.associatedSeries !== '' && !SERIES_PATTERN.test(draft.associatedSeries)) {

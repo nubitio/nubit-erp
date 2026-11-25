@@ -6,6 +6,7 @@ namespace App\Setup\Demo\Minimarket;
 
 use App\CashRegister\Entity\CashRegister;
 use App\Catalog\Entity\UnitOfMeasure;
+use App\Catalog\Service\VoucherSeriesAllocation;
 use App\Identity\Entity\User;
 use App\Inventory\Entity\ProductStock;
 use App\Inventory\Entity\Warehouse;
@@ -163,16 +164,14 @@ final readonly class MinimarketDemoSeeder
     /** Credit notes need their own series next to the factura and boleta ones; a fresh tenant may not have them yet. */
     private function ensureCreditNoteSeries(Branch $branch): void
     {
-        foreach (['FC01' => 'F001', 'BC01' => 'B001'] as $series => $associated) {
-            $exists = $this->connection->fetchOne('SELECT COUNT(*) FROM local_comprobante WHERE local_id = ? AND tipo_comprobante_id = \'07\' AND series = ?', [
-                $branch->getId(),
-                $series,
-            ]);
-            if ((int) $exists === 0) {
-                $this->connection->executeStatement(
-                    'INSERT INTO local_comprobante (local_id, tipo_comprobante_id, series, serie_asociada, is_active) VALUES (?, \'07\', ?, ?, 1)',
-                    [$branch->getId(), $series, $associated],
-                );
+        $branchId = (string) $branch->getId();
+        foreach (['01' => 'FC', '03' => 'BC'] as $type => $prefix) {
+            $associated = $this->connection->fetchOne(
+                'SELECT series FROM local_comprobante WHERE local_id = ? AND tipo_comprobante_id = ? AND is_active = 1 ORDER BY id LIMIT 1',
+                [$branchId, $type],
+            );
+            if (is_string($associated)) {
+                VoucherSeriesAllocation::ensureForBranch($this->connection, $branchId, '07', $prefix, $associated);
             }
         }
     }

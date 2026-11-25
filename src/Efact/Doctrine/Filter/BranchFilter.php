@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Efact\Doctrine\Filter;
 
+use App\Catalog\Entity\VoucherSeries;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\Query\Filter\SQLFilter;
 
@@ -21,7 +22,12 @@ class BranchFilter extends SQLFilter
         // they determine where the recurring sale is issued. Subscriptions
         // can therefore reference a plan created from another active branch;
         // filtering it here makes API Platform fail while resolving that IRI.
-        if ($targetEntity->getTableName() === 'subscription_plan') {
+        // Series are company-level settings; issuance still explicitly selects
+        // the branch of the document rather than reading all series.
+        if (
+            $targetEntity->getTableName() === 'subscription_plan'
+            || $targetEntity->getName() === VoucherSeries::class
+        ) {
             return '';
         }
 

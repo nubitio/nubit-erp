@@ -15,15 +15,14 @@ use App\Catalog\Entity\Category;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\SunatCatalog;
 use App\Catalog\Entity\UnitOfMeasure;
-use App\Catalog\Entity\VoucherSeries;
 use App\Catalog\Entity\VoucherType;
 use App\Catalog\Enum\SettlementBehavior;
 use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Repository\PaymentMethodRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
-use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
+use App\Catalog\Service\VoucherSeriesAllocation;
 use App\Contacts\Entity\Customer;
 use App\Contacts\Repository\CustomerRepository;
 use App\Identity\Entity\Role;
@@ -69,7 +68,6 @@ readonly class InitialSetupService
         private CashRegisterRepository $cashRegisterRepository,
         private ExpenseCategoryRepository $expenseCategoryRepository,
         private VoucherTypeRepository $voucherTypeRepository,
-        private VoucherSeriesRepository $voucherSeriesRepository,
         private UnitOfMeasureRepository $unitOfMeasureRepository,
         private CategoryRepository $categoryRepository,
         private CustomerRepository $customerRepository,
@@ -626,42 +624,13 @@ readonly class InitialSetupService
         }
     }
 
-    private function ensureVoucherSeriesForBranch(Branch $branch): void
+    public function ensureVoucherSeriesForBranch(Branch $branch): void
     {
-        $seriesList = [
-            ['code' => '01', 'series' => 'F001'], // Factura
-            ['code' => '03', 'series' => 'B001'], // Boleta
-            ['code' => '00', 'series' => 'N001'], // Nota de venta
-        ];
-
-        $needsFlush = false;
-        foreach ($seriesList as $definition) {
-            $voucherType = $this->voucherTypeRepository->find($definition['code']);
-            if (!$voucherType instanceof VoucherType) {
+        foreach (['00' => 'N', '01' => 'F', '03' => 'B'] as $type => $prefix) {
+            if (!$this->voucherTypeRepository->find($type) instanceof VoucherType) {
                 continue;
             }
-
-            $existing = $this->voucherSeriesRepository->findOneBy([
-                'branch' => $branch,
-                'voucherType' => $voucherType,
-                'series' => $definition['series'],
-            ]);
-
-            if ($existing instanceof VoucherSeries) {
-                continue;
-            }
-
-            $voucherSeries = new VoucherSeries()
-                ->setBranch($branch)
-                ->setVoucherType($voucherType)
-                ->setSeries($definition['series']);
-
-            $this->entityManager->persist($voucherSeries);
-            $needsFlush = true;
-        }
-
-        if ($needsFlush) {
-            $this->entityManager->flush();
+            VoucherSeriesAllocation::ensureForBranch($this->connection, (string) $branch->getId(), $type, $prefix);
         }
     }
 

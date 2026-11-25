@@ -14,22 +14,25 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use App\Catalog\Entity\VoucherType;
 use App\Catalog\Repository\VoucherSeriesRepository;
+use App\Catalog\State\VoucherSeriesWriteProcessor;
 use App\Efact\Domain\ActivatableInterface;
 use App\Organization\Entity\Branch;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: VoucherSeriesRepository::class)]
 #[ORM\Table(name: 'local_comprobante')]
+#[ORM\UniqueConstraint(name: VoucherSeries::UNIQUE_INDEX, columns: ['local_id', 'tipo_comprobante_id', 'series'])]
 #[ApiResource(
     operations: [
         // Everyone signed in reads these (branch picker, receipts, series per sale); changing them is settings.
         new GetCollection(security: "is_granted('ROLE_USER')"),
         new Get(security: "is_granted('ROLE_USER')"),
-        new Post(security: "is_granted('perm:settings.edit')"),
-        new Put(security: "is_granted('perm:settings.edit')"),
-        new Patch(security: "is_granted('perm:settings.edit')"),
+        new Post(security: "is_granted('perm:settings.edit')", processor: VoucherSeriesWriteProcessor::class),
+        new Put(security: "is_granted('perm:settings.edit')", processor: VoucherSeriesWriteProcessor::class),
+        new Patch(security: "is_granted('perm:settings.edit')", processor: VoucherSeriesWriteProcessor::class),
         new Delete(security: "is_granted('perm:settings.edit')"),
     ],
     shortName: 'VoucherSerie',
@@ -39,6 +42,8 @@ use Symfony\Component\Serializer\Attribute\Groups;
 )]
 class VoucherSeries implements ActivatableInterface
 {
+    public const string UNIQUE_INDEX = 'uq_local_comprobante_branch_type_series';
+
     #[Groups(['voucher_series:read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -49,17 +54,20 @@ class VoucherSeries implements ActivatableInterface
     #[ApiProperty(description: 'voucher_series.branch.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'local_id', referencedColumnName: 'local_id', nullable: false)]
+    #[Assert\NotNull(message: 'Elige la sucursal.')]
     private Branch $branch;
 
     #[Groups(['voucher_series:read'])]
     #[ApiProperty(description: 'voucher_series.voucher_type.label')]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'tipo_comprobante_id', referencedColumnName: 'codigo', nullable: false)]
+    #[Assert\NotNull(message: 'Elige el tipo de comprobante.')]
     private VoucherType $voucherType;
 
     #[Groups(['voucher_series:read'])]
     #[ApiProperty(description: 'voucher_series.series.label')]
     #[ORM\Column(name: 'series', length: 6)]
+    #[Assert\NotBlank(message: 'Ingresa el código de la serie.')]
     private string $series;
 
     #[Groups(['voucher_series:read'])]
@@ -108,7 +116,7 @@ class VoucherSeries implements ActivatableInterface
 
     public function setSeries(string $series): static
     {
-        $this->series = $series;
+        $this->series = strtoupper(trim($series));
 
         return $this;
     }

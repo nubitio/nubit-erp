@@ -7,7 +7,7 @@ type Collection<T> = T[] | { member?: T[]; 'hydra:member'?: T[] };
 
 /** Every record of a small collection (branches, series, voucher types), whichever shape it comes in. */
 async function listAll<T>(resource: string): Promise<T[]> {
-  const { data } = await httpClient.get<Collection<T>>(`${API}${resource}?itemsPerPage=200`);
+  const { data } = await httpClient.get<Collection<T>>(`${API}${resource}?pagination=false`);
   return Array.isArray(data) ? data : (data.member ?? data['hydra:member'] ?? []);
 }
 

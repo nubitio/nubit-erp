@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\State;
 
+use App\Catalog\Service\VoucherSeriesAllocation;
 use App\Sales\Domain\DocType;
 use App\Sales\Entity\SaleRecord;
 use App\Settings\Service\TenantSettingsService;
@@ -26,8 +27,8 @@ readonly class SaleUtils
     {
         $series = $this->fetchSeries($docType, $wareHouseId);
 
-        // Internal notes of sale are not SUNAT documents. Auto-provision N001 so a
-        // cashier can still ring up a sale when the branch was created without that series.
+        // Internal notes are not SUNAT documents. Assign the next free Nxxx code
+        // when this branch was created without a note series.
         if ($series === null && $docType === DocType::NOTA_VENTA->value) {
             $series = $this->provisionInternalSaleSeries($wareHouseId);
         }
@@ -74,22 +75,12 @@ readonly class SaleUtils
             return null;
         }
 
-        $existing = $this->connection->fetchOne('SELECT series FROM local_comprobante WHERE local_id = ? AND tipo_comprobante_id = ? LIMIT 1', [
-            $branchId,
+        return VoucherSeriesAllocation::ensureForBranch(
+            $this->connection,
+            (string) $branchId,
             DocType::NOTA_VENTA->value,
-        ]);
-        if (is_string($existing) && $existing !== '') {
-            return $existing;
-        }
-
-        $this->connection->insert('local_comprobante', [
-            'local_id' => $branchId,
-            'tipo_comprobante_id' => DocType::NOTA_VENTA->value,
-            'series' => 'N001',
-            'is_active' => 1,
-        ]);
-
-        return 'N001';
+            'N',
+        );
     }
 
     private function missingSeriesMessage(string $docType): string

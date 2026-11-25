@@ -10,14 +10,10 @@ use App\Catalog\Entity\Category;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\Product;
 use App\Catalog\Entity\UnitOfMeasure;
-use App\Catalog\Entity\VoucherSeries;
-use App\Catalog\Entity\VoucherType;
 use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Repository\PaymentMethodRepository;
 use App\Catalog\Repository\ProductRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
-use App\Catalog\Repository\VoucherSeriesRepository;
-use App\Catalog\Repository\VoucherTypeRepository;
 use App\Contacts\Entity\Customer;
 use App\Contacts\Repository\CustomerRepository;
 use App\Contacts\Repository\SupplierRepository;
@@ -69,8 +65,6 @@ final class E2eTestSeedServiceTest extends TestCase
         $productStockRepository = $this->createStub(ProductStockRepository::class);
         $categoryRepository = $this->createStub(CategoryRepository::class);
         $unitRepository = $this->createStub(UnitOfMeasureRepository::class);
-        $voucherTypeRepository = $this->createStub(VoucherTypeRepository::class);
-        $voucherSeriesRepository = $this->createStub(VoucherSeriesRepository::class);
         $paymentMethodRepository = $this->createMock(PaymentMethodRepository::class);
         $cashRegisterRepository = $this->createMock(CashRegisterRepository::class);
         $dashboardRepository = $this->createStub(DashboardRepository::class);
@@ -109,20 +103,6 @@ final class E2eTestSeedServiceTest extends TestCase
             ->setBranch($branch);
         $this->setEntityId($cashRegister, 'id', 1);
         $cashRegisterRepository->method('findOneBy')->willReturn($cashRegister);
-
-        $voucherType1 = new VoucherType()
-            ->setCode('01')
-            ->setName('Factura');
-        $voucherType3 = new VoucherType()
-            ->setCode('03')
-            ->setName('Boleta');
-        $voucherTypeRepository
-            ->method('find')
-            ->willReturnMap([
-                ['01', $voucherType1],
-                ['03', $voucherType3],
-            ]);
-        $voucherSeriesRepository->method('findOneBy')->willReturn(new VoucherSeries());
 
         $customer = new Customer()
             ->setRuc('20100000001')
@@ -185,8 +165,6 @@ final class E2eTestSeedServiceTest extends TestCase
             $productStockRepository,
             $categoryRepository,
             $unitRepository,
-            $voucherTypeRepository,
-            $voucherSeriesRepository,
             $paymentMethodRepository,
             $cashRegisterRepository,
             $dashboardRepository,
@@ -218,8 +196,6 @@ final class E2eTestSeedServiceTest extends TestCase
         $productStockRepository = $this->createStub(ProductStockRepository::class);
         $categoryRepository = $this->createStub(CategoryRepository::class);
         $unitRepository = $this->createStub(UnitOfMeasureRepository::class);
-        $voucherTypeRepository = $this->createStub(VoucherTypeRepository::class);
-        $voucherSeriesRepository = $this->createStub(VoucherSeriesRepository::class);
         $paymentMethodRepository = $this->createMock(PaymentMethodRepository::class);
         $cashRegisterRepository = $this->createMock(CashRegisterRepository::class);
         $dashboardRepository = $this->createStub(DashboardRepository::class);
@@ -285,8 +261,6 @@ final class E2eTestSeedServiceTest extends TestCase
             $productStockRepository,
             $categoryRepository,
             $unitRepository,
-            $voucherTypeRepository,
-            $voucherSeriesRepository,
             $paymentMethodRepository,
             $cashRegisterRepository,
             $dashboardRepository,
