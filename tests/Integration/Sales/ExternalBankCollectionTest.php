@@ -4,18 +4,19 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Sales;
 
+use App\Accounting\Entity\Account;
+use App\Accounting\Message\EconomicEvent;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Enum\SettlementBehavior;
 use App\Integration\Entity\ApiClient;
 use App\Sales\Domain\IntegrationSaleActor;
 use App\Sales\Port\ConfirmIntegrationCredit;
 use App\Sales\Service\ExternalBankCollection;
-use App\Sales\Service\SalePaymentService;
 use App\Settings\Service\TenantSettingsService;
 use App\Tests\ReleaseCritical\Support\CoreSaleFixture;
 use App\Treasury\Domain\AccountKind;
 use App\Treasury\Domain\TreasuryAccount;
-use App\Treasury\Port\RecordsMoneyMovement;
+use App\Treasury\Repository\GatewayRouteRepository;
 use App\Treasury\Repository\TreasuryAccountRepository;
 use App\Treasury\Service\TreasuryActivation;
 use DateTimeImmutable;
@@ -24,27 +25,31 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Uid\Uuid;
 
 final class ExternalBankCollectionTest extends KernelTestCase
 {
-    /** @return iterable<string, array{bool}> */
+    /** @return iterable<string, array{bool, bool, bool}> */
     public static function treasuryModes(): iterable
     {
-        yield 'bank receipt and duplicate' => [true];
-        yield 'Treasury unavailable rolls back' => [false];
+        yield 'bank receipt and duplicate' => [true, false, true];
+        yield 'gateway receipt and duplicate' => [true, true, true];
+        yield 'invalid gateway ledger rolls back' => [true, true, false];
+        yield 'Treasury unavailable rolls back' => [false, false, true];
     }
 
     #[DataProvider('treasuryModes')]
-    public function testCollectionDoesNotNeedADrawerAndCommitsOnlyWhenTreasuryCanPost(bool $enabled): void
-    {
+    public function testCollectionDoesNotNeedADrawerAndCommitsOnlyWhenTreasuryCanPost(
+        bool $enabled,
+        bool $gateway,
+        bool $validLedger,
+    ): void {
         self::bootKernel();
         $container = static::getContainer();
         $em = $container->get(EntityManagerInterface::class);
         static::assertInstanceOf(EntityManagerInterface::class, $em);
         $db = $em->getConnection();
-        if (!$db->createSchemaManager()->tablesExist(['integration_sales_request', 'treasury_account'])) {
+        if (!$db->createSchemaManager()->tablesExist(['integration_sales_request', 'treasury_gateway_route'])) {
             static::markTestSkipped('Run against a migrated test tenant.');
         }
         $settings = $container->get(TenantSettingsService::class);
@@ -76,24 +81,48 @@ final class ExternalBankCollectionTest extends KernelTestCase
 
         $activation = $container->get(TreasuryActivation::class);
         $accounts = $container->get(TreasuryAccountRepository::class);
-        $payments = $container->get(SalePaymentService::class);
-        $treasury = $container->get(RecordsMoneyMovement::class);
-        $bus = $container->get(MessageBusInterface::class);
+        $service = $container->get(ExternalBankCollection::class);
         static::assertInstanceOf(TreasuryActivation::class, $activation);
         static::assertInstanceOf(TreasuryAccountRepository::class, $accounts);
-        static::assertInstanceOf(SalePaymentService::class, $payments);
-        static::assertInstanceOf(RecordsMoneyMovement::class, $treasury);
-        static::assertInstanceOf(MessageBusInterface::class, $bus);
-        $service = new ExternalBankCollection($em, $payments, $treasury, $bus);
+        static::assertInstanceOf(ExternalBankCollection::class, $service);
         $activation->set($enabled);
         $accountId = Uuid::v7()->toRfc4122();
         $accounts->add(
-            new TreasuryAccount($accountId, AccountKind::Bank, 'External bank', 'PEN', $branch, null, null, true),
+            new TreasuryAccount(
+                $accountId,
+                $gateway ? AccountKind::Clearing : AccountKind::Bank,
+                'External account',
+                'PEN',
+                $branch,
+                null,
+                null,
+                true,
+            ),
         );
         $methodId = (int) $method->getId();
-        $accounts->map($branch, $methodId, 'PEN', $accountId);
+        $ledgerCode = 'G' . bin2hex(random_bytes(4));
+        if ($gateway) {
+            $routes = $container->get(GatewayRouteRepository::class);
+            static::assertInstanceOf(GatewayRouteRepository::class, $routes);
+            $routes->save($branch, $methodId, 'PEN', $accountId, $ledgerCode);
+            if ($validLedger) {
+                $em->persist(
+                    new Account()
+                        ->setCode($ledgerCode)
+                        ->setName('Gateway funds'),
+                );
+                $em->flush();
+            }
+        } else {
+            $accounts->map($branch, $methodId, 'PEN', $accountId);
+        }
+        $commits = $enabled && $validLedger;
 
-        $post = static fn(bool $replay = false, string $amount = '8.00'): int => $service->post(
+        $post = static fn(
+            bool $replay = false,
+            string $amount = '8.00',
+            ?bool $destination = null,
+        ): int => $service->post(
             $saleId,
             $actor,
             $branch,
@@ -103,29 +132,35 @@ final class ExternalBankCollectionTest extends KernelTestCase
             new DateTimeImmutable('2026-11-24'),
             'bank-ref-1',
             allowReplay: $replay,
+            gateway: $destination ?? $gateway,
         );
-        if ($enabled) {
+        if ($commits) {
             $paymentId = $post();
             static::assertGreaterThan(0, $paymentId);
             static::assertSame($paymentId, $post(replay: true));
+            $debit = $db->fetchOne(
+                'SELECT l.debit FROM journal_entry j JOIN journal_entry_line l ON l.journal_entry_id = j.id JOIN chart_of_accounts a ON a.id = l.account_id WHERE j.source = ? AND j.source_id = ? AND a.code = ?',
+                [EconomicEvent::SOURCE_RECEIVABLE_COLLECT, (string) $paymentId, $gateway ? $ledgerCode : '1041'],
+            );
+            static::assertSame('8.00', $debit);
         }
         try {
-            $post(replay: true, amount: '7.00');
+            $post(replay: true, destination: $gateway && !$commits, amount: $gateway && $commits ? '8.00' : '7.00');
             static::fail('A duplicate receipt or a receipt with Treasury disabled must be rejected.');
         } catch (ConflictHttpException|UnprocessableEntityHttpException $e) {
-            static::assertSame($enabled ? 409 : 422, $e->getStatusCode());
+            static::assertSame($commits ? 409 : 422, $e->getStatusCode());
         }
 
         static::assertSame(
-            $enabled ? '12.00' : '20.00',
+            $commits ? '12.00' : '20.00',
             $db->fetchOne('SELECT balance_due FROM sales WHERE id = ?', [$saleId]),
         );
         static::assertSame(
-            $enabled ? 1 : 0,
+            $commits ? 1 : 0,
             (int) $db->fetchOne('SELECT COUNT(*) FROM sale_payments WHERE sale_id = ?', [$saleId]),
         );
         static::assertSame(
-            $enabled ? 1 : 0,
+            $commits ? 1 : 0,
             (int) $db->fetchOne('SELECT COUNT(*) FROM treasury_movement WHERE account_id = ?', [$accountId]),
         );
         static::assertSame(0, $fixture->cashMovementCount($saleId));

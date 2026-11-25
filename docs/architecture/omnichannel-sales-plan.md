@@ -14,7 +14,7 @@
 
 **Cobro bancario externo:** `ExternalBankCollection` aplica una referencia de cobro confirmada a una venta del mismo cliente API y sucursal, sin caja. Bloquea la venta y confirma abono, aplicación, movimiento bancario y asiento juntos. Tesorería activa y mapeo bancario por medio/sucursal/moneda son obligatorios; no se usa suspenso. La referencia se deduplica por cliente API. El integrador verifica el cobro antes de enviarlo. El endpoint `POST /api/v1/sales/{id}/payments` exige `payments:write` y devuelve el mismo identificador ante un replay idéntico. La referencia reutilizada con datos distintos devuelve `409`. Quedan pendientes fondos por liquidar y comisiones de pasarela.
 
-**Fondos por liquidar:** Tesorería permite configurar cuentas de tipo `clearing` y muestra su saldo por moneda fuera del dinero disponible y de la proyección. Las cuentas se reservan para el flujo de pasarela. La captura, el asiento y la liquidación de pasarela siguen pendientes.
+**Fondos por liquidar:** Tesorería permite configurar cuentas de tipo `clearing` y muestra su saldo por moneda fuera del dinero disponible y de la proyección. Las cuentas se reservan para el flujo de pasarela. La API de cobros acepta capturas verificadas en PEN con `destination: gateway` y una ruta de Tesorería y contabilidad configurada por sucursal y medio. Aplica el cobro y registra el saldo y el asiento sin aumentar el banco. La liquidación y las comisiones siguen pendientes.
 
 **Consulta comercial:** `GET /api/v1/sales/{id}` exige `sales:read` y devuelve estado, moneda, total y saldo vigente para las ventas del cliente API en su sucursal activa. El saldo y el total conservan su representación decimal. La consulta devuelve `404` fuera de ese alcance.
 

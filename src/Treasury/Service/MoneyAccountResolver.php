@@ -29,7 +29,17 @@ final readonly class MoneyAccountResolver
     /** @return array{account: TreasuryAccount, warning: ?string} */
     public function resolve(MoneyMovementRequest $request): array
     {
-        if ($request->requireMappedBankAccount) {
+        if ($request->requiredAccountKind === AccountKind::Clearing) {
+            return [
+                'account' => $this->accounts->gatewayAccount(
+                    $request->accountId ?? '',
+                    $request->branchId,
+                ) ?? throw new TreasuryException('La cuenta de fondos por liquidar no está disponible.'),
+                'warning' => null,
+            ];
+        }
+
+        if ($request->requiredAccountKind === AccountKind::Bank) {
             return [
                 'account' => $this->accounts->mappedBankAccount(
                     $request->branchId,
@@ -43,8 +53,8 @@ final readonly class MoneyAccountResolver
         }
 
         if ($request->accountId !== null) {
-            $account = $this->accounts->find($request->accountId);
-            if ($account === null || !$account->active || $account->kind === AccountKind::Clearing) {
+            $account = $this->accounts->selectableAccount($request->accountId);
+            if ($account === null) {
                 throw new TreasuryException('La cuenta elegida no existe o está inactiva.');
             }
 
@@ -67,8 +77,8 @@ final readonly class MoneyAccountResolver
                 $request->paymentMethodId,
                 $request->currency,
             );
-            $account = $mapped === null ? null : $this->accounts->find($mapped);
-            if ($account !== null && $account->active && $account->kind !== AccountKind::Clearing) {
+            $account = $mapped === null ? null : $this->accounts->selectableAccount($mapped);
+            if ($account !== null) {
                 return ['account' => $account, 'warning' => null];
             }
         }

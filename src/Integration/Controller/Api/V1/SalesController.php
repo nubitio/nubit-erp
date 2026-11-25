@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Integration\Controller\Api\V1;
 
 use App\Integration\Sales\CreditSaleInput;
-use App\Integration\Sales\ExternalBankPaymentInput;
+use App\Integration\Sales\ExternalPaymentInput;
 use App\Integration\Sales\SalesClientAccess;
 use App\Integration\Sales\SalesIntake;
 use App\Integration\Security\ApiClientUser;
@@ -106,7 +106,7 @@ final class SalesController extends AbstractController
 
         try {
             $branch = $access->requirePaymentBranch($client);
-            $input = ExternalBankPaymentInput::fromArray($body);
+            $input = ExternalPaymentInput::fromArray($body);
             $paymentId = $collection->post(
                 CreditSaleInput::identifier($id),
                 new IntegrationSaleActor($client->getClientId()),
@@ -117,6 +117,7 @@ final class SalesController extends AbstractController
                 $input->paidAt,
                 $input->reference,
                 allowReplay: true,
+                gateway: $input->gateway,
             );
         } catch (ConflictHttpException $e) {
             return self::error('idempotency_conflict', $e->getMessage(), 409);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Treasury\Port;
 
+use App\Treasury\Domain\AccountKind;
 use App\Treasury\Domain\Direction;
 use App\Treasury\Domain\MovementKey;
 use App\Treasury\Domain\Party;
@@ -32,7 +33,7 @@ final readonly class MoneyMovementRequest
         /** Explicit account chosen at payment time; wins over the payment-method mapping. */
         public ?string $accountId = null,
         public string $origin = 'live',
-        /** External collections must use the branch's bank mapping, never a drawer or suspense account. */
-        public bool $requireMappedBankAccount = false,
+        /** External collections pin the custody type and never fall back to suspense. */
+        public ?AccountKind $requiredAccountKind = null,
     ) {}
 }

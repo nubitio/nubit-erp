@@ -70,8 +70,11 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * Apply a verified external PEN bank receipt
-         * @description Requires a mapped active bank account for the payment method and assigned branch.
+         * Apply a verified external PEN receipt
+         * @description Omit destination or use bank for a mapped bank account. Use gateway for a
+         *     confirmed provider capture routed to a configured funds-pending-settlement
+         *     account and asset ledger. Routing is configured in ERP per branch, payment
+         *     method, and currency.
          *     The caller must verify the receipt before submitting it. The capture reference
          *     is the idempotency key within the API client. Repeating the same receipt returns
          *     the original payment ID. Reusing the reference with a different sale or receipt
@@ -575,6 +578,11 @@ export interface components {
              */
             paid_at: string;
             capture_reference: string;
+            /**
+             * @default bank
+             * @enum {string}
+             */
+            destination: "bank" | "gateway";
         };
         CreditSaleRequest: {
             /** Format: uuid */
