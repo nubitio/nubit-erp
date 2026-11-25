@@ -69,7 +69,7 @@ security:
         # (PLE, bank reconciliation, onboarding, etc.) must fall through to
         # `main`, where the tenant JWT/cookie is authenticated.
         integration_api:
-            pattern: ^/api/v1/(?:documents|ping|webhook-endpoints)(?:/|$)
+            pattern: ^/api/v1/(?:documents|ping|sales|webhook-endpoints)(?:/|$)
             stateless: true
             provider: user_provider
             custom_authenticators:

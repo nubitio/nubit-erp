@@ -27,10 +27,14 @@
     ],
     "App\\Inventory\\Core\\Contract\\SalesInventoryPortInterface": [
         "applyMovementFromSaleItem(App\\Sales\\Entity\\SaleRecord $sale, App\\Sales\\Entity\\SaleItemRecord $item, int $lineNo, bool $enforceNonNegativeStock?): void",
-        "getStockForProductInWarehouse(App\\Catalog\\Entity\\Product $product, App\\Inventory\\Entity\\Warehouse $warehouse): float"
+        "getStockForProductInWarehouse(App\\Catalog\\Entity\\Product $product, App\\Inventory\\Entity\\Warehouse $warehouse): float",
+        "lockAvailableStock(App\\Catalog\\Entity\\Product $product, App\\Inventory\\Entity\\Warehouse $warehouse): string"
     ],
     "App\\Inventory\\Core\\Contract\\StockValidationPolicyInterface": [
         "validateSale(App\\Catalog\\Entity\\Product $product, string $warehouseId, string $requestedQtyBase, string $onHandQtyBase): App\\Inventory\\Core\\Dto\\StockValidationResult"
+    ],
+    "App\\Sales\\Port\\ConfirmIntegrationCredit": [
+        "confirmIntegrationCredit(string $clientId, string $branchId, string $warehouseId, int $customerId, array $items, string $expectedTotal): string"
     ],
     "App\\Sales\\Port\\InvoiceCreatorInterface": [
         "createAndDispatchInvoiceForSaleId(string $saleId): array",

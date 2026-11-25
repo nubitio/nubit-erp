@@ -76,3 +76,17 @@ it('keeps the versioned public contract complete and explicit', function (): voi
 
     expect($errors)->toBe([]);
 });
+
+it('authenticates commercial requests through the API key firewall', function (): void {
+    $response = self::bootKernel()->handle(
+        \Symfony\Component\HttpFoundation\Request::create(
+            'https://integration-gateway.example.test/api/v1/sales',
+            'POST',
+            server: ['HTTP_AUTHORIZATION' => 'Bearer nb_malformed'],
+        ),
+    );
+
+    expect($response->getStatusCode())->toBe(401)
+        ->and(json_decode((string) $response->getContent(), associative: true))
+        ->toBe(['error' => ['code' => 'unauthenticated', 'message' => 'Malformed API key.']]);
+});
