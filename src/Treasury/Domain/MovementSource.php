@@ -15,6 +15,7 @@ enum MovementSource: string
     case SupplierPaymentReversal = 'supplier_payment_reversal';
     case PayrollPayment = 'payroll_payment';
     case Transfer = 'transfer';
+    case GatewaySettlement = 'gateway_settlement';
     case OpeningBalance = 'opening_balance';
     case StatementAdjustment = 'statement_adjustment';
     case Reclassification = 'reclassification';

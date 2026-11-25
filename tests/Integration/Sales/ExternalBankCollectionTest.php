@@ -49,7 +49,7 @@ final class ExternalBankCollectionTest extends KernelTestCase
         $em = $container->get(EntityManagerInterface::class);
         static::assertInstanceOf(EntityManagerInterface::class, $em);
         $db = $em->getConnection();
-        if (!$db->createSchemaManager()->tablesExist(['integration_sales_request', 'treasury_gateway_route'])) {
+        if (!$db->createSchemaManager()->tablesExist(['integration_sales_request', 'treasury_gateway_settlement'])) {
             static::markTestSkipped('Run against a migrated test tenant.');
         }
         $settings = $container->get(TenantSettingsService::class);
@@ -144,9 +144,12 @@ final class ExternalBankCollectionTest extends KernelTestCase
             );
             static::assertSame('8.00', $debit);
         }
+        if ($gateway && $commits) {
+            GatewaySettlementAssertions::verify($container, $em, $accountId, $branch);
+        }
         try {
             $post(replay: true, destination: $gateway && !$commits, amount: $gateway && $commits ? '8.00' : '7.00');
-            static::fail('A duplicate receipt or a receipt with Treasury disabled must be rejected.');
+            static::fail('An invalid receipt or changed replay must be rejected.');
         } catch (ConflictHttpException|UnprocessableEntityHttpException $e) {
             static::assertSame($commits ? 409 : 422, $e->getStatusCode());
         }
@@ -161,7 +164,9 @@ final class ExternalBankCollectionTest extends KernelTestCase
         );
         static::assertSame(
             $commits ? 1 : 0,
-            (int) $db->fetchOne('SELECT COUNT(*) FROM treasury_movement WHERE account_id = ?', [$accountId]),
+            (int) $db->fetchOne("SELECT COUNT(*) FROM treasury_movement WHERE account_id = ? AND source_type = 'sale_payment'", [
+                $accountId,
+            ]),
         );
         static::assertSame(0, $fixture->cashMovementCount($saleId));
     }
