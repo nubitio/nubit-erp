@@ -286,7 +286,7 @@ class ProductionPromotionTest(unittest.TestCase):
 
         image_runner = load('build-image.yml')['jobs']['build']['runs-on']
         deploy_runner = load('deploy.yml')['jobs']['deploy']['runs-on']
-        self.assertIn('CI_RUNNER_PROVIDER_HEAVY', image_runner)
+        self.assertEqual(image_runner, ['self-hosted', 'nubit-x64'])
         self.assertIn('CI_RUNNER_PROVIDER_LIGHT', deploy_runner)
 
     def test_release_manifest_still_requires_an_immutable_digest(self):
