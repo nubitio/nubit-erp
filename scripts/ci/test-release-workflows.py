@@ -279,14 +279,14 @@ class ProductionPromotionTest(unittest.TestCase):
         self.assertEqual(ci['env']['CI_RUNNER_PROVIDER'], "${{ github.event.inputs.runner_provider || vars.CI_RUNNER_PROVIDER || '' }}")
 
         changes = ci['jobs']['changes']
-        self.assertEqual(changes['runs-on'], 'ubuntu-latest')
+        self.assertEqual(changes['runs-on'], ['self-hosted', 'nubit-x64'])
         runner_env = next(step['env'] for step in changes['steps'] if step.get('id') == 'runner')
         self.assertEqual(runner_env['CI_RUNNER_PROVIDER_HEAVY'], "${{ vars.CI_RUNNER_PROVIDER_HEAVY || 'blacksmith' }}")
         self.assertEqual(runner_env['CI_RUNNER_PROVIDER_LIGHT'], "${{ vars.CI_RUNNER_PROVIDER_LIGHT || 'github' }}")
 
         image_runner = load('build-image.yml')['jobs']['build']['runs-on']
         deploy_runner = load('deploy.yml')['jobs']['deploy']['runs-on']
-        self.assertIn('CI_RUNNER_PROVIDER_HEAVY', image_runner)
+        self.assertEqual(image_runner, ['self-hosted', 'nubit-x64'])
         self.assertIn('CI_RUNNER_PROVIDER_LIGHT', deploy_runner)
 
     def test_release_manifest_still_requires_an_immutable_digest(self):
