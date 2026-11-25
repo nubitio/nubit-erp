@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Treasury\Domain;
 
-/** A transfer writes two legs; every other source writes one `main` leg. */
+/** Transfers and settlements write two legs; single movements use the `main` leg. */
 enum Leg: string
 {
     case Main = 'main';
