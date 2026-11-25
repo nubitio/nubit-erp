@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Sales;
 
+use App\Billing\Invoice\Domain\InvoiceSendRetryService;
+use App\Billing\Service\InvoiceCreationServiceInterface;
+use App\Billing\Service\SaleV2Loader;
 use App\Integration\Entity\ApiClient;
+use App\Integration\Sales\SaleFiscalRequests;
 use App\Integration\Sales\SalesClientAccess;
 use App\Integration\Sales\SalesIntake;
 use App\Integration\Security\ApiClientUser;
@@ -106,6 +110,15 @@ final class CreditSaleConfirmationTest extends KernelTestCase
         $entries = $container->get(CustomerAccountEntryRepository::class);
         static::assertInstanceOf(CustomerAccountEntryRepository::class, $entries);
         static::assertTrue($entries->hasChargeForSale($created['sale_id']));
+
+        $loader = $container->get(SaleV2Loader::class);
+        $invoices = $container->get(InvoiceCreationServiceInterface::class);
+        $retry = $container->get(InvoiceSendRetryService::class);
+        static::assertInstanceOf(SaleV2Loader::class, $loader);
+        static::assertInstanceOf(InvoiceCreationServiceInterface::class, $invoices);
+        static::assertInstanceOf(InvoiceSendRetryService::class, $retry);
+        $fiscal = new SaleFiscalRequests($db, $access, $loader, $invoices, $retry);
+        FiscalRequestAssertions::verify($fiscal, $principal, $db, $created['sale_id'], $branch);
 
         try {
             $intake->submit($principal, $branch, 'sale-two', $hash, $command);

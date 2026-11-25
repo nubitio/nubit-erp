@@ -306,12 +306,13 @@ contexts:
   Integration:
     namespace: App\Integration
     layer: ErpCore
-    dependsOn: [Billing, ControlPlane, Organization, Sales]
+    dependsOn: [Billing, ControlPlane, Efact, Organization, Sales]
     publicContracts: []
     ownsTables:
       - integration_api_client
       - integration_api_key
       - integration_sales_request
+      - integration_sale_document
       - integration_document
       - integration_event
       - integration_webhook_endpoint

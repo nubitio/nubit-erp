@@ -24,4 +24,6 @@ Run `yarn generate:api-types` to generate the public TypeScript types into `asse
 
 For a verified gateway capture, send `destination: gateway`. Configure the PEN route with `php bin/console sales:gateway-route:set --tenant=<tenant> <branch-id> <method-id> <clearing-account-id> <asset-ledger-code>`. ERP uses the configured accounts and credits customer receivables in the same transaction. A retry must retain the destination. Gateway settlement and fees are separate operations.
 
+`POST /api/v1/sales/{id}/document` requires `sales:read` and `documents:write`. It creates one native voucher for a fully paid sale and durably links it to that sale before the regular `invoice:send` worker runs. Reposting returns the same document and current state. Read that state with `GET /api/v1/sales/{id}/document` using `sales:read` and `documents:read`. The tenant needs fiscal series, SUNAT sending enabled, and the native retry entitlement.
+
 This endpoint only confirms unpaid credit sales in PEN. It reduces available inventory and creates the receivable without recording a cash or bank movement or issuing a SUNAT document. It does not handle reservations for unconfirmed orders, payments, or WooCommerce synchronization. Do not use it as a substitute for an applicable fiscal issuance workflow.
