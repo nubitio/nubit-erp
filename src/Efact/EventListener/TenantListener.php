@@ -74,6 +74,7 @@ readonly class TenantListener
             // tenant connection and broke JWT/cookie auth for them.
             '/api/v1/documents',
             '/api/v1/ping',
+            '/api/v1/sales',
             '/api/v1/webhook-endpoints',
         ];
 
