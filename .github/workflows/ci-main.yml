@@ -194,6 +194,12 @@ jobs:
 
       - name: Check frontend API types are in sync with the backend
         if: needs.changes.outputs.backend == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24.14.1'
+
+      - name: Verify frontend API types are in sync with the backend
+        if: needs.changes.outputs.backend == 'true'
         run: bash scripts/api/app-types.sh --check
 
       - name: Run architecture rules (AR-001…AR-010)
