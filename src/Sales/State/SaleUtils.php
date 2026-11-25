@@ -75,12 +75,7 @@ readonly class SaleUtils
             return null;
         }
 
-        return VoucherSeriesAllocation::ensureForBranch(
-            $this->connection,
-            (string) $branchId,
-            DocType::NOTA_VENTA->value,
-            'N',
-        );
+        return VoucherSeriesAllocation::ensureForBranch($this->connection, $branchId, DocType::NOTA_VENTA->value, 'N');
     }
 
     private function missingSeriesMessage(string $docType): string

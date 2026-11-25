@@ -59,15 +59,15 @@ final class VoucherSeriesAllocation
     /** Call under the corresponding type lock when provisioning a new series. */
     public static function firstAvailableCode(Connection $connection, string $type, string $prefix): ?string
     {
-        $used = array_fill_keys(
-            $connection->fetchFirstColumn('SELECT UPPER(TRIM(series)) FROM local_comprobante WHERE tipo_comprobante_id = ? FOR UPDATE', [
-                $type,
-            ]),
-            value: true,
-        );
+        // The expression reads the non-null VARCHAR series column.
+        /** @var list<string> $allocated */
+        $allocated = $connection->fetchFirstColumn('SELECT UPPER(TRIM(series)) FROM local_comprobante WHERE tipo_comprobante_id = ? FOR UPDATE', [
+            $type,
+        ]);
+        $used = array_fill_keys($allocated, value: true);
         $digits = 4 - strlen($prefix);
         for ($number = 1; $number < (10 ** $digits); ++$number) {
-            $candidate = $prefix . str_pad((string) $number, $digits, pad_string: '0');
+            $candidate = $prefix . str_pad((string) $number, $digits, pad_string: '0', pad_type: STR_PAD_LEFT);
             if (!array_key_exists($candidate, $used)) {
                 return $candidate;
             }
