@@ -15,6 +15,7 @@ use ApiPlatform\Metadata\Put;
 use App\Catalog\Entity\VoucherType;
 use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Efact\Domain\ActivatableInterface;
+use App\Efact\Validator as AppAssert;
 use App\Organization\Entity\Branch;
 use Doctrine\ORM\Mapping as ORM;
 use Nubit\ApiPlatform\Doctrine\Filter\DataGridFilter;
@@ -36,6 +37,10 @@ use Symfony\Component\Serializer\Attribute\Groups;
     normalizationContext: ['groups' => ['voucher_series:read']],
     filters: [DataGridFilter::class],
     mercure: true,
+)]
+#[AppAssert\UniqueEntity(
+    fields: ['series', 'branch', 'voucherType'],
+    message: 'Esta serie ya está registrada para la sucursal y tipo de comprobante seleccionados.',
 )]
 class VoucherSeries implements ActivatableInterface
 {

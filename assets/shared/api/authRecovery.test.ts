@@ -22,6 +22,8 @@ const requestOf = (input: RequestInfo | URL, init?: RequestInit) =>
 let install: (typeof import('./authRecovery'))['installAuthRecovery'];
 beforeEach(async () => {
   vi.resetModules();
+  delete (window as Window & { __nubitAuthRecoveryInstalled__?: boolean })
+    .__nubitAuthRecoveryInstalled__;
   localStorage.clear();
   document.body.innerHTML = '';
   document.cookie = 'CSRF_TOKEN=initial-csrf; path=/';
@@ -34,6 +36,17 @@ afterEach(() => {
 });
 
 describe('shared authentication recovery', () => {
+  it('does not wrap fetch again when the installer runs more than once', () => {
+    const original = vi.fn(async () => Response.json({}));
+    vi.stubGlobal('fetch', original);
+
+    install();
+    const installedFetch = globalThis.fetch;
+    install();
+
+    expect(globalThis.fetch).toBe(installedFetch);
+  });
+
   it('sends a file upload with a Content-Type whose boundary matches the body', async () => {
     const sent: { contentType: string | null; body: string }[] = [];
     vi.stubGlobal(

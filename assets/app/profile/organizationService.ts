@@ -3,12 +3,28 @@ import { httpClient } from '@shared/api/HttpClient';
 
 const API = getCoreApiBaseUrl();
 
-type Collection<T> = T[] | { member?: T[]; 'hydra:member'?: T[] };
+type Collection<T> = T[] | { member?: T[]; 'hydra:member'?: T[]; totalItems?: number };
 
-/** Every record of a small collection (branches, series, voucher types), whichever shape it comes in. */
+/** Fetch every page of a collection, whichever JSON-LD collection shape it comes in. */
 async function listAll<T>(resource: string): Promise<T[]> {
-  const { data } = await httpClient.get<Collection<T>>(`${API}${resource}?itemsPerPage=200`);
-  return Array.isArray(data) ? data : (data.member ?? data['hydra:member'] ?? []);
+  const items: T[] = [];
+  let page = 1;
+  let totalItems = Number.POSITIVE_INFINITY;
+
+  while (items.length < totalItems) {
+    const { data } = await httpClient.get<Collection<T>>(
+      `${API}${resource}?itemsPerPage=200&page=${page}`,
+    );
+    if (Array.isArray(data)) return page === 1 ? data : [...items, ...data];
+
+    const currentPage = data.member ?? data['hydra:member'] ?? [];
+    items.push(...currentPage);
+    totalItems = data.totalItems ?? items.length;
+    if (currentPage.length === 0) break;
+    page += 1;
+  }
+
+  return items;
 }
 
 export interface Branch {

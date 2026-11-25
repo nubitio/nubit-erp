@@ -1,6 +1,6 @@
 import { Settings } from 'luxon';
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import ReactDOM, { type Root } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { UiStringsProvider, ES_UI_STRINGS } from '@nubitio/ui';
 import '@fontsource/lexend/latin-400.css';
@@ -37,6 +37,10 @@ const queryClient = new QueryClient({
   },
 });
 
+const APP_ROOT_KEY = '__nubitEfactAppRoot__';
+
+type EfactWindow = Window & { [APP_ROOT_KEY]?: Root };
+
 installPosBootstrapCache(queryClient);
 
 // URLs from the hash-router era (`/#/billing/sales`) are mapped to real paths before
@@ -48,7 +52,10 @@ window.addEventListener('load', () => {
   installAuthRecovery();
   startAppUpdates();
 
-  const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
+  const appWindow = window as EfactWindow;
+  const root =
+    appWindow[APP_ROOT_KEY] ??
+    (appWindow[APP_ROOT_KEY] = ReactDOM.createRoot(document.getElementById('root') as HTMLElement));
   root.render(
     <React.StrictMode>
       <QueryClientProvider client={queryClient}>

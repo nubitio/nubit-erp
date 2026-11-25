@@ -12,6 +12,7 @@ import {
 
 type Fetcher = typeof globalThis.fetch;
 const SESSION_LOCK = 'nubit-auth-session';
+const INSTALLATION_KEY = '__nubitAuthRecoveryInstalled__';
 const MUTATING = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 const CREDENTIAL_PATHS = new Set([
   '/api/auth/login',
@@ -205,6 +206,13 @@ async function authenticatedRequest(
 }
 
 export function installAuthRecovery(): void {
+  const installationWindow = window as Window & { [INSTALLATION_KEY]?: boolean };
+  // Vite HMR can re-evaluate the SPA entry module without replacing the page.
+  // Wrapping fetch twice deadlocks credential requests: each wrapper takes the
+  // same cross-tab lock before delegating to the previous wrapper.
+  if (installationWindow[INSTALLATION_KEY]) return;
+  installationWindow[INSTALLATION_KEY] = true;
+
   const original = globalThis.fetch.bind(globalThis);
   globalThis.fetch = async (input, init) => {
     const url = new URL(
