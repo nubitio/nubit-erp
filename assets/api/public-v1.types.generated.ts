@@ -60,6 +60,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sales/{id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Apply a verified external PEN bank receipt
+         * @description Requires a mapped active bank account for the payment method and assigned branch.
+         *     The caller must verify the receipt before submitting it. The capture reference
+         *     is the idempotency key within the API client. Repeating the same receipt returns
+         *     the original payment ID. Reusing the reference with a different sale or receipt
+         *     returns 409. The operation does not create a POS cash movement.
+         */
+        post: operations["recordExternalBankPayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/documents": {
         parameters: {
             query?: never;
@@ -540,6 +564,18 @@ export interface components {
             /** @description Exact decimal balance in the sale currency */
             balance_due: string;
         };
+        ExternalBankPayment: {
+            payment_method_id: number;
+            amount_minor: number;
+            /** @constant */
+            currency: "PEN";
+            /**
+             * Format: date-time
+             * @description UTC with second precision, for example 2026-11-24T15:00:00Z
+             */
+            paid_at: string;
+            capture_reference: string;
+        };
         CreditSaleRequest: {
             /** Format: uuid */
             branch_id: string;
@@ -886,6 +922,49 @@ export interface operations {
             401: components["responses"]["Unauthenticated"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
+        };
+    };
+    recordExternalBankPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExternalBankPayment"];
+            };
+        };
+        responses: {
+            /** @description Recorded payment or identical replay */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        payment_id: string;
+                    };
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+            409: components["responses"]["IdempotencyConflict"];
+            /** @description Request exceeds 4 KiB */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            422: components["responses"]["ValidationFailed"];
         };
     };
     submitDocument: {

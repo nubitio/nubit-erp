@@ -101,6 +101,50 @@ paths:
         '401': { $ref: '#/components/responses/Unauthenticated' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/sales/{id}/payments:
+    post:
+      operationId: recordExternalBankPayment
+      tags: [Sales]
+      summary: Apply a verified external PEN bank receipt
+      description: |
+        Requires a mapped active bank account for the payment method and assigned branch.
+        The caller must verify the receipt before submitting it. The capture reference
+        is the idempotency key within the API client. Repeating the same receipt returns
+        the original payment ID. Reusing the reference with a different sale or receipt
+        returns 409. The operation does not create a POS cash movement.
+      security: [{ ApiKey: [] }]
+      x-required-scopes: [payments:write]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExternalBankPayment' }
+      responses:
+        '200':
+          description: Recorded payment or identical replay
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [payment_id]
+                properties:
+                  payment_id: { type: string, pattern: '^[0-9]+$' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/IdempotencyConflict' }
+        '413':
+          description: Request exceeds 4 KiB
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422': { $ref: '#/components/responses/ValidationFailed' }
   /api/v1/documents:
     post:
       operationId: submitDocument
@@ -386,7 +430,7 @@ components:
       scheme: bearer
       bearerFormat: nb_<environment>_<tenant>_<secret>
       description: Tenant-scoped API key. Required operation scopes are listed in x-required-scopes; HTTP bearer security itself has no OAuth scope semantics.
-      x-scopes: [documents:read, documents:write, webhooks:manage, sales:write, sales:read]
+      x-scopes: [documents:read, documents:write, webhooks:manage, sales:write, sales:read, payments:write]
     TenantJwt:
       type: http
       scheme: bearer
@@ -402,6 +446,19 @@ components:
         currency: { type: string }
         total: { type: string, description: Exact decimal amount in the sale currency }
         balance_due: { type: string, description: Exact decimal balance in the sale currency }
+    ExternalBankPayment:
+      type: object
+      additionalProperties: false
+      required: [payment_method_id, amount_minor, currency, paid_at, capture_reference]
+      properties:
+        payment_method_id: { type: integer, minimum: 1, maximum: 2147483647 }
+        amount_minor: { type: integer, minimum: 1, maximum: 999999999999 }
+        currency: { type: string, const: PEN }
+        paid_at:
+          type: string
+          format: date-time
+          description: UTC with second precision, for example 2026-11-24T15:00:00Z
+        capture_reference: { type: string, pattern: '^[A-Za-z0-9._:-]{1,120}$' }
     CreditSaleRequest:
       type: object
       additionalProperties: false
