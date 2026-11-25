@@ -14,6 +14,8 @@
 
 **Cobro bancario externo (interno):** `ExternalBankCollection` aplica una referencia de cobro confirmada a una venta del mismo cliente API y sucursal, sin caja. Bloquea la venta y confirma abono, aplicación, movimiento bancario y asiento juntos. Tesorería activa y mapeo bancario por medio/sucursal/moneda son obligatorios; no se usa suspenso. La referencia se deduplica por cliente API y una repetición se rechaza con conflicto. El adaptador aún debe verificar la captura con su proveedor antes de invocar esta operación. Pasarelas con fondos por liquidar, comisiones y endpoint público siguen pendientes.
 
+**Consulta comercial:** `GET /api/v1/sales/{id}` exige `sales:read` y devuelve estado, moneda, total y saldo vigente para las ventas del cliente API en su sucursal activa. El saldo y el total conservan su representación decimal. La consulta devuelve `404` fuera de ese alcance.
+
 ## Resumen ejecutivo
 
 **Propuesta:** mantener `SaleRecord` (`sales`) y profundizar el módulo de confirmación de ventas detrás de una interfaz común para POS, administración e integraciones. Conservar el turno de origen como dato histórico cuando exista; atribuir el cobro a su propio turno y el dinero a su cuenta o custodio real. Reutilizar Treasury, el ledger de clientes, Billing y el contexto Integration. No crear un segundo modelo de venta, una caja virtual ni usuarios ficticios.

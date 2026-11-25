@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Integration\Api\PublicContractValidator;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Yaml\Yaml;
@@ -19,6 +21,12 @@ final class PublicApiContractTestKernel extends KernelTestCase
 
         return $router->getRouteCollection();
     }
+
+    public static function handleRequest(Request $request): Response
+    {
+        return self::bootKernel()->handle($request);
+    }
+
 }
 
 it('keeps the versioned public contract complete and explicit', function (): void {
@@ -30,7 +38,7 @@ it('keeps the versioned public contract complete and explicit', function (): voi
         ->and($contract['components']['securitySchemes']['ApiKey']['scheme'])->toBe('bearer')
         ->and($contract['components']['securitySchemes']['TenantJwt']['scheme'])->toBe('bearer')
         ->and($contract['components']['securitySchemes']['ApiKey']['x-scopes'])
-        ->toContain('documents:read', 'documents:write', 'webhooks:manage')
+        ->toContain('documents:read', 'documents:write', 'webhooks:manage', 'sales:read', 'sales:write')
         ->and($contract['components']['schemas'])->toHaveKeys([
             'Auth',
             'Status',
@@ -39,6 +47,8 @@ it('keeps the versioned public contract complete and explicit', function (): voi
         ])
         ->and($contract['paths'])->toHaveKeys([
             '/api/v1/ping',
+            '/api/v1/sales',
+            '/api/v1/sales/{id}',
             '/api/v1/documents',
             '/api/v1/documents/{reference}',
             '/api/v1/webhook-endpoints',
@@ -78,8 +88,8 @@ it('keeps the versioned public contract complete and explicit', function (): voi
 });
 
 it('authenticates commercial requests through the API key firewall', function (): void {
-    $response = self::bootKernel()->handle(
-        \Symfony\Component\HttpFoundation\Request::create(
+    $response = PublicApiContractTestKernel::handleRequest(
+        Request::create(
             'https://integration-gateway.example.test/api/v1/sales',
             'POST',
             server: ['HTTP_AUTHORIZATION' => 'Bearer nb_malformed'],
