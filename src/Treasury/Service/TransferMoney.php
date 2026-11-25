@@ -57,6 +57,9 @@ final readonly class TransferMoney
         if ($from === null || $to === null || !$from->active || !$to->active) {
             throw new TreasuryException('Las cuentas de la transferencia deben existir y estar activas.');
         }
+        if (in_array(AccountKind::Clearing, [$from->kind, $to->kind], strict: true)) {
+            throw new TreasuryException('Los fondos por liquidar requieren una liquidación de pasarela.');
+        }
         if ($from->currency !== $to->currency) {
             throw CurrencyMismatch::between($from->currency, $to->currency);
         }

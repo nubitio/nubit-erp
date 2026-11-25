@@ -5,7 +5,7 @@ import { TENANT_RUNTIME_CONFIG_QUERY_KEY } from '@shared/hooks/useTenantRuntimeC
 
 const API = `${getCoreApiBaseUrl()}treasury`;
 
-export type AccountKind = 'cash_register' | 'bank' | 'wallet' | 'suspense';
+export type AccountKind = 'cash_register' | 'bank' | 'wallet' | 'clearing' | 'suspense';
 
 export interface TreasuryAccount {
   id: string;
@@ -57,7 +57,14 @@ export interface OpenItemsSummary {
 
 export interface CurrencySummary {
   currency: string;
-  position: { total: string; cash: string; banks: string; wallets: string; suspense: string };
+  position: {
+    total: string;
+    cash: string;
+    banks: string;
+    wallets: string;
+    clearing: string;
+    suspense: string;
+  };
   receivables: OpenItemsSummary;
   payables: OpenItemsSummary;
   /** Today's money, plus receivables due within 30 days, minus payables due within 30 days or overdue. */
@@ -154,12 +161,16 @@ export function useSyncAccounts() {
   });
 }
 
-export function useCreateWallet() {
+export function useCreateTreasuryAccount() {
   const invalidate = useInvalidate();
 
   return useMutation({
-    mutationFn: async (input: { name: string; currency: string; branchId?: string | null }) =>
-      (await httpClient.post<TreasuryAccount>(`${API}/accounts`, input)).data,
+    mutationFn: async (input: {
+      name: string;
+      currency: string;
+      kind: 'wallet' | 'clearing';
+      branchId?: string | null;
+    }) => (await httpClient.post<TreasuryAccount>(`${API}/accounts`, input)).data,
     onSuccess: invalidate,
   });
 }

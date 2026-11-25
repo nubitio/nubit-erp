@@ -9,6 +9,7 @@ export const KIND_LABEL: Record<AccountKind, string> = {
   cash_register: 'Caja',
   bank: 'Banco',
   wallet: 'Billetera',
+  clearing: 'Fondos por liquidar',
   suspense: 'Sin asignar',
 };
 

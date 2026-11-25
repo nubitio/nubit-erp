@@ -23,7 +23,14 @@ const summary = (
   currencies: [
     {
       currency: 'PEN',
-      position: { total: '0.00', cash: '0.00', banks: '0.00', wallets: '0.00', suspense: '0.00' },
+      position: {
+        total: '0.00',
+        cash: '0.00',
+        banks: '0.00',
+        wallets: '0.00',
+        clearing: '0.00',
+        suspense: '0.00',
+      },
       receivables: { ...empty, overdueCount: overdueIn },
       payables: { ...empty, overdueCount: overdueOut },
       projectedInThirtyDays: '0.00',

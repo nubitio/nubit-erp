@@ -35,7 +35,7 @@ final readonly class FinanceSummaryQuery
      *     asOf: string,
      *     currencies: list<array{
      *         currency: string,
-     *         position: array{total: string, cash: string, banks: string, wallets: string, suspense: string},
+     *         position: array{total: string, cash: string, banks: string, wallets: string, clearing: string, suspense: string},
      *         receivables: array{balance: string, overdue: string, dueWithinSevenDays: string, dueWithinThirtyDays: string, count: int, overdueCount: int},
      *         payables: array{balance: string, overdue: string, dueWithinSevenDays: string, dueWithinThirtyDays: string, count: int, overdueCount: int},
      *         projectedInThirtyDays: string,
@@ -87,7 +87,7 @@ final readonly class FinanceSummaryQuery
         ];
     }
 
-    /** @return array<string, array{total: string, cash: string, banks: string, wallets: string, suspense: string}> */
+    /** @return array<string, array{total: string, cash: string, banks: string, wallets: string, clearing: string, suspense: string}> */
     private function positionByCurrency(): array
     {
         $byCurrency = [];
@@ -98,20 +98,24 @@ final readonly class FinanceSummaryQuery
                 'cash' => '0',
                 'banks' => '0',
                 'wallets' => '0',
+                'clearing' => '0',
                 'suspense' => '0',
             ];
             $key = match ($row['account']->kind) {
                 AccountKind::CashRegister => 'cash',
                 AccountKind::Bank => 'banks',
                 AccountKind::Wallet => 'wallets',
+                AccountKind::Clearing => 'clearing',
                 AccountKind::Suspense => 'suspense',
             };
             $byCurrency[$currency][$key] = Money::toString(Money::money(
                 $byCurrency[$currency][$key],
             )->plus(Money::money($row['balance'])));
-            $byCurrency[$currency]['total'] = Money::toString(Money::money(
-                $byCurrency[$currency]['total'],
-            )->plus(Money::money($row['balance'])));
+            if ($row['account']->kind !== AccountKind::Clearing) {
+                $byCurrency[$currency]['total'] = Money::toString(Money::money(
+                    $byCurrency[$currency]['total'],
+                )->plus(Money::money($row['balance'])));
+            }
         }
 
         foreach ($byCurrency as $currency => $values) {
@@ -123,9 +127,16 @@ final readonly class FinanceSummaryQuery
         return $byCurrency;
     }
 
-    /** @return array{total: string, cash: string, banks: string, wallets: string, suspense: string} */
+    /** @return array{total: string, cash: string, banks: string, wallets: string, clearing: string, suspense: string} */
     private static function emptyPosition(): array
     {
-        return ['total' => '0.00', 'cash' => '0.00', 'banks' => '0.00', 'wallets' => '0.00', 'suspense' => '0.00'];
+        return [
+            'total' => '0.00',
+            'cash' => '0.00',
+            'banks' => '0.00',
+            'wallets' => '0.00',
+            'clearing' => '0.00',
+            'suspense' => '0.00',
+        ];
     }
 }

@@ -8,6 +8,7 @@ use App\Treasury\Domain\AccountKind;
 use App\Treasury\Domain\Direction;
 use App\Treasury\Domain\MovementKey;
 use App\Treasury\Domain\MovementSource;
+use App\Treasury\Domain\TreasuryMovement;
 use App\Treasury\Port\MoneyMovementRequest;
 use App\Treasury\Report\FinanceAttentionQuery;
 use App\Treasury\Report\FinanceSummaryQuery;
@@ -30,6 +31,22 @@ final class FinanceSummaryQueryTest extends TestCase
         $this->put($kit, 'yape', '50.00');
         $this->put($kit, 'susp', '10.00');
         $this->put($kit, 'usd-bank', '300.00');
+        $kit->account('gateway', AccountKind::Clearing);
+        $kit->movements->append(new TreasuryMovement(
+            id: 'gateway-movement',
+            accountId: 'gateway',
+            signedAmount: '150.00',
+            currency: 'PEN',
+            occurredAt: new DateTimeImmutable(self::TODAY),
+            key: new MovementKey(MovementSource::SalePayment, 'gateway-capture'),
+            party: null,
+            reference: null,
+            description: null,
+            transferId: null,
+            correctsMovementId: null,
+            origin: 'live',
+            createdBy: null,
+        ));
 
         $summary = $this->query($kit)->summarize(new DateTimeImmutable(self::TODAY));
 
@@ -41,9 +58,15 @@ final class FinanceSummaryQueryTest extends TestCase
                 'cash' => '200.00',
                 'banks' => '1000.00',
                 'wallets' => '50.00',
+                'clearing' => '150.00',
                 'suspense' => '10.00',
             ],
             $pen,
+        );
+        self::assertSame('1260.00', $summary['currencies'][0]['projectedInThirtyDays']);
+        self::assertSame(
+            ['PEN' => '1260.00', 'USD' => '300.00'],
+            new PositionQuery($kit->accounts, $kit->movements, $kit->drawers)->totalsByCurrency(),
         );
         self::assertSame('300.00', $summary['currencies'][1]['position']['total']);
     }

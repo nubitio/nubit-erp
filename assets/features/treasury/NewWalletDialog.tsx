@@ -1,7 +1,7 @@
 import { AppDialog, Button, Combobox, FormField, TextField } from '@nubitio/ui';
 import { useState } from 'react';
 import toast from '@shared/lib/SharedUtils';
-import { treasuryErrorMessage, useCreateWallet } from './api/treasuryApi';
+import { treasuryErrorMessage, useCreateTreasuryAccount } from './api/treasuryApi';
 
 interface Props {
   onClose: () => void;
@@ -10,7 +10,8 @@ interface Props {
 const CURRENCIES = ['PEN', 'USD'];
 
 export const NewWalletDialog = ({ onClose }: Props) => {
-  const create = useCreateWallet();
+  const create = useCreateTreasuryAccount();
+  const [kind, setKind] = useState<'wallet' | 'clearing'>('wallet');
   const [name, setName] = useState('');
   const [currency, setCurrency] = useState('PEN');
 
@@ -20,14 +21,14 @@ export const NewWalletDialog = ({ onClose }: Props) => {
       return;
     }
     create.mutate(
-      { name: name.trim(), currency },
+      { name: name.trim(), currency, kind },
       {
         onSuccess: () => {
-          toast('Billetera creada', 'success');
+          toast('Cuenta creada', 'success');
           onClose();
         },
         onError: (error) =>
-          toast(treasuryErrorMessage(error, 'No se pudo crear la billetera'), 'error', 6000),
+          toast(treasuryErrorMessage(error, 'No se pudo crear la cuenta'), 'error', 6000),
       },
     );
   };
@@ -35,7 +36,7 @@ export const NewWalletDialog = ({ onClose }: Props) => {
   return (
     <AppDialog
       open
-      title="Nueva billetera"
+      title="Nueva cuenta de dinero"
       onClose={onClose}
       maxWidth={440}
       footer={
@@ -49,6 +50,20 @@ export const NewWalletDialog = ({ onClose }: Props) => {
         </>
       }
     >
+      <FormField label="Tipo de cuenta">
+        <Combobox
+          aria-label="Tipo de cuenta"
+          clearable={false}
+          options={[
+            { value: 'wallet', label: 'Billetera' },
+            { value: 'clearing', label: 'Fondos por liquidar' },
+          ]}
+          value={kind}
+          onChange={(value) => {
+            if (value === 'wallet' || value === 'clearing') setKind(value);
+          }}
+        />
+      </FormField>
       <FormField label="Nombre" helpText="Por ejemplo Yape, Plin o Tarjetas Izipay.">
         <TextField
           value={name}
