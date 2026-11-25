@@ -44,7 +44,10 @@ readonly class InvoiceSendRetryService
                   sunat_status <> '0'
                   AND NOT (
                     sunat_status REGEXP '^[0-9]+$'
-                    AND CAST(sunat_status AS UNSIGNED) BETWEEN 2000 AND 3999
+                    AND (
+                      CAST(sunat_status AS UNSIGNED) BETWEEN 2000 AND 3999
+                      OR (CAST(sunat_status AS UNSIGNED) >= 4000 AND cdr_path IS NOT NULL)
+                    )
                   )
                 )
               )
@@ -70,7 +73,10 @@ readonly class InvoiceSendRetryService
                   sunat_status <> '0'
                   AND NOT (
                     sunat_status REGEXP '^[0-9]+$'
-                    AND CAST(sunat_status AS UNSIGNED) BETWEEN 2000 AND 3999
+                    AND (
+                      CAST(sunat_status AS UNSIGNED) BETWEEN 2000 AND 3999
+                      OR (CAST(sunat_status AS UNSIGNED) >= 4000 AND cdr_path IS NOT NULL)
+                    )
                   )
                 )
               )

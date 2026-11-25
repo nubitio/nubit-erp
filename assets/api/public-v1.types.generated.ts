@@ -87,6 +87,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/sales/{id}/document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read the fiscal outcome for a sale */
+        get: operations["getIntegrationSaleDocument"];
+        put?: never;
+        /** Request a fiscal document for a fully paid sale */
+        post: operations["requestIntegrationSaleDocument"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/documents": {
         parameters: {
             query?: never;
@@ -729,6 +747,20 @@ export interface components {
         };
     };
     responses: {
+        /** @description Durable request and current fiscal outcome */
+        SaleDocumentStatus: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": {
+                    sale_id: string;
+                    document_id: string;
+                    /** @enum {string} */
+                    status: "queued" | "accepted" | "rejected" | "failed";
+                };
+            };
+        };
         /** @description Missing or invalid credentials */
         Unauthenticated: {
             headers: {
@@ -972,6 +1004,42 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
+            422: components["responses"]["ValidationFailed"];
+        };
+    };
+    getIntegrationSaleDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["SaleDocumentStatus"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    requestIntegrationSaleDocument: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["SaleDocumentStatus"];
+            202: components["responses"]["SaleDocumentStatus"];
+            401: components["responses"]["Unauthenticated"];
+            403: components["responses"]["Forbidden"];
+            404: components["responses"]["NotFound"];
             422: components["responses"]["ValidationFailed"];
         };
     };
