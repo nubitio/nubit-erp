@@ -83,10 +83,11 @@ final class ApiKeyCreateCommand extends Command
         $salesBranchId = trim((string) $input->getOption('sales-branch'));
         $hasSalesScope =
             in_array(SalesClientAccess::WRITE_SCOPE, $scopes, strict: true)
-            || in_array(SalesClientAccess::READ_SCOPE, $scopes, strict: true);
+            || in_array(SalesClientAccess::READ_SCOPE, $scopes, strict: true)
+            || in_array(SalesClientAccess::PAYMENT_SCOPE, $scopes, strict: true);
         if ($hasSalesScope !== ($salesBranchId !== '')) {
             $io->error(
-                '--sales-branch is required with sales:read or sales:write and requires at least one of those scopes.',
+                '--sales-branch is required with sales:read, sales:write or payments:write and requires at least one of those scopes.',
             );
 
             return Command::INVALID;

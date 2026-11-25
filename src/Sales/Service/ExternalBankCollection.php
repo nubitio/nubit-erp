@@ -46,6 +46,7 @@ final readonly class ExternalBankCollection
         string $currency,
         DateTimeImmutable $paidAt,
         string $captureReference,
+        bool $allowReplay = false,
     ): int {
         $reference = trim($captureReference);
         if ($paymentMethodId === PaymentMethod::CASH || $reference === '' || strlen($reference) > 120) {
@@ -68,6 +69,7 @@ final readonly class ExternalBankCollection
                 $paidAt,
                 $reference,
                 $key,
+                $allowReplay,
             ): int {
                 $sale = $this->entityManager->find(SaleRecord::class, $saleId, LockMode::PESSIMISTIC_WRITE);
                 if (
@@ -82,7 +84,25 @@ final readonly class ExternalBankCollection
                         'La moneda del cobro debe coincidir con la de la venta.',
                     );
                 }
-                $this->rejectRecordedCapture($key);
+                $existing = $this->entityManager->getConnection()->fetchAssociative('SELECT id, sale_id, payment_method_id, amount, paid_at FROM sale_payments WHERE idempotency_key = ?', [
+                    $key,
+                ]);
+                if ($existing !== false) {
+                    $recorded = [
+                        $existing['sale_id'],
+                        (int) $existing['payment_method_id'],
+                        $existing['amount'],
+                        $existing['paid_at'],
+                    ];
+                    if (
+                        $allowReplay
+                        && $recorded === [$saleId, $paymentMethodId, $amount, $paidAt->format('Y-m-d H:i:s')]
+                    ) {
+                        return (int) $existing['id'];
+                    }
+
+                    throw new ConflictHttpException('Esta referencia de cobro ya se registró.');
+                }
                 $method = $this->entityManager->find(PaymentMethod::class, $paymentMethodId);
                 if (!$method instanceof PaymentMethod) {
                     throw new UnprocessableEntityHttpException('El medio de pago no existe.');
@@ -97,17 +117,6 @@ final readonly class ExternalBankCollection
                 throw $e;
             }
             throw new ConflictHttpException('Esta referencia de cobro ya se registró.', $e);
-        }
-    }
-
-    private function rejectRecordedCapture(string $key): void
-    {
-        if (
-            $this->entityManager->getConnection()->fetchOne('SELECT id FROM sale_payments WHERE idempotency_key = ?', [
-                $key,
-            ]) !== false
-        ) {
-            throw new ConflictHttpException('Esta referencia de cobro ya se registró.');
         }
     }
 

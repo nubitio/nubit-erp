@@ -38,7 +38,7 @@ it('keeps the versioned public contract complete and explicit', function (): voi
         ->and($contract['components']['securitySchemes']['ApiKey']['scheme'])->toBe('bearer')
         ->and($contract['components']['securitySchemes']['TenantJwt']['scheme'])->toBe('bearer')
         ->and($contract['components']['securitySchemes']['ApiKey']['x-scopes'])
-        ->toContain('documents:read', 'documents:write', 'webhooks:manage', 'sales:read', 'sales:write')
+        ->toContain('documents:read', 'documents:write', 'webhooks:manage', 'sales:read', 'sales:write', 'payments:write')
         ->and($contract['components']['schemas'])->toHaveKeys([
             'Auth',
             'Status',
@@ -49,6 +49,7 @@ it('keeps the versioned public contract complete and explicit', function (): voi
             '/api/v1/ping',
             '/api/v1/sales',
             '/api/v1/sales/{id}',
+            '/api/v1/sales/{id}/payments',
             '/api/v1/documents',
             '/api/v1/documents/{reference}',
             '/api/v1/webhook-endpoints',
@@ -87,10 +88,10 @@ it('keeps the versioned public contract complete and explicit', function (): voi
     expect($errors)->toBe([]);
 });
 
-it('authenticates commercial requests through the API key firewall', function (): void {
+it('authenticates commercial requests through the API key firewall', function (string $path): void {
     $response = PublicApiContractTestKernel::handleRequest(
         Request::create(
-            'https://integration-gateway.example.test/api/v1/sales',
+            'https://integration-gateway.example.test' . $path,
             'POST',
             server: ['HTTP_AUTHORIZATION' => 'Bearer nb_malformed'],
         ),
@@ -99,4 +100,7 @@ it('authenticates commercial requests through the API key firewall', function ()
     expect($response->getStatusCode())->toBe(401)
         ->and(json_decode((string) $response->getContent(), associative: true))
         ->toBe(['error' => ['code' => 'unauthenticated', 'message' => 'Malformed API key.']]);
-});
+})->with([
+    'sale creation' => ['/api/v1/sales'],
+    'payment registration' => ['/api/v1/sales/018f0d0a-e38f-7621-af46-000000000001/payments'],
+]);

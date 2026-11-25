@@ -93,21 +93,24 @@ final class ExternalBankCollectionTest extends KernelTestCase
         $methodId = (int) $method->getId();
         $accounts->map($branch, $methodId, 'PEN', $accountId);
 
-        $post = static fn(): int => $service->post(
+        $post = static fn(bool $replay = false, string $amount = '8.00'): int => $service->post(
             $saleId,
             $actor,
             $branch,
             $methodId,
-            '8.00',
+            $amount,
             'PEN',
             new DateTimeImmutable('2026-11-24'),
             'bank-ref-1',
+            allowReplay: $replay,
         );
         if ($enabled) {
-            static::assertGreaterThan(0, $post());
+            $paymentId = $post();
+            static::assertGreaterThan(0, $paymentId);
+            static::assertSame($paymentId, $post(replay: true));
         }
         try {
-            $post();
+            $post(replay: true, amount: '7.00');
             static::fail('A duplicate receipt or a receipt with Treasury disabled must be rejected.');
         } catch (ConflictHttpException|UnprocessableEntityHttpException $e) {
             static::assertSame($enabled ? 409 : 422, $e->getStatusCode());

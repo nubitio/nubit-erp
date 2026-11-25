@@ -11,6 +11,7 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 final readonly class SalesClientAccess
 {
+    public const string PAYMENT_SCOPE = 'payments:write';
     public const string READ_SCOPE = 'sales:read';
     public const string WRITE_SCOPE = 'sales:write';
 
@@ -21,9 +22,24 @@ final readonly class SalesClientAccess
 
     public function requireBranch(ApiClientUser $client, string $requestedBranch): string
     {
+        $branchId = $this->assignedBranch($client, self::WRITE_SCOPE);
+        if ($branchId !== $requestedBranch) {
+            throw new AccessDeniedException();
+        }
+
+        return $branchId;
+    }
+
+    public function requirePaymentBranch(ApiClientUser $client): string
+    {
+        return $this->assignedBranch($client, self::PAYMENT_SCOPE);
+    }
+
+    private function assignedBranch(ApiClientUser $client, string $scope): string
+    {
         if (
             $client->getTenant() !== $this->tenantContext->getTenantName()
-            || !in_array(self::WRITE_SCOPE, $client->getScopes(), strict: true)
+            || !in_array($scope, $client->getScopes(), strict: true)
         ) {
             throw new AccessDeniedException();
         }
@@ -33,7 +49,7 @@ final readonly class SalesClientAccess
             INNER JOIN local b ON b.local_id = c.sales_branch_id
             WHERE c.id = ? AND b.is_active = 1
             SQL, [$client->getClientId()]);
-        if (!is_string($branchId) || $branchId !== $requestedBranch) {
+        if (!is_string($branchId)) {
             throw new AccessDeniedException();
         }
 
