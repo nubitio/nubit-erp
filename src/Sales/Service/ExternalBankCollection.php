@@ -4,19 +4,10 @@ declare(strict_types=1);
 
 namespace App\Sales\Service;
 
-use App\Accounting\Message\EconomicEvent;
 use App\Catalog\Entity\PaymentMethod;
 use App\Efact\Domain\Money;
 use App\Sales\Domain\IntegrationSaleActor;
-use App\Sales\Entity\SalePayment;
 use App\Sales\Entity\SaleRecord;
-use App\Treasury\Domain\Direction;
-use App\Treasury\Domain\MovementKey;
-use App\Treasury\Domain\MovementSource;
-use App\Treasury\Domain\Party;
-use App\Treasury\Domain\TreasuryException;
-use App\Treasury\Port\MoneyMovementRequest;
-use App\Treasury\Port\RecordsMoneyMovement;
 use DateTimeImmutable;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\DBAL\LockMode;
@@ -24,7 +15,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Uid\Uuid;
 
 /** Posts a verified external receipt, never a payment intent. The caller authenticates the provider and branch. */
@@ -33,8 +23,7 @@ final readonly class ExternalBankCollection
     public function __construct(
         private EntityManagerInterface $entityManager,
         private SalePaymentService $payments,
-        private RecordsMoneyMovement $treasury,
-        private MessageBusInterface $bus,
+        private ExternalReceiptPosting $posting,
     ) {}
 
     public function post(
@@ -47,6 +36,7 @@ final readonly class ExternalBankCollection
         DateTimeImmutable $paidAt,
         string $captureReference,
         bool $allowReplay = false,
+        bool $gateway = false,
     ): int {
         $reference = trim($captureReference);
         if ($paymentMethodId === PaymentMethod::CASH || $reference === '' || strlen($reference) > 120) {
@@ -70,6 +60,7 @@ final readonly class ExternalBankCollection
                 $reference,
                 $key,
                 $allowReplay,
+                $gateway,
             ): int {
                 $sale = $this->entityManager->find(SaleRecord::class, $saleId, LockMode::PESSIMISTIC_WRITE);
                 if (
@@ -84,7 +75,13 @@ final readonly class ExternalBankCollection
                         'La moneda del cobro debe coincidir con la de la venta.',
                     );
                 }
-                $existing = $this->entityManager->getConnection()->fetchAssociative('SELECT id, sale_id, payment_method_id, amount, paid_at FROM sale_payments WHERE idempotency_key = ?', [
+                $existing = $this->entityManager->getConnection()->fetchAssociative(<<<'SQL'
+                    SELECT p.id, p.sale_id, p.payment_method_id, p.amount, p.paid_at, a.kind
+                    FROM sale_payments p
+                    LEFT JOIN treasury_movement m ON m.source_type = 'sale_payment' AND m.source_id = p.idempotency_key AND m.leg = 'main'
+                    LEFT JOIN treasury_account a ON a.id = m.account_id
+                    WHERE p.idempotency_key = ?
+                    SQL, [
                     $key,
                 ]);
                 if ($existing !== false) {
@@ -93,10 +90,17 @@ final readonly class ExternalBankCollection
                         (int) $existing['payment_method_id'],
                         $existing['amount'],
                         $existing['paid_at'],
+                        $existing['kind'],
                     ];
                     if (
                         $allowReplay
-                        && $recorded === [$saleId, $paymentMethodId, $amount, $paidAt->format('Y-m-d H:i:s')]
+                        && $recorded === [
+                            $saleId,
+                            $paymentMethodId,
+                            $amount,
+                            $paidAt->format('Y-m-d H:i:s'),
+                            $gateway ? 'clearing' : 'bank',
+                        ]
                     ) {
                         return (int) $existing['id'];
                     }
@@ -110,7 +114,16 @@ final readonly class ExternalBankCollection
 
                 $payment = $this->payments->appendExternalPayment($sale, $method, $amount, $paidAt, $reference, $key);
 
-                return $this->book($sale, $payment, $branchId, $paymentMethodId, $amount, $paidAt, $reference);
+                return $this->posting->book(
+                    $sale,
+                    $payment,
+                    $branchId,
+                    $paymentMethodId,
+                    $amount,
+                    $paidAt,
+                    $reference,
+                    $gateway,
+                );
             });
         } catch (UniqueConstraintViolationException $e) {
             if (!str_contains(strtolower($e->getMessage()), 'uq_sale_payments_idempotency_key')) {
@@ -118,52 +131,5 @@ final readonly class ExternalBankCollection
             }
             throw new ConflictHttpException('Esta referencia de cobro ya se registró.', $e);
         }
-    }
-
-    private function book(
-        SaleRecord $sale,
-        SalePayment $payment,
-        string $branchId,
-        int $methodId,
-        string $amount,
-        DateTimeImmutable $paidAt,
-        string $reference,
-    ): int {
-        $id = $payment->getId() ?? throw new \LogicException('The payment must be stored before posting.');
-        $captureKey = $payment->getIdempotencyKey() ?? throw new \LogicException('The payment has no capture key.');
-        $description = 'Cobro externo ' . $reference;
-        $customerId = $sale->getCustomer()?->getId();
-        try {
-            $movement = $this->treasury->record(new MoneyMovementRequest(
-                key: new MovementKey(MovementSource::SalePayment, $captureKey),
-                direction: Direction::In,
-                amount: $amount,
-                currency: $payment->getCurrency(),
-                branchId: $branchId,
-                occurredAt: $paidAt,
-                paymentMethodId: $methodId,
-                party: $customerId === null ? null : new Party('customer', (string) $customerId),
-                reference: $reference,
-                description: $description,
-                requireMappedBankAccount: true,
-            ));
-        } catch (TreasuryException $e) {
-            throw new UnprocessableEntityHttpException($e->getMessage(), $e);
-        }
-        if ($movement === null || $movement->duplicate) {
-            throw new UnprocessableEntityHttpException('No se pudo registrar un nuevo cobro bancario en Tesorería.');
-        }
-
-        $this->bus->dispatch(new EconomicEvent(
-            source: EconomicEvent::SOURCE_RECEIVABLE_COLLECT,
-            sourceId: (string) $id,
-            kind: EconomicEvent::RECEIVABLE_COLLECT_BANK,
-            occurredOn: $paidAt->format('Y-m-d'),
-            description: $description,
-            total: $amount,
-            currency: $payment->getCurrency(),
-        ));
-
-        return $id;
     }
 }

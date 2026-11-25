@@ -85,6 +85,19 @@ final readonly class TreasuryAccountRepository
         return $id === false ? null : (string) $id;
     }
 
+    public function selectableAccount(string $id): ?TreasuryAccount
+    {
+        return $this->one("WHERE id = :id AND active = 1 AND kind <> 'clearing'", ['id' => $id]);
+    }
+
+    public function gatewayAccount(string $id, string $branchId): ?TreasuryAccount
+    {
+        return $this->one("WHERE id = :id AND kind = 'clearing' AND active = 1 AND (branch_id IS NULL OR branch_id = :branch)", [
+            'id' => $id,
+            'branch' => $branchId,
+        ]);
+    }
+
     public function mappedBankAccount(string $branchId, ?int $paymentMethodId, string $currency): ?TreasuryAccount
     {
         $id = $this->connection->fetchOne(

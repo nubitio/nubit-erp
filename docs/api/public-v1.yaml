@@ -105,9 +105,12 @@ paths:
     post:
       operationId: recordExternalBankPayment
       tags: [Sales]
-      summary: Apply a verified external PEN bank receipt
+      summary: Apply a verified external PEN receipt
       description: |
-        Requires a mapped active bank account for the payment method and assigned branch.
+        Omit destination or use bank for a mapped bank account. Use gateway for a
+        confirmed provider capture routed to a configured funds-pending-settlement
+        account and asset ledger. Routing is configured in ERP per branch, payment
+        method, and currency.
         The caller must verify the receipt before submitting it. The capture reference
         is the idempotency key within the API client. Repeating the same receipt returns
         the original payment ID. Reusing the reference with a different sale or receipt
@@ -459,6 +462,7 @@ components:
           format: date-time
           description: UTC with second precision, for example 2026-11-24T15:00:00Z
         capture_reference: { type: string, pattern: '^[A-Za-z0-9._:-]{1,120}$' }
+        destination: { type: string, enum: [bank, gateway], default: bank }
     CreditSaleRequest:
       type: object
       additionalProperties: false

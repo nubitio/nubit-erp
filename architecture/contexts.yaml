@@ -266,7 +266,7 @@ contexts:
     layer: ErpCore
     dependsOn: [CashRegister, Efact, Identity, Settings]
     publicContracts: []
-    ownsTables: [treasury_account, treasury_movement, treasury_payment_method_account]
+    ownsTables: [treasury_account, treasury_movement, treasury_payment_method_account, treasury_gateway_route]
 
   FixedAssets:
     namespace: App\FixedAssets

@@ -9,7 +9,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
-final readonly class ExternalBankPaymentInput
+final readonly class ExternalPaymentInput
 {
     private function __construct(
         public int $methodId,
@@ -17,6 +17,7 @@ final readonly class ExternalBankPaymentInput
         public string $currency,
         public DateTimeImmutable $paidAt,
         public string $reference,
+        public bool $gateway,
     ) {}
 
     /** @param array<array-key, mixed> $body */
@@ -27,8 +28,11 @@ final readonly class ExternalBankPaymentInput
         $currency = $body['currency'] ?? null;
         $reference = $body['capture_reference'] ?? null;
         $timestamp = $body['paid_at'] ?? null;
+        $body += ['destination' => 'bank'];
+        $destination = $body['destination'];
         if (
-            count($body) !== 5
+            count($body) !== 6
+            || !in_array($destination, ['bank', 'gateway'], strict: true)
             || !is_int($methodId)
             || $methodId < 1
             || $methodId > 2_147_483_647
@@ -40,7 +44,7 @@ final readonly class ExternalBankPaymentInput
             || preg_match('/\A[A-Za-z0-9._:-]{1,120}\z/', $reference) !== 1
             || !is_string($timestamp)
         ) {
-            throw new UnprocessableEntityHttpException('Invalid confirmed PEN bank payment.');
+            throw new UnprocessableEntityHttpException('Invalid confirmed PEN payment.');
         }
         $paidAt = DateTimeImmutable::createFromFormat('!Y-m-d\TH:i:s\Z', $timestamp, new DateTimeZone('UTC'));
         if ($paidAt === false || $paidAt->format('Y-m-d\TH:i:s\Z') !== $timestamp || $paidAt->format('Y') < '1000') {
@@ -53,6 +57,7 @@ final readonly class ExternalBankPaymentInput
             $currency,
             $paidAt,
             $reference,
+            $destination === 'gateway',
         );
     }
 }

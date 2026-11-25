@@ -60,7 +60,7 @@ final class ExternalBankReceiptTest extends TestCase
             occurredAt: new DateTimeImmutable('2026-11-24'),
             paymentMethodId: 5,
             accountId: 'override',
-            requireMappedBankAccount: true,
+            requiredAccountKind: AccountKind::Bank,
         );
     }
 }
