@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Integration\Controller\Api\V1;
 
 use App\Integration\Sales\CreditSaleInput;
+use App\Integration\Sales\SalesClientAccess;
 use App\Integration\Sales\SalesIntake;
 use App\Integration\Security\ApiClientUser;
 use App\Sales\Port\ConfirmIntegrationCredit;
@@ -62,6 +63,20 @@ final class SalesController extends AbstractController
         }
 
         return new JsonResponse($result, $result['replayed'] ? 200 : 201);
+    }
+
+    #[Route('/api/v1/sales/{id}', name: 'integration_v1_sales_get', methods: ['GET'])]
+    #[IsGranted('ROLE_SCOPE_SALES_READ')]
+    public function get(string $id, SalesClientAccess $access): JsonResponse
+    {
+        $client = $this->getUser();
+        if (!$client instanceof ApiClientUser) {
+            return self::error('forbidden', 'Integration credentials are required.', 403);
+        }
+
+        $sale = $access->findSale($client, $id);
+
+        return $sale === null ? self::error('not_found', 'Sale not found.', 404) : new JsonResponse($sale);
     }
 
     private static function error(string $code, string $message, int $status): JsonResponse

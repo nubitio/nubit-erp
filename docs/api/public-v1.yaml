@@ -80,6 +80,27 @@ paths:
             content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } },
           }
         '422': { $ref: '#/components/responses/ValidationFailed' }
+  /api/v1/sales/{id}:
+    get:
+      operationId: getIntegrationSale
+      tags: [Sales]
+      summary: Read a sale created by this API client in its assigned branch
+      security: [{ ApiKey: [] }]
+      x-required-scopes: [sales:read]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Current commercial status and receivable balance
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IntegrationSale' }
+        '401': { $ref: '#/components/responses/Unauthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
   /api/v1/documents:
     post:
       operationId: submitDocument
@@ -365,13 +386,22 @@ components:
       scheme: bearer
       bearerFormat: nb_<environment>_<tenant>_<secret>
       description: Tenant-scoped API key. Required operation scopes are listed in x-required-scopes; HTTP bearer security itself has no OAuth scope semantics.
-      x-scopes: [documents:read, documents:write, webhooks:manage, sales:write]
+      x-scopes: [documents:read, documents:write, webhooks:manage, sales:write, sales:read]
     TenantJwt:
       type: http
       scheme: bearer
       bearerFormat: JWT
       description: Tenant user JWT used by the ERP web API.
   schemas:
+    IntegrationSale:
+      type: object
+      required: [sale_id, status, currency, total, balance_due]
+      properties:
+        sale_id: { type: string }
+        status: { type: string }
+        currency: { type: string }
+        total: { type: string, description: Exact decimal amount in the sale currency }
+        balance_due: { type: string, description: Exact decimal balance in the sale currency }
     CreditSaleRequest:
       type: object
       additionalProperties: false

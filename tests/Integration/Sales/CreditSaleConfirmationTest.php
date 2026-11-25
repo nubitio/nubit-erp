@@ -36,15 +36,21 @@ final class CreditSaleConfirmationTest extends KernelTestCase
         $fixture->closeSession($world->cashSession);
         $branch = (string) $world->branch->getId();
 
-        $client = new ApiClient('Pilot', ['sales:write']);
+        $client = new ApiClient('Pilot', ['sales:read', 'sales:write']);
         $client->assignSalesBranch($branch);
         $em->persist($client);
         $em->flush();
 
         $context = new TenantContext();
         $context->setTenant(1, 'tenant-test', null, 'sales-test');
-        $principal = new ApiClientUser((string) $client->getId(), 'Pilot', 'tenant-test', ['sales:write']);
-        $intake = new SalesIntake($db, new SalesClientAccess($db, $context));
+        $principal = new ApiClientUser(
+            (string) $client->getId(),
+            'Pilot',
+            'tenant-test',
+            ['sales:read', 'sales:write'],
+        );
+        $access = new SalesClientAccess($db, $context);
+        $intake = new SalesIntake($db, $access);
         $confirm = $container->get(ConfirmIntegrationCredit::class);
         static::assertInstanceOf(ConfirmIntegrationCredit::class, $confirm);
         $command = static fn(string $clientId, string $branchId): string => $confirm->confirmIntegrationCredit(
@@ -59,6 +65,27 @@ final class CreditSaleConfirmationTest extends KernelTestCase
         $hash = hash('sha256', 'sample credit sale');
         $created = $intake->submit($principal, $branch, 'sale-one', $hash, $command);
         $retried = $intake->submit($principal, $branch, 'sale-one', $hash, $command);
+        static::assertSame(
+            [
+                'sale_id' => $created['sale_id'],
+                'status' => 'COMPLETED',
+                'currency' => 'PEN',
+                'total' => '20.00',
+                'balance_due' => '20.00',
+            ],
+            $access->findSale($principal, $created['sale_id']),
+        );
+        $otherClient = new ApiClient('Other pilot', ['sales:read']);
+        $otherClient->assignSalesBranch($branch);
+        $em->persist($otherClient);
+        $em->flush();
+        $otherPrincipal = new ApiClientUser(
+            (string) $otherClient->getId(),
+            'Other pilot',
+            'tenant-test',
+            ['sales:read'],
+        );
+        static::assertNull($access->findSale($otherPrincipal, $created['sale_id']));
         static::assertFalse($created['replayed']);
         static::assertSame(['sale_id' => $created['sale_id'], 'replayed' => true], $retried);
         static::assertEqualsWithDelta(1.0, (float) $fixture->onHand($world->warehouse, $world->product), 0.001);

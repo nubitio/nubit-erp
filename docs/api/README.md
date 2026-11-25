@@ -18,4 +18,6 @@ Run `yarn generate:api-types` to generate the public TypeScript types into `asse
 
 `POST /api/v1/sales` requires `sales:write`, an active branch assigned to the API client and an `Idempotency-Key`. Send existing branch, warehouse, customer and product IDs; the warehouse must belong to the authorized branch. Quantities and unit prices are decimal strings; `total_minor` is the expected total in céntimos. The server validates prices and the total before confirming the sale. First confirmation returns `201`; identical replay returns `200` with the same `sale_id`. A changed command under the same key returns `409`.
 
+`GET /api/v1/sales/{id}` requires `sales:read` and returns the status, currency, total and outstanding balance of a sale created by the same client in its assigned active branch. Monetary fields are exact decimal strings. An unknown sale or one outside the client's access returns `404`. Provision read access explicitly with `--scope=sales:read --sales-branch=<id>`.
+
 This endpoint only confirms unpaid credit sales in PEN. It reduces available inventory and creates the receivable without recording a cash or bank movement or issuing a SUNAT document. It does not handle reservations for unconfirmed orders, payments, or WooCommerce synchronization. Do not use it as a substitute for an applicable fiscal issuance workflow.

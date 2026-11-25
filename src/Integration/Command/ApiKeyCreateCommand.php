@@ -53,7 +53,7 @@ final class ApiKeyCreateCommand extends Command
                 'Scope, repeatable',
                 [],
             )
-            ->addOption('sales-branch', null, InputOption::VALUE_REQUIRED, 'Branch ID for the sales:write scope')
+            ->addOption('sales-branch', null, InputOption::VALUE_REQUIRED, 'Branch ID for commercial sales scopes')
             ->addOption('test', null, InputOption::VALUE_NONE, 'Mint a test key (nb_test_…) instead of live');
     }
 
@@ -81,8 +81,13 @@ final class ApiKeyCreateCommand extends Command
             return Command::INVALID;
         }
         $salesBranchId = trim((string) $input->getOption('sales-branch'));
-        if (in_array(SalesClientAccess::WRITE_SCOPE, $scopes, strict: true) !== ($salesBranchId !== '')) {
-            $io->error('--scope=sales:write and --sales-branch must be provided together.');
+        $hasSalesScope =
+            in_array(SalesClientAccess::WRITE_SCOPE, $scopes, strict: true)
+            || in_array(SalesClientAccess::READ_SCOPE, $scopes, strict: true);
+        if ($hasSalesScope !== ($salesBranchId !== '')) {
+            $io->error(
+                '--sales-branch is required with sales:read or sales:write and requires at least one of those scopes.',
+            );
 
             return Command::INVALID;
         }
