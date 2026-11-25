@@ -44,7 +44,7 @@ final readonly class MoneyAccountResolver
 
         if ($request->accountId !== null) {
             $account = $this->accounts->find($request->accountId);
-            if ($account === null || !$account->active) {
+            if ($account === null || !$account->active || $account->kind === AccountKind::Clearing) {
                 throw new TreasuryException('La cuenta elegida no existe o está inactiva.');
             }
 
@@ -68,7 +68,7 @@ final readonly class MoneyAccountResolver
                 $request->currency,
             );
             $account = $mapped === null ? null : $this->accounts->find($mapped);
-            if ($account !== null && $account->active) {
+            if ($account !== null && $account->active && $account->kind !== AccountKind::Clearing) {
                 return ['account' => $account, 'warning' => null];
             }
         }

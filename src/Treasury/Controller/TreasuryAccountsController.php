@@ -9,7 +9,6 @@ use App\Treasury\Domain\AccountKind;
 use App\Treasury\Domain\Direction;
 use App\Treasury\Domain\MovementKey;
 use App\Treasury\Domain\MovementSource;
-use App\Treasury\Domain\TreasuryAccount;
 use App\Treasury\Domain\TreasuryException;
 use App\Treasury\Port\MoneyMovementRequest;
 use App\Treasury\Repository\TreasuryAccountRepository;
@@ -18,7 +17,6 @@ use App\Treasury\Service\PositionQuery;
 use App\Treasury\Service\TreasuryAccountSeeder;
 use App\Treasury\Service\TreasuryMovementRecorder;
 use DateTimeImmutable;
-use Doctrine\DBAL\Connection;
 use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,9 +25,8 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Symfony\Component\Uid\Uuid;
 
-/** Money accounts: the position, wallets, the sync of accounts a tenant already has, and an account's movements. */
+/** Money accounts: the position, the sync of accounts a tenant already has, and an account's movements. */
 final class TreasuryAccountsController extends TreasuryApiController
 {
     public function __construct(
@@ -39,7 +36,6 @@ final class TreasuryAccountsController extends TreasuryApiController
         private readonly PositionQuery $position,
         private readonly TreasuryAccountSeeder $seeder,
         private readonly TreasuryMovementRecorder $recorder,
-        private readonly Connection $connection,
     ) {
         parent::__construct($capabilities);
     }
@@ -57,48 +53,6 @@ final class TreasuryAccountsController extends TreasuryApiController
             ),
             'totalsByCurrency' => $this->position->totalsByCurrency(),
         ]);
-    }
-
-    #[Route('/api/treasury/accounts', name: 'treasury_account_create', methods: ['POST'])]
-    #[IsGranted('perm:treasury.manage')]
-    public function createWallet(Request $request): JsonResponse
-    {
-        $this->requireCapability();
-        $body = $this->body($request);
-
-        $name = trim((string) ($body['name'] ?? ''));
-        $currency = strtoupper(trim((string) ($body['currency'] ?? 'PEN')));
-        $branchId = isset($body['branchId']) && $body['branchId'] !== '' ? (string) $body['branchId'] : null;
-        if ($name === '' || mb_strlen($name) > 120) {
-            throw new UnprocessableEntityHttpException(
-                'El nombre de la cuenta es obligatorio (máximo 120 caracteres).',
-            );
-        }
-        if (preg_match('/^[A-Z]{3}$/', $currency) !== 1) {
-            throw new UnprocessableEntityHttpException(
-                'La moneda debe ser un código de 3 letras, por ejemplo PEN o USD.',
-            );
-        }
-        if (
-            $branchId !== null
-            && $this->connection->fetchOne('SELECT 1 FROM local WHERE local_id = :id', ['id' => $branchId]) === false
-        ) {
-            throw new UnprocessableEntityHttpException('La sucursal indicada no existe.');
-        }
-
-        $account = new TreasuryAccount(
-            Uuid::v7()->toRfc4122(),
-            AccountKind::Wallet,
-            $name,
-            $currency,
-            $branchId,
-            null,
-            null,
-            true,
-        );
-        $this->accounts->add($account);
-
-        return $this->json(self::account($account) + ['balance' => '0.00'], Response::HTTP_CREATED);
     }
 
     /** Creates the accounts the tenant is missing (registers, banks, suspense) and the unambiguous default mappings. */

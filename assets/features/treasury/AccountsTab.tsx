@@ -117,7 +117,7 @@ export const AccountsTab = ({ onOpenMethods }: Props) => {
             icon="ph ph-plus"
             onClick={() => setDialog({ kind: 'wallet' })}
           >
-            Nueva billetera
+            Nueva cuenta de dinero
           </Button>
         )}
         {canTransfer && (

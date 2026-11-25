@@ -10,5 +10,15 @@ enum AccountKind: string
     case CashRegister = 'cash_register';
     case Bank = 'bank';
     case Wallet = 'wallet';
+    case Clearing = 'clearing';
     case Suspense = 'suspense';
+
+    public static function configurable(mixed $value): ?self
+    {
+        return match ($value ?? 'wallet') {
+            'wallet' => self::Wallet,
+            'clearing' => self::Clearing,
+            default => null,
+        };
+    }
 }

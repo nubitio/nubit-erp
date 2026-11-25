@@ -14,7 +14,7 @@ export const TransferDialog = ({ accounts, fromId, onClose }: Props) => {
   const transfer = useTransfer();
   // Suspense is a holding account, not a place to move money to. A drawer can be one side of a transfer.
   const movable = useMemo(
-    () => accounts.filter((a) => a.active && a.kind !== 'suspense'),
+    () => accounts.filter((a) => a.active && a.kind !== 'suspense' && a.kind !== 'clearing'),
     [accounts],
   );
   const [from, setFrom] = useState(fromId ?? movable[0]?.id ?? '');

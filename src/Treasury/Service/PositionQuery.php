@@ -31,11 +31,14 @@ final readonly class PositionQuery
         ], $this->accounts->all());
     }
 
-    /** @return array<string, string> currency => total across accounts, suspense included */
+    /** @return array<string, string> currency => total across available accounts, suspense included */
     public function totalsByCurrency(): array
     {
         $totals = [];
         foreach ($this->accounts() as $row) {
+            if ($row['account']->kind === AccountKind::Clearing) {
+                continue;
+            }
             $currency = $row['account']->currency;
             $totals[$currency] = Money::toString(Money::money($totals[$currency] ?? '0')->plus(Money::money(
                 $row['balance'],

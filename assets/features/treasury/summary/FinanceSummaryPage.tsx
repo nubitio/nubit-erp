@@ -21,6 +21,7 @@ const PROJECTION_HELP =
 
 function CurrencySection({ summary }: { summary: CurrencySummary }) {
   const { currency, position, receivables, payables, projectedInThirtyDays } = summary;
+  const clearing = position.clearing ?? '0.00';
   const money = (value: string) => formatMoney(value, currency);
   const owes = (value: string) => Number(value) > 0;
 
@@ -39,6 +40,9 @@ function CurrencySection({ summary }: { summary: CurrencySummary }) {
                 : ''
             }`,
           },
+          ...(Number(clearing) !== 0
+            ? [{ label: 'Fondos por liquidar', value: money(clearing) }]
+            : []),
           {
             label: 'Por cobrar',
             value: money(receivables.balance),
