@@ -32,9 +32,7 @@ env:
 jobs:
   changes:
     name: Detect changes
-    # Keep the small provider selector on GitHub-hosted; it chooses the runners
-    # used by the heavier jobs below.
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, nubit-x64]
     timeout-minutes: 5
     outputs:
       runner: ${{ steps.runner.outputs.runner }}
@@ -65,22 +63,10 @@ jobs:
           CI_BILLING_TOKEN: ${{ secrets.CI_BILLING_TOKEN }}
         run: |
           set -euo pipefail
-          if [ "$CI_RUNNER_PROVIDER" = auto ]; then
-            bash scripts/ci/select-runner.sh
-            exit 0
-          fi
-          if [ "$CI_RUNNER_PROVIDER" = github ]; then
-            echo "runner=ubuntu-latest" >> "$GITHUB_OUTPUT"
-            echo "runner_light=ubuntu-latest" >> "$GITHUB_OUTPUT"
-            echo "use_blacksmith_docker=false" >> "$GITHUB_OUTPUT"
-            echo "provider=github" >> "$GITHUB_OUTPUT"
-            echo "Using GitHub-hosted ubuntu-latest."
-            exit 0
-          fi
-          echo "runner=blacksmith-4vcpu-ubuntu-2404" >> "$GITHUB_OUTPUT"
-          echo "runner_light=blacksmith-2vcpu-ubuntu-2404" >> "$GITHUB_OUTPUT"
-          echo "use_blacksmith_docker=true" >> "$GITHUB_OUTPUT"
-          echo "provider=blacksmith" >> "$GITHUB_OUTPUT"
+          echo 'runner=["self-hosted","nubit-x64"]' >> "$GITHUB_OUTPUT"
+          echo 'runner_light=["self-hosted","nubit-x64"]' >> "$GITHUB_OUTPUT"
+          echo "use_blacksmith_docker=false" >> "$GITHUB_OUTPUT"
+          echo "provider=self-hosted" >> "$GITHUB_OUTPUT"
           echo "Using Blacksmith (4 vCPU heavy / 2 vCPU light)."
 
       - name: Detect changed areas
@@ -161,7 +147,7 @@ jobs:
     name: Backend Quality & Coverage
     needs: changes
     if: github.event_name != 'push'
-    runs-on: ${{ needs.changes.outputs.backend == 'true' && needs.changes.outputs.runner || needs.changes.outputs.runner_light }}
+    runs-on: ${{ fromJSON(needs.changes.outputs.backend == 'true' && needs.changes.outputs.runner || needs.changes.outputs.runner_light) }}
     # Normal runs take 1-7 minutes. A run once hung ~29 minutes in the post-step
     # BuildKit cleanup (buildkitd killed with SIGKILL) after every test had
     # passed, and was billed until the old 30-minute limit cut it. Keep this
@@ -304,7 +290,7 @@ jobs:
     name: Frontend Lint, Tests & Coverage
     needs: changes
     if: github.event_name != 'push'
-    runs-on: ${{ needs.changes.outputs.runner_light }}
+    runs-on: ${{ fromJSON(needs.changes.outputs.runner_light) }}
     timeout-minutes: 15
 
     steps:
@@ -376,7 +362,7 @@ jobs:
     name: Deployment tooling checks
     needs: changes
     if: github.event_name != 'push'
-    runs-on: ${{ needs.changes.outputs.runner_light }}
+    runs-on: ${{ fromJSON(needs.changes.outputs.runner_light) }}
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v6
@@ -415,7 +401,7 @@ jobs:
     # Manual dispatch can validate a feature branch without publishing.
     needs: changes
     if: needs.changes.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    runs-on: ${{ needs.changes.outputs.runner }}
+    runs-on: ${{ fromJSON(needs.changes.outputs.runner) }}
     timeout-minutes: 20
 
     env:

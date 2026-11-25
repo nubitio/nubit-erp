@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   version:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, nubit-x64]
     permissions:
       contents: write
       issues: write
@@ -50,7 +50,7 @@ jobs:
   manifest:
     needs: [version, build]
     if: needs.version.outputs.tag != ''
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, nubit-x64]
     permissions:
       contents: write
     steps:
