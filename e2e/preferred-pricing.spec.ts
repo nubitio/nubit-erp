@@ -2,13 +2,7 @@ import { expect, test, type APIResponse } from '@playwright/test';
 import { login } from './helpers/auth';
 import { loginViaApi } from './helpers/fiscal';
 import { selectPosCustomer } from './helpers/pos';
-import {
-  clickGridToolbarButton,
-  crudShellBody,
-  dismissDevToolbar,
-  waitForGridLoad,
-  waitForSaleFormReady,
-} from './helpers/crud';
+import { crudShellBody, dismissDevToolbar, waitForGridLoad } from './helpers/crud';
 import { E2E_SEED } from './support/seedConstants';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
@@ -108,11 +102,9 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
       await page.goto(`${BASE_URL}/billing/sales`);
       await dismissDevToolbar(page);
       await waitForGridLoad(page);
-      await clickGridToolbarButton(page, 'Nuevo');
-      const body = crudShellBody(page);
-      await waitForSaleFormReady(body);
-
-      const customerInput = body.getByLabel(/Cliente/i).first();
+      await page.getByRole('button', { name: 'Nueva venta' }).click();
+      await expect(page).toHaveURL(/\/billing\/sales\/new$/);
+      const customerInput = page.getByPlaceholder('Busca por nombre o RUC');
       await customerInput.fill(E2E_SEED.customerName);
       await page
         .locator('[role="option"]')
@@ -120,14 +112,7 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
         .first()
         .click();
 
-      await page.locator('button[aria-label="Agregar detalle"]').first().click();
-      // Resolve the product combobox directly: opening its list changes the accessible
-      // name of the row's open button, so a locator built from that button stops matching.
-      const productInput = page.getByRole('combobox', { name: 'Producto' }).last();
-      if (!(await productInput.isVisible({ timeout: 3000 }).catch(() => false))) {
-        await page.getByRole('button', { name: 'Abrir Producto' }).last().click();
-      }
-      await productInput.waitFor({ state: 'visible' });
+      const productInput = page.getByPlaceholder('Selecciona un producto o servicio');
       await productInput.click();
       await productInput.pressSequentially(E2E_SEED.productName, { delay: 30 });
       await page
@@ -136,11 +121,7 @@ test('la tarifa del cliente se aplica en POS y en el módulo Ventas', async ({ p
         .first()
         .click();
 
-      const row = page
-        .getByRole('row')
-        .filter({ has: page.getByRole('spinbutton') })
-        .last();
-      await expect(row.getByRole('cell').nth(2).getByRole('spinbutton')).toHaveValue('5', {
+      await expect(page.getByLabel('Precio de la línea 1')).toHaveValue(/^5(?:\.0+)?$/, {
         timeout: 10000,
       });
     });

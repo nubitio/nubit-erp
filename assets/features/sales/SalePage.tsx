@@ -533,7 +533,7 @@ export const SalePage = () => {
             beforeToolbar={renderColumnChooser}
             emptyState={{
               title: 'Sin ventas registradas',
-              description: 'Crea una venta con el botón Nuevo.',
+              description: 'Crea una venta con el botón Nueva venta.',
               icon: 'receipt',
             }}
           />
