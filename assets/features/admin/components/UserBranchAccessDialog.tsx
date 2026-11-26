@@ -20,6 +20,7 @@ const FORM_ID = 'user-branch-access-form';
 
 interface Assignment {
   operatingBranchIds: string[] | null;
+  readOnlyBranchIds: string[];
   defaultBranchId: string | null;
 }
 
@@ -64,7 +65,11 @@ export const UserBranchAccessDialog = ({
     mutationFn: () =>
       httpClient.put<Assignment>(
         endpoint,
-        { operatingBranchIds: selected, defaultBranchId: assigned?.defaultBranchId ?? null },
+        {
+          operatingBranchIds: selected,
+          readOnlyBranchIds: assigned?.readOnlyBranchIds ?? [],
+          defaultBranchId: assigned?.defaultBranchId ?? null,
+        },
         { errorPresentation: 'inline' },
       ),
     onSuccess: () => {
@@ -117,7 +122,8 @@ export const UserBranchAccessDialog = ({
                 limitado a los que selecciones.
               </Alert>
             )}
-            <Stack>
+            <Stack aria-label="Sucursales operativas">
+              <strong>Operar y consultar</strong>
               {branches.map((branch) => (
                 <Checkbox
                   key={branch.id}
@@ -129,6 +135,7 @@ export const UserBranchAccessDialog = ({
                       ? [...selected, branch.id]
                       : selected.filter((id) => id !== branch.id);
                     setDraft({
+                      ...assigned,
                       operatingBranchIds: ids,
                       defaultBranchId:
                         assigned.defaultBranchId && ids.includes(assigned.defaultBranchId)
@@ -139,6 +146,27 @@ export const UserBranchAccessDialog = ({
                 />
               ))}
             </Stack>
+            <Stack aria-label="Sucursales de solo consulta">
+              <strong>Solo consulta</strong>
+              {branches
+                .filter((branch) => !selected.includes(branch.id))
+                .map((branch) => (
+                  <Checkbox
+                    key={branch.id}
+                    label={branch.isActive ? branch.name : `${branch.name} (inactiva)`}
+                    checked={assigned.readOnlyBranchIds.includes(branch.id)}
+                    disabled={save.isPending || options.isFetching}
+                    onChange={(event) => {
+                      setDraft({
+                        ...assigned,
+                        readOnlyBranchIds: event.target.checked
+                          ? [...assigned.readOnlyBranchIds, branch.id]
+                          : assigned.readOnlyBranchIds.filter((id) => id !== branch.id),
+                      });
+                    }}
+                  />
+                ))}
+            </Stack>
             <FormField label="Sucursal predeterminada">
               <Combobox
                 aria-label="Sucursal predeterminada"
@@ -147,7 +175,7 @@ export const UserBranchAccessDialog = ({
                   .map((branch) => ({ value: branch.id, label: branch.name }))}
                 value={assigned.defaultBranchId}
                 disabled={save.isPending || options.isFetching}
-                onChange={(id) => setDraft({ operatingBranchIds: selected, defaultBranchId: id })}
+                onChange={(id) => setDraft({ ...assigned, defaultBranchId: id })}
               />
             </FormField>
           </>
