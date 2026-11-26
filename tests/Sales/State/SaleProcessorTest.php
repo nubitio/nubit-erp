@@ -42,7 +42,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
-use ReflectionNamedType;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -1638,39 +1637,5 @@ final class SaleProcessorTest extends TestCase
         $rc->getProperty('connection')->setValue($stub, $connMock);
 
         return $stub;
-    }
-
-    // =========================================================================
-    // General reflection utilities
-    // =========================================================================
-
-    /**
-     * Recursively initialize unset properties of a stub with no-op sub-stubs or null.
-     *
-     * @param ReflectionClass<object> $rc
-     */
-    private function initStubProperties(ReflectionClass $rc, object $stub): void
-    {
-        foreach ($rc->getProperties() as $prop) {
-            if ($prop->isInitialized($stub)) {
-                continue;
-            }
-            $type = $prop->getType();
-            if ($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
-                $depClass = $type->getName();
-                if (class_exists($depClass) || interface_exists($depClass)) {
-                    try {
-                        $depStub = new ReflectionClass($depClass)->newInstanceWithoutConstructor();
-                        $prop->setValue($stub, $depStub);
-                        continue;
-                    } catch (\Throwable) {
-                        // fall through
-                    }
-                }
-            }
-            if (!$type instanceof ReflectionNamedType || $type->allowsNull()) {
-                $prop->setValue($stub, null);
-            }
-        }
     }
 }
