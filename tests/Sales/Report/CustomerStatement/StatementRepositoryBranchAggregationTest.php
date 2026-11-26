@@ -52,7 +52,10 @@ final class StatementRepositoryBranchAggregationTest extends TestCase
     {
         $parts = parse_url($url);
         self::assertIsArray($parts);
+        $query = [];
         parse_str($parts['query'] ?? '', $query);
+        $charset = $query['charset'] ?? 'utf8mb4';
+        $serverVersion = $query['serverVersion'] ?? '10.11.0-MariaDB';
 
         return [
             'driver' => 'pdo_mysql',
@@ -61,8 +64,8 @@ final class StatementRepositoryBranchAggregationTest extends TestCase
             'user' => urldecode((string) ($parts['user'] ?? '')),
             'password' => urldecode((string) ($parts['pass'] ?? '')),
             'dbname' => ltrim((string) ($parts['path'] ?? ''), '/'),
-            'charset' => (string) ($query['charset'] ?? 'utf8mb4'),
-            'serverVersion' => (string) ($query['serverVersion'] ?? '10.11.0-MariaDB'),
+            'charset' => is_string($charset) ? $charset : 'utf8mb4',
+            'serverVersion' => is_string($serverVersion) ? $serverVersion : '10.11.0-MariaDB',
         ];
     }
 
