@@ -94,6 +94,9 @@ final class CoreInventoryPathTest extends KernelTestCase
         /** @var ProcessorInterface<mixed, mixed> $persist */
         $persist = $container->get('api_platform.doctrine.orm.state.persist_processor');
 
+        $context = $this->createStub(\App\Identity\Auth\BranchContextServiceInterface::class);
+        $context->method('getCurrentBranchId')->willReturn($world->branch->getId());
+
         return new StockEntryProcessor(
             $container->get(InventoryService::class),
             $container->get(UnitConversionServiceInterface::class),
@@ -102,6 +105,10 @@ final class CoreInventoryPathTest extends KernelTestCase
             $container->get(StockValidationPolicyInterface::class),
             $persist,
             $container->get(ActiveReferenceGuard::class),
+            new \App\Identity\Auth\OperationalBranchGuard(
+                $context,
+                $container->get(\App\Organization\Repository\BranchRepository::class),
+            ),
         );
     }
 }

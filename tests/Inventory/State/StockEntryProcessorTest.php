@@ -76,6 +76,8 @@ final class StockEntryProcessorTest extends TestCase
     /** @var list<string> */
     private array $grantedPermissions;
 
+    private User $user;
+
     protected function setUp(): void
     {
         $this->conn = DriverManager::getConnection([
@@ -116,9 +118,8 @@ final class StockEntryProcessorTest extends TestCase
 
         $this->em->method('flush');
 
-        // Security: return a stub user
-        $user = $this->createStub(User::class);
-        $this->security->method('getUser')->willReturn($user);
+        $this->user = new User();
+        $this->security->method('getUser')->willReturn($this->user);
         $this->security
             ->method('isGranted')
             ->willReturnCallback(fn(string $attribute): bool => in_array($attribute, $this->grantedPermissions, true));
@@ -229,6 +230,36 @@ final class StockEntryProcessorTest extends TestCase
         self::assertCount(2, $rows);
         self::assertSame('TRANSFER_OUT', $rows[0]['movement_type']);
         self::assertSame('TRANSFER_IN', $rows[1]['movement_type']);
+    }
+
+    public function testTransferResolvesAnAuthorizedDestinationInAnotherBranch(): void
+    {
+        $this->user->assignOperatingBranches(['branch-1', 'branch-2'], 'branch-1');
+        $this->seedStock('wh-src', 'prod-a', '30.000000');
+        $destination = $this->makeWarehouse('wh-dst')->setBranch($this->branch('branch-2'));
+        $this->em->method('getFilters')->willReturn($this->createStub(\Doctrine\ORM\Query\FilterCollection::class));
+        $this->em->expects(self::once())->method('find')->with(Warehouse::class, 'wh-dst')->willReturn($destination);
+        $entry = $this->makeEntry(StockEntryType::TRANSFER, 'wh-src');
+        $entry->setTargetWarehouseId('wh-dst');
+        $entry->addItem($this->makeItem('prod-a', '10.000000'));
+
+        $this->processor()->process($entry, $this->stubOperation());
+
+        self::assertOnHand('wh-src', 'prod-a', 20.0);
+        self::assertOnHand('wh-dst', 'prod-a', 10.0);
+    }
+
+    public function testReadOnlyBranchDoesNotAuthorizeTransferDestination(): void
+    {
+        $this->user->assignOperatingBranches(['branch-1'], 'branch-1');
+        $this->user->assignReadOnlyBranches(['branch-2']);
+        $entry = $this->makeTransferEntry('wh-src', 'wh-dst');
+        $entry->getTargetWarehouse()?->setBranch($this->branch('branch-2'));
+        $entry->addItem($this->makeItem('prod-a', '1.000000'));
+        $this->em->expects(self::never())->method('persist');
+
+        $this->expectException(\Symfony\Component\Security\Core\Exception\AccessDeniedException::class);
+        $this->processor()->process($entry, $this->stubOperation());
     }
 
     public function testTransferThrowsWhenSameWarehouse(): void
@@ -427,6 +458,11 @@ final class StockEntryProcessorTest extends TestCase
 
     private function processorWith(StockValidationPolicyInterface $policy): StockEntryProcessor
     {
+        $context = $this->createStub(\App\Identity\Auth\BranchContextServiceInterface::class);
+        $context->method('getCurrentBranchId')->willReturn('branch-1');
+        $branches = $this->createStub(\App\Organization\Repository\BranchRepository::class);
+        $branches->method('find')->willReturn($this->branch('branch-1'));
+
         $persistProcessor = $this->createStub(\ApiPlatform\State\ProcessorInterface::class);
 
         return new StockEntryProcessor(
@@ -437,6 +473,7 @@ final class StockEntryProcessorTest extends TestCase
             $policy,
             $persistProcessor,
             new \App\Efact\Domain\ActiveReferenceGuard(),
+            new \App\Identity\Auth\OperationalBranchGuard($context, $branches),
         );
     }
 
@@ -479,9 +516,17 @@ final class StockEntryProcessorTest extends TestCase
         $warehouse = new Warehouse();
         $ref = new \ReflectionProperty(Warehouse::class, 'id');
         $ref->setValue($warehouse, $id);
-        $warehouse->setName('Almacén ' . $id);
+        $warehouse->setName('Almacén ' . $id)->setBranch($this->branch('branch-1'));
 
         return $warehouse;
+    }
+
+    private function branch(string $id): \App\Organization\Entity\Branch
+    {
+        $branch = new \App\Organization\Entity\Branch();
+        new \ReflectionProperty($branch, 'id')->setValue($branch, $id);
+
+        return $branch;
     }
 
     private function makeItem(
