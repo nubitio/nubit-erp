@@ -44,14 +44,19 @@ final readonly class PurchasingBranchScope
             return;
         }
 
+        $this->authorize($branchId);
+
+        $request->attributes->set(self::BRANCH_ATTRIBUTE, $branchId);
+        $this->entityManager->getFilters()->enable('branch_filter')->setParameterList('branchIds', [$branchId]);
+    }
+
+    public function authorize(string $branchId): void
+    {
         $user = $this->security->getUser();
         if (!$user instanceof User || !$this->security->isGranted('perm:purchases.cross_branch')
             || $this->branches->resolve($user, $branchId) === null) {
             throw new AccessDeniedHttpException('No tienes permiso para gestionar compras de esta sucursal.');
         }
-
-        $request->attributes->set(self::BRANCH_ATTRIBUTE, $branchId);
-        $this->entityManager->getFilters()->enable('branch_filter')->setParameterList('branchIds', [$branchId]);
     }
 
     public function authorizedBranchId(): ?string

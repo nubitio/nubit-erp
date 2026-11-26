@@ -9,6 +9,7 @@ use App\Purchasing\Entity\PurchaseOrder;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Doctrine\ORM\EntityManagerInterface;
+use Nubit\Platform\Exception\ValidationException;
 
 /**
  * Keeps PurchaseOrderItem.receivedQty and PurchaseOrder.status in sync
@@ -28,6 +29,27 @@ readonly class PurchaseOrderReceiptService
     public function __construct(
         private EntityManagerInterface $entityManager,
     ) {}
+
+    public function resolveReceiptLines(Purchase $purchase): void
+    {
+        $orderLines = [];
+        foreach ($purchase->getPurchaseOrder()?->getItems() ?? [] as $orderItem) {
+            $orderLines[$orderItem->getId()] = $orderItem;
+        }
+        foreach ($purchase->getItems() as $item) {
+            $id = $item->getPurchaseOrderItemId() ?? $item->getPurchaseOrderItem()?->getId();
+            if ($id === null) {
+                continue;
+            }
+            $orderItem = $orderLines[$id] ?? null;
+            if ($orderItem === null || $orderItem->getProduct()?->getId() !== $item->getProduct()?->getId()) {
+                throw ValidationException::withErrors([
+                    'items' => ['El producto y la línea deben corresponder a la orden de compra seleccionada.'],
+                ]);
+            }
+            $item->setPurchaseOrderItem($orderItem);
+        }
+    }
 
     public function applyReceipt(Purchase $purchase): void
     {

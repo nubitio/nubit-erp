@@ -62,6 +62,9 @@ class PurchaseItem
     #[ORM\JoinColumn(name: 'purchase_order_item_id', nullable: true)]
     private ?PurchaseOrderItem $purchaseOrderItem = null;
 
+    #[Groups(['purchase:write'])]
+    private ?int $purchaseOrderItemId = null;
+
     #[Groups(['purchase_item:read', 'purchase:write'])]
     #[ORM\Column(name: 'line_no', type: 'integer')]
     #[ApiProperty(description: 'purchase_item.line_no.label', openapiContext: ['x-crud' => [
@@ -259,6 +262,16 @@ class PurchaseItem
         $this->purchase = $purchase;
 
         return $this;
+    }
+
+    public function getPurchaseOrderItemId(): ?int
+    {
+        return $this->purchaseOrderItemId;
+    }
+
+    public function setPurchaseOrderItemId(?int $id): void
+    {
+        $this->purchaseOrderItemId = $id;
     }
 
     public function getPurchaseOrderItem(): ?PurchaseOrderItem
