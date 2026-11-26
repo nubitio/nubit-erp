@@ -34,7 +34,7 @@ final class UserBranchAccessController extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        if ($user->getRole()->getId() === 1) {
+        if ($user->getRole()?->getId() === 1) {
             $this->denyAccessUnlessGranted('ROLE_SUPER_ADMIN');
         }
 
@@ -44,8 +44,13 @@ final class UserBranchAccessController extends AbstractController
             $readOnlyIds = $data['readOnlyBranchIds'] ?? $user->getReadOnlyBranchIds();
             $default = $data['defaultBranchId'] ?? null;
 
-            if (!is_array($ids) || !array_is_list($ids) || !is_array($readOnlyIds) || !array_is_list($readOnlyIds)
-                || ($default !== null && (!is_string($default) || !in_array($default, $ids, true)))) {
+            if (
+                !is_array($ids)
+                || !array_is_list($ids)
+                || !is_array($readOnlyIds)
+                || !array_is_list($readOnlyIds)
+                || $default !== null && (!is_string($default) || !in_array($default, $ids, true))
+            ) {
                 return $this->invalidAssignment();
             }
 
@@ -55,6 +60,8 @@ final class UserBranchAccessController extends AbstractController
                 }
             }
 
+            /** @var list<string> $ids */
+            /** @var list<string> $readOnlyIds */
             $user->assignOperatingBranches(array_values(array_unique($ids)), $default);
             $user->assignReadOnlyBranches(array_values(array_unique($readOnlyIds)));
             $this->entityManager->flush();

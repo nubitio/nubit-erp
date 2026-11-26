@@ -12,6 +12,7 @@ use App\Identity\Auth\OperationalBranchGuard;
 use App\Identity\Entity\User;
 use App\Purchasing\Entity\Purchase;
 use App\Purchasing\Service\PurchaseOrderReceiptService;
+use App\Purchasing\Service\PurchaseReceiptLines;
 use App\Purchasing\Service\PurchaseReceiptSequenceService;
 use App\Purchasing\Service\PurchaseSupplierDocumentValidator;
 use Override;
@@ -64,17 +65,20 @@ readonly class PurchaseProcessor implements ProcessorInterface
             if ($data->getBranch() !== null || !$isNewPurchase) {
                 $references['branch'] = $data->getBranch();
             }
-            if ($data->getWarehouse() !== null) {
-                $references['warehouse'] = $data->getWarehouse()->getBranch();
+            if (($reference = $data->getWarehouse()) !== null) {
+                $references['warehouse'] = $reference->getBranch();
             }
-            if ($data->getPurchaseOrder() !== null) {
-                $references['purchaseOrder'] = $data->getPurchaseOrder()->getBranch();
+            if (($reference = $data->getPurchaseOrder()) !== null) {
+                $references['purchaseOrder'] = $reference->getBranch();
             }
-            $data->setBranch($this->branchGuard->requireBranch($references, $this->purchasingScope?->authorizedBranchId()));
+            $data->setBranch($this->branchGuard->requireBranch(
+                $references,
+                $this->purchasingScope?->authorizedBranchId(),
+            ));
 
             if ($isNewPurchase) {
                 $this->purchaseSupplierDocumentValidator->assertRequiredForCreate($data);
-                $this->purchaseOrderReceiptService->resolveReceiptLines($data);
+                PurchaseReceiptLines::resolve($data);
                 if ($data->getReceiptNo() === null) {
                     $data->setReceiptNo($this->purchaseReceiptSequenceService->next());
                 }
@@ -113,7 +117,7 @@ readonly class PurchaseProcessor implements ProcessorInterface
 
         if ($isNewPurchase) {
             $this->purchaseInventoryService->recordPurchaseReceipt($data);
-            if ($data->getPurchaseOrder() !== null) {
+            if (($reference = $data->getPurchaseOrder()) !== null) {
                 $this->purchaseOrderReceiptService->applyReceipt($data);
             }
             $issued = $data->getIssuedAt() ?? new \DateTime();

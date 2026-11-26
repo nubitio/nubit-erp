@@ -25,10 +25,13 @@ final class BranchReportScopeTest extends TestCase
         $security->method('getUser')->willReturn($user);
         $context = $this->createStub(BranchContextServiceInterface::class);
         $context->method('getCurrentBranchId')->willReturn('current');
-        $historical = (new Branch())->setIsActive(false);
+        $historical = new Branch()->setIsActive(false);
         new ReflectionProperty(Branch::class, 'id')->setValue($historical, 'closed');
         $branches = $this->createMock(BranchRepository::class);
-        $branches->expects(self::exactly(2))->method('findBy')->with(['id' => ['current', 'closed']], ['name' => 'ASC'])
+        $branches
+            ->expects(self::exactly(2))
+            ->method('findBy')
+            ->with(['id' => ['current', 'closed']], ['name' => 'ASC'])
             ->willReturn([$historical]);
         $scope = new BranchReportScope($security, $context, $branches);
 

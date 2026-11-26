@@ -183,7 +183,9 @@ readonly class SaleProcessor implements ProcessorInterface, ConfirmIntegrationCr
         $branchId = $administrativeBranchId ?? $this->branchContextService->getCurrentBranchId();
         $branch = $branchId !== null ? $this->branchRepository->find($branchId) : null;
         if ($branch === null || !$branch->getIsActive()) {
-            throw ValidationException::withErrors(['branch' => ['Selecciona una sucursal activa para registrar la venta.']]);
+            throw ValidationException::withErrors(['branch' => [
+                'Selecciona una sucursal activa para registrar la venta.',
+            ]]);
         }
 
         $warehouse = $data->getWarehouse();
@@ -195,7 +197,9 @@ readonly class SaleProcessor implements ProcessorInterface, ConfirmIntegrationCr
         if ($isNew && $cashRegisterId !== null) {
             $cashRegister = $this->entityManager->find(CashRegister::class, $cashRegisterId);
             if ($cashRegister?->getBranch()->getId() !== $branchId) {
-                throw ValidationException::withErrors(['cashRegisterId' => ['Selecciona una caja de la sucursal activa.']]);
+                throw ValidationException::withErrors(['cashRegisterId' => [
+                    'Selecciona una caja de la sucursal activa.',
+                ]]);
             }
         }
 

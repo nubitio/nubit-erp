@@ -232,7 +232,7 @@ final readonly class StockMovementRepository
         $params = [];
         $where = [];
 
-        if (!empty($filters['branchId'])) {
+        if (($filters['branchId'] ?? '') !== '') {
             $where[] = 'sm.warehouse_id IN (SELECT w.almacen_id FROM almacen w WHERE w.local_id = :branch_id)';
             $params['branch_id'] = $filters['branchId'];
         }
@@ -306,7 +306,7 @@ final readonly class StockMovementRepository
         $params = [];
         $where = [];
 
-        if (!empty($filters['branchId'])) {
+        if (($filters['branchId'] ?? '') !== '') {
             $where[] = 'warehouse_id IN (SELECT w.almacen_id FROM almacen w WHERE w.local_id = :branch_id)';
             $params['branch_id'] = $filters['branchId'];
         }
@@ -414,7 +414,7 @@ final readonly class StockMovementRepository
         }
 
         // Product
-        if (!empty($row['product_id'])) {
+        if ((string) ($row['product_id'] ?? '') !== '') {
             $sm->product = [
                 'id' => $row['product_id'],
                 'name' => $row['product_name'] ?? '',
@@ -423,7 +423,7 @@ final readonly class StockMovementRepository
         }
 
         // Unit
-        if (!empty($row['unit_id'])) {
+        if ((string) ($row['unit_id'] ?? '') !== '') {
             $sm->unit = [
                 'id' => (int) $row['unit_id'],
                 'name' => $row['unit_name'] ?? '',

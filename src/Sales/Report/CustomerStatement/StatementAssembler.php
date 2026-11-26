@@ -113,12 +113,13 @@ final readonly class StatementAssembler
                 continue;
             }
 
+            $charge += ['detail' => 'Venta al crédito'];
             $movements[] = [
                 'sort' => $charge['date'] . '-0',
                 'kind' => 'charge',
                 'date' => $charge['date'],
                 'document' => $charge['document'],
-                'detail' => $charge['detail'] ?? 'Venta al crédito',
+                'detail' => $charge['detail'],
                 'amount' => $charge['amount'],
             ];
         }

@@ -41,7 +41,11 @@ final class CashMovementCollectionProviderTest extends TestCase
                     'created_at' => '2026-08-19 09:00:00',
                 ],
             ]);
-        $connection->expects(self::once())->method('fetchOne')->with(self::stringContains('WHERE s.branch_id = ?'), ['branch-a'])->willReturn(1);
+        $connection
+            ->expects(self::once())
+            ->method('fetchOne')
+            ->with(self::stringContains('WHERE s.branch_id = ?'), ['branch-a'])
+            ->willReturn(1);
 
         $em = $this->createStub(EntityManagerInterface::class);
         $hydrator = new CashMovementHydrator($em, $connection);
@@ -73,6 +77,7 @@ final class CashMovementCollectionProviderTest extends TestCase
 
         $provider->provide(new GetCollection(), [], ['filters' => ['page' => 3, 'itemsPerPage' => 10]]);
     }
+
     private function branchContext(): BranchContextServiceInterface
     {
         $context = $this->createStub(BranchContextServiceInterface::class);

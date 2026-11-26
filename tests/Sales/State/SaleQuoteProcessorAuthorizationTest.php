@@ -142,7 +142,7 @@ final class SaleQuoteProcessorAuthorizationTest extends TestCase
 
     public function testCreateRejectsAnotherBranch(): void
     {
-        $quote = (new SaleQuote())->setBranch($this->branch('branch-b'));
+        $quote = new SaleQuote()->setBranch($this->branch('branch-b'));
         $persist = $this->createMock(ProcessorInterface::class);
         $persist->expects(self::never())->method('process');
 
@@ -199,7 +199,9 @@ final class SaleQuoteProcessorAuthorizationTest extends TestCase
 
     private function existingQuote(string $requestedStatus): SaleQuote
     {
-        $quote = new SaleQuote()->setStatus($requestedStatus)->setBranch($this->branch('branch-a'));
+        $quote = new SaleQuote()
+            ->setStatus($requestedStatus)
+            ->setBranch($this->branch('branch-a'));
         new \ReflectionProperty(SaleQuote::class, 'id')->setValue($quote, 'quote-1');
 
         return $quote;

@@ -13,7 +13,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final readonly class ReportingWarehousesController
 {
-    public function __construct(private BranchReportScope $scope, private Connection $connection) {}
+    public function __construct(
+        private BranchReportScope $scope,
+        private Connection $connection,
+    ) {}
 
     #[Route('/api/inventory/reporting-warehouses', methods: ['GET'])]
     #[IsGranted('perm:inventory.view')]
@@ -21,9 +24,8 @@ final readonly class ReportingWarehousesController
     {
         $id = $this->scope->requireBranchId($request->query->getString('branchId') ?: null);
 
-        return new JsonResponse($this->connection->fetchAllAssociative(
-            'SELECT almacen_id AS id, descripcion AS name FROM almacen WHERE local_id = ? ORDER BY descripcion',
-            [$id],
-        ));
+        return new JsonResponse($this->connection->fetchAllAssociative('SELECT almacen_id AS id, descripcion AS name FROM almacen WHERE local_id = ? ORDER BY descripcion', [
+            $id,
+        ]));
     }
 }

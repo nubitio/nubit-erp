@@ -27,7 +27,6 @@ use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class CashRegisterOpenProcessorTest extends TestCase
 {
-
     /** @var EntityManagerInterface&MockObject */
     private EntityManagerInterface $entityManager;
 

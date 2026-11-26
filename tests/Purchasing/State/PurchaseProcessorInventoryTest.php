@@ -141,7 +141,7 @@ final class PurchaseProcessorInventoryTest extends TestCase
             new \ReflectionClass(PurchaseOrderReceiptService::class)->newInstanceWithoutConstructor(),
         );
 
-        $warehouse = (new Warehouse())->setBranch($branch);
+        $warehouse = new Warehouse()->setBranch($branch);
         new \ReflectionProperty(Warehouse::class, 'id')->setValue($warehouse, 'wh-1');
         $product = new Product();
         new \ReflectionProperty(Product::class, 'id')->setValue($product, 'prod-1');

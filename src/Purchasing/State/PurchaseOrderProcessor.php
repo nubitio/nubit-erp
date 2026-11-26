@@ -59,8 +59,8 @@ readonly class PurchaseOrderProcessor implements ProcessorInterface
         if ($data->getBranch() !== null || $data->getId() !== null) {
             $references['branch'] = $data->getBranch();
         }
-        if ($data->getWarehouse() !== null) {
-            $references['warehouse'] = $data->getWarehouse()->getBranch();
+        if (($reference = $data->getWarehouse()) !== null) {
+            $references['warehouse'] = $reference->getBranch();
         }
         $data->setBranch($this->branchGuard->requireBranch($references, $this->purchasingScope->authorizedBranchId()));
 

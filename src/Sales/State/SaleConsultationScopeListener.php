@@ -24,7 +24,10 @@ final readonly class SaleConsultationScopeListener
     public function apply(RequestEvent $event): void
     {
         $request = $event->getRequest();
-        if (!$event->isMainRequest() || $request->attributes->get('_api_operation_name') !== 'sale_branch_consultation') {
+        if (
+            !$event->isMainRequest()
+            || $request->attributes->get('_api_operation_name') !== 'sale_branch_consultation'
+        ) {
             return;
         }
 

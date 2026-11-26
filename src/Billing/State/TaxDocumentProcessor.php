@@ -62,8 +62,8 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         if (!$isNew) {
             $references['branch'] = $data->getBranch();
         }
-        if ($data->getSaleRecord() !== null) {
-            $references['saleRecord'] = $data->getSaleRecord()->getBranch();
+        if (($reference = $data->getSaleRecord()) !== null) {
+            $references['saleRecord'] = $reference->getBranch();
         }
         $branch = $this->branchGuard->requireBranch($references);
         $branchId = (string) $branch->getId();

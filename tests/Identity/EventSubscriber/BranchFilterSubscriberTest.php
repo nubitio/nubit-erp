@@ -174,12 +174,11 @@ final class BranchFilterSubscriberTest extends TestCase
         $context->method('getCurrentBranchId')->willReturn($branchId);
         $security = $this->createStub(Security::class);
         if ($authenticated) {
-            $security->method('getToken')->willReturn(new JWTAuthenticationToken(
-                (new User())->setUsername('tester'),
-                'api',
-                ['ROLE_USER'],
-                'token',
-            ));
+            $security
+                ->method('getToken')
+                ->willReturn(
+                    new JWTAuthenticationToken(new User()->setUsername('tester'), 'api', ['ROLE_USER'], 'token'),
+                );
         }
 
         return new BranchFilterSubscriber($this->entityManager, $context, $security);

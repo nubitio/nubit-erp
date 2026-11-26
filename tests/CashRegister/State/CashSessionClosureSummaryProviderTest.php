@@ -124,6 +124,7 @@ final class CashSessionClosureSummaryProviderTest extends TestCase
 
         $this->provider->provide(new GetCollection(uriTemplate: '/cash-shifts/{id}/summary'), ['id' => $cashShiftId]);
     }
+
     private function branchContext(): BranchContextServiceInterface
     {
         $context = $this->createStub(BranchContextServiceInterface::class);

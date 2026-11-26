@@ -41,7 +41,11 @@ final class PurchasingBranchScopeTest extends TestCase
             new OperatingBranchResolver($this->createStub(BranchRepository::class)),
             $entityManager,
         );
-        $event = new RequestEvent($this->createStub(HttpKernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST);
+        $event = new RequestEvent(
+            $this->createStub(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST,
+        );
 
         $this->expectException(AccessDeniedHttpException::class);
         $scope->apply($event);

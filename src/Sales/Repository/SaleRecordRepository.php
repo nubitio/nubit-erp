@@ -69,9 +69,14 @@ class SaleRecordRepository extends ServiceEntityRepository
      */
     public function aggregateReceivablesByCustomer(string $branchId, ?string $search, int $page, int $perPage): array
     {
-        $qb = $this->receivablesQuery($branchId)
+        $qb = $this
+            ->receivablesQuery($branchId)
             ->select('s.customer_id', 'c.razon_social', 'c.telefono', 'SUM(s.balance_due) AS total_balance')
-            ->addSelect('MAX(s.currency) AS currency', 'MIN(s.due_date) AS earliest_due_date', 'COUNT(s.id) AS pending_count')
+            ->addSelect(
+                'MAX(s.currency) AS currency',
+                'MIN(s.due_date) AS earliest_due_date',
+                'COUNT(s.id) AS pending_count',
+            )
             ->innerJoin('s', 'cliente', 'c', 'c.id = s.customer_id')
             ->groupBy('s.customer_id', 'c.razon_social', 'c.telefono')
             ->orderBy('total_balance', 'DESC')
@@ -94,7 +99,8 @@ class SaleRecordRepository extends ServiceEntityRepository
 
     public function countReceivableCustomers(string $branchId, ?string $search): int
     {
-        $qb = $this->receivablesQuery($branchId)
+        $qb = $this
+            ->receivablesQuery($branchId)
             ->select('COUNT(DISTINCT s.customer_id)')
             ->innerJoin('s', 'cliente', 'c', 'c.id = s.customer_id');
         $this->applyCustomerSearch($qb, $search);
@@ -105,8 +111,9 @@ class SaleRecordRepository extends ServiceEntityRepository
     /** @return array{total: string, currency: string, debtorCount: int} */
     public function sumReceivables(string $branchId): array
     {
-        $row = $this->receivablesQuery($branchId)
-            ->select("COALESCE(SUM(s.balance_due), 0) AS total", "COALESCE(MAX(s.currency), 'PEN') AS currency")
+        $row = $this
+            ->receivablesQuery($branchId)
+            ->select('COALESCE(SUM(s.balance_due), 0) AS total', "COALESCE(MAX(s.currency), 'PEN') AS currency")
             ->addSelect('COUNT(DISTINCT s.customer_id) AS debtor_count')
             ->fetchAssociative();
 
@@ -120,7 +127,8 @@ class SaleRecordRepository extends ServiceEntityRepository
     /** @return list<array<string, mixed>> */
     public function openReceivableDetails(string $branchId, int $customerId): array
     {
-        $invoices = $this->receivablesQuery($branchId)
+        $invoices = $this
+            ->receivablesQuery($branchId)
             ->select('s.id', 's.issued_date AS issuedDate', 's.due_date AS dueDate', 's.currency', 's.status')
             ->addSelect('s.grand_total AS grandTotal', 's.paid_total AS paidTotal', 's.balance_due AS balanceDue')
             ->addSelect("NULLIF(CONCAT_WS('-', NULLIF(s.series, ''), NULLIF(s.number, '')), '') AS invoiceFullNumber")
@@ -135,13 +143,16 @@ class SaleRecordRepository extends ServiceEntityRepository
             return [];
         }
 
-        $payments = $this->getEntityManager()->getConnection()->fetchAllAssociative(<<<'SQL'
-            SELECT p.sale_id, p.amount, p.paid_at, p.reference, m.name AS method_name
-            FROM sale_payments p
-            LEFT JOIN payment_method m ON m.id = p.payment_method_id
-            WHERE p.sale_id IN (:ids)
-            ORDER BY p.paid_at DESC, p.id DESC
-            SQL, ['ids' => array_column($invoices, 'id')], ['ids' => ArrayParameterType::STRING]);
+        $payments = $this
+            ->getEntityManager()
+            ->getConnection()
+            ->fetchAllAssociative(<<<'SQL'
+                SELECT p.sale_id, p.amount, p.paid_at, p.reference, m.name AS method_name
+                FROM sale_payments p
+                LEFT JOIN payment_method m ON m.id = p.payment_method_id
+                WHERE p.sale_id IN (:ids)
+                ORDER BY p.paid_at DESC, p.id DESC
+                SQL, ['ids' => array_column($invoices, 'id')], ['ids' => ArrayParameterType::STRING]);
         $bySale = [];
         foreach ($payments as $payment) {
             $saleId = $payment['sale_id'];
@@ -158,7 +169,10 @@ class SaleRecordRepository extends ServiceEntityRepository
 
     private function receivablesQuery(string $branchId): QueryBuilder
     {
-        return $this->getEntityManager()->getConnection()->createQueryBuilder()
+        return $this
+            ->getEntityManager()
+            ->getConnection()
+            ->createQueryBuilder()
             ->from('sales', 's')
             ->where('s.branch_id = :branch')
             ->andWhere('s.receivable_account = 1')

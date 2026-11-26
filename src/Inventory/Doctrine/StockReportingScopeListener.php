@@ -25,8 +25,11 @@ final readonly class StockReportingScopeListener
     public function apply(RequestEvent $event): void
     {
         $request = $event->getRequest();
-        if (!$event->isMainRequest() || !$request->isMethod('GET')
-            || $request->attributes->get('_api_resource_class') !== StockItem::class) {
+        if (
+            !$event->isMainRequest()
+            || !$request->isMethod('GET')
+            || $request->attributes->get('_api_resource_class') !== StockItem::class
+        ) {
             return;
         }
 

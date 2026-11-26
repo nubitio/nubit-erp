@@ -64,7 +64,10 @@ final class PayablesAgingController extends AbstractController
         return $this->json([
             'asOf' => $asOf,
             'buckets' => PayablesAgingCalculator::BUCKETS,
-            ...$this->aging->execute($this->scope->requireBranchId($request->query->getString('branchId') ?: null), $asOf),
+            ...$this->aging->execute(
+                $this->scope->requireBranchId($request->query->getString('branchId') ?: null),
+                $asOf,
+            ),
         ]);
     }
 
@@ -77,7 +80,10 @@ final class PayablesAgingController extends AbstractController
             throw new BadRequestHttpException('La vista debe ser "summary" o "detail".');
         }
 
-        $report = $this->aging->execute($this->scope->requireBranchId($request->query->getString('branchId') ?: null), $asOf);
+        $report = $this->aging->execute(
+            $this->scope->requireBranchId($request->query->getString('branchId') ?: null),
+            $asOf,
+        );
         $columns = $this->columns($view);
         $rows = $view === 'detail' ? $report['detail'] : [...$report['suppliers'], ...$report['totals']];
 

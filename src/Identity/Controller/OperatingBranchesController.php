@@ -13,7 +13,9 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final readonly class OperatingBranchesController
 {
-    public function __construct(private BranchRepository $branches) {}
+    public function __construct(
+        private BranchRepository $branches,
+    ) {}
 
     #[Route('/api/auth/operating-branches', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]

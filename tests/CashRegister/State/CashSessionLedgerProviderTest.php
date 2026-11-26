@@ -124,6 +124,7 @@ final class CashSessionLedgerProviderTest extends TestCase
             'number' => $number,
         ];
     }
+
     private function branchContext(): BranchContextServiceInterface
     {
         $context = $this->createStub(BranchContextServiceInterface::class);

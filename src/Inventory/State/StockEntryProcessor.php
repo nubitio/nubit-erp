@@ -134,7 +134,12 @@ final readonly class StockEntryProcessor implements ProcessorInterface
 
         $branch = $target?->getBranch();
         $branchId = $branch?->getId();
-        if ($branchId === null || !$branch->getIsActive() || !$user->canOperateInBranch($branchId)) {
+        if (
+            $branch === null
+            || $branchId === null
+            || !$branch->getIsActive()
+            || !$user->canOperateInBranch($branchId)
+        ) {
             throw new AccessDeniedException('El almacén destino no pertenece a una sucursal operativa autorizada.');
         }
 

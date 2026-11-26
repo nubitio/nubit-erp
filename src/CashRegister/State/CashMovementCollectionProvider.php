@@ -9,8 +9,8 @@ use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Service\CashMovementHydrator;
-use ArrayIterator;
 use App\Identity\Auth\BranchContextServiceInterface;
+use ArrayIterator;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
@@ -59,7 +59,10 @@ final readonly class CashMovementCollectionProvider implements ProviderInterface
             [ParameterType::STRING, ParameterType::INTEGER, ParameterType::INTEGER],
         );
 
-        $total = (int) $this->connection->fetchOne('SELECT COUNT(*) FROM cash_movements m JOIN cash_sessions s ON s.id = m.cash_session_id WHERE s.branch_id = ?', [$branchId]);
+        $total =
+            (int) $this->connection->fetchOne('SELECT COUNT(*) FROM cash_movements m JOIN cash_sessions s ON s.id = m.cash_session_id WHERE s.branch_id = ?', [
+                $branchId,
+            ]);
 
         $movements = array_map($this->hydrator->fromRow(...), $rows);
 

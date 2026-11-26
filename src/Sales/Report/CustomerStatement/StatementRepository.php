@@ -141,6 +141,7 @@ final readonly class StatementRepository
             'detail' => (string) $r['detail'],
         ], $rows);
     }
+
     /**
      * The customer ledger nets applications across the company. A local statement needs
      * the matching debit and credit when the received advance and the sale differ.
@@ -152,24 +153,27 @@ final readonly class StatementRepository
      */
     public function crossBranchAdvanceApplications(int $customerId, string $dateTo, string $branchId): array
     {
-        $rows = $this->connection->fetchAllAssociative(<<<'SQL'
-            SELECT e.branch_id AS origin, s.branch_id AS destination, a.applied_amount, DATE(a.applied_at) AS applied_on
-            FROM customer_payment_applications a
-            JOIN customer_account_entries e ON e.id = a.customer_account_entry_id
-            JOIN sales s ON s.id = a.sale_id
-            WHERE e.customer_id = :customer AND s.customer_id = e.customer_id
-              AND e.entry_type = 'advance'
-              AND s.branch_id IS NOT NULL
-              AND (e.branch_id IS NULL OR e.branch_id <> s.branch_id)
-              AND (e.branch_id = :origin OR s.branch_id = :destination)
-              AND DATE(a.applied_at) <= :date_to
-            ORDER BY a.id
-            SQL, [
-            'customer' => $customerId,
-            'origin' => $branchId,
-            'destination' => $branchId,
-            'date_to' => $dateTo,
-        ]);
+        $rows = $this->connection->fetchAllAssociative(
+            <<<'SQL'
+                SELECT e.branch_id AS origin, s.branch_id AS destination, a.applied_amount, DATE(a.applied_at) AS applied_on
+                FROM customer_payment_applications a
+                JOIN customer_account_entries e ON e.id = a.customer_account_entry_id
+                JOIN sales s ON s.id = a.sale_id
+                WHERE e.customer_id = :customer AND s.customer_id = e.customer_id
+                  AND e.entry_type = 'advance'
+                  AND s.branch_id IS NOT NULL
+                  AND (e.branch_id IS NULL OR e.branch_id <> s.branch_id)
+                  AND (e.branch_id = :origin OR s.branch_id = :destination)
+                  AND DATE(a.applied_at) <= :date_to
+                ORDER BY a.id
+                SQL,
+            [
+                'customer' => $customerId,
+                'origin' => $branchId,
+                'destination' => $branchId,
+                'date_to' => $dateTo,
+            ],
+        );
 
         $charges = [];
         $payments = [];

@@ -53,7 +53,10 @@ final class CoreInventoryPathTest extends KernelTestCase
         self::assertSame(0, $moves->countKardex(['warehouse' => $warehouseId, 'branchId' => 'other']));
         self::assertSame([], $moves->findKardexForExport(['warehouse' => $warehouseId, 'branchId' => 'other']));
         $summary = $container->get(\App\Inventory\Service\KardexSummaryService::class);
-        self::assertSame(0, $summary->getSummary((string) $world->product->getId(), $warehouseId, branchId: 'other')['movementCount']);
+        self::assertSame(
+            0,
+            $summary->getSummary((string) $world->product->getId(), $warehouseId, branchId: 'other')['movementCount'],
+        );
     }
 
     public function testTransferMovesStockBetweenWarehouses(): void
@@ -89,14 +92,26 @@ final class CoreInventoryPathTest extends KernelTestCase
                 $this->processor($source)->process($entry, new Post());
                 self::fail('A read-only assignment must not allow writing stock to that branch.');
             } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException) {
-                self::assertEqualsWithDelta(10.0, (float) $this->fixture->onHand($source->warehouse, $source->product), 0.001);
+                self::assertEqualsWithDelta(
+                    10.0,
+                    (float) $this->fixture->onHand($source->warehouse, $source->product),
+                    0.001,
+                );
             }
 
             $source->user->assignOperatingBranches([$sourceBranchId, $destinationBranchId], $sourceBranchId);
             $this->processor($source)->process($entry, new Post());
 
-            self::assertEqualsWithDelta(6.0, (float) $this->fixture->onHand($source->warehouse, $source->product), 0.001);
-            self::assertEqualsWithDelta(4.0, (float) $this->fixture->onHand($destination->warehouse, $source->product), 0.001);
+            self::assertEqualsWithDelta(
+                6.0,
+                (float) $this->fixture->onHand($source->warehouse, $source->product),
+                0.001,
+            );
+            self::assertEqualsWithDelta(
+                4.0,
+                (float) $this->fixture->onHand($destination->warehouse, $source->product),
+                0.001,
+            );
             self::assertTrue($filters->isEnabled('branch_filter'));
 
             $entries = $this->entityManager->getRepository(StockEntry::class);

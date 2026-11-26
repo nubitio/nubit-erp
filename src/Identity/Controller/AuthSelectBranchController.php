@@ -57,7 +57,9 @@ class AuthSelectBranchController extends AbstractController
         }
 
         if (!$user->canOperateInBranch($branchId)) {
-            return new JsonResponse(['message' => 'No tienes permiso para operar en esta sucursal.'], Response::HTTP_FORBIDDEN);
+            return new JsonResponse([
+                'message' => 'No tienes permiso para operar en esta sucursal.',
+            ], Response::HTTP_FORBIDDEN);
         }
 
         if (!$branch->getIsActive()) {

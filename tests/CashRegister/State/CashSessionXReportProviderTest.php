@@ -118,7 +118,9 @@ final class CashSessionXReportProviderTest extends TestCase
     public function testCashBreakdownMatchesClosureWhenCashAndDigitalRefundsCoexist(): void
     {
         $db = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
-        $db->executeStatement('CREATE TABLE cash_sessions (id INTEGER, opening_amount NUMERIC, opened_at TEXT, branch_id TEXT)');
+        $db->executeStatement(
+            'CREATE TABLE cash_sessions (id INTEGER, opening_amount NUMERIC, opened_at TEXT, branch_id TEXT)',
+        );
         $db->executeStatement(
             'CREATE TABLE cash_movements (cash_session_id INTEGER, category_id INTEGER, payment_method_id INTEGER, movement_type TEXT, amount NUMERIC)',
         );
@@ -177,8 +179,13 @@ final class CashSessionXReportProviderTest extends TestCase
                 ? 60
                 : $db->fetchOne($sql, self::named($params)));
         $breakdown = new SessionSalesBreakdown($connection);
-        $report = new CashSessionXReportProvider($connection, $breakdown, $this->branchContext())->provide(new Get(), ['id' => 1]);
-        $closure = new CashSessionClosureSummaryProvider($connection, $breakdown, $this->branchContext())->provide(new Get(), ['id' => 1]);
+        $report = new CashSessionXReportProvider($connection, $breakdown, $this->branchContext())->provide(new Get(), [
+            'id' => 1,
+        ]);
+        $closure = new CashSessionClosureSummaryProvider($connection, $breakdown, $this->branchContext())->provide(
+            new Get(),
+            ['id' => 1],
+        );
         self::assertSame('290.00', $report->cashSalesNet);
         self::assertSame('20.00', $report->cashAdjustmentsOut);
         self::assertSame('60.00', $report->cashOut);
@@ -225,6 +232,7 @@ final class CashSessionXReportProviderTest extends TestCase
 
         return $named;
     }
+
     private function branchContext(): BranchContextServiceInterface
     {
         $context = $this->createStub(BranchContextServiceInterface::class);

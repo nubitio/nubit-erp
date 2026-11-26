@@ -146,6 +146,8 @@ readonly class CustomerAccountLedger
      * Append one movement. `debit` and `credit` are non-negative strings and
      * exactly one of them is greater than zero — an entry moves the balance in a
      * single direction.
+     *
+     * @mago-expect lint:excessive-parameter-list
      */
     public function record(
         int $customerId,

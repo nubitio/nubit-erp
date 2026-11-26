@@ -59,13 +59,8 @@ readonly class ShiftReport
              JOIN cash_register cr ON cr.id = cs.cash_register_id
              LEFT JOIN usuario u ON u.usuario_id = cs.opened_by
              LEFT JOIN usuario cl ON cl.usuario_id = cs.closed_by
-             WHERE cs.id = ?';
-        $params = [$sessionId];
-        if ($branchId !== null) {
-            $sql .= ' AND cs.branch_id = ?';
-            $params[] = $branchId;
-        }
-        $session = $this->connection->fetchAssociative($sql, $params);
+             WHERE cs.id = ? AND (? IS NULL OR cs.branch_id = ?)';
+        $session = $this->connection->fetchAssociative($sql, [$sessionId, $branchId, $branchId]);
 
         if ($session === false) {
             throw new NotFoundHttpException(sprintf('CashSession not found for id %d.', $sessionId));

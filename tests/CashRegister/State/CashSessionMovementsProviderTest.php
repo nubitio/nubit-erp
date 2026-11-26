@@ -137,6 +137,7 @@ final class CashSessionMovementsProviderTest extends TestCase
         $this->expectException(NotFoundHttpException::class);
         $provider->provide(new GetCollection(), ['id' => '999']);
     }
+
     private function branchContext(): BranchContextServiceInterface
     {
         $context = $this->createStub(BranchContextServiceInterface::class);

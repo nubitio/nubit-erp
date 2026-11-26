@@ -35,7 +35,11 @@ final readonly class PurchasingBranchScope
         }
 
         $request = $event->getRequest();
-        if (!in_array($request->attributes->get('_api_resource_class'), [Purchase::class, PurchaseOrder::class], true)) {
+        if (!in_array(
+            $request->attributes->get('_api_resource_class'),
+            [Purchase::class, PurchaseOrder::class],
+            true,
+        )) {
             return;
         }
 
@@ -53,8 +57,11 @@ final readonly class PurchasingBranchScope
     public function authorize(string $branchId): void
     {
         $user = $this->security->getUser();
-        if (!$user instanceof User || !$this->security->isGranted('perm:purchases.cross_branch')
-            || $this->branches->resolve($user, $branchId) === null) {
+        if (
+            !$user instanceof User
+            || !$this->security->isGranted('perm:purchases.cross_branch')
+            || $this->branches->resolve($user, $branchId) === null
+        ) {
             throw new AccessDeniedHttpException('No tienes permiso para gestionar compras de esta sucursal.');
         }
     }

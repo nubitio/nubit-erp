@@ -66,7 +66,10 @@ final class ShiftReportController extends AbstractController
     public function print(int $id, Request $request): Response
     {
         $branchId = $this->requireBranch();
-        $ownerId = $this->connection->fetchOne('SELECT opened_by FROM cash_sessions WHERE id = ? AND branch_id = ?', [$id, $branchId]);
+        $ownerId = $this->connection->fetchOne('SELECT opened_by FROM cash_sessions WHERE id = ? AND branch_id = ?', [
+            $id,
+            $branchId,
+        ]);
         $user = $this->security->connectedUser();
         if (
             $ownerId !== false
@@ -79,10 +82,15 @@ final class ShiftReportController extends AbstractController
 
         $width = self::PAPER_WIDTH_MAP[$request->query->getInt('paper_width')] ?? max(32, $this->printerLineWidth);
 
-        return new Response($this->escPos->commands($this->report->forSession($id, $branchId), $width), Response::HTTP_OK, [
-            'Content-Type' => 'application/octet-stream',
-        ]);
+        return new Response(
+            $this->escPos->commands($this->report->forSession($id, $branchId), $width),
+            Response::HTTP_OK,
+            [
+                'Content-Type' => 'application/octet-stream',
+            ],
+        );
     }
+
     private function requireBranch(): string
     {
         return $this->branchContext->getCurrentBranchId() ?? throw new NotFoundHttpException('Turno no encontrado.');

@@ -50,7 +50,9 @@ final class InventorySummaryServiceTest extends TestCase
                 ('wh1', 'p2', 5),
                 ('wh2', 'p3', 0)");
 
-        $this->connection->executeStatement('CREATE TABLE almacen (almacen_id TEXT PRIMARY KEY, local_id TEXT NOT NULL)');
+        $this->connection->executeStatement(
+            'CREATE TABLE almacen (almacen_id TEXT PRIMARY KEY, local_id TEXT NOT NULL)',
+        );
         $this->connection->executeStatement("INSERT INTO almacen VALUES ('wh1', 'branch-a'), ('wh2', 'branch-b')");
 
         $this->service = new InventorySummaryService($this->connection);

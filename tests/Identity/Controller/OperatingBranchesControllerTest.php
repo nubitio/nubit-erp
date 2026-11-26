@@ -16,7 +16,8 @@ final class OperatingBranchesControllerTest extends TestCase
     public function testReturnsAssignedBranchesWithTheDefaultFirst(): void
     {
         $repository = $this->createMock(BranchRepository::class);
-        $repository->expects(self::once())
+        $repository
+            ->expects(self::once())
             ->method('findBy')
             ->with(['isActive' => true], ['name' => 'ASC'])
             ->willReturn([
@@ -29,15 +30,18 @@ final class OperatingBranchesControllerTest extends TestCase
         $user->assignOperatingBranches(['a', 'c'], 'c');
         $response = (new OperatingBranchesController($repository))($user);
 
-        self::assertSame([
-            ['id' => 'c', 'name' => 'Principal', 'isDefault' => true],
-            ['id' => 'a', 'name' => 'Almacén', 'isDefault' => false],
-        ], json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR));
+        self::assertSame(
+            [
+                ['id' => 'c', 'name' => 'Principal', 'isDefault' => true],
+                ['id' => 'a', 'name' => 'Almacén', 'isDefault' => false],
+            ],
+            json_decode((string) $response->getContent(), true, flags: JSON_THROW_ON_ERROR),
+        );
     }
 
     private function branch(string $id, string $name): Branch
     {
-        $branch = (new Branch())->setName($name);
+        $branch = new Branch()->setName($name);
         new ReflectionProperty(Branch::class, 'id')->setValue($branch, $id);
 
         return $branch;
