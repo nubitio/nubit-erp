@@ -27,8 +27,8 @@ class BranchFilter extends SQLFilter
             return '';
         }
 
-        // Check if the entity has a 'branch' association
-        if (!$targetEntity->hasAssociation('branch')) {
+        $usesWarehouseBranch = $targetEntity->getTableName() === 'stock_items';
+        if (!$usesWarehouseBranch && !$targetEntity->hasAssociation('branch')) {
             return '';
         }
 
@@ -40,6 +40,14 @@ class BranchFilter extends SQLFilter
 
         if ($branchIds === '') {
             return '1 = 0';
+        }
+
+        if ($usesWarehouseBranch) {
+            return sprintf(
+                '%s.warehouse_id IN (SELECT w.almacen_id FROM almacen w WHERE w.local_id IN (%s))',
+                $targetTableAlias,
+                $branchIds,
+            );
         }
 
         // Get the column name for the branch association

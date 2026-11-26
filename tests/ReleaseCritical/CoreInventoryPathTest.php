@@ -58,6 +58,26 @@ final class CoreInventoryPathTest extends KernelTestCase
         self::assertEqualsWithDelta(4.0, (float) $this->fixture->onHand($target, $world->product), 0.001);
     }
 
+    public function testStockItemsAreRestrictedToTheSelectedWarehouseBranch(): void
+    {
+        $first = $this->fixture->seed('5.000000');
+        $second = $this->fixture->seed('7.000000');
+        $repository = $this->entityManager->getRepository(\App\Inventory\Entity\StockItem::class);
+        $filters = $this->entityManager->getFilters();
+        $filter = $filters->enable('branch_filter');
+
+        try {
+            $filter->setParameterList('branchIds', [(string) $first->branch->getId()]);
+            self::assertCount(1, $repository->findBy(['warehouse' => $first->warehouse]));
+            self::assertSame([], $repository->findBy(['warehouse' => $second->warehouse]));
+
+            $filter->setParameterList('branchIds', [(string) $second->branch->getId()]);
+            self::assertCount(1, $repository->findBy(['warehouse' => $second->warehouse]));
+        } finally {
+            $filters->disable('branch_filter');
+        }
+    }
+
     public function testIssueWithInsufficientStockDoesNotChangeOnHand(): void
     {
         $world = $this->fixture->seed('1.000000');
