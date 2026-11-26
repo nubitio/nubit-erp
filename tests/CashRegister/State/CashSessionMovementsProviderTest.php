@@ -11,6 +11,7 @@ use App\CashRegister\Entity\CashSession;
 use App\CashRegister\Enum\CashMovementType;
 use App\CashRegister\Service\CashMovementHydrator;
 use App\CashRegister\State\CashSessionMovementsProvider;
+use App\Identity\Auth\BranchContextServiceInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
@@ -66,7 +67,7 @@ final class CashSessionMovementsProviderTest extends TestCase
             return null;
         });
 
-        return new CashSessionMovementsProvider($conn, new CashMovementHydrator($em, $conn));
+        return new CashSessionMovementsProvider($conn, new CashMovementHydrator($em, $conn), $this->branchContext());
     }
 
     // ── Happy path ────────────────────────────────────────────────────────────
@@ -135,5 +136,12 @@ final class CashSessionMovementsProviderTest extends TestCase
 
         $this->expectException(NotFoundHttpException::class);
         $provider->provide(new GetCollection(), ['id' => '999']);
+    }
+    private function branchContext(): BranchContextServiceInterface
+    {
+        $context = $this->createStub(BranchContextServiceInterface::class);
+        $context->method('getCurrentBranchId')->willReturn('branch-a');
+
+        return $context;
     }
 }

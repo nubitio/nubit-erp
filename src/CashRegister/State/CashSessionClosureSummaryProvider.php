@@ -10,6 +10,7 @@ use App\CashRegister\Dto\CashSessionClosureSummaryDto;
 use App\CashRegister\Service\SessionSalesBreakdown;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
+use App\Identity\Auth\BranchContextServiceInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Override;
@@ -26,6 +27,7 @@ readonly class CashSessionClosureSummaryProvider implements ProviderInterface
     public function __construct(
         private Connection $connection,
         private SessionSalesBreakdown $breakdown,
+        private BranchContextServiceInterface $branchContext,
     ) {}
 
     /**
@@ -38,8 +40,9 @@ readonly class CashSessionClosureSummaryProvider implements ProviderInterface
     {
         $cashSessionId = $uriVariables['id'];
 
-        $session = $this->connection->fetchAssociative('SELECT id, opening_amount FROM cash_sessions WHERE id = ?', [
+        $session = $this->connection->fetchAssociative('SELECT id, opening_amount FROM cash_sessions WHERE id = ? AND branch_id = ?', [
             $cashSessionId,
+            $this->branchContext->getCurrentBranchId(),
         ]);
 
         if ($session === false) {

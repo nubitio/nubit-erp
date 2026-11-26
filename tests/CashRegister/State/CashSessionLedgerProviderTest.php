@@ -6,6 +6,7 @@ namespace App\Tests\CashRegister\State;
 
 use ApiPlatform\Metadata\Get;
 use App\CashRegister\State\CashSessionLedgerProvider;
+use App\Identity\Auth\BranchContextServiceInterface;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -19,7 +20,7 @@ final class CashSessionLedgerProviderTest extends TestCase
 
         $this->expectException(NotFoundHttpException::class);
 
-        new CashSessionLedgerProvider($connection)->provide(new Get(), ['id' => 9]);
+        new CashSessionLedgerProvider($connection, $this->branchContext())->provide(new Get(), ['id' => 9]);
     }
 
     public function testMergesDrawerMovementsAndDigitalPaymentsNewestFirst(): void
@@ -77,7 +78,7 @@ final class CashSessionLedgerProviderTest extends TestCase
             ],
         ]);
 
-        $ledger = new CashSessionLedgerProvider($connection)->provide(new Get(), ['id' => 5]);
+        $ledger = new CashSessionLedgerProvider($connection, $this->branchContext())->provide(new Get(), ['id' => 5]);
 
         self::assertSame('open', $ledger->status);
         self::assertSame('200.00', $ledger->openingAmount);
@@ -122,5 +123,12 @@ final class CashSessionLedgerProviderTest extends TestCase
             'series' => $series,
             'number' => $number,
         ];
+    }
+    private function branchContext(): BranchContextServiceInterface
+    {
+        $context = $this->createStub(BranchContextServiceInterface::class);
+        $context->method('getCurrentBranchId')->willReturn('branch-a');
+
+        return $context;
     }
 }

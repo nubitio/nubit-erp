@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Service\CashMovementHydrator;
+use App\Identity\Auth\BranchContextServiceInterface;
 use Doctrine\DBAL\Exception;
 use Override;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -22,6 +23,7 @@ readonly class CashMovementItemProvider implements ProviderInterface
 {
     public function __construct(
         private CashMovementHydrator $hydrator,
+        private BranchContextServiceInterface $branchContext,
     ) {}
 
     /**
@@ -33,7 +35,8 @@ readonly class CashMovementItemProvider implements ProviderInterface
     {
         $id = (int) ($uriVariables['id'] ?? 0);
 
-        $movement = $this->hydrator->findById($id);
+        $branchId = $this->branchContext->getCurrentBranchId();
+        $movement = $branchId === null ? null : $this->hydrator->findById($id, $branchId);
         if ($movement === null) {
             throw new NotFoundHttpException(sprintf('CashMovement not found: %d', $id));
         }
