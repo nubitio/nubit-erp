@@ -133,6 +133,9 @@ final class CoreOperationalPathTest extends KernelTestCase
         static::assertInstanceOf(SalesWriteGateway::class, $gateway);
         $failingGateway = $this->createMock(SalesWriteGateway::class);
         $failingGateway
+            ->method('cashRegisterBelongsToBranch')
+            ->willReturnCallback($gateway->cashRegisterBelongsToBranch(...));
+        $failingGateway
             ->method('requireLockedOpenCashSessionForUser')
             ->willReturnCallback(static function (int $sessionId, int $userId) use ($gateway): void {
                 $gateway->requireLockedOpenCashSessionForUser($sessionId, $userId);
