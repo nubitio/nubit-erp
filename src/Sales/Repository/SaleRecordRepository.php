@@ -9,7 +9,7 @@ use App\Catalog\Repository\PaymentMethodRepository;
 use App\Sales\Entity\SaleRecord;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\ParameterType;
-use Doctrine\ORM\QueryBuilder;
+use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -66,81 +66,66 @@ class SaleRecordRepository extends ServiceEntityRepository
      *
      * @return list<array{customerId: int, customerName: string, customerPhone: ?string, totalBalance: string, currency: string, earliestDueDate: ?string, pendingCount: int}>
      */
-    public function aggregateReceivablesByCustomer(?string $search, int $page, int $perPage): array
+    public function aggregateReceivablesByCustomer(string $branchId, ?string $search, int $page, int $perPage): array
     {
-        $qb = $this
-            ->createQueryBuilder('s')
-            ->select('IDENTITY(s.customer) AS customerId')
-            ->addSelect('c.businessName AS customerName')
-            ->addSelect('c.phone AS customerPhone')
-            ->addSelect('SUM(s.balanceDue) AS totalBalance')
-            ->addSelect('MAX(s.currency) AS currency')
-            ->addSelect('MIN(s.dueDate) AS earliestDueDate')
-            ->addSelect('COUNT(s.id) AS pendingCount')
-            ->join('s.customer', 'c')
-            ->where('s.receivableAccount = true')
-            ->andWhere('s.balanceDue > 0')
-            ->andWhere("s.status <> 'VOIDED'")
-            ->andWhere('s.deletedAt IS NULL')
-            ->groupBy('s.customer, c.businessName, c.phone')
-            ->orderBy('totalBalance', 'DESC')
+        $qb = $this->receivablesQuery($branchId)
+            ->select('s.customer_id', 'c.razon_social', 'c.telefono', 'SUM(s.balance_due) AS total_balance')
+            ->addSelect('MAX(s.currency) AS currency', 'MIN(s.due_date) AS earliest_due_date', 'COUNT(s.id) AS pending_count')
+            ->innerJoin('s', 'cliente', 'c', 'c.id = s.customer_id')
+            ->groupBy('s.customer_id', 'c.razon_social', 'c.telefono')
+            ->orderBy('total_balance', 'DESC')
+            ->addOrderBy('s.customer_id', 'ASC')
             ->setFirstResult(($page - 1) * $perPage)
             ->setMaxResults($perPage);
 
         $this->applyCustomerSearch($qb, $search);
 
-        /** @var list<array{customerId: int, customerName: string, customerPhone: ?string, totalBalance: string, currency: string, earliestDueDate: ?string, pendingCount: int}> $rows */
-        $rows = $qb->getQuery()->getResult();
-
-        return $rows;
+        return array_map(static fn(array $row): array => [
+            'customerId' => (int) $row['customer_id'],
+            'customerName' => (string) $row['razon_social'],
+            'customerPhone' => $row['telefono'] === null ? null : (string) $row['telefono'],
+            'totalBalance' => (string) $row['total_balance'],
+            'currency' => (string) $row['currency'],
+            'earliestDueDate' => $row['earliest_due_date'] === null ? null : (string) $row['earliest_due_date'],
+            'pendingCount' => (int) $row['pending_count'],
+        ], $qb->fetchAllAssociative());
     }
 
-    /**
-     * Count of distinct customers with an open balance — paired with
-     * {@see aggregateReceivablesByCustomer} for pagination.
-     */
-    public function countReceivableCustomers(?string $search): int
+    public function countReceivableCustomers(string $branchId, ?string $search): int
     {
-        $qb = $this
-            ->createQueryBuilder('s')
-            ->select('COUNT(DISTINCT s.customer)')
-            ->join('s.customer', 'c')
-            ->where('s.receivableAccount = true')
-            ->andWhere('s.balanceDue > 0')
-            ->andWhere("s.status <> 'VOIDED'")
-            ->andWhere('s.deletedAt IS NULL');
-
+        $qb = $this->receivablesQuery($branchId)
+            ->select('COUNT(DISTINCT s.customer_id)')
+            ->innerJoin('s', 'cliente', 'c', 'c.id = s.customer_id');
         $this->applyCustomerSearch($qb, $search);
 
-        return (int) $qb->getQuery()->getSingleScalarResult();
+        return (int) $qb->fetchOne();
     }
 
-    /**
-     * Branch-wide totals for the "Deudores" KPI header: overall balance,
-     * currency, and how many distinct customers carry it.
-     *
-     * @return array{total: string, currency: string, debtorCount: int}
-     */
-    public function sumReceivables(): array
+    /** @return array{total: string, currency: string, debtorCount: int} */
+    public function sumReceivables(string $branchId): array
     {
-        /** @var array{total: string, currency: string, debtorCount: int} $row */
-        $row = $this
-            ->createQueryBuilder('s')
-            ->select('COALESCE(SUM(s.balanceDue), 0) AS total')
-            ->addSelect('COALESCE(MAX(s.currency), \'PEN\') AS currency')
-            ->addSelect('COUNT(DISTINCT s.customer) AS debtorCount')
-            ->where('s.receivableAccount = true')
-            ->andWhere('s.balanceDue > 0')
-            ->andWhere("s.status <> 'VOIDED'")
-            ->andWhere('s.deletedAt IS NULL')
-            ->getQuery()
-            ->getSingleResult();
+        $row = $this->receivablesQuery($branchId)
+            ->select("COALESCE(SUM(s.balance_due), 0) AS total", "COALESCE(MAX(s.currency), 'PEN') AS currency")
+            ->addSelect('COUNT(DISTINCT s.customer_id) AS debtor_count')
+            ->fetchAssociative();
 
         return [
-            'total' => $row['total'],
-            'currency' => $row['currency'],
-            'debtorCount' => (int) $row['debtorCount'],
+            'total' => (string) ($row['total'] ?? '0.00'),
+            'currency' => (string) ($row['currency'] ?? 'PEN'),
+            'debtorCount' => (int) ($row['debtor_count'] ?? 0),
         ];
+    }
+
+    private function receivablesQuery(string $branchId): QueryBuilder
+    {
+        return $this->getEntityManager()->getConnection()->createQueryBuilder()
+            ->from('sales', 's')
+            ->where('s.branch_id = :branch')
+            ->andWhere('s.receivable_account = 1')
+            ->andWhere('s.balance_due > 0')
+            ->andWhere("s.status <> 'VOIDED'")
+            ->andWhere('s.deleted_at IS NULL')
+            ->setParameter('branch', $branchId);
     }
 
     /**
@@ -150,9 +135,7 @@ class SaleRecordRepository extends ServiceEntityRepository
      * both "no due date recorded" and "not yet due"; the rest count full days
      * past the due date, matching {@see AgingCalculator}'s bucket names.
      *
-     * Raw SQL (DATEDIFF has no portable DQL equivalent that also survives
-     * GROUP BY), so — unlike the QueryBuilder methods above — this bypasses
-     * Doctrine's automatic branch filter and scopes by `$branchId` itself.
+     * Like the other receivable reports, scopes explicitly by branch.
      *
      * @return array{current: string, '1-30': string, '31-60': string, '61-90': string, '90+': string}
      */
@@ -200,7 +183,7 @@ class SaleRecordRepository extends ServiceEntityRepository
             return;
         }
 
-        $qb->andWhere('LOWER(c.businessName) LIKE :search')->setParameter(
+        $qb->andWhere('LOWER(c.razon_social) LIKE :search')->setParameter(
             'search',
             '%' . mb_strtolower(trim($search)) . '%',
         );
