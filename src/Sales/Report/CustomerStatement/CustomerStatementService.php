@@ -27,14 +27,16 @@ final readonly class CustomerStatementService
             throw new NotFoundHttpException(sprintf('Cliente %d no encontrado.', $customerId));
         }
 
+        $applications = $this->repository->crossBranchAdvanceApplications($customerId, $dateTo, $branchId);
+
         return $this->assembler->assemble(
             $customerId,
             $customer['name'],
             $customer['doc'],
             $dateFrom,
             $dateTo,
-            $this->repository->charges($customerId, $dateTo, $branchId),
-            $this->repository->payments($customerId, $dateTo, $branchId),
+            [...$this->repository->charges($customerId, $dateTo, $branchId), ...$applications['charges']],
+            [...$this->repository->payments($customerId, $dateTo, $branchId), ...$applications['payments']],
         );
     }
 
