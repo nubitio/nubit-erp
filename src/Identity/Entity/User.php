@@ -120,6 +120,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     #[ORM\Column(name: 'operating_branch_ids', type: 'json', nullable: true)]
     private ?array $operatingBranchIds = null;
 
+    /** @var list<string>|null */
+    #[ORM\Column(name: 'read_only_branch_ids', type: 'json', nullable: true)]
+    private ?array $readOnlyBranchIds = null;
+
     #[ORM\Column(name: 'default_branch_id', length: 36, nullable: true)]
     private ?string $defaultBranchId = null;
 
@@ -217,6 +221,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     public function getOperatingBranchIds(): ?array
     {
         return $this->operatingBranchIds;
+    }
+
+    /** @return list<string> */
+    public function getReadOnlyBranchIds(): array
+    {
+        return $this->readOnlyBranchIds ?? [];
+    }
+
+    /** @param list<string> $branchIds */
+    public function assignReadOnlyBranches(array $branchIds): void
+    {
+        $this->readOnlyBranchIds = $branchIds;
     }
 
     public function getDefaultBranchId(): ?string

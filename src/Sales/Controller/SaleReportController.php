@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Sales\Controller;
 
 use App\Efact\Util\DateHelper;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchReportScope;
 use DateTimeImmutable;
 use DateTimeZone;
 use Doctrine\DBAL\Connection;
@@ -18,8 +18,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[RequiresFeature('excel_export')]
+#[IsGranted('perm:sales.view')]
 class SaleReportController extends AbstractController
 {
     /** @var array<string, ExportableReportInterface> */
@@ -44,16 +46,13 @@ class SaleReportController extends AbstractController
      * @throws Exception
      * @throws \Doctrine\DBAL\Exception
      */
-    public function __invoke(Request $request, BranchContextService $branchContext): StreamedResponse
+    public function __invoke(Request $request, BranchReportScope $scope): StreamedResponse
     {
         $reportKey = (string) $request->query->get('report', '');
         $dateFrom = (string) $request->query->get('date-from', '');
         $dateTo = (string) $request->query->get('date-to', '');
 
-        $localId = $branchContext->getCurrentBranchId();
-        if ($localId === null) {
-            throw new BadRequestHttpException('Debe seleccionar una sucursal para generar el reporte.');
-        }
+        $localId = $scope->requireBranchId($request->query->getString('branchId') ?: null);
 
         if ($reportKey === '') {
             throw new BadRequestHttpException('El tipo de reporte es requerido.');

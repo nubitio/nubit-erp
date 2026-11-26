@@ -4,25 +4,22 @@ declare(strict_types=1);
 
 namespace App\Sales\Controller;
 
-use App\Identity\Auth\BranchContextServiceInterface;
+use App\Identity\Auth\BranchReportScope;
 use App\Sales\Report\Summary\MonthlySalesSummary;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpFoundation\Request;
 
 final class MonthlySalesSummaryController extends AbstractController
 {
     public function __construct(
         private readonly MonthlySalesSummary $summary,
-        private readonly BranchContextServiceInterface $branchContext,
+        private readonly BranchReportScope $scope,
     ) {}
 
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
-        $branchId = $this->branchContext->getCurrentBranchId();
-        if ($branchId === null) {
-            throw new BadRequestHttpException('Selecciona una sucursal para consultar el resumen.');
-        }
+        $branchId = $this->scope->requireBranchId($request->query->getString('branchId') ?: null);
 
         return $this->json($this->summary->get($branchId));
     }
