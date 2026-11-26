@@ -9,8 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\Billing\Despatch\Domain\DespatchGuideValidator;
 use App\Billing\Despatch\Entity\DespatchGuide;
 use App\Billing\Despatch\Repository\DespatchGuideRepository;
-use App\Identity\Auth\BranchContextService;
-use App\Organization\Repository\BranchRepository;
+use App\Identity\Auth\OperationalBranchGuard;
 use Nubit\Platform\Exception\ServiceException;
 use Override;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -28,8 +27,7 @@ readonly class DespatchGuideProcessor implements ProcessorInterface
             service: 'api_platform.doctrine.orm.state.persist_processor',
         )]
         private ProcessorInterface $persistProcessor,
-        private BranchContextService $branchContextService,
-        private BranchRepository $branchRepository,
+        private OperationalBranchGuard $branchGuard,
         private DespatchGuideRepository $guideRepository,
         private DespatchGuideValidator $validator = new DespatchGuideValidator(),
     ) {}
@@ -43,6 +41,14 @@ readonly class DespatchGuideProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $isNew = $data->getId() === null;
+        $references = [];
+        if (!$isNew) {
+            $references['branch'] = $data->getBranch();
+        }
+        if ($data->getSaleRecord() !== null) {
+            $references['saleRecord'] = $data->getSaleRecord()->getBranch();
+        }
+        $branch = $this->branchGuard->requireBranch($references);
 
         if ($isNew) {
             if (trim($data->getSeries()) === '') {
@@ -57,10 +63,7 @@ readonly class DespatchGuideProcessor implements ProcessorInterface
                 throw new ServiceException(implode(' ', $errors));
             }
 
-            $branchId = $this->branchContextService->getCurrentBranchId();
-            if ($branchId !== null) {
-                $data->setBranch($this->branchRepository->find($branchId));
-            }
+            $data->setBranch($branch);
 
             $next = $this->guideRepository->allocateNextNumber($data->getSeries());
             $data->setNumber((string) $next);
