@@ -15,8 +15,13 @@ services:
       - app-var:/app/var
       - app-public-uploads:/app/public/uploads
     environment:
+      APP_DEBUG:
+      FRANKENPHP_CONFIG:
       OTEL_SDK_DISABLED: 'true'
       OTEL_PHP_AUTOLOAD_ENABLED: 'false'
+    networks:
+      default:
+        aliases: [demo]
 
   # Dev-only mail catcher; CI never sends real mail.
   mailpit:

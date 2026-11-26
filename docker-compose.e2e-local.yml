@@ -4,12 +4,8 @@
 #
 # It runs in its own compose project (own DB volume, own network) so it never
 # touches the dev stack. The fixed container names in docker-compose.yml would
-# collide with the dev containers, so they are dropped here; the Playwright
-# runner still resolves `nubit-erp-web`, which is kept as a network alias.
+# collide with the dev containers, so they are dropped here. Playwright
+# uses the `demo` alias from docker-compose.ci.yml.
 services:
   web:
     container_name: !reset null
-    networks:
-      default:
-        aliases:
-          - nubit-erp-web
