@@ -1,4 +1,5 @@
 import { expect, type APIRequestContext } from '@playwright/test';
+import { E2E_SEED } from '../support/seedConstants';
 
 export type AuthSession = {
   accessToken: string;
@@ -25,13 +26,22 @@ export async function loginViaApi(
   const accessToken = payload.token;
   expect(accessToken, 'login debe devolver token').toBeTruthy();
 
-  return {
+  const session = {
     accessToken: accessToken as string,
     headers: {
       Authorization: `Bearer ${accessToken as string}`,
       'Content-Type': 'application/json',
     },
   };
+  const response = await request.get(`${baseUrl}/api/auth/operating-branches`, {
+    headers: session.headers,
+  });
+  expect(response.ok(), 'cargar sucursales operativas').toBeTruthy();
+  const branches = (await response.json()) as { id: string; name: string }[];
+  const branch = branches.find((option) => option.name === E2E_SEED.branchName) ?? branches[0];
+  expect(branch, 'el fixture debe tener una sucursal operativa').toBeDefined();
+
+  return selectBranchViaApi(request, baseUrl, session, branch.id);
 }
 
 export async function createInvoiceForSale(

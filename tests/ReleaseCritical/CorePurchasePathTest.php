@@ -123,16 +123,31 @@ final class CorePurchasePathTest extends KernelTestCase
 
         $branchContext->method('getCurrentBranchId')->willReturn($world->branch->getId());
 
+        /** @var BranchRepository $branches */
+        $branches = $container->get(BranchRepository::class);
+        /** @var PurchaseInventoryService $inventory */
+        $inventory = $container->get(PurchaseInventoryService::class);
+        /** @var PurchaseReceiptSequenceService $sequence */
+        $sequence = $container->get(PurchaseReceiptSequenceService::class);
+        /** @var PurchaseSupplierDocumentValidator $validator */
+        $validator = $container->get(PurchaseSupplierDocumentValidator::class);
+        /** @var ActiveReferenceGuard $references */
+        $references = $container->get(ActiveReferenceGuard::class);
+        /** @var PurchaseOrderReceiptService $receipts */
+        $receipts = $container->get(PurchaseOrderReceiptService::class);
+        /** @var MessageBusInterface $bus */
+        $bus = $container->get(MessageBusInterface::class);
+
         return new PurchaseProcessor(
             $persist,
             $security,
-            new OperationalBranchGuard($branchContext, $container->get(BranchRepository::class)),
-            $container->get(PurchaseInventoryService::class),
-            $container->get(PurchaseReceiptSequenceService::class),
-            $container->get(PurchaseSupplierDocumentValidator::class),
-            $container->get(ActiveReferenceGuard::class),
-            $container->get(PurchaseOrderReceiptService::class),
-            $container->get(MessageBusInterface::class),
+            new OperationalBranchGuard($branchContext, $branches),
+            $inventory,
+            $sequence,
+            $validator,
+            $references,
+            $receipts,
+            $bus,
         );
     }
 }

@@ -34,18 +34,7 @@ final readonly class StockMovementRepository
     /**
      * Return paginated kardex rows with running_balance.
      *
-     * @param array{
-     *   warehouse?: string,
-     *   product?: string,
-     *   type?: string,
-     *   from?: string,
-     *   to?: string,
-     *   sourceId?: string,
-     *   sourceIdOperator?: string,
-     *   note?: string,
-     *   noteOperator?: string,
-     *   valuation?: string,
-     * } $filters
+     * @param array<string, string> $filters
      *
      * @return list<StockMovement>
      *
@@ -63,18 +52,7 @@ final readonly class StockMovementRepository
     }
 
     /**
-     * @param array{
-     *   warehouse?: string,
-     *   product?: string,
-     *   type?: string,
-     *   from?: string,
-     *   to?: string,
-     *   sourceId?: string,
-     *   sourceIdOperator?: string,
-     *   note?: string,
-     *   noteOperator?: string,
-     *   valuation?: string,
-     * } $filters
+     * @param array<string, string> $filters
      *
      * @return list<StockMovement>
      *
@@ -416,9 +394,9 @@ final readonly class StockMovementRepository
         // Product
         if ((string) ($row['product_id'] ?? '') !== '') {
             $sm->product = [
-                'id' => $row['product_id'],
-                'name' => $row['product_name'] ?? '',
-                'code' => $row['product_code'] ?? null,
+                'id' => (string) $row['product_id'],
+                'name' => (string) ($row['product_name'] ?? ''),
+                'code' => isset($row['product_code']) ? (string) $row['product_code'] : null,
             ];
         }
 

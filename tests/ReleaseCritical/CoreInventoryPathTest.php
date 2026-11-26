@@ -46,12 +46,14 @@ final class CoreInventoryPathTest extends KernelTestCase
         self::assertEqualsWithDelta(8.0, (float) $this->fixture->onHand($world->warehouse, $world->product), 0.001);
 
         $container = static::getContainer();
+        /** @var \App\Inventory\Repository\StockMovementRepository $moves */
         $moves = $container->get(\App\Inventory\Repository\StockMovementRepository::class);
         $warehouseId = (string) $world->warehouse->getId();
         $branchId = (string) $world->branch->getId();
         self::assertSame(1, $moves->countKardex(['warehouse' => $warehouseId, 'branchId' => $branchId]));
         self::assertSame(0, $moves->countKardex(['warehouse' => $warehouseId, 'branchId' => 'other']));
         self::assertSame([], $moves->findKardexForExport(['warehouse' => $warehouseId, 'branchId' => 'other']));
+        /** @var \App\Inventory\Service\KardexSummaryService $summary */
         $summary = $container->get(\App\Inventory\Service\KardexSummaryService::class);
         self::assertSame(
             0,
@@ -186,6 +188,9 @@ final class CoreInventoryPathTest extends KernelTestCase
         $context = $this->createStub(\App\Identity\Auth\BranchContextServiceInterface::class);
         $context->method('getCurrentBranchId')->willReturn($world->branch->getId());
 
+        /** @var \App\Organization\Repository\BranchRepository $branches */
+        $branches = $container->get(\App\Organization\Repository\BranchRepository::class);
+
         return new StockEntryProcessor(
             $container->get(InventoryService::class),
             $container->get(UnitConversionServiceInterface::class),
@@ -194,10 +199,7 @@ final class CoreInventoryPathTest extends KernelTestCase
             $container->get(StockValidationPolicyInterface::class),
             $persist,
             $container->get(ActiveReferenceGuard::class),
-            new \App\Identity\Auth\OperationalBranchGuard(
-                $context,
-                $container->get(\App\Organization\Repository\BranchRepository::class),
-            ),
+            new \App\Identity\Auth\OperationalBranchGuard($context, $branches),
         );
     }
 }

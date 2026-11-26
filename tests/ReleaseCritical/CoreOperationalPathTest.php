@@ -231,6 +231,7 @@ final class CoreOperationalPathTest extends KernelTestCase
         static::assertNull($result->getCashSessionId());
         static::assertCount(0, $result->getSalePayments());
         self::assertSame(0, $this->fixture->cashMovementCount((string) $result->getId()));
+        /** @var SaleRecordRepository $repository */
         $repository = static::getContainer()->get(SaleRecordRepository::class);
         $branchId = (string) $world->branch->getId();
         $rows = $repository->aggregateReceivablesByCustomer($branchId, null, 1, 10);
@@ -624,6 +625,9 @@ final class CoreOperationalPathTest extends KernelTestCase
         /** @var ProcessorInterface<mixed, mixed>&\PHPUnit\Framework\MockObject\Stub $remove */
         $remove = $this->createStub(ProcessorInterface::class);
 
+        /** @var BranchRepository $branches */
+        $branches = $container->get(BranchRepository::class);
+        /** @var JWTManagerInterface $jwt */
         $jwt = $container->get(JWTManagerInterface::class);
         $encoded = $jwt->encode(['branchId' => $world->branch->getId() ?? '', 'sub' => 'kernel-core']);
         $token = new JWTAuthenticationToken($world->user, 'api', ['ROLE_ADMIN'], $encoded);
@@ -651,11 +655,7 @@ final class CoreOperationalPathTest extends KernelTestCase
                 }
             },
             $container->get(LoggerInterface::class),
-            new BranchContextService(
-                $symfonySecurity,
-                $jwt,
-                new \App\Identity\Auth\OperatingBranchResolver($container->get(BranchRepository::class)),
-            ),
+            new BranchContextService($symfonySecurity, $jwt, new \App\Identity\Auth\OperatingBranchResolver($branches)),
             $container->get(BranchRepository::class),
             $gateway ?? $container->get(SalesWriteGateway::class),
             $container->get(CashSessionResolverInterface::class),

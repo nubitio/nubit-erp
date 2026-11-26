@@ -13,7 +13,10 @@ final class PurchaseReceiptLines
     {
         $orderLines = [];
         foreach ($purchase->getPurchaseOrder()?->getItems() ?? [] as $orderItem) {
-            $orderLines[$orderItem->getId()] = $orderItem;
+            $id = $orderItem->getId();
+            if ($id !== null) {
+                $orderLines[$id] = $orderItem;
+            }
         }
         foreach ($purchase->getItems() as $item) {
             $id = $item->getPurchaseOrderItemId() ?? $item->getPurchaseOrderItem()?->getId();

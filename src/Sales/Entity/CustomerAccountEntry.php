@@ -114,6 +114,11 @@ class CustomerAccountEntry
         return $this->id;
     }
 
+    public function getBranchId(): ?string
+    {
+        return $this->branchId;
+    }
+
     public function getCustomerId(): int
     {
         return $this->customerId;

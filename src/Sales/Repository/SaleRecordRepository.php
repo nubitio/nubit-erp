@@ -94,7 +94,7 @@ class SaleRecordRepository extends ServiceEntityRepository
             'currency' => (string) $row['currency'],
             'earliestDueDate' => $row['earliest_due_date'] === null ? null : (string) $row['earliest_due_date'],
             'pendingCount' => (int) $row['pending_count'],
-        ], $qb->fetchAllAssociative());
+        ], array_values($qb->fetchAllAssociative()));
     }
 
     public function countReceivableCustomers(string $branchId, ?string $search): int
@@ -164,7 +164,7 @@ class SaleRecordRepository extends ServiceEntityRepository
             $invoice['payments'] = $bySale[$invoice['id']] ?? [];
 
             return $invoice;
-        }, $invoices);
+        }, array_values($invoices));
     }
 
     private function receivablesQuery(string $branchId): QueryBuilder

@@ -61,8 +61,8 @@ readonly class SaleQuoteProcessor implements ProcessorInterface
         if ($data->getBranch() !== null || !$isNew) {
             $references['branch'] = $data->getBranch();
         }
-        if ($data->getWarehouse() !== null) {
-            $references['warehouse'] = $data->getWarehouse()->getBranch();
+        if (($warehouse = $data->getWarehouse()) !== null) {
+            $references['warehouse'] = $warehouse->getBranch();
         }
         $data->setBranch($this->branchGuard->requireBranch($references));
 

@@ -6,7 +6,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { parseApiCollection } from './helpers/api';
 import { waitForGridLoad } from './helpers/crud';
-import { loginViaApi, selectBranchViaApi } from './helpers/fiscal';
+import { loginViaApi } from './helpers/fiscal';
 import { gotoProtectedRoute } from './helpers/navigation';
 import { login } from './helpers/auth';
 import { E2E_SEED } from './support/seedConstants';
@@ -49,20 +49,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
     await waitForGridLoad(page);
     await expect(page).toHaveURL(/\/purchases/);
 
-    const session = await loginViaApi(
-      request,
-      BASE_URL,
-      credentials.username,
-      credentials.password,
-    );
-    const options = await request.get(`${BASE_URL}/api/auth/operating-branches`, {
-      headers: session.headers,
-    });
-    expect(options.ok()).toBeTruthy();
-    const branches = (await options.json()) as { id: string; name: string }[];
-    const branch = branches.find((option) => option.name === E2E_SEED.branchName);
-    expect(branch).toBeDefined();
-    const auth = await selectBranchViaApi(request, BASE_URL, session, branch!.id);
+    const auth = await loginViaApi(request, BASE_URL, credentials.username, credentials.password);
     const warehousesResponse = await request.get(
       `${BASE_URL}/api/warehouses?page=1&itemsPerPage=20`,
       {
@@ -143,12 +130,11 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
   test('03 - Crear compra y verificar stock incrementado', async ({ request }) => {
     const seed = await getE2ESeed();
-    const session = await loginViaApi(request, BASE_URL, seed.username, seed.password);
+    const auth = await loginViaApi(request, BASE_URL, seed.username, seed.password);
 
     expect(resolvedProductId).toBeTruthy();
     expect(resolvedWarehouseId).toBeTruthy();
     expect(resolvedBranchId).toBeTruthy();
-    const auth = await selectBranchViaApi(request, BASE_URL, session, resolvedBranchId!);
 
     await test.step('Registrar compra vía API', async () => {
       const suppliersResponse = await request.get(`${BASE_URL}/api/suppliers?itemsPerPage=50`, {
