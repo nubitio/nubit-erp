@@ -11,6 +11,8 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use App\Billing\Sale\SaleVoidUseCase;
 use App\CashRegister\Dto\CashRegisterCloseDto;
+use App\CashRegister\Service\CashMovementHydrator;
+use App\CashRegister\Service\SessionSalesBreakdown;
 use App\CashRegister\State\CashRegisterCloseProcessor;
 use App\CashRegister\State\CashRegisterDashboardProvider;
 use App\CashRegister\State\CashSessionClosureSummaryProvider;
@@ -80,6 +82,7 @@ final class CoreOperationalPathTest extends KernelTestCase
 
     public function testCreatedProductAndCustomerArePersistedAndSellable(): void
     {
+        $other = $this->fixture->seed('20.000000');
         $world = $this->fixture->seed('1.000000');
 
         $product = $this->entityManager->find(Product::class, $world->product->getId());
@@ -96,7 +99,6 @@ final class CoreOperationalPathTest extends KernelTestCase
         self::assertInstanceOf(SaleRecord::class, $result);
         self::assertEqualsWithDelta(0.0, (float) $this->fixture->onHand($world->warehouse, $world->product), 0.001);
 
-        $other = $this->fixture->seed('20.000000');
         $sale = $this->newOperationalSale($world, PaymentMethod::CASH, '2')->setWarehouse($other->warehouse);
         $this->expectException(ValidationException::class);
         $this->processor($world)->process($sale, new Post());
@@ -453,18 +455,28 @@ final class CoreOperationalPathTest extends KernelTestCase
 
     private function assertCashReconciles(CoreSaleWorld $world, string $expected): void
     {
-        $container = static::getContainer();
         $connection = $this->entityManager->getConnection();
         $branchContext = $this->createStub(BranchContextServiceInterface::class);
         $branchContext->method('getCurrentBranchId')->willReturn($world->branch->getId());
         $dashboard = new CashRegisterDashboardProvider($connection, $branchContext)->provide(new GetCollection());
         static::assertEqualsWithDelta((float) $expected, $dashboard[0]->balance, 0.001, 'Cash dashboard');
+        $breakdown = new SessionSalesBreakdown($connection);
+        $hydrator = new CashMovementHydrator($this->entityManager, $connection);
         $variables = ['id' => $world->cashSession->getId()];
-        $summary = $container->get(CashSessionClosureSummaryProvider::class)->provide(new GetCollection(), $variables);
+        $summary = new CashSessionClosureSummaryProvider($connection, $breakdown, $branchContext)->provide(
+            new GetCollection(),
+            $variables,
+        );
         static::assertSame($expected, $summary[0]->expectedAmount, 'Closure preview');
-        $xReport = $container->get(CashSessionXReportProvider::class)->provide(new Get(), $variables);
+        $xReport = new CashSessionXReportProvider($connection, $breakdown, $branchContext)->provide(
+            new Get(),
+            $variables,
+        );
         static::assertSame($expected, $xReport->currentBalance, 'X report');
-        $movements = $container->get(CashSessionMovementsProvider::class)->provide(new GetCollection(), $variables);
+        $movements = new CashSessionMovementsProvider($connection, $hydrator, $branchContext)->provide(
+            new GetCollection(),
+            $variables,
+        );
         $gridBalance = 0.0;
         foreach ($movements as $movement) {
             $gridBalance += ($movement->getType()->value === 'income' ? 1 : -1) * (float) $movement->getAmount();
