@@ -98,6 +98,15 @@ final class CoreInventoryPathTest extends KernelTestCase
             self::assertEqualsWithDelta(6.0, (float) $this->fixture->onHand($source->warehouse, $source->product), 0.001);
             self::assertEqualsWithDelta(4.0, (float) $this->fixture->onHand($destination->warehouse, $source->product), 0.001);
             self::assertTrue($filters->isEnabled('branch_filter'));
+
+            $entries = $this->entityManager->getRepository(StockEntry::class);
+            $lines = $this->entityManager->getRepository(StockEntryItem::class);
+            self::assertCount(1, $entries->findBy(['id' => $entry->getId()]));
+            self::assertCount(1, $lines->findBy(['entry' => $entry]));
+
+            $filters->getFilter('branch_filter')->setParameterList('branchIds', [$destinationBranchId]);
+            self::assertSame([], $entries->findBy(['id' => $entry->getId()]));
+            self::assertSame([], $lines->findBy(['entry' => $entry]));
         } finally {
             $filters->disable('branch_filter');
         }

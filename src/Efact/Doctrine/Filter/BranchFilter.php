@@ -27,7 +27,8 @@ class BranchFilter extends SQLFilter
             return '';
         }
 
-        $usesWarehouseBranch = $targetEntity->getTableName() === 'stock_items';
+        $table = $targetEntity->getTableName();
+        $usesWarehouseBranch = in_array($table, ['stock_items', 'stock_entries', 'stock_entry_items'], true);
         if (!$usesWarehouseBranch && !$targetEntity->hasAssociation('branch')) {
             return '';
         }
@@ -40,6 +41,14 @@ class BranchFilter extends SQLFilter
 
         if ($branchIds === '') {
             return '1 = 0';
+        }
+
+        if ($table === 'stock_entry_items') {
+            return sprintf(
+                '%s.entry_id IN (SELECT e.id FROM stock_entries e JOIN almacen w ON w.almacen_id = e.warehouse_id WHERE w.local_id IN (%s))',
+                $targetTableAlias,
+                $branchIds,
+            );
         }
 
         if ($usesWarehouseBranch) {
