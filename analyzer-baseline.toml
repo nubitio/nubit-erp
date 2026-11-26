@@ -3322,7 +3322,7 @@ count = 2
 file = "src/Onboarding/Controller/TenantOnboardingController.php"
 code = "less-specific-argument"
 message = 'Argument type mismatch for argument #1 of `App\Onboarding\Controller\TenantOnboardingController::optionalString`: expected `array<string, mixed>`, but provided type `array<array-key, mixed>` is less specific.'
-count = 5
+count = 4
 
 [[issues]]
 file = "src/Onboarding/Controller/TenantOnboardingController.php"
