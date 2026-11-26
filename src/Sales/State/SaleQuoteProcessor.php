@@ -7,6 +7,7 @@ namespace App\Sales\State;
 use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
+use App\Identity\Auth\OperationalBranchGuard;
 use App\Identity\Security\Security;
 use App\Sales\Entity\SaleQuote;
 use App\Sales\Service\SaleQuoteService;
@@ -38,6 +39,7 @@ readonly class SaleQuoteProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private Security $security,
         private SaleQuoteService $saleQuoteService,
+        private OperationalBranchGuard $branchGuard,
     ) {}
 
     /**
@@ -48,16 +50,25 @@ readonly class SaleQuoteProcessor implements ProcessorInterface
     #[Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
-        if ($operation instanceof DeleteOperationInterface) {
-            return $this->removeProcessor->process($data, $operation, $uriVariables, $context);
-        }
-
         $user = $this->security->connectedUser();
         if ($user === null) {
             throw new UnauthorizedHttpException('Bearer', 'Usuario no autenticado.');
         }
 
         $isNew = $data->getId() === null;
+
+        $references = [];
+        if ($data->getBranch() !== null || !$isNew) {
+            $references['branch'] = $data->getBranch();
+        }
+        if ($data->getWarehouse() !== null) {
+            $references['warehouse'] = $data->getWarehouse()->getBranch();
+        }
+        $data->setBranch($this->branchGuard->requireBranch($references));
+
+        if ($operation instanceof DeleteOperationInterface) {
+            return $this->removeProcessor->process($data, $operation, $uriVariables, $context);
+        }
 
         if ($isNew) {
             $data->setCreatedBy($user->userId);
