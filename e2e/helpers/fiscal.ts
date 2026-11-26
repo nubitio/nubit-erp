@@ -143,3 +143,26 @@ export function buildReceiptPdfUrl(
 
   return `${baseUrl}/receipt/${payload}/pdf`;
 }
+
+export async function selectBranchViaApi(
+  request: APIRequestContext,
+  baseUrl: string,
+  session: AuthSession,
+  branchId: string,
+): Promise<AuthSession> {
+  const response = await request.post(`${baseUrl}/api/auth/select-branch`, {
+    headers: { ...session.headers, 'X-Client-Type': 'android' },
+    data: { branchId, response_mode: 'json' },
+  });
+  expect(
+    response.ok(),
+    `seleccionar sucursal debe responder 2xx (${response.status()})`,
+  ).toBeTruthy();
+  const { token } = (await response.json()) as { token: string };
+  expect(token).toBeTruthy();
+
+  return {
+    accessToken: token,
+    headers: { ...session.headers, Authorization: `Bearer ${token}` },
+  };
+}
