@@ -634,7 +634,11 @@ final class CoreOperationalPathTest extends KernelTestCase
                 }
             },
             $container->get(LoggerInterface::class),
-            new BranchContextService($symfonySecurity, $jwt),
+            new BranchContextService(
+                $symfonySecurity,
+                $jwt,
+                new \App\Identity\Auth\OperatingBranchResolver($container->get(BranchRepository::class)),
+            ),
             $container->get(BranchRepository::class),
             $gateway ?? $container->get(SalesWriteGateway::class),
             $container->get(CashSessionResolverInterface::class),

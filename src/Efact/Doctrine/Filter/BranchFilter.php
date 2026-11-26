@@ -33,16 +33,19 @@ class BranchFilter extends SQLFilter
         }
 
         try {
-            $branchId = $this->getParameter('branchId');
+            $branchIds = $this->getParameterList('branchIds');
         } catch (\InvalidArgumentException) {
-            // Parameter not set, don't filter
-            return '';
+            return '1 = 0';
+        }
+
+        if ($branchIds === '') {
+            return '1 = 0';
         }
 
         // Get the column name for the branch association
         $association = $targetEntity->getAssociationMapping('branch');
         $columnName = $association['joinColumns'][0]['name'] ?? 'branch_id';
 
-        return sprintf('%s.%s = %s', $targetTableAlias, $columnName, $branchId);
+        return sprintf('%s.%s IN (%s)', $targetTableAlias, $columnName, $branchIds);
     }
 }
