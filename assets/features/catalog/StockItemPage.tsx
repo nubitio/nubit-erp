@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/refs -- grid actions use a stable page ref during render */
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   FieldType,
   SchemaCrudPage,
@@ -13,7 +13,8 @@ import {
   type GridCellContext,
 } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
-import { HubPanel } from '@nubitio/ui';
+import { HubPanel, SelectField } from '@nubitio/ui';
+import { httpClient } from '@shared/api/HttpClient';
 import toast from '@shared/lib/SharedUtils';
 import { useTenantRuntimeConfig } from '@shared/hooks';
 import { useSessionInfo } from '@shared/sessionInfo';
@@ -199,10 +200,12 @@ function rowToAdjustTarget(row: StockItemRecord): StockAdjustTarget {
 function buildStockItemsUrl(
   categoryFilterId: string | null,
   statusFilter: StockStatusFilter,
+  branchId: string,
 ): string {
   const params = new URLSearchParams();
   if (categoryFilterId) params.set('categoryId', categoryFilterId);
   if (statusFilter !== 'all') params.set('stockStatus', statusFilter);
+  if (branchId) params.set('branchId', branchId);
   const query = params.toString();
   return `${API}stock-items${query ? `?${query}` : ''}`;
 }
@@ -217,6 +220,38 @@ export const StockItemPage = () => {
   const { data: categories = [] } = useInventoryCategories();
 
   const inInventoryHub = location.pathname.startsWith('/inventory');
+  const [requestedBranch, setRequestedBranch] = useState('');
+  const reportingBranches = useQuery({
+    queryKey: ['reporting-branches', currentBranchId],
+    queryFn: async () =>
+      (
+        await httpClient.get<{ id: string; name: string; isActive: boolean }[]>(
+          `${API}auth/reporting-branches`,
+        )
+      ).data,
+    enabled: inInventoryHub,
+  });
+  const reportOptions = useMemo(
+    () => reportingBranches.data?.filter((branch) => branch.id !== currentBranchId) ?? [],
+    [currentBranchId, reportingBranches.data],
+  );
+  const reportBranch = reportOptions.some((branch) => branch.id === requestedBranch)
+    ? requestedBranch
+    : '';
+  const reportingWarehouses = useQuery({
+    queryKey: ['inventory', 'reporting-warehouses', reportBranch],
+    queryFn: async () =>
+      (
+        await httpClient.get<{ id: string; name: string }[]>(
+          `${API}inventory/reporting-warehouses?${new URLSearchParams({ branchId: reportBranch })}`,
+        )
+      ).data,
+    enabled: Boolean(reportBranch),
+  });
+  const shownWarehouses = useMemo(
+    () => (reportBranch ? (reportingWarehouses.data ?? []) : warehouses),
+    [reportBranch, reportingWarehouses.data, warehouses],
+  );
   const showWarehouseTabs = runtimeConfig?.ui.inventory.showWarehouseSelector ?? false;
   const showWarehouseColumn = !runtimeConfig?.profile.simpleStoreMode;
 
@@ -345,129 +380,142 @@ export const StockItemPage = () => {
 
   const resource = useMemo(
     () =>
-      defineResource<StockItemRecord>(buildStockItemsUrl(categoryFilterId, statusFilter), {
-        id: `stock-item-${warehouseFilterId ?? 'all'}-${categoryFilterId ?? 'all'}-${statusFilter}`,
-        title: inInventoryHub ? '' : 'Existencias',
-        mode: 'normal',
-        filter: warehouseFilter,
-        bulkActions,
-        fieldContract: defineFields<StockItemRecord>({
-          source: 'hydra',
-          strategy: 'augment',
-          directives: [
-            { kind: 'override', key: 'id', patch: { visible: false, visibleOnForm: false } },
-            { kind: 'override', key: 'unitName', patch: { visible: false, visibleOnForm: false } },
-            { kind: 'override', key: 'unitCode', patch: { visible: false, visibleOnForm: false } },
-            {
-              kind: 'override',
-              key: 'warehouse',
-              patch: {
-                order: 0,
-                width: 160,
-                label: 'Almacén',
-                visible: showWarehouseColumn,
-                visibleOnForm: showWarehouseColumn,
-                valueField: '_iri',
-                textField: 'name',
-                url: API + 'warehouses',
-                selectedFilterOperation: '=',
-                formatter: (e) => formatWarehouse(e.value),
+      defineResource<StockItemRecord>(
+        buildStockItemsUrl(categoryFilterId, statusFilter, reportBranch),
+        {
+          id: `stock-item-${warehouseFilterId ?? 'all'}-${categoryFilterId ?? 'all'}-${statusFilter}`,
+          title: inInventoryHub ? '' : 'Existencias',
+          mode: 'normal',
+          filter: warehouseFilter,
+          bulkActions: reportBranch ? [] : bulkActions,
+          fieldContract: defineFields<StockItemRecord>({
+            source: 'hydra',
+            strategy: 'augment',
+            directives: [
+              { kind: 'override', key: 'id', patch: { visible: false, visibleOnForm: false } },
+              {
+                kind: 'override',
+                key: 'unitName',
+                patch: { visible: false, visibleOnForm: false },
               },
-            },
-            {
-              kind: 'override',
-              key: 'product',
-              patch: {
-                order: 1,
-                width: 300,
-                label: 'Producto',
-                valueField: '_iri',
-                textField: 'name',
-                url: API + 'products',
-                selectedFilterOperation: '=',
-                formatter: makeProductFormatter(),
+              {
+                kind: 'override',
+                key: 'unitCode',
+                patch: { visible: false, visibleOnForm: false },
               },
-            },
-            {
-              kind: 'override',
-              key: 'qtyOnHand',
-              patch: {
-                order: 2,
-                width: 150,
-                label: 'En mano',
-                align: 'right',
-                formatter: formatQtyWithCoverage,
+              {
+                kind: 'override',
+                key: 'warehouse',
+                patch: {
+                  order: 0,
+                  width: 160,
+                  label: 'Almacén',
+                  visible: showWarehouseColumn,
+                  visibleOnForm: showWarehouseColumn,
+                  valueField: '_iri',
+                  textField: 'name',
+                  url: API + 'warehouses',
+                  selectedFilterOperation: '=',
+                  formatter: (e) => formatWarehouse(e.value),
+                },
               },
-            },
-            {
-              kind: 'override',
-              key: 'qtyReserved',
-              patch: {
-                order: 3,
-                width: 110,
-                label: 'Reservado',
-                align: 'right',
-                formatter: (e) => formatQty(e.value),
+              {
+                kind: 'override',
+                key: 'product',
+                patch: {
+                  order: 1,
+                  width: 300,
+                  label: 'Producto',
+                  valueField: '_iri',
+                  textField: 'name',
+                  url: API + 'products',
+                  selectedFilterOperation: '=',
+                  formatter: makeProductFormatter(),
+                },
               },
-            },
-            {
-              kind: 'override',
-              key: 'qtyAvailable',
-              patch: {
-                order: 4,
-                width: 110,
-                label: 'Disponible',
-                align: 'right',
-                formatter: (e) => formatQty(e.value),
+              {
+                kind: 'override',
+                key: 'qtyOnHand',
+                patch: {
+                  order: 2,
+                  width: 150,
+                  label: 'En mano',
+                  align: 'right',
+                  formatter: formatQtyWithCoverage,
+                },
               },
-            },
-            {
-              kind: 'override',
-              key: 'minStock',
-              patch: {
-                order: 5,
-                width: 100,
-                label: 'Mínimo',
-                align: 'right',
-                formatter: (e) => formatQty(e.value),
+              {
+                kind: 'override',
+                key: 'qtyReserved',
+                patch: {
+                  order: 3,
+                  width: 110,
+                  label: 'Reservado',
+                  align: 'right',
+                  formatter: (e) => formatQty(e.value),
+                },
               },
-            },
-            {
-              kind: 'override',
-              key: 'updatedAt',
-              patch: { order: 6, width: 150, label: 'Actualizado' },
-            },
-            {
-              kind: 'append' as const,
-              field: {
-                name: '_actions',
-                type: FieldType.TEXT,
-                label: '',
-                order: 7,
-                width: 80,
-                visible: true,
-                visibleOnForm: false,
-                sortable: false,
-                filterable: false,
-                formatter: makeActionsFormatter(openAdjustDrawer, openKardex),
-              } as Field,
-            },
-          ],
-        }),
-        sort: [{ selector: 'updatedAt', desc: true }],
-        defaultPreset: 'basic',
-        columnPresets,
-        emptyState: {
-          title: 'Sin existencias',
-          description: 'No hay stock registrado en ningún almacén.',
-          icon: 'package',
+              {
+                kind: 'override',
+                key: 'qtyAvailable',
+                patch: {
+                  order: 4,
+                  width: 110,
+                  label: 'Disponible',
+                  align: 'right',
+                  formatter: (e) => formatQty(e.value),
+                },
+              },
+              {
+                kind: 'override',
+                key: 'minStock',
+                patch: {
+                  order: 5,
+                  width: 100,
+                  label: 'Mínimo',
+                  align: 'right',
+                  formatter: (e) => formatQty(e.value),
+                },
+              },
+              {
+                kind: 'override',
+                key: 'updatedAt',
+                patch: { order: 6, width: 150, label: 'Actualizado' },
+              },
+              {
+                kind: 'append' as const,
+                field: {
+                  name: '_actions',
+                  type: FieldType.TEXT,
+                  label: '',
+                  order: 7,
+                  width: 80,
+                  visible: true,
+                  visibleOnForm: false,
+                  sortable: false,
+                  filterable: false,
+                  formatter: reportBranch
+                    ? () => null
+                    : makeActionsFormatter(openAdjustDrawer, openKardex),
+                } as Field,
+              },
+            ],
+          }),
+          sort: [{ selector: 'updatedAt', desc: true }],
+          defaultPreset: 'basic',
+          columnPresets,
+          emptyState: {
+            title: 'Sin existencias',
+            description: 'No hay stock registrado en ningún almacén.',
+            icon: 'package',
+          },
+          permissions: {
+            canAdd: false,
+            canEdit: false,
+            canDelete: false,
+          },
         },
-        permissions: {
-          canAdd: false,
-          canEdit: false,
-          canDelete: false,
-        },
-      }),
+      ),
     [
       bulkActions,
       categoryFilterId,
@@ -475,6 +523,7 @@ export const StockItemPage = () => {
       inInventoryHub,
       openAdjustDrawer,
       openKardex,
+      reportBranch,
       showWarehouseColumn,
       statusFilter,
       warehouseFilter,
@@ -487,10 +536,33 @@ export const StockItemPage = () => {
 
     return (
       <HubPanel variant="flush">
-        <InventorySummaryCards warehouseId={warehouseFilterId} />
-        {showWarehouseTabs && (
+        {reportOptions.length > 0 && (
+          <SelectField
+            aria-label="Sucursales autorizadas para existencias"
+            value={reportBranch}
+            onChange={(event) => {
+              setRequestedBranch(event.target.value);
+              setWarehouseFilterId(null);
+              setAdjustTarget(null);
+              setBulkOpen(false);
+              selectedRowsRef.current.clear();
+            }}
+          >
+            <option value="">Sucursal operativa</option>
+            {reportOptions.map((branch) => (
+              <option key={branch.id} value={branch.id}>
+                {branch.isActive ? branch.name : `${branch.name} (inactiva)`}
+              </option>
+            ))}
+          </SelectField>
+        )}
+        <InventorySummaryCards
+          warehouseId={warehouseFilterId}
+          branchId={reportBranch || currentBranchId}
+        />
+        {(showWarehouseTabs || Boolean(reportBranch)) && (
           <InventoryWarehouseTabs
-            warehouses={warehouses}
+            warehouses={shownWarehouses}
             selectedWarehouseId={warehouseFilterId}
             onChange={setWarehouseFilterId}
           />
@@ -507,17 +579,20 @@ export const StockItemPage = () => {
   }, [
     categories,
     categoryFilterId,
+    currentBranchId,
     inInventoryHub,
+    reportBranch,
+    reportOptions,
     showWarehouseTabs,
+    shownWarehouses,
     statusFilter,
     warehouseFilterId,
-    warehouses,
   ]);
 
   return (
     <div className="inventory-stock-page" data-testid="inventory-stock-page">
       <SchemaCrudPage
-        key={gridKey}
+        key={`${gridKey}:${reportBranch}`}
         resource={resource}
         aboveGrid={stockDashboard}
         onSelectionChanged={(rows) => {
@@ -530,7 +605,7 @@ export const StockItemPage = () => {
       />
 
       <StockAdjustDrawer
-        target={adjustTarget}
+        target={reportBranch ? null : adjustTarget}
         onClose={() => setAdjustTarget(null)}
         onApplied={refreshInventoryViews}
       />

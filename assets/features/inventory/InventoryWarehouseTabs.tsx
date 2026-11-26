@@ -2,7 +2,7 @@ import { ScopeTabs } from '@nubitio/ui';
 import type { WarehouseOption } from '@shared/hooks/useWarehouses';
 
 interface InventoryWarehouseTabsProps {
-  warehouses: WarehouseOption[];
+  warehouses: Pick<WarehouseOption, 'id' | 'name'>[];
   selectedWarehouseId: string | null;
   onChange: (warehouseId: string | null) => void;
 }
