@@ -25,16 +25,16 @@ final readonly class InventorySummaryService
      *
      * @throws Exception
      */
-    public function getSummary(?string $warehouseId = null): array
+    public function getSummary(string $branchId, ?string $warehouseId = null): array
     {
         $warehouseId = $this->normalizeWarehouseId($warehouseId);
 
         return [
-            'totalSkus' => $this->countDistinctSkus($warehouseId),
-            'categoryCount' => $this->countDistinctCategories($warehouseId),
-            'stockValueAtCost' => $this->sumStockValueAtCost($warehouseId),
-            'lowStockCount' => $this->countLowStock($warehouseId),
-            'outOfStockCount' => $this->countOutOfStock($warehouseId),
+            'totalSkus' => $this->countDistinctSkus($branchId, $warehouseId),
+            'categoryCount' => $this->countDistinctCategories($branchId, $warehouseId),
+            'stockValueAtCost' => $this->sumStockValueAtCost($branchId, $warehouseId),
+            'lowStockCount' => $this->countLowStock($branchId, $warehouseId),
+            'outOfStockCount' => $this->countOutOfStock($branchId, $warehouseId),
             'warehouseId' => $warehouseId,
         ];
     }
@@ -51,14 +51,14 @@ final readonly class InventorySummaryService
     /**
      * @throws Exception
      */
-    private function countDistinctSkus(?string $warehouseId): int
+    private function countDistinctSkus(string $branchId, ?string $warehouseId): int
     {
         $sql = <<<'SQL'
             SELECT COUNT(DISTINCT si.product_id)
             FROM stock_items si
             SQL;
 
-        [$sql, $params] = $this->applyWarehouseFilter($sql, $warehouseId, 'si');
+        [$sql, $params] = $this->applyWarehouseFilter($sql, $branchId, $warehouseId);
 
         return (int) $this->connection->fetchOne($sql, $params);
     }
@@ -66,7 +66,7 @@ final readonly class InventorySummaryService
     /**
      * @throws Exception
      */
-    private function countDistinctCategories(?string $warehouseId): int
+    private function countDistinctCategories(string $branchId, ?string $warehouseId): int
     {
         $sql = <<<'SQL'
             SELECT COUNT(DISTINCT p.categoria_id)
@@ -74,7 +74,7 @@ final readonly class InventorySummaryService
             INNER JOIN producto p ON p.producto_id = si.product_id
             SQL;
 
-        [$sql, $params] = $this->applyWarehouseFilter($sql, $warehouseId, 'si');
+        [$sql, $params] = $this->applyWarehouseFilter($sql, $branchId, $warehouseId);
 
         return (int) $this->connection->fetchOne($sql, $params);
     }
@@ -82,7 +82,7 @@ final readonly class InventorySummaryService
     /**
      * @throws Exception
      */
-    private function sumStockValueAtCost(?string $warehouseId): string
+    private function sumStockValueAtCost(string $branchId, ?string $warehouseId): string
     {
         $sql = <<<'SQL'
             SELECT COALESCE(SUM(si.qty_on_hand * COALESCE(p.precio_compra, 0)), 0)
@@ -90,7 +90,7 @@ final readonly class InventorySummaryService
             INNER JOIN producto p ON p.producto_id = si.product_id
             SQL;
 
-        [$sql, $params] = $this->applyWarehouseFilter($sql, $warehouseId, 'si');
+        [$sql, $params] = $this->applyWarehouseFilter($sql, $branchId, $warehouseId);
 
         $value = $this->connection->fetchOne($sql, $params);
 
@@ -100,7 +100,7 @@ final readonly class InventorySummaryService
     /**
      * @throws Exception
      */
-    private function countLowStock(?string $warehouseId): int
+    private function countLowStock(string $branchId, ?string $warehouseId): int
     {
         $sql = <<<'SQL'
             SELECT COUNT(*)
@@ -111,7 +111,7 @@ final readonly class InventorySummaryService
               AND si.qty_on_hand <= p.stock_minimo
             SQL;
 
-        [$sql, $params] = $this->applyWarehouseFilter($sql, $warehouseId, 'si', hasWhere: true);
+        [$sql, $params] = $this->applyWarehouseFilter($sql, $branchId, $warehouseId, hasWhere: true);
 
         return (int) $this->connection->fetchOne($sql, $params);
     }
@@ -119,7 +119,7 @@ final readonly class InventorySummaryService
     /**
      * @throws Exception
      */
-    private function countOutOfStock(?string $warehouseId): int
+    private function countOutOfStock(string $branchId, ?string $warehouseId): int
     {
         $sql = <<<'SQL'
             SELECT COUNT(*)
@@ -127,7 +127,7 @@ final readonly class InventorySummaryService
             WHERE si.qty_on_hand <= 0
             SQL;
 
-        [$sql, $params] = $this->applyWarehouseFilter($sql, $warehouseId, 'si', hasWhere: true);
+        [$sql, $params] = $this->applyWarehouseFilter($sql, $branchId, $warehouseId, hasWhere: true);
 
         return (int) $this->connection->fetchOne($sql, $params);
     }
@@ -137,19 +137,19 @@ final readonly class InventorySummaryService
      */
     private function applyWarehouseFilter(
         string $sql,
+        string $branchId,
         ?string $warehouseId,
-        string $alias,
         bool $hasWhere = false,
     ): array {
-        if ($warehouseId === null) {
-            return [$sql, []];
+        $connector = $hasWhere ? ' AND ' : ' WHERE ';
+        $sql .= $connector . 'si.warehouse_id IN (SELECT almacen_id FROM almacen WHERE local_id = :branchId)';
+        $params = ['branchId' => $branchId];
+
+        if ($warehouseId !== null) {
+            $sql .= ' AND si.warehouse_id = :warehouseId';
+            $params['warehouseId'] = $warehouseId;
         }
 
-        $connector = $hasWhere ? ' AND ' : ' WHERE ';
-
-        return [
-            $sql . $connector . "{$alias}.warehouse_id = :warehouseId",
-            ['warehouseId' => $warehouseId],
-        ];
+        return [$sql, $params];
     }
 }
