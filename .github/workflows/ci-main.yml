@@ -340,8 +340,15 @@ jobs:
     timeout-minutes: 30
 
     env:
-      E2E_BASE_URL: http://web
+      E2E_BASE_URL: http://demo
       APP_ENV: e2e
+      # Match the Symfony cache explicitly warmed before Playwright.
+      APP_DEBUG: '0'
+      # Leave room for the dev dependencies and Symfony cache loaded by E2E.
+      # Filling the OPcache hash table can abort FrankenPHP under PHP ZTS.
+      FRANKENPHP_CONFIG: |
+        php_ini opcache.max_accelerated_files 100000
+        php_ini opcache.memory_consumption 512
       E2E_SEED_ENABLED: '1'
       DATABASE_URL: mysql://demo:changeme@database:3306/demo?serverVersion=10.7.1-MariaDB&charset=utf8mb4
       CONTROL_PLANE_DATABASE_URL: mysql://efact:changeme@database:3306/efact?serverVersion=10.7.1-MariaDB&charset=utf8mb4
@@ -424,6 +431,8 @@ jobs:
           # A health probe can look up the `demo` tenant before it is registered;
           # TenantService caches that miss for 300s and every request then 404s
           # with "Tenant not found". Drop it now that the tenant exists.
+          # Composer and the seed use root, while FrankenPHP uses www-data.
+          docker compose exec -T web chown -R www-data:www-data /app/var/cache/e2e
           docker compose exec -T --user www-data web php bin/console cache:pool:clear cache.app
           docker compose exec -T --user www-data web php bin/console cache:clear --no-warmup --no-debug
           docker compose exec -T --user www-data web php bin/console cache:warmup --no-debug
@@ -442,7 +451,13 @@ jobs:
 
       - name: Collect E2E stack diagnostics
         if: failure()
-        run: docker compose ps -a && docker compose logs --no-color --tail=150
+        run: |
+          docker compose ps -a
+          docker events --since 30m --until "$(date +%s)" \
+            --filter type=container --filter label=com.docker.compose.service=web \
+            --filter event=die --filter event=oom --filter event=start \
+            --format '{{.Time}} {{.Actor.Attributes.name}} {{.Action}} {{.Actor.Attributes.exitCode}}'
+          docker compose logs --no-color --tail=150
 
       - name: Stop full stack
         if: always()

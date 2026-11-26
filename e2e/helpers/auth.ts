@@ -19,22 +19,6 @@ async function fillDxInput(page: Page, ariaLabel: string, value: string) {
   await page.keyboard.press('Tab');
 }
 
-async function waitForPostLoginLanding(page: Page) {
-  await page
-    .waitForFunction(
-      () => {
-        const onLogin = window.location.pathname === '/login';
-        const loginForm = document.querySelector('form.login-form');
-        return !onLogin && !loginForm;
-      },
-      undefined,
-      { timeout: 30000 },
-    )
-    .catch(() => {});
-
-  await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-}
-
 /** Log in and complete branch selection when the picker appears. */
 export async function login(page: Page, username: string, password: string) {
   const baseUrl = getE2EBaseUrl();
@@ -60,41 +44,36 @@ export async function login(page: Page, username: string, password: string) {
     `login API debe responder 2xx (status ${loginResponse.status()})`,
   ).toBeTruthy();
 
-  try {
-    const firstBranch = page.locator('[data-testid="branch-picker-option"]').first();
-    await firstBranch.waitFor({ state: 'visible', timeout: 7000 });
-    const e2eBranch = page
-      .locator('[data-testid="branch-picker-option"]')
-      .filter({ hasText: E2E_SEED.branchName });
+  const branches = page.getByTestId('branch-picker-option');
+  const firstBranch = branches.first();
+  const hasLeftLogin = () => new URL(page.url()).pathname !== '/login';
+  await expect
+    .poll(async () => hasLeftLogin() || (await firstBranch.isVisible()), {
+      timeout: 30000,
+      message: 'debe seleccionar una sucursal o continuar al ERP',
+    })
+    .toBe(true);
+
+  if (!hasLeftLogin()) {
+    const e2eBranch = branches.filter({ hasText: E2E_SEED.branchName });
     const target = (await e2eBranch.count()) > 0 ? e2eBranch.first() : firstBranch;
     await target.click();
-    await page.waitForTimeout(300);
     const acceptBtn = page
       .getByRole('dialog', { name: 'Seleccionar local' })
       .getByRole('button', { name: /aceptar/i });
-    await acceptBtn.waitFor({ state: 'visible', timeout: 5000 });
-    await acceptBtn.click();
-    await page
-      .locator('[data-testid="branch-picker-option"]')
-      .first()
-      .waitFor({ state: 'hidden', timeout: 10000 });
-  } catch {
-    // No branch picker — auto-selected.
+    const [response] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/auth/select-branch' &&
+          response.request().method() === 'POST',
+      ),
+      acceptBtn.click(),
+    ]);
+    expect(response.ok(), `seleccionar sucursal debe responder 2xx (${response.status()})`).toBe(
+      true,
+    );
   }
 
-  await waitForPostLoginLanding(page);
-
-  const landedPath = new URL(page.url()).pathname;
-  const onAppRoute =
-    landedPath === '/dashboard' ||
-    landedPath === '/pos' ||
-    !(
-      landedPath === '/login' ||
-      (await page
-        .locator('form.login-form')
-        .isVisible()
-        .catch(() => false))
-    );
-
-  expect(onAppRoute, 'debe salir de /login tras autenticarse').toBeTruthy();
+  await page.waitForURL((url) => url.pathname !== '/login', { timeout: 30000 });
+  await expect(page.locator('form.login-form')).toBeHidden();
 }

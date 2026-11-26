@@ -6,25 +6,9 @@
 # Seeding and cleanup are handled by separate CI steps (not this script).
 set -e
 
-# Wait for the web server to be ready before running tests.
-# This guards against the web container being recreated by docker compose run.
-# Resolve the Docker service hostname to the address Playwright actually uses.
-# TenantListener permits this private container IP only in the explicitly
-# isolated e2e/test environments; production private-IP behavior is unchanged.
-if [ -z "$E2E_BASE_URL" ] || [ "$E2E_BASE_URL" = "http://web" ]; then
-  WEB_IP=""
-  for _ in $(seq 1 10); do
-    WEB_IP=$(getent hosts nubit-erp-web | awk '{print $1}' | head -1)
-    [ -n "$WEB_IP" ] && break
-    sleep 1
-  done
-
-  if [ -n "$WEB_IP" ]; then
-    export E2E_BASE_URL="http://${WEB_IP}"
-  else
-    export E2E_BASE_URL="http://nubit-erp-web"
-  fi
-fi
+# Use the seeded tenant name as a Docker DNS alias so every client keeps the
+# same tenant origin even when Docker assigns the web container a new IP.
+export E2E_BASE_URL="${E2E_BASE_URL:-http://demo}"
 
 BASE="$E2E_BASE_URL"
 echo "Waiting for $BASE/health/live ..."

@@ -22,8 +22,10 @@ cd "$ROOT_DIR"
 export COMPOSE_PROJECT_NAME="${E2E_COMPOSE_PROJECT:-nubit-e2e}"
 export COMPOSE_FILE="docker-compose.yml:docker-compose.ci.yml:docker-compose.e2e-local.yml"
 
-export E2E_BASE_URL="http://web"
+export E2E_BASE_URL="http://demo"
 export APP_ENV="e2e"
+export APP_DEBUG="0"
+export FRANKENPHP_CONFIG=$'php_ini opcache.max_accelerated_files 100000\nphp_ini opcache.memory_consumption 512'
 export E2E_SEED_ENABLED="1"
 export CI="1"
 export DATABASE_URL="mysql://demo:changeme@database:3306/demo?serverVersion=10.7.1-MariaDB&charset=utf8mb4"
@@ -128,6 +130,8 @@ step "Warming the SPA"
 # A health probe can look up the `demo` tenant before it is registered; the
 # registry caches that miss (TenantService, 300s) and every request then 404s
 # with "Tenant not found". Drop it now that the tenant exists.
+# Composer and the seed use root, while FrankenPHP uses www-data.
+docker compose exec -T web chown -R www-data:www-data /app/var/cache/e2e
 docker compose exec -T --user www-data web php bin/console cache:pool:clear cache.app
 docker compose exec -T --user www-data web php bin/console cache:clear --no-warmup --no-debug
 docker compose exec -T --user www-data web php bin/console cache:warmup --no-debug

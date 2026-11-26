@@ -11,7 +11,7 @@ const BASE_URL = getE2EBaseUrl();
 
 test.use({
   serviceWorkers: 'allow',
-  // The isolated Docker stack is HTTP on a private IP. Enable secure-context
+  // The isolated Docker stack uses HTTP. Enable secure-context
   // browser APIs only for this test origin, as HTTPS would do in production.
   launchOptions: {
     args: [
@@ -82,6 +82,7 @@ test('Una venta offline sobrevive a recarga y actualización PWA y se sincroniza
   const originalWorker = await readFile(swPath, 'utf8');
   const errors: string[] = [];
   const attempts: { key: string; serverId: string }[] = [];
+  let backendAvailable = false;
   page.on('pageerror', (error) => errors.push(error.message));
 
   try {
@@ -164,9 +165,21 @@ test('Una venta offline sobrevive a recarga y actualización PWA y se sincroniza
     await context.route('**/health/live', (route) =>
       route.fulfill({ status: 503, body: 'offline' }),
     );
-    await context.route('**/api/sales', (route) => {
-      if (route.request().method() === 'POST') return route.abort('failed');
-      return route.continue();
+    await context.route('**/api/sales', async (route) => {
+      if (route.request().method() !== 'POST') return route.continue();
+      if (!backendAvailable) return route.abort('failed');
+
+      const response = await route.fetch();
+      expect(response.ok(), await response.text()).toBe(true);
+      const created = (await response.json()) as { id: string };
+      attempts.push({
+        key: route.request().headers()['idempotency-key'],
+        serverId: String(created.id),
+      });
+      // Lose the first accepted response so the next attempt has to replay
+      // the same key and recover the original sale.
+      if (attempts.length === 1) return route.abort('failed');
+      return route.fulfill({ response });
     });
     await context.setOffline(false);
     await expect(page.getByLabel('Sin conexión', { exact: true })).toBeVisible();
@@ -197,22 +210,10 @@ test('Una venta offline sobrevive a recarga y actualización PWA y se sincroniza
       status: 'pending',
     });
 
-    // The backend accepts the first retry, but the response is lost. The next
-    // attempt must reuse the key and return that same sale, not create another.
+    // Keep the interception installed as health recovers, so an in-flight
+    // retry cannot reach the server without being counted.
+    backendAvailable = true;
     await context.unroute('**/health/live');
-    await context.unroute('**/api/sales');
-    await context.route('**/api/sales', async (route) => {
-      if (route.request().method() !== 'POST') return route.continue();
-      const response = await route.fetch();
-      expect(response.ok(), await response.text()).toBe(true);
-      const created = (await response.json()) as { id: string };
-      attempts.push({
-        key: route.request().headers()['idempotency-key'],
-        serverId: String(created.id),
-      });
-      if (attempts.length === 1) return route.abort('failed');
-      return route.fulfill({ response });
-    });
     await context.setOffline(true);
     await context.setOffline(false);
     await expect
