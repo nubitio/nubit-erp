@@ -72,6 +72,7 @@ final class TenantCertificateControllerHttpTest extends TestCase
         ]));
 
         self::assertSame(400, $response->getStatusCode());
+        self::assertStringContainsString('certificate_reauthentication_required', (string) $response->getContent());
     }
 
     public function testMutationResponseContainsMetadataOnly(): void

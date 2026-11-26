@@ -20,6 +20,7 @@ export interface UploadTenantCertificateInput {
   ruc?: string;
   solUser: string;
   solPass: string;
+  currentPassword: string;
   certificate: File;
   certificatePassword?: string;
 }
@@ -43,13 +44,16 @@ async function uploadTenantCertificate(input: UploadTenantCertificateInput) {
   }
   formData.append('solUser', input.solUser);
   formData.append('solPass', input.solPass);
+  formData.append('currentPassword', input.currentPassword);
   if (input.certificatePassword) {
     formData.append('certificatePassword', input.certificatePassword);
   }
   formData.append('certificate', input.certificate);
 
   return httpRequestData(
-    httpClient.post<UploadTenantCertificateResponse>('/api/tenant/certificate', formData),
+    httpClient.post<UploadTenantCertificateResponse>('/api/tenant/certificate', formData, {
+      errorPresentation: 'inline',
+    }),
   );
 }
 

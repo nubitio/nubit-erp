@@ -21,7 +21,7 @@ const FAQ: Record<OnboardingHelpProps['step'], Array<{ q: string; a: string }>> 
   SUNAT: [
     {
       q: '¿Qué es el certificado?',
-      a: 'El archivo .pfx (o PEM) que SUNAT te da para firmar boletas y facturas. Si no lo tienes ahora, puedes configurarlo después en Ajustes. No se sube por el chat.',
+      a: 'El archivo .p12, .pfx o PEM que SUNAT te da para firmar boletas y facturas. Si no lo tienes ahora, puedes configurarlo después en Ajustes. No se sube por el chat.',
     },
   ],
   Branch: [

@@ -3,6 +3,12 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert, Badge, Button, FileDropzone, Skeleton, TextField } from '@nubitio/ui';
 import { tenantSettingsService, type SunatStateDto } from '@features/config';
 import { getTenantCertificate, useUploadTenantCertificate } from '@shared/hooks';
+import {
+  SUNAT_CERTIFICATE_ACCEPT,
+  SunatCertificateConfirmation,
+  SunatPasswordField,
+  validateSunatCertificate,
+} from '@shared/components/SunatCertificateConfirmation';
 import toast from '@shared/lib/SharedUtils';
 import { ToggleRow, ValueRow } from '../settings/SettingsControls';
 import { SettingsGroup, SettingsRow } from '../settings/SettingsRow';
@@ -32,6 +38,10 @@ const CertificateGroup = () => {
   const [solPass, setSolPass] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [filePassword, setFilePassword] = useState('');
+  const [confirming, setConfirming] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [saveError, setSaveError] = useState<string>();
+  const errors = submitted ? validateSunatCertificate(solUser, solPass, file) : undefined;
 
   if (certificate.isError) {
     return <Alert tone="warning">No se pudo cargar el certificado SUNAT.</Alert>;
@@ -39,24 +49,34 @@ const CertificateGroup = () => {
   if (certificate.isPending) return <Skeleton variant="rect" height={260} />;
 
   const current = certificate.data.certificate;
-  const canSubmit = solUser.trim() !== '' && solPass !== '' && file !== null;
-
   const submit = () => {
+    setSubmitted(true);
+    setSaveError(undefined);
+    if (!Object.values(validateSunatCertificate(solUser, solPass, file)).some(Boolean)) {
+      setConfirming(true);
+    }
+  };
+
+  const save = async (currentPassword: string) => {
     if (!file) return;
-    upload.mutate(
-      { solUser: solUser.trim(), solPass, certificate: file, certificatePassword: filePassword },
-      {
-        onSuccess: () => {
-          setSolPass('');
-          setFilePassword('');
-          setFile(null);
-          void queryClient.invalidateQueries({ queryKey: CERTIFICATE_KEY });
-          toast('Certificado SUNAT actualizado', 'success');
-        },
-        onError: (error) =>
-          toast(error.message || 'No se pudo actualizar el certificado SUNAT', 'error'),
-      },
-    );
+    const { certificate: saved } = await upload.mutateAsync({
+      solUser: solUser.trim(),
+      solPass,
+      certificate: file,
+      certificatePassword: filePassword,
+      currentPassword,
+    });
+    upload.reset();
+    setSolPass('');
+    setFilePassword('');
+    setFile(null);
+    setSubmitted(false);
+    void queryClient.invalidateQueries({ queryKey: CERTIFICATE_KEY });
+    if (saved.lycetSyncStatus === 'synced') {
+      toast('Certificado SUNAT actualizado', 'success');
+    } else {
+      toast('Certificado guardado. Revisa el estado de sincronización con Lycet.', 'warning');
+    }
   };
 
   return (
@@ -73,21 +93,22 @@ const CertificateGroup = () => {
       )}
       <SettingsRow
         label="Usuario SOL"
-        description="Sin el RUC: se agrega automáticamente."
+        description={errors?.solUser ?? 'Sin el RUC: se agrega automáticamente.'}
         htmlFor="sunat-sol-user"
       >
         <TextField
           id="sunat-sol-user"
+          invalid={Boolean(errors?.solUser)}
           value={solUser}
           placeholder="Ej. MODDATOS"
           autoComplete="off"
           onChange={(event) => setSolUser(event.target.value)}
         />
       </SettingsRow>
-      <SettingsRow label="Clave SOL" htmlFor="sunat-sol-pass">
-        <TextField
+      <SettingsRow label="Clave SOL" description={errors?.solPass} htmlFor="sunat-sol-pass">
+        <SunatPasswordField
           id="sunat-sol-pass"
-          type="password"
+          invalid={Boolean(errors?.solPass)}
           value={solPass}
           autoComplete="new-password"
           onChange={(event) => setSolPass(event.target.value)}
@@ -95,15 +116,17 @@ const CertificateGroup = () => {
       </SettingsRow>
       <SettingsRow
         label="Certificado digital"
-        description="Firma tus comprobantes. Archivo .pfx o PEM."
+        description="Firma tus comprobantes. Archivo .p12, .pfx o PEM."
       >
         <div className="settings-dropzone">
           <FileDropzone
-            accept=".pfx,.pem,.crt,.cer"
+            accept={SUNAT_CERTIFICATE_ACCEPT}
+            error={errors?.certificate}
+            invalid={Boolean(errors?.certificate)}
             value={file ? { fileName: file.name } : null}
             labels={{
               prompt: 'Suelta el certificado o haz clic para buscarlo',
-              hint: 'Acepta archivos PFX o PEM.',
+              hint: 'Acepta archivos P12, PFX o PEM.',
               replace: 'Cambiar certificado',
               remove: 'Quitar certificado',
               open: 'Abrir certificado',
@@ -115,24 +138,34 @@ const CertificateGroup = () => {
       </SettingsRow>
       <SettingsRow
         label="Contraseña del certificado"
-        description="Solo si el certificado es PFX."
+        description="Para archivos P12 o PFX protegidos."
         htmlFor="sunat-cert-pass"
       >
-        <TextField
+        <SunatPasswordField
           id="sunat-cert-pass"
-          type="password"
           value={filePassword}
           autoComplete="new-password"
           onChange={(event) => setFilePassword(event.target.value)}
         />
       </SettingsRow>
+      {saveError && <Alert tone="danger">{saveError}</Alert>}
+      {confirming && (
+        <SunatCertificateConfirmation
+          onClose={() => {
+            upload.reset();
+            setConfirming(false);
+          }}
+          onConfirm={save}
+          onError={setSaveError}
+        />
+      )}
       <div className="settings-actions">
         <Button
           type="button"
           variant="primary"
           loading={upload.isPending}
-          disabled={!canSubmit}
           onClick={submit}
+          data-testid="save-sunat-certificate"
         >
           {current ? 'Reemplazar certificado' : 'Configurar certificado'}
         </Button>
