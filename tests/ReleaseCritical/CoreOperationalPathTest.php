@@ -97,6 +97,17 @@ final class CoreOperationalPathTest extends KernelTestCase
         self::assertEqualsWithDelta(0.0, (float) $this->fixture->onHand($world->warehouse, $world->product), 0.001);
     }
 
+    public function testSaleRejectsWarehouseFromAnotherBranch(): void
+    {
+        $world = $this->fixture->seed('20.000000');
+        $other = $this->fixture->seed('20.000000');
+        $sale = $this->newOperationalSale($world, PaymentMethod::CASH, '2')
+            ->setWarehouse($other->warehouse);
+
+        $this->expectException(\Nubit\Platform\Exception\ValidationException::class);
+        $this->processor($world)->process($sale, new Post());
+    }
+
     public function testCashSaleDecrementsStockAndWritesCashMovement(): void
     {
         $world = $this->fixture->seed('20.000000');
