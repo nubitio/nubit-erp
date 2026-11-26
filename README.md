@@ -331,15 +331,9 @@ Pipeline CI/CD en GitHub Actions:
 - `rollback-prod.yml`: rollback manual seleccionando el ref de un release estable, indicando `release_tag`, o proporcionando directamente un digest de GHCR. Requiere exactamente un destino y omite migraciones.
 - `deploy.yml`: despliegue reusable vía Portainer con smoke test posterior.
 
-### Selección de runners
+### Runners de GitHub Actions
 
-El comportamiento híbrido predeterminado usa GitHub-hosted para trabajos livianos y Blacksmith para backend/E2E pesados y build de imagen. Se puede configurar en **Settings → Secrets and variables → Actions → Variables**:
-
-- `CI_RUNNER_PROVIDER_LIGHT`: `github` (default) o `blacksmith`.
-- `CI_RUNNER_PROVIDER_HEAVY`: `blacksmith` (default) o `github`.
-- `CI_RUNNER_PROVIDER`: override legado para forzar los workflows de deploy/build a GitHub (`github`) o Blacksmith (`blacksmith`). Déjalo sin definir para usar las variables por carga. `auto` se admite como override manual de `ci-main.yml`.
-
-Al ejecutar manualmente `ci-main.yml`, `runner_provider` permite elegir `hybrid`, `github`, `blacksmith` o `auto` para esa ejecución.
+Todos los jobs usan runners x64 alojados por GitHub con `ubuntu-24.04`. Los builds Docker usan Buildx con la caché de GitHub Actions. Los runners que ejecutan despliegues necesitan acceso de red a Portainer y a la URL de smoke test de cada entorno.
 
 Deploy manual por compose prod:
 

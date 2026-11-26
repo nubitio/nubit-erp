@@ -11,9 +11,13 @@ on:
     tags:
       - 'v*.*.*-rc*'
 
+permissions:
+  contents: read
+
 jobs:
   resolve-image:
-    runs-on: ${{ (vars.CI_RUNNER_PROVIDER == 'github' || ((vars.CI_RUNNER_PROVIDER == '' || vars.CI_RUNNER_PROVIDER == 'hybrid') && vars.CI_RUNNER_PROVIDER_LIGHT != 'blacksmith')) && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     permissions:
       contents: read
       packages: read
@@ -22,25 +26,20 @@ jobs:
     steps:
       - name: Login to GHCR
         if: ${{ inputs.image_ref == '' }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup Blacksmith Builder
-        uses: useblacksmith/setup-docker-builder@v1
-        if: ${{ inputs.image_ref == '' && vars.CI_RUNNER_PROVIDER != 'github' && (vars.CI_RUNNER_PROVIDER != '' && vars.CI_RUNNER_PROVIDER != 'hybrid' || vars.CI_RUNNER_PROVIDER_LIGHT == 'blacksmith') }}
-
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
-        if: ${{ inputs.image_ref == '' && (vars.CI_RUNNER_PROVIDER == 'github' || ((vars.CI_RUNNER_PROVIDER == '' || vars.CI_RUNNER_PROVIDER == 'hybrid') && vars.CI_RUNNER_PROVIDER_LIGHT != 'blacksmith')) }}
+        if: ${{ inputs.image_ref == '' }}
 
       - name: Resolve image reference
         id: resolve
         env:
           INPUT_IMAGE_REF: ${{ inputs.image_ref }}
-          GITHUB_SHA: ${{ github.sha }}
           REPOSITORY: ${{ github.repository }}
         run: |
           set -euo pipefail
@@ -50,14 +49,14 @@ jobs:
           fi
 
           SHORT_SHA="${GITHUB_SHA:0:7}"
-          IMAGE_TAG="ghcr.io/${REPOSITORY}:sha-${SHORT_SHA}"
+          IMAGE_TAG="ghcr.io/${REPOSITORY,,}:sha-${SHORT_SHA}"
           DIGEST="$(docker buildx imagetools inspect "${IMAGE_TAG}" --format '{{json .Manifest.Digest}}' | tr -d '"')"
-          if [ -z "${DIGEST}" ]; then
+          if [[ ! "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
             echo "Could not resolve digest for ${IMAGE_TAG}"
             exit 1
           fi
 
-          IMAGE_REF="ghcr.io/${REPOSITORY}@${DIGEST}"
+          IMAGE_REF="ghcr.io/${REPOSITORY,,}@${DIGEST}"
           echo "image_ref=${IMAGE_REF}" >> "$GITHUB_OUTPUT"
           echo "Resolved ${IMAGE_REF}"
 

@@ -1,0 +1,24 @@
+name: Setup Node and Yarn
+description: Install the CI Node runtime, activate the project's Yarn version, and cache package downloads
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v6
+      with:
+        node-version: '24.14.1'
+        package-manager-cache: false
+
+    - name: Enable Corepack
+      id: yarn
+      shell: bash
+      run: |
+        npm install --global corepack@0.34.5
+        corepack enable
+        echo "cache_dir=$(yarn config get cacheFolder)" >> "$GITHUB_OUTPUT"
+
+    - name: Cache Yarn packages
+      uses: actions/cache@v5
+      with:
+        path: ${{ steps.yarn.outputs.cache_dir }}
+        key: yarn-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('yarn.lock', '.yarnrc.yml', 'package.json') }}

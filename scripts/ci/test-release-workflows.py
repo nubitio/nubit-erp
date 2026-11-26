@@ -5,9 +5,7 @@ Loads the workflow YAML. Does not call GitHub, GHCR, or Portainer.
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
-import subprocess
 import unittest
 
 import yaml
@@ -102,10 +100,10 @@ class ReleaseWorkflowTest(unittest.TestCase):
         self.assertEqual(events['push']['branches'], ['main'])
         self.assertIn('workflow_dispatch', events)
         e2e = ci['jobs']['e2e']
-        self.assertEqual(e2e['needs'], 'changes')
+        self.assertNotIn('needs', e2e)
         self.assertEqual(
             e2e['if'],
-            "needs.changes.result == 'success' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')",
+            "github.event_name == 'push' || github.event_name == 'workflow_dispatch'",
         )
 
     def test_commit_type_ci_is_not_releasable(self):
@@ -116,46 +114,6 @@ class ReleaseWorkflowTest(unittest.TestCase):
         by_type = {rule['type']: rule['release'] for rule in rules if 'type' in rule}
         self.assertIs(by_type['ci'], False)
         self.assertEqual(by_type['fix'], 'patch')
-
-
-class RunnerSelectionTest(unittest.TestCase):
-    def select(self, *, provider: str = '', heavy: str = 'blacksmith', light: str = 'github') -> dict[str, str]:
-        env = {
-            **os.environ,
-            'CI_RUNNER_PROVIDER': provider,
-            'CI_RUNNER_PROVIDER_HEAVY': heavy,
-            'CI_RUNNER_PROVIDER_LIGHT': light,
-        }
-        result = subprocess.run(
-            ['bash', str(ROOT / 'scripts/ci/select-runner.sh')],
-            capture_output=True,
-            text=True,
-            env=env,
-            check=True,
-        )
-        return dict(
-            line.split('=', maxsplit=1)
-            for line in result.stdout.splitlines()
-            if '=' in line
-        )
-
-    def test_hybrid_uses_blacksmith_for_heavy_and_github_for_light_jobs(self):
-        selected = self.select(provider='hybrid')
-        self.assertEqual(selected['runner'], 'blacksmith-4vcpu-ubuntu-2404')
-        self.assertEqual(selected['runner_light'], 'ubuntu-latest')
-        self.assertEqual(selected['use_blacksmith_docker'], 'true')
-
-    def test_workload_provider_variables_can_reverse_the_hybrid(self):
-        selected = self.select(provider='hybrid', heavy='github', light='blacksmith')
-        self.assertEqual(selected['runner'], 'ubuntu-latest')
-        self.assertEqual(selected['runner_light'], 'blacksmith-2vcpu-ubuntu-2404')
-        self.assertEqual(selected['use_blacksmith_docker'], 'false')
-
-    def test_legacy_global_provider_still_overrides_both_workloads(self):
-        selected = self.select(provider='github', heavy='blacksmith', light='blacksmith')
-        self.assertEqual(selected['runner'], 'ubuntu-latest')
-        self.assertEqual(selected['runner_light'], 'ubuntu-latest')
-        self.assertEqual(selected['use_blacksmith_docker'], 'false')
 
 
 class ProductionPromotionTest(unittest.TestCase):
@@ -246,7 +204,7 @@ class ProductionPromotionTest(unittest.TestCase):
     def test_dev_deploy_follows_ci_and_uses_the_verified_digest(self):
         ci = load('ci-main.yml')
         dev = ci['jobs']['deploy-dev']
-        self.assertEqual(dev['needs'], ['changes', 'release'])
+        self.assertEqual(dev['needs'], 'release')
         self.assertEqual(dev['if'], "github.event_name == 'push' && github.ref == 'refs/heads/main'")
         self.assertEqual(dev['uses'], './.github/workflows/deploy.yml')
         self.assertEqual(dev['with']['image_ref'], '${{ needs.release.outputs.image_ref }}')
@@ -271,23 +229,13 @@ class ProductionPromotionTest(unittest.TestCase):
         self.assertNotIn('run_migrations', staging_job['with'])
         self.assertNotIn('build-image.yml', yaml.safe_dump(staging))
 
-    def test_runner_provider_can_be_selected_by_workload_size(self):
-        ci = load('ci-main.yml')
-        runner_input = triggers(ci)['workflow_dispatch']['inputs']['runner_provider']
-        self.assertEqual(runner_input['type'], 'choice')
-        self.assertEqual(runner_input['options'], ['hybrid', 'github', 'blacksmith', 'auto'])
-        self.assertEqual(ci['env']['CI_RUNNER_PROVIDER'], "${{ github.event.inputs.runner_provider || vars.CI_RUNNER_PROVIDER || '' }}")
-
-        changes = ci['jobs']['changes']
-        self.assertEqual(changes['runs-on'], ['self-hosted', 'nubit-x64'])
-        runner_env = next(step['env'] for step in changes['steps'] if step.get('id') == 'runner')
-        self.assertEqual(runner_env['CI_RUNNER_PROVIDER_HEAVY'], "${{ vars.CI_RUNNER_PROVIDER_HEAVY || 'blacksmith' }}")
-        self.assertEqual(runner_env['CI_RUNNER_PROVIDER_LIGHT'], "${{ vars.CI_RUNNER_PROVIDER_LIGHT || 'github' }}")
-
-        image_runner = load('build-image.yml')['jobs']['build']['runs-on']
-        deploy_runner = load('deploy.yml')['jobs']['deploy']['runs-on']
-        self.assertEqual(image_runner, ['self-hosted', 'nubit-x64'])
-        self.assertIn('CI_RUNNER_PROVIDER_LIGHT', deploy_runner)
+    def test_all_executable_jobs_use_github_hosted_ubuntu(self):
+        for path in workflow_files():
+            for job_id, job in load(path.name)['jobs'].items():
+                with self.subTest(workflow=path.name, job=job_id):
+                    if 'uses' not in job:
+                        self.assertEqual(job['runs-on'], 'ubuntu-24.04')
+                    self.assertNotIn('blacksmith', yaml.safe_dump(job).lower())
 
     def test_release_manifest_still_requires_an_immutable_digest(self):
         resolve = load('resolve-release.yml')

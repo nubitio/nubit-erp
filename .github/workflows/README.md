@@ -14,26 +14,9 @@
 | **resolve-release.yml** | Reusable | Validate release manifest against its tag, commit and GHCR repository |
 | **rollback-prod.yml** | Manual | Restore a release or emergency digest without running migrations |
 
-## Runner switch (GitHub vs Blacksmith)
+## GitHub-hosted runners
 
-The default policy is hybrid: GitHub-hosted runners for light jobs, Blacksmith for heavy jobs. Set the workload-specific repository variables to change one side without affecting the other.
-
-| Variable | Values | Default |
-|----------|--------|---------|
-| `CI_RUNNER_PROVIDER_LIGHT` | `github`, `blacksmith` | `github` |
-| `CI_RUNNER_PROVIDER_HEAVY` | `github`, `blacksmith` | `blacksmith` |
-| `CI_RUNNER_PROVIDER` | Legacy global override: `github`, `blacksmith`, `hybrid`, `auto` | unset |
-
-```bash
-# Workload-specific provider policy:
-gh variable set CI_RUNNER_PROVIDER_LIGHT --body github
-gh variable set CI_RUNNER_PROVIDER_HEAVY --body blacksmith
-# Optional legacy override for every workload:
-gh variable set CI_RUNNER_PROVIDER --body github
-gh variable set CI_RUNNER_PROVIDER --body blacksmith
-```
-
-Or **Actions → CI → Run workflow** and select `runner_provider`: `hybrid`, `github`, `blacksmith`, or `auto`. The small provider-selection job always runs on GitHub-hosted; heavy CI jobs use 4 vCPU on Blacksmith and image builds use 8 vCPU. Lightweight jobs and deploys use GitHub-hosted by default.
+All jobs use GitHub-hosted x64 runners on `ubuntu-24.04`. No runner-selection variables are required. The deploy jobs need network access from the hosted runner to the configured Portainer endpoint and smoke URL for each environment.
 
 ## What CI actually runs
 
@@ -54,10 +37,10 @@ The release-critical Playwright spec list lives in [`docker/ci-e2e-runner.sh`](.
 E2E stays on an isolated compose stack (not `dev.efact.app`). Setup is cached:
 
 - Composer `vendor/` via Actions cache
-- Yarn via `setup-node` cache
-- Web image via Blacksmith BuildKit or GitHub `type=gha` cache, selected for the heavy runner
+- Yarn package downloads via Actions cache
+- Web image via Docker Buildx with GitHub `type=gha` cache
 - PCOV is baked into the `dev` image
-- Frontend for e2e is built on the runner while the stack boots
+- Frontend for e2e is built on the runner after MariaDB is ready
 
 ## Notes
 
@@ -139,7 +122,3 @@ PORTAINER_STACK_NAME
 PORTAINER_ENDPOINT_ID
 APP_URL
 ```
-
-## Optional: automatic runner failover
-
-Not used day to day. If you later set `CI_RUNNER_PROVIDER=auto` plus `BLACKSMITH_ORG_TOKEN` and `CI_BILLING_TOKEN`, `scripts/ci/select-runner.sh` will prefer Blacksmith and flip to GitHub when remaining minutes drop below `CI_RUNNER_RESERVE_MINUTES` (default 200). Without those secrets, `auto` is the same as `blacksmith`.
