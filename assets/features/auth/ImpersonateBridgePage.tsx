@@ -17,7 +17,7 @@ const TOKEN_PARAM = ['token'] as const;
 interface BranchOption {
   id: string;
   name: string;
-  isActive?: boolean;
+  isDefault?: boolean;
 }
 
 function extractErrorMessage(err: unknown, fallback: string): string {
@@ -69,14 +69,8 @@ export const ImpersonateBridgePage = () => {
           StorageUtils.setItem('user', response.data.user);
         }
 
-        const branchesResponse = await branchService.getAll();
+        const { data: branches } = await branchService.getOperatingBranches();
         if (cancelled) return;
-
-        const rawBranches = branchesResponse?.data;
-        const allBranches: BranchOption[] = Array.isArray(rawBranches)
-          ? (rawBranches as BranchOption[])
-          : [];
-        const branches = allBranches.filter((branch) => branch.isActive !== false);
 
         if (branches.length === 0) {
           setError('No hay locales disponibles para este usuario.');

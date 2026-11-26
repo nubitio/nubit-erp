@@ -4,12 +4,18 @@ import { StorageUtils } from '../../../shared/lib/StorageUtils';
 
 const API = getCoreApiBaseUrl();
 
+export interface OperatingBranch {
+  id: string;
+  name: string;
+  isDefault: boolean;
+}
+
 class BranchService {
   private static readonly SELECTED_BRANCH_ID = 'selectedBranchId';
   private static readonly SELECTED_BRANCH_NAME = 'selectedBranchName';
 
-  getAll() {
-    return httpClient.get<unknown>(`${API}branches`);
+  getOperatingBranches() {
+    return httpClient.get<OperatingBranch[]>(`${API}auth/operating-branches`);
   }
 
   /**

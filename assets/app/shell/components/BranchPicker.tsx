@@ -16,7 +16,7 @@ import './BranchPicker.scss';
 interface Branch {
   id: string;
   name: string;
-  isActive?: boolean;
+  isDefault?: boolean;
 }
 
 interface BranchPickerProps {
@@ -78,14 +78,12 @@ export const BranchPicker = ({
   }, [selectedBranch, selecting, close, navigate, redirectPath]);
 
   const loadBranchData = useCallback((data: Branch[]) => {
-    // Disabled branches remain queryable for reports but must not be selectable.
-    const selectable = data.filter((item) => item.isActive !== false);
-    setBranches(selectable);
+    setBranches(data);
 
     const lastBranchId = branchService.getSelectedBranchId();
-    const rememberedBranch = selectable.find((item) => item.id === lastBranchId) ?? null;
+    const rememberedBranch = data.find((item) => item.id === lastBranchId) ?? null;
 
-    setSelectedBranch(rememberedBranch ?? selectable[0] ?? null);
+    setSelectedBranch(data.find((item) => item.isDefault) ?? rememberedBranch ?? data[0] ?? null);
 
     setHasLoaded(true);
     setLoadingBranches(false);
@@ -118,12 +116,10 @@ export const BranchPicker = ({
 
     let cancelled = false;
     branchService
-      .getAll()
+      .getOperatingBranches()
       .then((response) => {
         if (cancelled) return;
-        const raw = response?.data;
-        const data: Branch[] = Array.isArray(raw) ? (raw as Branch[]) : [];
-        loadBranchData(data);
+        loadBranchData(response.data);
       })
       .catch(() => {
         if (cancelled) return;

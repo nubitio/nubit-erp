@@ -15,7 +15,7 @@ import { classifyLoginError } from './loginErrors';
 interface BranchOption {
   id: string;
   name: string;
-  isActive?: boolean;
+  isDefault?: boolean;
 }
 
 /** Extract a user-facing message from an API error response. */
@@ -127,13 +127,7 @@ export const LoginForm = () => {
         }
 
         try {
-          const branchesResponse = await branchService.getAll();
-          const rawBranches = branchesResponse?.data;
-          const allBranches: BranchOption[] = Array.isArray(rawBranches)
-            ? (rawBranches as BranchOption[])
-            : [];
-          // Disabled branches stay available for historical reports but cannot start a session.
-          const branches = allBranches.filter((branch) => branch.isActive !== false);
+          const { data: branches } = await branchService.getOperatingBranches();
 
           if (branches.length === 0) {
             setSubmitError('No hay locales disponibles para este usuario.');

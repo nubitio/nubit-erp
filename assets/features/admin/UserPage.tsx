@@ -14,6 +14,7 @@ import { httpClient } from '@shared/api/HttpClient';
 import { hasPermission } from '@shared/permissions';
 import toast from '@shared/lib/SharedUtils';
 import { InviteUserDialog } from './components/InviteUserDialog';
+import { UserBranchAccessDialog } from './components/UserBranchAccessDialog';
 import { invitationErrorMessage, usePendingInvitationActions } from './usePendingInvitations';
 import { userDirectoryEndpoints, userEndpoints } from './api/adminEndpoints';
 import { userResource } from './userResource';
@@ -52,6 +53,10 @@ const UsersGrid = () => {
   const { ask, ConfirmHost } = useConfirm();
   const canReset = Boolean(window.app_identity) && hasPermission('users.edit');
   const canInvite = Boolean(window.app_identity) && hasPermission('users.create');
+  const canAssignBranches = hasPermission('users.edit') && hasPermission('roles.assign');
+  const [branchUser, setBranchUser] = useState<{ id: string | number; username: string } | null>(
+    null,
+  );
   const canSeeActivity = hasPermission('activity.view');
   const [inviteOpen, setInviteOpen] = useState(false);
   const { resend, revoke, busy } = usePendingInvitationActions(() => gridRef.current?.refresh());
@@ -130,6 +135,15 @@ const UsersGrid = () => {
         const username = row.username;
         if (!username) return [];
         const actions = [];
+        const id = row.id;
+        if (canAssignBranches && id != null) {
+          actions.push({
+            key: 'branch-access',
+            text: 'Acceso a sucursales',
+            icon: 'ph-buildings',
+            onClick: () => setBranchUser({ id, username }),
+          });
+        }
         if (canSeeActivity) {
           actions.push({
             key: 'activity',
@@ -165,6 +179,7 @@ const UsersGrid = () => {
       canReset,
       canInvite,
       canSeeActivity,
+      canAssignBranches,
       navigate,
       withSecondFactor,
       ask,
@@ -179,6 +194,13 @@ const UsersGrid = () => {
     <>
       <SchemaCrudPage resource={resource} gridRef={gridRef} />
       <ConfirmHost />
+      {branchUser && (
+        <UserBranchAccessDialog
+          userId={branchUser.id}
+          username={branchUser.username}
+          onClose={() => setBranchUser(null)}
+        />
+      )}
       {inviteOpen && (
         <InviteUserDialog
           onClose={() => {
