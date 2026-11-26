@@ -16,6 +16,8 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Exception as DriverException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(VoucherSeriesWriteProcessor::class)]
@@ -32,7 +34,9 @@ final class VoucherSeriesWriteProcessorTest extends TestCase
                 ['01'] => '01',
                 ['01', 'F001', 0] => 'branch-with-duplicate',
                 ['branch-with-duplicate'] => 'Principal',
+                default => throw new \LogicException('Unexpected voucher series query parameters.'),
             });
+        /** @var ProcessorInterface<VoucherSeries, VoucherSeries>&MockObject $persist */
         $persist = $this->createMock(ProcessorInterface::class);
         $persist->expects($this->never())->method('process');
 
@@ -48,6 +52,7 @@ final class VoucherSeriesWriteProcessorTest extends TestCase
         $existing = $this->series(3);
         $connection = $this->connection();
         $connection->expects($this->exactly(2))->method('fetchOne')->willReturnOnConsecutiveCalls('01', 3);
+        /** @var ProcessorInterface<VoucherSeries, VoucherSeries>&MockObject $persist */
         $persist = $this->createMock(ProcessorInterface::class);
         $persist->expects($this->once())->method('process')->willReturn($existing);
 
@@ -59,6 +64,7 @@ final class VoucherSeriesWriteProcessorTest extends TestCase
     {
         $connection = $this->connection();
         $connection->expects($this->exactly(2))->method('fetchOne')->willReturnOnConsecutiveCalls('01', false);
+        /** @var ProcessorInterface<VoucherSeries, VoucherSeries>&Stub $persist */
         $persist = $this->createStub(ProcessorInterface::class);
         $driverError = new class("Duplicate entry for key 'uq_local_comprobante_branch_type_series'") extends
             \RuntimeException implements DriverException {
@@ -75,7 +81,7 @@ final class VoucherSeriesWriteProcessorTest extends TestCase
         );
     }
 
-    private function connection(): Connection&\PHPUnit\Framework\MockObject\MockObject
+    private function connection(): Connection&MockObject
     {
         $connection = $this->createMock(Connection::class);
         $connection
