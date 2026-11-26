@@ -611,6 +611,14 @@ readonly class SalesWriteGateway
         );
     }
 
+    public function cashRegisterBelongsToBranch(int $registerId, string $branchId): bool
+    {
+        return $this->connection->fetchOne('SELECT 1 FROM cash_register WHERE id = ? AND branch_id = ?', [
+            $registerId,
+            $branchId,
+        ]) !== false;
+    }
+
     /**
      * The user's currently-open cash session id, if any. Raw SQL on purpose:
      * Sales must not import App\CashRegister classes (ContextBoundaryTest), so

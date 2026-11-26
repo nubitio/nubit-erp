@@ -8,14 +8,13 @@ use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Accounting\Message\EconomicEvent;
-use App\CashRegister\Entity\CashRegister;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\Product;
 use App\Contacts\Entity\Customer;
 use App\Contacts\Repository\CustomerRepository;
 use App\Efact\Domain\ActiveReferenceGuard;
 use App\Efact\Domain\Money;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Offline\InvalidOfflineSignature;
 use App\Identity\Offline\OfflineActor;
@@ -79,7 +78,7 @@ readonly class SaleProcessor implements ProcessorInterface, ConfirmIntegrationCr
         private TenantSettingsService $tenantSettings,
         private InvoiceCreatorInterface $saleInvoicing,
         private LoggerInterface $logger,
-        private BranchContextService $branchContextService,
+        private BranchContextServiceInterface $branchContextService,
         private BranchRepository $branchRepository,
         private SalesWriteGateway $salesWriteGateway,
         private CashSessionResolverInterface $cashSessionResolver,
@@ -182,7 +181,7 @@ readonly class SaleProcessor implements ProcessorInterface, ConfirmIntegrationCr
 
         $branchId = $administrativeBranchId ?? $this->branchContextService->getCurrentBranchId();
         $branch = $branchId !== null ? $this->branchRepository->find($branchId) : null;
-        if ($branch === null || !$branch->getIsActive()) {
+        if ($branchId === null || $branch === null || !$branch->getIsActive()) {
             throw ValidationException::withErrors(['branch' => [
                 'Selecciona una sucursal activa para registrar la venta.',
             ]]);
@@ -194,13 +193,14 @@ readonly class SaleProcessor implements ProcessorInterface, ConfirmIntegrationCr
         }
 
         $cashRegisterId = $data->getCajaId();
-        if ($isNew && $cashRegisterId !== null) {
-            $cashRegister = $this->entityManager->find(CashRegister::class, $cashRegisterId);
-            if ($cashRegister?->getBranch()->getId() !== $branchId) {
-                throw ValidationException::withErrors(['cashRegisterId' => [
-                    'Selecciona una caja de la sucursal activa.',
-                ]]);
-            }
+        if (
+            $isNew
+            && $cashRegisterId !== null
+            && !$this->salesWriteGateway->cashRegisterBelongsToBranch($cashRegisterId, $branchId)
+        ) {
+            throw ValidationException::withErrors(['cashRegisterId' => [
+                'Selecciona una caja de la sucursal activa.',
+            ]]);
         }
 
         if (!$isNew && $data->getBranch()?->getId() !== $branchId) {

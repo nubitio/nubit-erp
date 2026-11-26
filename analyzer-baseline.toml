@@ -4743,19 +4743,7 @@ count = 1
 [[issues]]
 file = "tests/Billing/State/TaxDocumentProcessorTest.php"
 code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$jwtManagerStub`."
-count = 1
-
-[[issues]]
-file = "tests/Billing/State/TaxDocumentProcessorTest.php"
-code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$processor`."
-count = 1
-
-[[issues]]
-file = "tests/Billing/State/TaxDocumentProcessorTest.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$stub`."
 count = 1
 
 [[issues]]
@@ -5847,12 +5835,6 @@ count = 1
 [[issues]]
 file = "tests/Sales/State/SaleProcessorInvoiceDispatchTest.php"
 code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$branchContextStub`."
-count = 1
-
-[[issues]]
-file = "tests/Sales/State/SaleProcessorInvoiceDispatchTest.php"
-code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$processor`."
 count = 1
 
@@ -5889,18 +5871,6 @@ count = 1
 [[issues]]
 file = "tests/Sales/State/SaleProcessorTest.php"
 code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$jwtManager`."
-count = 1
-
-[[issues]]
-file = "tests/Sales/State/SaleProcessorTest.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$jwtToken`."
-count = 1
-
-[[issues]]
-file = "tests/Sales/State/SaleProcessorTest.php"
-code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$pm`."
 count = 1
 
@@ -5914,7 +5884,7 @@ count = 1
 file = "tests/Sales/State/SaleProcessorTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$stub`."
-count = 5
+count = 3
 
 [[issues]]
 file = "tests/Sales/State/SaleProviderTest.php"
