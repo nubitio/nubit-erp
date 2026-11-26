@@ -4,11 +4,12 @@ import { resolveEntityIri } from './inventoryEntityIri';
 
 const API = getCoreApiBaseUrl();
 
-export type StockAdjustOperation = 'RECEIPT' | 'ISSUE' | 'ADJUSTMENT';
+export type StockAdjustOperation = 'RECEIPT' | 'ISSUE' | 'ADJUSTMENT' | 'TRANSFER';
 
 export interface SubmitStockAdjustInput {
   type: StockAdjustOperation;
   warehouseIri: string;
+  targetWarehouseId?: string;
   productIri: string;
   qty: string;
   reason?: string;
@@ -45,11 +46,24 @@ export async function submitStockAdjust(input: SubmitStockAdjustInput): Promise<
     body.note = note;
   }
 
+  if (input.type === 'TRANSFER') {
+    if (!input.targetWarehouseId) throw new Error('Selecciona un almacén destino.');
+    body.targetWarehouseId = input.targetWarehouseId;
+  }
+
   if (input.type === 'ADJUSTMENT') {
     body.reason = input.reason ?? 'COUNT_CORRECTION';
   }
 
   await httpClient.post(`${API}stock-entries`, body);
+}
+
+export async function listTransferDestinations() {
+  return (
+    await httpClient.get<{ id: string; name: string; branchName: string }[]>(
+      `${API}inventory/transfer-destinations`,
+    )
+  ).data;
 }
 
 export interface CycleCountLineInput {

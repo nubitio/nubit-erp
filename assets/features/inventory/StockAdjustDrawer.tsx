@@ -1,7 +1,13 @@
 import { useMemo, useState } from 'react';
-import { AppDropdown, Button, Drawer, TextField } from '@nubitio/ui';
+import { useQuery } from '@tanstack/react-query';
+import { AppDropdown, Button, Combobox, Drawer, FormField, TextField } from '@nubitio/ui';
 import toast from '@shared/lib/SharedUtils';
-import { submitStockAdjust, type StockAdjustOperation } from './stockEntryApi';
+import { hasPermission } from '@shared/permissions';
+import {
+  listTransferDestinations,
+  submitStockAdjust,
+  type StockAdjustOperation,
+} from './stockEntryApi';
 import './InventoryHub.scss';
 
 const REASON_OPTIONS = [
@@ -35,12 +41,13 @@ interface StockAdjustDrawerProps {
   onApplied: () => void;
 }
 
-type UiOperation = 'receive' | 'issue' | 'count';
+type UiOperation = 'receive' | 'issue' | 'count' | 'transfer';
 
 const OPERATION_MAP: Record<UiOperation, StockAdjustOperation> = {
   receive: 'RECEIPT',
   issue: 'ISSUE',
   count: 'ADJUSTMENT',
+  transfer: 'TRANSFER',
 };
 
 function StockAdjustForm({
@@ -52,9 +59,32 @@ function StockAdjustForm({
   onClose: () => void;
   onApplied: () => void;
 }) {
-  const [operation, setOperation] = useState<UiOperation>('receive');
+  const canTransfer = hasPermission('inventory.transfer');
+  const canAdjust = hasPermission('inventory.adjust');
+  const canCount = hasPermission('inventory.cycle_count');
+  const [operation, setOperation] = useState<UiOperation>(
+    canAdjust ? 'receive' : canTransfer ? 'transfer' : 'count',
+  );
+  const [destinationId, setDestinationId] = useState<string | null>(null);
+  const destinations = useQuery({
+    queryKey: ['inventory', 'transfer-destinations', target.warehouseId],
+    queryFn: listTransferDestinations,
+    enabled: operation === 'transfer' && canTransfer,
+    retry: false,
+  });
   const [qty, setQty] = useState('');
-  const [reason, setReason] = useState('COUNT_CORRECTION');
+  const [reason, setReason] = useState(canCount ? 'COUNT_CORRECTION' : 'INITIAL_STOCK');
+  const reasonOptions = REASON_OPTIONS.filter((option) =>
+    option.value === 'COUNT_CORRECTION' ? canCount : canAdjust,
+  );
+  const canSubmit =
+    operation === 'transfer'
+      ? canTransfer && Boolean(destinationId)
+      : operation === 'count'
+        ? reason === 'COUNT_CORRECTION'
+          ? canCount
+          : canAdjust
+        : canAdjust;
   const [reference, setReference] = useState('');
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
@@ -62,6 +92,7 @@ function StockAdjustForm({
   const qtyLabel = useMemo(() => {
     const unitSuffix = target.unitLabel ? ` (${target.unitLabel})` : '';
     if (operation === 'count') return `Stock real (conteo físico)${unitSuffix}`;
+    if (operation === 'transfer') return `Cantidad a trasladar${unitSuffix}`;
     if (operation === 'issue') return `Cantidad a salir${unitSuffix}`;
     return `Cantidad a ingresar${unitSuffix}`;
   }, [operation, target.unitLabel]);
@@ -69,6 +100,8 @@ function StockAdjustForm({
   const currentStock = Number(target.qtyOnHand ?? 0);
 
   const handleApply = async () => {
+    if (!canSubmit || saving) return;
+
     const parsedQty = Number(qty);
     if (!Number.isFinite(parsedQty) || parsedQty < 0) {
       toast('Ingresa una cantidad válida', 'error');
@@ -90,7 +123,10 @@ function StockAdjustForm({
       return;
     }
 
-    const apiQty = operation === 'count' ? String(parsedQty) : String(parsedQty);
+    if (operation === 'transfer' && (parsedQty <= 0 || !destinationId)) {
+      toast('Ingresa una cantidad positiva y selecciona un almacén destino.', 'error');
+      return;
+    }
 
     if (target.warehouseIri === '' || target.productIri === '') {
       toast('No se pudo identificar el producto o almacén de esta fila', 'error');
@@ -103,7 +139,8 @@ function StockAdjustForm({
         type: OPERATION_MAP[operation],
         warehouseIri: target.warehouseIri,
         productIri: target.productIri,
-        qty: apiQty,
+        qty: String(parsedQty),
+        targetWarehouseId: operation === 'transfer' ? (destinationId ?? undefined) : undefined,
         reason: operation === 'count' ? reason : undefined,
         note: note.trim() || undefined,
         reference: reference.trim() || undefined,
@@ -137,27 +174,28 @@ function StockAdjustForm({
       </div>
 
       <div className="stock-adjust-drawer__ops" role="group" aria-label="Tipo de operación">
-        <button
-          type="button"
-          className={`stock-adjust-drawer__op stock-adjust-drawer__op--receive${operation === 'receive' ? ' stock-adjust-drawer__op--active' : ''}`}
-          onClick={() => setOperation('receive')}
-        >
-          Ingreso
-        </button>
-        <button
-          type="button"
-          className={`stock-adjust-drawer__op${operation === 'issue' ? ' stock-adjust-drawer__op--active' : ''}`}
-          onClick={() => setOperation('issue')}
-        >
-          Salida
-        </button>
-        <button
-          type="button"
-          className={`stock-adjust-drawer__op${operation === 'count' ? ' stock-adjust-drawer__op--active' : ''}`}
-          onClick={() => setOperation('count')}
-        >
-          Conteo
-        </button>
+        {(
+          [
+            ['receive', 'Ingreso', canAdjust],
+            ['issue', 'Salida', canAdjust],
+            ['count', 'Conteo', canCount || canAdjust],
+            ['transfer', 'Traslado', canTransfer],
+          ] as const
+        )
+          .filter(([, , allowed]) => allowed)
+          .map(([value, label]) => (
+            <Button
+              key={value}
+              type="button"
+              size="sm"
+              variant={operation === value ? 'secondary' : 'ghost'}
+              aria-pressed={operation === value}
+              disabled={saving}
+              onClick={() => setOperation(value)}
+            >
+              {label}
+            </Button>
+          ))}
       </div>
 
       <div className="stock-adjust-drawer__section">
@@ -172,13 +210,37 @@ function StockAdjustForm({
           />
         </label>
 
+        {operation === 'transfer' && (
+          <FormField
+            label="Almacén destino"
+            required
+            error={
+              destinations.isError ? 'No se pudieron cargar los almacenes autorizados.' : undefined
+            }
+          >
+            <Combobox
+              aria-label="Almacén destino"
+              required
+              value={destinationId}
+              onChange={setDestinationId}
+              disabled={saving || destinations.isPending}
+              options={(destinations.data ?? [])
+                .filter((warehouse) => warehouse.id !== target.warehouseId)
+                .map((warehouse) => ({
+                  value: warehouse.id,
+                  label: `${warehouse.branchName} · ${warehouse.name}`,
+                }))}
+            />
+          </FormField>
+        )}
+
         {operation === 'count' && (
           <label className="stock-adjust-drawer__field">
             <span>Motivo</span>
             <AppDropdown
               value={reason}
               onChange={setReason}
-              options={REASON_OPTIONS}
+              options={reasonOptions}
               variant="form"
               showFieldLabel={false}
             />
@@ -208,8 +270,8 @@ function StockAdjustForm({
         <Button variant="ghost" type="button" onClick={onClose} disabled={saving}>
           Cancelar
         </Button>
-        <Button variant="primary" type="submit" loading={saving}>
-          Aplicar ajuste
+        <Button variant="primary" type="submit" loading={saving} disabled={!canSubmit}>
+          {operation === 'transfer' ? 'Registrar traslado' : 'Aplicar ajuste'}
         </Button>
       </div>
     </form>
