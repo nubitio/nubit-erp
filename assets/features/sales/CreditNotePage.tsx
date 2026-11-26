@@ -122,7 +122,7 @@ export const CreditNotePage = () => {
         },
         // Issuing happens on its own screen, which re-derives every amount from the affected
         // document, so the generic "Nuevo" form is replaced by a button that opens it.
-        permissions: { canAdd: false, canEdit: true, canDelete: true },
+        permissions: { canAdd: false, canEdit: false, canView: false, canDelete: true },
         toolbar: {
           primary: hasPermission('sales.void')
             ? [
@@ -135,43 +135,33 @@ export const CreditNotePage = () => {
                 },
               ]
             : [],
-          selection: [
-            {
-              text: 'Ver',
-              type: 'primary',
-              group: 'view',
-              groupLabel: 'Consulta',
-              onClick: () => runOpenCreditNoteReceiptAction(actionDeps),
-            },
+        },
+        rowActions: (row: DataRecord) => {
+          const creditNote = row as CreditNoteRow;
+          const rowDeps = { ...actionDeps, getSelectedRow: () => creditNote };
+          return [
+            { text: 'Ver', icon: 'ph-eye', onClick: () => runOpenCreditNoteReceiptAction(rowDeps) },
             {
               text: 'Consulta CDR',
-              type: 'warning',
-              group: 'view',
-              groupLabel: 'Consulta',
-              onClick: () => runConsultCreditNoteCdrAction(actionDeps),
+              icon: 'ph-file-magnifying-glass',
+              onClick: () => runConsultCreditNoteCdrAction(rowDeps),
             },
             {
               text: 'Consulta CPE',
-              type: 'success',
-              group: 'view',
-              groupLabel: 'Consulta',
-              onClick: () => runConsultCreditNoteCpeAction(actionDeps),
+              icon: 'ph-seal-check',
+              onClick: () => runConsultCreditNoteCpeAction(rowDeps),
             },
             {
               text: 'Enviar a SUNAT',
-              type: 'info',
-              group: 'delivery',
-              groupLabel: 'Envío',
-              onClick: () => runSendCreditNoteToSunatAction(actionDeps),
+              icon: 'ph-cloud-arrow-up',
+              onClick: () => runSendCreditNoteToSunatAction(rowDeps),
             },
             {
               text: 'Enviar por correo',
-              type: 'success',
-              group: 'delivery',
-              groupLabel: 'Envío',
+              icon: 'ph-envelope-simple',
               onClick: () => toast('Funcionalidad no implementada', 'warning'),
             },
-          ],
+          ];
         },
       }),
     [actionDeps, navigate],
