@@ -65,12 +65,17 @@ readonly class ReceiveAdvanceService
             throw new UnprocessableEntityHttpException('El monto del anticipo debe ser mayor a 0.');
         }
 
+        $branchId = $this->branchContext?->getCurrentBranchId();
+        if ($this->branchContext !== null && $branchId === null) {
+            throw new UnprocessableEntityHttpException('Selecciona una sucursal para registrar el anticipo.');
+        }
+
         $isCash = $paymentMethod->getId() === PaymentMethod::CASH;
         $cashSessionId = null;
         if ($isCash) {
             $cashSessionId = $this->salesWriteGateway->findOpenCashSessionIdForUser(
                 (int) $createdBy->getId(),
-                $this->branchContext?->getCurrentBranchId(),
+                $branchId,
             );
             if ($cashSessionId === null) {
                 throw new UnprocessableEntityHttpException('Abre tu caja para registrar anticipos en efectivo.');
@@ -92,6 +97,7 @@ readonly class ReceiveAdvanceService
             $paymentMethod,
             $createdBy,
             $moneyAccountId,
+            $branchId,
         ): void {
             $this->ledger->recordAdvanceReceived(
                 customerId: $customerId,
@@ -101,6 +107,7 @@ readonly class ReceiveAdvanceService
                 source: 'advance_receipt',
                 sourceId: $advanceId,
                 description: $reference !== null && $reference !== '' ? $reference : $description,
+                branchId: $branchId,
             );
 
             // Same transaction as the ledger entry: a Treasury refusal leaves no advance behind.
@@ -112,7 +119,7 @@ readonly class ReceiveAdvanceService
                 paymentMethod: $paymentMethod,
                 paidAt: $paidAt,
                 userId: $createdBy->getId(),
-                branchId: null,
+                branchId: $branchId,
                 customerId: (string) $customerId,
                 reference: $reference,
                 description: $description,

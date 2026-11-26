@@ -20,7 +20,7 @@ final readonly class CustomerStatementService
     /**
      * @throws Exception
      */
-    public function build(int $customerId, string $dateFrom, string $dateTo): CustomerStatement
+    public function build(int $customerId, string $dateFrom, string $dateTo, string $branchId): CustomerStatement
     {
         $customer = $this->repository->findCustomer($customerId);
         if ($customer === null) {
@@ -33,8 +33,8 @@ final readonly class CustomerStatementService
             $customer['doc'],
             $dateFrom,
             $dateTo,
-            $this->repository->charges($customerId, $dateTo),
-            $this->repository->payments($customerId, $dateTo),
+            $this->repository->charges($customerId, $dateTo, $branchId),
+            $this->repository->payments($customerId, $dateTo, $branchId),
         );
     }
 

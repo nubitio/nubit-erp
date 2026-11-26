@@ -58,7 +58,7 @@ final readonly class StatementRepository
      *
      * @throws Exception
      */
-    public function charges(int $customerId, string $dateTo): array
+    public function charges(int $customerId, string $dateTo, string $branchId): array
     {
         $rows = $this->connection->fetchAllAssociative(
             <<<'SQL'
@@ -74,12 +74,13 @@ final readonly class StatementRepository
                 FROM customer_account_entries e
                 LEFT JOIN sales s ON s.id = e.sale_id
                 WHERE e.customer_id = :customer
+                  AND s.branch_id = :branch
                   AND e.entry_type = 'charge'
                   AND (s.status IS NULL OR s.status <> 'VOIDED')
                   AND e.occurred_on <= :date_to
                 ORDER BY e.id
                 SQL,
-            ['customer' => $customerId, 'date_to' => $dateTo],
+            ['customer' => $customerId, 'date_to' => $dateTo, 'branch' => $branchId],
         );
 
         return array_map(static fn(array $r): array => [
@@ -102,7 +103,7 @@ final readonly class StatementRepository
      *
      * @throws Exception
      */
-    public function payments(int $customerId, string $dateTo): array
+    public function payments(int $customerId, string $dateTo, string $branchId): array
     {
         $rows = $this->connection->fetchAllAssociative(
             <<<'SQL'
@@ -118,11 +119,19 @@ final readonly class StatementRepository
                 FROM customer_account_entries e
                 LEFT JOIN sales s ON s.id = e.sale_id
                 WHERE e.customer_id = :customer
-                  AND e.entry_type IN ('payment', 'credit_note', 'advance')
+                  AND (
+                      (e.entry_type IN ('payment', 'credit_note') AND s.branch_id = :branch)
+                      OR (e.entry_type = 'advance' AND e.branch_id = :advance_branch)
+                  )
                   AND e.occurred_on <= :date_to
                 ORDER BY e.id
                 SQL,
-            ['customer' => $customerId, 'date_to' => $dateTo],
+            [
+                'customer' => $customerId,
+                'date_to' => $dateTo,
+                'branch' => $branchId,
+                'advance_branch' => $branchId,
+            ],
         );
 
         return array_map(static fn(array $r): array => [

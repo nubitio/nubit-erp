@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Controller;
 
+use App\Identity\Auth\BranchReportScope;
 use App\Organization\Service\CompanyContext;
 use App\Sales\Report\CustomerStatement\CustomerStatement;
 use App\Sales\Report\CustomerStatement\CustomerStatementService;
@@ -36,6 +37,7 @@ final class CustomerStatementController extends AbstractController
         private readonly string $weasyprintBinary,
         private readonly CompanyContext $companyContext,
         private readonly TenantSettingsService $tenantSettings,
+        private readonly BranchReportScope $scope,
     ) {}
 
     public function __invoke(Request $request): StreamedResponse
@@ -55,7 +57,8 @@ final class CustomerStatementController extends AbstractController
             (string) $request->query->get('date-to', ''),
         );
 
-        $statement = $this->statements->build($customerId, $dateFrom, $dateTo);
+        $branchId = $this->scope->requireBranchId($request->query->getString('branchId') ?: null);
+        $statement = $this->statements->build($customerId, $dateFrom, $dateTo, $branchId);
         $slug =
             preg_replace(pattern: '/[^A-Za-z0-9]+/', replacement: '-', subject: $statement->customerName) ?? 'cliente';
         $basename = sprintf('estado-cuenta-%s-%s-a-%s', trim(string: $slug, characters: '-'), $dateFrom, $dateTo);

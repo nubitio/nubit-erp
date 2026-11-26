@@ -126,6 +126,7 @@ readonly class CustomerAccountLedger
         ?string $source = null,
         ?string $sourceId = null,
         ?string $description = null,
+        ?string $branchId = null,
     ): CustomerAccountEntry {
         return $this->record(
             $customerId,
@@ -137,6 +138,7 @@ readonly class CustomerAccountLedger
             source: $source,
             sourceId: $sourceId,
             description: $description,
+            branchId: $branchId,
         );
     }
 
@@ -156,6 +158,7 @@ readonly class CustomerAccountLedger
         ?string $source = null,
         ?string $sourceId = null,
         ?string $description = null,
+        ?string $branchId = null,
     ): CustomerAccountEntry {
         if ($customerId <= 0) {
             throw new InvalidArgumentException('A customer-account entry needs a customer id.');
@@ -189,6 +192,7 @@ readonly class CustomerAccountLedger
             source: $source,
             sourceId: $sourceId,
             description: $description,
+            branchId: $branchId,
         );
 
         $this->entityManager->persist($entry);
