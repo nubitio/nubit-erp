@@ -216,7 +216,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
         return $this->username;
     }
 
-    /** @return list<string> */
     /** @return list<string>|null */
     public function getOperatingBranchIds(): ?array
     {
