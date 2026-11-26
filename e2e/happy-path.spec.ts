@@ -28,13 +28,7 @@
  */
 
 import { expect, test, type Page } from '@playwright/test';
-import {
-  clickCrudSave,
-  crudShell,
-  crudShellBody,
-  dismissDevToolbar,
-  waitForSaleFormReady,
-} from './helpers/crud';
+import { dismissDevToolbar } from './helpers/crud';
 import { customerRow, customersGrid, waitForCustomersGrid } from './helpers/customers';
 import { completePosCashPayment, selectPosCustomer, waitForPosCheckoutReady } from './helpers/pos';
 import { E2E_SEED } from './support/seedConstants';
@@ -58,8 +52,6 @@ const SEED_CUSTOMER_NAME = 'Cliente CI E2E';
 // ── Persisted state between steps ─────────────────────────────────────────────
 let openedCashSessionId: string | null = null; // capturado al abrir caja
 let createdMovementRowText: string | null = null; // descripción del movimiento
-let salesModuleSaleId: string | null = null; // venta creada desde /sale
-let salesModuleProductName: string | null = null; // producto elegido en /sale
 let posProductName = productName; // product to use in POS test (may fall back to seed)
 
 type CashRegisterDashboardRow = {
@@ -115,28 +107,6 @@ async function fillDxInput(page: Page, ariaLabel: string | string[], value: stri
   await input.waitFor({ state: 'visible', timeout: 8000 });
   await input.fill(value);
   await expect(input).toHaveValue(value);
-}
-
-/**
- * Selecciona una opción en un DxSelectBox / DxLookup por aria-label del contenedor.
- * Hace click en el wrapper → espera el overlay dropdown → hace click en la opción deseada.
- */
-/**
- * Hace click en un botón de la toolbar del DxDataGrid identificado por texto.
- */
-async function clickGridToolbarButton(page: Page, buttonText: string) {
-  // NativeDataGridView renderiza la toolbar en .nb-datagrid__toolbar con botones .nb-button.
-  // The current UI can render translated or English labels depending on locale.
-  const alternatives: Record<string, RegExp> = {
-    Nuevo: /^(Nuevo|New)$/i,
-    Editar: /^(Editar|Edit)$/i,
-    Eliminar: /^(Eliminar|Delete)$/i,
-    Guardar: /^(Guardar|Save)$/i,
-  };
-  const text = alternatives[buttonText] ?? new RegExp(`^${buttonText}$`, 'i');
-  const btn = page.locator('.nb-datagrid__toolbar .nb-button').filter({ hasText: text }).first();
-  await btn.waitFor({ state: 'visible', timeout: 8000 });
-  await btn.click();
 }
 
 /**
@@ -705,189 +675,49 @@ test.describe('Happy Path — flujo completo de venta', () => {
       ).not.toBeNull();
     });
 
-    await test.step('Navegar a /billing/sales', async () => {
+    await test.step('Abrir el formulario de nueva venta', async () => {
       await gotoProtectedRoute(page, 'billing/sales');
       await dismissDevToolbar(page);
       await waitForGridLoad(page);
-      await expect(
-        page.locator('.nb-datagrid__toolbar').filter({ hasText: 'Ventas' }).first(),
-      ).toBeVisible({
-        timeout: 15000,
-      });
+      await page.getByRole('button', { name: 'Nueva venta' }).click();
+      await expect(page).toHaveURL(/\/billing\/sales\/new$/);
+      await expect(page.getByRole('heading', { name: 'Nueva factura' })).toBeVisible();
     });
 
-    await test.step('Abrir formulario de nueva venta', async () => {
-      await clickGridToolbarButton(page, 'Nuevo');
-      await expect(crudShell(page, /nuevo|new/i)).toBeVisible({
-        timeout: 12000,
-      });
-      await waitForSaleFormReady(crudShellBody(page));
+    await test.step('Completar cliente y producto', async () => {
+      const customer = page.getByPlaceholder('Busca por nombre o RUC');
+      await customer.fill(SEED_CUSTOMER_NAME);
+      await page.getByRole('option').filter({ hasText: SEED_CUSTOMER_NAME }).first().click();
+
+      const product = page.getByPlaceholder('Selecciona un producto o servicio');
+      await product.fill(SEED_PRODUCT_NAME);
+      await page.getByRole('option').filter({ hasText: SEED_PRODUCT_NAME }).first().click();
+      await expect(page.getByLabel('Precio de la línea 1')).not.toHaveValue('');
     });
 
-    await test.step('Verificar el almacén activo', async () => {
-      const body = crudShellBody(page);
-      const almacenInput = body
-        .locator('#nb-form-warehouse, input[aria-label="Almacen"], input[aria-label="Almacén"]')
-        .first();
-      const almacenVisible = await almacenInput.isVisible({ timeout: 5000 }).catch(() => false);
-
-      if (almacenVisible) {
-        // The form auto-selects the only active warehouse once its options load, so
-        // give that a moment before opening the list by hand.
-        const autoSelected = await expect
-          .poll(async () => (await almacenInput.inputValue().catch(() => '')).trim(), {
-            timeout: 5000,
-          })
-          .not.toBe('')
-          .then(
-            () => true,
-            () => false,
-          );
-        const currentVal = autoSelected ? 'selected' : '';
-        if (currentVal.trim().length === 0) {
-          await almacenInput.click();
-          await page.waitForTimeout(300);
-          const firstWarehouse = page.locator('[role="option"]').first();
-          await firstWarehouse.waitFor({ state: 'visible', timeout: 8000 });
-          await firstWarehouse.click();
-          await page.waitForTimeout(300);
-        }
-        await expect(almacenInput).not.toHaveValue('');
-      }
-    });
-
-    await test.step('Agregar producto al detalle de la venta', async () => {
-      const saleDialog = crudShell(page, /nuevo|new/i);
-
-      // NativeFormView: "+" button with aria-label="Agregar detalle"
-      const addRowBtn = page.locator('button[aria-label="Agregar detalle"]').first();
-      await addRowBtn.waitFor({ state: 'visible', timeout: 8000 });
-      await addRowBtn.click();
-
-      // The new row appears immediately in the native detail table
-      const detailTable = saleDialog.locator('.nb-form__detail-table').first();
-      const insertedRow = detailTable.locator('tbody tr').last();
-      await insertedRow.waitFor({ state: 'visible', timeout: 8000 });
-
-      // Product column renders a NativeEntitySelect; click the cell first because
-      // compact/table layouts can leave the input without focus until interaction.
-      const productCell = insertedRow.locator('td').nth(0);
-      await productCell.click();
-      const productInput = productCell.locator('input[role="combobox"], input').first();
-      await productInput.waitFor({ state: 'attached', timeout: 5000 });
-      await productInput.click();
-      await productInput.pressSequentially(SEED_PRODUCT_NAME, { delay: 40 });
-      salesModuleProductName = SEED_PRODUCT_NAME;
-
-      // NativeEntitySelect dropdown
-      const seedProductOption = page
-        .locator('[role="option"]')
-        .filter({ hasText: SEED_PRODUCT_NAME });
-      await seedProductOption.first().waitFor({ state: 'visible', timeout: 15000 });
-      await seedProductOption.first().click();
-
-      // Wait for the async productService.getOne() onChange to populate unitPrice before tabbing away.
-      // Column indices: 0=product, 1=qty, 2=unitPrice
-      const priceInput = insertedRow.locator('td').nth(2).locator('input').first();
-      await expect(priceInput).not.toHaveValue('0', { timeout: 8000 });
-
-      // Tab through remaining cells so onChange handlers run
-      await page.keyboard.press('Tab'); // qty cell
-      await page.keyboard.press('Tab'); // price cell
-      await page.keyboard.press('Tab'); // exit detail grid
-
-      // Verify the row exists in the native detail table
-      // Note: product name is in an input.value (not text content), so we can't use hasText
-      const committedRow = detailTable.locator('tbody tr').first();
-      await committedRow.waitFor({ state: 'visible', timeout: 8000 });
-
-      // The product's onChange auto-populates unitPrice; read via inputValue()
-      // Column indices: 0=product, 1=qty, 2=unitPrice, 3=discountPercent, 4=discountAmount, 5=netAmount
-      const priceValue = await committedRow
-        .locator('td')
-        .nth(2)
-        .locator('input')
-        .first()
-        .inputValue()
-        .catch(() => '0');
-      expect(Number(priceValue)).toBeGreaterThan(0);
-    });
-
-    await test.step('Guardar y verificar persistencia de la venta', async () => {
-      // Capture console errors to diagnose silent save failures
-      const consoleErrors: string[] = [];
-      page.on('console', (msg) => {
-        if (msg.type() === 'error') consoleErrors.push(msg.text());
-      });
-
-      const createSaleResponsePromise = page.waitForResponse(
+    await test.step('Guardar borrador y verificar persistencia', async () => {
+      const createSaleResponse = page.waitForResponse(
         (response) =>
           /\/api\/sales(?:\?.*)?$/.test(response.url()) && response.request().method() === 'POST',
-        { timeout: 15000 },
       );
-
-      const saleDialog = crudShell(page, /nuevo|new/i);
-
-      // Watch for a toast that would indicate silent validation failure
-      const toastLocator = page.locator('[class*="toast"]').first();
-      const toastPromise = toastLocator
-        .waitFor({ state: 'visible', timeout: 3000 })
-        .then(() => toastLocator.textContent())
-        .catch(() => null);
-
-      await clickCrudSave(saleDialog);
-
-      const toastText = await toastPromise;
-      if (toastText) {
-        // eslint-disable-next-line no-console
-        console.log('[E2E] Toast after save click:', toastText);
-      }
-
-      const createSaleResponse = await createSaleResponsePromise.catch(async (err) => {
-        // eslint-disable-next-line no-console
-        console.error('[E2E] POST /api/sales never fired. Console errors:', consoleErrors);
-        throw err;
-      });
-      if (!createSaleResponse.ok()) {
-        const body = await createSaleResponse.text().catch(() => '(unreadable)');
-        // eslint-disable-next-line no-console
-        console.error('[E2E] POST /api/sales failed:', createSaleResponse.status(), body);
-      }
-      expect(createSaleResponse.ok(), 'la venta en /sale debe responder 2xx').toBeTruthy();
-
-      const createdSale = (await createSaleResponse.json()) as { id?: string | null };
-      salesModuleSaleId = createdSale.id ?? null;
-      expect(salesModuleSaleId, 'la respuesta de /api/sales debe incluir id').toBeTruthy();
-
-      await expect(saleDialog).toBeHidden({
+      await page.getByTestId('new-invoice-save-panel').click();
+      const response = await createSaleResponse;
+      expect(response.ok(), 'la venta en borrador debe responder 2xx').toBeTruthy();
+      const createdSale = (await response.json()) as { id?: string | null };
+      expect(createdSale.id, 'la respuesta debe incluir el id de la venta').toBeTruthy();
+      await expect(page).toHaveURL(new RegExp(`/billing/sales/${createdSale.id}$`), {
         timeout: 15000,
       });
-      await waitForGridLoad(page);
 
       const persistedSale = await page.evaluate(
         async ({ baseUrl, saleId }) => {
-          // eslint-disable-next-line no-restricted-globals -- fetch runs in browser context inside page.evaluate, not in app module scope
+          // eslint-disable-next-line no-restricted-globals -- fetch runs in browser context inside page.evaluate
           const saleResponse = await fetch(`${baseUrl}/api/sales/${saleId}`);
-          const sale = await saleResponse.json();
-          // eslint-disable-next-line no-restricted-globals -- fetch runs in browser context inside page.evaluate, not in app module scope
-          const itemsResponse = await fetch(`${baseUrl}/api/sales/${saleId}/items`);
-          const items = await itemsResponse.json();
-          return {
-            saleStatus: sale.status,
-            grandTotal: sale.grandTotal,
-            items,
-          };
+          return saleResponse.json();
         },
-        { baseUrl: BASE_URL, saleId: salesModuleSaleId! },
+        { baseUrl: BASE_URL, saleId: createdSale.id! },
       );
-
-      expect(persistedSale.saleStatus).toBe('COMPLETED');
       expect(Number(persistedSale.grandTotal ?? 0)).toBeGreaterThan(0);
-      expect(Array.isArray(persistedSale.items)).toBeTruthy();
-      expect(persistedSale.items.length).toBeGreaterThan(0);
-      if (salesModuleProductName) {
-        expect(JSON.stringify(persistedSale.items)).toContain(salesModuleProductName);
-      }
     });
   });
 

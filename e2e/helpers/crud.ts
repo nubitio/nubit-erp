@@ -35,7 +35,7 @@ export function crudShellBody(page: Page, name?: RegExp): Locator {
 
 export async function clickGridToolbarButton(page: Page, buttonText: string) {
   const alternatives: Record<string, RegExp> = {
-    Nuevo: /^(Nuevo|New)$/i,
+    Nuevo: /^(Nuevo|New|Nueva venta)$/i,
     Editar: /^(Editar|Edit)$/i,
     Eliminar: /^(Eliminar|Delete)$/i,
   };
