@@ -68,6 +68,41 @@ final class CoreInventoryPathTest extends KernelTestCase
         self::assertEqualsWithDelta(4.0, (float) $this->fixture->onHand($target, $world->product), 0.001);
     }
 
+    public function testCrossBranchTransferRequiresOperatingAccessAtDestination(): void
+    {
+        $source = $this->fixture->seed('10.000000');
+        $destination = $this->fixture->seed('5.000000');
+        $sourceBranchId = (string) $source->branch->getId();
+        $destinationBranchId = (string) $destination->branch->getId();
+        $destinationWarehouseId = (string) $destination->warehouse->getId();
+
+        $source->user->assignOperatingBranches([$sourceBranchId], $sourceBranchId);
+        $source->user->assignReadOnlyBranches([$destinationBranchId]);
+        $this->entityManager->detach($destination->warehouse);
+        $filters = $this->entityManager->getFilters();
+        $filters->enable('branch_filter')->setParameterList('branchIds', [$sourceBranchId]);
+
+        try {
+            $entry = $this->entry($source, StockEntryType::TRANSFER, '4');
+            $entry->setTargetWarehouseId($destinationWarehouseId);
+            try {
+                $this->processor($source)->process($entry, new Post());
+                self::fail('A read-only assignment must not allow writing stock to that branch.');
+            } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException) {
+                self::assertEqualsWithDelta(10.0, (float) $this->fixture->onHand($source->warehouse, $source->product), 0.001);
+            }
+
+            $source->user->assignOperatingBranches([$sourceBranchId, $destinationBranchId], $sourceBranchId);
+            $this->processor($source)->process($entry, new Post());
+
+            self::assertEqualsWithDelta(6.0, (float) $this->fixture->onHand($source->warehouse, $source->product), 0.001);
+            self::assertEqualsWithDelta(4.0, (float) $this->fixture->onHand($destination->warehouse, $source->product), 0.001);
+            self::assertTrue($filters->isEnabled('branch_filter'));
+        } finally {
+            $filters->disable('branch_filter');
+        }
+    }
+
     public function testStockItemsAreRestrictedToTheSelectedWarehouseBranch(): void
     {
         $first = $this->fixture->seed('5.000000');
