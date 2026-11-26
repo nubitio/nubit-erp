@@ -40,6 +40,7 @@ readonly class PurchaseProcessor implements ProcessorInterface
         private ActiveReferenceGuard $activeReferenceGuard,
         private PurchaseOrderReceiptService $purchaseOrderReceiptService,
         private ?MessageBusInterface $messageBus = null,
+        private ?PurchasingBranchScope $purchasingScope = null,
     ) {}
 
     #[Override]
@@ -69,7 +70,7 @@ readonly class PurchaseProcessor implements ProcessorInterface
             if ($data->getPurchaseOrder() !== null) {
                 $references['purchaseOrder'] = $data->getPurchaseOrder()->getBranch();
             }
-            $data->setBranch($this->branchGuard->requireBranch($references));
+            $data->setBranch($this->branchGuard->requireBranch($references, $this->purchasingScope?->authorizedBranchId()));
 
             if ($isNewPurchase) {
                 $this->purchaseSupplierDocumentValidator->assertRequiredForCreate($data);

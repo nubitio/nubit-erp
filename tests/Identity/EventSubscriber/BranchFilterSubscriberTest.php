@@ -63,10 +63,10 @@ final class BranchFilterSubscriberTest extends TestCase
         $this->filterCollection = $this->createMock(FilterCollection::class);
     }
 
-    public function testGetSubscribedEventsReturnsRequestWithPriority5(): void
+    public function testGetSubscribedEventsReturnsRequestWithPriority6(): void
     {
         self::assertSame(
-            [KernelEvents::REQUEST => ['onKernelRequest', 5]],
+            [KernelEvents::REQUEST => ['onKernelRequest', 6]],
             BranchFilterSubscriber::getSubscribedEvents(),
         );
     }

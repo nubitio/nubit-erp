@@ -44,6 +44,7 @@ readonly class PurchaseOrderProcessor implements ProcessorInterface
         private PurchaseOrderSequenceService $purchaseOrderSequenceService,
         private ActiveReferenceGuard $activeReferenceGuard,
         private OperationalBranchGuard $branchGuard,
+        private PurchasingBranchScope $purchasingScope,
     ) {}
 
     /**
@@ -61,7 +62,7 @@ readonly class PurchaseOrderProcessor implements ProcessorInterface
         if ($data->getWarehouse() !== null) {
             $references['warehouse'] = $data->getWarehouse()->getBranch();
         }
-        $data->setBranch($this->branchGuard->requireBranch($references));
+        $data->setBranch($this->branchGuard->requireBranch($references, $this->purchasingScope->authorizedBranchId()));
 
         if ($operation instanceof DeleteOperationInterface) {
             return $this->persistProcessor->process($data, $operation, $uriVariables, $context);

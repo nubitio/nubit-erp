@@ -16,9 +16,9 @@ final readonly class OperationalBranchGuard
     ) {}
 
     /** @param array<string, Branch|null> $references Supplied references whose branch is required. */
-    public function requireBranch(array $references = []): Branch
+    public function requireBranch(array $references = [], ?string $authorizedBranchId = null): Branch
     {
-        $id = $this->context->getCurrentBranchId();
+        $id = $authorizedBranchId ?? $this->context->getCurrentBranchId();
         $branch = $id === null ? null : $this->branches->find($id);
         if ($branch === null || !$branch->getIsActive()) {
             throw ValidationException::withErrors([
