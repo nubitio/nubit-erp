@@ -31,7 +31,7 @@ final class StatementRepositoryTest extends TestCase
         self::assertSame([], new StatementRepository($connection)->charges(55, '2026-05-31', 'branch-1'));
     }
 
-    public function testPaymentsQueryLeavesOutVoidedSaleChargeReversal(): void
+    public function testPaymentsQueryUsesPersistedCollectionIdentityForSingleStatementAbono(): void
     {
         $connection = $this->createMock(Connection::class);
         $connection
@@ -40,12 +40,23 @@ final class StatementRepositoryTest extends TestCase
             ->with(
                 self::callback(
                     static fn(string $sql): bool => (
-                        str_contains($sql, "e.entry_type IN ('payment', 'credit_note') AND s.branch_id = :branch")
+                        str_contains($sql, "e.source = 'on_account_collect'")
+                        && str_contains($sql, 'SUM(a.applied_amount)')
+                        && str_contains($sql, 'customer_payment_applications')
+                        && str_contains($sql, 'applied_sale.branch_id = :collect_branch')
+                        && str_contains($sql, "e.entry_type = 'credit_note' AND s.branch_id = :branch")
                         && str_contains($sql, "e.entry_type = 'advance' AND e.branch_id = :advance_branch")
+                        && str_contains($sql, 'prior.source_id = e.source_id')
                         && !str_contains($sql, "'charge_reversal'")
                     ),
                 ),
-                ['customer' => 55, 'date_to' => '2026-05-31', 'branch' => 'branch-1', 'advance_branch' => 'branch-1'],
+                [
+                    'customer' => 55,
+                    'date_to' => '2026-05-31',
+                    'branch' => 'branch-1',
+                    'collect_branch' => 'branch-1',
+                    'advance_branch' => 'branch-1',
+                ],
             )
             ->willReturn([]);
 

@@ -54,8 +54,9 @@ final class CollectOnAccountServiceTest extends TestCase
         $sales = $this->salesRepo([$this->sale('s1', '70.00'), $this->sale('s2', '50.00')]);
         $ledger = $this->createMock(CustomerAccountLedger::class);
         $ledger
-            ->expects(self::exactly(2))
+            ->expects(self::once())
             ->method('recordPayment')
+            ->with(9, self::anything(), '120.00', 'PEN', null, 'on_account_collect', self::anything(), self::anything())
             ->willReturn($this->createStub(CustomerAccountEntry::class));
 
         $cashWrite = static::once();
