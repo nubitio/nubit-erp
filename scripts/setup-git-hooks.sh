@@ -9,5 +9,6 @@ fi
 
 git config --local core.hooksPath .husky
 chmod +x .husky/pre-push
+chmod +x .husky/commit-msg
 
-echo "Git pre-push quality gate installed."
+echo "Git pre-push and commit-message hooks installed."
