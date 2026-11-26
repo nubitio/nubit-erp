@@ -112,6 +112,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     #[ORM\JoinColumn(name: 'rol_id', referencedColumnName: 'rol_id', nullable: false)]
     private Role $role;
 
+    /**
+     * Null preserves existing access until an administrator configures this account.
+     *
+     * @var list<string>|null
+     */
+    #[ORM\Column(name: 'operating_branch_ids', type: 'json', nullable: true)]
+    private ?array $operatingBranchIds = null;
+
+    #[ORM\Column(name: 'default_branch_id', length: 36, nullable: true)]
+    private ?string $defaultBranchId = null;
+
     #[Assert\Email]
     #[Assert\Length(max: 180)]
     #[Groups(['user:read', 'user:create', 'user:update'])]
@@ -202,6 +213,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, Equatab
     }
 
     /** @return list<string> */
+    /** @return list<string>|null */
+    public function getOperatingBranchIds(): ?array
+    {
+        return $this->operatingBranchIds;
+    }
+
+    public function getDefaultBranchId(): ?string
+    {
+        return $this->defaultBranchId;
+    }
+
+    /** @param list<string> $branchIds */
+    public function assignOperatingBranches(array $branchIds, ?string $defaultBranchId): void
+    {
+        $this->operatingBranchIds = $branchIds;
+        $this->defaultBranchId = $defaultBranchId;
+    }
+
+    public function canOperateInBranch(string $branchId): bool
+    {
+        return $this->operatingBranchIds === null || in_array($branchId, $this->operatingBranchIds, true);
+    }
+
     #[Override]
     public function getRoles(): array
     {

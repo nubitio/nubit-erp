@@ -56,6 +56,10 @@ class AuthSelectBranchController extends AbstractController
             return new JsonResponse(['message' => 'Sucursal no encontrada'], Response::HTTP_NOT_FOUND);
         }
 
+        if (!$user->canOperateInBranch($branchId)) {
+            return new JsonResponse(['message' => 'No tienes permiso para operar en esta sucursal.'], Response::HTTP_FORBIDDEN);
+        }
+
         if (!$branch->getIsActive()) {
             return new JsonResponse([
                 'message' => 'La sucursal está deshabilitada. Solo está disponible para consultas históricas.',
