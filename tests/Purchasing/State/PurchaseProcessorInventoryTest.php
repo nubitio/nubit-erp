@@ -8,7 +8,8 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use App\Catalog\Entity\Product;
 use App\Efact\Domain\ActiveReferenceGuard;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
+use App\Identity\Auth\OperationalBranchGuard;
 use App\Identity\Entity\User;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Dto\StockValidationResult;
@@ -121,13 +122,18 @@ final class PurchaseProcessorInventoryTest extends TestCase
             },
         );
 
-        $branchContext = new \ReflectionClass(BranchContextService::class)->newInstanceWithoutConstructor();
+        $branchContext = $this->createStub(BranchContextServiceInterface::class);
+
+        $branch = new Branch();
+        new \ReflectionProperty(Branch::class, 'id')->setValue($branch, 'branch-1');
+        $branchContext->method('getCurrentBranchId')->willReturn('branch-1');
+        $branches = $this->createStub(BranchRepository::class);
+        $branches->method('find')->willReturn($branch);
 
         $processor = new PurchaseProcessor(
             $persist,
             $security,
-            $branchContext,
-            $this->createStub(BranchRepository::class),
+            new OperationalBranchGuard($branchContext, $branches),
             new PurchaseInventoryService($inventory),
             new PurchaseReceiptSequenceService($this->connection),
             new PurchaseSupplierDocumentValidator(),
@@ -135,7 +141,7 @@ final class PurchaseProcessorInventoryTest extends TestCase
             new \ReflectionClass(PurchaseOrderReceiptService::class)->newInstanceWithoutConstructor(),
         );
 
-        $warehouse = new Warehouse();
+        $warehouse = (new Warehouse())->setBranch($branch);
         new \ReflectionProperty(Warehouse::class, 'id')->setValue($warehouse, 'wh-1');
         $product = new Product();
         new \ReflectionProperty(Product::class, 'id')->setValue($product, 'prod-1');
@@ -143,7 +149,7 @@ final class PurchaseProcessorInventoryTest extends TestCase
 
         $purchase = new Purchase()
             ->setWarehouse($warehouse)
-            ->setBranch(new Branch())
+            ->setBranch($branch)
             ->setReceiptNo(1)
             ->setSupplierDocType('01')
             ->setSupplierDocSeries('F001')

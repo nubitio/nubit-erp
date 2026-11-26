@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Efact\Domain\ActiveReferenceGuard;
+use App\Identity\Auth\OperationalBranchGuard;
 use App\Identity\Entity\User;
 use App\Identity\Security\Security;
 use App\Purchasing\Entity\PurchaseOrder;
@@ -42,6 +43,7 @@ readonly class PurchaseOrderProcessor implements ProcessorInterface
         private PurchaseOrderService $purchaseOrderService,
         private PurchaseOrderSequenceService $purchaseOrderSequenceService,
         private ActiveReferenceGuard $activeReferenceGuard,
+        private OperationalBranchGuard $branchGuard,
     ) {}
 
     /**
@@ -52,6 +54,15 @@ readonly class PurchaseOrderProcessor implements ProcessorInterface
     #[Override]
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
+        $references = [];
+        if ($data->getBranch() !== null || $data->getId() !== null) {
+            $references['branch'] = $data->getBranch();
+        }
+        if ($data->getWarehouse() !== null) {
+            $references['warehouse'] = $data->getWarehouse()->getBranch();
+        }
+        $data->setBranch($this->branchGuard->requireBranch($references));
+
         if ($operation instanceof DeleteOperationInterface) {
             return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
         }

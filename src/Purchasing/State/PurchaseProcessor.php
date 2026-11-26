@@ -8,10 +8,8 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Accounting\Message\EconomicEvent;
 use App\Efact\Domain\ActiveReferenceGuard;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\OperationalBranchGuard;
 use App\Identity\Entity\User;
-use App\Organization\Entity\Branch;
-use App\Organization\Repository\BranchRepository;
 use App\Purchasing\Entity\Purchase;
 use App\Purchasing\Service\PurchaseOrderReceiptService;
 use App\Purchasing\Service\PurchaseReceiptSequenceService;
@@ -35,8 +33,7 @@ readonly class PurchaseProcessor implements ProcessorInterface
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $persistProcessor,
         private Security $security,
-        private BranchContextService $branchContextService,
-        private BranchRepository $branchRepository,
+        private OperationalBranchGuard $branchGuard,
         private PurchaseInventoryService $purchaseInventoryService,
         private PurchaseReceiptSequenceService $purchaseReceiptSequenceService,
         private PurchaseSupplierDocumentValidator $purchaseSupplierDocumentValidator,
@@ -62,6 +59,18 @@ readonly class PurchaseProcessor implements ProcessorInterface
 
         // Auto-populate fields that the form does not send
         if ($data instanceof Purchase) {
+            $references = [];
+            if ($data->getBranch() !== null || !$isNewPurchase) {
+                $references['branch'] = $data->getBranch();
+            }
+            if ($data->getWarehouse() !== null) {
+                $references['warehouse'] = $data->getWarehouse()->getBranch();
+            }
+            if ($data->getPurchaseOrder() !== null) {
+                $references['purchaseOrder'] = $data->getPurchaseOrder()->getBranch();
+            }
+            $data->setBranch($this->branchGuard->requireBranch($references));
+
             if ($isNewPurchase) {
                 $this->purchaseSupplierDocumentValidator->assertRequiredForCreate($data);
                 if ($data->getReceiptNo() === null) {
@@ -81,17 +90,6 @@ readonly class PurchaseProcessor implements ProcessorInterface
             // 2. Default issuedAt to now if not provided
             if ($data->getIssuedAt() === null) {
                 $data->setIssuedAt(new \DateTime());
-            }
-
-            // 3. Set branch from the current JWT session context (branch is not on User entity)
-            if ($data->getBranch() === null) {
-                $branchId = $this->branchContextService->getCurrentBranchId();
-                if ($branchId !== null) {
-                    $branch = $this->branchRepository->find($branchId);
-                    if ($branch instanceof Branch) {
-                        $data->setBranch($branch);
-                    }
-                }
             }
 
             // 4. Ensure each item's owning-side back-reference is set before Doctrine persist.

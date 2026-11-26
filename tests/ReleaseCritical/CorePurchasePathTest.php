@@ -8,7 +8,8 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use App\Efact\Domain\ActiveReferenceGuard;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
+use App\Identity\Auth\OperationalBranchGuard;
 use App\Organization\Repository\BranchRepository;
 use App\Purchasing\Entity\Purchase;
 use App\Purchasing\Entity\PurchaseItem;
@@ -118,13 +119,14 @@ final class CorePurchasePathTest extends KernelTestCase
 
         /** @var ProcessorInterface<mixed, mixed> $persist */
         $persist = $container->get('api_platform.doctrine.orm.state.persist_processor');
-        $branchContext = new \ReflectionClass(BranchContextService::class)->newInstanceWithoutConstructor();
+        $branchContext = $this->createStub(BranchContextServiceInterface::class);
+
+        $branchContext->method('getCurrentBranchId')->willReturn($world->branch->getId());
 
         return new PurchaseProcessor(
             $persist,
             $security,
-            $branchContext,
-            $container->get(BranchRepository::class),
+            new OperationalBranchGuard($branchContext, $container->get(BranchRepository::class)),
             $container->get(PurchaseInventoryService::class),
             $container->get(PurchaseReceiptSequenceService::class),
             $container->get(PurchaseSupplierDocumentValidator::class),
