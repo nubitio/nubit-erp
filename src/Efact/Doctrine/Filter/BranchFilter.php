@@ -21,7 +21,9 @@ class BranchFilter extends SQLFilter
         // they determine where the recurring sale is issued. Subscriptions
         // can therefore reference a plan created from another active branch;
         // filtering it here makes API Platform fail while resolving that IRI.
-        if ($targetEntity->getTableName() === 'subscription_plan') {
+        // Series are company-level settings; issuance still explicitly selects
+        // the branch of the document rather than reading all series.
+        if (in_array($targetEntity->getTableName(), ['subscription_plan', 'local_comprobante'], true)) {
             return '';
         }
 

@@ -7,6 +7,7 @@ namespace App\Onboarding\Controller;
 use App\Catalog\Entity\VoucherSeries;
 use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
+use App\Catalog\Service\VoucherSeriesAllocation;
 use App\Inventory\Entity\Warehouse;
 use App\Inventory\Repository\WarehouseRepository;
 use App\Organization\Entity\Branch;
@@ -91,15 +92,37 @@ final class TenantOnboardingController extends AbstractController
             return $this->json(['error' => $e->getMessage()], Response::HTTP_BAD_REQUEST);
         }
 
-        $this->entityManager->persist($branch);
-        $this->entityManager->flush();
+        $connection = $this->entityManager->getConnection();
+        try {
+            $connection->transactional(function () use ($branch, $payload, $connection): void {
+                $this->entityManager->persist($branch);
+                $this->entityManager->flush();
 
-        $invoiceSeries = strtoupper($this->optionalString($payload, 'invoiceSeries') ?? 'F001');
-        $receiptSeries = strtoupper($this->optionalString($payload, 'receiptSeries') ?? 'B001');
-        $this->upsertVoucherSeries($branch, '01', $invoiceSeries);
-        $this->upsertVoucherSeries($branch, '03', $receiptSeries);
-        $this->upsertVoucherSeries($branch, '00', 'N001');
-        $this->entityManager->flush();
+                VoucherSeriesAllocation::ensureForBranch($connection, (string) $branch->getId(), '00', 'N');
+                foreach (['01' => ['invoiceSeries', 'F'], '03' => ['receiptSeries', 'B']] as $type => [
+                    $field,
+                    $prefix,
+                ]) {
+                    $series = $this->optionalString($payload, $field);
+                    if ($series === null) {
+                        VoucherSeriesAllocation::ensureForBranch(
+                            $connection,
+                            (string) $branch->getId(),
+                            $type,
+                            $prefix,
+                        );
+                        continue;
+                    }
+                    VoucherSeriesAllocation::withTypeLock($connection, $type, fn() => $this->upsertVoucherSeries(
+                        $branch,
+                        $type,
+                        strtoupper($series),
+                    ));
+                }
+            });
+        } catch (\InvalidArgumentException $e) {
+            return $this->json(['error' => $e->getMessage()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
 
         return $this->json(['branch' => $this->serializeBranch($branch)]);
     }
@@ -200,10 +223,24 @@ final class TenantOnboardingController extends AbstractController
             'branch' => $branch,
             'voucherType' => $voucherType,
         ]);
+        if ($existing?->getSeries() === $series) {
+            return;
+        }
+        $conflict = VoucherSeriesAllocation::conflictingBranch(
+            $this->entityManager->getConnection(),
+            $voucherTypeCode,
+            $series,
+            $existing?->getId() ?? 0,
+        );
+        if ($conflict !== null) {
+            throw new \InvalidArgumentException(VoucherSeriesAllocation::duplicateMessage($series, $conflict));
+        }
+
         $record = $existing ?? new VoucherSeries();
         $record->setBranch($branch)->setVoucherType($voucherType)->setSeries($series);
 
         $this->entityManager->persist($record);
+        $this->entityManager->flush();
     }
 
     /**

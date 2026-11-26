@@ -81,6 +81,10 @@ class SaleUtilsTest extends TestCase
 
     public function testGetSaleSeriesProvisionsInternalNoteSeriesWhenMissing(): void
     {
+        $this->connection
+            ->method('transactional')
+            ->willReturnCallback(fn(callable $allocate) => $allocate($this->connection));
+        $this->connection->method('fetchFirstColumn')->willReturn(['N001']);
         $fetchOneCallCount = 0;
         $this->connection
             ->method('fetchOne')
@@ -91,7 +95,7 @@ class SaleUtilsTest extends TestCase
                     1 => false,
                     2 => 'branch-uuid',
                     3 => '00',
-                    4 => false,
+                    4 => '00',
                     default => false,
                 };
             });
@@ -101,13 +105,14 @@ class SaleUtilsTest extends TestCase
             ->with('local_comprobante', [
                 'local_id' => 'branch-uuid',
                 'tipo_comprobante_id' => '00',
-                'series' => 'N001',
+                'series' => 'N002',
+                'serie_asociada' => null,
                 'is_active' => 1,
             ]);
 
         $result = $this->utils->getSaleSeries('00', 'wh-uuid');
 
-        static::assertSame('N001', $result);
+        static::assertSame('N002', $result);
     }
 
     // ── getSaleNumber() ───────────────────────────────────────────────────────

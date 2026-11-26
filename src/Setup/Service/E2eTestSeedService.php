@@ -11,14 +11,10 @@ use App\Catalog\Entity\Category;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\Product;
 use App\Catalog\Entity\UnitOfMeasure;
-use App\Catalog\Entity\VoucherSeries;
-use App\Catalog\Entity\VoucherType;
 use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Repository\PaymentMethodRepository;
 use App\Catalog\Repository\ProductRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
-use App\Catalog\Repository\VoucherSeriesRepository;
-use App\Catalog\Repository\VoucherTypeRepository;
 use App\Contacts\Entity\Customer;
 use App\Contacts\Entity\Supplier;
 use App\Contacts\Repository\CustomerRepository;
@@ -82,8 +78,6 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         private readonly ProductStockRepository $productStockRepository,
         private readonly CategoryRepository $categoryRepository,
         private readonly UnitOfMeasureRepository $unitOfMeasureRepository,
-        private readonly VoucherTypeRepository $voucherTypeRepository,
-        private readonly VoucherSeriesRepository $voucherSeriesRepository,
         private readonly PaymentMethodRepository $paymentMethodRepository,
         private readonly CashRegisterRepository $cashRegisterRepository,
         private readonly DashboardRepository $dashboardRepository,
@@ -130,7 +124,7 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $this->purgeE2eSales();
         $this->purgeE2eCashSessions($cashRegister);
         $this->openE2eCashSession($cashRegister, $branch, $user);
-        $this->ensureVoucherSeries($branch);
+        $this->initialSetupService->ensureVoucherSeriesForBranch($branch);
 
         // Login may keep the installation's default branch selected. Ensure
         // its POS also has an open register owned by the disposable E2E user.
@@ -419,44 +413,6 @@ final class E2eTestSeedService implements E2eTestSeedServiceInterface
         $this->entityManager->flush();
 
         return $warehouse;
-    }
-
-    private function ensureVoucherSeries(Branch $branch): void
-    {
-        $facturaType = $this->voucherTypeRepository->find('01');
-        $boletaType = $this->voucherTypeRepository->find('03');
-        $notaVentaType = $this->voucherTypeRepository->find('00');
-
-        if ($facturaType instanceof VoucherType) {
-            $this->upsertVoucherSeries($branch, $facturaType, 'F001');
-        }
-
-        if ($boletaType instanceof VoucherType) {
-            $this->upsertVoucherSeries($branch, $boletaType, 'B001');
-        }
-
-        if ($notaVentaType instanceof VoucherType) {
-            $this->upsertVoucherSeries($branch, $notaVentaType, 'N001');
-        }
-
-        $this->entityManager->flush();
-    }
-
-    private function upsertVoucherSeries(Branch $branch, VoucherType $voucherType, string $series): void
-    {
-        $existing = $this->voucherSeriesRepository->findOneBy([
-            'branch' => $branch,
-            'voucherType' => $voucherType,
-        ]);
-
-        if ($existing instanceof VoucherSeries) {
-            return;
-        }
-
-        $voucherSeries = new VoucherSeries();
-        $voucherSeries->setBranch($branch)->setVoucherType($voucherType)->setSeries($series);
-
-        $this->entityManager->persist($voucherSeries);
     }
 
     private function upsertCustomer(): Customer

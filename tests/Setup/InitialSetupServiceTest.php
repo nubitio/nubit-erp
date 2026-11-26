@@ -18,7 +18,6 @@ use App\Catalog\Repository\CategoryRepository;
 use App\Catalog\Repository\PaymentMethodRepository;
 use App\Catalog\Repository\SunatCatalogRepository;
 use App\Catalog\Repository\UnitOfMeasureRepository;
-use App\Catalog\Repository\VoucherSeriesRepository;
 use App\Catalog\Repository\VoucherTypeRepository;
 use App\Contacts\Entity\Customer;
 use App\Contacts\Repository\CustomerRepository;
@@ -188,7 +187,6 @@ final class InitialSetupServiceTest extends TestCase
         ?CashRegisterRepository $cashRegisterRepository = null,
         ?ExpenseCategoryRepository $expenseCategoryRepository = null,
         ?VoucherTypeRepository $voucherTypeRepository = null,
-        ?VoucherSeriesRepository $voucherSeriesRepository = null,
         ?UnitOfMeasureRepository $unitOfMeasureRepository = null,
         ?CategoryRepository $categoryRepository = null,
         ?CustomerRepository $customerRepository = null,
@@ -211,7 +209,6 @@ final class InitialSetupServiceTest extends TestCase
             $cashRegisterRepository ?? $this->createMock(CashRegisterRepository::class),
             $expenseCategoryRepository ?? $this->createMock(ExpenseCategoryRepository::class),
             $voucherTypeRepository ?? $this->createMock(VoucherTypeRepository::class),
-            $voucherSeriesRepository ?? $this->createMock(VoucherSeriesRepository::class),
             $unitOfMeasureRepository ?? $this->createMock(UnitOfMeasureRepository::class),
             $categoryRepository ?? $this->createMock(CategoryRepository::class),
             $customerRepository ?? $this->createMock(CustomerRepository::class),

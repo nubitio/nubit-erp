@@ -53,11 +53,22 @@ describe('validateSeries', () => {
     expect(Object.keys(issues).sort()).toEqual(['branchId', 'series', 'typeCode']);
   });
 
-  it('refuses a series that already exists for the same branch and type', () => {
+  it('reserves the series company-wide per voucher type, even when inactive', () => {
     const same = draft({ typeCode: '01', series: 'F001' });
     expect(validateSeries(same, [existing]).series).toBeDefined();
-    expect(validateSeries({ ...same, branchId: 'b2' }, [existing]).series).toBeUndefined();
+    expect(
+      validateSeries({ ...same, branchId: 'b2' }, [{ ...existing, isActive: false }]).series,
+    ).toContain('Principal');
     expect(validateSeries({ ...same, typeCode: '03' }, [existing]).series).toBeUndefined();
+  });
+
+  it('allows editing other fields of an existing legacy duplicate without reassigning it', () => {
+    const legacy = { ...existing, id: 2, branch: { id: 'b2', name: 'Otra sucursal' } };
+    const same = draft({ branchId: 'b2', typeCode: '01', series: 'F001' });
+    expect(validateSeries(same, [existing, legacy], legacy)).toEqual({});
+    expect(
+      validateSeries({ ...same, branchId: 'b3' }, [existing, legacy], legacy).series,
+    ).toBeDefined();
   });
 
   it('checks the associated series only when given', () => {
