@@ -18,7 +18,8 @@ permissions:
 
 jobs:
   resolve:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
       image_ref: ${{ steps.resolve.outputs.image_ref }}
       commit: ${{ steps.resolve.outputs.commit }}

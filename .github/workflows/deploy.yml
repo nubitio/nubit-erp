@@ -28,7 +28,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: ${{ (vars.CI_RUNNER_PROVIDER == 'github' || ((vars.CI_RUNNER_PROVIDER == '' || vars.CI_RUNNER_PROVIDER == 'hybrid') && vars.CI_RUNNER_PROVIDER_LIGHT != 'blacksmith')) && 'ubuntu-latest' || 'blacksmith-2vcpu-ubuntu-2404' }}
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment:
       name: ${{ inputs.environment }}
@@ -36,7 +36,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          fetch-depth: 1
+          persist-credentials: false
           ref: ${{ inputs.ref || github.sha }}
 
       - name: Validate deployment configuration
