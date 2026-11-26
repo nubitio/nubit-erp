@@ -244,6 +244,11 @@ final class CoreOperationalPathTest extends KernelTestCase
         self::assertSame(1, $repository->countReceivableCustomers($branchId, null));
         self::assertSame('10.00', $repository->sumReceivables($branchId)['total']);
         self::assertSame([], $repository->aggregateReceivablesByCustomer('other-branch', null, 1, 10));
+        $customerId = (int) $world->customer->getId();
+        $details = $repository->openReceivableDetails($branchId, $customerId);
+        self::assertSame($result->getId(), $details[0]['id']);
+        self::assertSame([], $details[0]['payments']);
+        self::assertSame([], $repository->openReceivableDetails('other-branch', $customerId));
         $retriedCredit = $this->newOperationalSale($world, PaymentMethod::CREDIT, '1');
         $replayed = $processor->process($retriedCredit, $operation, context: ['request' => $request]);
         static::assertInstanceOf(SaleRecord::class, $replayed);

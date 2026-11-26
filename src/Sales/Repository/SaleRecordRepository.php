@@ -8,6 +8,7 @@ use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Repository\PaymentMethodRepository;
 use App\Sales\Entity\SaleRecord;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -114,6 +115,45 @@ class SaleRecordRepository extends ServiceEntityRepository
             'currency' => (string) ($row['currency'] ?? 'PEN'),
             'debtorCount' => (int) ($row['debtor_count'] ?? 0),
         ];
+    }
+
+    /** @return list<array<string, mixed>> */
+    public function openReceivableDetails(string $branchId, int $customerId): array
+    {
+        $invoices = $this->receivablesQuery($branchId)
+            ->select('s.id', 's.issued_date AS issuedDate', 's.due_date AS dueDate', 's.currency', 's.status')
+            ->addSelect('s.grand_total AS grandTotal', 's.paid_total AS paidTotal', 's.balance_due AS balanceDue')
+            ->addSelect("NULLIF(CONCAT_WS('-', NULLIF(s.series, ''), NULLIF(s.number, '')), '') AS invoiceFullNumber")
+            ->andWhere('s.customer_id = :customer')
+            ->setParameter('customer', $customerId)
+            ->orderBy('s.due_date', 'ASC')
+            ->addOrderBy('s.id', 'ASC')
+            ->setMaxResults(200)
+            ->fetchAllAssociative();
+
+        if ($invoices === []) {
+            return [];
+        }
+
+        $payments = $this->getEntityManager()->getConnection()->fetchAllAssociative(<<<'SQL'
+            SELECT p.sale_id, p.amount, p.paid_at, p.reference, m.name AS method_name
+            FROM sale_payments p
+            LEFT JOIN payment_method m ON m.id = p.payment_method_id
+            WHERE p.sale_id IN (:ids)
+            ORDER BY p.paid_at DESC, p.id DESC
+            SQL, ['ids' => array_column($invoices, 'id')], ['ids' => ArrayParameterType::STRING]);
+        $bySale = [];
+        foreach ($payments as $payment) {
+            $saleId = $payment['sale_id'];
+            unset($payment['sale_id']);
+            $bySale[$saleId][] = $payment;
+        }
+
+        return array_map(static function (array $invoice) use ($bySale): array {
+            $invoice['payments'] = $bySale[$invoice['id']] ?? [];
+
+            return $invoice;
+        }, $invoices);
     }
 
     private function receivablesQuery(string $branchId): QueryBuilder
