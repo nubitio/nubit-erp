@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Controller;
 
+use App\Identity\Auth\BranchReportScope;
 use App\Inventory\Service\KardexExportLimitExceeded;
 use App\Inventory\Service\KardexExportService;
 use Nubit\Platform\Export\PdfExporter;
@@ -17,12 +18,13 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[IsGranted('ROLE_USER')]
+#[IsGranted('perm:inventory.view')]
 final class KardexExportController extends AbstractController
 {
     public function __construct(
         private readonly KardexExportService $exportService,
         private readonly PdfExporter $pdfExporter,
+        private readonly BranchReportScope $scope,
     ) {}
 
     #[RequiresFeature('excel_export')]
@@ -75,6 +77,7 @@ final class KardexExportController extends AbstractController
             throw new BadRequestHttpException('productId is required');
         }
 
+        $branchId = $this->scope->requireBranchId($request->query->getString('branchId') ?: null);
         $warehouseId = $request->query->getString('warehouseId');
         $from = $request->query->getString('from');
         $to = $request->query->getString('to');
@@ -83,6 +86,7 @@ final class KardexExportController extends AbstractController
         try {
             $report = $this->exportService->buildReportData([
                 'productId' => $productId,
+                'branchId' => $branchId,
                 'warehouseId' => $warehouseId !== '' ? $warehouseId : null,
                 'from' => $from !== '' ? $from : null,
                 'to' => $to !== '' ? $to : null,

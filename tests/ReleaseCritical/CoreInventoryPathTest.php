@@ -44,6 +44,16 @@ final class CoreInventoryPathTest extends KernelTestCase
         $this->processor($world)->process($this->entry($world, StockEntryType::RECEIPT, '3'), new Post());
 
         self::assertEqualsWithDelta(8.0, (float) $this->fixture->onHand($world->warehouse, $world->product), 0.001);
+
+        $container = static::getContainer();
+        $moves = $container->get(\App\Inventory\Repository\StockMovementRepository::class);
+        $warehouseId = (string) $world->warehouse->getId();
+        $branchId = (string) $world->branch->getId();
+        self::assertSame(1, $moves->countKardex(['warehouse' => $warehouseId, 'branchId' => $branchId]));
+        self::assertSame(0, $moves->countKardex(['warehouse' => $warehouseId, 'branchId' => 'other']));
+        self::assertSame([], $moves->findKardexForExport(['warehouse' => $warehouseId, 'branchId' => 'other']));
+        $summary = $container->get(\App\Inventory\Service\KardexSummaryService::class);
+        self::assertSame(0, $summary->getSummary((string) $world->product->getId(), $warehouseId, branchId: 'other')['movementCount']);
     }
 
     public function testTransferMovesStockBetweenWarehouses(): void

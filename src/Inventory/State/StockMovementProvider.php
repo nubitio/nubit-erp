@@ -7,6 +7,7 @@ namespace App\Inventory\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
+use App\Identity\Auth\BranchReportScope;
 use App\Inventory\Repository\StockMovementRepository;
 use App\Inventory\Service\KardexReferenceResolver;
 use Override;
@@ -31,6 +32,7 @@ final readonly class StockMovementProvider implements ProviderInterface
         private StockMovementRepository $repository,
         private KardexReferenceResolver $referenceResolver,
         private RequestStack $requestStack,
+        private BranchReportScope $scope,
     ) {}
 
     #[Override]
@@ -39,6 +41,7 @@ final readonly class StockMovementProvider implements ProviderInterface
         $request = $this->requestStack->getCurrentRequest();
 
         $filters = [
+            'branchId' => $this->scope->requireBranchId($request?->query->getString('branchId') ?: null),
             'warehouse' => $request?->query->get('warehouse'),
             'product' => $request?->query->get('product'),
             'type' => $request?->query->get('type') ?? $request?->query->get('movementType'),

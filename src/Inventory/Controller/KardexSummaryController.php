@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Controller;
 
+use App\Identity\Auth\BranchReportScope;
 use App\Inventory\Service\KardexSummaryService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,12 +13,13 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[IsGranted('ROLE_USER')]
+#[IsGranted('perm:inventory.view')]
 #[Route('/api/inventory/kardex-summary', name: 'api_inventory_kardex_summary', methods: ['GET'])]
 final class KardexSummaryController extends AbstractController
 {
     public function __construct(
         private readonly KardexSummaryService $summaryService,
+        private readonly BranchReportScope $scope,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -27,6 +29,7 @@ final class KardexSummaryController extends AbstractController
             return $this->json(['message' => 'productId is required'], Response::HTTP_BAD_REQUEST);
         }
 
+        $branchId = $this->scope->requireBranchId($request->query->getString('branchId') ?: null);
         $warehouseId = $request->query->getString('warehouseId');
         $from = $request->query->getString('from');
         $to = $request->query->getString('to');
@@ -38,6 +41,7 @@ final class KardexSummaryController extends AbstractController
             $from !== '' ? $from : null,
             $to !== '' ? $to : null,
             $valuation !== '' ? $valuation : null,
+            $branchId,
         ));
     }
 }

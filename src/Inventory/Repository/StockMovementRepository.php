@@ -232,6 +232,11 @@ final readonly class StockMovementRepository
         $params = [];
         $where = [];
 
+        if (!empty($filters['branchId'])) {
+            $where[] = 'sm.warehouse_id IN (SELECT w.almacen_id FROM almacen w WHERE w.local_id = :branch_id)';
+            $params['branch_id'] = $filters['branchId'];
+        }
+
         if (!empty($filters['warehouse'])) {
             $where[] = 'sm.warehouse_id = :warehouse_id';
             $params['warehouse_id'] = $this->extractUuid($filters['warehouse']);
@@ -300,6 +305,11 @@ final readonly class StockMovementRepository
     {
         $params = [];
         $where = [];
+
+        if (!empty($filters['branchId'])) {
+            $where[] = 'warehouse_id IN (SELECT w.almacen_id FROM almacen w WHERE w.local_id = :branch_id)';
+            $params['branch_id'] = $filters['branchId'];
+        }
 
         if (!empty($filters['warehouse'])) {
             $where[] = 'warehouse_id = :warehouse_id';
