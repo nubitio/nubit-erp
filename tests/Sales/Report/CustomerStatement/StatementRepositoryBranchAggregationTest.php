@@ -46,7 +46,7 @@ final class StatementRepositoryBranchAggregationTest extends TestCase
     }
 
     /**
-     * @return array{driver: string, host: string, port: int, user: string, password: string, dbname: string, charset: string, serverVersion: string}
+     * @return array{driver: 'pdo_mysql', host: string, port: int, user: string, password: string, dbname: string, charset: string, serverVersion: string}
      */
     private function connectionParameters(string $url): array
     {
