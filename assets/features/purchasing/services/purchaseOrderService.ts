@@ -1,13 +1,15 @@
 import { httpClient } from '@shared/api/HttpClient';
-import { purchaseOrderEndpoints } from '../api/purchaseOrderEndpoints';
+import { purchaseOrderEndpoints, withPurchasingBranch } from '../api/purchaseOrderEndpoints';
 
-const purchaseOrderService = () => {
+const purchaseOrderService = (branchId = '') => {
   const send = (id: string) => {
-    return httpClient.patch(purchaseOrderEndpoints.detail(id), { status: 'sent' });
+    return httpClient.patch(withPurchasingBranch(purchaseOrderEndpoints.detail(id), branchId), {
+      status: 'sent',
+    });
   };
 
   const cancel = (id: string) => {
-    return httpClient.delete(purchaseOrderEndpoints.detail(id));
+    return httpClient.delete(withPurchasingBranch(purchaseOrderEndpoints.detail(id), branchId));
   };
 
   return { send, cancel };

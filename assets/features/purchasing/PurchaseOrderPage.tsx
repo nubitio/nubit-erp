@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   DataGridView,
   FormView,
@@ -9,9 +9,14 @@ import {
   type FormHandle,
   type GridHandle,
 } from '@nubitio/crud';
+import { useQuery } from '@tanstack/react-query';
+import { SelectField } from '@nubitio/ui';
+import { branchService } from '@features/branch';
+import { hasPermission } from '@shared/permissions';
+import { useSessionInfo } from '@shared/sessionInfo';
 import { useEvents } from '@nubitio/core';
 import toast from '@shared/lib/SharedUtils';
-import { purchaseOrderEndpoints } from './api/purchaseOrderEndpoints';
+import { purchaseOrderEndpoints, withPurchasingBranch } from './api/purchaseOrderEndpoints';
 import { PurchaseOrderFields, PurchaseOrderDetailFields } from './PurchaseOrderFields';
 import purchaseOrderService from './services/purchaseOrderService';
 import { purchaseOrderEvents } from './model/constants';
@@ -21,13 +26,22 @@ const PURCHASE_ORDER_FORM_LAYOUT = {
   sections: [
     {
       label: 'Datos principales',
-      fields: ['supplier', 'branch', 'warehouse', 'currency', 'expectedDate'],
+      fields: ['supplier', 'warehouse', 'currency', 'expectedDate'],
     },
     {
       label: 'Notas',
       fields: ['note'],
     },
   ],
+};
+
+const purchasingAdapter = {
+  ...HydraAdapter,
+  buildItemUrl(baseUrl: string, id: string | number) {
+    const [path, query] = baseUrl.split('?');
+    const item = HydraAdapter.buildItemUrl(path, id);
+    return query ? `${item}?${query}` : item;
+  },
 };
 
 interface PurchaseOrderRow extends DataRecord {
@@ -42,7 +56,21 @@ export const PurchaseOrderPage = () => {
   const [orderFormOpen, setOrderFormOpen] = useState(false);
   const [on] = useEvents();
 
-  const fields = useMemo(() => PurchaseOrderFields(), []);
+  const { currentBranchId } = useSessionInfo();
+  const [search, setSearch] = useSearchParams();
+  const canChooseBranch = hasPermission('purchases.cross_branch');
+  const operatingBranches = useQuery({
+    queryKey: ['purchasing', 'operating-branches', currentBranchId],
+    queryFn: async () => (await branchService.getOperatingBranches()).data,
+    enabled: canChooseBranch,
+  });
+  const options = operatingBranches.data?.filter((branch) => branch.id !== currentBranchId) ?? [];
+  const requestedBranch = search.get('branchId') ?? '';
+  const branchId =
+    canChooseBranch && options.some((branch) => branch.id === requestedBranch)
+      ? requestedBranch
+      : '';
+  const fields = useMemo(() => PurchaseOrderFields(branchId), [branchId]);
   const detailFields = useMemo(() => PurchaseOrderDetailFields(), []);
 
   useEffect(() => {
@@ -56,10 +84,10 @@ export const PurchaseOrderPage = () => {
     return () => subscriptions.forEach((subscription) => subscription.unsubscribe());
   }, [on]);
 
-  const API_URL = purchaseOrderEndpoints.list();
+  const API_URL = withPurchasingBranch(purchaseOrderEndpoints.list(), branchId);
 
   const sendOrder = (orderId: string) => {
-    purchaseOrderService()
+    purchaseOrderService(branchId)
       .send(orderId)
       .then(() => {
         toast('Orden de compra enviada', 'success');
@@ -69,7 +97,7 @@ export const PurchaseOrderPage = () => {
   };
 
   const cancelOrder = (orderId: string) => {
-    purchaseOrderService()
+    purchaseOrderService(branchId)
       .cancel(orderId)
       .then(() => {
         toast('Orden de compra cancelada', 'success');
@@ -95,7 +123,8 @@ export const PurchaseOrderPage = () => {
         text: 'Recibir mercadería',
         icon: 'ph-package',
         type: 'success' as const,
-        onClick: () => navigate(`/purchase-orders/${order.id}/receive`),
+        onClick: () =>
+          navigate(withPurchasingBranch(`/purchase-orders/${order.id}/receive`, branchId)),
       });
     }
 
@@ -113,15 +142,32 @@ export const PurchaseOrderPage = () => {
 
   return (
     <div id="wrapper" className={orderFormOpen ? 'wrapper--with-page' : undefined}>
+      {!orderFormOpen && options.length > 0 && (
+        <SelectField
+          aria-label="Sucursal de compras"
+          value={branchId}
+          onChange={(event) =>
+            setSearch(event.target.value ? { branchId: event.target.value } : {}, { replace: true })
+          }
+        >
+          <option value="">Sucursal operativa</option>
+          {options.map((branch) => (
+            <option key={branch.id} value={branch.id}>
+              {branch.name}
+            </option>
+          ))}
+        </SelectField>
+      )}
       {!orderFormOpen && (
         <DataGridView
+          key={API_URL}
           id="purchase-orders"
           ref={gridRef}
           title="Órdenes de compra"
           url={API_URL}
           fields={fields}
           allowAdd
-          adapter={HydraAdapter}
+          adapter={purchasingAdapter}
           rowActions={rowActions}
           events={purchaseOrderEvents}
           filterRow={false}
@@ -140,7 +186,7 @@ export const PurchaseOrderPage = () => {
           fields={fields}
           detailFields={detailFields}
           detailPropertyName="writeItems"
-          adapter={HydraAdapter}
+          adapter={purchasingAdapter}
           formLayout={PURCHASE_ORDER_FORM_LAYOUT}
           events={purchaseOrderEvents}
           presentationContext={{
