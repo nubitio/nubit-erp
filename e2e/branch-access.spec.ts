@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { expect, test } from '@playwright/test';
 import { login } from './helpers/auth';
+import { parseApiCollection } from './helpers/api';
 import { loginViaApi, selectBranchViaApi } from './helpers/fiscal';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 import { E2E_SEED } from './support/seedConstants';
@@ -48,6 +49,7 @@ test('La consulta de otra sucursal respeta las asignaciones durante una sesión 
     const centralWarehouses = `${base}/api/purchasing/warehouses?${query}`;
     await login(page, username, password);
     expect((await page.request.get(centralWarehouses)).status()).toBe(403);
+    const orderUrl = `${base}/api/purchase-orders?${query}`;
     await page.goto(`${base}/billing/consult`);
     const selector = page.getByRole('combobox', { name: 'Sucursales autorizadas para ventas' });
     await expect(selector.getByRole('option', { name: branchB.name })).toHaveCount(1);
@@ -73,6 +75,24 @@ test('La consulta de otra sucursal respeta las asignaciones durante una sesión 
     expect((await request.get(centralWarehouses, { headers: operating.headers })).status()).toBe(
       200,
     );
+    const suppliers = await request.get(`${base}/api/suppliers`, { headers: operating.headers });
+    expect(suppliers.ok()).toBeTruthy();
+    const supplier = parseApiCollection<{ id: string }>(await suppliers.json())[0];
+    expect(supplier).toBeDefined();
+    const order = await request.post(orderUrl, {
+      headers: operating.headers,
+      data: { supplier: `/api/suppliers/${supplier.id}`, currency: 'PEN' },
+    });
+    expect(order.status(), await order.text()).toBe(201);
+    const { id: orderId } = (await order.json()) as { id: string };
+    const ownBranchOrder = await request.get(`${base}/api/purchase-orders/${orderId}`, {
+      headers: operating.headers,
+    });
+    expect(ownBranchOrder.status()).toBe(404);
+    const scopedOrder = await request.get(`${base}/api/purchase-orders/${orderId}?${query}`, {
+      headers: operating.headers,
+    });
+    expect(scopedOrder.status()).toBe(200);
     const branchBSession = await selectBranchViaApi(request, base, operating, branchB.id);
     await configure([branchA.id], []);
     const revoked = await request.get(`${base}/api/sales/consultation?${query}`, {
