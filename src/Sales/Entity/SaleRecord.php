@@ -56,6 +56,11 @@ use Symfony\Component\Validator\Constraints as Assert;
     shortName: 'Sale',
     operations: [
         new GetCollection(security: "is_granted('perm:sales.view')"),
+        new GetCollection(
+            uriTemplate: '/sales/consultation',
+            security: "is_granted('perm:sales.view')",
+            name: 'sale_branch_consultation',
+        ),
         new Get(security: "is_granted('perm:sales.view')"),
         new Get(
             uriTemplate: '/sales/{id}/payments',
