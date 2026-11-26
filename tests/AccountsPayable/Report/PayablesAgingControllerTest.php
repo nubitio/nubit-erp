@@ -8,10 +8,15 @@ use App\AccountsPayable\Controller\PayablesAgingController;
 use App\AccountsPayable\Report\PayablesAgingCalculator;
 use App\AccountsPayable\Report\PayablesAgingQuery;
 use App\Identity\Auth\BranchContextServiceInterface;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Identity\Auth\BranchReportScope;
+use App\Identity\Entity\User;
+use App\Organization\Repository\BranchRepository;
+use Doctrine\DBAL\Connection;
 use Nubit\Platform\Export\XlsExporter;
 use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
@@ -53,16 +58,27 @@ final class PayablesAgingControllerTest extends TestCase
         $controller->export(new Request(['view' => 'everything']));
     }
 
+    public function testExportRejectsUnassignedBranchBeforeQuerying(): void
+    {
+        $this->expectException(AccessDeniedHttpException::class);
+        $this->controller('current')->export(new Request(['branchId' => 'other']));
+    }
+
     private function controller(?string $branchId): PayablesAgingController
     {
         $branch = $this->createMock(BranchContextServiceInterface::class);
         $branch->method('getCurrentBranchId')->willReturn($branchId);
 
-        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $security = $this->createStub(Security::class);
+        $security->method('getUser')->willReturn(new User());
+        $branches = $this->createStub(BranchRepository::class);
+        $branches->method('findBy')->willReturn([]);
+        $connection = $this->createMock(Connection::class);
+        $connection->expects(self::never())->method('fetchAllAssociative');
 
         $controller = new PayablesAgingController(
-            new PayablesAgingQuery($entityManager, new PayablesAgingCalculator()),
-            $branch,
+            new PayablesAgingQuery($connection, new PayablesAgingCalculator()),
+            new BranchReportScope($security, $branch, $branches),
             $this->createStub(XlsExporter::class),
         );
         $controller->setContainer(new Container());
