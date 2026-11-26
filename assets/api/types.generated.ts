@@ -3257,6 +3257,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sales/consultation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retrieves the collection of Sale resources.
+         * @description Retrieves the collection of Sale resources.
+         */
+        get: operations["sale_branch_consultation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sales/{id}": {
         parameters: {
             query?: never;
@@ -10756,6 +10776,7 @@ export interface components {
              * @example https://example.com/
              */
             purchaseOrderItem?: string | null;
+            purchaseOrderItemId?: number | null;
             /**
              * @description purchase_item.line_no.label
              * @default 0
@@ -13157,6 +13178,7 @@ export interface components {
              * @example https://example.com/
              */
             targetWarehouse?: string | null;
+            targetWarehouseId?: string | null;
             /**
              * Format: iri-reference
              * @description stock_entry.operation.label
@@ -27827,6 +27849,53 @@ export interface operations {
                     "application/ld+json": components["schemas"]["ConstraintViolation.jsonld"];
                     "application/problem+json": components["schemas"]["ConstraintViolation"];
                     "application/json": components["schemas"]["ConstraintViolation"];
+                };
+            };
+        };
+    };
+    sale_branch_consultation: {
+        parameters: {
+            query?: {
+                /** @description The collection page number */
+                page?: number;
+                /** @description The number of items per page */
+                itemsPerPage?: number;
+                /** @description Enable or disable pagination */
+                pagination?: boolean;
+                /** @description Sorting parameter. */
+                sort?: string;
+                /** @description Filtering parameter. */
+                filter?: string;
+                /** @description Search parameter. */
+                searchValue?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sale collection */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Sale-sale_record.read"][];
+                    "application/ld+json": components["schemas"]["HydraCollectionBaseSchema"] & {
+                        member: components["schemas"]["Sale.jsonld-sale_record.read"][];
+                    };
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/ld+json": components["schemas"]["Error.jsonld"];
+                    "application/problem+json": components["schemas"]["Error"];
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };

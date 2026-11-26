@@ -6,7 +6,7 @@ namespace App\Tests\Sales\State;
 
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Security\Security;
 use App\Organization\Entity\Branch;
@@ -30,7 +30,6 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
 use ReflectionNamedType;
-use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
 
 /**
  * Unit tests for the invoicing-port behaviour in SaleProcessor::process().
@@ -181,10 +180,12 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
 
         // Inject no-op stubs for final-class properties not exercised by tests.
         $this->injectNoOpStub($processorReflection, $processor, 'saleUtils');
-        // branchContextService: inject a real-ish stub that returns null from getCurrentBranchId().
-        // We do this by injecting a Symfony Security stub that returns null from getToken().
         $this->injectBranchContextStub($processorReflection, $processor);
-        $this->injectNoOpStub($processorReflection, $processor, 'branchRepository');
+        $branch = new Branch();
+        new \ReflectionProperty(Branch::class, 'id')->setValue($branch, 'branch-1');
+        $branches = $this->createStub(\App\Organization\Repository\BranchRepository::class);
+        $branches->method('find')->willReturn($branch);
+        $this->set($processorReflection, $processor, 'branchRepository', $branches);
         // salesWriteGateway: use an interface mock so write() is a no-op (avoids warehouse/register guards).
         /** @var SalesWriteGateway&MockObject $salesWriteGatewayMock */
         $salesWriteGatewayMock = $this->createStub(SalesWriteGateway::class);
@@ -274,28 +275,12 @@ final class SaleProcessorInvoiceDispatchTest extends TestCase
         $processorReflection->getProperty('cashSessionResolver')->setValue($target, $resolver);
     }
 
-    /**
-     * Inject a BranchContextService stub into SaleProcessor::$branchContextService.
-     *
-     * BranchContextService is final readonly. Its getCurrentBranchId() calls
-     * $this->security->getToken(). We bypass its constructor, then inject a
-     * createMock(SecurityComponent::class) that returns null from getToken() —
-     * which causes getCurrentBranchId() to return null safely (no branch set).
-     *
-     * @param ReflectionClass<SaleProcessor> $processorReflection
-     */
+    /** @param ReflectionClass<SaleProcessor> $processorReflection */
     private function injectBranchContextStub(ReflectionClass $processorReflection, SaleProcessor $target): void
     {
-        /** @var SecurityComponent&MockObject $securityComponentMock */
-        $securityComponentMock = $this->createStub(SecurityComponent::class);
-        $securityComponentMock->method('getToken')->willReturn(null);
-
-        $branchContextReflection = new ReflectionClass(BranchContextService::class);
-        /** @var BranchContextService $branchContextStub */
-        $branchContextStub = $branchContextReflection->newInstanceWithoutConstructor();
-        $branchContextReflection->getProperty('security')->setValue($branchContextStub, $securityComponentMock);
-
-        $processorReflection->getProperty('branchContextService')->setValue($target, $branchContextStub);
+        $context = $this->createStub(BranchContextServiceInterface::class);
+        $context->method('getCurrentBranchId')->willReturn('branch-1');
+        $processorReflection->getProperty('branchContextService')->setValue($target, $context);
     }
 
     /**

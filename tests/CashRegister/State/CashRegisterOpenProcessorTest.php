@@ -9,7 +9,7 @@ use App\CashRegister\Dto\CashRegisterOpenDto;
 use App\CashRegister\Entity\CashRegister;
 use App\CashRegister\Entity\CashSession;
 use App\CashRegister\State\CashRegisterOpenProcessor;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Entity\User;
 use App\Identity\Security\Security;
@@ -18,21 +18,15 @@ use App\Organization\Repository\BranchRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
-use Firebase\JWT\JWT;
-use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
-use Nubit\AdminBundle\Auth\JWTManager;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
-use Symfony\Bundle\SecurityBundle\Security as SymfonySecurity;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 
 #[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 final class CashRegisterOpenProcessorTest extends TestCase
 {
-    private const string JWT_TEST_SECRET = 'test-secret-at-least-32-chars-long-ok';
-
     /** @var EntityManagerInterface&MockObject */
     private EntityManagerInterface $entityManager;
 
@@ -244,39 +238,12 @@ final class CashRegisterOpenProcessorTest extends TestCase
         $processor->process(new CashRegisterOpenDto(id: 1, openingBalance: '100'), new Post());
     }
 
-    /**
-     * Build a BranchContextService stub (final readonly) that returns a fixed branch ID.
-     * Uses a real JWT signed with the test secret and decoded by a real JWTManager stub.
-     */
-    private function buildBranchContextWithFixedId(string $branchId): BranchContextService
+    private function buildBranchContextWithFixedId(string $branchId): BranchContextServiceInterface
     {
-        $reflection = new \ReflectionClass(BranchContextService::class);
-        /** @var BranchContextService $stub */
-        $stub = $reflection->newInstanceWithoutConstructor();
+        $context = $this->createStub(BranchContextServiceInterface::class);
+        $context->method('getCurrentBranchId')->willReturn($branchId);
 
-        // Build a real JWTManager stub (final) via reflection
-        $jwtReflection = new \ReflectionClass(JWTManager::class);
-        /** @var JWTManager $jwtManager */
-        $jwtManager = $jwtReflection->newInstanceWithoutConstructor();
-        $jwtReflection->getProperty('secret')->setValue($jwtManager, self::JWT_TEST_SECRET);
-        $jwtReflection->getProperty('logger')->setValue($jwtManager, new NullLogger());
-
-        // Encode a real JWT with the branchId claim
-        $rawJwt = JWT::encode(['branchId' => $branchId], self::JWT_TEST_SECRET, 'HS256');
-
-        // Build a real JWTAuthenticationToken (not final)
-        $user = $this->createStub(User::class);
-        $user->method('getRoles')->willReturn(['ROLE_USER']);
-        $token = new JWTAuthenticationToken($user, 'main', ['ROLE_USER'], $rawJwt);
-
-        /** @var SymfonySecurity&MockObject $securityMock */
-        $securityMock = $this->createStub(SymfonySecurity::class);
-        $securityMock->method('getToken')->willReturn($token);
-
-        $reflection->getProperty('security')->setValue($stub, $securityMock);
-        $reflection->getProperty('jwtManager')->setValue($stub, $jwtManager);
-
-        return $stub;
+        return $context;
     }
 
     private function setBranchId(Branch $branch, string $id): void

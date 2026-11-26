@@ -14,7 +14,7 @@ use function usort;
  * so the running-balance and period-total maths are unit-testable in isolation.
  * Aging lives in {@see AgingCalculator}.
  *
- * @phpstan-type ChargeRow array{sale_id: string, date: string, document: string, amount: string, balance_due: string}
+ * @phpstan-type ChargeRow array{sale_id: string, date: string, document: string, amount: string, balance_due: string, detail?: string}
  * @phpstan-type PaymentRow array{date: string, document: string, amount: string, detail: string}
  * @phpstan-type Movement array{sort: string, kind: string, date: string, document: string, detail: string, amount: string}
  */
@@ -113,12 +113,13 @@ final readonly class StatementAssembler
                 continue;
             }
 
+            $charge += ['detail' => 'Venta al crédito'];
             $movements[] = [
                 'sort' => $charge['date'] . '-0',
                 'kind' => 'charge',
                 'date' => $charge['date'],
                 'document' => $charge['document'],
-                'detail' => 'Venta al crédito',
+                'detail' => $charge['detail'],
                 'amount' => $charge['amount'],
             ];
         }

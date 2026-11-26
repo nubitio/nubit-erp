@@ -6,7 +6,7 @@ namespace App\AccountsPayable\Controller;
 
 use App\AccountsPayable\Report\PayablesAgingCalculator;
 use App\AccountsPayable\Report\PayablesAgingQuery;
-use App\Identity\Auth\BranchContextServiceInterface;
+use App\Identity\Auth\BranchReportScope;
 use DateTimeImmutable;
 use DateTimeZone;
 use Nubit\Platform\Export\XlsExporter;
@@ -53,7 +53,7 @@ final class PayablesAgingController extends AbstractController
 
     public function __construct(
         private readonly PayablesAgingQuery $aging,
-        private readonly BranchContextServiceInterface $branchContext,
+        private readonly BranchReportScope $scope,
         private readonly XlsExporter $xlsExporter,
     ) {}
 
@@ -64,7 +64,10 @@ final class PayablesAgingController extends AbstractController
         return $this->json([
             'asOf' => $asOf,
             'buckets' => PayablesAgingCalculator::BUCKETS,
-            ...$this->aging->execute($this->branchId(), $asOf),
+            ...$this->aging->execute(
+                $this->scope->requireBranchId($request->query->getString('branchId') ?: null),
+                $asOf,
+            ),
         ]);
     }
 
@@ -77,7 +80,10 @@ final class PayablesAgingController extends AbstractController
             throw new BadRequestHttpException('La vista debe ser "summary" o "detail".');
         }
 
-        $report = $this->aging->execute($this->branchId(), $asOf);
+        $report = $this->aging->execute(
+            $this->scope->requireBranchId($request->query->getString('branchId') ?: null),
+            $asOf,
+        );
         $columns = $this->columns($view);
         $rows = $view === 'detail' ? $report['detail'] : [...$report['suppliers'], ...$report['totals']];
 
@@ -88,18 +94,6 @@ final class PayablesAgingController extends AbstractController
     private function columns(string $view): array
     {
         return $view === 'detail' ? self::DETAIL_COLUMNS : self::SUMMARY_COLUMNS;
-    }
-
-    private function branchId(): string
-    {
-        $branch = $this->branchContext->getCurrentBranchId();
-        if ($branch === null) {
-            throw new BadRequestHttpException(
-                'Selecciona una sucursal para consultar la antigüedad de cuentas por pagar.',
-            );
-        }
-
-        return (string) $branch;
     }
 
     /** Defaults to today (America/Lima). Past dates are rejected: balances are the current ones. */

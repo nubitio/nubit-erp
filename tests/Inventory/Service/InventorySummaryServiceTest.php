@@ -50,24 +50,29 @@ final class InventorySummaryServiceTest extends TestCase
                 ('wh1', 'p2', 5),
                 ('wh2', 'p3', 0)");
 
+        $this->connection->executeStatement(
+            'CREATE TABLE almacen (almacen_id TEXT PRIMARY KEY, local_id TEXT NOT NULL)',
+        );
+        $this->connection->executeStatement("INSERT INTO almacen VALUES ('wh1', 'branch-a'), ('wh2', 'branch-b')");
+
         $this->service = new InventorySummaryService($this->connection);
     }
 
-    public function testSummaryAcrossAllWarehouses(): void
+    public function testSummaryAcrossWarehousesInSelectedBranch(): void
     {
-        $summary = $this->service->getSummary(null);
+        $summary = $this->service->getSummary('branch-a');
 
-        self::assertSame(3, $summary['totalSkus']);
-        self::assertSame(2, $summary['categoryCount']);
+        self::assertSame(2, $summary['totalSkus']);
+        self::assertSame(1, $summary['categoryCount']);
         self::assertSame('1027.50', $summary['stockValueAtCost']);
-        self::assertSame(2, $summary['lowStockCount']);
-        self::assertSame(1, $summary['outOfStockCount']);
+        self::assertSame(1, $summary['lowStockCount']);
+        self::assertSame(0, $summary['outOfStockCount']);
         self::assertNull($summary['warehouseId']);
     }
 
     public function testSummaryFilteredByWarehouse(): void
     {
-        $summary = $this->service->getSummary('wh1');
+        $summary = $this->service->getSummary('branch-a', 'wh1');
 
         self::assertSame(2, $summary['totalSkus']);
         self::assertSame(1, $summary['categoryCount']);
@@ -75,5 +80,11 @@ final class InventorySummaryServiceTest extends TestCase
         self::assertSame(1, $summary['lowStockCount']);
         self::assertSame(0, $summary['outOfStockCount']);
         self::assertSame('wh1', $summary['warehouseId']);
+    }
+
+    public function testWarehouseFilterCannotExpandBranchScope(): void
+    {
+        self::assertSame(0, $this->service->getSummary('branch-a', 'wh2')['totalSkus']);
+        self::assertSame(1, $this->service->getSummary('branch-b', 'wh2')['totalSkus']);
     }
 }

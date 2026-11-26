@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use App\CashRegister\Dto\CashSessionClosureSummaryDto;
 use App\CashRegister\Service\SessionSalesBreakdown;
 use App\CashRegister\State\CashSessionClosureSummaryProvider;
+use App\Identity\Auth\BranchContextServiceInterface;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -37,7 +38,7 @@ final class CashSessionClosureSummaryProviderTest extends TestCase
                 'receivable' => ['amount' => '0.00', 'operations' => 0],
                 'total' => '350.00',
             ]);
-        $this->provider = new CashSessionClosureSummaryProvider($this->connection, $breakdown);
+        $this->provider = new CashSessionClosureSummaryProvider($this->connection, $breakdown, $this->branchContext());
     }
 
     /**
@@ -122,5 +123,13 @@ final class CashSessionClosureSummaryProviderTest extends TestCase
         $this->expectExceptionMessage('CashSession not found for id 99.');
 
         $this->provider->provide(new GetCollection(uriTemplate: '/cash-shifts/{id}/summary'), ['id' => $cashShiftId]);
+    }
+
+    private function branchContext(): BranchContextServiceInterface
+    {
+        $context = $this->createStub(BranchContextServiceInterface::class);
+        $context->method('getCurrentBranchId')->willReturn('branch-a');
+
+        return $context;
     }
 }

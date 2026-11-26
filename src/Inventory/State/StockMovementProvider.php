@@ -7,6 +7,7 @@ namespace App\Inventory\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
+use App\Identity\Auth\BranchReportScope;
 use App\Inventory\Repository\StockMovementRepository;
 use App\Inventory\Service\KardexReferenceResolver;
 use Override;
@@ -31,6 +32,7 @@ final readonly class StockMovementProvider implements ProviderInterface
         private StockMovementRepository $repository,
         private KardexReferenceResolver $referenceResolver,
         private RequestStack $requestStack,
+        private BranchReportScope $scope,
     ) {}
 
     #[Override]
@@ -38,20 +40,22 @@ final readonly class StockMovementProvider implements ProviderInterface
     {
         $request = $this->requestStack->getCurrentRequest();
 
+        $movementType = $request?->query->getString('movementType') ?? '';
         $filters = [
-            'warehouse' => $request?->query->get('warehouse'),
-            'product' => $request?->query->get('product'),
-            'type' => $request?->query->get('type') ?? $request?->query->get('movementType'),
-            'from' => $request?->query->get('from'),
-            'to' => $request?->query->get('to'),
-            'valuation' => $request?->query->get('valuation'),
+            'branchId' => $this->scope->requireBranchId($request?->query->getString('branchId') ?: null),
+            'warehouse' => $request?->query->getString('warehouse'),
+            'product' => $request?->query->getString('product'),
+            'type' => $request?->query->getString('type', $movementType),
+            'from' => $request?->query->getString('from'),
+            'to' => $request?->query->getString('to'),
+            'valuation' => $request?->query->getString('valuation'),
         ];
 
         if ($request !== null) {
             $filters = array_replace($filters, $this->extractGridFilters($request->query->all('filter')));
         }
 
-        // Remove nulls
+        /** @var array<string, string> $filters */
         $filters = array_filter($filters, static fn($v) => $v !== null && $v !== '');
 
         $page = max(1, (int) ($request?->query->get('page', 1) ?? 1));

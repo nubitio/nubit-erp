@@ -7,8 +7,12 @@ namespace App\Tests\Sales\State;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
+use App\Identity\Auth\BranchContextServiceInterface;
+use App\Identity\Auth\OperationalBranchGuard;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Security\Security;
+use App\Organization\Entity\Branch;
+use App\Organization\Repository\BranchRepository;
 use App\Sales\Entity\SaleQuote;
 use App\Sales\Service\SaleQuoteService;
 use App\Sales\State\SaleQuoteProcessor;
@@ -46,6 +50,7 @@ final class SaleQuoteProcessorAuthorizationTest extends TestCase
         self::assertSame(9, $saved->getCreatedBy());
         self::assertSame(9, $saved->getSellerUserId());
         self::assertSame('10.00', $saved->getGrandTotal());
+        self::assertSame('branch-a', $saved->getBranch()?->getId());
     }
 
     public function testCreateSentRequiresSendPermissionAndDoesNotPersistWithoutIt(): void
@@ -135,6 +140,24 @@ final class SaleQuoteProcessorAuthorizationTest extends TestCase
         self::assertSame(SaleQuote::STATUS_ACCEPTED, $saved->getStatus());
     }
 
+    public function testCreateRejectsAnotherBranch(): void
+    {
+        $quote = new SaleQuote()->setBranch($this->branch('branch-b'));
+        $persist = $this->createMock(ProcessorInterface::class);
+        $persist->expects(self::never())->method('process');
+
+        $this->expectException(ValidationException::class);
+        $this->processor($persist, $this->security(canSend: false))->process($quote, new Post());
+    }
+
+    private function branch(string $id): Branch
+    {
+        $branch = new Branch();
+        new \ReflectionProperty(Branch::class, 'id')->setValue($branch, $id);
+
+        return $branch;
+    }
+
     private function security(bool $canSend): Security
     {
         $security = $this->createStub(Security::class);
@@ -159,18 +182,26 @@ final class SaleQuoteProcessorAuthorizationTest extends TestCase
         $entityManager = $this->createStub(EntityManagerInterface::class);
         $entityManager->method('getUnitOfWork')->willReturn($unitOfWork);
 
+        $context = $this->createStub(BranchContextServiceInterface::class);
+        $context->method('getCurrentBranchId')->willReturn('branch-a');
+        $branches = $this->createStub(BranchRepository::class);
+        $branches->method('find')->willReturn($this->branch('branch-a'));
+
         return new SaleQuoteProcessor(
             $persist,
             $this->createStub(ProcessorInterface::class),
             $entityManager,
             $security,
             new SaleQuoteService($this->createStub(EntityManagerInterface::class)),
+            new OperationalBranchGuard($context, $branches),
         );
     }
 
     private function existingQuote(string $requestedStatus): SaleQuote
     {
-        $quote = new SaleQuote()->setStatus($requestedStatus);
+        $quote = new SaleQuote()
+            ->setStatus($requestedStatus)
+            ->setBranch($this->branch('branch-a'));
         new \ReflectionProperty(SaleQuote::class, 'id')->setValue($quote, 'quote-1');
 
         return $quote;

@@ -22,16 +22,15 @@ final readonly class EfactTokenClaimsProvider implements TokenClaimsProviderInte
         private SelectedBranchContext $selectedBranch,
         private TenantContext $tenantContext,
         private PermissionCheckerInterface $permissionChecker,
+        private OperatingBranchResolver $branches,
     ) {}
 
     public function claims(UserInterface $user, array $previousClaims = []): array
     {
         $branch = $this->selectedBranch->get();
-
-        // On refresh, carry the branch claims of the rotated token forward —
-        // the signed JWT is the source of truth for the active branch.
-        $branchId = $branch?->getId() ?? $previousClaims['branchId'] ?? null;
-        $branchName = $branch?->getName() ?? $previousClaims['branchName'] ?? null;
+        if ($branch === null && $user instanceof User) {
+            $branch = $this->branches->resolve($user, $previousClaims['branchId'] ?? null);
+        }
 
         // Support impersonation (see ImpersonationApiController) stamps the
         // acting control-plane admin here at mint time; carried forward on
@@ -43,8 +42,8 @@ final readonly class EfactTokenClaimsProvider implements TokenClaimsProviderInte
             'userId' => $user instanceof User ? $user->getId() : null,
             'role' => $user instanceof User ? $user->getRole()?->getId() : null,
             'roles' => $user->getRoles(),
-            'branchId' => $branchId,
-            'branchName' => $branchName,
+            'branchId' => $branch?->getId(),
+            'branchName' => $branch?->getName(),
             'tenantId' => $this->tenantContext->getTenantId(),
             'tenantName' => $this->tenantContext->getTenantName(),
             'impersonatedBy' => $impersonatedBy,

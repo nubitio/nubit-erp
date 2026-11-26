@@ -16,18 +16,16 @@ use App\Billing\Service\CreditNoteReturnSelector;
 use App\Billing\Service\CreditNoteStockReverserInterface;
 use App\Billing\State\TaxDocumentProcessor;
 use App\Identity\Activity\SalesActivityInterface;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
+use App\Identity\Auth\OperationalBranchGuard;
 use App\Organization\Entity\Branch;
 use App\Organization\Repository\BranchRepository;
 use App\Settings\Service\TenantSettingsService;
-use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
-use Nubit\AdminBundle\Auth\JWTManager;
 use Nubit\Platform\Exception\ServiceException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\MockObject\Stub;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\NullLogger;
 use ReflectionClass;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
 
@@ -54,8 +52,8 @@ final class TaxDocumentProcessorTest extends TestCase
     /** @var ProcessorInterface<mixed, mixed>&MockObject */
     private ProcessorInterface $removeProcessor;
 
-    /** @var BranchContextService */
-    private BranchContextService $branchContextService;
+    /** @var BranchContextServiceInterface */
+    private BranchContextServiceInterface $branchContextService;
 
     /** @var BranchRepository&Stub */
     private BranchRepository $branchRepository;
@@ -70,6 +68,9 @@ final class TaxDocumentProcessorTest extends TestCase
         $this->persistProcessor = $this->createMock(ProcessorInterface::class);
         $this->removeProcessor = $this->createMock(ProcessorInterface::class);
         $this->branchRepository = $this->createStub(BranchRepository::class);
+        $branch = new Branch();
+        new \ReflectionProperty(Branch::class, 'id')->setValue($branch, 'branch-001');
+        $this->branchRepository->method('find')->willReturn($branch);
         $this->taxDocumentRepository = $this->createMock(TaxDocumentRepository::class);
         $this->branchContextService = $this->buildBranchContextStub(branchId: 'branch-001');
     }
@@ -301,54 +302,12 @@ final class TaxDocumentProcessorTest extends TestCase
         return $creditNote;
     }
 
-    /**
-     * Build BranchContextService via reflection so getCurrentBranchId() returns
-     * the given branch ID without touching the real JWT/Security infrastructure.
-     *
-     * Strategy:
-     * - BranchContextService is final readonly → bypass constructor via reflection.
-     * - JWTManager is final readonly → bypass constructor via reflection; inject a
-     *   real non-empty secret so decode() can execute.
-     * - Encode a real HS256 JWT containing the branchId so that JWTManager::decode()
-     *   returns the expected payload.
-     * - JWTAuthenticationToken is NOT final → use createMock(); its getCredentials()
-     *   returns the encoded JWT.
-     *
-     * @param string $branchId The branch ID to be returned by getCurrentBranchId().
-     */
-    private function buildBranchContextStub(string $branchId): BranchContextService
+    private function buildBranchContextStub(string $branchId): BranchContextServiceInterface
     {
-        $secret = 'test-secret-key-for-phpunit-testing';
+        $context = $this->createStub(BranchContextServiceInterface::class);
+        $context->method('getCurrentBranchId')->willReturn($branchId);
 
-        // Build a real JWT signed with the secret so JWTManager::decode() succeeds.
-        $payload = ['branchId' => $branchId, 'exp' => time() + 3600];
-        $rawJwt = \Firebase\JWT\JWT::encode($payload, $secret, 'HS256');
-
-        // Stub JWTAuthenticationToken (not final) to return our JWT string.
-        /** @var JWTAuthenticationToken&MockObject $tokenMock */
-        $tokenMock = $this->createStub(JWTAuthenticationToken::class);
-        $tokenMock->method('getCredentials')->willReturn($rawJwt);
-
-        // Stub SecurityComponent to return the token stub.
-        /** @var SecurityComponent&MockObject $securityMock */
-        $securityMock = $this->createStub(SecurityComponent::class);
-        $securityMock->method('getToken')->willReturn($tokenMock);
-
-        // Build JWTManager via reflection (final readonly — cannot mock directly).
-        $jwtManagerReflection = new ReflectionClass(JWTManager::class);
-        /** @var JWTManager $jwtManagerStub */
-        $jwtManagerStub = $jwtManagerReflection->newInstanceWithoutConstructor();
-        $jwtManagerReflection->getProperty('secret')->setValue($jwtManagerStub, $secret);
-        $jwtManagerReflection->getProperty('logger')->setValue($jwtManagerStub, new NullLogger());
-
-        // Build BranchContextService via reflection (final readonly).
-        $branchContextReflection = new ReflectionClass(BranchContextService::class);
-        /** @var BranchContextService $stub */
-        $stub = $branchContextReflection->newInstanceWithoutConstructor();
-        $branchContextReflection->getProperty('security')->setValue($stub, $securityMock);
-        $branchContextReflection->getProperty('jwtManager')->setValue($stub, $jwtManagerStub);
-
-        return $stub;
+        return $context;
     }
 
     /**
@@ -362,8 +321,10 @@ final class TaxDocumentProcessorTest extends TestCase
 
         $reflection->getProperty('persistProcessor')->setValue($processor, $this->persistProcessor);
         $reflection->getProperty('removeProcessor')->setValue($processor, $this->removeProcessor);
-        $reflection->getProperty('branchContextService')->setValue($processor, $this->branchContextService);
-        $reflection->getProperty('branchRepository')->setValue($processor, $this->branchRepository);
+        $reflection->getProperty('branchGuard')->setValue(
+            $processor,
+            new OperationalBranchGuard($this->branchContextService, $this->branchRepository),
+        );
         $reflection->getProperty('taxDocumentRepository')->setValue($processor, $this->taxDocumentRepository);
         $reflection->getProperty('creditNoteStockReverser')->setValue(
             $processor,

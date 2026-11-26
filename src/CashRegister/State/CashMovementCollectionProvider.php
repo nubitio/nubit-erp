@@ -9,6 +9,7 @@ use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Service\CashMovementHydrator;
+use App\Identity\Auth\BranchContextServiceInterface;
 use ArrayIterator;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -33,6 +34,7 @@ final readonly class CashMovementCollectionProvider implements ProviderInterface
     public function __construct(
         private Connection $connection,
         private CashMovementHydrator $hydrator,
+        private BranchContextServiceInterface $branchContext,
     ) {}
 
     /**
@@ -44,18 +46,23 @@ final readonly class CashMovementCollectionProvider implements ProviderInterface
         $filters = $context['filters'] ?? [];
         $page = max(1, (int) ($filters['page'] ?? 1));
         $perPage = max(1, min(200, (int) ($filters['itemsPerPage'] ?? self::DEFAULT_PER_PAGE)));
+        $branchId = $this->branchContext->getCurrentBranchId();
         $offset = ($page - 1) * $perPage;
 
         $rows = $this->connection->fetchAllAssociative(
-            'SELECT id, cash_session_id, movement_type, category_id, amount, description, created_at
-             FROM cash_movements
-             ORDER BY created_at DESC, id DESC
+            'SELECT m.id, m.cash_session_id, m.movement_type, m.category_id, m.amount, m.description, m.created_at
+             FROM cash_movements m JOIN cash_sessions s ON s.id = m.cash_session_id
+             WHERE s.branch_id = ?
+             ORDER BY m.created_at DESC, m.id DESC
              LIMIT ? OFFSET ?',
-            [$perPage, $offset],
-            [ParameterType::INTEGER, ParameterType::INTEGER],
+            [$branchId, $perPage, $offset],
+            [ParameterType::STRING, ParameterType::INTEGER, ParameterType::INTEGER],
         );
 
-        $total = (int) $this->connection->fetchOne('SELECT COUNT(*) FROM cash_movements');
+        $total =
+            (int) $this->connection->fetchOne('SELECT COUNT(*) FROM cash_movements m JOIN cash_sessions s ON s.id = m.cash_session_id WHERE s.branch_id = ?', [
+                $branchId,
+            ]);
 
         $movements = array_map($this->hydrator->fromRow(...), $rows);
 

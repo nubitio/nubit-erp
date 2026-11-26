@@ -11,6 +11,8 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\State\ProcessorInterface;
 use App\Billing\Sale\SaleVoidUseCase;
 use App\CashRegister\Dto\CashRegisterCloseDto;
+use App\CashRegister\Service\CashMovementHydrator;
+use App\CashRegister\Service\SessionSalesBreakdown;
 use App\CashRegister\State\CashRegisterCloseProcessor;
 use App\CashRegister\State\CashRegisterDashboardProvider;
 use App\CashRegister\State\CashSessionClosureSummaryProvider;
@@ -80,6 +82,7 @@ final class CoreOperationalPathTest extends KernelTestCase
 
     public function testCreatedProductAndCustomerArePersistedAndSellable(): void
     {
+        $other = $this->fixture->seed('20.000000');
         $world = $this->fixture->seed('1.000000');
 
         $product = $this->entityManager->find(Product::class, $world->product->getId());
@@ -95,6 +98,10 @@ final class CoreOperationalPathTest extends KernelTestCase
         );
         self::assertInstanceOf(SaleRecord::class, $result);
         self::assertEqualsWithDelta(0.0, (float) $this->fixture->onHand($world->warehouse, $world->product), 0.001);
+
+        $sale = $this->newOperationalSale($world, PaymentMethod::CASH, '2')->setWarehouse($other->warehouse);
+        $this->expectException(ValidationException::class);
+        $this->processor($world)->process($sale, new Post());
     }
 
     public function testCashSaleDecrementsStockAndWritesCashMovement(): void
@@ -125,6 +132,9 @@ final class CoreOperationalPathTest extends KernelTestCase
         $gateway = static::getContainer()->get(SalesWriteGateway::class);
         static::assertInstanceOf(SalesWriteGateway::class, $gateway);
         $failingGateway = $this->createMock(SalesWriteGateway::class);
+        $failingGateway
+            ->method('cashRegisterBelongsToBranch')
+            ->willReturnCallback($gateway->cashRegisterBelongsToBranch(...));
         $failingGateway
             ->method('requireLockedOpenCashSessionForUser')
             ->willReturnCallback(static function (int $sessionId, int $userId) use ($gateway): void {
@@ -226,6 +236,19 @@ final class CoreOperationalPathTest extends KernelTestCase
         static::assertNull($result->getCashSessionId());
         static::assertCount(0, $result->getSalePayments());
         self::assertSame(0, $this->fixture->cashMovementCount((string) $result->getId()));
+        /** @var SaleRecordRepository $repository */
+        $repository = static::getContainer()->get(SaleRecordRepository::class);
+        $branchId = (string) $world->branch->getId();
+        $rows = $repository->aggregateReceivablesByCustomer($branchId, null, 1, 10);
+        self::assertSame('10.00', $rows[0]['totalBalance']);
+        self::assertSame(1, $repository->countReceivableCustomers($branchId, null));
+        self::assertSame('10.00', $repository->sumReceivables($branchId)['total']);
+        self::assertSame([], $repository->aggregateReceivablesByCustomer('other-branch', null, 1, 10));
+        $customerId = (int) $world->customer->getId();
+        $details = $repository->openReceivableDetails($branchId, $customerId);
+        self::assertSame($result->getId(), $details[0]['id']);
+        self::assertSame([], $details[0]['payments']);
+        self::assertSame([], $repository->openReceivableDetails('other-branch', $customerId));
         $retriedCredit = $this->newOperationalSale($world, PaymentMethod::CREDIT, '1');
         $replayed = $processor->process($retriedCredit, $operation, context: ['request' => $request]);
         static::assertInstanceOf(SaleRecord::class, $replayed);
@@ -435,18 +458,28 @@ final class CoreOperationalPathTest extends KernelTestCase
 
     private function assertCashReconciles(CoreSaleWorld $world, string $expected): void
     {
-        $container = static::getContainer();
         $connection = $this->entityManager->getConnection();
         $branchContext = $this->createStub(BranchContextServiceInterface::class);
         $branchContext->method('getCurrentBranchId')->willReturn($world->branch->getId());
         $dashboard = new CashRegisterDashboardProvider($connection, $branchContext)->provide(new GetCollection());
         static::assertEqualsWithDelta((float) $expected, $dashboard[0]->balance, 0.001, 'Cash dashboard');
+        $breakdown = new SessionSalesBreakdown($connection);
+        $hydrator = new CashMovementHydrator($this->entityManager, $connection);
         $variables = ['id' => $world->cashSession->getId()];
-        $summary = $container->get(CashSessionClosureSummaryProvider::class)->provide(new GetCollection(), $variables);
+        $summary = new CashSessionClosureSummaryProvider($connection, $breakdown, $branchContext)->provide(
+            new GetCollection(),
+            $variables,
+        );
         static::assertSame($expected, $summary[0]->expectedAmount, 'Closure preview');
-        $xReport = $container->get(CashSessionXReportProvider::class)->provide(new Get(), $variables);
+        $xReport = new CashSessionXReportProvider($connection, $breakdown, $branchContext)->provide(
+            new Get(),
+            $variables,
+        );
         static::assertSame($expected, $xReport->currentBalance, 'X report');
-        $movements = $container->get(CashSessionMovementsProvider::class)->provide(new GetCollection(), $variables);
+        $movements = new CashSessionMovementsProvider($connection, $hydrator, $branchContext)->provide(
+            new GetCollection(),
+            $variables,
+        );
         $gridBalance = 0.0;
         foreach ($movements as $movement) {
             $gridBalance += ($movement->getType()->value === 'income' ? 1 : -1) * (float) $movement->getAmount();
@@ -607,6 +640,9 @@ final class CoreOperationalPathTest extends KernelTestCase
         /** @var ProcessorInterface<mixed, mixed>&\PHPUnit\Framework\MockObject\Stub $remove */
         $remove = $this->createStub(ProcessorInterface::class);
 
+        /** @var BranchRepository $branches */
+        $branches = $container->get(BranchRepository::class);
+        /** @var JWTManagerInterface $jwt */
         $jwt = $container->get(JWTManagerInterface::class);
         $encoded = $jwt->encode(['branchId' => $world->branch->getId() ?? '', 'sub' => 'kernel-core']);
         $token = new JWTAuthenticationToken($world->user, 'api', ['ROLE_ADMIN'], $encoded);
@@ -634,7 +670,7 @@ final class CoreOperationalPathTest extends KernelTestCase
                 }
             },
             $container->get(LoggerInterface::class),
-            new BranchContextService($symfonySecurity, $jwt),
+            new BranchContextService($symfonySecurity, $jwt, new \App\Identity\Auth\OperatingBranchResolver($branches)),
             $container->get(BranchRepository::class),
             $gateway ?? $container->get(SalesWriteGateway::class),
             $container->get(CashSessionResolverInterface::class),

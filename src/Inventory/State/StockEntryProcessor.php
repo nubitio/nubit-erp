@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Catalog\Entity\Product;
 use App\Efact\Domain\ActiveReferenceGuard;
+use App\Identity\Auth\OperationalBranchGuard;
 use App\Identity\Entity\User;
 use App\Inventory\Core\Contract\StockValidationPolicyInterface;
 use App\Inventory\Core\Contract\UnitConversionServiceInterface;
@@ -18,6 +19,7 @@ use App\Inventory\Core\Enum\StockMovementType;
 use App\Inventory\Core\Service\InventoryService;
 use App\Inventory\Entity\StockEntry;
 use App\Inventory\Entity\StockEntryItem;
+use App\Inventory\Entity\Warehouse;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -52,6 +54,7 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $persistProcessor,
         private ActiveReferenceGuard $activeReferenceGuard,
+        private OperationalBranchGuard $branchGuard,
     ) {}
 
     #[Override]
@@ -67,13 +70,15 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         }
 
         $this->denyUnlessGranted($data, $type);
-        $this->validateEntry($data, $type);
-
-        /** @var User|null $user */
         $user = $this->security->getUser();
-        if ($user instanceof User) {
-            $data->setCreatedBy($user);
+        if (!$user instanceof User) {
+            throw new AccessDeniedException('Se requiere un usuario para registrar el movimiento.');
         }
+
+        $this->branchGuard->requireBranch(['warehouse' => $data->getWarehouse()?->getBranch()]);
+        $this->resolveTransferDestination($data, $type, $user);
+        $this->validateEntry($data, $type);
+        $data->setCreatedBy($user);
 
         $this->em->wrapInTransaction(function () use ($data, $type): void {
             $this->em->persist($data);
@@ -90,6 +95,55 @@ final readonly class StockEntryProcessor implements ProcessorInterface
         });
 
         return $data;
+    }
+
+    private function resolveTransferDestination(StockEntry $entry, StockEntryType $type, User $user): void
+    {
+        $targetId = $entry->getTargetWarehouseId();
+        $target = $entry->getTargetWarehouse();
+        if (!$type->requiresTargetWarehouse()) {
+            if ($targetId !== null || $target !== null) {
+                throw new UnprocessableEntityHttpException('El almacén destino solo se usa en traslados.');
+            }
+
+            return;
+        }
+
+        if ($targetId !== null) {
+            if ($target !== null && $target->getId() !== $targetId) {
+                throw new UnprocessableEntityHttpException('Indica un único almacén destino.');
+            }
+
+            $filters = $this->em->getFilters();
+            $enabled = $filters->isEnabled('branch_filter');
+            if ($enabled) {
+                $filters->suspend('branch_filter');
+            }
+            try {
+                $target = $this->em->find(Warehouse::class, $targetId);
+            } finally {
+                if ($enabled) {
+                    $filters->restore('branch_filter');
+                }
+            }
+        }
+
+        if ($target === null && $targetId === null) {
+            return; // validateEntry reports the missing required destination.
+        }
+
+        $branch = $target?->getBranch();
+        $branchId = $branch?->getId();
+        if (
+            $branch === null
+            || $branchId === null
+            || !$branch->getIsActive()
+            || !$user->canOperateInBranch($branchId)
+        ) {
+            throw new AccessDeniedException('El almacén destino no pertenece a una sucursal operativa autorizada.');
+        }
+
+        $entry->setTargetWarehouse($target);
     }
 
     private function denyUnlessGranted(StockEntry $entry, StockEntryType $type): void

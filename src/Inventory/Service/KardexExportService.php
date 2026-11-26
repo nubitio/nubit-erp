@@ -30,6 +30,7 @@ final readonly class KardexExportService
      * @param array{
      *   productId: string,
      *   warehouseId?: string|null,
+     *   branchId?: string|null,
      *   from?: string|null,
      *   to?: string|null,
      *   valuation?: string|null,
@@ -47,6 +48,7 @@ final readonly class KardexExportService
     public function buildReportData(array $params): array
     {
         $productId = $params['productId'];
+        $branchId = $params['branchId'] ?? null;
         $warehouseId = $params['warehouseId'] ?? null;
         $from = $params['from'] ?? null;
         $to = $params['to'] ?? null;
@@ -56,20 +58,21 @@ final readonly class KardexExportService
             [
                 'product' => $productId,
                 'warehouse' => $warehouseId,
+                'branchId' => $branchId,
                 'from' => $from,
                 'to' => $to,
                 'valuation' => $valuation,
             ],
             static fn($value) => $value !== null && $value !== '',
         );
-        /** @var array{product?: string, warehouse?: string, from?: string, to?: string, valuation?: string} $filters */
+        /** @var array{product?: string, warehouse?: string, branchId?: string, from?: string, to?: string, valuation?: string} $filters */
 
         $movementCount = $this->movementRepository->countKardex($filters);
         if ($movementCount > self::MAX_EXPORT_ROWS) {
             throw new KardexExportLimitExceeded(self::MAX_EXPORT_ROWS);
         }
 
-        $summary = $this->summaryService->getSummary($productId, $warehouseId, $from, $to, $valuation);
+        $summary = $this->summaryService->getSummary($productId, $warehouseId, $from, $to, $valuation, $branchId);
 
         $movements = $this->movementRepository->findKardexForExport($filters);
         $this->referenceResolver->applyToMovements($movements);

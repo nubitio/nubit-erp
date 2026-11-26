@@ -13,7 +13,7 @@ use App\Catalog\Entity\Product;
 use App\Catalog\Repository\SunatCatalogRepository;
 use App\Contacts\Entity\Customer;
 use App\Contacts\Repository\CustomerRepository;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Security\Security;
 use App\Inventory\Core\Contract\SalesInventoryPortInterface;
@@ -42,8 +42,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use ReflectionClass;
-use ReflectionNamedType;
-use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -118,6 +116,8 @@ final class SaleProcessorTest extends TestCase
     /** @var BranchRepository&MockObject */
     private BranchRepository $branchRepository;
 
+    private ?Branch $branchOverride = null;
+
     /** @var CustomerRepository&MockObject */
     private CustomerRepository $customerRepository;
 
@@ -132,7 +132,7 @@ final class SaleProcessorTest extends TestCase
     // Their inner dependencies are replaced with mocks injected via reflection.
     // -------------------------------------------------------------------------
 
-    private BranchContextService $branchContextService;
+    private BranchContextServiceInterface $branchContextService;
     private SaleInventoryOrchestrator $inventoryOrchestrator;
     private DetractionCalculator $detractionCalculator;
     private SaleSettlementPlanService $saleSettlementPlanService;
@@ -173,12 +173,15 @@ final class SaleProcessorTest extends TestCase
         $this->branchRepository = $this->createMock(BranchRepository::class);
         $this->customerRepository = $this->createMock(CustomerRepository::class);
         $this->salesWriteGateway = $this->createMock(SalesWriteGateway::class);
+        $this->salesWriteGateway->method('cashRegisterBelongsToBranch')->willReturn(true);
         $this->sunatCatalogRepository = $this->createMock(SunatCatalogRepository::class);
         $this->saleRecordRepository = $this->createMock(SaleRecordRepository::class);
         $this->saleRecordRepository->method('findByOfflineRetryKey')->willReturn(null);
 
+        $this->branchContextService = $this->buildBranchContextStub('branch-1');
+        $this->branchRepository->method('find')->willReturnCallback($this->findBranch(...));
+
         // Build final-class stubs
-        $this->branchContextService = $this->buildBranchContextStub(returnBranchId: null);
         $this->inventoryOrchestrator = $this->buildInventoryOrchestratorStub(shouldThrow: false);
         $this->detractionCalculator = $this->buildDetractionCalculatorStub();
         $this->saleSettlementPlanService = $this->buildSaleSettlementPlanServiceStub();
@@ -598,6 +601,7 @@ final class SaleProcessorTest extends TestCase
         new ReflectionClass(Warehouse::class)
             ->getProperty('id')
             ->setValue($warehouse, 'wh-test');
+        $warehouse->setBranch($this->findBranch('branch-1'));
         $sale->setAlmacen($warehouse);
 
         $product = new Product();
@@ -1025,9 +1029,9 @@ final class SaleProcessorTest extends TestCase
             ->getProperty('id')
             ->setValue($branch, 'branch-42');
 
-        $this->branchContextService = $this->buildBranchContextStubWithRealToken('branch-42');
+        $this->branchContextService = $this->buildBranchContextStub('branch-42');
 
-        $this->branchRepository->method('find')->with('branch-42')->willReturn($branch);
+        $this->branchOverride = $branch;
 
         $this->buildAndRunProcessor($sale, new Post());
 
@@ -1046,8 +1050,8 @@ final class SaleProcessorTest extends TestCase
             ->getProperty('id')
             ->setValue($branch, 'branch-42');
 
-        $this->branchContextService = $this->buildBranchContextStubWithRealToken('branch-42');
-        $this->branchRepository->method('find')->with('branch-42')->willReturn($branch);
+        $this->branchContextService = $this->buildBranchContextStub('branch-42');
+        $this->branchOverride = $branch;
 
         $this->salesWriteGateway->expects($this->never())->method('write');
         $this->persistProcessor->expects($this->never())->method('process');
@@ -1454,6 +1458,7 @@ final class SaleProcessorTest extends TestCase
         $sale = new SaleRecord();
         $sale->setTipoId($tipoId);
         $sale->setId('existing-uuid-abc-123');
+        $sale->setBranch($this->findBranch('branch-1'));
 
         // Operational sales (tipoId=2) always call SalePaymentPlanService::resolveForWrite().
         // Provide a minimal payment so it doesn't throw.
@@ -1486,76 +1491,24 @@ final class SaleProcessorTest extends TestCase
     // Final-class stub factories
     // =========================================================================
 
-    /**
-     * Build a BranchContextService stub where getCurrentBranchId() returns null.
-     * The SecurityComponent mock returns null from getToken(), so JWTAuthenticationToken
-     * instanceof check fails and the method returns null safely.
-     *
-     * @param string|null $returnBranchId unused here — kept for API symmetry
-     */
-    private function buildBranchContextStub(?string $returnBranchId = null): BranchContextService
+    private function buildBranchContextStub(string $branchId): BranchContextServiceInterface
     {
-        /** @var SecurityComponent&MockObject $secMock */
-        $secMock = $this->createStub(SecurityComponent::class);
-        $secMock->method('getToken')->willReturn(null);
+        $context = $this->createStub(BranchContextServiceInterface::class);
+        $context->method('getCurrentBranchId')->willReturn($branchId);
 
-        $rc = new ReflectionClass(BranchContextService::class);
-        /** @var BranchContextService $stub */
-        $stub = $rc->newInstanceWithoutConstructor();
-        $rc->getProperty('security')->setValue($stub, $secMock);
-
-        // jwtManager is never called because token is null; inject no-op sub-stub
-        if ($rc->hasProperty('jwtManager')) {
-            $jwtMgrClass = (string) $rc->getProperty('jwtManager')->getType();
-            if (class_exists($jwtMgrClass)) {
-                $jwtStub = new ReflectionClass($jwtMgrClass)->newInstanceWithoutConstructor();
-                $rc->getProperty('jwtManager')->setValue($stub, $jwtStub);
-            }
-        }
-
-        return $stub;
+        return $context;
     }
 
-    /**
-     * Build a BranchContextService stub where getCurrentBranchId() returns the given branch ID.
-     */
-    private function buildBranchContextStubWithRealToken(string $branchId): BranchContextService
+    private function findBranch(string $branchId): Branch
     {
-        // 1. Build a real JWTManager with a test secret (bypassing constructor to avoid empty-secret check)
-        $jwtManagerRc = new ReflectionClass(\Nubit\AdminBundle\Auth\JWTManager::class);
-        /** @var \Nubit\AdminBundle\Auth\JWTManager $jwtManager */
-        $jwtManager = $jwtManagerRc->newInstanceWithoutConstructor();
-        $jwtManagerRc->getProperty('secret')->setValue($jwtManager, 'test-secret-for-unit-tests-32bytes');
-        $jwtManagerRc->getProperty('logger')->setValue($jwtManager, $this->logger);
-
-        // 2. Encode a JWT that contains the branchId
-        $encodedToken = $jwtManager->encode(['branchId' => $branchId, 'sub' => 'test-user']);
-
-        // 3. Build JWTAuthenticationToken with the encoded token as credentials
-        $jwtTokenRc = new ReflectionClass(\Nubit\AdminBundle\Auth\JWTAuthenticationToken::class);
-        /** @var \Nubit\AdminBundle\Auth\JWTAuthenticationToken $jwtToken */
-        $jwtToken = $jwtTokenRc->newInstanceWithoutConstructor();
-        // Set the 'token' property on JWTAuthenticationToken itself
-        $jwtTokenRc->getProperty('token')->setValue($jwtToken, $encodedToken);
-        // Initialize parent PostAuthenticationToken properties to avoid "not initialized" errors
-        $parentRc = $jwtTokenRc->getParentClass();
-        if ($parentRc !== false) {
-            $this->initStubProperties($parentRc, $jwtToken);
+        if ($this->branchOverride !== null) {
+            return $this->branchOverride;
         }
 
-        // 4. Make security->getToken() return our JWT token
-        /** @var \Symfony\Bundle\SecurityBundle\Security&MockObject $secMock */
-        $secMock = $this->createStub(\Symfony\Bundle\SecurityBundle\Security::class);
-        $secMock->method('getToken')->willReturn($jwtToken);
+        $branch = new Branch();
+        new \ReflectionProperty(Branch::class, 'id')->setValue($branch, $branchId);
 
-        // 5. Build BranchContextService via reflection
-        $bcsRc = new ReflectionClass(BranchContextService::class);
-        /** @var BranchContextService $stub */
-        $stub = $bcsRc->newInstanceWithoutConstructor();
-        $bcsRc->getProperty('security')->setValue($stub, $secMock);
-        $bcsRc->getProperty('jwtManager')->setValue($stub, $jwtManager);
-
-        return $stub;
+        return $branch;
     }
 
     /**
@@ -1684,39 +1637,5 @@ final class SaleProcessorTest extends TestCase
         $rc->getProperty('connection')->setValue($stub, $connMock);
 
         return $stub;
-    }
-
-    // =========================================================================
-    // General reflection utilities
-    // =========================================================================
-
-    /**
-     * Recursively initialize unset properties of a stub with no-op sub-stubs or null.
-     *
-     * @param ReflectionClass<object> $rc
-     */
-    private function initStubProperties(ReflectionClass $rc, object $stub): void
-    {
-        foreach ($rc->getProperties() as $prop) {
-            if ($prop->isInitialized($stub)) {
-                continue;
-            }
-            $type = $prop->getType();
-            if ($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
-                $depClass = $type->getName();
-                if (class_exists($depClass) || interface_exists($depClass)) {
-                    try {
-                        $depStub = new ReflectionClass($depClass)->newInstanceWithoutConstructor();
-                        $prop->setValue($stub, $depStub);
-                        continue;
-                    } catch (\Throwable) {
-                        // fall through
-                    }
-                }
-            }
-            if (!$type instanceof ReflectionNamedType || $type->allowsNull()) {
-                $prop->setValue($stub, null);
-            }
-        }
     }
 }

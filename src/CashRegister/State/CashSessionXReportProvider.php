@@ -9,6 +9,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Dto\CashSessionPaymentMethodSalesDto;
 use App\CashRegister\Dto\CashSessionXReportDto;
 use App\CashRegister\Service\SessionSalesBreakdown;
+use App\Identity\Auth\BranchContextServiceInterface;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Connection;
@@ -24,6 +25,7 @@ readonly class CashSessionXReportProvider implements ProviderInterface
     public function __construct(
         private Connection $connection,
         private SessionSalesBreakdown $breakdown,
+        private BranchContextServiceInterface $branchContext,
     ) {}
 
     /**
@@ -35,8 +37,9 @@ readonly class CashSessionXReportProvider implements ProviderInterface
     {
         $cashSessionId = $uriVariables['id'];
 
-        $session = $this->connection->fetchAssociative('SELECT id, opening_amount, opened_at FROM cash_sessions WHERE id = ?', [
+        $session = $this->connection->fetchAssociative('SELECT id, opening_amount, opened_at FROM cash_sessions WHERE id = ? AND branch_id = ?', [
             $cashSessionId,
+            $this->branchContext->getCurrentBranchId(),
         ]);
 
         if ($session === false) {

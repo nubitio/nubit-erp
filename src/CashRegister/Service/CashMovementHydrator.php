@@ -41,11 +41,17 @@ final readonly class CashMovementHydrator
      *
      * @throws Exception
      */
-    public function findById(int $id): ?CashMovement
+    public function findById(int $id, ?string $branchId = null): ?CashMovement
     {
-        $row = $this->connection->fetchAssociative('SELECT id, cash_session_id, movement_type, category_id, amount, description, created_at
-             FROM cash_movements
-             WHERE id = ?', [$id]);
+        $sql = 'SELECT m.id, m.cash_session_id, m.movement_type, m.category_id, m.amount, m.description, m.created_at
+                FROM cash_movements m WHERE m.id = ?';
+        $params = [$id];
+        if ($branchId !== null) {
+            $sql .= ' AND m.cash_session_id IN (SELECT s.id FROM cash_sessions s WHERE s.branch_id = ?)';
+            $params[] = $branchId;
+        }
+
+        $row = $this->connection->fetchAssociative($sql, $params);
 
         return $row === false ? null : $this->fromRow($row);
     }

@@ -14,7 +14,7 @@ use App\Contacts\Entity\Customer;
 use App\Contacts\Repository\CustomerRepository;
 use App\Efact\Domain\ActiveReferenceGuard;
 use App\Efact\Domain\Money;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Dto\AuthUserDto;
 use App\Identity\Offline\InvalidOfflineSignature;
 use App\Identity\Offline\OfflineActor;
@@ -78,7 +78,7 @@ readonly class SaleProcessor implements ProcessorInterface, ConfirmIntegrationCr
         private TenantSettingsService $tenantSettings,
         private InvoiceCreatorInterface $saleInvoicing,
         private LoggerInterface $logger,
-        private BranchContextService $branchContextService,
+        private BranchContextServiceInterface $branchContextService,
         private BranchRepository $branchRepository,
         private SalesWriteGateway $salesWriteGateway,
         private CashSessionResolverInterface $cashSessionResolver,
@@ -113,6 +113,10 @@ readonly class SaleProcessor implements ProcessorInterface, ConfirmIntegrationCr
 
         $isNew = !$data->getId();
         if ($operation instanceof DeleteOperationInterface) {
+            $branchId = $this->branchContextService->getCurrentBranchId();
+            if ($branchId === null || $data->getBranch()?->getId() !== $branchId) {
+                throw new AccessDeniedException('Selecciona la sucursal de la venta para eliminarla.');
+            }
             $this->logger->info('Processing sale deletion', [
                 'sale_id' => $data->getId(),
             ]);
@@ -175,6 +179,34 @@ readonly class SaleProcessor implements ProcessorInterface, ConfirmIntegrationCr
             throw new AccessDeniedException('Permission "pos.offline_sale" is required to synchronize offline sales.');
         }
 
+        $branchId = $administrativeBranchId ?? $this->branchContextService->getCurrentBranchId();
+        $branch = $branchId !== null ? $this->branchRepository->find($branchId) : null;
+        if ($branchId === null || $branch === null || !$branch->getIsActive()) {
+            throw ValidationException::withErrors(['branch' => [
+                'Selecciona una sucursal activa para registrar la venta.',
+            ]]);
+        }
+
+        $warehouse = $data->getWarehouse();
+        if ($warehouse !== null && $warehouse->getBranch()?->getId() !== $branchId) {
+            throw ValidationException::withErrors(['warehouse' => ['Selecciona un almacén de la sucursal activa.']]);
+        }
+
+        $cashRegisterId = $data->getCajaId();
+        if (
+            $isNew
+            && $cashRegisterId !== null
+            && !$this->salesWriteGateway->cashRegisterBelongsToBranch($cashRegisterId, $branchId)
+        ) {
+            throw ValidationException::withErrors(['cashRegisterId' => [
+                'Selecciona una caja de la sucursal activa.',
+            ]]);
+        }
+
+        if (!$isNew && $data->getBranch()?->getId() !== $branchId) {
+            throw new AccessDeniedException('La venta pertenece a otra sucursal.');
+        }
+
         // Idempotent replay: POS double-clicks and the offline outbox both resend
         // the same Idempotency-Key. Without this check a retry whose first attempt
         // reached the server would create a second SaleRecord, double-deduct stock,
@@ -182,7 +214,7 @@ readonly class SaleProcessor implements ProcessorInterface, ConfirmIntegrationCr
         if ($isNew && $isUuidIdempotencyKey) {
             $existingSale = $this->saleRecordRepository->findByOfflineRetryKey($idempotencyKey);
             if ($existingSale instanceof SaleRecord) {
-                if ($administrativeCredit && $existingSale->getBranch()?->getId() !== $administrativeBranchId) {
+                if ($existingSale->getBranch()?->getId() !== $branchId) {
                     throw new ConflictHttpException('Esta clave de idempotencia ya está en uso.');
                 }
                 $this->logger->info('Sale replay detected via Idempotency-Key — returning existing sale', [
@@ -193,22 +225,6 @@ readonly class SaleProcessor implements ProcessorInterface, ConfirmIntegrationCr
                 $this->saleRecordRepository->enrichWithTaxDocuments([$existingSale]);
 
                 return $existingSale;
-            }
-        }
-
-        // Disabled branches stay readable for reports but must not accept new sales,
-        // even from sessions whose token was issued before the branch was disabled.
-        if ($isNew) {
-            $contextBranchId = $this->branchContextService->getCurrentBranchId();
-            $contextBranch = $contextBranchId !== null ? $this->branchRepository->find($contextBranchId) : null;
-            if ($contextBranch !== null && !$contextBranch->getIsActive()) {
-                $this->logger->warning('Sale rejected: branch is disabled', [
-                    'user_id' => $user->userId,
-                    'branch_id' => $contextBranchId,
-                ]);
-                throw ValidationException::withErrors([
-                    'branch' => ['La sucursal está deshabilitada; no se pueden registrar nuevas ventas.'],
-                ]);
             }
         }
 
@@ -314,13 +330,7 @@ readonly class SaleProcessor implements ProcessorInterface, ConfirmIntegrationCr
                 $data->setOfflineRetryKey($idempotencyKey);
             }
 
-            // Set the branch from the current user's session
-            $branchId = $this->branchContextService->getCurrentBranchId();
-            if ($branchId !== null) {
-                $branch = $this->branchRepository->find($branchId);
-                $data->setBranch($branch);
-                $this->logger->debug('Branch set for sale', ['branch_id' => $branchId]);
-            }
+            $data->setBranch($branch);
         } else {
             $this->logger->info('Updating existing sale record', [
                 'sale_id' => $data->getId(),

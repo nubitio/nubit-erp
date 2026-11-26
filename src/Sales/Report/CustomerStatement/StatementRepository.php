@@ -58,7 +58,7 @@ final readonly class StatementRepository
      *
      * @throws Exception
      */
-    public function charges(int $customerId, string $dateTo): array
+    public function charges(int $customerId, string $dateTo, string $branchId): array
     {
         $rows = $this->connection->fetchAllAssociative(
             <<<'SQL'
@@ -74,12 +74,13 @@ final readonly class StatementRepository
                 FROM customer_account_entries e
                 LEFT JOIN sales s ON s.id = e.sale_id
                 WHERE e.customer_id = :customer
+                  AND s.branch_id = :branch
                   AND e.entry_type = 'charge'
                   AND (s.status IS NULL OR s.status <> 'VOIDED')
                   AND e.occurred_on <= :date_to
                 ORDER BY e.id
                 SQL,
-            ['customer' => $customerId, 'date_to' => $dateTo],
+            ['customer' => $customerId, 'date_to' => $dateTo, 'branch' => $branchId],
         );
 
         return array_map(static fn(array $r): array => [
@@ -102,7 +103,7 @@ final readonly class StatementRepository
      *
      * @throws Exception
      */
-    public function payments(int $customerId, string $dateTo): array
+    public function payments(int $customerId, string $dateTo, string $branchId): array
     {
         $rows = $this->connection->fetchAllAssociative(
             <<<'SQL'
@@ -118,11 +119,19 @@ final readonly class StatementRepository
                 FROM customer_account_entries e
                 LEFT JOIN sales s ON s.id = e.sale_id
                 WHERE e.customer_id = :customer
-                  AND e.entry_type IN ('payment', 'credit_note', 'advance')
+                  AND (
+                      (e.entry_type IN ('payment', 'credit_note') AND s.branch_id = :branch)
+                      OR (e.entry_type = 'advance' AND e.branch_id = :advance_branch)
+                  )
                   AND e.occurred_on <= :date_to
                 ORDER BY e.id
                 SQL,
-            ['customer' => $customerId, 'date_to' => $dateTo],
+            [
+                'customer' => $customerId,
+                'date_to' => $dateTo,
+                'branch' => $branchId,
+                'advance_branch' => $branchId,
+            ],
         );
 
         return array_map(static fn(array $r): array => [
@@ -131,5 +140,64 @@ final readonly class StatementRepository
             'amount' => (string) $r['amount'],
             'detail' => (string) $r['detail'],
         ], $rows);
+    }
+
+    /**
+     * The customer ledger nets applications across the company. A local statement needs
+     * the matching debit and credit when the received advance and the sale differ.
+     *
+     * @return array{
+     *     charges: list<array{sale_id: string, date: string, document: string, amount: string, balance_due: string, detail: string}>,
+     *     payments: list<array{date: string, document: string, amount: string, detail: string}>
+     * }
+     */
+    public function crossBranchAdvanceApplications(int $customerId, string $dateTo, string $branchId): array
+    {
+        $rows = $this->connection->fetchAllAssociative(
+            <<<'SQL'
+                SELECT e.branch_id AS origin, s.branch_id AS destination, a.applied_amount, DATE(a.applied_at) AS applied_on
+                FROM customer_payment_applications a
+                JOIN customer_account_entries e ON e.id = a.customer_account_entry_id
+                JOIN sales s ON s.id = a.sale_id
+                WHERE e.customer_id = :customer AND s.customer_id = e.customer_id
+                  AND e.entry_type = 'advance'
+                  AND s.branch_id IS NOT NULL
+                  AND (e.branch_id IS NULL OR e.branch_id <> s.branch_id)
+                  AND (e.branch_id = :origin OR s.branch_id = :destination)
+                  AND DATE(a.applied_at) <= :date_to
+                ORDER BY a.id
+                SQL,
+            [
+                'customer' => $customerId,
+                'origin' => $branchId,
+                'destination' => $branchId,
+                'date_to' => $dateTo,
+            ],
+        );
+
+        $charges = [];
+        $payments = [];
+        foreach ($rows as $row) {
+            $movement = [
+                'date' => (string) $row['applied_on'],
+                'amount' => (string) $row['applied_amount'],
+                'document' => 'Anticipo',
+            ];
+            if ($row['origin'] === $branchId) {
+                $charges[] = [
+                    ...$movement,
+                    'sale_id' => '',
+                    'balance_due' => '0.00',
+                    'detail' => 'Anticipo aplicado fuera de la sucursal',
+                ];
+            } else {
+                $payments[] = [
+                    ...$movement,
+                    'detail' => 'Anticipo de otra sucursal aplicado',
+                ];
+            }
+        }
+
+        return ['charges' => $charges, 'payments' => $payments];
     }
 }

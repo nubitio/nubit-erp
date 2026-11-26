@@ -7,6 +7,7 @@ namespace App\Sales\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\Pagination\TraversablePaginator;
 use ApiPlatform\State\ProviderInterface;
+use App\Identity\Auth\BranchReportScope;
 use App\Sales\ApiResource\CustomerReceivable;
 use App\Sales\Repository\SaleRecordRepository;
 use ArrayIterator;
@@ -35,19 +36,21 @@ final readonly class CustomerReceivableProvider implements ProviderInterface
     public function __construct(
         private SaleRecordRepository $repository,
         private RequestStack $requestStack,
+        private BranchReportScope $scope,
     ) {}
 
     #[Override]
     public function provide(Operation $operation, array $uriVariables = [], array $context = []): TraversablePaginator
     {
         $request = $this->requestStack->getCurrentRequest();
+        $branchId = $this->scope->requireBranchId($request?->query->getString('branchId') ?: null);
         $search = $this->extractSearch(array_values($request?->query->all('filter') ?? []));
 
         $page = max(1, (int) $request?->query->get('page', 1));
         $perPage = max(1, min(200, (int) $request?->query->get('itemsPerPage', self::DEFAULT_PER_PAGE)));
 
-        $rows = $this->repository->aggregateReceivablesByCustomer($search, $page, $perPage);
-        $total = $this->repository->countReceivableCustomers($search);
+        $rows = $this->repository->aggregateReceivablesByCustomer($branchId, $search, $page, $perPage);
+        $total = $this->repository->countReceivableCustomers($branchId, $search);
         $today = new DateTimeImmutable('now', new DateTimeZone('America/Lima'));
 
         $items = array_map(fn(array $row): CustomerReceivable => $this->hydrate($row, $today), $rows);

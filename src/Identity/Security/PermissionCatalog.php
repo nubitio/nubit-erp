@@ -84,6 +84,7 @@ final class PermissionCatalog
                 'permissions' => [
                     'purchases.view' => 'Ver ingresos de stock',
                     'purchases.create' => 'Registrar ingresos',
+                    'purchases.cross_branch' => 'Gestionar compras de otras sucursales operativas',
                     'purchases.edit' => 'Editar compras',
                     'purchases.void' => 'Anular compras',
                 ],

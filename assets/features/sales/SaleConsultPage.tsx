@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { AppDropdown } from '@nubitio/ui';
+import { useQuery } from '@tanstack/react-query';
+import { AppDropdown, SelectField } from '@nubitio/ui';
 import {
   ColumnChooserButton,
   DataGridView,
@@ -10,6 +11,7 @@ import {
 } from '@nubitio/crud';
 import { useCoreTranslation } from '@nubitio/core';
 import { getCoreApiBaseUrl } from '@nubitio/core';
+import { useSessionInfo } from '@shared/sessionInfo';
 import { httpClient } from '@shared/api/HttpClient';
 import { SaleFields } from './SaleFields';
 import { saleEndpoints } from './api/saleEndpoints';
@@ -126,6 +128,21 @@ export const SaleConsultPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { currentBranchId } = useSessionInfo();
+  const [requestedBranch, setRequestedBranch] = useState('');
+  const reportingBranches = useQuery({
+    queryKey: ['reporting-branches', currentBranchId],
+    queryFn: async () =>
+      (
+        await httpClient.get<{ id: string; name: string; isActive: boolean }[]>(
+          `${API}auth/reporting-branches`,
+        )
+      ).data,
+  });
+  const options = reportingBranches.data?.filter((branch) => branch.id !== currentBranchId) ?? [];
+  const branchId = options.some((branch) => branch.id === requestedBranch) ? requestedBranch : '';
+  const consultationUrl = `${saleEndpoints.list()}/consultation${branchId ? `?${new URLSearchParams({ branchId })}` : ''}`;
+
   const fields = useMemo(() => SaleFields(null), []);
   const columnChooserState = useColumnChooser(SALE_CONSULT_PRESET_RESOURCE, fields);
   const canGenerate = !!selectedReport;
@@ -147,6 +164,7 @@ export const SaleConsultPage = () => {
     const params = new URLSearchParams({
       report: selectedReport,
     });
+    if (branchId) params.set('branchId', branchId);
     if (gridFilter.length > 0) params.set('filter', JSON.stringify(gridFilter));
     if (dateRange.from) params.set('date-from', dateRange.from);
     if (dateRange.to) params.set('date-to', dateRange.to);
@@ -165,7 +183,7 @@ export const SaleConsultPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedReport]);
+  }, [branchId, selectedReport]);
 
   const handleClear = useCallback(() => {
     setSelectedReport('detailed-sales');
@@ -227,11 +245,30 @@ export const SaleConsultPage = () => {
 
   return (
     <div className="sale-consult-page">
+      {options.length > 0 && (
+        <SelectField
+          aria-label="Sucursales autorizadas para ventas"
+          value={branchId}
+          disabled={loading}
+          onChange={(event) => {
+            setRequestedBranch(event.target.value);
+            setError(null);
+          }}
+        >
+          <option value="">Sucursal operativa</option>
+          {options.map((branch) => (
+            <option key={branch.id} value={branch.id}>
+              {branch.isActive ? branch.name : `${branch.name} (inactiva)`}
+            </option>
+          ))}
+        </SelectField>
+      )}
       <DataGridView
+        key={consultationUrl}
         id="sales-consult"
         ref={gridRef}
         title="Consulta ventas"
-        url={saleEndpoints.list()}
+        url={consultationUrl}
         fields={fields}
         sort={[{ selector: 'issuedDate', desc: true }]}
         toolbar={toolbar}

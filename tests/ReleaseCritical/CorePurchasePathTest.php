@@ -8,7 +8,8 @@ use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use App\Efact\Domain\ActiveReferenceGuard;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
+use App\Identity\Auth\OperationalBranchGuard;
 use App\Organization\Repository\BranchRepository;
 use App\Purchasing\Entity\Purchase;
 use App\Purchasing\Entity\PurchaseItem;
@@ -118,19 +119,35 @@ final class CorePurchasePathTest extends KernelTestCase
 
         /** @var ProcessorInterface<mixed, mixed> $persist */
         $persist = $container->get('api_platform.doctrine.orm.state.persist_processor');
-        $branchContext = new \ReflectionClass(BranchContextService::class)->newInstanceWithoutConstructor();
+        $branchContext = $this->createStub(BranchContextServiceInterface::class);
+
+        $branchContext->method('getCurrentBranchId')->willReturn($world->branch->getId());
+
+        /** @var BranchRepository $branches */
+        $branches = $container->get(BranchRepository::class);
+        /** @var PurchaseInventoryService $inventory */
+        $inventory = $container->get(PurchaseInventoryService::class);
+        /** @var PurchaseReceiptSequenceService $sequence */
+        $sequence = $container->get(PurchaseReceiptSequenceService::class);
+        /** @var PurchaseSupplierDocumentValidator $validator */
+        $validator = $container->get(PurchaseSupplierDocumentValidator::class);
+        /** @var ActiveReferenceGuard $references */
+        $references = $container->get(ActiveReferenceGuard::class);
+        /** @var PurchaseOrderReceiptService $receipts */
+        $receipts = $container->get(PurchaseOrderReceiptService::class);
+        /** @var MessageBusInterface $bus */
+        $bus = $container->get(MessageBusInterface::class);
 
         return new PurchaseProcessor(
             $persist,
             $security,
-            $branchContext,
-            $container->get(BranchRepository::class),
-            $container->get(PurchaseInventoryService::class),
-            $container->get(PurchaseReceiptSequenceService::class),
-            $container->get(PurchaseSupplierDocumentValidator::class),
-            $container->get(ActiveReferenceGuard::class),
-            $container->get(PurchaseOrderReceiptService::class),
-            $container->get(MessageBusInterface::class),
+            new OperationalBranchGuard($branchContext, $branches),
+            $inventory,
+            $sequence,
+            $validator,
+            $references,
+            $receipts,
+            $bus,
         );
     }
 }

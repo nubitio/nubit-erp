@@ -100,6 +100,9 @@ class StockEntry
     #[ORM\JoinColumn(name: 'target_warehouse_id', referencedColumnName: 'almacen_id', nullable: true)]
     private ?Warehouse $targetWarehouse = null;
 
+    #[Groups(['stock_entry:write'])]
+    private ?string $targetWarehouseId = null;
+
     /** Optional operation category — applicable to RECEIPT and ISSUE. */
     #[Groups(['stock_entry:read', 'stock_entry:write'])]
     #[ApiProperty(description: 'stock_entry.operation.label')]
@@ -190,6 +193,16 @@ class StockEntry
     {
         $this->targetWarehouse = $w;
         return $this;
+    }
+
+    public function getTargetWarehouseId(): ?string
+    {
+        return $this->targetWarehouseId;
+    }
+
+    public function setTargetWarehouseId(?string $id): void
+    {
+        $this->targetWarehouseId = $id;
     }
 
     public function getOperation(): ?LogisticOperation

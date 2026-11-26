@@ -134,6 +134,7 @@ test.describe('Compras — crear compra e incremento de stock', () => {
 
     expect(resolvedProductId).toBeTruthy();
     expect(resolvedWarehouseId).toBeTruthy();
+    expect(resolvedBranchId).toBeTruthy();
 
     await test.step('Registrar compra vía API', async () => {
       const suppliersResponse = await request.get(`${BASE_URL}/api/suppliers?itemsPerPage=50`, {

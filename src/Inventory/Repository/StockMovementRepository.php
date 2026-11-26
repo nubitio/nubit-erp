@@ -34,18 +34,7 @@ final readonly class StockMovementRepository
     /**
      * Return paginated kardex rows with running_balance.
      *
-     * @param array{
-     *   warehouse?: string,
-     *   product?: string,
-     *   type?: string,
-     *   from?: string,
-     *   to?: string,
-     *   sourceId?: string,
-     *   sourceIdOperator?: string,
-     *   note?: string,
-     *   noteOperator?: string,
-     *   valuation?: string,
-     * } $filters
+     * @param array<string, string> $filters
      *
      * @return list<StockMovement>
      *
@@ -63,18 +52,7 @@ final readonly class StockMovementRepository
     }
 
     /**
-     * @param array{
-     *   warehouse?: string,
-     *   product?: string,
-     *   type?: string,
-     *   from?: string,
-     *   to?: string,
-     *   sourceId?: string,
-     *   sourceIdOperator?: string,
-     *   note?: string,
-     *   noteOperator?: string,
-     *   valuation?: string,
-     * } $filters
+     * @param array<string, string> $filters
      *
      * @return list<StockMovement>
      *
@@ -232,6 +210,11 @@ final readonly class StockMovementRepository
         $params = [];
         $where = [];
 
+        if (($filters['branchId'] ?? '') !== '') {
+            $where[] = 'sm.warehouse_id IN (SELECT w.almacen_id FROM almacen w WHERE w.local_id = :branch_id)';
+            $params['branch_id'] = $filters['branchId'];
+        }
+
         if (!empty($filters['warehouse'])) {
             $where[] = 'sm.warehouse_id = :warehouse_id';
             $params['warehouse_id'] = $this->extractUuid($filters['warehouse']);
@@ -300,6 +283,11 @@ final readonly class StockMovementRepository
     {
         $params = [];
         $where = [];
+
+        if (($filters['branchId'] ?? '') !== '') {
+            $where[] = 'warehouse_id IN (SELECT w.almacen_id FROM almacen w WHERE w.local_id = :branch_id)';
+            $params['branch_id'] = $filters['branchId'];
+        }
 
         if (!empty($filters['warehouse'])) {
             $where[] = 'warehouse_id = :warehouse_id';
@@ -404,16 +392,16 @@ final readonly class StockMovementRepository
         }
 
         // Product
-        if (!empty($row['product_id'])) {
+        if ((string) ($row['product_id'] ?? '') !== '') {
             $sm->product = [
-                'id' => $row['product_id'],
-                'name' => $row['product_name'] ?? '',
-                'code' => $row['product_code'] ?? null,
+                'id' => (string) $row['product_id'],
+                'name' => (string) ($row['product_name'] ?? ''),
+                'code' => isset($row['product_code']) ? (string) $row['product_code'] : null,
             ];
         }
 
         // Unit
-        if (!empty($row['unit_id'])) {
+        if ((string) ($row['unit_id'] ?? '') !== '') {
             $sm->unit = [
                 'id' => (int) $row['unit_id'],
                 'name' => $row['unit_name'] ?? '',

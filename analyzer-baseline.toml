@@ -2737,16 +2737,10 @@ message = "Redundant cast to `(string)`: the expression already has this type."
 count = 1
 
 [[issues]]
-file = "src/Identity/Auth/BranchContextService.php"
-code = "mixed-assignment"
-message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 1
-
-[[issues]]
 file = "src/Identity/Auth/EfactTokenClaimsProvider.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 3
+count = 1
 
 [[issues]]
 file = "src/Identity/Controller/AuthImpersonationConsumeController.php"
@@ -3081,12 +3075,6 @@ count = 2
 [[issues]]
 file = "src/Inventory/Repository/StockMovementRepository.php"
 code = "mixed-property-type-coercion"
-message = "A value with a less specific type `array{'code': mixed, 'id': truthy-mixed, 'name': nonnull}` is being assigned to property `$$product` (array{'code': null|string, 'id': string, 'name': string}|null)."
-count = 1
-
-[[issues]]
-file = "src/Inventory/Repository/StockMovementRepository.php"
-code = "mixed-property-type-coercion"
 message = "A value with a less specific type `array{'id': int, 'name': nonnull}` is being assigned to property `$$unit` (array{'id': int, 'name': string}|null)."
 count = 1
 
@@ -3275,18 +3263,6 @@ file = "src/Inventory/State/StockMovementProvider.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
 count = 2
-
-[[issues]]
-file = "src/Inventory/State/StockMovementProvider.php"
-code = "possibly-invalid-argument"
-message = 'Possible argument type mismatch for argument #1 of `App\Inventory\Repository\StockMovementRepository::countKardex`: expected `array<string, string>`, but possibly received `array<string, null|string>`.'
-count = 1
-
-[[issues]]
-file = "src/Inventory/State/StockMovementProvider.php"
-code = "possibly-invalid-argument"
-message = '''Possible argument type mismatch for argument #1 of `App\Inventory\Repository\StockMovementRepository::findKardex`: expected `array{'from'?: string, 'note'?: string, 'noteOperator'?: string, 'product'?: string, 'sourceId'?: string, 'sourceIdOperator'?: string, 'to'?: string, 'type'?: string, 'valuation'?: string, 'warehouse'?: string}`, but possibly received `array<string, null|string>`.'''
-count = 1
 
 [[issues]]
 file = "src/Inventory/State/StockMovementProvider.php"
@@ -4767,19 +4743,7 @@ count = 1
 [[issues]]
 file = "tests/Billing/State/TaxDocumentProcessorTest.php"
 code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$jwtManagerStub`."
-count = 1
-
-[[issues]]
-file = "tests/Billing/State/TaxDocumentProcessorTest.php"
-code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$processor`."
-count = 1
-
-[[issues]]
-file = "tests/Billing/State/TaxDocumentProcessorTest.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$stub`."
 count = 1
 
 [[issues]]
@@ -4852,18 +4816,6 @@ count = 3
 file = "tests/CashRegister/State/CashRegisterOpenProcessorTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$capturedSession`."
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterOpenProcessorTest.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$jwtManager`."
-count = 1
-
-[[issues]]
-file = "tests/CashRegister/State/CashRegisterOpenProcessorTest.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$stub`."
 count = 1
 
 [[issues]]
@@ -5204,12 +5156,6 @@ count = 2
 
 [[issues]]
 file = "tests/Identity/EventSubscriber/BranchFilterSubscriberTest.php"
-code = "mixed-return-statement"
-message = 'Could not infer a precise return type for function `App\Tests\Identity\EventSubscriber\TestableBranchFilterSubscriber::getEntityManager`. Saw type `mixed`.'
-count = 1
-
-[[issues]]
-file = "tests/Identity/EventSubscriber/BranchFilterSubscriberTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$stub`."
 count = 1
@@ -5506,19 +5452,7 @@ count = 1
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "ambiguous-object-method-access"
 message = "Cannot statically verify method call on a generic `object` type."
-count = 13
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "invalid-iterator"
-message = "The expression provided to `foreach` is not iterable. It resolved to type `mixed`, which is not iterable."
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "invalid-type-cast"
-message = "Casting `mixed` to `float`."
-count = 1
+count = 9
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
@@ -5589,12 +5523,6 @@ count = 1
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "less-specific-argument"
-message = 'Argument type mismatch for argument #2 of `App\Identity\Auth\BranchContextService::__construct`: expected `Nubit\AdminBundle\Auth\JWTManagerInterface`, but provided type `null|object` is less specific.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "less-specific-argument"
 message = 'Argument type mismatch for argument #2 of `App\Tests\ReleaseCritical\Support\CoreSaleFixture::__construct`: expected `App\Settings\Service\TenantSettingsService`, but provided type `null|object` is less specific.'
 count = 1
 
@@ -5618,39 +5546,21 @@ count = 1
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "mixed-argument"
-message = 'Invalid argument type for argument #4 of `Nubit\AdminBundle\Auth\JWTAuthenticationToken::__construct`: expected `string`, but found `mixed`.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "mixed-array-access"
-message = "Unsafe array access on type `mixed`."
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "mixed-assignment"
 message = "Assigning `mixed` type to a variable may lead to unexpected behavior."
-count = 14
+count = 10
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "mixed-method-access"
 message = "Attempting to access a method on a non-object type (`mixed`)."
-count = 3
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "mixed-property-access"
-message = "Attempting to access a property on a non-object type (`mixed`)."
-count = 3
+count = 1
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "possible-method-access-on-null"
 message = "Attempting to call a method on `null`."
-count = 13
+count = 9
 
 [[issues]]
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
@@ -5704,12 +5614,6 @@ count = 1
 file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
 code = "possibly-null-argument"
 message = 'Argument #18 of method `App\Sales\State\SaleProcessor::__construct` is possibly `null`, but parameter type `App\Efact\Domain\ActiveReferenceGuard` does not accept it.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CoreOperationalPathTest.php"
-code = "possibly-null-argument"
-message = 'Argument #2 of method `App\Identity\Auth\BranchContextService::__construct` is possibly `null`, but parameter type `Nubit\AdminBundle\Auth\JWTManagerInterface` does not accept it.'
 count = 1
 
 [[issues]]
@@ -5775,49 +5679,7 @@ count = 2
 [[issues]]
 file = "tests/ReleaseCritical/CorePurchasePathTest.php"
 code = "less-specific-argument"
-message = 'Argument type mismatch for argument #10 of `App\Purchasing\State\PurchaseProcessor::__construct`: expected `Symfony\Component\Messenger\MessageBusInterface|null`, but provided type `null|object` is less specific.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "less-specific-argument"
 message = 'Argument type mismatch for argument #2 of `App\Tests\ReleaseCritical\Support\CoreSaleFixture::__construct`: expected `App\Settings\Service\TenantSettingsService`, but provided type `null|object` is less specific.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "less-specific-argument"
-message = 'Argument type mismatch for argument #4 of `App\Purchasing\State\PurchaseProcessor::__construct`: expected `App\Organization\Repository\BranchRepository`, but provided type `null|object` is less specific.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "less-specific-argument"
-message = 'Argument type mismatch for argument #5 of `App\Purchasing\State\PurchaseProcessor::__construct`: expected `App\Purchasing\State\PurchaseInventoryService`, but provided type `null|object` is less specific.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "less-specific-argument"
-message = 'Argument type mismatch for argument #6 of `App\Purchasing\State\PurchaseProcessor::__construct`: expected `App\Purchasing\Service\PurchaseReceiptSequenceService`, but provided type `null|object` is less specific.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "less-specific-argument"
-message = 'Argument type mismatch for argument #7 of `App\Purchasing\State\PurchaseProcessor::__construct`: expected `App\Purchasing\Service\PurchaseSupplierDocumentValidator`, but provided type `null|object` is less specific.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "less-specific-argument"
-message = 'Argument type mismatch for argument #8 of `App\Purchasing\State\PurchaseProcessor::__construct`: expected `App\Efact\Domain\ActiveReferenceGuard`, but provided type `null|object` is less specific.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "less-specific-argument"
-message = 'Argument type mismatch for argument #9 of `App\Purchasing\State\PurchaseProcessor::__construct`: expected `App\Purchasing\Service\PurchaseOrderReceiptService`, but provided type `null|object` is less specific.'
 count = 1
 
 [[issues]]
@@ -5836,42 +5698,6 @@ count = 1
 file = "tests/ReleaseCritical/CorePurchasePathTest.php"
 code = "possibly-null-argument"
 message = 'Argument #2 of method `App\Tests\ReleaseCritical\Support\CoreSaleFixture::__construct` is possibly `null`, but parameter type `App\Settings\Service\TenantSettingsService` does not accept it.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "possibly-null-argument"
-message = 'Argument #4 of method `App\Purchasing\State\PurchaseProcessor::__construct` is possibly `null`, but parameter type `App\Organization\Repository\BranchRepository` does not accept it.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "possibly-null-argument"
-message = 'Argument #5 of method `App\Purchasing\State\PurchaseProcessor::__construct` is possibly `null`, but parameter type `App\Purchasing\State\PurchaseInventoryService` does not accept it.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "possibly-null-argument"
-message = 'Argument #6 of method `App\Purchasing\State\PurchaseProcessor::__construct` is possibly `null`, but parameter type `App\Purchasing\Service\PurchaseReceiptSequenceService` does not accept it.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "possibly-null-argument"
-message = 'Argument #7 of method `App\Purchasing\State\PurchaseProcessor::__construct` is possibly `null`, but parameter type `App\Purchasing\Service\PurchaseSupplierDocumentValidator` does not accept it.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "possibly-null-argument"
-message = 'Argument #8 of method `App\Purchasing\State\PurchaseProcessor::__construct` is possibly `null`, but parameter type `App\Efact\Domain\ActiveReferenceGuard` does not accept it.'
-count = 1
-
-[[issues]]
-file = "tests/ReleaseCritical/CorePurchasePathTest.php"
-code = "possibly-null-argument"
-message = 'Argument #9 of method `App\Purchasing\State\PurchaseProcessor::__construct` is possibly `null`, but parameter type `App\Purchasing\Service\PurchaseOrderReceiptService` does not accept it.'
 count = 1
 
 [[issues]]
@@ -6009,12 +5835,6 @@ count = 1
 [[issues]]
 file = "tests/Sales/State/SaleProcessorInvoiceDispatchTest.php"
 code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$branchContextStub`."
-count = 1
-
-[[issues]]
-file = "tests/Sales/State/SaleProcessorInvoiceDispatchTest.php"
-code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$processor`."
 count = 1
 
@@ -6051,18 +5871,6 @@ count = 1
 [[issues]]
 file = "tests/Sales/State/SaleProcessorTest.php"
 code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$jwtManager`."
-count = 1
-
-[[issues]]
-file = "tests/Sales/State/SaleProcessorTest.php"
-code = "redundant-docblock-type"
-message = "Redundant docblock type for variable `$jwtToken`."
-count = 1
-
-[[issues]]
-file = "tests/Sales/State/SaleProcessorTest.php"
-code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$pm`."
 count = 1
 
@@ -6076,7 +5884,7 @@ count = 1
 file = "tests/Sales/State/SaleProcessorTest.php"
 code = "redundant-docblock-type"
 message = "Redundant docblock type for variable `$stub`."
-count = 5
+count = 3
 
 [[issues]]
 file = "tests/Sales/State/SaleProviderTest.php"

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Controller;
 
+use App\Identity\Auth\BranchReportScope;
 use App\Inventory\Service\InventorySummaryService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,13 +18,14 @@ final class InventorySummaryController extends AbstractController
 {
     public function __construct(
         private readonly InventorySummaryService $summaryService,
+        private readonly BranchReportScope $scope,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
     {
         $warehouseId = $request->query->getString('warehouseId');
-        $normalizedWarehouseId = $warehouseId !== '' ? $warehouseId : null;
+        $branchId = $this->scope->requireBranchId($request->query->getString('branchId') ?: null);
 
-        return $this->json($this->summaryService->getSummary($normalizedWarehouseId));
+        return $this->json($this->summaryService->getSummary($branchId, $warehouseId !== '' ? $warehouseId : null));
     }
 }

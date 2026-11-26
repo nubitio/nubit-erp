@@ -7,6 +7,7 @@ namespace App\CashRegister\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Dto\CashSessionLedgerDto;
+use App\Identity\Auth\BranchContextServiceInterface;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use DateMalformedStringException;
@@ -35,6 +36,7 @@ readonly class CashSessionLedgerProvider implements ProviderInterface
 
     public function __construct(
         private Connection $connection,
+        private BranchContextServiceInterface $branchContext,
     ) {}
 
     /**
@@ -50,7 +52,10 @@ readonly class CashSessionLedgerProvider implements ProviderInterface
              FROM cash_sessions cs
              JOIN cash_register cr ON cr.id = cs.cash_register_id
              LEFT JOIN usuario u ON u.usuario_id = cs.opened_by
-             WHERE cs.id = ?', [$sessionId]);
+             WHERE cs.id = ? AND cs.branch_id = ?', [
+            $sessionId,
+            $this->branchContext->getCurrentBranchId(),
+        ]);
 
         if ($session === false) {
             throw new NotFoundHttpException(sprintf('CashSession not found for id %d.', $sessionId));

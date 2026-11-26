@@ -13,9 +13,8 @@ use App\Billing\Service\CreditNoteLinePreparer;
 use App\Billing\Service\CreditNoteStockReverserInterface;
 use App\Billing\Shared\Enum\CreditNoteReason;
 use App\Identity\Activity\SalesActivityInterface;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\OperationalBranchGuard;
 use App\Identity\Entity\User;
-use App\Organization\Repository\BranchRepository;
 use App\Sales\State\SalesWriteGateway;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -38,8 +37,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         private ProcessorInterface $persistProcessor,
         #[Autowire(service: 'api_platform.doctrine.orm.state.remove_processor')]
         private ProcessorInterface $removeProcessor,
-        private BranchContextService $branchContextService,
-        private BranchRepository $branchRepository,
+        private OperationalBranchGuard $branchGuard,
         private TaxDocumentRepository $taxDocumentRepository,
         private SalesWriteGateway $salesWriteGateway,
         private EntityManagerInterface $entityManager,
@@ -60,6 +58,15 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): mixed
     {
         $isNew = !$data->getId();
+        $references = [];
+        if (!$isNew) {
+            $references['branch'] = $data->getBranch();
+        }
+        if (($reference = $data->getSaleRecord()) !== null) {
+            $references['saleRecord'] = $reference->getBranch();
+        }
+        $branch = $this->branchGuard->requireBranch($references);
+        $branchId = (string) $branch->getId();
 
         if ($operation instanceof DeleteOperationInterface) {
             if ($data->isProcessed()) {
@@ -105,9 +112,8 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
                         'No se puede generar otra nota de crédito para un comprobante ya anulado.',
                     );
                 }
-                $branchId = $this->branchContextService->getCurrentBranchId();
                 $relatedBranchId = $related->getBranch()?->getId() ?? $related->getSaleRecord()?->getBranch()?->getId();
-                if ($branchId === null || $relatedBranchId === null || $branchId !== $relatedBranchId) {
+                if ($branchId !== $relatedBranchId) {
                     throw new ServiceException('El comprobante afectado no pertenece a la sucursal actual.');
                 }
                 $affectedSeries = $related->getSeries();
@@ -136,12 +142,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
                 $data->setCreatedAt(new DateTime());
                 $data->setCreatedByUserId($this->currentUserId());
 
-                // Set the branch from the current user's session
-                $branchId = $this->branchContextService->getCurrentBranchId();
-                if ($branchId !== null) {
-                    $branch = $this->branchRepository->find($branchId);
-                    $data->setBranch($branch);
-                }
+                $data->setBranch($branch);
             } else {
                 if ($data->isProcessed()) {
                     throw new ServiceException('No se puede actualizar un documento procesado.');

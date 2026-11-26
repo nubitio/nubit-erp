@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\AccountsPayable\Report;
 
 use App\AccountsPayable\Entity\SupplierBill;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\DBAL\Connection;
 
 /**
  * Loads a branch's open supplier bills and delegates bucketing to
@@ -17,7 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 final readonly class PayablesAgingQuery
 {
     public function __construct(
-        private EntityManagerInterface $entityManager,
+        private Connection $connection,
         private PayablesAgingCalculator $calculator,
     ) {}
 
@@ -26,44 +26,35 @@ final readonly class PayablesAgingQuery
      */
     public function execute(string $branchId, string $asOf): array
     {
-        /** @var list<SupplierBill> $bills */
-        $bills = $this->entityManager
-            ->createQueryBuilder()
-            ->select('b', 's')
-            ->from(SupplierBill::class, 'b')
-            ->join('b.supplier', 's')
-            ->where('IDENTITY(b.branch) = :branch')
-            ->andWhere('b.balanceDue > 0')
-            ->andWhere('b.status <> :void')
-            ->setParameter('branch', $branchId)
-            ->setParameter('void', SupplierBill::VOID)
-            ->getQuery()
-            ->getResult();
+        // The report's authorized branch can differ from the session's ORM filter.
+        $bills = $this->connection->fetchAllAssociative(
+            <<<'SQL'
+                SELECT b.supplier_id, s.ruc, s.razon_social, b.currency, b.document_type,
+                       b.series, b.number, b.issue_date, b.due_date, b.balance_due
+                FROM supplier_bill b
+                JOIN proveedor s ON s.proveedor_id = b.supplier_id
+                WHERE b.branch_id = :branch AND b.balance_due > 0 AND b.status <> :void
+                SQL,
+            ['branch' => $branchId, 'void' => SupplierBill::VOID],
+        );
 
-        $rows = [];
-        foreach ($bills as $bill) {
-            $supplier = $bill->getSupplier();
-            $rows[] = [
-                'supplierId' => (string) $supplier->getId(),
-                'ruc' => $supplier->getRuc(),
-                'supplier' => $supplier->getBusinessName(),
-                'currency' => $bill->getCurrency(),
-                'document' => $this->documentLabel($bill),
-                'issueDate' => $bill->getIssueDate()->format('Y-m-d'),
-                'dueDate' => $bill->getDueDate()->format('Y-m-d'),
-                'balanceDue' => $bill->getBalanceDue(),
+        $rows = array_map(static function (array $bill): array {
+            $series = trim((string) $bill['series']);
+            $number = trim((string) $bill['number']);
+            $reference = implode('-', array_filter([$series, $number], static fn(string $part): bool => $part !== ''));
+
+            return [
+                'supplierId' => (string) $bill['supplier_id'],
+                'ruc' => (string) $bill['ruc'],
+                'supplier' => (string) $bill['razon_social'],
+                'currency' => (string) $bill['currency'],
+                'document' => trim(sprintf('%s %s', (string) $bill['document_type'], $reference)),
+                'issueDate' => (string) $bill['issue_date'],
+                'dueDate' => (string) $bill['due_date'],
+                'balanceDue' => (string) $bill['balance_due'],
             ];
-        }
+        }, $bills);
 
         return $this->calculator->calculate($rows, $asOf);
-    }
-
-    private function documentLabel(SupplierBill $bill): string
-    {
-        $series = trim((string) $bill->getSeries());
-        $number = trim((string) $bill->getNumber());
-        $reference = implode('-', array_filter([$series, $number], static fn(string $part): bool => $part !== ''));
-
-        return trim(sprintf('%s %s', (string) $bill->getDocumentType(), $reference));
     }
 }

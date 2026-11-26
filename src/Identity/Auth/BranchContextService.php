@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Identity\Auth;
 
+use App\Identity\Entity\User;
 use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
 use Nubit\AdminBundle\Auth\JWTManagerInterface;
 use Symfony\Bundle\SecurityBundle\Security as SecurityComponent;
@@ -17,6 +18,7 @@ final readonly class BranchContextService implements BranchContextServiceInterfa
     public function __construct(
         private SecurityComponent $security,
         private JWTManagerInterface $jwtManager,
+        private OperatingBranchResolver $branches,
     ) {}
 
     /**
@@ -35,9 +37,9 @@ final readonly class BranchContextService implements BranchContextServiceInterfa
             return null;
         }
 
-        $branchId = $payload['branchId'] ?? null;
+        $user = $token->getUser();
 
-        return $branchId !== null ? (string) $branchId : null;
+        return $user instanceof User ? $this->branches->resolve($user, $payload['branchId'] ?? null)?->getId() : null;
     }
 
     /**

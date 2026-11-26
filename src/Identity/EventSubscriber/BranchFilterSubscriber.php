@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Identity\EventSubscriber;
 
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
 use Doctrine\ORM\EntityManagerInterface;
+use Nubit\AdminBundle\Auth\JWTAuthenticationToken;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -17,13 +19,14 @@ class BranchFilterSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly BranchContextService $branchContextService,
+        private readonly BranchContextServiceInterface $branchContextService,
+        private readonly Security $security,
     ) {}
 
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::REQUEST => ['onKernelRequest', 5],
+            KernelEvents::REQUEST => ['onKernelRequest', 6],
         ];
     }
 
@@ -34,7 +37,7 @@ class BranchFilterSubscriber implements EventSubscriberInterface
         }
 
         $branchId = $this->branchContextService->getCurrentBranchId();
-        if ($branchId === null) {
+        if ($branchId === null && !$this->security->getToken() instanceof JWTAuthenticationToken) {
             return;
         }
 
@@ -44,6 +47,6 @@ class BranchFilterSubscriber implements EventSubscriberInterface
             $filters->enable('branch_filter');
         }
 
-        $filters->getFilter('branch_filter')->setParameter('branchId', $branchId);
+        $filters->getFilter('branch_filter')->setParameterList('branchIds', $branchId === null ? [] : [$branchId]);
     }
 }

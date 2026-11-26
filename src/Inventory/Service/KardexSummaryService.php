@@ -47,14 +47,15 @@ final readonly class KardexSummaryService
         ?string $from = null,
         ?string $to = null,
         ?string $valuation = null,
+        ?string $branchId = null,
     ): array {
         $product = $this->fetchProduct($productId);
-        $movementStats = $this->fetchMovementStats($productId, $warehouseId, $from, $to);
+        $movementStats = $this->fetchMovementStats($productId, $warehouseId, $from, $to, $branchId);
         $valuationMethod = $this->normalizeValuation($valuation);
 
         $currentStock = $movementStats['currentStock'];
 
-        $movementsForValuation = $this->fetchMovementsForValuation($productId, $warehouseId, $from, $to);
+        $movementsForValuation = $this->fetchMovementsForValuation($productId, $warehouseId, $from, $to, $branchId);
 
         if ($valuationMethod === 'fifo') {
             $metrics = $this->fifoValuator->endingMetrics($movementsForValuation);
@@ -145,10 +146,20 @@ final readonly class KardexSummaryService
      *
      * @throws Exception
      */
-    private function fetchMovementStats(string $productId, ?string $warehouseId, ?string $from, ?string $to): array
-    {
+    private function fetchMovementStats(
+        string $productId,
+        ?string $warehouseId,
+        ?string $from,
+        ?string $to,
+        ?string $branchId,
+    ): array {
         $params = ['product_id' => $productId];
         $where = ['sm.product_id = :product_id'];
+
+        if ($branchId !== null) {
+            $where[] = 'sm.warehouse_id IN (SELECT w.almacen_id FROM almacen w WHERE w.local_id = :branch_id)';
+            $params['branch_id'] = $branchId;
+        }
 
         if ($warehouseId !== null && $warehouseId !== '') {
             $where[] = 'sm.warehouse_id = :warehouse_id';
@@ -268,9 +279,15 @@ final readonly class KardexSummaryService
         ?string $warehouseId,
         ?string $from,
         ?string $to,
+        ?string $branchId,
     ): array {
         $params = ['product_id' => $productId];
         $where = ['sm.product_id = :product_id'];
+
+        if ($branchId !== null) {
+            $where[] = 'sm.warehouse_id IN (SELECT w.almacen_id FROM almacen w WHERE w.local_id = :branch_id)';
+            $params['branch_id'] = $branchId;
+        }
 
         if ($warehouseId !== null && $warehouseId !== '') {
             $where[] = 'sm.warehouse_id = :warehouse_id';

@@ -126,6 +126,7 @@ readonly class CustomerAccountLedger
         ?string $source = null,
         ?string $sourceId = null,
         ?string $description = null,
+        ?string $branchId = null,
     ): CustomerAccountEntry {
         return $this->record(
             $customerId,
@@ -137,6 +138,7 @@ readonly class CustomerAccountLedger
             source: $source,
             sourceId: $sourceId,
             description: $description,
+            branchId: $branchId,
         );
     }
 
@@ -144,6 +146,8 @@ readonly class CustomerAccountLedger
      * Append one movement. `debit` and `credit` are non-negative strings and
      * exactly one of them is greater than zero — an entry moves the balance in a
      * single direction.
+     *
+     * @mago-expect lint:excessive-parameter-list
      */
     public function record(
         int $customerId,
@@ -156,6 +160,7 @@ readonly class CustomerAccountLedger
         ?string $source = null,
         ?string $sourceId = null,
         ?string $description = null,
+        ?string $branchId = null,
     ): CustomerAccountEntry {
         if ($customerId <= 0) {
             throw new InvalidArgumentException('A customer-account entry needs a customer id.');
@@ -189,6 +194,7 @@ readonly class CustomerAccountLedger
             source: $source,
             sourceId: $sourceId,
             description: $description,
+            branchId: $branchId,
         );
 
         $this->entityManager->persist($entry);

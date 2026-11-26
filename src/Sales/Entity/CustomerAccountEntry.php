@@ -77,6 +77,9 @@ class CustomerAccountEntry
     #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
     private DateTimeImmutable $createdAt;
 
+    #[ORM\Column(name: 'branch_id', type: Types::STRING, length: 36, nullable: true)]
+    private ?string $branchId;
+
     public function __construct(
         int $customerId,
         CustomerAccountEntryType $entryType,
@@ -89,6 +92,7 @@ class CustomerAccountEntry
         ?string $source = null,
         ?string $sourceId = null,
         ?string $description = null,
+        ?string $branchId = null,
     ) {
         $this->customerId = $customerId;
         $this->entryType = $entryType;
@@ -101,12 +105,18 @@ class CustomerAccountEntry
         $this->source = $source;
         $this->sourceId = $sourceId;
         $this->description = $description;
+        $this->branchId = $branchId;
         $this->createdAt = new DateTimeImmutable();
     }
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getBranchId(): ?string
+    {
+        return $this->branchId;
     }
 
     public function getCustomerId(): int

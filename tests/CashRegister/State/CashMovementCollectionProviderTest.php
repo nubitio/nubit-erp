@@ -9,6 +9,7 @@ use ApiPlatform\State\Pagination\TraversablePaginator;
 use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Service\CashMovementHydrator;
 use App\CashRegister\State\CashMovementCollectionProvider;
+use App\Identity\Auth\BranchContextServiceInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
@@ -28,7 +29,7 @@ final class CashMovementCollectionProviderTest extends TestCase
         $connection
             ->expects(self::once())
             ->method('fetchAllAssociative')
-            ->with(self::stringContains('FROM cash_movements'))
+            ->with(self::stringContains('WHERE s.branch_id = ?'), ['branch-a', 30, 0])
             ->willReturn([
                 [
                     'id' => 900,
@@ -40,12 +41,16 @@ final class CashMovementCollectionProviderTest extends TestCase
                     'created_at' => '2026-08-19 09:00:00',
                 ],
             ]);
-        $connection->method('fetchOne')->willReturn(1);
+        $connection
+            ->expects(self::once())
+            ->method('fetchOne')
+            ->with(self::stringContains('WHERE s.branch_id = ?'), ['branch-a'])
+            ->willReturn(1);
 
         $em = $this->createStub(EntityManagerInterface::class);
         $hydrator = new CashMovementHydrator($em, $connection);
 
-        $provider = new CashMovementCollectionProvider($connection, $hydrator);
+        $provider = new CashMovementCollectionProvider($connection, $hydrator, $this->branchContext());
 
         $result = $provider->provide(new GetCollection(), [], []);
 
@@ -62,14 +67,22 @@ final class CashMovementCollectionProviderTest extends TestCase
         $connection
             ->expects(self::once())
             ->method('fetchAllAssociative')
-            ->with(self::anything(), [10, 20], self::anything())
+            ->with(self::anything(), ['branch-a', 10, 20], self::anything())
             ->willReturn([]);
         $connection->method('fetchOne')->willReturn(0);
 
         $em = $this->createStub(EntityManagerInterface::class);
         $hydrator = new CashMovementHydrator($em, $connection);
-        $provider = new CashMovementCollectionProvider($connection, $hydrator);
+        $provider = new CashMovementCollectionProvider($connection, $hydrator, $this->branchContext());
 
         $provider->provide(new GetCollection(), [], ['filters' => ['page' => 3, 'itemsPerPage' => 10]]);
+    }
+
+    private function branchContext(): BranchContextServiceInterface
+    {
+        $context = $this->createStub(BranchContextServiceInterface::class);
+        $context->method('getCurrentBranchId')->willReturn('branch-a');
+
+        return $context;
     }
 }

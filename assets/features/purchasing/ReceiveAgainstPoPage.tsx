@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Card } from '@nubitio/ui';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Button, Card, FormField, FormLayout, TextField } from '@nubitio/ui';
 import { httpClient } from '@shared/api/HttpClient';
 import { createEndpoints } from '@shared/api/endpoints';
 import toast from '@shared/lib/SharedUtils';
-import { purchaseOrderEndpoints } from './api/purchaseOrderEndpoints';
+import { purchaseOrderEndpoints, withPurchasingBranch } from './api/purchaseOrderEndpoints';
 
 const purchaseEndpoints = createEndpoints('purchases');
 
@@ -39,17 +39,28 @@ interface ReceiveLine {
 export const ReceiveAgainstPoPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [search] = useSearchParams();
+  const branchId = search.get('branchId') ?? '';
+  const ordersUrl = withPurchasingBranch('/purchase-orders', branchId);
+  const [loadError, setLoadError] = useState(false);
   const [order, setOrder] = useState<PurchaseOrderDto | null>(null);
   const [lines, setLines] = useState<ReceiveLine[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [docType, setDocType] = useState('01');
+  const [docSeries, setDocSeries] = useState('');
+  const [docNumber, setDocNumber] = useState('');
 
   useEffect(() => {
     if (!id) return;
+    const controller = new AbortController();
     httpClient
-      .get<PurchaseOrderDto>(purchaseOrderEndpoints.detail(id), {
+      .get<PurchaseOrderDto>(withPurchasingBranch(purchaseOrderEndpoints.detail(id), branchId), {
         headers: { Accept: 'application/ld+json' },
+        signal: controller.signal,
       })
       .then((response) => {
+        if (controller.signal.aborted) return;
+        setLoadError(false);
         const po = response.data;
         setOrder(po);
         setLines(
@@ -64,15 +75,20 @@ export const ReceiveAgainstPoPage = () => {
               pendingQty: item.pendingQty,
             })),
         );
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setLoadError(true);
       });
-  }, [id]);
+    return () => controller.abort();
+  }, [id, branchId]);
 
   const updateLine = (index: number, patch: Partial<ReceiveLine>) => {
     setLines((prev) => prev.map((line, i) => (i === index ? { ...line, ...patch } : line)));
   };
 
   const handleSubmit = () => {
-    if (!order || !id) return;
+    if (!order || !id || isSubmitting || !docType.trim() || !docSeries.trim() || !docNumber.trim())
+      return;
 
     const items = lines
       .filter((line) => Number(line.qty) > 0)
@@ -82,7 +98,7 @@ export const ReceiveAgainstPoPage = () => {
         unitCost: line.unitCost,
         grossAmount: (Number(line.qty) * Number(line.unitCost)).toFixed(2),
         totalAmount: (Number(line.qty) * Number(line.unitCost)).toFixed(2),
-        purchaseOrderItem: `/api/purchase-order-items/${line.purchaseOrderItemId}`,
+        purchaseOrderItemId: line.purchaseOrderItemId,
       }));
 
     if (items.length === 0) {
@@ -92,20 +108,20 @@ export const ReceiveAgainstPoPage = () => {
 
     setIsSubmitting(true);
     httpClient
-      .post(purchaseEndpoints.list(), {
+      .post(withPurchasingBranch(purchaseEndpoints.list(), branchId), {
         supplier: order.supplier ? `/api/suppliers/${order.supplier.id}` : null,
         branch: order.branch ? `/api/branches/${order.branch.id}` : null,
         warehouse: order.warehouse ? `/api/warehouses/${order.warehouse.id}` : null,
         currency: order.currency,
         purchaseOrder: purchaseOrderEndpoints.detail(order.id),
-        supplierDocType: '01',
-        supplierDocSeries: 'E001',
-        supplierDocNumber: '1',
+        supplierDocType: docType.trim(),
+        supplierDocSeries: docSeries.trim().toUpperCase(),
+        supplierDocNumber: docNumber.trim(),
         items,
       })
       .then(() => {
         toast('Mercadería recibida', 'success');
-        navigate('/purchase-orders');
+        navigate(ordersUrl);
       })
       .catch((err: unknown) => {
         const message = err instanceof Error ? err.message : 'No se pudo registrar la recepción.';
@@ -113,6 +129,10 @@ export const ReceiveAgainstPoPage = () => {
       })
       .finally(() => setIsSubmitting(false));
   };
+
+  if (loadError) {
+    return <Card title="Recibir mercadería">No se pudo cargar la orden de compra.</Card>;
+  }
 
   if (!order) {
     return <Card title="Recibir mercadería">Cargando…</Card>;
@@ -147,9 +167,47 @@ export const ReceiveAgainstPoPage = () => {
           />
         </div>
       ))}
-      <Button variant="success" fullWidth loading={isSubmitting} onClick={handleSubmit}>
-        Registrar recepción
-      </Button>
+      <FormLayout
+        onSubmit={(event) => {
+          event.preventDefault();
+          handleSubmit();
+        }}
+      >
+        <FormField label="Tipo de comprobante del proveedor" htmlFor="receive-doc-type" required>
+          <TextField
+            id="receive-doc-type"
+            value={docType}
+            onChange={(event) => setDocType(event.target.value)}
+            required
+          />
+        </FormField>
+        <FormField label="Serie" htmlFor="receive-doc-series" required>
+          <TextField
+            id="receive-doc-series"
+            value={docSeries}
+            onChange={(event) => setDocSeries(event.target.value)}
+            required
+          />
+        </FormField>
+        <FormField label="Número de comprobante" htmlFor="receive-doc-number" required>
+          <TextField
+            id="receive-doc-number"
+            value={docNumber}
+            onChange={(event) => setDocNumber(event.target.value)}
+            required
+          />
+        </FormField>
+        <Button
+          variant="primary"
+          type="submit"
+          fullWidth
+          loading={isSubmitting}
+          disabled={lines.length === 0}
+          data-testid="register-purchase-receipt"
+        >
+          Registrar recepción
+        </Button>
+      </FormLayout>
     </Card>
   );
 };

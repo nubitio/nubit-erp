@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
 use App\CashRegister\Entity\CashMovement;
 use App\CashRegister\Service\CashMovementHydrator;
+use App\Identity\Auth\BranchContextServiceInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Override;
@@ -21,6 +22,7 @@ readonly class CashSessionMovementsProvider implements ProviderInterface
     public function __construct(
         private Connection $connection,
         private CashMovementHydrator $hydrator,
+        private BranchContextServiceInterface $branchContext,
     ) {}
 
     /**
@@ -33,7 +35,10 @@ readonly class CashSessionMovementsProvider implements ProviderInterface
     {
         $cashSessionId = $uriVariables['id'];
 
-        $session = $this->connection->fetchAssociative('SELECT id FROM cash_sessions WHERE id = ?', [$cashSessionId]);
+        $session = $this->connection->fetchAssociative('SELECT id FROM cash_sessions WHERE id = ? AND branch_id = ?', [
+            $cashSessionId,
+            $this->branchContext->getCurrentBranchId(),
+        ]);
 
         if ($session === false) {
             throw new NotFoundHttpException(sprintf('CashSession not found for id %s.', $cashSessionId));

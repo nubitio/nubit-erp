@@ -9,7 +9,7 @@ use ApiPlatform\State\ProcessorInterface;
 use App\CashRegister\Dto\CashRegisterOpenDto;
 use App\CashRegister\Entity\CashRegister;
 use App\CashRegister\Entity\CashSession;
-use App\Identity\Auth\BranchContextService;
+use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Entity\User;
 use App\Identity\Security\Security;
 use App\Organization\Repository\BranchRepository;
@@ -33,7 +33,7 @@ readonly class CashRegisterOpenProcessor implements ProcessorInterface
     public function __construct(
         private EntityManagerInterface $entityManager,
         private Security $security,
-        private BranchContextService $branchContextService,
+        private BranchContextServiceInterface $branchContextService,
         private BranchRepository $branchRepository,
     ) {}
 

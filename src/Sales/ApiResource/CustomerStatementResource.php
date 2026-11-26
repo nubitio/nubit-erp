@@ -61,6 +61,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
                 ],
             ],
         ),
+        security: "is_granted('perm:sales.view')",
         output: StreamedResponse::class,
         read: false,
     ),

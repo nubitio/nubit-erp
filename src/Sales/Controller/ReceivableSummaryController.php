@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Sales\Controller;
 
 use App\Efact\Domain\Money;
-use App\Identity\Auth\BranchContextServiceInterface;
+use App\Identity\Auth\BranchReportScope;
 use App\Sales\Repository\SaleRecordRepository;
 use DateTimeImmutable;
 use DateTimeZone;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * KPI header for the "Deudores" page (#409): branch-wide total owed, how many
@@ -25,26 +26,14 @@ final class ReceivableSummaryController extends AbstractController
 {
     public function __construct(
         private readonly SaleRecordRepository $repository,
-        private readonly BranchContextServiceInterface $branchContext,
+        private readonly BranchReportScope $scope,
     ) {}
 
-    public function __invoke(): JsonResponse
+    public function __invoke(Request $request): JsonResponse
     {
-        $branchId = $this->branchContext->getCurrentBranchId();
-        if ($branchId === null) {
-            return $this->json([
-                'totalBalance' => '0.00',
-                'currency' => 'PEN',
-                'debtorCount' => 0,
-                'overdueTotal' => '0.00',
-                'notYetDueTotal' => '0.00',
-                'aging' => [],
-                'topDebtor' => null,
-            ]);
-        }
-
-        $totals = $this->repository->sumReceivables();
-        $topDebtor = $this->repository->aggregateReceivablesByCustomer(null, 1, 1)[0] ?? null;
+        $branchId = $this->scope->requireBranchId($request->query->getString('branchId') ?: null);
+        $totals = $this->repository->sumReceivables($branchId);
+        $topDebtor = $this->repository->aggregateReceivablesByCustomer($branchId, null, 1, 1)[0] ?? null;
         $aging = $this->repository->aggregateReceivablesAging($branchId);
 
         $overdueTotal = Money::of($aging['1-30'])

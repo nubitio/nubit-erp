@@ -10,6 +10,7 @@ use App\Purchasing\Entity\PurchaseItem;
 use App\Purchasing\Entity\PurchaseOrder;
 use App\Purchasing\Entity\PurchaseOrderItem;
 use App\Purchasing\Service\PurchaseOrderReceiptService;
+use App\Purchasing\Service\PurchaseReceiptLines;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 
@@ -36,6 +37,26 @@ final class PurchaseOrderReceiptServiceTest extends TestCase
         return new PurchaseItem()
             ->setPurchaseOrderItem($orderItem)
             ->setQty($qty);
+    }
+
+    public function testReceiptLineIdMustBelongToTheSelectedOrder(): void
+    {
+        $order = $this->makeOrder('2.000');
+        $line = $order->getItems()->first();
+        self::assertInstanceOf(PurchaseOrderItem::class, $line);
+        new \ReflectionProperty(PurchaseOrderItem::class, 'id')->setValue($line, 42);
+        $item = new PurchaseItem()->setQty('1.000');
+        $item->setPurchaseOrderItemId(42);
+        $purchase = new Purchase()
+            ->setPurchaseOrder($order)
+            ->addItem($item);
+
+        PurchaseReceiptLines::resolve($purchase);
+        self::assertSame($line, $item->getPurchaseOrderItem());
+
+        $item->setPurchaseOrderItemId(43);
+        $this->expectException(\Nubit\Platform\Exception\ValidationException::class);
+        PurchaseReceiptLines::resolve($purchase);
     }
 
     public function testApplyReceiptOnlyUpdatesLinkedLines(): void

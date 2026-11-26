@@ -29,7 +29,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
     ],
     normalizationContext: ['groups' => ['stock_movement:read']],
     filters: [DataGridFilter::class],
-    security: "is_granted('ROLE_USER')",
+    security: "is_granted('perm:inventory.view')",
     mercure: false,
 )]
 final class StockMovement

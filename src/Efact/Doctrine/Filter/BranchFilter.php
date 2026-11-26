@@ -27,22 +27,42 @@ class BranchFilter extends SQLFilter
             return '';
         }
 
-        // Check if the entity has a 'branch' association
-        if (!$targetEntity->hasAssociation('branch')) {
+        $table = $targetEntity->getTableName();
+        $usesWarehouseBranch = in_array($table, ['stock_items', 'stock_entries', 'stock_entry_items'], true);
+        if (!$usesWarehouseBranch && !$targetEntity->hasAssociation('branch')) {
             return '';
         }
 
         try {
-            $branchId = $this->getParameter('branchId');
+            $branchIds = $this->getParameterList('branchIds');
         } catch (\InvalidArgumentException) {
-            // Parameter not set, don't filter
-            return '';
+            return '1 = 0';
+        }
+
+        if ($branchIds === '') {
+            return '1 = 0';
+        }
+
+        if ($table === 'stock_entry_items') {
+            return sprintf(
+                '%s.entry_id IN (SELECT e.id FROM stock_entries e JOIN almacen w ON w.almacen_id = e.warehouse_id WHERE w.local_id IN (%s))',
+                $targetTableAlias,
+                $branchIds,
+            );
+        }
+
+        if ($usesWarehouseBranch) {
+            return sprintf(
+                '%s.warehouse_id IN (SELECT w.almacen_id FROM almacen w WHERE w.local_id IN (%s))',
+                $targetTableAlias,
+                $branchIds,
+            );
         }
 
         // Get the column name for the branch association
         $association = $targetEntity->getAssociationMapping('branch');
         $columnName = $association['joinColumns'][0]['name'] ?? 'branch_id';
 
-        return sprintf('%s.%s = %s', $targetTableAlias, $columnName, $branchId);
+        return sprintf('%s.%s IN (%s)', $targetTableAlias, $columnName, $branchIds);
     }
 }

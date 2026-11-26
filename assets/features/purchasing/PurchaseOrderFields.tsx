@@ -1,4 +1,5 @@
 import { getCoreApiBaseUrl } from '@nubitio/core';
+import { withPurchasingBranch } from './api/purchaseOrderEndpoints';
 
 const API = getCoreApiBaseUrl();
 import {
@@ -24,7 +25,7 @@ type PurchaseOrderDetailRow = DataRecord & {
   totalAmount?: number | string;
 };
 
-export const PurchaseOrderFields = (): Field[] => {
+export const PurchaseOrderFields = (branchId = ''): Field[] => {
   const fields: Field[] = [];
 
   fields.push(identityField().build());
@@ -41,11 +42,16 @@ export const PurchaseOrderFields = (): Field[] => {
     entityField(API + 'branches', 'id', 'name')
       .name('branch')
       .label('Sucursal')
+      .visibleOnForm(false)
       .build(),
   );
 
   fields.push(
-    entityField(API + 'warehouses', 'id', 'name')
+    entityField(
+      branchId ? withPurchasingBranch(API + 'purchasing/warehouses', branchId) : API + 'warehouses',
+      branchId ? '_iri' : 'id',
+      'name',
+    )
       .name('warehouse')
       .label('Almacén destino')
       .build(),

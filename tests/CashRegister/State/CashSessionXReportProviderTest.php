@@ -9,6 +9,7 @@ use App\CashRegister\Dto\CashSessionXReportDto;
 use App\CashRegister\Service\SessionSalesBreakdown;
 use App\CashRegister\State\CashSessionClosureSummaryProvider;
 use App\CashRegister\State\CashSessionXReportProvider;
+use App\Identity\Auth\BranchContextServiceInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -37,7 +38,7 @@ final class CashSessionXReportProviderTest extends TestCase
                 'receivable' => ['amount' => '40.00', 'operations' => 1],
                 'total' => '540.00',
             ]);
-        $this->provider = new CashSessionXReportProvider($this->connection, $breakdown);
+        $this->provider = new CashSessionXReportProvider($this->connection, $breakdown, $this->branchContext());
     }
 
     /**
@@ -117,7 +118,9 @@ final class CashSessionXReportProviderTest extends TestCase
     public function testCashBreakdownMatchesClosureWhenCashAndDigitalRefundsCoexist(): void
     {
         $db = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
-        $db->executeStatement('CREATE TABLE cash_sessions (id INTEGER, opening_amount NUMERIC, opened_at TEXT)');
+        $db->executeStatement(
+            'CREATE TABLE cash_sessions (id INTEGER, opening_amount NUMERIC, opened_at TEXT, branch_id TEXT)',
+        );
         $db->executeStatement(
             'CREATE TABLE cash_movements (cash_session_id INTEGER, category_id INTEGER, payment_method_id INTEGER, movement_type TEXT, amount NUMERIC)',
         );
@@ -125,7 +128,7 @@ final class CashSessionXReportProviderTest extends TestCase
         $db->executeStatement("INSERT INTO cash_movement_category VALUES (1, 'manager_withdrawal')");
         $db->executeStatement('CREATE TABLE tax_document (tax_document_id INTEGER, sale_id TEXT, document_type TEXT)');
         $db->executeStatement('CREATE TABLE payment_method (id INTEGER, name TEXT)');
-        $db->executeStatement("INSERT INTO cash_sessions VALUES (1, 200.00, '2026-10-29 08:00:00')");
+        $db->executeStatement("INSERT INTO cash_sessions VALUES (1, 200.00, '2026-10-29 08:00:00', 'branch-a')");
         $db->executeStatement("INSERT INTO payment_method VALUES (1, 'Efectivo'), (2, 'Tarjeta')");
         // The shift sold 540: 300 in cash, 200 by card, 40 on credit (15 of it collected later, in another shift's
         // hands), and a voided 50 by card that counts nowhere. Only the cash reached the drawer.
@@ -176,8 +179,13 @@ final class CashSessionXReportProviderTest extends TestCase
                 ? 60
                 : $db->fetchOne($sql, self::named($params)));
         $breakdown = new SessionSalesBreakdown($connection);
-        $report = new CashSessionXReportProvider($connection, $breakdown)->provide(new Get(), ['id' => 1]);
-        $closure = new CashSessionClosureSummaryProvider($connection, $breakdown)->provide(new Get(), ['id' => 1]);
+        $report = new CashSessionXReportProvider($connection, $breakdown, $this->branchContext())->provide(new Get(), [
+            'id' => 1,
+        ]);
+        $closure = new CashSessionClosureSummaryProvider($connection, $breakdown, $this->branchContext())->provide(
+            new Get(),
+            ['id' => 1],
+        );
         self::assertSame('290.00', $report->cashSalesNet);
         self::assertSame('20.00', $report->cashAdjustmentsOut);
         self::assertSame('60.00', $report->cashOut);
@@ -223,5 +231,13 @@ final class CashSessionXReportProviderTest extends TestCase
         }
 
         return $named;
+    }
+
+    private function branchContext(): BranchContextServiceInterface
+    {
+        $context = $this->createStub(BranchContextServiceInterface::class);
+        $context->method('getCurrentBranchId')->willReturn('branch-a');
+
+        return $context;
     }
 }

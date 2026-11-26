@@ -28,7 +28,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'stock_entry_items')]
 #[ApiResource(
     uriTemplate: '/stock-entries/{id}/items',
-    operations: [new GetCollection()],
+    operations: [new GetCollection(security: "is_granted('perm:inventory.view')")],
     uriVariables: [
         'id' => new Link(fromProperty: 'items', fromClass: StockEntry::class),
     ],

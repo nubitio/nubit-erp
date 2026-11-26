@@ -3,6 +3,7 @@ import { useInventorySummary } from './useInventorySummary';
 
 interface InventorySummaryCardsProps {
   warehouseId: string | null;
+  branchId?: string | null;
 }
 
 function formatCurrency(value: string): string {
@@ -18,8 +19,8 @@ const CARD_CONFIG = [
   { key: 'out', label: 'Sin stock', icon: 'ph-prohibit', tone: 'danger' as const },
 ];
 
-export const InventorySummaryCards = ({ warehouseId }: InventorySummaryCardsProps) => {
-  const { data, isLoading } = useInventorySummary(warehouseId);
+export const InventorySummaryCards = ({ warehouseId, branchId }: InventorySummaryCardsProps) => {
+  const { data, isLoading } = useInventorySummary(warehouseId, branchId);
 
   const values: Record<string, { value: string; hint: string; emphasize: boolean }> = {
     skus: {
