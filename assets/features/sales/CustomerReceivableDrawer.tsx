@@ -21,6 +21,7 @@ export interface ReceivableCustomer {
 }
 
 interface Props {
+  branchId?: string;
   customer: ReceivableCustomer | null;
   refreshKey?: number;
   onClose: () => void;
@@ -45,17 +46,23 @@ interface FlatPayment {
   reference: string | null;
 }
 
-function CustomerReceivableDetail({ customer }: { customer: ReceivableCustomer }) {
+function CustomerReceivableDetail({
+  customer,
+  branchId,
+}: {
+  customer: ReceivableCustomer;
+  branchId?: string;
+}) {
   const [invoices, setInvoices] = useState<ReceivableInvoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [reminding, setReminding] = useState<ReceivableInvoice | null>(null);
-  const canRemind = hasPermission('receivables.remind');
+  const canRemind = !branchId && hasPermission('receivables.remind');
 
   useEffect(() => {
     const controller = new AbortController();
-    listOpenInvoices(customer.id, controller.signal)
+    listOpenInvoices(customer.id, controller.signal, branchId)
       .then((rows) => {
         if (!controller.signal.aborted) setInvoices(rows);
       })
@@ -67,7 +74,7 @@ function CustomerReceivableDetail({ customer }: { customer: ReceivableCustomer }
       });
 
     return () => controller.abort();
-  }, [customer.id, attempt]);
+  }, [customer.id, attempt, branchId]);
 
   const payments = useMemo<FlatPayment[]>(() => {
     const flat = invoices.flatMap((invoice) =>
@@ -207,12 +214,13 @@ function CustomerReceivableDetail({ customer }: { customer: ReceivableCustomer }
 export const CustomerReceivableDrawer = ({
   customer,
   refreshKey = 0,
+  branchId,
   onClose,
   onCollect,
   onAdvance,
   onDownloadStatement,
 }: Props) => {
-  const canCollect = hasPermission('sales.collect');
+  const canCollect = !branchId && hasPermission('sales.collect');
 
   return (
     <Drawer
@@ -251,7 +259,11 @@ export const CustomerReceivableDrawer = ({
       }
     >
       {customer && (
-        <CustomerReceivableDetail key={`${customer.id}-${refreshKey}`} customer={customer} />
+        <CustomerReceivableDetail
+          key={`${customer.id}-${branchId}-${refreshKey}`}
+          customer={customer}
+          branchId={branchId}
+        />
       )}
     </Drawer>
   );

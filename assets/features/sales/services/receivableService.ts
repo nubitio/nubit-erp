@@ -42,7 +42,17 @@ function collectionMembers(payload: unknown): Record<string, unknown>[] {
 export async function listOpenInvoices(
   customerId: number,
   signal?: AbortSignal,
+  branchId?: string,
 ): Promise<ReceivableInvoice[]> {
+  if (branchId) {
+    const params = new URLSearchParams({ branchId });
+    const { data } = await httpClient.get<ReceivableInvoice[]>(
+      `${API}sales/reports/receivable-customers/${customerId}/invoices?${params}`,
+      { signal, errorPresentation: 'inline' },
+    );
+    return data;
+  }
+
   const response = await httpClient.get<unknown>(`${API}sales`, {
     signal,
     errorPresentation: 'inline',

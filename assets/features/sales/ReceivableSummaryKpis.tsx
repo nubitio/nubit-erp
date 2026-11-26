@@ -5,17 +5,26 @@ import { formatMoney } from '@shared/lib/displayFormat';
 import { saleEndpoints } from './api/saleEndpoints';
 import { receivableAging, type ReceivableSummary } from './receivableAging';
 
-async function fetchReceivableSummary(): Promise<ReceivableSummary> {
-  const response = await httpClient.get<ReceivableSummary>(saleEndpoints.receivableSummary(), {
-    errorPresentation: 'inline',
-  });
+async function fetchReceivableSummary(branchId?: string): Promise<ReceivableSummary> {
+  const response = await httpClient.get<ReceivableSummary>(
+    saleEndpoints.receivableSummary(branchId),
+    {
+      errorPresentation: 'inline',
+    },
+  );
   return response.data;
 }
 
-export const ReceivableSummaryKpis = ({ refreshKey = 0 }: { refreshKey?: number }) => {
+export const ReceivableSummaryKpis = ({
+  refreshKey = 0,
+  branchId,
+}: {
+  refreshKey?: number;
+  branchId?: string;
+}) => {
   const { data, isLoading, isError, isFetching, refetch } = useQuery({
-    queryKey: ['sales', 'accounts-receivable', 'summary', refreshKey],
-    queryFn: fetchReceivableSummary,
+    queryKey: ['sales', 'accounts-receivable', 'summary', branchId, refreshKey],
+    queryFn: () => fetchReceivableSummary(branchId),
     retry: false,
   });
   const buckets = data ? receivableAging(data) : [];

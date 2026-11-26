@@ -31,6 +31,7 @@ export interface CustomerReceivableRecord extends DataRecord {
 }
 
 interface Props {
+  branchId?: string;
   refreshKey?: number;
   onOpenDetail: (customer: ReceivableCustomer) => void;
   onCollect: (customer: ReceivableCustomer) => void;
@@ -74,9 +75,14 @@ function formatDateHuman(value: string | null): string {
   }).format(new Date(`${value}T00:00:00`));
 }
 
-export const CustomerReceivablesGrid = ({ refreshKey = 0, onOpenDetail, onCollect }: Props) => {
+export const CustomerReceivablesGrid = ({
+  branchId,
+  refreshKey = 0,
+  onOpenDetail,
+  onCollect,
+}: Props) => {
   const gridRef = useRef<GridHandle>(null);
-  const canCollect = hasPermission('sales.collect');
+  const canCollect = !branchId && hasPermission('sales.collect');
   const isFirstRender = useRef(true);
 
   useEffect(() => {
@@ -175,7 +181,7 @@ export const CustomerReceivablesGrid = ({ refreshKey = 0, onOpenDetail, onCollec
       id="accounts-receivable-debtors"
       ref={gridRef}
       title="Deudores"
-      url={saleEndpoints.receivableCustomers()}
+      url={saleEndpoints.receivableCustomers(branchId)}
       fields={fields}
       adapter={HydraAdapter}
       appearance="page"

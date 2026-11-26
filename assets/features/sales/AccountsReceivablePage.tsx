@@ -1,11 +1,13 @@
 import './AccountsReceivablePage.scss';
 import { useCallback, useState } from 'react';
-import { PageHeader } from '@nubitio/ui';
+import { useQuery } from '@tanstack/react-query';
+import { PageHeader, SelectField } from '@nubitio/ui';
 import { FinanceNavigation } from '@shared/ui/finance/FinanceNavigation';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { httpClient } from '@shared/api/HttpClient';
 import { hasPermission } from '@shared/permissions';
 import { downloadBlob, filenameFromDisposition } from '@shared/lib/downloadBlob';
+import { useSessionInfo } from '@shared/sessionInfo';
 import toast from '@shared/lib/SharedUtils';
 import { CollectPaymentDialog } from './CollectPaymentDialog';
 import { CustomerAdvanceDialog } from './CustomerAdvanceDialog';
@@ -15,11 +17,12 @@ import { ReceivableSummaryKpis } from './ReceivableSummaryKpis';
 
 const API = getCoreApiBaseUrl();
 
-async function downloadCustomerStatement(id: number): Promise<void> {
-  const response = await httpClient.get<Blob>(
-    `${API}sales/reports/customer-statement?customer=${id}&format=pdf`,
-    { responseType: 'blob' },
-  );
+async function downloadCustomerStatement(id: number, branchId: string): Promise<void> {
+  const params = new URLSearchParams({ customer: String(id), format: 'pdf' });
+  if (branchId) params.set('branchId', branchId);
+  const response = await httpClient.get<Blob>(`${API}sales/reports/customer-statement?${params}`, {
+    responseType: 'blob',
+  });
   downloadBlob(
     response.data,
     filenameFromDisposition(
@@ -41,6 +44,23 @@ export const AccountsReceivablePage = () => {
   const [version, setVersion] = useState(0);
   const canCollect = hasPermission('sales.collect');
 
+  const { currentBranchId } = useSessionInfo();
+  const [requestedBranch, setRequestedBranch] = useState('');
+  const branches = useQuery({
+    queryKey: ['reporting-branches', currentBranchId],
+    queryFn: async () =>
+      (
+        await httpClient.get<{ id: string; name: string; isActive: boolean }[]>(
+          `${API}auth/reporting-branches`,
+        )
+      ).data,
+  });
+  const options = branches.data?.filter((branch) => branch.id !== currentBranchId) ?? [];
+  const reportBranch = options.some((branch) => branch.id === requestedBranch)
+    ? requestedBranch
+    : '';
+  const readOnly = Boolean(reportBranch);
+
   const refresh = useCallback(() => setVersion((current) => current + 1), []);
 
   const startCollection = useCallback((customer: ReceivableCustomer) => {
@@ -55,14 +75,36 @@ export const AccountsReceivablePage = () => {
         subtitle="Saldo pendiente de tus clientes y registro de pagos."
       />
       <FinanceNavigation />
-      <ReceivableSummaryKpis refreshKey={version} />
+      {options.length > 0 && (
+        <SelectField
+          aria-label="Sucursales autorizadas para cuentas por cobrar"
+          value={reportBranch}
+          onChange={(event) => {
+            setSelectedCustomer(null);
+            setCollectCustomer(null);
+            setAdvanceCustomer(null);
+            setRequestedBranch(event.target.value);
+          }}
+        >
+          <option value="">Sucursal operativa</option>
+          {options.map((branch) => (
+            <option key={branch.id} value={branch.id}>
+              {branch.isActive ? branch.name : `${branch.name} (inactiva)`}
+            </option>
+          ))}
+        </SelectField>
+      )}
+      <ReceivableSummaryKpis refreshKey={version} branchId={reportBranch} />
       <CustomerReceivablesGrid
+        key={reportBranch}
+        branchId={reportBranch}
         refreshKey={version}
         onOpenDetail={setSelectedCustomer}
         onCollect={startCollection}
       />
       <CustomerReceivableDrawer
         customer={selectedCustomer}
+        branchId={reportBranch}
         refreshKey={version}
         onClose={() => setSelectedCustomer(null)}
         onCollect={startCollection}
@@ -71,12 +113,12 @@ export const AccountsReceivablePage = () => {
           setAdvanceCustomer(customer);
         }}
         onDownloadStatement={(customerId) => {
-          downloadCustomerStatement(customerId).catch(() =>
+          downloadCustomerStatement(customerId, reportBranch).catch(() =>
             toast('No se pudo descargar el estado de cuenta. Inténtalo de nuevo.', 'error'),
           );
         }}
       />
-      {collectCustomer && canCollect && (
+      {collectCustomer && canCollect && !readOnly && (
         <CollectPaymentDialog
           key={`collect-${collectCustomer.id}-${version}`}
           customerId={collectCustomer.id}
@@ -90,7 +132,7 @@ export const AccountsReceivablePage = () => {
           }}
         />
       )}
-      {advanceCustomer && canCollect && (
+      {advanceCustomer && canCollect && !readOnly && (
         <CustomerAdvanceDialog
           key={`advance-${advanceCustomer.id}-${version}`}
           customerId={advanceCustomer.id}
