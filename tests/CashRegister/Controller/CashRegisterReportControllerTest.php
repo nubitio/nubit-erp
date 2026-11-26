@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\CashRegister\Controller;
 
 use App\CashRegister\Controller\CashRegisterReportController;
+use App\Identity\Auth\BranchContextServiceInterface;
 use Doctrine\DBAL\Connection;
 use Nubit\Platform\Export\PdfExporter;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -105,13 +106,16 @@ beforeEach(function (): void {
     $this->twig = static::getContainer()->get(Environment::class);
 });
 
-it('returns a 404 when the session does not exist', function (): void {
+it('returns a 404 when the session belongs to another branch', function (): void {
+    $sessionId = insertClosureReportFixtures($this->connection);
     $pdfExporter = $this->createStub(PdfExporter::class);
 
-    $controller = new CashRegisterReportController($this->twig, $this->connection, $pdfExporter);
+    $branch = $this->createStub(BranchContextServiceInterface::class);
+    $branch->method('getCurrentBranchId')->willReturn('another-branch');
+    $controller = new CashRegisterReportController($this->twig, $this->connection, $pdfExporter, $branch);
     $controller->setContainer(static::getContainer());
 
-    $response = $controller->__invoke(999_888_777);
+    $response = $controller->__invoke($sessionId);
 
     expect($response->getStatusCode())->toBe(Response::HTTP_NOT_FOUND);
 });
@@ -138,7 +142,12 @@ it('reads the shift from the shared report and exports the rendered closure repo
             });
         });
 
-    $controller = new CashRegisterReportController($this->twig, $this->connection, $pdfExporter);
+    $branch = $this->createStub(BranchContextServiceInterface::class);
+    $branch->method('getCurrentBranchId')->willReturn((string) $this->connection->fetchOne(
+        'SELECT branch_id FROM cash_sessions WHERE id = ?',
+        [$sessionId],
+    ));
+    $controller = new CashRegisterReportController($this->twig, $this->connection, $pdfExporter, $branch);
     $controller->setContainer(static::getContainer());
 
     $response = $controller->__invoke($sessionId);

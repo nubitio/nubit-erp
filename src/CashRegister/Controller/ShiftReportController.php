@@ -6,6 +6,7 @@ namespace App\CashRegister\Controller;
 
 use App\CashRegister\Service\ShiftReport;
 use App\CashRegister\Service\ShiftReportEscPos;
+use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Security\Security;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
@@ -15,6 +16,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -30,6 +32,7 @@ final class ShiftReportController extends AbstractController
         private readonly Security $security,
         #[Autowire('%env(PRINTER_LINE_WIDTH)%')]
         private readonly int $printerLineWidth,
+        private readonly BranchContextServiceInterface $branchContext,
     ) {}
 
     /**
@@ -44,7 +47,7 @@ final class ShiftReportController extends AbstractController
     )]
     public function __invoke(int $id): JsonResponse
     {
-        return $this->json($this->report->forSession($id));
+        return $this->json($this->report->forSession($id, $this->requireBranch()));
     }
 
     /**
@@ -62,7 +65,8 @@ final class ShiftReportController extends AbstractController
     )]
     public function print(int $id, Request $request): Response
     {
-        $ownerId = $this->connection->fetchOne('SELECT opened_by FROM cash_sessions WHERE id = ?', [$id]);
+        $branchId = $this->requireBranch();
+        $ownerId = $this->connection->fetchOne('SELECT opened_by FROM cash_sessions WHERE id = ? AND branch_id = ?', [$id, $branchId]);
         $user = $this->security->connectedUser();
         if (
             $ownerId !== false
@@ -75,8 +79,12 @@ final class ShiftReportController extends AbstractController
 
         $width = self::PAPER_WIDTH_MAP[$request->query->getInt('paper_width')] ?? max(32, $this->printerLineWidth);
 
-        return new Response($this->escPos->commands($this->report->forSession($id), $width), Response::HTTP_OK, [
+        return new Response($this->escPos->commands($this->report->forSession($id, $branchId), $width), Response::HTTP_OK, [
             'Content-Type' => 'application/octet-stream',
         ]);
+    }
+    private function requireBranch(): string
+    {
+        return $this->branchContext->getCurrentBranchId() ?? throw new NotFoundHttpException('Turno no encontrado.');
     }
 }

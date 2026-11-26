@@ -49,9 +49,9 @@ readonly class ShiftReport
      * @return ShiftReportData
      * @throws Exception
      */
-    public function forSession(int $sessionId): array
+    public function forSession(int $sessionId, ?string $branchId = null): array
     {
-        $session = $this->connection->fetchAssociative('SELECT cs.id, cs.status, cs.opening_amount, cs.expected_amount, cs.counted_amount, cs.difference_amount,
+        $sql = 'SELECT cs.id, cs.status, cs.opening_amount, cs.expected_amount, cs.counted_amount, cs.difference_amount,
                     cs.close_note, cs.opened_at, cs.closed_at, cs.counted_denominations, cs.opening_fund_kept,
                     cs.cash_withdrawn_at_close, cs.branch_id,
                     cr.name AS register_name, u.username AS cashier, cl.username AS closed_by
@@ -59,7 +59,13 @@ readonly class ShiftReport
              JOIN cash_register cr ON cr.id = cs.cash_register_id
              LEFT JOIN usuario u ON u.usuario_id = cs.opened_by
              LEFT JOIN usuario cl ON cl.usuario_id = cs.closed_by
-             WHERE cs.id = ?', [$sessionId]);
+             WHERE cs.id = ?';
+        $params = [$sessionId];
+        if ($branchId !== null) {
+            $sql .= ' AND cs.branch_id = ?';
+            $params[] = $branchId;
+        }
+        $session = $this->connection->fetchAssociative($sql, $params);
 
         if ($session === false) {
             throw new NotFoundHttpException(sprintf('CashSession not found for id %d.', $sessionId));

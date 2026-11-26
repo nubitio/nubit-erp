@@ -8,6 +8,7 @@ use App\CashRegister\Service\SessionSalesBreakdown;
 use App\CashRegister\Service\ShiftCash;
 use App\CashRegister\Service\ShiftReceipts;
 use App\CashRegister\Service\ShiftReport;
+use App\Identity\Auth\BranchContextServiceInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Nubit\Platform\Export\PdfExporter;
@@ -25,6 +26,7 @@ class CashRegisterReportController extends AbstractController
         private readonly Environment $twig,
         private readonly Connection $connection,
         private readonly PdfExporter $pdfExporter,
+        private readonly BranchContextServiceInterface $branchContext,
     ) {}
 
     /**
@@ -43,7 +45,8 @@ class CashRegisterReportController extends AbstractController
         );
 
         try {
-            $data = $report->forSession($id);
+            $branchId = $this->branchContext->getCurrentBranchId() ?? throw new NotFoundHttpException();
+            $data = $report->forSession($id, $branchId);
         } catch (NotFoundHttpException) {
             return $this->json(['message' => 'Turno no encontrado'], Response::HTTP_NOT_FOUND);
         }
