@@ -10,9 +10,7 @@ use App\Organization\Repository\BranchRepository;
 
 final readonly class OperatingBranchResolver
 {
-    public function __construct(
-        private BranchRepository $branches,
-    ) {}
+    public function __construct(private BranchRepository $branches) {}
 
     public function resolve(User $user, mixed $branchId): ?Branch
     {
