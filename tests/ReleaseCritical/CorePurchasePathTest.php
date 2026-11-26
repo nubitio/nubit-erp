@@ -122,7 +122,6 @@ final class CorePurchasePathTest extends KernelTestCase
         $branchContext = $this->createStub(BranchContextServiceInterface::class);
 
         $branchContext->method('getCurrentBranchId')->willReturn($world->branch->getId());
-
         /** @var BranchRepository $branches */
         $branches = $container->get(BranchRepository::class);
         /** @var PurchaseInventoryService $inventory */
