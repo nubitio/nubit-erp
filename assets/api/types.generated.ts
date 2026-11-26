@@ -15207,15 +15207,15 @@ export interface components {
              * @description voucher_series.branch.label
              * @example https://example.com/
              */
-            branch?: string;
+            branch: string;
             /**
              * Format: iri-reference
              * @description voucher_series.voucher_type.label
              * @example https://example.com/
              */
-            voucherType?: string;
+            voucherType: string;
             /** @description voucher_series.series.label */
-            series?: string;
+            series: string;
             /** @description voucher_series.associated_series.label */
             associatedSeries?: string | null;
             /**
@@ -15227,11 +15227,11 @@ export interface components {
         "VoucherSerie-voucher_series.read": {
             readonly id?: number;
             /** @description voucher_series.branch.label */
-            branch?: components["schemas"]["Branch-voucher_series.read"];
+            branch: components["schemas"]["Branch-voucher_series.read"];
             /** @description voucher_series.voucher_type.label */
-            voucherType?: components["schemas"]["VoucherType-voucher_series.read"];
+            voucherType: components["schemas"]["VoucherType-voucher_series.read"];
             /** @description voucher_series.series.label */
-            series?: string;
+            series: string;
             /** @description voucher_series.associated_series.label */
             associatedSeries?: string | null;
             /**
@@ -15267,11 +15267,11 @@ export interface components {
         "VoucherSerie.jsonld-voucher_series.read": components["schemas"]["HydraItemBaseSchema"] & {
             readonly id?: number;
             /** @description voucher_series.branch.label */
-            branch?: components["schemas"]["Branch.jsonld-voucher_series.read"];
+            branch: components["schemas"]["Branch.jsonld-voucher_series.read"];
             /** @description voucher_series.voucher_type.label */
-            voucherType?: components["schemas"]["VoucherType.jsonld-voucher_series.read"];
+            voucherType: components["schemas"]["VoucherType.jsonld-voucher_series.read"];
             /** @description voucher_series.series.label */
-            series?: string;
+            series: string;
             /** @description voucher_series.associated_series.label */
             associatedSeries?: string | null;
             /**
