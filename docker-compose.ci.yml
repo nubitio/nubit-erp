@@ -9,7 +9,7 @@ services:
     ports: !reset []
     depends_on: !override
       database:
-        condition: service_started
+        condition: service_healthy
     volumes: !override
       - .:/app
       - app-var:/app/var
@@ -33,6 +33,11 @@ services:
 
   database:
     ports: !reset []
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 3s
+      timeout: 5s
+      retries: 30
 
   redis:
     ports: !reset []

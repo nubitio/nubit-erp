@@ -13,7 +13,8 @@ concurrency:
 
 jobs:
   version:
-    runs-on: [self-hosted, nubit-x64]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     permissions:
       contents: write
       issues: write
@@ -50,7 +51,8 @@ jobs:
   manifest:
     needs: [version, build]
     if: needs.version.outputs.tag != ''
-    runs-on: [self-hosted, nubit-x64]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
     permissions:
       contents: write
     steps:

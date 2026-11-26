@@ -3,6 +3,9 @@ name: Deploy to Dev
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-image:
     uses: ./.github/workflows/build-image.yml
