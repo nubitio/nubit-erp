@@ -280,6 +280,15 @@ readonly class CollectOnAccountService
         ?string $moneyAccountId,
     ): array {
         $out = [];
+        $entry = $this->ledger->recordPayment(
+            customerId: $customerId,
+            occurredOn: $paidAt,
+            amount: Money::toString($total),
+            currency: $currency,
+            source: 'on_account_collect',
+            sourceId: $collectionId,
+            description: sprintf('Cobro a cuenta cliente #%d', $customerId),
+        );
         foreach ($plan as $row) {
             $sale = $row['sale'];
             $applyAmount = Money::toString($row['amount']);
@@ -291,17 +300,6 @@ readonly class CollectOnAccountService
                 $applyAmount,
                 $paidAt,
                 $reference,
-            );
-
-            $entry = $this->ledger->recordPayment(
-                customerId: $customerId,
-                occurredOn: $paidAt,
-                amount: $applyAmount,
-                currency: $currency,
-                saleId: (string) $sale->getId(),
-                source: 'on_account_collect',
-                sourceId: $collectionId,
-                description: $label,
             );
 
             $this->entityManager->persist(new CustomerPaymentApplication(

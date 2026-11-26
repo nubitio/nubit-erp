@@ -109,19 +109,52 @@ final readonly class StatementRepository
             <<<'SQL'
                 SELECT
                     e.occurred_on AS date,
-                    TRIM(BOTH '-' FROM CONCAT(COALESCE(s.series, ''), '-', COALESCE(s.number, ''))) AS document,
-                    e.credit AS amount,
+                    CASE WHEN e.source = 'on_account_collect'
+                        THEN 'Cobro a cuenta'
+                        ELSE COALESCE(NULLIF(TRIM(BOTH '-' FROM CONCAT(COALESCE(s.series, ''), '-', COALESCE(s.number, ''))), ''), 'Documento interno')
+                    END AS document,
+                    CASE WHEN e.source = 'on_account_collect'
+                        THEN (
+                            SELECT SUM(a.applied_amount)
+                            FROM customer_payment_applications a
+                            JOIN customer_account_entries collection_entry ON collection_entry.id = a.customer_account_entry_id
+                            JOIN sales applied_sale ON applied_sale.id = a.sale_id
+                            WHERE collection_entry.customer_id = e.customer_id
+                              AND collection_entry.source = e.source
+                              AND collection_entry.source_id = e.source_id
+                              AND collection_entry.entry_type = 'payment'
+                              AND applied_sale.branch_id = :collect_branch
+                        )
+                        ELSE e.credit
+                    END AS amount,
                     CASE e.entry_type
                         WHEN 'credit_note' THEN 'Nota de crédito'
                         WHEN 'advance' THEN 'Anticipo recibido'
+                        WHEN 'payment' THEN 'Cobro'
                         ELSE ''
                     END AS detail
                 FROM customer_account_entries e
                 LEFT JOIN sales s ON s.id = e.sale_id
                 WHERE e.customer_id = :customer
                   AND (
-                      (e.entry_type IN ('payment', 'credit_note') AND s.branch_id = :branch)
+                      (e.entry_type = 'payment' AND e.source = 'on_account_collect' AND EXISTS (
+                          SELECT 1 FROM customer_payment_applications a
+                          JOIN sales applied_sale ON applied_sale.id = a.sale_id
+                          JOIN customer_account_entries collection_entry ON collection_entry.id = a.customer_account_entry_id
+                          WHERE collection_entry.source = e.source AND collection_entry.source_id = e.source_id
+                            AND applied_sale.branch_id = :collect_branch
+                      ))
+                      OR (e.entry_type = 'payment' AND (e.source IS NULL OR e.source <> 'on_account_collect') AND s.branch_id = :branch)
+                      OR (e.entry_type = 'credit_note' AND s.branch_id = :branch)
                       OR (e.entry_type = 'advance' AND e.branch_id = :advance_branch)
+                  )
+                  AND (
+                      e.source <> 'on_account_collect'
+                      OR NOT EXISTS (
+                          SELECT 1 FROM customer_account_entries prior
+                          WHERE prior.source = e.source AND prior.source_id = e.source_id
+                            AND prior.entry_type = e.entry_type AND prior.id < e.id
+                      )
                   )
                   AND e.occurred_on <= :date_to
                 ORDER BY e.id
@@ -130,6 +163,7 @@ final readonly class StatementRepository
                 'customer' => $customerId,
                 'date_to' => $dateTo,
                 'branch' => $branchId,
+                'collect_branch' => $branchId,
                 'advance_branch' => $branchId,
             ],
         );
