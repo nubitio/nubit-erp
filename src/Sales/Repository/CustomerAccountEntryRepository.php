@@ -124,6 +124,12 @@ class CustomerAccountEntryRepository extends ServiceEntityRepository
         return $rows;
     }
 
+    /** The entry a source id already produced, for replaying a retried request. */
+    public function findBySource(string $source, string $sourceId): ?CustomerAccountEntry
+    {
+        return $this->findOneBy(['source' => $source, 'sourceId' => $sourceId]);
+    }
+
     /** Whether an entry from this source was already booked: the guard that keeps a retry from posting twice. */
     public function hasEntryFromSource(string $source, string $sourceId): bool
     {

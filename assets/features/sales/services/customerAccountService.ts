@@ -40,6 +40,8 @@ export interface ReceiveAdvanceInput {
   reference?: string;
   /** Treasury account the money lands in; omitted = the payment method's mapped account. */
   moneyAccountId?: string;
+  /** Same key on a retry of the same advance: the server returns the first receipt instead of receiving twice. */
+  idempotencyKey?: string;
 }
 
 export interface CustomerAdvanceReceipt {
@@ -89,14 +91,18 @@ export const customerAccountService = {
   },
 
   receiveAdvance(input: ReceiveAdvanceInput) {
-    return httpClient.post<CustomerAdvanceReceipt>(`${API}sales/customer-advances`, {
-      customerId: input.customerId,
-      amount: round2(input.amount),
-      paymentMethodId: input.paymentMethodId,
-      paidAt: input.paidAt,
-      reference: input.reference,
-      moneyAccountId: input.moneyAccountId || undefined,
-    });
+    return httpClient.post<CustomerAdvanceReceipt>(
+      `${API}sales/customer-advances`,
+      {
+        customerId: input.customerId,
+        amount: round2(input.amount),
+        paymentMethodId: input.paymentMethodId,
+        paidAt: input.paidAt,
+        reference: input.reference,
+        moneyAccountId: input.moneyAccountId || undefined,
+      },
+      input.idempotencyKey ? { headers: { 'Idempotency-Key': input.idempotencyKey } } : undefined,
+    );
   },
 
   applyAdvance(input: ApplyAdvanceInput) {

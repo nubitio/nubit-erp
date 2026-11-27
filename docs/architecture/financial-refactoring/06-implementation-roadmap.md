@@ -10,7 +10,7 @@ Fase 0 implementada en el árbol de trabajo (sin commit). Verificado: 618 prueba
 | --- | --- | --- |
 | T0.1 locks en cobros | Hecho | `lockOpenReceivablesForCustomer` (FOR UPDATE + refresh), `refresh(PESSIMISTIC_WRITE)` en cobro individual; `ApplyAdvanceService` ahora transaccional con candado por cliente (`CustomerAccountLock`). **Sin prueba de concurrencia real** (ver T0.11) |
 | T0.2 locks en AP | Hecho | pago y reversión releen bajo lock |
-| T0.3 idempotencia | Parcial | índice único en migración (solo en tenants limpios), recheck de la clave bajo lock, 409 reintentable, métrica de clave ausente. **Falta**: clave en anticipos, aplicación de anticipo y pago a proveedor |
+| T0.3 idempotencia | Casi hecho | índice único en migración (solo en tenants limpios), recheck de la clave bajo lock, 409 reintentable, métrica de clave ausente; pago a proveedor (`supplier_payment.idempotency_key`) y anticipo recibido (id derivado del header) idempotentes con envío desde el frontend. El anticipo recibido ahora escribe caja y evento contable dentro de la misma transacción. **Falta**: aplicación de anticipo (`ApplyAdvanceService`) y cobro de una sola venta |
 | T0.4 ledger sin carrera | Hecho | `CustomerAccountLock` dentro de `CustomerAccountLedger::record` |
 | T0.5 guarda SupplierBill | Hecho | `SupplierBillUpdateProcessor` |
 | T0.6 cuota SUNAT | Hecho (código) | `SaleCreditTermsProvider`; **falta validar en la beta de SUNAT** |
@@ -18,7 +18,8 @@ Fase 0 implementada en el árbol de trabajo (sin commit). Verificado: 618 prueba
 | T0.8 NC con efecto | Hecho (operativo) | `CreditNoteReceivableAdjuster`; **sin asiento contable** y solo ventas a crédito |
 | T0.9 moneda homogénea | Hecho | `CollectionPlanGuard` |
 | T0.10 CHECK de saldos | Hecho | migración `Version20261127100000`, condicionada a datos limpios |
-| T0.11 batería de concurrencia | Pendiente | requiere MariaDB con esquema migrado (la BD `demo_test` local no lo tiene) |
+| T0.11 batería de concurrencia | Pendiente | `demo_test` local ya está migrada (2026-11-27); falta escribir las pruebas con dos conexiones |
+| D-08 orden por vencimiento | Hecho | `SaleRecordRepository` ordena por `COALESCE(due_date, issued_date)` |
 
 Fases 1 a 4 no iniciadas.
 
