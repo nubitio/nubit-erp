@@ -39,7 +39,9 @@ export const CustomerAdvanceDialog = ({
   const [applied, setApplied] = useState<CollectOnAccountApplication[] | null>(null);
 
   // Same key while the form is unchanged: a retry after a timeout cannot receive the advance twice.
-  const idempotency = useIdempotencyKey(`${customerId}|${amountValue}|${paymentMethodId}|${moneyAccountId}`);
+  const idempotency = useIdempotencyKey(
+    `${customerId}|${amountValue}|${paymentMethodId}|${moneyAccountId}`,
+  );
   const money = (value: string | number) => NumberUtils.formatCurrency(Number(value), currency);
 
   const reset = () => {
@@ -80,11 +82,14 @@ export const CustomerAdvanceDialog = ({
               setAvailable(data.availableAdvance);
               reset();
             })
-        : customerAccountService.applyAdvance({ customerId, amount }).then(({ data }) => {
-            toast(`Anticipo aplicado a ${data.applications.length} comprobante(s)`, 'success');
-            setAvailable(data.availableAdvance);
-            setApplied(data.applications);
-          });
+        : customerAccountService
+            .applyAdvance({ customerId, amount, idempotencyKey: idempotency.current() })
+            .then(({ data }) => {
+              idempotency.renew();
+              toast(`Anticipo aplicado a ${data.applications.length} comprobante(s)`, 'success');
+              setAvailable(data.availableAdvance);
+              setApplied(data.applications);
+            });
 
     request
       .catch(() => {

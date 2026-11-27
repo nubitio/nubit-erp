@@ -57,6 +57,8 @@ export interface ApplyAdvanceInput {
   amount: number;
   paidAt?: string;
   applications?: Array<{ saleId: string; amount: number }>;
+  /** Same key on a retry of the same application: the server returns the first result. */
+  idempotencyKey?: string;
 }
 
 export interface AdvanceApplicationResult {
@@ -106,15 +108,19 @@ export const customerAccountService = {
   },
 
   applyAdvance(input: ApplyAdvanceInput) {
-    return httpClient.post<AdvanceApplicationResult>(`${API}sales/customer-advances/apply`, {
-      customerId: input.customerId,
-      amount: round2(input.amount),
-      paidAt: input.paidAt,
-      applications: (input.applications ?? []).map((a) => ({
-        saleId: a.saleId,
-        amount: round2(a.amount),
-      })),
-    });
+    return httpClient.post<AdvanceApplicationResult>(
+      `${API}sales/customer-advances/apply`,
+      {
+        customerId: input.customerId,
+        amount: round2(input.amount),
+        paidAt: input.paidAt,
+        applications: (input.applications ?? []).map((a) => ({
+          saleId: a.saleId,
+          amount: round2(a.amount),
+        })),
+      },
+      input.idempotencyKey ? { headers: { 'Idempotency-Key': input.idempotencyKey } } : undefined,
+    );
   },
 };
 

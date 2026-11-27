@@ -7,6 +7,7 @@ namespace App\Sales\Service;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Enum\SettlementBehavior;
 use App\Efact\Domain\Money;
+use App\Sales\Entity\SaleRecord;
 use Brick\Math\BigDecimal;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
@@ -55,9 +56,13 @@ final readonly class CollectionPlanGuard
      */
     public static function currencyOf(array $plan): string
     {
-        $currency = $plan === [] ? '' : $plan[0]['sale']->getCurrency();
+        return $plan === [] ? 'PEN' : self::saleCurrency($plan[0]['sale']);
+    }
 
-        return $currency !== '' ? $currency : 'PEN';
+    /** The currency a sale is booked in; PEN when none was stored. */
+    public static function saleCurrency(SaleRecord $sale): string
+    {
+        return $sale->getCurrency() !== '' ? $sale->getCurrency() : 'PEN';
     }
 
     /**
@@ -70,7 +75,7 @@ final readonly class CollectionPlanGuard
     {
         $currencies = [];
         foreach ($plan as $row) {
-            $currencies[$row['sale']->getCurrency() !== '' ? $row['sale']->getCurrency() : 'PEN'] = true;
+            $currencies[self::saleCurrency($row['sale'])] = true;
         }
         if (count($currencies) > 1) {
             throw new UnprocessableEntityHttpException(sprintf(

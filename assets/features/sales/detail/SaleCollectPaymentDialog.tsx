@@ -4,6 +4,7 @@ import { AppDialog, Button, FormField, TextField } from '@nubitio/ui';
 import { EntityDropdown } from '@nubitio/crud';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { httpClient } from '@shared/api/HttpClient';
+import { useIdempotencyKey } from '@shared/lib/idempotency';
 import { saleEndpoints } from '../api/saleEndpoints';
 import { saleDocument, saleMoney, type SaleDetail } from './saleDetailModel';
 
@@ -25,15 +26,24 @@ export function SaleCollectPaymentDialog({
   const [amount, setAmount] = useState(sale.balanceDue);
   const [method, setMethod] = useState<string | null>(null);
   const [reference, setReference] = useState('');
+  // Same key while the form is unchanged: a retry after a timeout cannot collect twice.
+  const idempotency = useIdempotencyKey(`${sale.id}|${amount}|${method}|${reference}`);
   const payment = useMutation({
     mutationFn: () =>
-      httpClient.post(`${saleEndpoints.detail(sale.id)}/collect`, {
-        id: sale.id,
-        amount,
-        paymentMethodId: Number(method),
-        reference: reference.trim() || null,
-      }),
-    onSuccess: onDone,
+      httpClient.post(
+        `${saleEndpoints.detail(sale.id)}/collect`,
+        {
+          id: sale.id,
+          amount,
+          paymentMethodId: Number(method),
+          reference: reference.trim() || null,
+        },
+        { headers: { 'Idempotency-Key': idempotency.current() } },
+      ),
+    onSuccess: () => {
+      idempotency.renew();
+      onDone();
+    },
   });
   return (
     <AppDialog

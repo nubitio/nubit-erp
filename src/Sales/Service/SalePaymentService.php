@@ -66,6 +66,7 @@ readonly class SalePaymentService
         ?string $reference,
         User $createdBy,
         ?string $moneyAccountId = null,
+        ?string $idempotencyKey = null,
     ): SalePayment {
         // Same order as before the split: reject a bad method or a voided sale
         // before touching the cash drawer, so the error and the (lack of) side
@@ -100,6 +101,7 @@ readonly class SalePaymentService
             $moneyAccountId,
             $cashSessionId,
             $amountMoney,
+            $idempotencyKey,
         ): SalePayment {
             if ($cashSessionId !== null) {
                 $this->salesWriteGateway->requireLockedOpenCashSessionForUser(
@@ -112,7 +114,12 @@ readonly class SalePaymentService
             // collection left, not the snapshot loaded before the transaction (G-01).
             $this->entityManager->refresh($sale, LockMode::PESSIMISTIC_WRITE);
 
-            $payment = $this->appendPayment($sale, $paymentMethod, $amount, $paidAt, $reference);
+            $replayed = SalePaymentIdempotency::existing($this->entityManager, $idempotencyKey, $sale, $amountMoney);
+            if ($replayed instanceof SalePayment) {
+                return $replayed;
+            }
+
+            $payment = $this->appendPayment($sale, $paymentMethod, $amount, $paidAt, $reference, $idempotencyKey);
 
             $customer = $sale->getCustomer();
             $this->treasuryReceipts?->record(new TreasuryReceipt(
@@ -152,10 +159,11 @@ readonly class SalePaymentService
         string $amount,
         DateTimeImmutable $paidAt,
         ?string $reference,
+        ?string $idempotencyKey = null,
     ): SalePayment {
         $this->assertCollectable($paymentMethod, $sale);
 
-        return $this->persistPaymentRow($sale, $paymentMethod, $amount, $paidAt, $reference);
+        return $this->persistPaymentRow($sale, $paymentMethod, $amount, $paidAt, $reference, $idempotencyKey);
     }
 
     /** Called inside the authorized external collection transaction, with the sale already locked. */
@@ -229,7 +237,7 @@ readonly class SalePaymentService
             ->setSaleRecord($sale)
             ->setPaymentMethod($paymentMethod)
             ->setAmount(Money::toString($amountMoney))
-            ->setCurrency($sale->getCurrency() !== '' ? $sale->getCurrency() : 'PEN')
+            ->setCurrency(CollectionPlanGuard::saleCurrency($sale))
             ->setPaidAt(\DateTime::createFromImmutable($paidAt))
             ->setReference($reference)
             ->setIdempotencyKey($captureKey)

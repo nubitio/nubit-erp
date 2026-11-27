@@ -13,11 +13,14 @@ use App\Sales\Dto\AdvanceApplicationResult;
 use App\Sales\Dto\CollectOnAccountApplication;
 use App\Sales\Entity\CustomerAccountEntry;
 use App\Sales\Entity\CustomerPaymentApplication;
+use App\Sales\Entity\SaleRecord;
+use App\Sales\Repository\CustomerPaymentApplicationRepository;
 use App\Sales\Repository\CustomerAccountEntryRepository;
 use App\Sales\Repository\SaleRecordRepository;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Uid\Uuid;
@@ -44,6 +47,7 @@ readonly class ApplyAdvanceService
         private MessageBusInterface $messageBus,
         private OperationLog $operationLog,
         private ?CustomerAccountLock $accountLock = null,
+        private ?CustomerPaymentApplicationRepository $applications = null,
     ) {}
 
     /**
@@ -54,6 +58,7 @@ readonly class ApplyAdvanceService
         string $amount,
         DateTimeImmutable $appliedAt,
         array $applications,
+        ?string $applicationId = null,
     ): AdvanceApplicationResult {
         // One transaction from the first read: the customer lock makes two applications of the same
         // advance run one after the other, so an advance can never be spent twice (G-01, invariant 5).
@@ -62,10 +67,12 @@ readonly class ApplyAdvanceService
             $amount,
             $appliedAt,
             $applications,
+            $applicationId,
         ): AdvanceApplicationResult {
             $this->accountLock?->lock($customerId);
 
-            return $this->applyLocked($customerId, $amount, $appliedAt, $applications);
+            return $this->replay($applicationId, $customerId)
+                ?? $this->applyLocked($customerId, $amount, $appliedAt, $applications, $applicationId);
         });
     }
 
@@ -77,6 +84,7 @@ readonly class ApplyAdvanceService
         string $amount,
         DateTimeImmutable $appliedAt,
         array $applications,
+        ?string $applicationId,
     ): AdvanceApplicationResult {
         $amountMoney = Money::money($amount);
         if ($amountMoney->isLessThanOrEqualTo(0)) {
@@ -102,9 +110,9 @@ readonly class ApplyAdvanceService
         $plan = $this->planner->plan($openSales, $amountMoney, $applications);
 
         $currency = $plan[0]['sale']->getCurrency() !== '' ? $plan[0]['sale']->getCurrency() : 'PEN';
-        $applicationId = Uuid::v4()->toRfc4122();
+        $applicationId ??= Uuid::v4()->toRfc4122();
 
-        $lines = $this->applyPlan($plan, $customerId, $advanceMethod, $appliedAt, $currency);
+        $lines = $this->applyPlan($plan, $customerId, $advanceMethod, $appliedAt, $currency, $applicationId);
 
         $description = sprintf('Aplicación de anticipo cliente #%d', $customerId);
         $this->messageBus->dispatch(new EconomicEvent(
@@ -129,6 +137,40 @@ readonly class ApplyAdvanceService
             customerId: $customerId,
             applied: Money::toString($amountMoney),
             currency: $currency,
+            availableAdvance: $this->entries->availableAdvance($customerId),
+            applications: $lines,
+        );
+    }
+
+    /** The result of an application already booked under this id, so a retry applies nothing twice. */
+    private function replay(?string $applicationId, int $customerId): ?AdvanceApplicationResult
+    {
+        $rows = $applicationId === null ? [] : ($this->applications?->summaryForBatch($applicationId) ?? []);
+        if ($rows === []) {
+            return null;
+        }
+        if ($rows[0]['customerId'] !== $customerId) {
+            throw new ConflictHttpException('Esta clave de idempotencia ya se usó en otra aplicación.');
+        }
+
+        $total = BigDecimal::zero();
+        $lines = [];
+        foreach ($rows as $row) {
+            $sale = $this->sales->find($row['saleId']);
+            $total = $total->plus($row['applied']);
+            $lines[] = new CollectOnAccountApplication(
+                saleId: $row['saleId'],
+                document: $sale instanceof SaleRecord ? CollectOnAccountPlanner::documentLabel($sale) : $row['saleId'],
+                applied: Money::toString(Money::money($row['applied'])),
+                balanceDueAfter: $sale instanceof SaleRecord ? $sale->getBalanceDue() : '0.00',
+            );
+        }
+
+        return new AdvanceApplicationResult(
+            applicationId: (string) $applicationId,
+            customerId: $customerId,
+            applied: Money::toString($total),
+            currency: $rows[0]['currency'],
             availableAdvance: $this->entries->availableAdvance($customerId),
             applications: $lines,
         );
@@ -170,6 +212,7 @@ readonly class ApplyAdvanceService
         PaymentMethod $advanceMethod,
         DateTimeImmutable $appliedAt,
         string $currency,
+        string $applicationId,
     ): array {
         $advances = $this->entries->advancesWithRemaining($customerId);
 
@@ -178,6 +221,7 @@ readonly class ApplyAdvanceService
             $advanceMethod,
             $appliedAt,
             $currency,
+            $applicationId,
             &$advances,
         ): array {
             $out = [];
@@ -204,6 +248,7 @@ readonly class ApplyAdvanceService
                     (int) $payment->getId(),
                     $currency,
                     $appliedAt,
+                    $applicationId,
                 );
 
                 $out[] = new CollectOnAccountApplication(
@@ -235,6 +280,7 @@ readonly class ApplyAdvanceService
         int $salePaymentId,
         string $currency,
         DateTimeImmutable $appliedAt,
+        string $batchId,
     ): int {
         $left = $amount;
         while ($left->isGreaterThan(0)) {
@@ -260,6 +306,7 @@ readonly class ApplyAdvanceService
                 currency: $currency,
                 appliedAt: $appliedAt,
                 salePaymentId: $salePaymentId,
+                batchId: $batchId,
             ));
 
             $advances[$cursor]['remaining'] = Money::toString($remaining->minus($portion));

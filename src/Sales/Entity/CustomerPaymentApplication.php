@@ -23,6 +23,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'customer_payment_applications')]
 #[ORM\Index(name: 'idx_customer_payment_application_entry', columns: ['customer_account_entry_id'])]
 #[ORM\Index(name: 'idx_customer_payment_application_sale', columns: ['sale_id'])]
+#[ORM\Index(name: 'idx_customer_payment_application_batch', columns: ['batch_id'])]
 class CustomerPaymentApplication
 {
     #[ORM\Id]
@@ -54,6 +55,10 @@ class CustomerPaymentApplication
     #[ORM\Column(name: 'applied_at', type: Types::DATETIME_IMMUTABLE)]
     private DateTimeImmutable $appliedAt;
 
+    /** Id of the request that created this row (an advance application), so a retry can be recognised. */
+    #[ORM\Column(name: 'batch_id', type: Types::STRING, length: 36, nullable: true)]
+    private ?string $batchId = null;
+
     public function __construct(
         CustomerAccountEntry $accountEntry,
         string $saleId,
@@ -61,6 +66,7 @@ class CustomerPaymentApplication
         string $currency,
         ?DateTimeImmutable $appliedAt = null,
         ?int $salePaymentId = null,
+        ?string $batchId = null,
     ) {
         $this->accountEntry = $accountEntry;
         $this->saleId = $saleId;
@@ -68,6 +74,7 @@ class CustomerPaymentApplication
         $this->currency = $currency;
         $this->appliedAt = $appliedAt ?? new DateTimeImmutable();
         $this->salePaymentId = $salePaymentId;
+        $this->batchId = $batchId;
     }
 
     public function getId(): ?int
@@ -105,6 +112,11 @@ class CustomerPaymentApplication
     public function getCurrency(): string
     {
         return $this->currency;
+    }
+
+    public function getBatchId(): ?string
+    {
+        return $this->batchId;
     }
 
     public function getAppliedAt(): DateTimeImmutable

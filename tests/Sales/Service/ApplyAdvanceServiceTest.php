@@ -139,7 +139,37 @@ final class ApplyAdvanceServiceTest extends TestCase
         $this->service()->apply(9, '100.00', new DateTimeImmutable(), []);
     }
 
-    private function service(): ApplyAdvanceService
+    public function testARetryWithTheSameApplicationIdReturnsTheFirstResultAndAppliesNothing(): void
+    {
+        $batches = $this->createMock(\App\Sales\Repository\CustomerPaymentApplicationRepository::class);
+        $batches->method('summaryForBatch')->with('app-1')->willReturn([
+            ['saleId' => 's1', 'applied' => '120.00', 'currency' => 'PEN', 'customerId' => 9],
+        ]);
+        $this->sales->method('find')->willReturn($this->sale('s1', '80.00'));
+        $this->entries->method('availableAdvance')->willReturn('380.00');
+        $this->salePaymentService->expects(self::never())->method('appendAdvancePayment');
+
+        $result = $this->service($batches)->apply(9, '120.00', new DateTimeImmutable(), [], 'app-1');
+
+        self::assertSame('app-1', $result->applicationId);
+        self::assertSame('120.00', $result->applied);
+        self::assertSame('80.00', $result->applications[0]->balanceDueAfter);
+        self::assertSame([], $this->dispatched);
+    }
+
+    public function testTheSameApplicationIdForAnotherCustomerIsAConflict(): void
+    {
+        $batches = $this->createMock(\App\Sales\Repository\CustomerPaymentApplicationRepository::class);
+        $batches->method('summaryForBatch')->willReturn([
+            ['saleId' => 's1', 'applied' => '120.00', 'currency' => 'PEN', 'customerId' => 77],
+        ]);
+
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\ConflictHttpException::class);
+
+        $this->service($batches)->apply(9, '120.00', new DateTimeImmutable(), [], 'app-1');
+    }
+
+    private function service(?\App\Sales\Repository\CustomerPaymentApplicationRepository $batches = null): ApplyAdvanceService
     {
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('wrapInTransaction')->willReturnCallback(static fn(callable $f): mixed => $f());
@@ -171,6 +201,7 @@ final class ApplyAdvanceServiceTest extends TestCase
             $this->salePaymentService,
             $bus,
             new OperationLog(new NullLogger()),
+            applications: $batches,
         );
     }
 
