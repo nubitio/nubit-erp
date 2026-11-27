@@ -8,7 +8,7 @@ use App\Sales\Event\SaleConfirmed;
 use App\Sales\Receivable\ReceivableOpener;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Settings\Capability\CapabilityKey;
-use App\Settings\Capability\TenantCapabilityResolver;
+use App\Settings\Repository\TenantCapabilityRepository;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Throwable;
@@ -24,13 +24,14 @@ final readonly class OpenReceivableOnSaleConfirmed
     public function __construct(
         private SaleRecordRepository $sales,
         private ReceivableOpener $opener,
-        private TenantCapabilityResolver $capabilities,
+        private TenantCapabilityRepository $capabilities,
         private LoggerInterface $logger,
     ) {}
 
     public function __invoke(SaleConfirmed $event): void
     {
-        if (!$this->capabilities->isEnabled(CapabilityKey::FinanceReceivablesV2)) {
+        // Read the row directly: the shared resolver memoises, and a stale answer would outlive a later switch.
+        if ($this->capabilities->findByKey(CapabilityKey::FinanceReceivablesV2->value)?->isEnabled() !== true) {
             return;
         }
 

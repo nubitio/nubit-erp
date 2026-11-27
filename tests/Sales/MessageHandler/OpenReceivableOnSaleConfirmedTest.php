@@ -10,10 +10,8 @@ use App\Sales\MessageHandler\OpenReceivableOnSaleConfirmed;
 use App\Sales\Receivable\ReceivableOpener;
 use App\Sales\Repository\SaleRecordRepository;
 use App\Settings\Capability\CapabilityKey;
-use App\Settings\Capability\TenantCapabilityResolver;
 use App\Settings\Entity\TenantCapability;
 use App\Settings\Repository\TenantCapabilityRepository;
-use Nubit\Platform\Feature\Contract\FeatureCheckerInterface;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -68,22 +66,15 @@ final class OpenReceivableOnSaleConfirmedTest extends TestCase
         );
     }
 
-    private function capabilities(bool $enabled): TenantCapabilityResolver
+    private function capabilities(bool $enabled): TenantCapabilityRepository
     {
         $repository = $this->createStub(TenantCapabilityRepository::class);
         $repository
-            ->method('allByKey')
+            ->method('findByKey')
             ->willReturn(
-                $enabled
-                    ? [
-                        CapabilityKey::FinanceReceivablesV2->value => new TenantCapability(CapabilityKey::FinanceReceivablesV2->value)->setEnabled(
-                            true,
-                        ),
-                    ] : [],
+                $enabled ? new TenantCapability(CapabilityKey::FinanceReceivablesV2->value)->setEnabled(true) : null,
             );
-        $features = $this->createStub(FeatureCheckerInterface::class);
-        $features->method('getEntitlements')->willReturn([]);
 
-        return new TenantCapabilityResolver($features, $repository);
+        return $repository;
     }
 }

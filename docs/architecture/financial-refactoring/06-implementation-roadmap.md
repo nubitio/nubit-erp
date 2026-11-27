@@ -21,7 +21,20 @@ Fase 0 implementada en el árbol de trabajo (sin commit). Verificado: 618 prueba
 | T0.11 batería de concurrencia | Parcial | `tests/Sales/Concurrency/ReceivableLockingIntegrationTest` con MariaDB real y dos conexiones: el lock de `lockOpenReceivablesForCustomer` bloquea a otro escritor, el re-read ve lo que otro confirmó y `CustomerAccountLock` bloquea por cliente (verificado por mutación). **Falta** una prueba de carrera de extremo a extremo del servicio de cobro, de pago a proveedor y de reversión doble |
 | D-08 orden por vencimiento | Hecho | `SaleRecordRepository` ordena por `COALESCE(due_date, issued_date)` |
 
-Fases 1 a 4 no iniciadas.
+### Fase 1: avance (rama `feat/finance-phase1-core`)
+
+| Tarea | Estado | Notas |
+| --- | --- | --- |
+| T1.1 esquema | Hecho | migración `Version20261127130000`: `sales_receivable`, `sales_receivable_installment`, `sales_collection`, `sales_collection_tender`, `sales_collection_allocation`, `sales_receivable_adjustment` (prefijo `sales_` por la regla de nombres; dueño Sales). CHECK de montos en BD. Reversible |
+| T1.2 planificador | Hecho | `AllocationPlanner` (vencimiento / emisión) y `ManualAllocationPlanner` en `Efact\Domain\Finance`; el ejemplo A800/B1200/C2400/D1400 con 2500 está en las pruebas |
+| T1.3 apertura | Hecho en sombra | `ReceivableOpener` + `OpenReceivableOnSaleConfirmed`, detrás de la capability `finance.receivables_v2` (apagada). Una cuota por saldo neto pendiente. Un fallo nunca llega a la venta |
+| Auditoría | Hecho | reglas AR-08 y AR-09 en `finance:audit` |
+| T1.4 `RegisterCollection` | Pendiente | siguiente tarea: cobranza multimedio con exceso, sobre las tablas nuevas |
+| T1.5 a T1.12 | Pendiente | reversión, backfill, cuotas en ventas, AP, estados de cuenta a fecha de corte, UI, permisos |
+
+Nota de diseño: el manejador lee la fila de la capability con el repositorio y no con `TenantCapabilityResolver`, porque el resolver memoiza y una respuesta vieja sobrevive a un cambio posterior dentro del mismo proceso (rompía `ExternalBankCollectionTest`).
+
+Fases 2 a 4 no iniciadas.
 
 ## Fase 0 · Estabilización (sin cambios de modelo)
 
