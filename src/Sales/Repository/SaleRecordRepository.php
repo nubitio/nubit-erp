@@ -170,7 +170,7 @@ class SaleRecordRepository extends ServiceEntityRepository
     /**
      * Open receivable invoices for a branch, ordered by oldest due date first.
      *
-     * @return list<array<string, mixed>>
+     * @return array<int, array<string, mixed>>
      */
     public function listOpenReceivables(string $branchId, int $page = 1, int $perPage = 20): array
     {
