@@ -190,6 +190,12 @@ contexts:
       - customer_account_entries # customer current account (#367)
       - customer_payment_applications # abono <-> venta (#367)
       - sales_collection_reminder # manual payment reminders log
+      - sales_receivable # receivable per credit sale (finance refactoring, phase 1)
+      - sales_receivable_installment # due date and amount per instalment
+      - sales_collection # money received from a customer, independent of what it settles
+      - sales_collection_tender # how it was received (method, account, amount)
+      - sales_collection_allocation # collection <-> instalment, one row per instalment settled
+      - sales_receivable_adjustment # credit/debit notes, write-offs, reconciliation deltas
 
   Billing:
     namespace: App\Billing

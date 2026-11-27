@@ -150,6 +150,11 @@ final class CapabilityCatalog
                 ownerContext: 'Treasury',
             ),
             new CapabilityDefinition(
+                key: CapabilityKey::FinanceReceivablesV2,
+                label: 'Cuentas por cobrar con cuotas y cobranzas multimedio',
+                ownerContext: 'Sales',
+            ),
+            new CapabilityDefinition(
                 key: CapabilityKey::FixedAssetsTracking,
                 label: 'Activos fijos',
                 ownerContext: 'FixedAssets',

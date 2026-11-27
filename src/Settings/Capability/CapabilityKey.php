@@ -32,6 +32,7 @@ enum CapabilityKey: string
     case PayrollCore = 'payroll.core';
     case TreasuryBankReconciliation = 'treasury.bank_reconciliation';
     case TreasuryAccounts = 'treasury.accounts';
+    case FinanceReceivablesV2 = 'finance.receivables_v2';
     case FixedAssetsTracking = 'fixed_assets.tracking';
     case ExpenseReportsCore = 'expense_reports.core';
     case AccountingGeneralLedger = 'accounting.general_ledger';
