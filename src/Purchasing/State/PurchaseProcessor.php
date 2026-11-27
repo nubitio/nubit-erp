@@ -78,7 +78,7 @@ readonly class PurchaseProcessor implements ProcessorInterface
 
             if ($isNewPurchase) {
                 $this->purchaseSupplierDocumentValidator->assertRequiredForCreate($data);
-                PurchaseReceiptLines::resolve($data);
+                $this->purchaseOrderReceiptService->resolveReceiptLines($data);
                 if ($data->getReceiptNo() === null) {
                     $data->setReceiptNo($this->purchaseReceiptSequenceService->next());
                 }

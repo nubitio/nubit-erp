@@ -15,7 +15,7 @@ import {
   getTaxDocument,
   getVoucherForSale,
   listTaxDocumentsForSale,
-  loginViaApi,
+  loginAtSeedBranchViaApi,
   sendTaxDocument,
 } from './helpers/fiscal';
 import { completePosCashPayment, selectPosCustomer, waitForPosCheckoutReady } from './helpers/pos';
@@ -134,7 +134,7 @@ test.describe('Golden path fiscal — POS a SUNAT y PDF', () => {
       await expect(page.getByLabel('Nota interna de la venta')).toHaveValue('');
     });
 
-    const auth = await loginViaApi(request, BASE_URL, seed.username, seed.password);
+    const auth = await loginAtSeedBranchViaApi(request, BASE_URL, seed.username, seed.password);
 
     await test.step('Emitir comprobante desde la venta', async () => {
       const invoiceResponse = await createInvoiceForSale(request, BASE_URL, auth, saleId);

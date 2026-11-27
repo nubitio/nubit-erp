@@ -20,7 +20,7 @@ import {
   createInvoiceForSale,
   getTaxDocument,
   listTaxDocumentsForSale,
-  loginViaApi,
+  loginAtSeedBranchViaApi,
   type AuthSession,
 } from './helpers/fiscal';
 import { completePosCashPayment, selectPosCustomer, waitForPosCheckoutReady } from './helpers/pos';
@@ -135,7 +135,7 @@ test.describe('NRUS — régimen tributario fuerza tipo de comprobante', () => {
     await login(page, seed.username, seed.password);
     await ensureOpenCashSession(page, BASE_URL);
 
-    const auth = await loginViaApi(request, BASE_URL, seed.username, seed.password);
+    const auth = await loginAtSeedBranchViaApi(request, BASE_URL, seed.username, seed.password);
 
     try {
       await test.step('Régimen GENERAL + cliente con RUC → Factura', async () => {

@@ -52,7 +52,14 @@ final class TenantCertificateController extends AbstractController
 
         try {
             $payload = $this->certificateRequest->payload($request);
-            $this->requireReauthentication($payload);
+            $password = $payload['currentPassword'] ?? $payload['reauthPassword'] ?? null;
+            if (!is_string($password) || !$this->reauthentication->isValid($this->getUser(), $password)) {
+                return $this->json([
+                    'code' => 'certificate_reauthentication_required',
+                    'error' => 'La contraseña actual del ERP es obligatoria y debe ser correcta.',
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
             $ruc = $this->certificateIdentity->ruc($payload['ruc'] ?? null);
             $solUser = $this->certificateIdentity->solUserWithRuc(
                 $this->certificateIdentity->requiredString($payload, 'solUser'),
@@ -108,17 +115,6 @@ final class TenantCertificateController extends AbstractController
         }
 
         return $this->json(['certificate' => null]);
-    }
-
-    /**
-     * @param array<string, mixed> $payload
-     */
-    private function requireReauthentication(array $payload): void
-    {
-        $password = $payload['currentPassword'] ?? $payload['reauthPassword'] ?? null;
-        if (!is_string($password) || !$this->reauthentication->isValid($this->getUser(), $password)) {
-            throw new \InvalidArgumentException('Se requiere reautenticacion para modificar el certificado.');
-        }
     }
 
     /**

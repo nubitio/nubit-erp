@@ -1,7 +1,13 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Button, FileDropzone, FormField, TextField } from '@nubitio/ui';
+import { Alert, Button, FileDropzone, FormField, TextField } from '@nubitio/ui';
+import {
+  SUNAT_CERTIFICATE_ACCEPT,
+  SunatCertificateConfirmation,
+  SunatPasswordField,
+  validateSunatCertificate,
+} from '@shared/components/SunatCertificateConfirmation';
 import toast, { SharedUtils } from '@shared/lib/SharedUtils';
 import {
   useApplyTenantPreset,
@@ -105,7 +111,15 @@ export function TenantOnboardingGate() {
   const [warehouse, setWarehouse] = useState<SaveWarehouseInput>({ name: '' });
   const [certificateFile, setCertificateFile] = useState<File | null>(null);
   const [sunat, setSunat] = useState({ solUser: '', solPass: '', certificatePassword: '' });
+  const [confirmingSunat, setConfirmingSunat] = useState(false);
+  const [submittedSunat, setSubmittedSunat] = useState(false);
+  const [sunatError, setSunatError] = useState<string>();
+
   const [sunatSkipped, setSunatSkipped] = useState(false);
+  const sunatErrors =
+    submittedSunat && !sunatSkipped
+      ? validateSunatCertificate(sunat.solUser, sunat.solPass, certificateFile)
+      : undefined;
   const [lycetSyncStatus, setLycetSyncStatus] = useState<string | null>(null);
   // Resuming the wizard via snapshot can jump straight past the SUNAT step
   // (e.g. branch/warehouse already exist from an earlier session) without
@@ -197,11 +211,6 @@ export function TenantOnboardingGate() {
         company.businessName.trim() !== '' &&
         company.fiscalAddress.trim() !== ''
       );
-    if (step === 2)
-      return (
-        sunatSkipped ||
-        (sunat.solUser.trim() !== '' && sunat.solPass.trim() !== '' && certificateFile !== null)
-      );
     if (step === 3)
       return (
         branch.name.trim() !== '' &&
@@ -210,7 +219,7 @@ export function TenantOnboardingGate() {
       );
     if (step === 4) return warehouse.name.trim() !== '';
     return true;
-  }, [branch, certificateFile, company, selectedPreset, step, sunat, sunatSkipped, warehouse]);
+  }, [branch, company, selectedPreset, step, warehouse]);
 
   const sunatStatusLabel = useMemo(() => {
     if (sunatSkipped) return 'se configura después en Ajustes';
@@ -242,21 +251,17 @@ export function TenantOnboardingGate() {
       if (step === 1) {
         await saveCompany.mutateAsync(company);
       }
-      if (step === 2 && !sunatSkipped && certificateFile) {
-        const result = await uploadCertificate.mutateAsync({
-          ruc: company.ruc,
-          solUser: sunat.solUser,
-          solPass: sunat.solPass,
-          certificate: certificateFile,
-          certificatePassword: sunat.certificatePassword,
-        });
-        setLycetSyncStatus(result.certificate.lycetSyncStatus);
-        if (result.certificate.lycetSyncStatus !== 'synced') {
-          toast(
-            'El certificado se guardó, pero la sincronización con SUNAT quedó pendiente. Podrás reintentarla desde Ajustes.',
-            'warning',
-          );
+      if (step === 2 && !sunatSkipped) {
+        setSubmittedSunat(true);
+        setSunatError(undefined);
+        if (
+          !Object.values(
+            validateSunatCertificate(sunat.solUser, sunat.solPass, certificateFile),
+          ).some(Boolean)
+        ) {
+          setConfirmingSunat(true);
         }
+        return;
       }
       if (step === 3) {
         await saveBranch.mutateAsync(branch);
@@ -274,6 +279,29 @@ export function TenantOnboardingGate() {
     } catch (error) {
       toast(error instanceof Error ? error.message : 'No se pudo guardar el paso.', 'error');
     }
+  };
+
+  const saveSunatCertificate = async (currentPassword: string) => {
+    if (!certificateFile) return;
+    const result = await uploadCertificate.mutateAsync({
+      ruc: company.ruc,
+      solUser: sunat.solUser.trim(),
+      solPass: sunat.solPass,
+      certificate: certificateFile,
+      certificatePassword: sunat.certificatePassword,
+      currentPassword,
+    });
+    setSunat((value) => ({ ...value, solPass: '', certificatePassword: '' }));
+    setCertificateFile(null);
+    setSubmittedSunat(false);
+    setLycetSyncStatus(result.certificate.lycetSyncStatus);
+    if (result.certificate.lycetSyncStatus !== 'synced') {
+      toast(
+        'El certificado se guardó, pero la sincronización con Lycet quedó pendiente.',
+        'warning',
+      );
+    }
+    setStep(3);
   };
 
   const verifyRuc = async () => {
@@ -460,16 +488,26 @@ export function TenantOnboardingGate() {
 
             {currentStep === 'SUNAT' && (
               <div className="tenant-onboarding__grid">
-                <FormField label="Usuario SOL (sin RUC)" className="tenant-onboarding__field">
+                <FormField
+                  label="Usuario SOL (sin RUC)"
+                  error={sunatErrors?.solUser}
+                  className="tenant-onboarding__field"
+                >
                   <TextField
                     value={sunat.solUser}
+                    invalid={Boolean(sunatErrors?.solUser)}
                     onChange={(e) => setSunat({ ...sunat, solUser: e.target.value })}
                     placeholder="Ej. MODDATOS"
                     disabled={sunatSkipped}
                   />
                 </FormField>
-                <FormField label="Clave SOL" className="tenant-onboarding__field">
-                  <TextField
+                <FormField
+                  label="Clave SOL"
+                  error={sunatErrors?.solPass}
+                  className="tenant-onboarding__field"
+                >
+                  <SunatPasswordField
+                    invalid={Boolean(sunatErrors?.solPass)}
                     value={sunat.solPass}
                     onChange={(e) => setSunat({ ...sunat, solPass: e.target.value })}
                     type="password"
@@ -477,16 +515,18 @@ export function TenantOnboardingGate() {
                   />
                 </FormField>
                 <FormField
-                  label="Certificado digital (.pfx o PEM)"
+                  label="Certificado digital (.p12, .pfx o PEM)"
                   className="tenant-onboarding__field tenant-onboarding__dropzone"
                 >
                   <FileDropzone
-                    accept=".pfx,.pem,.crt,.cer"
+                    accept={SUNAT_CERTIFICATE_ACCEPT}
+                    error={sunatErrors?.certificate}
+                    invalid={Boolean(sunatErrors?.certificate)}
                     value={certificateFile ? { fileName: certificateFile.name } : null}
                     disabled={sunatSkipped}
                     labels={{
-                      prompt: 'Suelta el archivo .pfx o haz clic para buscarlo',
-                      hint: 'Certificado digital SUNAT en formato PFX o PEM.',
+                      prompt: 'Suelta el certificado o haz clic para buscarlo',
+                      hint: 'Certificado digital SUNAT en formato P12, PFX o PEM.',
                       replace: 'Cambiar certificado',
                       remove: 'Quitar certificado',
                       open: 'Abrir certificado',
@@ -496,14 +536,25 @@ export function TenantOnboardingGate() {
                   />
                 </FormField>
                 <FormField label="Contraseña del certificado" className="tenant-onboarding__field">
-                  <TextField
+                  <SunatPasswordField
                     value={sunat.certificatePassword}
                     onChange={(e) => setSunat({ ...sunat, certificatePassword: e.target.value })}
                     type="password"
-                    placeholder="Clave del PFX"
+                    placeholder="Si el P12 o PFX está protegido"
                     disabled={sunatSkipped}
                   />
                 </FormField>
+                {!sunatSkipped && sunatError && <Alert tone="danger">{sunatError}</Alert>}
+                {confirmingSunat && (
+                  <SunatCertificateConfirmation
+                    onClose={() => {
+                      uploadCertificate.reset();
+                      setConfirmingSunat(false);
+                    }}
+                    onConfirm={saveSunatCertificate}
+                    onError={setSunatError}
+                  />
+                )}
                 <Button
                   className="tenant-onboarding__skip"
                   variant="ghost"

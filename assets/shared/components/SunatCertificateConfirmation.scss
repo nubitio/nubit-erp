@@ -1,0 +1,18 @@
+.sunat-password-field {
+  position: relative;
+  width: 100%;
+
+  .sunat-password-field__input {
+    width: 100%;
+    padding-inline-end: calc(var(--control-height-form) + var(--space-2));
+  }
+
+  .sunat-password-field__toggle {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: var(--space-1);
+    transform: translateY(-50%);
+    border-color: transparent;
+    background: transparent;
+  }
+}

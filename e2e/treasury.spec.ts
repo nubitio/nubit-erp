@@ -1,7 +1,7 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 import { parseApiCollection } from './helpers/api';
 import { login } from './helpers/auth';
-import { loginViaApi } from './helpers/fiscal';
+import { loginAtSeedBranchViaApi } from './helpers/fiscal';
 import { E2E_SEED } from './support/seedConstants';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
@@ -39,7 +39,7 @@ test('cuentas de dinero: pagos por billetera y por caja, reversas, transferencia
   request,
 }) => {
   const seed = await getE2ESeed();
-  const auth = await loginViaApi(request, BASE_URL, seed.username, seed.password);
+  const auth = await loginAtSeedBranchViaApi(request, BASE_URL, seed.username, seed.password);
   const headers: Headers = auth.headers;
   const suffix = String(Date.now()).slice(-6);
 

@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { login } from './helpers/auth';
 import { parseApiCollection } from './helpers/api';
 import { ensureOpenCashSession } from './helpers/cashbox';
-import { loginViaApi } from './helpers/fiscal';
+import { loginAtSeedBranchViaApi } from './helpers/fiscal';
 import { selectPosCustomer, selectPosPaymentMethod, waitForPosCheckoutReady } from './helpers/pos';
 import { E2E_SEED } from './support/seedConstants';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
@@ -11,7 +11,7 @@ const BASE_URL = getE2EBaseUrl();
 
 test('POS redondea efectivo S/10.63 a S/10.60 y persiste el ajuste', async ({ page, request }) => {
   const seed = await getE2ESeed();
-  const auth = await loginViaApi(request, BASE_URL, seed.username, seed.password);
+  const auth = await loginAtSeedBranchViaApi(request, BASE_URL, seed.username, seed.password);
   const headers = { ...auth.headers, 'Content-Type': 'application/merge-patch+json' };
   const productsResponse = await request.get(
     `${BASE_URL}/api/products?code=${encodeURIComponent(E2E_SEED.productCode)}`,

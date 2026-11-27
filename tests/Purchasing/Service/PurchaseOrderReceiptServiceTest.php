@@ -50,13 +50,14 @@ final class PurchaseOrderReceiptServiceTest extends TestCase
         $purchase = new Purchase()
             ->setPurchaseOrder($order)
             ->addItem($item);
+        $service = new PurchaseOrderReceiptService($this->createStub(EntityManagerInterface::class));
 
-        PurchaseReceiptLines::resolve($purchase);
+        $service->resolveReceiptLines($purchase);
         self::assertSame($line, $item->getPurchaseOrderItem());
 
         $item->setPurchaseOrderItemId(43);
         $this->expectException(\Nubit\Platform\Exception\ValidationException::class);
-        PurchaseReceiptLines::resolve($purchase);
+        $service->resolveReceiptLines($purchase);
     }
 
     public function testApplyReceiptOnlyUpdatesLinkedLines(): void
