@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Sales\Receivable;
 
+use App\Efact\Domain\Finance\OpenItem;
 use App\Efact\Domain\Money;
 use App\Sales\Entity\SaleRecord;
 use Brick\Math\BigDecimal;
@@ -19,12 +20,13 @@ readonly class OpenInstallmentLoader
     public function __construct(
         private CollectionStore $store,
         private ReceivableOpener $opener,
+        private InstallmentReconciler $reconciler,
     ) {}
 
     /**
      * @param array<string, SaleRecord> $bySale
      *
-     * @return list<array{item: \App\Efact\Domain\Finance\OpenItem, saleId: string}>
+     * @return list<array{item: OpenItem, saleId: string}>
      */
     public function load(array $bySale): array
     {
@@ -36,10 +38,10 @@ readonly class OpenInstallmentLoader
         }
 
         $items = $this->store->lockOpenInstallments(array_keys($bySale));
-        $open = [];
-        foreach ($items as $row) {
-            $open[$row['saleId']] = ($open[$row['saleId']] ?? BigDecimal::zero())->plus($row['item']->open);
+        if ($this->reconcileDrift($bySale, $items)) {
+            $items = $this->store->lockOpenInstallments(array_keys($bySale));
         }
+        $open = $this->openBySale($items);
         foreach ($bySale as $saleId => $sale) {
             if (!($open[$saleId] ?? BigDecimal::zero())->isEqualTo(Money::money($sale->getBalanceDue()))) {
                 throw new ConflictHttpException(sprintf(
@@ -50,5 +52,38 @@ readonly class OpenInstallmentLoader
         }
 
         return $items;
+    }
+
+    /**
+     * @param array<string, SaleRecord> $bySale
+     * @param list<array{item: OpenItem, saleId: string}> $items
+     */
+    private function reconcileDrift(array $bySale, array $items): bool
+    {
+        $changed = false;
+        foreach ($bySale as $saleId => $sale) {
+            $mine = array_column(
+                array_filter($items, static fn(array $row): bool => $row['saleId'] === $saleId),
+                'item',
+            );
+            $changed = $this->reconciler->reconcile($sale, $mine) || $changed;
+        }
+
+        return $changed;
+    }
+
+    /**
+     * @param list<array{item: OpenItem, saleId: string}> $items
+     *
+     * @return array<string, BigDecimal> open amount per sale
+     */
+    private function openBySale(array $items): array
+    {
+        $open = [];
+        foreach ($items as $row) {
+            $open[$row['saleId']] = ($open[$row['saleId']] ?? BigDecimal::zero())->plus($row['item']->open);
+        }
+
+        return $open;
     }
 }

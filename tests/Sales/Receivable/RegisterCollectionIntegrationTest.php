@@ -325,6 +325,49 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
      * Rows of one of the collection tables for this test's customer only: the coverage run has no per-test
      * rollback, so a global count would also see what other tests left behind.
      */
+    public function testAPaymentMadeThroughTheOldPerInvoiceFlowDoesNotBlockTheNextCollection(): void
+    {
+        // Receivables exist after a first collection; then someone pays one invoice from the sale detail,
+        // which still goes through the old flow and lowers the sale's balance without touching the instalments.
+        $this->register->register($this->request($this->key('d1'), '10'));
+        $sale = $this->em->find(\App\Sales\Entity\SaleRecord::class, $this->saleIds[1]);
+        self::assertNotNull($sale);
+        $payments = self::getContainer()->get(\App\Sales\Service\SalePaymentService::class);
+        self::assertInstanceOf(\App\Sales\Service\SalePaymentService::class, $payments);
+        $payments->registerPayment(
+            $sale,
+            $this->methodA,
+            '20.00',
+            new DateTimeImmutable('2026-11-27'),
+            'LEGACY',
+            new User(),
+        );
+
+        // 440 owed - 10 (new flow) - 20 (old flow) = 410, and the instalments must follow.
+        $result = $this->register->register($this->request($this->key('d2'), '410'));
+
+        self::assertSame('0.00', $result->unapplied);
+        self::assertSame(
+            '0.00',
+            (string) $this->db->fetchOne('SELECT SUM(balance_due) FROM sales WHERE id IN (?, ?, ?)', $this->saleIds),
+        );
+        self::assertSame(
+            '0.00',
+            (string) $this->db->fetchOne(
+                'SELECT COALESCE(SUM(i.amount - i.settled_amount - i.adjusted_amount), 0) FROM sales_receivable_installment i JOIN sales_receivable r ON r.id = i.receivable_id WHERE r.customer_id = ?',
+                [(int) $this->world->customer->getId()],
+            ),
+        );
+        // The old-flow payment is on record as an adjustment, not lost.
+        self::assertSame(
+            '20.00',
+            (string) $this->db->fetchOne(
+                "SELECT SUM(a.amount) FROM sales_receivable_adjustment a JOIN sales_receivable r ON r.id = a.receivable_id WHERE r.customer_id = ? AND a.kind = 'legacy_sync'",
+                [(int) $this->world->customer->getId()],
+            ),
+        );
+    }
+
     private function rows(string $table): int
     {
         $customer = (int) $this->world->customer->getId();

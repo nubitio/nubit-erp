@@ -262,6 +262,61 @@ readonly class CollectionStore
     }
 
     /**
+     * Brings an instalment in line with a change the old flow made to the sale behind the instalment's back
+     * (a payment or credit note that lowered `balance_due`): the amount is recorded as adjusted, never erased.
+     */
+    public function adjustInstallment(string $id, string $amount): void
+    {
+        $this->connection->executeStatement('UPDATE sales_receivable_installment SET adjusted_amount = adjusted_amount + ? WHERE id = ?', [
+            $amount,
+            $id,
+        ]);
+    }
+
+    public function insertAdjustment(string $receivableId, string $kind, string $amount, string $reason): void
+    {
+        $now = new DateTimeImmutable();
+        $this->connection->insert('sales_receivable_adjustment', [
+            'id' => Uuid::v7()->toRfc4122(),
+            'receivable_id' => $receivableId,
+            'kind' => $kind,
+            'amount' => $amount,
+            'occurred_on' => $now->format('Y-m-d'),
+            'reason' => $reason,
+            'created_at' => $now->format('Y-m-d H:i:s'),
+        ]);
+    }
+
+    /** An instalment for a balance the sale has and the receivable does not (the old flow raised it). */
+    public function addInstallment(string $saleId, string $dueDate, string $amount): void
+    {
+        $receivable = $this->connection->fetchAssociative(
+            'SELECT r.id, COALESCE(MAX(i.seq), 0) AS last_seq FROM sales_receivable r
+             LEFT JOIN sales_receivable_installment i ON i.receivable_id = r.id WHERE r.sale_id = ? GROUP BY r.id',
+            [$saleId],
+        );
+        if ($receivable === false) {
+            return;
+        }
+
+        $this->connection->insert('sales_receivable_installment', [
+            'id' => Uuid::v7()->toRfc4122(),
+            'receivable_id' => (string) $receivable['id'],
+            'seq' => (int) $receivable['last_seq'] + 1,
+            'due_date' => $dueDate,
+            'amount' => $amount,
+        ]);
+    }
+
+    /** The receivable id of a sale, or null. */
+    public function receivableIdOf(string $saleId): ?string
+    {
+        $id = $this->connection->fetchOne('SELECT id FROM sales_receivable WHERE sale_id = ?', [$saleId]);
+
+        return $id === false ? null : (string) $id;
+    }
+
+    /**
      * Whether any of these sales has credit notes applied to it; a reversal would double count the excess.
      *
      * @param list<string> $saleIds
