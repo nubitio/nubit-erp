@@ -19,6 +19,7 @@ import supplierBillService, {
   type SupplierBillPayment,
   type SupplierBillSummary,
 } from './services/supplierBillService';
+import { useIdempotencyKey } from '@shared/lib/idempotency';
 import { supplierPaymentAmount } from './model/paymentAmount';
 import { hasPermission } from '@shared/permissions';
 import toast from '@shared/lib/SharedUtils';
@@ -56,6 +57,9 @@ function SupplierBillPaymentPage({ id }: { id?: string }) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [amountError, setAmountError] = useState(false);
   const [methodError, setMethodError] = useState(false);
+  const idempotency = useIdempotencyKey(
+    [id, amount, paymentMethodId, moneyAccountId, reference].join('|'),
+  );
   const [reloadKey, setReloadKey] = useState(0);
   const [reversing, setReversing] = useState<SupplierBillPayment | null>(null);
   const canPay = hasPermission('accounts_payable.pay');
@@ -116,7 +120,9 @@ function SupplierBillPaymentPage({ id }: { id?: string }) {
         paymentMethodId: Number(paymentMethodId),
         reference: reference.trim() || undefined,
         moneyAccountId,
+        idempotencyKey: idempotency.current(),
       });
+      idempotency.renew();
       toast('Pago registrado', 'success');
       navigate('/accounts-payable');
     } catch (error) {

@@ -90,7 +90,7 @@ final readonly class ReceivablesAudit
             $report[$id] = [
                 'description' => $rule['description'],
                 'count' => count($rows),
-                'sample' => array_slice($rows, 0, self::SAMPLE),
+                'sample' => array_slice($rows, offset: 0, length: self::SAMPLE),
             ];
         }
 

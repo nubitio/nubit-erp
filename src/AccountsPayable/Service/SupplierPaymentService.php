@@ -48,6 +48,7 @@ readonly class SupplierPaymentService
         ?string $reference,
         User $createdBy,
         ?string $moneyAccountId = null,
+        ?string $idempotencyKey = null,
     ): SupplierPayment {
         if ($bill->getStatus() === SupplierBill::VOID) {
             throw new UnprocessableEntityHttpException('No se puede registrar un pago sobre una factura anulada.');
@@ -66,10 +67,15 @@ readonly class SupplierPaymentService
             $reference,
             $createdBy,
             $moneyAccountId,
+            $idempotencyKey,
         ): SupplierPayment {
             // Lock the bill and re-read it: the balance checked here is the one a concurrent payment
             // left, not the snapshot loaded before the transaction (G-01).
             $this->entityManager->refresh($bill, LockMode::PESSIMISTIC_WRITE);
+            $replayed = SupplierPaymentIdempotency::existing($this->entityManager, $idempotencyKey, $bill, $amountMoney);
+            if ($replayed instanceof SupplierPayment) {
+                return $replayed;
+            }
             if ($bill->getStatus() === SupplierBill::VOID) {
                 throw new UnprocessableEntityHttpException('No se puede registrar un pago sobre una factura anulada.');
             }
@@ -88,6 +94,7 @@ readonly class SupplierPaymentService
                 ->setAmount(Money::toString($amountMoney))
                 ->setPaidAt($paidAt)
                 ->setReference($reference)
+                ->setIdempotencyKey($idempotencyKey)
                 ->setCreatedBy($createdBy);
 
             $newPaidTotal = Money::money($bill->getPaidTotal())->plus($amountMoney);
