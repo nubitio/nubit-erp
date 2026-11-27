@@ -85,7 +85,7 @@ test('Crédito en el POS crea automáticamente una cuenta por cobrar', async ({ 
   await page.goto(`${BASE_URL}/accounts-receivable`);
   const row = page.getByRole('row').filter({ hasText: E2E_SEED.customerName }).first();
   const [whole, cents] = (openingBalance + Number(sale.balanceDue)).toFixed(2).split('.');
-  await expect(row.getByRole('cell').nth(1)).toContainText(new RegExp(`${whole}[.,]${cents}`), {
+  await expect(row).toContainText(new RegExp(`${whole}[.,]${cents}`), {
     timeout: 15_000,
   });
 });

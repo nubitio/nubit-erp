@@ -108,7 +108,7 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
   await test.step('filtrar por cliente y registrar un pago parcial', async () => {
     await page.goto(`${BASE_URL}/accounts-receivable`);
 
-    await expect(page.getByRole('table', { name: 'Deudores' })).toBeVisible();
+    await expect(page.getByRole('table', { name: 'Por cliente' })).toBeVisible();
     // Filters live in the toolbar above the grid, not inside the table header.
     await page.getByRole('textbox', { name: 'Filtrar Cliente' }).fill(customerName);
 
@@ -163,7 +163,7 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
     });
     await expect(page.getByText('OP-E2E-001')).toBeVisible();
     await page.getByTestId('receivable-back').click();
-    await expect(page.getByRole('table', { name: 'Deudores' })).toBeVisible();
+    await expect(page.getByRole('table', { name: 'Por cliente' })).toBeVisible();
   });
 
   await test.step('saldar la cuenta y quitarla de la lista', async () => {
