@@ -29,9 +29,7 @@ final readonly class CollectOnAccountPlanner
      */
     public function plan(array $openSales, BigDecimal $amount, array $applications, string $excessHint = ''): array
     {
-        $plan = $applications === []
-            ? $this->fifo($openSales, $amount)
-            : $this->explicit($openSales, $applications);
+        $plan = $applications === [] ? $this->fifo($openSales, $amount) : $this->explicit($openSales, $applications);
         CollectionPlanGuard::assertCovers($plan, $amount, $excessHint);
         CollectionPlanGuard::assertSingleCurrency($plan);
 

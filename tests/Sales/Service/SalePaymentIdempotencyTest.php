@@ -41,7 +41,12 @@ final class SalePaymentIdempotencyTest extends TestCase
     {
         $this->expectException(ConflictHttpException::class);
 
-        SalePaymentIdempotency::existing($this->em($this->payment('s2', '40.00')), 'k', $this->sale('s1'), BigDecimal::of('40.00'));
+        SalePaymentIdempotency::existing(
+            $this->em($this->payment('s2', '40.00')),
+            'k',
+            $this->sale('s1'),
+            BigDecimal::of('40.00'),
+        );
     }
 
     private function em(SalePayment $found): EntityManagerInterface
@@ -64,6 +69,8 @@ final class SalePaymentIdempotencyTest extends TestCase
 
     private function payment(string $saleId, string $amount): SalePayment
     {
-        return new SalePayment()->setSaleRecord($this->sale($saleId))->setAmount($amount);
+        return new SalePayment()
+            ->setSaleRecord($this->sale($saleId))
+            ->setAmount($amount);
     }
 }

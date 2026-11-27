@@ -14,8 +14,8 @@ use App\Sales\Dto\CollectOnAccountApplication;
 use App\Sales\Entity\CustomerAccountEntry;
 use App\Sales\Entity\CustomerPaymentApplication;
 use App\Sales\Entity\SaleRecord;
-use App\Sales\Repository\CustomerPaymentApplicationRepository;
 use App\Sales\Repository\CustomerAccountEntryRepository;
+use App\Sales\Repository\CustomerPaymentApplicationRepository;
 use App\Sales\Repository\SaleRecordRepository;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
@@ -71,8 +71,15 @@ readonly class ApplyAdvanceService
         ): AdvanceApplicationResult {
             $this->accountLock?->lock($customerId);
 
-            return $this->replay($applicationId, $customerId)
-                ?? $this->applyLocked($customerId, $amount, $appliedAt, $applications, $applicationId);
+            return (
+                $this->replay($applicationId, $customerId) ?? $this->applyLocked(
+                    $customerId,
+                    $amount,
+                    $appliedAt,
+                    $applications,
+                    $applicationId,
+                )
+            );
         });
     }
 
@@ -145,7 +152,7 @@ readonly class ApplyAdvanceService
     /** The result of an application already booked under this id, so a retry applies nothing twice. */
     private function replay(?string $applicationId, int $customerId): ?AdvanceApplicationResult
     {
-        $rows = $applicationId === null ? [] : ($this->applications?->summaryForBatch($applicationId) ?? []);
+        $rows = $applicationId === null ? [] : $this->applications?->summaryForBatch($applicationId) ?? [];
         if ($rows === []) {
             return null;
         }

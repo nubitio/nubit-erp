@@ -28,8 +28,8 @@ final readonly class ReceivablesAudit
         ],
         'AR-02' => [
             'description' => 'sales: balance_due or paid_total is negative',
-            'sql' => "SELECT id, paid_total, balance_due FROM sales
-                      WHERE balance_due < 0 OR paid_total < 0",
+            'sql' => 'SELECT id, paid_total, balance_due FROM sales
+                      WHERE balance_due < 0 OR paid_total < 0',
         ],
         'AR-03' => [
             'description' => 'sales: paid_total differs from the sum of its sale_payments (non-voided)',
@@ -41,37 +41,37 @@ final readonly class ReceivablesAudit
         ],
         'AR-04' => [
             'description' => 'customer ledger: duplicated entry for the same (source, source_id, entry_type)',
-            'sql' => "SELECT source, source_id, entry_type, COUNT(*) AS entries
+            'sql' => 'SELECT source, source_id, entry_type, COUNT(*) AS entries
                       FROM customer_account_entries
                       WHERE source IS NOT NULL AND source_id IS NOT NULL
                       GROUP BY source, source_id, entry_type
-                      HAVING COUNT(*) > 1",
+                      HAVING COUNT(*) > 1',
         ],
         'AR-05' => [
             'description' => 'customer ledger: last running_balance differs from the sum of debits minus credits',
-            'sql' => "SELECT e.customer_id, SUM(e.debit) - SUM(e.credit) AS expected,
+            'sql' => 'SELECT e.customer_id, SUM(e.debit) - SUM(e.credit) AS expected,
                              (SELECT l.running_balance FROM customer_account_entries l
                               WHERE l.customer_id = e.customer_id ORDER BY l.id DESC LIMIT 1) AS stored
                       FROM customer_account_entries e
                       GROUP BY e.customer_id
                       HAVING SUM(e.debit) - SUM(e.credit) <> (
                           SELECT l.running_balance FROM customer_account_entries l
-                          WHERE l.customer_id = e.customer_id ORDER BY l.id DESC LIMIT 1)",
+                          WHERE l.customer_id = e.customer_id ORDER BY l.id DESC LIMIT 1)',
         ],
         'AR-06' => [
             'description' => 'applications: sum applied for a sale_payment differs from the payment amount',
-            'sql' => "SELECT a.sale_payment_id, p.amount, SUM(a.applied_amount) AS applied
+            'sql' => 'SELECT a.sale_payment_id, p.amount, SUM(a.applied_amount) AS applied
                       FROM customer_payment_applications a
                       JOIN sale_payments p ON p.id = a.sale_payment_id
                       GROUP BY a.sale_payment_id, p.amount
-                      HAVING SUM(a.applied_amount) <> p.amount",
+                      HAVING SUM(a.applied_amount) <> p.amount',
         ],
         'AR-07' => [
             'description' => 'applications: currency differs from the currency of the sale',
-            'sql' => "SELECT a.id, a.sale_id, a.currency AS applied_currency, s.currency AS sale_currency
+            'sql' => 'SELECT a.id, a.sale_id, a.currency AS applied_currency, s.currency AS sale_currency
                       FROM customer_payment_applications a
                       JOIN sales s ON s.id = a.sale_id
-                      WHERE a.currency <> s.currency",
+                      WHERE a.currency <> s.currency',
         ],
     ];
 

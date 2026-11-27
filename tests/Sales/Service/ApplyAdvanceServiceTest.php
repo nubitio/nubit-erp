@@ -142,9 +142,12 @@ final class ApplyAdvanceServiceTest extends TestCase
     public function testARetryWithTheSameApplicationIdReturnsTheFirstResultAndAppliesNothing(): void
     {
         $batches = $this->createMock(\App\Sales\Repository\CustomerPaymentApplicationRepository::class);
-        $batches->method('summaryForBatch')->with('app-1')->willReturn([
-            ['saleId' => 's1', 'applied' => '120.00', 'currency' => 'PEN', 'customerId' => 9],
-        ]);
+        $batches
+            ->method('summaryForBatch')
+            ->with('app-1')
+            ->willReturn([
+                ['saleId' => 's1', 'applied' => '120.00', 'currency' => 'PEN', 'customerId' => 9],
+            ]);
         $this->sales->method('find')->willReturn($this->sale('s1', '80.00'));
         $this->entries->method('availableAdvance')->willReturn('380.00');
         $this->salePaymentService->expects(self::never())->method('appendAdvancePayment');
@@ -160,9 +163,11 @@ final class ApplyAdvanceServiceTest extends TestCase
     public function testTheSameApplicationIdForAnotherCustomerIsAConflict(): void
     {
         $batches = $this->createMock(\App\Sales\Repository\CustomerPaymentApplicationRepository::class);
-        $batches->method('summaryForBatch')->willReturn([
-            ['saleId' => 's1', 'applied' => '120.00', 'currency' => 'PEN', 'customerId' => 77],
-        ]);
+        $batches
+            ->method('summaryForBatch')
+            ->willReturn([
+                ['saleId' => 's1', 'applied' => '120.00', 'currency' => 'PEN', 'customerId' => 77],
+            ]);
 
         $this->expectException(\Symfony\Component\HttpKernel\Exception\ConflictHttpException::class);
 

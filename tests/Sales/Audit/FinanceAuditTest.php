@@ -34,12 +34,17 @@ final class FinanceAuditTest extends TestCase
     {
         $this->db->executeStatement("INSERT INTO sales VALUES ('s1','COMPLETED',NULL,100,40,60,'PEN')");
         $this->db->executeStatement("INSERT INTO sale_payments VALUES (1,'s1',40)");
-        $this->db->executeStatement("INSERT INTO customer_account_entries VALUES (1,9,'CHARGE',100,0,100,'sale','s1',NULL), (2,9,'PAYMENT',0,40,60,'sale_payment','1',NULL)");
+        $this->db->executeStatement(
+            "INSERT INTO customer_account_entries VALUES (1,9,'CHARGE',100,0,100,'sale','s1',NULL), (2,9,'PAYMENT',0,40,60,'sale_payment','1',NULL)",
+        );
         $this->db->executeStatement("INSERT INTO customer_payment_applications VALUES (1,'s1',1,40,'PEN')");
         $this->db->executeStatement("INSERT INTO supplier_bill VALUES ('b1','PARTIAL',100,30,70,NULL)");
         $this->db->executeStatement("INSERT INTO supplier_payment VALUES (1,'b1',30,NULL), (2,'b1',50,'2026-11-01')");
 
-        foreach ([...new ReceivablesAudit($this->db)->run(), ...new PayablesAudit($this->db)->run()] as $id => $result) {
+        foreach ([
+            ...new ReceivablesAudit($this->db)->run(),
+            ...new PayablesAudit($this->db)->run(),
+        ] as $id => $result) {
             self::assertSame(0, $result['count'], $id);
         }
     }
@@ -48,14 +53,20 @@ final class FinanceAuditTest extends TestCase
     {
         // A credit note applied to s2 explains its lower balance (AR-01 holds there).
         $this->db->executeStatement("INSERT INTO sales VALUES ('s2','COMPLETED',NULL,100,0,70,'PEN')");
-        $this->db->executeStatement("INSERT INTO customer_account_entries (id, customer_id, entry_type, debit, credit, running_balance, source, source_id, sale_id) VALUES (9,8,'credit_note',0,30,-30,'credit_note','n1','s2')");
+        $this->db->executeStatement(
+            "INSERT INTO customer_account_entries (id, customer_id, entry_type, debit, credit, running_balance, source, source_id, sale_id) VALUES (9,8,'credit_note',0,30,-30,'credit_note','n1','s2')",
+        );
         // AR-01/AR-03: balance and payments disagree with the total.
         $this->db->executeStatement("INSERT INTO sales VALUES ('s1','COMPLETED',NULL,100,0,0,'PEN')");
         $this->db->executeStatement("INSERT INTO sale_payments VALUES (1,'s1',40)");
         // AR-04: the same collection booked twice on the ledger. AR-05: running balance is off.
-        $this->db->executeStatement("INSERT INTO customer_account_entries VALUES (1,9,'PAYMENT',0,40,-40,'on_account_collect','c1',NULL), (2,9,'PAYMENT',0,40,-80,'on_account_collect','c1',NULL), (3,9,'ADVANCE',0,10,-10,'x','y',NULL)");
+        $this->db->executeStatement(
+            "INSERT INTO customer_account_entries VALUES (1,9,'PAYMENT',0,40,-40,'on_account_collect','c1',NULL), (2,9,'PAYMENT',0,40,-80,'on_account_collect','c1',NULL), (3,9,'ADVANCE',0,10,-10,'x','y',NULL)",
+        );
         // AP-01/AP-03: balance does not match payments, status wrong.
-        $this->db->executeStatement("INSERT INTO supplier_bill VALUES ('b1','PENDING',100,0,100,'p1'), ('b2','PENDING',100,0,100,'p1')");
+        $this->db->executeStatement(
+            "INSERT INTO supplier_bill VALUES ('b1','PENDING',100,0,100,'p1'), ('b2','PENDING',100,0,100,'p1')",
+        );
         $this->db->executeStatement("INSERT INTO supplier_payment VALUES (1,'b1',30,NULL)");
 
         $ar = new ReceivablesAudit($this->db)->run();

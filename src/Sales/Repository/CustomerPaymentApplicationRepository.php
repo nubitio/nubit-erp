@@ -47,7 +47,12 @@ class CustomerPaymentApplicationRepository extends ServiceEntityRepository
         /** @var list<array{saleId: string, applied: string, currency: string, customerId: int|string}> $rows */
         $rows = $this
             ->createQueryBuilder('a')
-            ->select('a.saleId AS saleId', 'SUM(a.appliedAmount) AS applied', 'a.currency AS currency', 'e.customerId AS customerId')
+            ->select(
+                'a.saleId AS saleId',
+                'SUM(a.appliedAmount) AS applied',
+                'a.currency AS currency',
+                'e.customerId AS customerId',
+            )
             ->join('a.accountEntry', 'e')
             ->where('a.batchId = :batch')
             ->setParameter('batch', $batchId)
@@ -56,14 +61,11 @@ class CustomerPaymentApplicationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getArrayResult();
 
-        return array_map(
-            static fn(array $r): array => [
-                'saleId' => (string) $r['saleId'],
-                'applied' => (string) $r['applied'],
-                'currency' => (string) $r['currency'],
-                'customerId' => (int) $r['customerId'],
-            ],
-            $rows,
-        );
+        return array_map(static fn(array $r): array => [
+            'saleId' => (string) $r['saleId'],
+            'applied' => (string) $r['applied'],
+            'currency' => (string) $r['currency'],
+            'customerId' => (int) $r['customerId'],
+        ], $rows);
     }
 }

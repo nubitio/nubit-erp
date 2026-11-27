@@ -276,25 +276,33 @@ final class BillCreateUseCaseTest extends TestCase
         $formaPago = $invoice->getFormaPago();
         self::assertInstanceOf(FormaPagoCredito::class, $formaPago);
         self::assertSame(60.0, (float) $formaPago->getMonto());
-        $cuotas = $invoice->getCuotas();
-        self::assertCount(1, $cuotas);
-        self::assertSame(60.0, (float) $cuotas[0]->getMonto());
-        self::assertSame('2025-02-14', $cuotas[0]->getFechaPago()?->format('Y-m-d'));
+        self::assertCount(1, $invoice->getCuotas() ?? []);
+        $cuota = $this->firstCuota($invoice);
+        self::assertSame(60.0, (float) $cuota->getMonto());
+        self::assertSame('2025-02-14', $cuota->getFechaPago()?->format('Y-m-d'));
     }
 
     public function testACreditDueDateNotAfterTheIssueDateMovesToTheNextDay(): void
     {
         $invoice = $this->creditInvoice(['amount' => 100.0, 'dueDate' => new \DateTimeImmutable('2025-01-15')]);
 
-        self::assertSame('2025-01-16', $invoice->getCuotas()[0]->getFechaPago()?->format('Y-m-d'));
+        self::assertSame('2025-01-16', $this->firstCuota($invoice)->getFechaPago()?->format('Y-m-d'));
     }
 
     public function testWithoutCreditTermsTheLegacyScheduleIsKept(): void
     {
-        $invoice = $this->creditInvoice(null);
+        $cuota = $this->firstCuota($this->creditInvoice(null));
 
-        self::assertSame(100.0, (float) $invoice->getCuotas()[0]->getMonto());
-        self::assertSame('2025-02-15', $invoice->getCuotas()[0]->getFechaPago()?->format('Y-m-d'));
+        self::assertSame(100.0, (float) $cuota->getMonto());
+        self::assertSame('2025-02-15', $cuota->getFechaPago()?->format('Y-m-d'));
+    }
+
+    private function firstCuota(\Greenter\Model\Sale\Invoice $invoice): \Greenter\Model\Sale\Cuota
+    {
+        $cuota = (($invoice->getCuotas() ?? []))[0] ?? null;
+        self::assertInstanceOf(\Greenter\Model\Sale\Cuota::class, $cuota);
+
+        return $cuota;
     }
 
     /** @param array{amount: float, dueDate: \DateTimeImmutable}|null $terms */

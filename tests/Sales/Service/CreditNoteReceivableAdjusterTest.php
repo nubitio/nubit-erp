@@ -59,9 +59,10 @@ final class CreditNoteReceivableAdjusterTest extends TestCase
     public function testAnExcessOverTheOpenBalanceBecomesAnAdvanceForTheCustomer(): void
     {
         $sale = $this->sale('30.00', true);
-        $this->ledger->expects(self::once())->method('record')->willReturn(
-            $this->createStub(CustomerAccountEntry::class),
-        );
+        $this->ledger
+            ->expects(self::once())
+            ->method('record')
+            ->willReturn($this->createStub(CustomerAccountEntry::class));
         $this->ledger
             ->expects(self::once())
             ->method('recordAdvanceReceived')
@@ -78,9 +79,10 @@ final class CreditNoteReceivableAdjusterTest extends TestCase
     {
         $sale = $this->sale('0.00', true);
         $this->ledger->expects(self::never())->method('record');
-        $this->ledger->expects(self::once())->method('recordAdvanceReceived')->willReturn(
-            $this->createStub(CustomerAccountEntry::class),
-        );
+        $this->ledger
+            ->expects(self::once())
+            ->method('recordAdvanceReceived')
+            ->willReturn($this->createStub(CustomerAccountEntry::class));
 
         $result = $this->adjuster()->apply($sale, '100.00', 'n1', 'FC01-1', new DateTimeImmutable());
 
@@ -112,7 +114,11 @@ final class CreditNoteReceivableAdjusterTest extends TestCase
 
     private function adjuster(): CreditNoteReceivableAdjuster
     {
-        return new CreditNoteReceivableAdjuster($this->createMock(EntityManagerInterface::class), $this->ledger, $this->entries);
+        return new CreditNoteReceivableAdjuster(
+            $this->createMock(EntityManagerInterface::class),
+            $this->ledger,
+            $this->entries,
+        );
     }
 
     private function sale(string $balanceDue, bool $receivable): SaleRecord

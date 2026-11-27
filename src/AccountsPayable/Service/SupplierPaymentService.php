@@ -72,7 +72,12 @@ readonly class SupplierPaymentService
             // Lock the bill and re-read it: the balance checked here is the one a concurrent payment
             // left, not the snapshot loaded before the transaction (G-01).
             $this->entityManager->refresh($bill, LockMode::PESSIMISTIC_WRITE);
-            $replayed = SupplierPaymentIdempotency::existing($this->entityManager, $idempotencyKey, $bill, $amountMoney);
+            $replayed = SupplierPaymentIdempotency::existing(
+                $this->entityManager,
+                $idempotencyKey,
+                $bill,
+                $amountMoney,
+            );
             if ($replayed instanceof SupplierPayment) {
                 return $replayed;
             }

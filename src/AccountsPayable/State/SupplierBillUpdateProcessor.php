@@ -59,10 +59,14 @@ final readonly class SupplierBillUpdateProcessor implements ProcessorInterface
             );
         }
         if ($before->getSupplier()->getId() !== $after->getSupplier()->getId()) {
-            throw new UnprocessableEntityHttpException('El proveedor no se puede cambiar una vez registrada la factura.');
+            throw new UnprocessableEntityHttpException(
+                'El proveedor no se puede cambiar una vez registrada la factura.',
+            );
         }
         if ($before->getBranch()->getId() !== $after->getBranch()->getId()) {
-            throw new UnprocessableEntityHttpException('La sucursal no se puede cambiar una vez registrada la factura.');
+            throw new UnprocessableEntityHttpException(
+                'La sucursal no se puede cambiar una vez registrada la factura.',
+            );
         }
     }
 }

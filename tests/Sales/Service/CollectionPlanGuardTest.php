@@ -25,10 +25,10 @@ final class CollectionPlanGuardTest extends TestCase
         $plan = new CollectOnAccountPlanner()->plan($sales, BigDecimal::of('2500.00'), []);
 
         self::assertCount(3, $plan);
-        self::assertSame(['800.00', '1200.00', '500.00'], array_map(
-            static fn(array $row): string => (string) $row['amount']->toScale(2),
-            $plan,
-        ));
+        self::assertSame(
+            ['800.00', '1200.00', '500.00'],
+            array_map(static fn(array $row): string => (string) $row['amount']->toScale(2), $plan),
+        );
     }
 
     public function testAnAmountAboveTheDebtIsRejectedWithTheHint(): void

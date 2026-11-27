@@ -78,11 +78,10 @@ final readonly class CollectionPlanGuard
             $currencies[self::saleCurrency($row['sale'])] = true;
         }
         if (count($currencies) > 1) {
-            throw new UnprocessableEntityHttpException(sprintf(
-                'Un cobro se registra en una sola moneda; las facturas seleccionadas están en %s. Cobre cada moneda por separado.',
-                implode(' y ', array_keys($currencies)),
-            ));
+            throw new UnprocessableEntityHttpException(sprintf('Un cobro se registra en una sola moneda; las facturas seleccionadas están en %s. Cobre cada moneda por separado.', implode(
+                ' y ',
+                array_keys($currencies),
+            )));
         }
     }
-
 }

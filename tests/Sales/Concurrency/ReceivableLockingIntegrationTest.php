@@ -81,7 +81,9 @@ final class ReceivableLockingIntegrationTest extends KernelTestCase
     {
         // Control: with nothing locked, the other cashier gets the row at once.
         $this->other->beginTransaction();
-        self::assertSame(self::SALE, $this->other->fetchOne('SELECT id FROM sales WHERE id = ? FOR UPDATE', [self::SALE]));
+        self::assertSame(self::SALE, $this->other->fetchOne('SELECT id FROM sales WHERE id = ? FOR UPDATE', [
+            self::SALE,
+        ]));
         $this->other->rollBack();
 
         $this->main->beginTransaction();
@@ -111,7 +113,9 @@ final class ReceivableLockingIntegrationTest extends KernelTestCase
     public function testACustomerAccountLockBlocksAnotherWriterOfTheSameCustomer(): void
     {
         $this->other->beginTransaction();
-        self::assertNotFalse($this->other->fetchOne('SELECT id FROM cliente WHERE id = ? FOR UPDATE', [self::CUSTOMER]));
+        self::assertNotFalse($this->other->fetchOne('SELECT id FROM cliente WHERE id = ? FOR UPDATE', [
+            self::CUSTOMER,
+        ]));
         $this->other->rollBack();
 
         $this->main->beginTransaction();

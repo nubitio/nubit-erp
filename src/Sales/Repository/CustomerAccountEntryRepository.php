@@ -133,15 +133,17 @@ class CustomerAccountEntryRepository extends ServiceEntityRepository
     /** Whether an entry from this source was already booked: the guard that keeps a retry from posting twice. */
     public function hasEntryFromSource(string $source, string $sourceId): bool
     {
-        return (int) $this
-            ->createQueryBuilder('e')
-            ->select('COUNT(e.id)')
-            ->where('e.source = :source')
-            ->andWhere('e.sourceId = :sourceId')
-            ->setParameter('source', $source)
-            ->setParameter('sourceId', $sourceId)
-            ->getQuery()
-            ->getSingleScalarResult() > 0;
+        return (
+            (int) $this
+                ->createQueryBuilder('e')
+                ->select('COUNT(e.id)')
+                ->where('e.source = :source')
+                ->andWhere('e.sourceId = :sourceId')
+                ->setParameter('source', $source)
+                ->setParameter('sourceId', $sourceId)
+                ->getQuery()
+                ->getSingleScalarResult() > 0
+        );
     }
 
     /**

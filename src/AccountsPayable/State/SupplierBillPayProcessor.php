@@ -91,7 +91,9 @@ readonly class SupplierBillPayProcessor implements ProcessorInterface
             throw new BadRequestHttpException('Idempotency-Key inválida.');
         }
 
-        return Uuid::v5(Uuid::fromString(Uuid::NAMESPACE_OID), sprintf('supplier-pay:%d:%s', $userId, $key))
-            ->toRfc4122();
+        return Uuid::v5(
+            Uuid::fromString(Uuid::NAMESPACE_OID),
+            sprintf('supplier-pay:%d:%s', $userId, $key),
+        )->toRfc4122();
     }
 }
