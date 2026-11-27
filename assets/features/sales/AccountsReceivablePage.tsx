@@ -138,12 +138,7 @@ export const AccountsReceivablePage = () => {
               {
                 value: 'invoices',
                 label: 'Por comprobante',
-                content: (
-                  <ReceivableInvoicesGrid
-                    branchId={reportBranch}
-                    onCollected={refresh}
-                  />
-                ),
+                content: <ReceivableInvoicesGrid branchId={reportBranch} onCollected={refresh} />,
               },
             ]}
           />

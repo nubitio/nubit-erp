@@ -238,7 +238,6 @@ export const CustomerAdvanceDialog = ({
               exceder el saldo a favor disponible.
             </p>
           )}
-
         </form>
       )}
     </AppDialog>

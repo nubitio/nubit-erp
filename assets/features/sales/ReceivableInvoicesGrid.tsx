@@ -54,8 +54,9 @@ export function ReceivableInvoicesGrid({
         .name('invoiceFullNumber')
         .label('Comprobante')
         .cardRole('title')
-        .formatter((cell: GridCellContext) =>
-          formatInvoiceNumber(cell.value as string | null | undefined) || 'Saldo inicial',
+        .formatter(
+          (cell: GridCellContext) =>
+            formatInvoiceNumber(cell.value as string | null | undefined) || 'Saldo inicial',
         )
         .build(),
       textField()
@@ -64,12 +65,7 @@ export function ReceivableInvoicesGrid({
         .formatter((cell: GridCellContext) => String(cell.value ?? 'Cliente'))
         .build(),
       dateField().name('dueDate').label('Vencimiento').build(),
-      currencyField()
-        .name('grandTotal')
-        .label('Total')
-        .align('right')
-        .formatter(moneyCell)
-        .build(),
+      currencyField().name('grandTotal').label('Total').align('right').formatter(moneyCell).build(),
       currencyField()
         .name('balanceDue')
         .label('Saldo')
@@ -88,12 +84,8 @@ export function ReceivableInvoicesGrid({
         .formatter((cell: GridCellContext) => {
           const row = cell.data as InvoiceRecord | undefined;
           const customerId = Number(row?.customerId);
-          if (
-            !row ||
-            !Number.isFinite(customerId) ||
-            branchId ||
-            !hasPermission('sales.collect')
-          ) return null;
+          if (!row || !Number.isFinite(customerId) || branchId || !hasPermission('sales.collect'))
+            return null;
           return (
             <span className="owner-row-buttons" onClick={(event) => event.stopPropagation()}>
               <Button
@@ -132,10 +124,7 @@ export function ReceivableInvoicesGrid({
 
   return (
     <>
-      <ReceivableGridFrame
-        gridRef={gridRef}
-        className="accounts-receivable-page__invoice-grid"
-      >
+      <ReceivableGridFrame gridRef={gridRef} className="accounts-receivable-page__invoice-grid">
         <DataGridView
           id="accounts-receivable-invoices"
           ref={gridRef}

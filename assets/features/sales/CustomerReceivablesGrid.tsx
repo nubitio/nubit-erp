@@ -195,10 +195,7 @@ export const CustomerReceivablesGrid = ({
   const detailQuery = branchId ? `?branchId=${encodeURIComponent(branchId)}` : '';
 
   return (
-    <ReceivableGridFrame
-      gridRef={gridRef}
-      className="accounts-receivable-page__customer-grid"
-    >
+    <ReceivableGridFrame gridRef={gridRef} className="accounts-receivable-page__customer-grid">
       <DataGridView
         id="accounts-receivable-debtors"
         ref={gridRef}

@@ -203,7 +203,6 @@ export const CollectPaymentDialog = ({
               />
             </FormField>
           </div>
-
         </form>
       )}
     </AppDialog>
