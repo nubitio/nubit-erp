@@ -7,6 +7,7 @@ namespace App\Sales\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Catalog\Entity\PaymentMethod;
+use App\Efact\Observability\OperationLog;
 use App\Identity\Entity\User;
 use App\Identity\Security\Security;
 use App\Sales\Dto\CollectOnAccountResult;
@@ -30,6 +31,7 @@ readonly class CollectOnAccountProcessor implements ProcessorInterface
         private EntityManagerInterface $entityManager,
         private Security $security,
         private CollectOnAccountService $collectOnAccountService,
+        private ?OperationLog $operationLog = null,
     ) {}
 
     /**
@@ -84,6 +86,11 @@ readonly class CollectOnAccountProcessor implements ProcessorInterface
 
         $key = $request->headers->get('Idempotency-Key');
         if ($key === null || $key === '') {
+            // D-09: the key becomes mandatory on a announced date; until then, count who still omits it.
+            $this->operationLog?->record('sales', 'collect_on_account.missing_idempotency_key', null, [
+                'user_id' => $userId,
+            ]);
+
             return null;
         }
 

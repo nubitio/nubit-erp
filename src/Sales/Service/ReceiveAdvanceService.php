@@ -17,6 +17,7 @@ use App\Sales\State\SalesWriteGateway;
 use App\Treasury\Domain\MovementSource;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Uid\Uuid;
@@ -42,6 +43,26 @@ readonly class ReceiveAdvanceService
         private ?BranchContextServiceInterface $branchContext = null,
     ) {}
 
+    /** The receipt of a request already booked under this advance id, so a retry does not receive the money twice. */
+    private function replay(?string $advanceId, int $customerId): ?CustomerAdvanceReceipt
+    {
+        $entry = $advanceId === null ? null : $this->entries->findBySource('advance_receipt', $advanceId);
+        if ($entry === null) {
+            return null;
+        }
+        if ($entry->getCustomerId() !== $customerId) {
+            throw new ConflictHttpException('Esta clave de idempotencia ya se usó en otro anticipo.');
+        }
+
+        return new CustomerAdvanceReceipt(
+            advanceId: (string) $advanceId,
+            customerId: $customerId,
+            amount: $entry->getCredit(),
+            currency: $entry->getCurrency(),
+            availableAdvance: $this->entries->availableAdvance($customerId),
+        );
+    }
+
     public function receive(
         int $customerId,
         PaymentMethod $paymentMethod,
@@ -50,7 +71,13 @@ readonly class ReceiveAdvanceService
         ?string $reference,
         User $createdBy,
         ?string $moneyAccountId = null,
+        ?string $advanceId = null,
     ): CustomerAdvanceReceipt {
+        $replayed = $this->replay($advanceId, $customerId);
+        if ($replayed instanceof CustomerAdvanceReceipt) {
+            return $replayed;
+        }
+
         if (
             !$paymentMethod->getIsActive()
             || $paymentMethod->getSettlementBehavior() !== SettlementBehavior::COLLECTED
@@ -82,7 +109,7 @@ readonly class ReceiveAdvanceService
             }
         }
 
-        $advanceId = Uuid::v4()->toRfc4122();
+        $advanceId ??= Uuid::v4()->toRfc4122();
         $description = sprintf('Anticipo de cliente #%d', $customerId);
         $currency = 'PEN';
 
@@ -98,7 +125,16 @@ readonly class ReceiveAdvanceService
             $createdBy,
             $moneyAccountId,
             $branchId,
+            $cashSessionId,
+            $isCash,
         ): void {
+            if ($cashSessionId !== null) {
+                $this->salesWriteGateway->requireLockedOpenCashSessionForUser(
+                    $cashSessionId,
+                    (int) $createdBy->getId(),
+                );
+            }
+
             $this->ledger->recordAdvanceReceived(
                 customerId: $customerId,
                 occurredOn: $paidAt,
@@ -125,38 +161,38 @@ readonly class ReceiveAdvanceService
                 description: $description,
                 moneyAccountId: $moneyAccountId,
             ));
-        });
 
-        if ($cashSessionId !== null) {
-            $this->salesWriteGateway->writeCustomerAdvanceMovement(
-                advanceId: $advanceId,
-                cashSessionId: $cashSessionId,
-                createdBy: (int) $createdBy->getId(),
-                amount: Money::toString($amountMoney),
-                paymentMethodId: PaymentMethod::CASH,
-                createdAt: $paidAt,
+            if ($cashSessionId !== null) {
+                $this->salesWriteGateway->writeCustomerAdvanceMovement(
+                    advanceId: $advanceId,
+                    cashSessionId: $cashSessionId,
+                    createdBy: (int) $createdBy->getId(),
+                    amount: Money::toString($amountMoney),
+                    paymentMethodId: PaymentMethod::CASH,
+                    createdAt: $paidAt,
+                    description: $description,
+                );
+            }
+
+            $this->messageBus->dispatch(new EconomicEvent(
+                source: EconomicEvent::SOURCE_CUSTOMER_ADVANCE,
+                sourceId: $advanceId,
+                kind: $isCash
+                    ? EconomicEvent::CUSTOMER_ADVANCE_RECEIVED_CASH
+                    : EconomicEvent::CUSTOMER_ADVANCE_RECEIVED_BANK,
+                occurredOn: $paidAt->format('Y-m-d'),
                 description: $description,
-            );
-        }
+                total: Money::toString($amountMoney),
+                currency: $currency,
+            ));
 
-        $this->messageBus->dispatch(new EconomicEvent(
-            source: EconomicEvent::SOURCE_CUSTOMER_ADVANCE,
-            sourceId: $advanceId,
-            kind: $isCash
-                ? EconomicEvent::CUSTOMER_ADVANCE_RECEIVED_CASH
-                : EconomicEvent::CUSTOMER_ADVANCE_RECEIVED_BANK,
-            occurredOn: $paidAt->format('Y-m-d'),
-            description: $description,
-            total: Money::toString($amountMoney),
-            currency: $currency,
-        ));
-
-        $this->operationLog->record('sales', 'customer_advance.received', $advanceId, [
-            'customer_id' => $customerId,
-            'amount' => Money::toString($amountMoney),
-            'currency' => $currency,
-            'to_cash_session' => $cashSessionId,
-        ]);
+            $this->operationLog->record('sales', 'customer_advance.received', $advanceId, [
+                'customer_id' => $customerId,
+                'amount' => Money::toString($amountMoney),
+                'currency' => $currency,
+                'to_cash_session' => $cashSessionId,
+            ]);
+        });
 
         return new CustomerAdvanceReceipt(
             advanceId: $advanceId,

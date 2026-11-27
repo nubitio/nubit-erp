@@ -6,7 +6,6 @@ namespace App\Sales\Service;
 
 use App\Accounting\Message\EconomicEvent;
 use App\Catalog\Entity\PaymentMethod;
-use App\Catalog\Enum\SettlementBehavior;
 use App\Efact\Domain\Money;
 use App\Efact\Observability\OperationLog;
 use App\Identity\Entity\User;
@@ -20,6 +19,7 @@ use App\Sales\State\SalesWriteGateway;
 use App\Treasury\Domain\MovementSource;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -44,6 +44,8 @@ use Symfony\Component\Uid\Uuid;
  */
 readonly class CollectOnAccountService
 {
+    private const string EXCESS_HINT = 'Dejar el excedente como anticipo del cliente aún no está disponible.';
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private SaleRecordRepository $sales,
@@ -81,7 +83,7 @@ readonly class CollectOnAccountService
             }
         }
 
-        $this->assertCollectableMethod($paymentMethod);
+        CollectionPlanGuard::assertCollectableMethod($paymentMethod);
 
         $amountMoney = Money::money($amount);
         if ($amountMoney->isLessThanOrEqualTo(0)) {
@@ -93,23 +95,21 @@ readonly class CollectOnAccountService
             throw new UnprocessableEntityHttpException('El cliente no tiene comprobantes pendientes de cobro.');
         }
 
-        $plan = $applications === []
-            ? $this->planner->fifo($openSales, $amountMoney)
-            : $this->planner->explicit($openSales, $applications);
+        $plan = $this->planner->plan($openSales, $amountMoney, $applications, self::EXCESS_HINT);
 
-        $this->assertFullyApplied($plan, $amountMoney);
-
-        $currency = $plan[0]['sale']->getCurrency() !== '' ? $plan[0]['sale']->getCurrency() : 'PEN';
+        $currency = CollectionPlanGuard::currencyOf($plan);
         $isCash = $paymentMethod->getId() === PaymentMethod::CASH;
         $cashSessionId = $isCash
             ? $this->resolveCashSession($createdBy, $plan[0]['sale']->getBranch()?->getId())
             : null;
 
+        $callerSuppliedKey = $collectionId !== null;
         $collectionId ??= Uuid::v4()->toRfc4122();
         $description = sprintf('Cobro a cuenta cliente #%d', $customerId);
 
-        $lines = $this->entityManager->wrapInTransaction(function () use (
-            $plan,
+        $lines = $this->bookOnce(fn(): array => $this->entityManager->wrapInTransaction(function () use (
+            $callerSuppliedKey,
+            $applications,
             $paymentMethod,
             $paidAt,
             $reference,
@@ -138,8 +138,17 @@ readonly class CollectOnAccountService
                 );
             }
 
+            // A concurrent request with the same key may have booked it while this one waited for the lock.
+            if ($callerSuppliedKey && ($this->entries?->findCollectionApplications($collectionId) ?? []) !== []) {
+                throw new ConflictHttpException('Este cobro ya fue registrado. Reintente para ver su resultado.');
+            }
+
+            // Re-read the debt under a row lock: the plan above was made on a snapshot another
+            // collection may already have spent (G-01). The lock is held until this transaction ends.
+            $lockedPlan = $this->planUnderLock($customerId, $amountMoney, $applications);
+
             $lines = $this->applyPlan(
-                $plan,
+                $lockedPlan,
                 $paymentMethod,
                 $paidAt,
                 $reference,
@@ -160,7 +169,7 @@ readonly class CollectOnAccountService
             );
 
             return $lines;
-        });
+        }));
 
         $this->operationLog->record('sales', 'receivable.collected_on_account', $collectionId, [
             'customer_id' => $customerId,
@@ -177,6 +186,38 @@ readonly class CollectOnAccountService
             currency: $currency,
             applications: $lines,
         );
+    }
+
+    /**
+     * The unique index on the ledger is the last line of defence against a double booking: a loser of that
+     * race gets a retryable conflict instead of a 500.
+     *
+     * @param callable(): list<CollectOnAccountApplication> $book
+     *
+     * @return list<CollectOnAccountApplication>
+     */
+    private function bookOnce(callable $book): array
+    {
+        try {
+            return $book();
+        } catch (UniqueConstraintViolationException) {
+            throw new ConflictHttpException('Este cobro ya fue registrado. Reintente para ver su resultado.');
+        }
+    }
+
+    /**
+     * @param list<array{saleId: string, amount: string|float}> $applications
+     *
+     * @return list<PlanRow>
+     */
+    private function planUnderLock(int $customerId, BigDecimal $amount, array $applications): array
+    {
+        $openSales = $this->sales->lockOpenReceivablesForCustomer($customerId);
+        if ($openSales === []) {
+            throw new ConflictHttpException('La deuda del cliente cambió; actualice y reintente el cobro.');
+        }
+
+        return $this->planner->plan($openSales, $amount, $applications, self::EXCESS_HINT);
     }
 
     /**
@@ -214,39 +255,6 @@ readonly class CollectOnAccountService
             currency: $rows[0]['currency'],
             applications: $lines,
         );
-    }
-
-    private function assertCollectableMethod(PaymentMethod $paymentMethod): void
-    {
-        if (
-            !$paymentMethod->getIsActive()
-            || $paymentMethod->getSettlementBehavior() !== SettlementBehavior::COLLECTED
-        ) {
-            throw new UnprocessableEntityHttpException(
-                'Seleccione un método de pago activo que represente dinero recibido. Crédito no es un cobro.',
-            );
-        }
-    }
-
-    /**
-     * @param list<PlanRow> $plan
-     */
-    private function assertFullyApplied(array $plan, BigDecimal $amount): void
-    {
-        $applied = array_reduce(
-            $plan,
-            static fn(BigDecimal $carry, array $row): BigDecimal => $carry->plus($row['amount']),
-            BigDecimal::zero(),
-        );
-
-        if ($applied->isLessThan($amount)) {
-            throw new UnprocessableEntityHttpException(sprintf(
-                'El monto (%s) excede la deuda que se puede aplicar (%s). Ajuste el monto o las facturas; '
-                . 'dejar el excedente como anticipo del cliente aún no está disponible.',
-                Money::toString($amount),
-                Money::toString($applied),
-            ));
-        }
     }
 
     private function resolveCashSession(User $createdBy, ?string $branchId): int

@@ -6,6 +6,7 @@ import customerAccountService, {
   type CollectOnAccountApplication,
 } from './services/customerAccountService';
 import toast from '@shared/lib/SharedUtils';
+import { useIdempotencyKey } from '@shared/lib/idempotency';
 import { MoneyAccountPicker } from '../treasury/MoneyAccountPicker';
 import NumberUtils from '@shared/lib/NumberUtils';
 
@@ -37,6 +38,10 @@ export const CustomerAdvanceDialog = ({
   const [available, setAvailable] = useState<string | null>(null);
   const [applied, setApplied] = useState<CollectOnAccountApplication[] | null>(null);
 
+  // Same key while the form is unchanged: a retry after a timeout cannot receive the advance twice.
+  const idempotency = useIdempotencyKey(
+    `${customerId}|${amountValue}|${paymentMethodId}|${moneyAccountId}`,
+  );
   const money = (value: string | number) => NumberUtils.formatCurrency(Number(value), currency);
 
   const reset = () => {
@@ -69,17 +74,22 @@ export const CustomerAdvanceDialog = ({
               paymentMethodId: parseInt(paymentMethodId as string, 10),
               reference: referenceRef.current?.value || undefined,
               moneyAccountId,
+              idempotencyKey: idempotency.current(),
             })
             .then(({ data }) => {
+              idempotency.renew();
               toast('Anticipo recibido', 'success');
               setAvailable(data.availableAdvance);
               reset();
             })
-        : customerAccountService.applyAdvance({ customerId, amount }).then(({ data }) => {
-            toast(`Anticipo aplicado a ${data.applications.length} comprobante(s)`, 'success');
-            setAvailable(data.availableAdvance);
-            setApplied(data.applications);
-          });
+        : customerAccountService
+            .applyAdvance({ customerId, amount, idempotencyKey: idempotency.current() })
+            .then(({ data }) => {
+              idempotency.renew();
+              toast(`Anticipo aplicado a ${data.applications.length} comprobante(s)`, 'success');
+              setAvailable(data.availableAdvance);
+              setApplied(data.applications);
+            });
 
     request
       .catch(() => {

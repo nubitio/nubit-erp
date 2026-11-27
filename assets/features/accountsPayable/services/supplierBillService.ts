@@ -35,6 +35,8 @@ export interface PaySupplierBillInput {
   reference?: string;
   /** Treasury account the money leaves; omitted = the payment method's mapped account. */
   moneyAccountId?: string;
+  /** Same key on a retry of the same payment: the server returns the first one instead of paying twice. */
+  idempotencyKey?: string;
 }
 
 const supplierBillService = () => {
@@ -49,7 +51,10 @@ const supplierBillService = () => {
         reference: input.reference,
         moneyAccountId: input.moneyAccountId || undefined,
       },
-      { errorPresentation: 'inline' },
+      {
+        errorPresentation: 'inline',
+        headers: input.idempotencyKey ? { 'Idempotency-Key': input.idempotencyKey } : undefined,
+      },
     );
   };
 

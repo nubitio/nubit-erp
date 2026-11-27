@@ -9,8 +9,10 @@ use App\Catalog\Repository\PaymentMethodRepository;
 use App\Sales\Entity\SaleRecord;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\ArrayParameterType;
+use Doctrine\DBAL\LockMode;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -34,7 +36,7 @@ class SaleRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * A customer's sales that still owe money, oldest first — the FIFO order a
+     * A customer's sales that still owe money, oldest due date first (D-08) — the order a
      * "cobro a cuenta" (#381) applies a payment in. `balance_due > 0` and
      * `receivable_account = 1` match the population the statement (#366) reads.
      *
@@ -43,7 +45,35 @@ class SaleRecordRepository extends ServiceEntityRepository
     public function findOpenReceivablesForCustomer(int $customerId): array
     {
         /** @var list<SaleRecord> $rows */
-        $rows = $this
+        $rows = $this->openReceivablesQuery($customerId)->getResult();
+
+        return $rows;
+    }
+
+    /**
+     * Same population and order as {@see findOpenReceivablesForCustomer()}, but locked
+     * (`SELECT … FOR UPDATE`) and re-read from the database even when the entities are already
+     * managed. Must run inside a transaction: the lock is held until it ends, so a concurrent
+     * collection waits and then sees the balance this one left (G-01).
+     *
+     * @return list<SaleRecord>
+     */
+    public function lockOpenReceivablesForCustomer(int $customerId): array
+    {
+        $query = $this->openReceivablesQuery($customerId);
+        $query->setLockMode(LockMode::PESSIMISTIC_WRITE);
+        $query->setHint(Query::HINT_REFRESH, true);
+
+        /** @var list<SaleRecord> $rows */
+        $rows = $query->getResult();
+
+        return $rows;
+    }
+
+    /** @return Query<null, mixed> */
+    private function openReceivablesQuery(int $customerId): Query
+    {
+        return $this
             ->createQueryBuilder('s')
             ->where('s.customer = :customer')
             ->andWhere('s.receivableAccount = true')
@@ -51,13 +81,13 @@ class SaleRecordRepository extends ServiceEntityRepository
             ->andWhere("s.status <> 'VOIDED'")
             ->andWhere('s.deletedAt IS NULL')
             ->setParameter('customer', $customerId)
-            ->orderBy('s.issuedDate', 'ASC')
+            // D-08: oldest due date first; a sale without one counts as due on its issue date.
+            ->addSelect('COALESCE(s.dueDate, s.issuedDate) AS HIDDEN effectiveDue')
+            ->orderBy('effectiveDue', 'ASC')
+            ->addOrderBy('s.issuedDate', 'ASC')
             ->addOrderBy('s.issuedAt', 'ASC')
             ->addOrderBy('s.id', 'ASC')
-            ->getQuery()
-            ->getResult();
-
-        return $rows;
+            ->getQuery();
     }
 
     /**

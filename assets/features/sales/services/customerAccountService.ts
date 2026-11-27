@@ -40,6 +40,8 @@ export interface ReceiveAdvanceInput {
   reference?: string;
   /** Treasury account the money lands in; omitted = the payment method's mapped account. */
   moneyAccountId?: string;
+  /** Same key on a retry of the same advance: the server returns the first receipt instead of receiving twice. */
+  idempotencyKey?: string;
 }
 
 export interface CustomerAdvanceReceipt {
@@ -55,6 +57,8 @@ export interface ApplyAdvanceInput {
   amount: number;
   paidAt?: string;
   applications?: Array<{ saleId: string; amount: number }>;
+  /** Same key on a retry of the same application: the server returns the first result. */
+  idempotencyKey?: string;
 }
 
 export interface AdvanceApplicationResult {
@@ -89,26 +93,34 @@ export const customerAccountService = {
   },
 
   receiveAdvance(input: ReceiveAdvanceInput) {
-    return httpClient.post<CustomerAdvanceReceipt>(`${API}sales/customer-advances`, {
-      customerId: input.customerId,
-      amount: round2(input.amount),
-      paymentMethodId: input.paymentMethodId,
-      paidAt: input.paidAt,
-      reference: input.reference,
-      moneyAccountId: input.moneyAccountId || undefined,
-    });
+    return httpClient.post<CustomerAdvanceReceipt>(
+      `${API}sales/customer-advances`,
+      {
+        customerId: input.customerId,
+        amount: round2(input.amount),
+        paymentMethodId: input.paymentMethodId,
+        paidAt: input.paidAt,
+        reference: input.reference,
+        moneyAccountId: input.moneyAccountId || undefined,
+      },
+      input.idempotencyKey ? { headers: { 'Idempotency-Key': input.idempotencyKey } } : undefined,
+    );
   },
 
   applyAdvance(input: ApplyAdvanceInput) {
-    return httpClient.post<AdvanceApplicationResult>(`${API}sales/customer-advances/apply`, {
-      customerId: input.customerId,
-      amount: round2(input.amount),
-      paidAt: input.paidAt,
-      applications: (input.applications ?? []).map((a) => ({
-        saleId: a.saleId,
-        amount: round2(a.amount),
-      })),
-    });
+    return httpClient.post<AdvanceApplicationResult>(
+      `${API}sales/customer-advances/apply`,
+      {
+        customerId: input.customerId,
+        amount: round2(input.amount),
+        paidAt: input.paidAt,
+        applications: (input.applications ?? []).map((a) => ({
+          saleId: a.saleId,
+          amount: round2(a.amount),
+        })),
+      },
+      input.idempotencyKey ? { headers: { 'Idempotency-Key': input.idempotencyKey } } : undefined,
+    );
   },
 };
 

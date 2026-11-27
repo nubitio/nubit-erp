@@ -30,6 +30,7 @@ readonly class CustomerAccountLedger
     public function __construct(
         private EntityManagerInterface $entityManager,
         private CustomerAccountEntryRepository $entries,
+        private ?CustomerAccountLock $lock = null,
     ) {}
 
     /**
@@ -179,6 +180,8 @@ readonly class CustomerAccountLedger
             throw new InvalidArgumentException('A customer-account entry moves the balance in one direction only.');
         }
 
+        // Read-then-insert of the running balance: serialise writers of this customer (G-03).
+        $this->lock?->lock($customerId);
         $previousBalance = $this->entries->currentBalance($customerId);
         $runningBalance = self::nextRunningBalance($previousBalance, $debit, $credit);
 

@@ -21,6 +21,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 #[ORM\Entity]
 #[ORM\Table(name: 'supplier_payment')]
 #[ORM\Index(name: 'idx_supplier_payment_bill', columns: ['supplier_bill_id'])]
+#[ORM\UniqueConstraint(name: 'uniq_supplier_payment_idempotency_key', columns: ['idempotency_key'])]
 class SupplierPayment
 {
     #[Groups(['supplier_bill:read'])]
@@ -53,6 +54,10 @@ class SupplierPayment
     #[Groups(['supplier_bill:read'])]
     #[ORM\Column(name: 'reversed_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $reversedAt = null;
+
+    /** Stable id of the request that created this payment, so a retry returns it instead of paying twice. */
+    #[ORM\Column(name: 'idempotency_key', length: 64, nullable: true)]
+    private ?string $idempotencyKey = null;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'created_by', referencedColumnName: 'usuario_id', nullable: false)]
@@ -122,6 +127,18 @@ class SupplierPayment
     public function getReference(): ?string
     {
         return $this->reference;
+    }
+
+    public function getIdempotencyKey(): ?string
+    {
+        return $this->idempotencyKey;
+    }
+
+    public function setIdempotencyKey(?string $idempotencyKey): static
+    {
+        $this->idempotencyKey = $idempotencyKey;
+
+        return $this;
     }
 
     public function setReference(?string $reference): static

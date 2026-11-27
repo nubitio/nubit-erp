@@ -34,6 +34,7 @@ readonly class BillCreateUseCase
         private CompanyRepository $companyRepository,
         private VoucherHydratorInterface $voucherHydrator,
         private AmountFormatterService $amountFormatterService,
+        private ?CreditTermsProviderInterface $creditTerms = null,
     ) {}
 
     /**
@@ -122,6 +123,12 @@ readonly class BillCreateUseCase
             };
         }
 
+        // Credit sales report what is really pending and when it is due, not the whole total at +1 month (G-05).
+        $creditTerms = 2 === $hydratedVoucher->voucherPaymentMethod
+            ? $this->creditTerms?->termsFor($hydratedVoucher->saleId)
+            : null;
+        $creditAmount = $creditTerms['amount'] ?? $hydratedVoucher->voucherSaleAmount;
+
         $bill = new Invoice()
             ->setUblVersion('2.1')
             ->setTipoOperacion($operationType)
@@ -131,7 +138,7 @@ readonly class BillCreateUseCase
             ->setFechaEmision($hydratedVoucher->voucherDate)
             ->setFormaPago(
                 2 === $hydratedVoucher->voucherPaymentMethod
-                    ? new FormaPagoCredito($hydratedVoucher->voucherSaleAmount)
+                    ? new FormaPagoCredito($creditAmount)
                     : new FormaPagoContado(),
             )
             ->setTipoMoneda($hydratedVoucher->voucherCurrency)
@@ -171,12 +178,16 @@ readonly class BillCreateUseCase
         }
 
         if (2 === $hydratedVoucher->voucherPaymentMethod) {
-            $paymentDate = $hydratedVoucher->voucherDate->modify('+1 month');
+            $paymentDate = $creditTerms['dueDate'] ?? $hydratedVoucher->voucherDate->modify('+1 month');
+            // SUNAT needs the instalment date after the issue date.
+            if ($paymentDate <= $hydratedVoucher->voucherDate) {
+                $paymentDate = $hydratedVoucher->voucherDate->modify('+1 day');
+            }
 
             $bill->setCuotas([
                 new Cuota()
                     ->setFechaPago($paymentDate)
-                    ->setMonto($hydratedVoucher->voucherSaleAmount),
+                    ->setMonto($creditAmount),
             ]);
         }
 

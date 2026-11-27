@@ -206,4 +206,51 @@ final class SupplierPaymentServiceTest extends TestCase
 
         $this->service($em)->reversePayment($bill, $payment);
     }
+
+    public function testARetryWithTheSameKeyReturnsTheFirstPaymentAndPaysNothingAgain(): void
+    {
+        $bill = $this->pendingBill();
+        $first = $this->paymentOn($bill, '40.00');
+        $repo = $this->createMock(\Doctrine\ORM\EntityRepository::class);
+        $repo->method('findOneBy')->with(['idempotencyKey' => 'key-1'])->willReturn($first);
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->method('getRepository')->willReturn($repo);
+        $em->expects(static::never())->method('persist');
+
+        $payment = $this->service($em)->registerPayment(
+            $bill,
+            new PaymentMethod(),
+            '40.00',
+            new DateTimeImmutable(),
+            null,
+            new User(),
+            null,
+            'key-1',
+        );
+
+        static::assertSame($first, $payment);
+        static::assertSame('100.00', $bill->getBalanceDue());
+    }
+
+    public function testTheSameKeyForAnotherAmountIsAConflict(): void
+    {
+        $bill = $this->pendingBill();
+        $repo = $this->createMock(\Doctrine\ORM\EntityRepository::class);
+        $repo->method('findOneBy')->willReturn($this->paymentOn($bill, '40.00'));
+        $em = $this->createMock(EntityManagerInterface::class);
+        $em->method('getRepository')->willReturn($repo);
+
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\ConflictHttpException::class);
+
+        $this->service($em)->registerPayment(
+            $bill,
+            new PaymentMethod(),
+            '50.00',
+            new DateTimeImmutable(),
+            null,
+            new User(),
+            null,
+            'key-1',
+        );
+    }
 }

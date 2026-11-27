@@ -323,6 +323,7 @@ final class CollectOnAccountServiceTest extends TestCase
     {
         $repo = $this->createMock(SaleRecordRepository::class);
         $repo->method('findOpenReceivablesForCustomer')->willReturn($open);
+        $repo->method('lockOpenReceivablesForCustomer')->willReturn($open);
 
         return $repo;
     }

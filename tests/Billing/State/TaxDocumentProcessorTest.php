@@ -20,6 +20,8 @@ use App\Identity\Auth\BranchContextServiceInterface;
 use App\Identity\Auth\OperationalBranchGuard;
 use App\Organization\Entity\Branch;
 use App\Organization\Repository\BranchRepository;
+use App\Sales\Entity\SaleRecord;
+use App\Sales\Service\CreditNoteReceivableAdjuster;
 use App\Settings\Service\TenantSettingsService;
 use Nubit\Platform\Exception\ServiceException;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -109,6 +111,43 @@ final class TaxDocumentProcessorTest extends TestCase
         self::assertSame('07', $result->getDocumentType());
         self::assertSame('BC01', $result->getSeries());
         self::assertSame('1', $result->getNumber());
+    }
+
+    /**
+     * G-04: a new credit note on a credit sale hands the sale and the note's total to the receivable adjuster,
+     * so the open balance goes down in the same transaction.
+     */
+    public function testNewCreditNoteAdjustsTheReceivableOfItsSale(): void
+    {
+        $sale = new SaleRecord();
+        $relatedDoc = $this->buildRelatedTaxDocument(isVoided: false, series: 'F001');
+        $relatedDoc->setSaleRecord($sale);
+        $creditNote = $this->buildNewCreditNote(relatedTaxDocument: $relatedDoc, reasonCode: '04');
+
+        $this->taxDocumentRepository
+            ->method('getTaxDocumentSeriesByBranch')
+            ->willReturn(new SeriesResultDto(series: 'BC01', associatedSeries: 'F001'));
+        $this->taxDocumentRepository->method('getNextSequenceNumber')->willReturn(1);
+        $this->taxDocumentRepository
+            ->method('getSalesCurrencyForSaleId')
+            ->willReturn(['currency' => 'PEN', 'exchange_rate' => null]);
+        // The database assigns the id when the note is persisted.
+        $this->persistProcessor
+            ->method('process')
+            ->willReturnCallback(static function (TaxDocument $note): TaxDocument {
+                new \ReflectionProperty(TaxDocument::class, 'id')->setValue($note, 'cn-1');
+
+                return $note;
+            });
+
+        $adjuster = $this->createMock(CreditNoteReceivableAdjuster::class);
+        $adjuster
+            ->expects(self::once())
+            ->method('apply')
+            ->with($sale, self::anything(), 'cn-1', self::anything(), self::anything())
+            ->willReturn(['reduced' => '0.00', 'creditedToCustomer' => '0.00']);
+
+        $this->buildProcessor($adjuster)->process($creditNote, new Post(), [], []);
     }
 
     // -------------------------------------------------------------------------
@@ -313,7 +352,7 @@ final class TaxDocumentProcessorTest extends TestCase
     /**
      * Construct TaxDocumentProcessor via reflection, bypassing the constructor.
      */
-    private function buildProcessor(): TaxDocumentProcessor
+    private function buildProcessor(?CreditNoteReceivableAdjuster $adjuster = null): TaxDocumentProcessor
     {
         $reflection = new ReflectionClass(TaxDocumentProcessor::class);
         /** @var TaxDocumentProcessor $processor */
@@ -330,6 +369,7 @@ final class TaxDocumentProcessorTest extends TestCase
             $processor,
             $this->createMock(CreditNoteStockReverserInterface::class),
         );
+        $reflection->getProperty('receivableAdjuster')->setValue($processor, $adjuster);
         $reflection->getProperty('security')->setValue($processor, $this->createStub(SecurityComponent::class));
         $reflection->getProperty('activity')->setValue($processor, $this->createStub(SalesActivityInterface::class));
         $tenantSettings = $this->createStub(TenantSettingsService::class);

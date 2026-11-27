@@ -15,8 +15,11 @@ use App\Identity\Security\Security;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Override;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * @implements ProcessorInterface<SupplierBillPayDto, SupplierBill>
@@ -71,8 +74,26 @@ readonly class SupplierBillPayProcessor implements ProcessorInterface
             $data->reference,
             $userRef,
             $data->moneyAccountId,
+            $this->idempotencyKeyFor($context['request'] ?? null, (int) $user->userId),
         );
 
         return $bill;
+    }
+
+    /** A stable id from the `Idempotency-Key` header, scoped to the user; null when the client sends none. */
+    private function idempotencyKeyFor(mixed $request, int $userId): ?string
+    {
+        $key = $request instanceof Request ? $request->headers->get('Idempotency-Key') : null;
+        if ($key === null || $key === '') {
+            return null;
+        }
+        if (preg_match('/^[A-Za-z0-9._:-]{8,128}$/', $key) !== 1) {
+            throw new BadRequestHttpException('Idempotency-Key inválida.');
+        }
+
+        return Uuid::v5(
+            Uuid::fromString(Uuid::NAMESPACE_OID),
+            sprintf('supplier-pay:%d:%s', $userId, $key),
+        )->toRfc4122();
     }
 }

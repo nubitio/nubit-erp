@@ -133,6 +133,53 @@ final class ReceiveAdvanceServiceTest extends TestCase
         );
     }
 
+    public function testARetryWithTheSameAdvanceIdReturnsTheFirstReceiptAndBooksNothing(): void
+    {
+        $entry = $this->createStub(CustomerAccountEntry::class);
+        $entry->method('getCustomerId')->willReturn(7);
+        $entry->method('getCredit')->willReturn('500.00');
+        $entry->method('getCurrency')->willReturn('PEN');
+        $this->entries->method('findBySource')->with('advance_receipt', 'adv-1')->willReturn($entry);
+        $this->entries->method('availableAdvance')->willReturn('500.00');
+        $this->ledger->expects(self::never())->method('recordAdvanceReceived');
+        $this->gateway->expects(self::never())->method('writeCustomerAdvanceMovement');
+
+        $receipt = $this->service()->receive(
+            7,
+            $this->method(PaymentMethod::CASH),
+            '500.00',
+            new DateTimeImmutable('2026-09-09'),
+            null,
+            new User(),
+            null,
+            'adv-1',
+        );
+
+        self::assertSame('adv-1', $receipt->advanceId);
+        self::assertSame('500.00', $receipt->amount);
+        self::assertSame([], $this->dispatched);
+    }
+
+    public function testTheSameAdvanceIdForAnotherCustomerIsAConflict(): void
+    {
+        $entry = $this->createStub(CustomerAccountEntry::class);
+        $entry->method('getCustomerId')->willReturn(99);
+        $this->entries->method('findBySource')->willReturn($entry);
+
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\ConflictHttpException::class);
+
+        $this->service()->receive(
+            7,
+            $this->method(PaymentMethod::CASH),
+            '500.00',
+            new DateTimeImmutable(),
+            null,
+            new User(),
+            null,
+            'adv-1',
+        );
+    }
+
     private function service(): ReceiveAdvanceService
     {
         $em = $this->createMock(EntityManagerInterface::class);

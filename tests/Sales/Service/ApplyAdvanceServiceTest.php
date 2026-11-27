@@ -64,7 +64,7 @@ final class ApplyAdvanceServiceTest extends TestCase
                 ['entryId' => 12, 'remaining' => '250.00'],
             ]);
         $this->sales
-            ->method('findOpenReceivablesForCustomer')
+            ->method('lockOpenReceivablesForCustomer')
             ->willReturn([
                 $this->sale('s1', '200.00'),
                 $this->sale('s2', '150.00'),
@@ -103,7 +103,7 @@ final class ApplyAdvanceServiceTest extends TestCase
         $this->methodConfigured = false; // findOneBy -> null
         $this->entries->method('availableAdvance')->willReturn('500.00', '400.00');
         $this->entries->method('advancesWithRemaining')->willReturn([['entryId' => 1, 'remaining' => '500.00']]);
-        $this->sales->method('findOpenReceivablesForCustomer')->willReturn([$this->sale('s1', '100.00')]);
+        $this->sales->method('lockOpenReceivablesForCustomer')->willReturn([$this->sale('s1', '100.00')]);
 
         $this->service()->apply(9, '100.00', new DateTimeImmutable('2026-09-10'), []);
 
@@ -121,7 +121,7 @@ final class ApplyAdvanceServiceTest extends TestCase
     public function testNoOpenSalesIsRejected(): void
     {
         $this->entries->method('availableAdvance')->willReturn('500.00');
-        $this->sales->method('findOpenReceivablesForCustomer')->willReturn([]);
+        $this->sales->method('lockOpenReceivablesForCustomer')->willReturn([]);
 
         $this->expectException(UnprocessableEntityHttpException::class);
         $this->expectExceptionMessage('no tiene comprobantes pendientes');
@@ -133,13 +133,48 @@ final class ApplyAdvanceServiceTest extends TestCase
     {
         $this->entries->method('availableAdvance')->willReturn('500.00');
         $this->entries->method('advancesWithRemaining')->willReturn([['entryId' => 1, 'remaining' => '500.00']]);
-        $this->sales->method('findOpenReceivablesForCustomer')->willReturn([$this->sale('s1', '40.00')]);
+        $this->sales->method('lockOpenReceivablesForCustomer')->willReturn([$this->sale('s1', '40.00')]);
 
         $this->expectException(UnprocessableEntityHttpException::class);
         $this->service()->apply(9, '100.00', new DateTimeImmutable(), []);
     }
 
-    private function service(): ApplyAdvanceService
+    public function testARetryWithTheSameApplicationIdReturnsTheFirstResultAndAppliesNothing(): void
+    {
+        $batches = $this->createMock(\App\Sales\Repository\CustomerPaymentApplicationRepository::class);
+        $batches
+            ->method('summaryForBatch')
+            ->with('app-1')
+            ->willReturn([
+                ['saleId' => 's1', 'applied' => '120.00', 'currency' => 'PEN', 'customerId' => 9],
+            ]);
+        $this->sales->method('find')->willReturn($this->sale('s1', '80.00'));
+        $this->entries->method('availableAdvance')->willReturn('380.00');
+        $this->salePaymentService->expects(self::never())->method('appendAdvancePayment');
+
+        $result = $this->service($batches)->apply(9, '120.00', new DateTimeImmutable(), [], 'app-1');
+
+        self::assertSame('app-1', $result->applicationId);
+        self::assertSame('120.00', $result->applied);
+        self::assertSame('80.00', $result->applications[0]->balanceDueAfter);
+        self::assertSame([], $this->dispatched);
+    }
+
+    public function testTheSameApplicationIdForAnotherCustomerIsAConflict(): void
+    {
+        $batches = $this->createMock(\App\Sales\Repository\CustomerPaymentApplicationRepository::class);
+        $batches
+            ->method('summaryForBatch')
+            ->willReturn([
+                ['saleId' => 's1', 'applied' => '120.00', 'currency' => 'PEN', 'customerId' => 77],
+            ]);
+
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\ConflictHttpException::class);
+
+        $this->service($batches)->apply(9, '120.00', new DateTimeImmutable(), [], 'app-1');
+    }
+
+    private function service(?\App\Sales\Repository\CustomerPaymentApplicationRepository $batches = null): ApplyAdvanceService
     {
         $em = $this->createMock(EntityManagerInterface::class);
         $em->method('wrapInTransaction')->willReturnCallback(static fn(callable $f): mixed => $f());
@@ -171,6 +206,7 @@ final class ApplyAdvanceServiceTest extends TestCase
             $this->salePaymentService,
             $bus,
             new OperationLog(new NullLogger()),
+            applications: $batches,
         );
     }
 

@@ -28,7 +28,7 @@ function initialAmount(balanceDue?: string): string {
 
 /**
  * Single collection flow for Cuentas por cobrar: registers the money once in
- * cash/bank and applies it to the customer's oldest open invoices (FIFO). The
+ * cash/bank and applies it to the customer's open invoices by oldest due date. The
  * per-invoice and advance flows were folded into this one for SMB use.
  */
 export const CollectPaymentDialog = ({
@@ -125,8 +125,8 @@ export const CollectPaymentDialog = ({
           {balanceDue
             ? `Saldo pendiente: ${NumberUtils.formatCurrency(Number(balanceDue), currency)}. `
             : ''}
-          El pago se aplica a los comprobantes más antiguos y se registra una sola vez en caja o
-          banco.
+          El pago se aplica primero a los comprobantes que vencen antes y se registra una sola vez
+          en caja o banco.
         </p>
       </div>
 
