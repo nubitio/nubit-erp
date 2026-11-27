@@ -269,6 +269,56 @@ final class BillCreateUseCaseTest extends TestCase
         self::assertNotEmpty($invoice->getCuotas());
     }
 
+    public function testCreditInvoiceReportsTheNetPendingAmountAndTheInternalDueDate(): void
+    {
+        $invoice = $this->creditInvoice(['amount' => 60.0, 'dueDate' => new \DateTimeImmutable('2025-02-14')]);
+
+        $formaPago = $invoice->getFormaPago();
+        self::assertInstanceOf(FormaPagoCredito::class, $formaPago);
+        self::assertSame(60.0, (float) $formaPago->getMonto());
+        $cuotas = $invoice->getCuotas();
+        self::assertCount(1, $cuotas);
+        self::assertSame(60.0, (float) $cuotas[0]->getMonto());
+        self::assertSame('2025-02-14', $cuotas[0]->getFechaPago()?->format('Y-m-d'));
+    }
+
+    public function testACreditDueDateNotAfterTheIssueDateMovesToTheNextDay(): void
+    {
+        $invoice = $this->creditInvoice(['amount' => 100.0, 'dueDate' => new \DateTimeImmutable('2025-01-15')]);
+
+        self::assertSame('2025-01-16', $invoice->getCuotas()[0]->getFechaPago()?->format('Y-m-d'));
+    }
+
+    public function testWithoutCreditTermsTheLegacyScheduleIsKept(): void
+    {
+        $invoice = $this->creditInvoice(null);
+
+        self::assertSame(100.0, (float) $invoice->getCuotas()[0]->getMonto());
+        self::assertSame('2025-02-15', $invoice->getCuotas()[0]->getFechaPago()?->format('Y-m-d'));
+    }
+
+    /** @param array{amount: float, dueDate: \DateTimeImmutable}|null $terms */
+    private function creditInvoice(?array $terms): \Greenter\Model\Sale\Invoice
+    {
+        $this->setupTaxDocument();
+        $provider = $this->createStub(\App\Billing\Sunat\Domain\CreditTermsProviderInterface::class);
+        $provider->method('termsFor')->willReturn($terms);
+        $useCase = new BillCreateUseCase(
+            $this->taxDocumentRepository,
+            $this->billUtils,
+            $this->companyRepository,
+            $this->voucherHydrator,
+            $this->amountFormatterService,
+            $provider,
+        );
+        $this->taxDocumentRepository
+            ->method('getVoucherByTaxDocumentId')
+            ->willReturn($this->createMock(\App\Billing\Invoice\Domain\Voucher::class));
+        $this->voucherHydrator->method('hydrate')->willReturn($this->makeBaseVoucher(paymentMethod: 2));
+
+        return $useCase->__invoke('td-1');
+    }
+
     public function testInvokeAddsDetractionAndSetsDetraccionSaleOperationType(): void
     {
         $this->setupTaxDocument();

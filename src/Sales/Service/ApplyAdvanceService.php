@@ -43,12 +43,36 @@ readonly class ApplyAdvanceService
         private SalePaymentService $salePaymentService,
         private MessageBusInterface $messageBus,
         private OperationLog $operationLog,
+        private ?CustomerAccountLock $accountLock = null,
     ) {}
 
     /**
      * @param list<array{saleId: string, amount: string|float}> $applications empty = FIFO
      */
     public function apply(
+        int $customerId,
+        string $amount,
+        DateTimeImmutable $appliedAt,
+        array $applications,
+    ): AdvanceApplicationResult {
+        // One transaction from the first read: the customer lock makes two applications of the same
+        // advance run one after the other, so an advance can never be spent twice (G-01, invariant 5).
+        return $this->entityManager->wrapInTransaction(function () use (
+            $customerId,
+            $amount,
+            $appliedAt,
+            $applications,
+        ): AdvanceApplicationResult {
+            $this->accountLock?->lock($customerId);
+
+            return $this->applyLocked($customerId, $amount, $appliedAt, $applications);
+        });
+    }
+
+    /**
+     * @param list<array{saleId: string, amount: string|float}> $applications
+     */
+    private function applyLocked(
         int $customerId,
         string $amount,
         DateTimeImmutable $appliedAt,
@@ -70,15 +94,12 @@ readonly class ApplyAdvanceService
 
         $advanceMethod = $this->advanceMethod();
 
-        $openSales = $this->sales->findOpenReceivablesForCustomer($customerId);
+        $openSales = $this->sales->lockOpenReceivablesForCustomer($customerId);
         if ($openSales === []) {
             throw new UnprocessableEntityHttpException('El cliente no tiene comprobantes pendientes de cobro.');
         }
 
-        $plan = $applications === []
-            ? $this->planner->fifo($openSales, $amountMoney)
-            : $this->planner->explicit($openSales, $applications);
-        $this->assertFullyApplied($plan, $amountMoney);
+        $plan = $this->planner->plan($openSales, $amountMoney, $applications);
 
         $currency = $plan[0]['sale']->getCurrency() !== '' ? $plan[0]['sale']->getCurrency() : 'PEN';
         $applicationId = Uuid::v4()->toRfc4122();
@@ -136,25 +157,6 @@ readonly class ApplyAdvanceService
         $this->entityManager->flush();
 
         return $method;
-    }
-
-    /**
-     * @param list<PlanRow> $plan
-     */
-    private function assertFullyApplied(array $plan, BigDecimal $amount): void
-    {
-        $applied = array_reduce(
-            $plan,
-            static fn(BigDecimal $carry, array $row): BigDecimal => $carry->plus($row['amount']),
-            BigDecimal::zero(),
-        );
-        if ($applied->isLessThan($amount)) {
-            throw new UnprocessableEntityHttpException(sprintf(
-                'El monto (%s) excede la deuda que se puede aplicar (%s). Ajuste el monto o las facturas.',
-                Money::toString($amount),
-                Money::toString($applied),
-            ));
-        }
     }
 
     /**

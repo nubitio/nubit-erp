@@ -17,6 +17,7 @@ use App\AccountsPayable\Repository\SupplierBillRepository;
 use App\AccountsPayable\State\SupplierBillCreateProcessor;
 use App\AccountsPayable\State\SupplierBillPayProcessor;
 use App\AccountsPayable\State\SupplierBillReversePaymentProcessor;
+use App\AccountsPayable\State\SupplierBillUpdateProcessor;
 use App\AccountsPayable\State\SupplierBillVoidProcessor;
 use App\Contacts\Entity\Supplier;
 use App\Organization\Entity\Branch;
@@ -40,7 +41,10 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(security: "is_granted('perm:accounts_payable.view')"),
         new Post(security: "is_granted('perm:accounts_payable.create')", processor: SupplierBillCreateProcessor::class),
         new Get(security: "is_granted('perm:accounts_payable.view')"),
-        new Patch(security: "is_granted('perm:accounts_payable.create')"),
+        new Patch(
+            security: "is_granted('perm:accounts_payable.create')",
+            processor: SupplierBillUpdateProcessor::class,
+        ),
         new Delete(
             // Voids in place instead of deleting the row — keeps the audit
             // trail (paid bills must stay visible in reports/statements).

@@ -42,9 +42,9 @@ final class OnAccountAndAdvanceTreasuryTest extends TestCase
     {
         $spy = new TreasurySpy();
         $sales = $this->createMock(SaleRecordRepository::class);
-        $sales
-            ->method('findOpenReceivablesForCustomer')
-            ->willReturn([$this->sale('s1', '70.00'), $this->sale('s2', '50.00')]);
+        $open = [$this->sale('s1', '70.00'), $this->sale('s2', '50.00')];
+        $sales->method('findOpenReceivablesForCustomer')->willReturn($open);
+        $sales->method('lockOpenReceivablesForCustomer')->willReturn($open);
         $payments = $this->createMock(SalePaymentService::class);
         $payments
             ->method('appendPayment')

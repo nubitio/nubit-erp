@@ -17,6 +17,7 @@ use App\Sales\State\SalesWriteGateway;
 use App\Treasury\Domain\MovementSource;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -106,6 +107,10 @@ readonly class SalePaymentService
                     (int) $createdBy->getId(),
                 );
             }
+
+            // Lock the sale and re-read it so the balance check below sees what a concurrent
+            // collection left, not the snapshot loaded before the transaction (G-01).
+            $this->entityManager->refresh($sale, LockMode::PESSIMISTIC_WRITE);
 
             $payment = $this->appendPayment($sale, $paymentMethod, $amount, $paidAt, $reference);
 

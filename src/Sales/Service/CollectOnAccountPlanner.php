@@ -19,6 +19,26 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 final readonly class CollectOnAccountPlanner
 {
     /**
+     * The plan for a request: FIFO when no split is given, the explicit split otherwise; checked to cover
+     * the whole amount and to stay in one currency.
+     *
+     * @param list<SaleRecord> $openSales oldest first
+     * @param list<array{saleId: string, amount: string|float}> $applications empty = FIFO
+     *
+     * @return list<PlanRow>
+     */
+    public function plan(array $openSales, BigDecimal $amount, array $applications, string $excessHint = ''): array
+    {
+        $plan = $applications === []
+            ? $this->fifo($openSales, $amount)
+            : $this->explicit($openSales, $applications);
+        CollectionPlanGuard::assertCovers($plan, $amount, $excessHint);
+        CollectionPlanGuard::assertSingleCurrency($plan);
+
+        return $plan;
+    }
+
+    /**
      * @param list<SaleRecord> $openSales oldest first
      *
      * @return list<PlanRow>

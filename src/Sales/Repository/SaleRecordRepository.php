@@ -9,8 +9,10 @@ use App\Catalog\Repository\PaymentMethodRepository;
 use App\Sales\Entity\SaleRecord;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\ArrayParameterType;
+use Doctrine\DBAL\LockMode;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -43,7 +45,35 @@ class SaleRecordRepository extends ServiceEntityRepository
     public function findOpenReceivablesForCustomer(int $customerId): array
     {
         /** @var list<SaleRecord> $rows */
-        $rows = $this
+        $rows = $this->openReceivablesQuery($customerId)->getResult();
+
+        return $rows;
+    }
+
+    /**
+     * Same population and order as {@see findOpenReceivablesForCustomer()}, but locked
+     * (`SELECT … FOR UPDATE`) and re-read from the database even when the entities are already
+     * managed. Must run inside a transaction: the lock is held until it ends, so a concurrent
+     * collection waits and then sees the balance this one left (G-01).
+     *
+     * @return list<SaleRecord>
+     */
+    public function lockOpenReceivablesForCustomer(int $customerId): array
+    {
+        $query = $this->openReceivablesQuery($customerId);
+        $query->setLockMode(LockMode::PESSIMISTIC_WRITE);
+        $query->setHint(Query::HINT_REFRESH, true);
+
+        /** @var list<SaleRecord> $rows */
+        $rows = $query->getResult();
+
+        return $rows;
+    }
+
+    /** @return Query<null, mixed> */
+    private function openReceivablesQuery(int $customerId): Query
+    {
+        return $this
             ->createQueryBuilder('s')
             ->where('s.customer = :customer')
             ->andWhere('s.receivableAccount = true')
@@ -54,10 +84,7 @@ class SaleRecordRepository extends ServiceEntityRepository
             ->orderBy('s.issuedDate', 'ASC')
             ->addOrderBy('s.issuedAt', 'ASC')
             ->addOrderBy('s.id', 'ASC')
-            ->getQuery()
-            ->getResult();
-
-        return $rows;
+            ->getQuery();
     }
 
     /**

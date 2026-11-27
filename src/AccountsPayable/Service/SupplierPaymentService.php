@@ -19,6 +19,7 @@ use App\Treasury\Port\MoneyMovementRequest;
 use App\Treasury\Port\RecordsMoneyMovement;
 use Brick\Math\BigDecimal;
 use DateTimeImmutable;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -57,15 +58,6 @@ readonly class SupplierPaymentService
             throw new UnprocessableEntityHttpException('El monto del pago debe ser mayor a 0.');
         }
 
-        $balanceDue = Money::money($bill->getBalanceDue());
-        if ($amountMoney->isGreaterThan($balanceDue)) {
-            throw new UnprocessableEntityHttpException(sprintf(
-                'El monto del pago (%s) excede el saldo pendiente (%s).',
-                Money::toString($amountMoney),
-                Money::toString($balanceDue),
-            ));
-        }
-
         return $this->entityManager->wrapInTransaction(function () use (
             $bill,
             $paymentMethod,
@@ -73,9 +65,23 @@ readonly class SupplierPaymentService
             $paidAt,
             $reference,
             $createdBy,
-            $balanceDue,
             $moneyAccountId,
         ): SupplierPayment {
+            // Lock the bill and re-read it: the balance checked here is the one a concurrent payment
+            // left, not the snapshot loaded before the transaction (G-01).
+            $this->entityManager->refresh($bill, LockMode::PESSIMISTIC_WRITE);
+            if ($bill->getStatus() === SupplierBill::VOID) {
+                throw new UnprocessableEntityHttpException('No se puede registrar un pago sobre una factura anulada.');
+            }
+            $balanceDue = Money::money($bill->getBalanceDue());
+            if ($amountMoney->isGreaterThan($balanceDue)) {
+                throw new UnprocessableEntityHttpException(sprintf(
+                    'El monto del pago (%s) excede el saldo pendiente (%s).',
+                    Money::toString($amountMoney),
+                    Money::toString($balanceDue),
+                ));
+            }
+
             $payment = new SupplierPayment()
                 ->setSupplierBill($bill)
                 ->setPaymentMethod($paymentMethod)
@@ -143,6 +149,13 @@ readonly class SupplierPaymentService
         }
 
         $this->entityManager->wrapInTransaction(function () use ($bill, $payment, $userId): void {
+            // Lock and re-read both rows so two reversals of one payment cannot both pass (G-01).
+            $this->entityManager->refresh($bill, LockMode::PESSIMISTIC_WRITE);
+            $this->entityManager->refresh($payment);
+            if ($payment->isReversed()) {
+                throw new UnprocessableEntityHttpException('Este pago ya fue reversado.');
+            }
+
             $amountMoney = Money::money($payment->getAmount());
             $newPaidTotal = Money::money($bill->getPaidTotal())->minus($amountMoney);
             $newBalanceDue = Money::money($bill->getBalanceDue())->plus($amountMoney);

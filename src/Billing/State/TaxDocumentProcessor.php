@@ -15,6 +15,7 @@ use App\Billing\Shared\Enum\CreditNoteReason;
 use App\Identity\Activity\SalesActivityInterface;
 use App\Identity\Auth\OperationalBranchGuard;
 use App\Identity\Entity\User;
+use App\Sales\Service\CreditNoteReceivableAdjuster;
 use App\Sales\State\SalesWriteGateway;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -45,6 +46,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         private CreditNoteLinePreparer $creditNoteLinePreparer,
         private Security $security,
         private SalesActivityInterface $activity,
+        private ?CreditNoteReceivableAdjuster $receivableAdjuster = null,
     ) {}
 
     /**
@@ -156,6 +158,7 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
             if ($isNew && $data->getReasonCode() !== null) {
                 $this->voidSaleIfCreditNoteAnnuls($data);
                 $this->creditNoteStockReverser->reverse($data);
+                $this->adjustReceivable($data);
             }
 
             $transactionConnection?->commit();
@@ -211,6 +214,24 @@ readonly class TaxDocumentProcessor implements ProcessorInterface
         } catch (\Throwable) {
             // V2 sync failure is non-fatal here; the ORM entity is already updated.
         }
+    }
+
+    /** A credit note lowers the credit sale's open balance; what was already paid becomes a saldo a favor (G-04). */
+    private function adjustReceivable(TaxDocument $creditNote): void
+    {
+        $sale = $creditNote->getSaleRecord();
+        $id = $creditNote->getId();
+        if ($this->receivableAdjuster === null || $sale === null || $id === null) {
+            return;
+        }
+
+        $this->receivableAdjuster->apply(
+            $sale,
+            $creditNote->getTotal(),
+            $id,
+            $creditNote->getFullNumber(),
+            new \DateTimeImmutable(),
+        );
     }
 
     private function currentUserId(): ?int

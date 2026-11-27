@@ -64,7 +64,7 @@ final class ApplyAdvanceServiceTest extends TestCase
                 ['entryId' => 12, 'remaining' => '250.00'],
             ]);
         $this->sales
-            ->method('findOpenReceivablesForCustomer')
+            ->method('lockOpenReceivablesForCustomer')
             ->willReturn([
                 $this->sale('s1', '200.00'),
                 $this->sale('s2', '150.00'),
@@ -103,7 +103,7 @@ final class ApplyAdvanceServiceTest extends TestCase
         $this->methodConfigured = false; // findOneBy -> null
         $this->entries->method('availableAdvance')->willReturn('500.00', '400.00');
         $this->entries->method('advancesWithRemaining')->willReturn([['entryId' => 1, 'remaining' => '500.00']]);
-        $this->sales->method('findOpenReceivablesForCustomer')->willReturn([$this->sale('s1', '100.00')]);
+        $this->sales->method('lockOpenReceivablesForCustomer')->willReturn([$this->sale('s1', '100.00')]);
 
         $this->service()->apply(9, '100.00', new DateTimeImmutable('2026-09-10'), []);
 
@@ -121,7 +121,7 @@ final class ApplyAdvanceServiceTest extends TestCase
     public function testNoOpenSalesIsRejected(): void
     {
         $this->entries->method('availableAdvance')->willReturn('500.00');
-        $this->sales->method('findOpenReceivablesForCustomer')->willReturn([]);
+        $this->sales->method('lockOpenReceivablesForCustomer')->willReturn([]);
 
         $this->expectException(UnprocessableEntityHttpException::class);
         $this->expectExceptionMessage('no tiene comprobantes pendientes');
@@ -133,7 +133,7 @@ final class ApplyAdvanceServiceTest extends TestCase
     {
         $this->entries->method('availableAdvance')->willReturn('500.00');
         $this->entries->method('advancesWithRemaining')->willReturn([['entryId' => 1, 'remaining' => '500.00']]);
-        $this->sales->method('findOpenReceivablesForCustomer')->willReturn([$this->sale('s1', '40.00')]);
+        $this->sales->method('lockOpenReceivablesForCustomer')->willReturn([$this->sale('s1', '40.00')]);
 
         $this->expectException(UnprocessableEntityHttpException::class);
         $this->service()->apply(9, '100.00', new DateTimeImmutable(), []);
