@@ -45,6 +45,22 @@ export function SaleCollectPaymentDialog({
       width={560}
       closeOnOutsideClick={false}
       closeOnEscape={!payment.isPending}
+      footer={
+        <>
+          <Button onClick={onClose} disabled={payment.isPending}>
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            form="sale-collect-payment-form"
+            variant="primary"
+            disabled={!method || payment.isPending}
+            loading={payment.isPending}
+          >
+            Confirmar pago
+          </Button>
+        </>
+      }
     >
       <p>
         {saleDocument(sale)} · Saldo: {saleMoney(sale.balanceDue, sale.currency)}
@@ -52,6 +68,7 @@ export function SaleCollectPaymentDialog({
       <p>El pago se aplica únicamente a esta venta.</p>
       <form
         className="sale-collect-form"
+        id="sale-collect-payment-form"
         onSubmit={(event) => {
           event.preventDefault();
           if (method && amount && !payment.isPending) payment.mutate();
@@ -98,19 +115,6 @@ export function SaleCollectPaymentDialog({
             cobras en efectivo.
           </p>
         )}
-        <div className="sale-detail__actions">
-          <Button onClick={onClose} disabled={payment.isPending}>
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={!method || payment.isPending}
-            loading={payment.isPending}
-          >
-            Confirmar pago
-          </Button>
-        </div>
       </form>
     </AppDialog>
   );

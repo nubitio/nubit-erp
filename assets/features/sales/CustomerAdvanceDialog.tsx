@@ -97,6 +97,32 @@ export const CustomerAdvanceDialog = ({
       }}
       width={560}
       closeOnOutsideClick={false}
+      footer={
+        applied ? (
+          <Button type="button" variant="primary" onClick={onDone}>
+            Listo
+          </Button>
+        ) : (
+          <>
+            <Button type="button" variant="secondary" onClick={onClose} disabled={isProcessing}>
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="customer-advance-form"
+              variant="primary"
+              loading={isProcessing}
+              data-testid="customer-advance-submit-btn"
+            >
+              {isProcessing
+                ? 'Procesando...'
+                : mode === 'receive'
+                  ? 'Registrar anticipo'
+                  : 'Aplicar anticipo'}
+            </Button>
+          </>
+        )
+      }
     >
       <div style={{ marginBottom: 12 }}>
         <h3 style={{ marginBottom: 4 }}>{customerName ?? 'Cliente'}</h3>
@@ -140,12 +166,10 @@ export const CustomerAdvanceDialog = ({
               </li>
             ))}
           </ul>
-          <Button type="button" variant="success" fullWidth onClick={onDone}>
-            Listo
-          </Button>
         </div>
       ) : (
         <form
+          id="customer-advance-form"
           style={{ width: '100%' }}
           onSubmit={(e) => {
             e.preventDefault();
@@ -215,19 +239,6 @@ export const CustomerAdvanceDialog = ({
             </p>
           )}
 
-          <Button
-            type="submit"
-            variant="success"
-            fullWidth
-            loading={isProcessing}
-            data-testid="customer-advance-submit-btn"
-          >
-            {isProcessing
-              ? 'Procesando...'
-              : mode === 'receive'
-                ? 'Registrar anticipo'
-                : 'Aplicar anticipo'}
-          </Button>
         </form>
       )}
     </AppDialog>

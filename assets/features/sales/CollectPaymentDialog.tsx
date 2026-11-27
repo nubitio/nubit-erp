@@ -96,6 +96,28 @@ export const CollectPaymentDialog = ({
       }}
       width={560}
       closeOnOutsideClick={false}
+      footer={
+        applied ? (
+          <Button type="button" variant="primary" onClick={onDone}>
+            Listo
+          </Button>
+        ) : (
+          <>
+            <Button type="button" variant="secondary" onClick={onClose} disabled={isProcessing}>
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="receivable-payment-form"
+              variant="primary"
+              loading={isProcessing}
+              data-testid="receivable-payment-submit-btn"
+            >
+              {isProcessing ? 'Procesando...' : 'Registrar pago'}
+            </Button>
+          </>
+        )
+      }
     >
       <div className="mb-3">
         <h3 style={{ marginBottom: 4 }}>{customerName ?? 'Cliente'}</h3>
@@ -119,12 +141,10 @@ export const CollectPaymentDialog = ({
               </li>
             ))}
           </ul>
-          <Button type="button" variant="success" fullWidth onClick={onDone}>
-            Listo
-          </Button>
         </div>
       ) : (
         <form
+          id="receivable-payment-form"
           style={{ width: '100%' }}
           onSubmit={(e) => {
             e.preventDefault();
@@ -184,15 +204,6 @@ export const CollectPaymentDialog = ({
             </FormField>
           </div>
 
-          <Button
-            type="submit"
-            variant="success"
-            fullWidth
-            loading={isProcessing}
-            data-testid="receivable-payment-submit-btn"
-          >
-            {isProcessing ? 'Procesando...' : 'Registrar pago'}
-          </Button>
         </form>
       )}
     </AppDialog>

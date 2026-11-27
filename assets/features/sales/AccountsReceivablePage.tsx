@@ -1,8 +1,7 @@
 import './AccountsReceivablePage.scss';
 import { useCallback, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { PageHeader, SelectField } from '@nubitio/ui';
-import { FinanceNavigation } from '@shared/ui/finance/FinanceNavigation';
+import { PageHeader, SelectField, Tabs } from '@nubitio/ui';
 import { getCoreApiBaseUrl } from '@nubitio/core';
 import { httpClient } from '@shared/api/HttpClient';
 import { hasPermission } from '@shared/permissions';
@@ -11,9 +10,13 @@ import { useSessionInfo } from '@shared/sessionInfo';
 import toast from '@shared/lib/SharedUtils';
 import { CollectPaymentDialog } from './CollectPaymentDialog';
 import { CustomerAdvanceDialog } from './CustomerAdvanceDialog';
-import { CustomerReceivableDrawer, type ReceivableCustomer } from './CustomerReceivableDrawer';
+import {
+  CustomerReceivableDetailView,
+  type ReceivableCustomer,
+} from './CustomerReceivableDetailView';
 import { CustomerReceivablesGrid } from './CustomerReceivablesGrid';
 import { ReceivableSummaryKpis } from './ReceivableSummaryKpis';
+import { ReceivableInvoicesGrid } from './ReceivableInvoicesGrid';
 
 const API = getCoreApiBaseUrl();
 
@@ -33,14 +36,14 @@ async function downloadCustomerStatement(id: number, branchId: string): Promise<
 }
 
 /**
- * Cuentas por cobrar, SMB-first: one list of debtors, one collection flow and a
- * per-customer drawer. The old Deudores/Comprobantes tabs and the per-invoice
- * collect + advance flows were collapsed into this screen (#409 redesign).
+ * Cuentas por cobrar: a compact worklist with a focused, full-page customer
+ * view. The customer context stays visible while reviewing open invoices.
  */
 export const AccountsReceivablePage = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<ReceivableCustomer | null>(null);
   const [collectCustomer, setCollectCustomer] = useState<ReceivableCustomer | null>(null);
   const [advanceCustomer, setAdvanceCustomer] = useState<ReceivableCustomer | null>(null);
+  const [receivableView, setReceivableView] = useState<'invoices' | 'customers'>('customers');
   const [version, setVersion] = useState(0);
   const canCollect = hasPermission('sales.collect');
 
@@ -70,54 +73,82 @@ export const AccountsReceivablePage = () => {
 
   return (
     <div id="wrapper" className="accounts-receivable-page">
-      <PageHeader
-        title="Cuentas por cobrar"
-        subtitle="Saldo pendiente de tus clientes y registro de pagos."
-      />
-      <FinanceNavigation />
-      {options.length > 0 && (
-        <SelectField
-          aria-label="Sucursales autorizadas para cuentas por cobrar"
-          value={reportBranch}
-          onChange={(event) => {
-            setSelectedCustomer(null);
-            setCollectCustomer(null);
-            setAdvanceCustomer(null);
-            setRequestedBranch(event.target.value);
+      {selectedCustomer ? (
+        <CustomerReceivableDetailView
+          key={`${selectedCustomer.id}-${reportBranch}-${version}`}
+          customer={selectedCustomer}
+          branchId={reportBranch}
+          onBack={() => setSelectedCustomer(null)}
+          onCollect={() => setCollectCustomer(selectedCustomer)}
+          onAdvance={() => setAdvanceCustomer(selectedCustomer)}
+          onDownloadStatement={() => {
+            downloadCustomerStatement(selectedCustomer.id, reportBranch).catch(() =>
+              toast('No se pudo descargar el estado de cuenta. Inténtalo de nuevo.', 'error'),
+            );
           }}
-        >
-          <option value="">Sucursal operativa</option>
-          {options.map((branch) => (
-            <option key={branch.id} value={branch.id}>
-              {branch.isActive ? branch.name : `${branch.name} (inactiva)`}
-            </option>
-          ))}
-        </SelectField>
+        />
+      ) : (
+        <>
+          <PageHeader
+            className="accounts-receivable-page__header"
+            title="Cuentas por cobrar"
+            subtitle="Seguimiento de comprobantes pendientes"
+            actions={
+              options.length > 0 ? (
+                <SelectField
+                  aria-label="Sucursal de cuentas por cobrar"
+                  value={reportBranch}
+                  onChange={(event) => {
+                    setSelectedCustomer(null);
+                    setCollectCustomer(null);
+                    setAdvanceCustomer(null);
+                    setRequestedBranch(event.target.value);
+                  }}
+                >
+                  <option value="">Sucursal operativa</option>
+                  {options.map((branch) => (
+                    <option key={branch.id} value={branch.id}>
+                      {branch.isActive ? branch.name : `${branch.name} (inactiva)`}
+                    </option>
+                  ))}
+                </SelectField>
+              ) : null
+            }
+          />
+          <ReceivableSummaryKpis refreshKey={version} branchId={reportBranch} />
+          <Tabs
+            className="accounts-receivable-page__tabs"
+            aria-label="Vista de cuentas por cobrar"
+            value={receivableView}
+            onChange={setReceivableView}
+            items={[
+              {
+                value: 'customers',
+                label: 'Por cliente',
+                content: (
+                  <CustomerReceivablesGrid
+                    key={reportBranch}
+                    branchId={reportBranch}
+                    refreshKey={version}
+                    onOpenDetail={setSelectedCustomer}
+                    onCollect={startCollection}
+                  />
+                ),
+              },
+              {
+                value: 'invoices',
+                label: 'Por comprobante',
+                content: (
+                  <ReceivableInvoicesGrid
+                    branchId={reportBranch}
+                    onCollected={refresh}
+                  />
+                ),
+              },
+            ]}
+          />
+        </>
       )}
-      <ReceivableSummaryKpis refreshKey={version} branchId={reportBranch} />
-      <CustomerReceivablesGrid
-        key={reportBranch}
-        branchId={reportBranch}
-        refreshKey={version}
-        onOpenDetail={setSelectedCustomer}
-        onCollect={startCollection}
-      />
-      <CustomerReceivableDrawer
-        customer={selectedCustomer}
-        branchId={reportBranch}
-        refreshKey={version}
-        onClose={() => setSelectedCustomer(null)}
-        onCollect={startCollection}
-        onAdvance={(customer) => {
-          setSelectedCustomer(null);
-          setAdvanceCustomer(customer);
-        }}
-        onDownloadStatement={(customerId) => {
-          downloadCustomerStatement(customerId, reportBranch).catch(() =>
-            toast('No se pudo descargar el estado de cuenta. Inténtalo de nuevo.', 'error'),
-          );
-        }}
-      />
       {collectCustomer && canCollect && !readOnly && (
         <CollectPaymentDialog
           key={`collect-${collectCustomer.id}-${version}`}
@@ -128,6 +159,7 @@ export const AccountsReceivablePage = () => {
           onClose={() => setCollectCustomer(null)}
           onDone={() => {
             setCollectCustomer(null);
+            setSelectedCustomer(null);
             refresh();
           }}
         />
@@ -141,6 +173,7 @@ export const AccountsReceivablePage = () => {
           onClose={() => setAdvanceCustomer(null)}
           onDone={() => {
             setAdvanceCustomer(null);
+            setSelectedCustomer(null);
             refresh();
           }}
         />

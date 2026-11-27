@@ -1,0 +1,334 @@
+.receivable-detail {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  padding: 0 var(--page-padding) var(--space-4);
+  color: var(--text-primary);
+
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 42px;
+    border-bottom: 1px solid var(--border-subtle);
+
+  }
+
+  &__context {
+    color: var(--text-tertiary, var(--text-secondary));
+    font-size: var(--font-size-sm);
+  }
+
+  &__back {
+    min-height: 30px;
+    padding: 0;
+    border-color: transparent;
+    background: transparent;
+    color: var(--accent-color);
+    text-decoration: none;
+
+    &:not(:disabled):hover,
+    &:not(:disabled):focus-visible {
+      border-color: transparent;
+      background: transparent;
+      color: var(--accent-hover);
+    }
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  &__identity {
+    min-width: 0;
+
+    h1 {
+      overflow: hidden;
+      margin: 0;
+      font-size: clamp(1.125rem, 1.6vw, 1.5rem);
+      font-weight: var(--font-weight-semibold);
+      line-height: 1.2;
+      text-overflow: ellipsis;
+    }
+
+    p {
+      margin: var(--space-1) 0 0;
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  &__more-trigger {
+    min-height: var(--control-height);
+    gap: var(--space-2);
+
+    > i {
+      font-size: var(--font-size-sm);
+    }
+  }
+
+  &__layout {
+    display: grid;
+    flex: 1 1 auto;
+    grid-template-columns: minmax(0, 1.7fr) minmax(260px, 0.8fr);
+    align-items: start;
+    gap: var(--space-4);
+    padding-top: var(--space-4);
+  }
+
+  &__side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  &__panel,
+  &__balance-card {
+    min-width: 0;
+    padding: var(--space-4);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--surface-1);
+  }
+
+  &__panel-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+
+    h2 {
+      margin: 0;
+      font-size: var(--font-size-md);
+      font-weight: 650;
+    }
+
+    p {
+      margin: var(--space-1) 0 0;
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+    }
+  }
+
+  &__count {
+    display: inline-flex;
+    min-width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  &__invoices,
+  &__payments {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  &__invoice {
+    padding: var(--space-3);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--surface-1);
+  }
+
+  &__invoice-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-2);
+
+    > div {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      gap: 3px;
+    }
+  }
+
+  &__invoice-number {
+    overflow: hidden;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__invoice-date {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  &__invoice-amounts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-subtle);
+
+    > span,
+    > strong {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      gap: 3px;
+      font-size: var(--font-size-sm);
+      font-weight: 600;
+    }
+
+    small {
+      color: var(--text-secondary);
+      font-size: var(--font-size-xs);
+      font-weight: 400;
+    }
+
+    > strong {
+      text-align: right;
+    }
+  }
+
+  &__invoice-action {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--space-2);
+  }
+
+  &__balance-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    border-color: color-mix(in srgb, var(--accent-color) 22%, var(--border-subtle));
+    background: color-mix(in srgb, var(--accent-color) 5%, var(--surface-1));
+
+    > span,
+    > small {
+      color: var(--text-secondary);
+      font-size: var(--font-size-sm);
+    }
+
+    > strong {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      line-height: 1.15;
+    }
+  }
+
+  &__payments li {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-2);
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--border-subtle);
+
+    &:last-child {
+      border-bottom: 0;
+    }
+
+    > div {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    span {
+      overflow: hidden;
+      color: var(--text-secondary);
+      font-size: var(--font-size-xs);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    > strong {
+      flex: 0 0 auto;
+      font-size: var(--font-size-sm);
+    }
+  }
+
+  &__empty-payments {
+    margin: 0;
+    padding: var(--space-3) 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+  }
+}
+
+@media (max-width: 767.98px) {
+  .receivable-detail {
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: var(--space-3);
+    padding-left: var(--space-3);
+
+    &__toolbar {
+      position: sticky;
+      z-index: 5;
+      top: 0;
+      min-height: 38px;
+      background: var(--surface-0);
+    }
+
+    &__context {
+      display: none;
+    }
+
+    &__header {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+    }
+
+    &__actions {
+      width: 100%;
+
+      > .nb-button {
+        flex: 1 1 auto;
+      }
+    }
+
+    &__layout {
+      grid-template-columns: minmax(0, 1fr);
+      gap: var(--space-3);
+      padding-top: var(--space-3);
+    }
+
+    &__panel,
+    &__balance-card {
+      padding: var(--space-3);
+    }
+  }
+}
+
+@media (max-width: 380px) {
+  .receivable-detail__invoice-amounts {
+    gap: var(--space-1);
+
+    > span,
+    > strong {
+      font-size: var(--font-size-xs);
+    }
+  }
+}

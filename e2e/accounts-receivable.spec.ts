@@ -157,12 +157,13 @@ test('filtra la deuda por cliente, registra un abono y muestra el historial', as
     await expect(updatedRow).toContainText(/5[.,]00/, { timeout: 15000 });
 
     await updatedRow.getByRole('button', { name: customerName }).click();
-    const drawer = page.getByRole('dialog', { name: customerName });
-    await expect(drawer).toBeVisible();
-    await expect(drawer.getByText('Abonos recientes')).toBeVisible({ timeout: 15000 });
-    await expect(drawer.getByText('OP-E2E-001')).toBeVisible();
-    await drawer.getByRole('button', { name: 'Cerrar' }).click();
-    await expect(drawer).toBeHidden();
+    await expect(page.getByRole('heading', { name: customerName })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Pagos recientes' })).toBeVisible({
+      timeout: 15000,
+    });
+    await expect(page.getByText('OP-E2E-001')).toBeVisible();
+    await page.getByTestId('receivable-back').click();
+    await expect(page.getByRole('table', { name: 'Deudores' })).toBeVisible();
   });
 
   await test.step('saldar la cuenta y quitarla de la lista', async () => {
