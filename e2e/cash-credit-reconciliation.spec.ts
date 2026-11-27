@@ -3,7 +3,7 @@ import { strFromU8, unzipSync } from 'fflate';
 import { parseApiCollection } from './helpers/api';
 import { login } from './helpers/auth';
 import { ensureOpenCashSession } from './helpers/cashbox';
-import { loginViaApi } from './helpers/fiscal';
+import { loginAtSeedBranchViaApi } from './helpers/fiscal';
 import { E2E_SEED } from './support/seedConstants';
 import { getE2EBaseUrl, getE2ESeed } from './support/e2eSeed';
 
@@ -50,7 +50,7 @@ test('María: crédito 13.88, abono 3.88, Excel y cierre coinciden sin sumar deu
   const seed = await getE2ESeed();
   await login(page, seed.username, seed.password);
   const sessionId = await ensureOpenCashSession(page, BASE_URL);
-  const auth = await loginViaApi(request, BASE_URL, seed.username, seed.password);
+  const auth = await loginAtSeedBranchViaApi(request, BASE_URL, seed.username, seed.password);
   const summaryResponse = await page.request.get(
     `${BASE_URL}/api/cash-sessions/${sessionId}/summary`,
   );

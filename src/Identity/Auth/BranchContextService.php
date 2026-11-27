@@ -39,9 +39,7 @@ final readonly class BranchContextService implements BranchContextServiceInterfa
 
         $user = $token->getUser();
 
-        return $user instanceof User
-            ? $this->branches->resolve($user, $payload['branchId'] ?? null)?->getId()
-            : null;
+        return $user instanceof User ? $this->branches->resolve($user, $payload['branchId'] ?? null)?->getId() : null;
     }
 
     /**

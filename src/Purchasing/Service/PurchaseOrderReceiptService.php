@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Purchasing\Service;
 
 use App\Purchasing\Entity\Purchase;
-use App\Purchasing\Entity\PurchaseOrder;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Doctrine\ORM\EntityManagerInterface;
@@ -32,10 +31,7 @@ readonly class PurchaseOrderReceiptService
 
     public function resolveReceiptLines(Purchase $purchase): void
     {
-        $orderLines = [];
-        foreach ($purchase->getPurchaseOrder()?->getItems() ?? [] as $orderItem) {
-            $orderLines[$orderItem->getId()] = $orderItem;
-        }
+        $orderLines = PurchaseOrderReceiptLines::index($purchase);
         foreach ($purchase->getItems() as $item) {
             $id = $item->getPurchaseOrderItemId() ?? $item->getPurchaseOrderItem()?->getId();
             if ($id === null) {
@@ -68,7 +64,7 @@ readonly class PurchaseOrderReceiptService
 
         $purchaseOrder = $purchase->getPurchaseOrder();
         if ($purchaseOrder !== null) {
-            $purchaseOrder->setStatus($this->deriveStatus($purchaseOrder));
+            $purchaseOrder->setStatus(PurchaseOrderReceiptStatus::derive($purchaseOrder));
         }
 
         $this->entityManager->flush();
@@ -94,38 +90,9 @@ readonly class PurchaseOrderReceiptService
 
         $purchaseOrder = $purchase->getPurchaseOrder();
         if ($purchaseOrder !== null) {
-            $purchaseOrder->setStatus($this->deriveStatus($purchaseOrder));
+            $purchaseOrder->setStatus(PurchaseOrderReceiptStatus::derive($purchaseOrder));
         }
 
         $this->entityManager->flush();
-    }
-
-    private function deriveStatus(PurchaseOrder $purchaseOrder): string
-    {
-        $anyReceived = false;
-        $allReceived = true;
-
-        foreach ($purchaseOrder->getItems() as $item) {
-            $received = BigDecimal::of($item->getReceivedQty());
-            $ordered = BigDecimal::of($item->getOrderedQty());
-
-            if ($received->isGreaterThan(BigDecimal::zero())) {
-                $anyReceived = true;
-            }
-            if ($received->isLessThan($ordered)) {
-                $allReceived = false;
-            }
-        }
-
-        if ($allReceived && $anyReceived) {
-            return PurchaseOrder::STATUS_RECEIVED;
-        }
-        if ($anyReceived) {
-            return PurchaseOrder::STATUS_PARTIALLY_RECEIVED;
-        }
-
-        // Nothing received (e.g. after a full revert) — fall back to 'sent'
-        // rather than leaving a receipt-driven status with zero receipts.
-        return PurchaseOrder::STATUS_SENT;
     }
 }

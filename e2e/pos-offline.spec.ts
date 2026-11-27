@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, rename, writeFile } from 'node:fs/promises';
 import { expect, test, type Page } from '@playwright/test';
 import { login } from './helpers/auth';
 import { ensureOpenCashSession } from './helpers/cashbox';
@@ -8,6 +8,14 @@ import { E2E_SEED } from './support/seedConstants';
 import updatePolicy from '../config/app-update.json' with { type: 'json' };
 
 const BASE_URL = getE2EBaseUrl();
+const SW_PATH = 'public/sw.js';
+
+async function publishServiceWorker(contents: string) {
+  // A browser update check can read the script while the test publishes it.
+  const stagingPath = `${SW_PATH}.e2e-${process.pid}`;
+  await writeFile(stagingPath, contents);
+  await rename(stagingPath, SW_PATH);
+}
 
 test.use({
   serviceWorkers: 'allow',
@@ -78,8 +86,7 @@ test('Una venta offline sobrevive a recarga y actualización PWA y se sincroniza
 }) => {
   test.setTimeout(180_000);
   const seed = await getE2ESeed();
-  const swPath = 'public/sw.js';
-  const originalWorker = await readFile(swPath, 'utf8');
+  const originalWorker = await readFile(SW_PATH, 'utf8');
   const errors: string[] = [];
   const attempts: { key: string; serverId: string }[] = [];
   let backendAvailable = false;
@@ -183,7 +190,7 @@ test('Una venta offline sobrevive a recarga y actualización PWA y se sincroniza
     });
     await context.setOffline(false);
     await expect(page.getByLabel('Sin conexión', { exact: true })).toBeVisible();
-    await writeFile(swPath, `${originalWorker}\n// E2E worker revision ${Date.now()}\n`);
+    await publishServiceWorker(`${originalWorker}\n// E2E worker revision ${Date.now()}\n`);
     await page.evaluate(async () => {
       const registration = await navigator.serviceWorker.ready;
       await registration.update();
@@ -204,11 +211,18 @@ test('Una venta offline sobrevive a recarga y actualización PWA y se sincroniza
     await expect(page.getByRole('button', { name: /Ventas pendientes: 2/ })).toBeVisible({
       timeout: 30_000,
     });
-    expect((await readOfflineState(page))?.sales.find((row) => row.id === sale.id)).toMatchObject({
-      id: sale.id,
-      idempotencyKey: sale.idempotencyKey,
-      status: 'pending',
-    });
+    // A retry can claim a queued sale while the mocked API still rejects it.
+    const afterTakeover = await readOfflineState(page);
+    expect(afterTakeover?.sales).toHaveLength(2);
+    for (const queuedSale of [sale, secondSale]) {
+      const persisted = afterTakeover?.sales.find((row) => row.id === queuedSale.id);
+      expect(persisted).toMatchObject({
+        id: queuedSale.id,
+        idempotencyKey: queuedSale.idempotencyKey,
+        status: expect.stringMatching(/^(pending|syncing)$/),
+      });
+      expect(persisted?.serverSaleId).toBeUndefined();
+    }
 
     // Keep the interception installed as health recovers, so an in-flight
     // retry cannot reach the server without being counted.
@@ -259,7 +273,7 @@ test('Una venta offline sobrevive a recarga y actualización PWA y se sincroniza
       contentType: 'application/json',
     });
     await context.setOffline(false);
-    await writeFile(swPath, originalWorker);
+    await publishServiceWorker(originalWorker);
   }
 });
 

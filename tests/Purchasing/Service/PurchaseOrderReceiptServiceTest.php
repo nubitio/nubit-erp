@@ -45,9 +45,11 @@ final class PurchaseOrderReceiptServiceTest extends TestCase
         $line = $order->getItems()->first();
         self::assertInstanceOf(PurchaseOrderItem::class, $line);
         new \ReflectionProperty(PurchaseOrderItem::class, 'id')->setValue($line, 42);
-        $item = (new PurchaseItem())->setQty('1.000');
+        $item = new PurchaseItem()->setQty('1.000');
         $item->setPurchaseOrderItemId(42);
-        $purchase = (new Purchase())->setPurchaseOrder($order)->addItem($item);
+        $purchase = new Purchase()
+            ->setPurchaseOrder($order)
+            ->addItem($item);
         $service = new PurchaseOrderReceiptService($this->createStub(EntityManagerInterface::class));
 
         $service->resolveReceiptLines($purchase);

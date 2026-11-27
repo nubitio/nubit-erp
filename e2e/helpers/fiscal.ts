@@ -44,6 +44,24 @@ export async function loginViaApi(
   return selectBranchViaApi(request, baseUrl, session, branch.id);
 }
 
+export async function loginAtSeedBranchViaApi(
+  request: APIRequestContext,
+  baseUrl: string,
+  username: string,
+  password: string,
+): Promise<AuthSession> {
+  const session = await loginViaApi(request, baseUrl, username, password);
+  const response = await request.get(`${baseUrl}/api/auth/operating-branches`, {
+    headers: session.headers,
+  });
+  expect(response.ok(), 'cargar sucursales operativas').toBeTruthy();
+  const branches = (await response.json()) as { id: string; name: string }[];
+  const branch = branches.find((option) => option.name === E2E_SEED.branchName);
+  if (!branch) throw new Error(`Falta la sucursal E2E ${E2E_SEED.branchName}`);
+
+  return selectBranchViaApi(request, baseUrl, session, branch.id);
+}
+
 export async function createInvoiceForSale(
   request: APIRequestContext,
   baseUrl: string,

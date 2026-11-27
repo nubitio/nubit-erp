@@ -54,8 +54,6 @@ final readonly class PurchasingBranchScope
         $this->entityManager->getFilters()->enable('branch_filter')->setParameterList('branchIds', [$branchId]);
     }
 
-    }
-
     public function authorize(string $branchId): void
     {
         $user = $this->security->getUser();

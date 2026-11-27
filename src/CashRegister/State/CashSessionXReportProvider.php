@@ -12,7 +12,6 @@ use App\CashRegister\Service\SessionSalesBreakdown;
 use App\Identity\Auth\BranchContextServiceInterface;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
-use App\Identity\Auth\BranchContextServiceInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Override;

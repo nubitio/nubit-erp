@@ -8,7 +8,6 @@ use ApiPlatform\Metadata\DeleteOperationInterface;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Accounting\Message\EconomicEvent;
-use App\CashRegister\Entity\CashRegister;
 use App\Catalog\Entity\PaymentMethod;
 use App\Catalog\Entity\Product;
 use App\Contacts\Entity\Customer;
