@@ -15,7 +15,8 @@ import { Badge, Button, Stack, Text } from '@nubitio/ui';
 import { moneyCell } from '@shared/ui/crudFormatters';
 import { hasPermission } from '@shared/permissions';
 import { saleEndpoints } from './api/saleEndpoints';
-import type { ReceivableCustomer } from './CustomerReceivableDrawer';
+import type { ReceivableCustomer } from './CustomerReceivableDetailView';
+import { ReceivableGridFrame } from './ReceivableGridFrame';
 
 export interface CustomerReceivableRecord extends DataRecord {
   id: string;
@@ -150,14 +151,15 @@ export const CustomerReceivablesGrid = ({
         .name('pendingCount')
         .label('Comprobantes')
         .align('right')
-        .width(110)
+        .width(76)
         .filterable(false)
         .build(),
       textField()
         .name('_collect')
         .label('Acciones')
         .hideable(false)
-        .width(110)
+        .width(76)
+        .align('right')
         .filterable(false)
         .sortable(false)
         .formatter((cell: GridCellContext) => {
@@ -165,7 +167,7 @@ export const CustomerReceivablesGrid = ({
           if (!row || !canCollect) return null;
           return (
             <span className="owner-row-buttons" onClick={(event) => event.stopPropagation()}>
-              <Button size="sm" variant="primary" onClick={() => onCollect(toCustomer(row))}>
+              <Button size="sm" variant="secondary" onClick={() => onCollect(toCustomer(row))}>
                 Cobrar
               </Button>
             </span>
@@ -176,27 +178,48 @@ export const CustomerReceivablesGrid = ({
     [canCollect, onCollect, onOpenDetail],
   );
 
+  const detailFields = useMemo(
+    () => [
+      identityField().visible(false).visibleOnForm(false).build(),
+      textField().name('invoiceFullNumber').label('Comprobante').build(),
+      dateField().name('dueDate').label('Vencimiento').build(),
+      currencyField()
+        .name('balanceDue')
+        .label('Saldo pendiente')
+        .align('right')
+        .formatter(moneyCell)
+        .build(),
+    ],
+    [],
+  );
+  const detailQuery = branchId ? `?branchId=${encodeURIComponent(branchId)}` : '';
+
   return (
-    <DataGridView
-      id="accounts-receivable-debtors"
-      ref={gridRef}
-      title="Deudores"
-      url={saleEndpoints.receivableCustomers(branchId)}
-      fields={fields}
-      adapter={HydraAdapter}
-      appearance="page"
-      filterRow
-      filterToolbarFields={['customerName']}
-      allowAdd={false}
-      allowEdit={false}
-      allowDelete={false}
-      sort={[{ selector: 'totalBalance', desc: true }]}
-      emptyState={{
-        title: 'Nadie te debe en este momento',
-        description:
-          'En cuanto un cliente tenga un saldo pendiente, aparecerá aquí con su deuda total.',
-        icon: 'hand-coins',
-      }}
-    />
+    <ReceivableGridFrame gridRef={gridRef} className="accounts-receivable-page__customer-grid">
+      <DataGridView
+        id="accounts-receivable-debtors"
+        ref={gridRef}
+        title="Por cliente"
+        url={saleEndpoints.receivableCustomers(branchId)}
+        fields={fields}
+        detailUrl={`${saleEndpoints.receivableCustomers()}/{id}/invoices${detailQuery}`}
+        detailFields={detailFields}
+        adapter={HydraAdapter}
+        appearance="page"
+        toolbarVisible={false}
+        filterRow
+        filterToolbarFields={['customerName']}
+        allowAdd={false}
+        allowEdit={false}
+        allowDelete={false}
+        sort={[{ selector: 'totalBalance', desc: true }]}
+        emptyState={{
+          title: 'Nadie te debe en este momento',
+          description:
+            'En cuanto un cliente tenga un saldo pendiente, aparecerá aquí con su deuda total.',
+          icon: 'hand-coins',
+        }}
+      />
+    </ReceivableGridFrame>
   );
 };

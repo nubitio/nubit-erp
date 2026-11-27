@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { Alert, Button, KpiMetricRow } from '@nubitio/ui';
+import { Alert, Button } from '@nubitio/ui';
 import { httpClient } from '@shared/api/HttpClient';
 import { formatMoney } from '@shared/lib/displayFormat';
 import { saleEndpoints } from './api/saleEndpoints';
 import { receivableAging, type ReceivableSummary } from './receivableAging';
+import './AccountsReceivablePage.scss';
 
 async function fetchReceivableSummary(branchId?: string): Promise<ReceivableSummary> {
   const response = await httpClient.get<ReceivableSummary>(
@@ -28,8 +29,6 @@ export const ReceivableSummaryKpis = ({
     retry: false,
   });
   const buckets = data ? receivableAging(data) : [];
-  const total = buckets.reduce((sum, bucket) => sum + Number(bucket.amount), 0);
-
   return (
     <section
       className="accounts-receivable-page__summary"
@@ -48,40 +47,36 @@ export const ReceivableSummaryKpis = ({
           </Button>
         </Alert>
       ) : (
-        <>
-          <p className="accounts-receivable-page__balance" aria-live="polite">
-            {data
-              ? `${formatMoney(data.totalBalance, data.currency)} pendientes de ${data.debtorCount} ${data.debtorCount === 1 ? 'cliente' : 'clientes'}`
-              : 'Cargando resumen…'}
-          </p>
-          <KpiMetricRow
-            testId="accounts-receivable-kpis"
-            layout="cards"
-            loading={isLoading}
-            items={
-              data
-                ? buckets.map((bucket) => ({
-                    label: bucket.label,
-                    value: formatMoney(bucket.amount, data.currency),
-                    tone: bucket.tone,
-                  }))
-                : ['Al día', 'Vencido 1–30 días', 'Vencido 31–60 días', 'Más de 60 días'].map(
-                    (label) => ({ label, value: '—' }),
-                  )
-            }
-          />
-          {data && total > 0 && (
+        <div className="accounts-receivable-page__summary-content" aria-live="polite">
+          <div className="accounts-receivable-page__total">
+            <span>Saldo total por cobrar</span>
+            <strong>{data ? formatMoney(data.totalBalance, data.currency) : '—'}</strong>
+            <small>
+              {isLoading
+                ? 'Cargando clientes…'
+                : `${data?.debtorCount ?? 0} ${data?.debtorCount === 1 ? 'cliente' : 'clientes'}`}
+            </small>
+          </div>
+          <div className="accounts-receivable-page__aging">
             <div className="accounts-receivable-page__aging-bar" aria-hidden="true">
               {buckets.map((bucket, index) => (
                 <span
                   key={bucket.label}
                   data-bucket={index}
-                  style={{ flexGrow: Number(bucket.amount) / total }}
+                  style={{ flexGrow: Number(bucket.amount) || 0 }}
                 />
               ))}
             </div>
-          )}
-        </>
+            <div className="accounts-receivable-page__aging-values">
+              {buckets.map((bucket, index) => (
+                <div key={bucket.label} data-bucket={index}>
+                  <span>{['Al día', '1–30 días', '31–60 días', '+60 días'][index]}</span>
+                  <strong>{data ? formatMoney(bucket.amount, data.currency) : '—'}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );

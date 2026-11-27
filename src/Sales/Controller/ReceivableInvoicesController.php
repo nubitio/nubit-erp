@@ -26,4 +26,20 @@ final readonly class ReceivableInvoicesController
 
         return new JsonResponse($this->sales->openReceivableDetails($branchId, $customerId));
     }
+
+    #[Route('/api/sales/reports/receivable-invoices', methods: ['GET'])]
+    #[IsGranted('perm:sales.view')]
+    public function list(Request $request): JsonResponse
+    {
+        $branchId = $this->scope->requireBranchId($request->query->getString('branchId') ?: null);
+
+        $page = max(1, $request->query->getInt('page', 1));
+        $perPage = max(1, min(200, $request->query->getInt('itemsPerPage', 20)));
+        $invoices = $this->sales->listOpenReceivables($branchId, $page, $perPage);
+
+        return new JsonResponse([
+            'hydra:member' => $invoices,
+            'hydra:totalItems' => $this->sales->countOpenReceivables($branchId),
+        ]);
+    }
 }

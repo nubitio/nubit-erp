@@ -167,6 +167,46 @@ class SaleRecordRepository extends ServiceEntityRepository
         }, array_values($invoices));
     }
 
+    /**
+     * Open receivable invoices for a branch, ordered by oldest due date first.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function listOpenReceivables(string $branchId, int $page = 1, int $perPage = 20): array
+    {
+        return $this
+            ->receivablesQuery($branchId)
+            ->select(
+                's.id',
+                's.customer_id AS customerId',
+                'c.razon_social AS customerName',
+                's.issued_date AS issuedDate',
+                's.due_date AS dueDate',
+                's.currency',
+                's.status',
+                's.grand_total AS grandTotal',
+                's.subtotal',
+                's.discount_total AS discountTotal',
+                's.tax_total AS taxTotal',
+                's.paid_total AS paidTotal',
+                's.change_total AS changeTotal',
+                's.balance_due AS balanceDue',
+            )
+            ->addSelect("NULLIF(CONCAT_WS('-', NULLIF(s.series, ''), NULLIF(s.number, '')), '') AS invoiceFullNumber")
+            ->innerJoin('s', 'cliente', 'c', 'c.id = s.customer_id')
+            ->orderBy('s.due_date', 'ASC')
+            ->addOrderBy('s.issued_date', 'ASC')
+            ->addOrderBy('s.id', 'ASC')
+            ->setFirstResult((max(1, $page) - 1) * max(1, $perPage))
+            ->setMaxResults(max(1, $perPage))
+            ->fetchAllAssociative();
+    }
+
+    public function countOpenReceivables(string $branchId): int
+    {
+        return (int) $this->receivablesQuery($branchId)->select('COUNT(s.id)')->fetchOne();
+    }
+
     private function receivablesQuery(string $branchId): QueryBuilder
     {
         return $this

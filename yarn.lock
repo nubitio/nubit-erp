@@ -1873,40 +1873,40 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nubitio/admin@npm:2.6.2, @nubitio/admin@npm:^2.6.2":
-  version: 2.6.2
-  resolution: "@nubitio/admin@npm:2.6.2"
+"@nubitio/admin@npm:2.6.3, @nubitio/admin@npm:^2.6.3":
+  version: 2.6.3
+  resolution: "@nubitio/admin@npm:2.6.3"
   peerDependencies:
-    "@nubitio/core": ^2.6.2
-    "@nubitio/crud": ^2.6.2
-    "@nubitio/hydra": ^2.6.2
-    "@nubitio/ui": ^2.6.2
+    "@nubitio/core": ^2.6.3
+    "@nubitio/crud": ^2.6.3
+    "@nubitio/hydra": ^2.6.3
+    "@nubitio/ui": ^2.6.3
     "@tanstack/react-query": ^5.0.0
     react: ^18.2.0 || ^19.0.0
     react-dom: ^18.2.0 || ^19.0.0
     react-router-dom: ^6.0.0 || ^7.0.0
-  checksum: 10c0/45c9408fb92d53b21e377df58304a0851bd577aeccf5b081141c86651494a97f3b8cf6dee0f8b8399a7b2f4ee2b188204c06546b9ea27f845dce66149e2a9653
+  checksum: 10c0/118de45f2098923e027bdf4358b1a5fe7a388710a6789df92fea9806501d3144252702490566bace4770ec90cc02634c484014ae199a8b269ace30a5815f4b46
   languageName: node
   linkType: hard
 
-"@nubitio/core@npm:2.6.2, @nubitio/core@npm:^2.6.2":
-  version: 2.6.2
-  resolution: "@nubitio/core@npm:2.6.2"
+"@nubitio/core@npm:2.6.3, @nubitio/core@npm:^2.6.3":
+  version: 2.6.3
+  resolution: "@nubitio/core@npm:2.6.3"
   peerDependencies:
     i18next: ^23.0.0 || ^27.0.0
     react: ^18.2.0 || ^19.0.0
     react-dom: ^18.2.0 || ^19.0.0
     react-i18next: ^14.0.0 || ^15.0.0 || ^18.0.0
-  checksum: 10c0/87483e583084e9e57ef69e58182962d8527467b32a7deb95f09980651edda503bcb1f44aebd6f254bab030904c91b5bc1dd55f1069c62e23b3443507c3be8870
+  checksum: 10c0/8e8da4612b73054dcb8f6f1b078d68327d4bb1ac8af36bd2fc2e80d26396ea69df0409d96045d92d4ea23eef6bcfd3af7ab5b62503c7ddccaec4e8aaa51add88
   languageName: node
   linkType: hard
 
-"@nubitio/crud@npm:2.6.2, @nubitio/crud@npm:^2.6.2":
-  version: 2.6.2
-  resolution: "@nubitio/crud@npm:2.6.2"
+"@nubitio/crud@npm:2.6.3, @nubitio/crud@npm:^2.6.3":
+  version: 2.6.3
+  resolution: "@nubitio/crud@npm:2.6.3"
   peerDependencies:
-    "@nubitio/core": ^2.6.2
-    "@nubitio/ui": ^2.6.2
+    "@nubitio/core": ^2.6.3
+    "@nubitio/ui": ^2.6.3
     "@tanstack/react-query": ^5.0.0
     "@tiptap/extension-link": ^3.0.0
     "@tiptap/react": ^3.0.0
@@ -1923,16 +1923,16 @@ __metadata:
       optional: true
     "@tiptap/starter-kit":
       optional: true
-  checksum: 10c0/c8f2d85ee9e0018e960967e9cad2d7951e6e4b3daf5980ede24574c647d71440c3bffd73bb18291a170667be7aea3f6313ebee2cba0b49617653296997b52496
+  checksum: 10c0/7c1acd205c077d9b243260307614bcd627462e185155a4d9ff8b1020ba3fd8758ea364a991589299600ec3ceaaeb8e1231cf5a3b9154e27540521a5721c5330c
   languageName: node
   linkType: hard
 
-"@nubitio/dashboard@npm:^2.6.2":
-  version: 2.6.2
-  resolution: "@nubitio/dashboard@npm:2.6.2"
+"@nubitio/dashboard@npm:^2.6.3":
+  version: 2.6.3
+  resolution: "@nubitio/dashboard@npm:2.6.3"
   peerDependencies:
-    "@nubitio/core": ^2.6.2
-    "@nubitio/ui": ^2.6.2
+    "@nubitio/core": ^2.6.3
+    "@nubitio/ui": ^2.6.3
     "@tanstack/react-query": ^5.0.0
     react: ^18.2.0 || ^19.0.0
     react-dom: ^18.2.0 || ^19.0.0
@@ -1941,35 +1941,35 @@ __metadata:
   peerDependenciesMeta:
     recharts:
       optional: true
-  checksum: 10c0/48b45ddffc8f726148a8cff1fb756bd7e333be2f9831568b152c884b3c116224d26e6e2e12eb0ef5911b71c4e971c0799b7ab692d8aa5d945dafd4fc6f479a5b
+  checksum: 10c0/6c8765d9ad0fce78eb098efb0e3000593a0ba1d547c9fda3a016a8b041a8ad00656ae0510f99691e0d08b8ee398fba5e1c83ccd2319c201698e4d2b757a28291
   languageName: node
   linkType: hard
 
-"@nubitio/hydra@npm:2.6.2, @nubitio/hydra@npm:^2.6.2":
-  version: 2.6.2
-  resolution: "@nubitio/hydra@npm:2.6.2"
+"@nubitio/hydra@npm:2.6.3, @nubitio/hydra@npm:^2.6.3":
+  version: 2.6.3
+  resolution: "@nubitio/hydra@npm:2.6.3"
   peerDependencies:
-    "@nubitio/core": ^2.6.2
-    "@nubitio/crud": ^2.6.2
+    "@nubitio/core": ^2.6.3
+    "@nubitio/crud": ^2.6.3
     "@tanstack/react-query": ^5.0.0
     i18next: ^23.0.0 || ^27.0.0
     react: ^18.2.0 || ^19.0.0
     react-dom: ^18.2.0 || ^19.0.0
     react-i18next: ^14.0.0 || ^15.0.0 || ^18.0.0
-  checksum: 10c0/21d2049e68faa942a68ebd9d23e6fa0bf76cbd7ed883c5030fac2fa25e6ca4a133e7750cd150f9038bb5ea302a2b0ab40f4018d14234a4233c4df88674bcb114
+  checksum: 10c0/3d90bf704efe1fb0e8f58e3f77dffa26b4a475b29795838edd09b07364fd18f0d415ab2ec74fa95d787fd4fe499f71036ef9189ff7b6c62e47647d31cd614eda
   languageName: node
   linkType: hard
 
-"@nubitio/react-admin@npm:2.6.2":
-  version: 2.6.2
-  resolution: "@nubitio/react-admin@npm:2.6.2"
+"@nubitio/react-admin@npm:2.6.3":
+  version: 2.6.3
+  resolution: "@nubitio/react-admin@npm:2.6.3"
   dependencies:
-    "@nubitio/admin": "npm:^2.6.2"
-    "@nubitio/core": "npm:^2.6.2"
-    "@nubitio/crud": "npm:^2.6.2"
-    "@nubitio/dashboard": "npm:^2.6.2"
-    "@nubitio/hydra": "npm:^2.6.2"
-    "@nubitio/ui": "npm:^2.6.2"
+    "@nubitio/admin": "npm:^2.6.3"
+    "@nubitio/core": "npm:^2.6.3"
+    "@nubitio/crud": "npm:^2.6.3"
+    "@nubitio/dashboard": "npm:^2.6.3"
+    "@nubitio/hydra": "npm:^2.6.3"
+    "@nubitio/ui": "npm:^2.6.3"
   peerDependencies:
     "@tanstack/react-query": ^5.0.0
     i18next: ^23.0.0 || ^27.0.0
@@ -1977,13 +1977,13 @@ __metadata:
     react-dom: ^18.2.0 || ^19.0.0
     react-i18next: ^14.0.0 || ^15.0.0 || ^18.0.0
     react-router-dom: ^6.0.0 || ^7.0.0
-  checksum: 10c0/97e80995037978233bfad1c8cf5af3a3322b9576d298882ea0358f19ed4e47cf9a17a0061e943ecba40c9a4596512db69016e1193d8589d64806921290a765bd
+  checksum: 10c0/8a088af7dcfadad5cef0a01804903cfa820d3ddab854aa8a40afa4e7581ce709f7782b8beceff1e6e813742b79d27f7010a8b793ff52003bcec98f4e57f6571c
   languageName: node
   linkType: hard
 
-"@nubitio/ui@npm:2.6.2, @nubitio/ui@npm:^2.6.2":
-  version: 2.6.2
-  resolution: "@nubitio/ui@npm:2.6.2"
+"@nubitio/ui@npm:2.6.3, @nubitio/ui@npm:^2.6.3":
+  version: 2.6.3
+  resolution: "@nubitio/ui@npm:2.6.3"
   dependencies:
     "@base-ui/react": "npm:^1.9.0"
     "@internationalized/date": "npm:^3.12.4"
@@ -1992,7 +1992,7 @@ __metadata:
   peerDependencies:
     react: ^18.2.0 || ^19.0.0
     react-dom: ^18.2.0 || ^19.0.0
-  checksum: 10c0/c1cef896c507d8c949c5a573957c41d9f290cc71d048baf97a8f9a643f1dfdc077e94465f72bc57da3f5d18d81f09749b7e5a6b86855333a799bbf69f5311cde
+  checksum: 10c0/f3b28429312edf1d974f0f10866603c452f2c9010bb1f46385556c4cfba229f4a1b3544e3ce5744737ebe861b6c0352232f409fa631fc9fa68af1e45611eae60
   languageName: node
   linkType: hard
 
@@ -4844,12 +4844,12 @@ __metadata:
     "@fontsource/inter": "npm:^5.3.0"
     "@fontsource/lexend": "npm:^5.3.0"
     "@fontsource/syne": "npm:^5.3.0"
-    "@nubitio/admin": "npm:2.6.2"
-    "@nubitio/core": "npm:2.6.2"
-    "@nubitio/crud": "npm:2.6.2"
-    "@nubitio/hydra": "npm:2.6.2"
-    "@nubitio/react-admin": "npm:2.6.2"
-    "@nubitio/ui": "npm:2.6.2"
+    "@nubitio/admin": "npm:2.6.3"
+    "@nubitio/core": "npm:2.6.3"
+    "@nubitio/crud": "npm:2.6.3"
+    "@nubitio/hydra": "npm:2.6.3"
+    "@nubitio/react-admin": "npm:2.6.3"
+    "@nubitio/ui": "npm:2.6.3"
     "@phosphor-icons/web": "npm:^2.1.2"
     "@playwright/test": "npm:^1.65.1"
     "@rollup/rollup-linux-arm64-gnu": "npm:4.61.1"
