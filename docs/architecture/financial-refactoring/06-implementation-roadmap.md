@@ -8,17 +8,17 @@ Fase 0 implementada en el árbol de trabajo (sin commit). Verificado: 618 prueba
 
 | Tarea | Estado | Notas |
 | --- | --- | --- |
-| T0.1 locks en cobros | Hecho | `lockOpenReceivablesForCustomer` (FOR UPDATE + refresh), `refresh(PESSIMISTIC_WRITE)` en cobro individual; `ApplyAdvanceService` ahora transaccional con candado por cliente (`CustomerAccountLock`). **Sin prueba de concurrencia real** (ver T0.11) |
+| T0.1 locks en cobros | Hecho | `lockOpenReceivablesForCustomer` (FOR UPDATE + refresh), `refresh(PESSIMISTIC_WRITE)` en cobro individual; `ApplyAdvanceService` ahora transaccional con candado por cliente (`CustomerAccountLock`). verificado a nivel de bloqueo en T0.11 |
 | T0.2 locks en AP | Hecho | pago y reversión releen bajo lock |
-| T0.3 idempotencia | Casi hecho | índice único en migración (solo en tenants limpios), recheck de la clave bajo lock, 409 reintentable, métrica de clave ausente; pago a proveedor (`supplier_payment.idempotency_key`) y anticipo recibido (id derivado del header) idempotentes con envío desde el frontend. El anticipo recibido ahora escribe caja y evento contable dentro de la misma transacción. **Falta**: aplicación de anticipo (`ApplyAdvanceService`) y cobro de una sola venta |
+| T0.3 idempotencia | Hecho | índice único en migración (solo en tenants limpios), recheck de la clave bajo lock, 409 reintentable y métrica de clave ausente en el cobro global; `supplier_payment.idempotency_key`; anticipo recibido con id derivado del header (y caja + evento contable en la misma transacción); aplicación de anticipo con `customer_payment_applications.batch_id`; cobro de una venta con `sale_payments.idempotency_key`. Las pantallas envían la clave. La clave sigue siendo opcional en el servidor (D-09: obligatoria con fecha de corte) |
 | T0.4 ledger sin carrera | Hecho | `CustomerAccountLock` dentro de `CustomerAccountLedger::record` |
 | T0.5 guarda SupplierBill | Hecho | `SupplierBillUpdateProcessor` |
 | T0.6 cuota SUNAT | Hecho (código) | `SaleCreditTermsProvider`; **falta validar en la beta de SUNAT** |
 | T0.7 audit/verify | `finance:audit` hecho | `finance:verify` programado y reglas de Treasury pendientes |
-| T0.8 NC con efecto | Hecho (operativo) | `CreditNoteReceivableAdjuster`; **sin asiento contable** y solo ventas a crédito |
+| T0.8 NC con efecto | Hecho (operativo) | `CreditNoteReceivableAdjuster`; **sin asiento contable** y solo ventas a crédito. En ventas a crédito el dinero cobrado queda como saldo a favor, por lo que no se revierte Tesorería. La NC de anulación sobre una venta **al contado** sigue sin devolver el dinero (camino previo, fuera de este alcance) |
 | T0.9 moneda homogénea | Hecho | `CollectionPlanGuard` |
 | T0.10 CHECK de saldos | Hecho | migración `Version20261127100000`, condicionada a datos limpios |
-| T0.11 batería de concurrencia | Pendiente | `demo_test` local ya está migrada (2026-11-27); falta escribir las pruebas con dos conexiones |
+| T0.11 batería de concurrencia | Parcial | `tests/Sales/Concurrency/ReceivableLockingIntegrationTest` con MariaDB real y dos conexiones: el lock de `lockOpenReceivablesForCustomer` bloquea a otro escritor, el re-read ve lo que otro confirmó y `CustomerAccountLock` bloquea por cliente (verificado por mutación). **Falta** una prueba de carrera de extremo a extremo del servicio de cobro, de pago a proveedor y de reversión doble |
 | D-08 orden por vencimiento | Hecho | `SaleRecordRepository` ordena por `COALESCE(due_date, issued_date)` |
 
 Fases 1 a 4 no iniciadas.
