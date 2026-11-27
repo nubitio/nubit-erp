@@ -29,7 +29,7 @@ Fase 0 implementada en el árbol de trabajo (sin commit). Verificado: 618 prueba
 | T1.2 planificador | Hecho | `AllocationPlanner` (vencimiento / emisión) y `ManualAllocationPlanner` en `Efact\Domain\Finance`; el ejemplo A800/B1200/C2400/D1400 con 2500 está en las pruebas |
 | T1.3 apertura | Hecho en sombra | `ReceivableOpener` + `OpenReceivableOnSaleConfirmed`, detrás de la capability `finance.receivables_v2` (apagada). Una cuota por saldo neto pendiente. Un fallo nunca llega a la venta |
 | Auditoría | Hecho | reglas AR-08 y AR-09 en `finance:audit` |
-| T1.4 `RegisterCollection` | Pendiente | siguiente tarea: cobranza multimedio con exceso, sobre las tablas nuevas |
+| T1.4 `RegisterCollection` | Hecho (API) | `POST /api/sales/collections` detrás de `finance.receivables_v2`, `Idempotency-Key` obligatoria. Varios medios (el efectivo en uno solo), reparto por vencimiento o manual, exceso como saldo a favor. Una transacción: bloquea ventas, cliente y cuotas; escribe `sales_collection*` y mantiene `sales.balance_due`, `sale_payments`, ledger, caja/Tesorería (una vez por medio) y eventos contables al día. Una venta anterior al módulo abre su cuenta por cobrar al cobrarla (origen `backfill`, cuota = saldo actual: no se inventa historia). **Falta** la pantalla (T1.11) y el comando de backfill masivo |
 | T1.5 a T1.12 | Pendiente | reversión, backfill, cuotas en ventas, AP, estados de cuenta a fecha de corte, UI, permisos |
 
 Nota de diseño: el manejador lee la fila de la capability con el repositorio y no con `TenantCapabilityResolver`, porque el resolver memoiza y una respuesta vieja sobrevive a un cambio posterior dentro del mismo proceso (rompía `ExternalBankCollectionTest`).
