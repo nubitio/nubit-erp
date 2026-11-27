@@ -10,6 +10,7 @@ use App\Efact\Domain\Money;
 use DateTimeImmutable;
 use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Connection;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\Uid\Uuid;
 
 /**
@@ -169,7 +170,7 @@ readonly class CollectionStore
             return null;
         }
         if ((int) $collection['customer_id'] !== $customerId) {
-            throw new \DomainException('The idempotency key belongs to another customer.');
+            throw new ConflictHttpException('Esta clave de idempotencia ya se usó en otra cobranza.');
         }
 
         $id = (string) $collection['id'];

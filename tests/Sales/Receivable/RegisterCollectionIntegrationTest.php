@@ -34,9 +34,11 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
     private PaymentMethod $methodB;
     /** @var list<string> */
     private array $saleIds = [];
+    private string $runId;
 
     protected function setUp(): void
     {
+        $this->runId = bin2hex(random_bytes(6));
         self::bootKernel();
         $container = self::getContainer();
         $em = $container->get(EntityManagerInterface::class);
@@ -85,7 +87,7 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
 
     public function testOneCollectionOverTwoTendersSettlesTheInvoicesByDueDate(): void
     {
-        $result = $this->register->register($this->request('key-1', '100', '150'));
+        $result = $this->register->register($this->request($this->key('1'), '100', '150'));
 
         self::assertSame('250.00', $result->total);
         self::assertSame('0.00', $result->unapplied);
@@ -124,8 +126,8 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
 
     public function testARetryWithTheSameKeyReturnsTheFirstCollectionAndBooksNothingAgain(): void
     {
-        $first = $this->register->register($this->request('key-2', '100'));
-        $again = $this->register->register($this->request('key-2', '100'));
+        $first = $this->register->register($this->request($this->key('2'), '100'));
+        $again = $this->register->register($this->request($this->key('2'), '100'));
 
         self::assertFalse($first->replayed);
         self::assertTrue($again->replayed);
@@ -140,7 +142,7 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
 
     public function testAnAmountAboveTheDebtLeavesTheRestAsTheCustomersAdvance(): void
     {
-        $result = $this->register->register($this->request('key-3', '500'));
+        $result = $this->register->register($this->request($this->key('3'), '500'));
 
         self::assertSame(['80.00', '120.00', '240.00'], array_column($result->allocations, 'amount'));
         self::assertSame('60.00', $result->unapplied);
@@ -157,7 +159,7 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
     public function testAManualSplitIsHonoured(): void
     {
         // Receivables are opened by the first collection; open them with a tiny one and then split by hand.
-        $this->register->register($this->request('key-4a', '10'));
+        $this->register->register($this->request($this->key('4a'), '10'));
         $items = $this->db->fetchAllAssociative('SELECT i.id FROM sales_receivable_installment i JOIN sales_receivable r ON r.id = i.receivable_id WHERE r.sale_id = ?', [
             $this->saleIds[2],
         ]);
@@ -168,7 +170,7 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
             receivedOn: new DateTimeImmutable('2026-11-27'),
             tenders: [new TenderInput($this->methodA, '100')],
             allocations: [['installmentId' => (string) $items[0]['id'], 'amount' => '100']],
-            idempotencyKey: 'key-4b',
+            idempotencyKey: $this->key('4b'),
             createdBy: new User(),
         ));
 
@@ -177,6 +179,12 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
             '140.00',
             (string) $this->db->fetchOne('SELECT balance_due FROM sales WHERE id = ?', [$this->saleIds[2]]),
         );
+    }
+
+    /** Unique per run: the coverage run keeps what tests write, so fixed keys would collide on a second run. */
+    private function key(string $name): string
+    {
+        return $name . '-' . $this->runId;
     }
 
     /** One tender per amount, alternating the two methods. */
@@ -209,8 +217,25 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
         return $method;
     }
 
+    /**
+     * Rows of one of the collection tables for this test's customer only: the coverage run has no per-test
+     * rollback, so a global count would also see what other tests left behind.
+     */
     private function rows(string $table): int
     {
-        return (int) $this->db->fetchOne(sprintf('SELECT COUNT(*) FROM %s', $table));
+        $customer = (int) $this->world->customer->getId();
+
+        return (int) match ($table) {
+            'sales_collection' => $this->db->fetchOne('SELECT COUNT(*) FROM sales_collection WHERE customer_id = ?', [
+                $customer,
+            ]),
+            default => $this->db->fetchOne(
+                sprintf(
+                    'SELECT COUNT(*) FROM %s x JOIN sales_collection c ON c.id = x.collection_id WHERE c.customer_id = ?',
+                    $table,
+                ),
+                [$customer],
+            ),
+        };
     }
 }

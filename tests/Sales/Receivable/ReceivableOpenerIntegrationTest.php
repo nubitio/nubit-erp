@@ -10,6 +10,7 @@ use App\Sales\Receivable\ReceivableOpener;
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Uid\Uuid;
 
 /** Opens receivables against the migrated schema (DAMA rolls every test back). */
 final class ReceivableOpenerIntegrationTest extends KernelTestCase
@@ -28,7 +29,7 @@ final class ReceivableOpenerIntegrationTest extends KernelTestCase
 
     public function testACreditSaleOpensOneReceivableWithItsNetPendingAmountAndDueDate(): void
     {
-        $sale = $this->sale('c1c1c1c1-0000-4000-8000-000000000001', total: '100.00', balanceDue: '60.00');
+        $sale = $this->sale(Uuid::v4()->toRfc4122(), total: '100.00', balanceDue: '60.00');
 
         self::assertTrue($this->opener->open($sale));
 
@@ -48,7 +49,7 @@ final class ReceivableOpenerIntegrationTest extends KernelTestCase
 
     public function testOpeningTheSameSaleTwiceIsANoOp(): void
     {
-        $sale = $this->sale('c1c1c1c1-0000-4000-8000-000000000002', total: '100.00', balanceDue: '100.00');
+        $sale = $this->sale(Uuid::v4()->toRfc4122(), total: '100.00', balanceDue: '100.00');
 
         self::assertTrue($this->opener->open($sale));
         self::assertFalse($this->opener->open($sale));
@@ -60,14 +61,14 @@ final class ReceivableOpenerIntegrationTest extends KernelTestCase
 
     public function testASaleWithNothingPendingOpensNothing(): void
     {
-        $sale = $this->sale('c1c1c1c1-0000-4000-8000-000000000003', total: '100.00', balanceDue: '0.00');
+        $sale = $this->sale(Uuid::v4()->toRfc4122(), total: '100.00', balanceDue: '0.00');
 
         self::assertFalse($this->opener->open($sale));
     }
 
     public function testTheDatabaseRefusesInstalmentsThatExceedTheirAmount(): void
     {
-        $sale = $this->sale('c1c1c1c1-0000-4000-8000-000000000004', total: '100.00', balanceDue: '100.00');
+        $sale = $this->sale(Uuid::v4()->toRfc4122(), total: '100.00', balanceDue: '100.00');
         $this->opener->open($sale);
 
         $this->expectException(\Doctrine\DBAL\Exception\DriverException::class);
