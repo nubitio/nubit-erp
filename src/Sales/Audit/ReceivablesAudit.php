@@ -73,6 +73,22 @@ final readonly class ReceivablesAudit
                       JOIN sales s ON s.id = a.sale_id
                       WHERE a.currency <> s.currency',
         ],
+        'AR-08' => [
+            'description' => 'receivable: instalments must add up to net_pending (only when finance.receivables_v2 is on)',
+            'sql' => 'SELECT r.id, r.sale_id, r.net_pending, COALESCE(SUM(i.amount), 0) AS instalments
+                      FROM sales_receivable r LEFT JOIN sales_receivable_installment i ON i.receivable_id = r.id
+                      GROUP BY r.id, r.sale_id, r.net_pending
+                      HAVING r.net_pending <> COALESCE(SUM(i.amount), 0)',
+        ],
+        'AR-09' => [
+            'description' => 'receivable: settled_amount of an instalment equals the sum of its active allocations',
+            'sql' => "SELECT i.id, i.settled_amount,
+                             COALESCE((SELECT SUM(a.amount) FROM sales_collection_allocation a
+                                       WHERE a.installment_id = i.id AND a.status = 'active'), 0) AS allocated
+                      FROM sales_receivable_installment i
+                      WHERE i.settled_amount <> COALESCE((SELECT SUM(a.amount) FROM sales_collection_allocation a
+                                       WHERE a.installment_id = i.id AND a.status = 'active'), 0)",
+        ],
     ];
 
     public function __construct(

@@ -23,6 +23,9 @@ final class FinanceAuditTest extends TestCase
             'CREATE TABLE sale_payments (id INTEGER, sale_id TEXT, amount NUMERIC)',
             'CREATE TABLE customer_account_entries (id INTEGER PRIMARY KEY, customer_id INT, entry_type TEXT, debit NUMERIC, credit NUMERIC, running_balance NUMERIC, source TEXT, source_id TEXT, sale_id TEXT)',
             'CREATE TABLE customer_payment_applications (id INTEGER, sale_id TEXT, sale_payment_id INT, applied_amount NUMERIC, currency TEXT)',
+            'CREATE TABLE sales_receivable (id TEXT, sale_id TEXT, net_pending NUMERIC)',
+            'CREATE TABLE sales_receivable_installment (id TEXT, receivable_id TEXT, amount NUMERIC, settled_amount NUMERIC)',
+            'CREATE TABLE sales_collection_allocation (id TEXT, installment_id TEXT, amount NUMERIC, status TEXT)',
             'CREATE TABLE supplier_bill (id TEXT, status TEXT, amount NUMERIC, paid_total NUMERIC, balance_due NUMERIC, purchase_id TEXT)',
             'CREATE TABLE supplier_payment (id INTEGER, supplier_bill_id TEXT, amount NUMERIC, reversed_at TEXT)',
         ] as $sql) {
@@ -69,6 +72,14 @@ final class FinanceAuditTest extends TestCase
         );
         $this->db->executeStatement("INSERT INTO supplier_payment VALUES (1,'b1',30,NULL)");
 
+        // AR-08: a receivable whose instalments do not add up. AR-09: settled without an allocation.
+        $this->db->executeStatement("INSERT INTO sales_receivable VALUES ('r1','s1',100)");
+        $this->db->executeStatement("INSERT INTO sales_receivable_installment VALUES ('i1','r1',60,0)");
+        $this->db->executeStatement("INSERT INTO sales_receivable_installment VALUES ('i2','r1',30,25)");
+        $this->db->executeStatement(
+            "INSERT INTO sales_collection_allocation VALUES ('a1','i2',20,'active'), ('a2','i2',5,'reversed')",
+        );
+
         $ar = new ReceivablesAudit($this->db)->run();
         $ap = new PayablesAudit($this->db)->run();
 
@@ -76,6 +87,8 @@ final class FinanceAuditTest extends TestCase
         self::assertSame(1, $ar['AR-03']['count']);
         self::assertSame(1, $ar['AR-04']['count']);
         self::assertSame(1, $ar['AR-05']['count']);
+        self::assertSame(1, $ar['AR-08']['count']);
+        self::assertSame(1, $ar['AR-09']['count']);
         self::assertSame(1, $ap['AP-01']['count']);
         self::assertSame(0, $ap['AP-03']['count']);
         self::assertSame(1, $ap['AP-04']['count']);
