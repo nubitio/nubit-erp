@@ -125,8 +125,8 @@ export const CollectPaymentDialog = ({
           {balanceDue
             ? `Saldo pendiente: ${NumberUtils.formatCurrency(Number(balanceDue), currency)}. `
             : ''}
-          El pago se aplica primero a los comprobantes que vencen antes y se registra una sola vez en caja o
-          banco.
+          El pago se aplica primero a los comprobantes que vencen antes y se registra una sola vez
+          en caja o banco.
         </p>
       </div>
 
