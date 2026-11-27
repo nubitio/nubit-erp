@@ -160,6 +160,116 @@ readonly class CollectionStore
         ]);
     }
 
+    /**
+     * The collection row, locked until the transaction ends; null when there is none.
+     *
+     * @return array<string, mixed>|null
+     */
+    public function lockCollection(string $id): ?array
+    {
+        $row = $this->connection->fetchAssociative('SELECT * FROM sales_collection WHERE id = ? FOR UPDATE', [$id]);
+
+        return $row === false ? null : $row;
+    }
+
+    /** @return list<array{id: string, installmentId: string, saleId: string, amount: string}> */
+    public function activeAllocations(string $collectionId): array
+    {
+        $rows = $this->connection->fetchAllAssociative('SELECT a.id, a.installment_id, r.sale_id, a.amount
+             FROM sales_collection_allocation a
+             JOIN sales_receivable_installment i ON i.id = a.installment_id
+             JOIN sales_receivable r ON r.id = i.receivable_id
+             WHERE a.collection_id = ? AND a.status = ?
+             ORDER BY a.id', [$collectionId, 'active']);
+
+        return array_map(static fn(array $r): array => [
+            'id' => (string) $r['id'],
+            'installmentId' => (string) $r['installment_id'],
+            'saleId' => (string) $r['sale_id'],
+            'amount' => (string) $r['amount'],
+        ], $rows);
+    }
+
+    /** @return list<array{id: string, paymentMethodId: int, amount: string}> */
+    public function tenders(string $collectionId): array
+    {
+        $rows = $this->connection->fetchAllAssociative('SELECT id, payment_method_id, amount FROM sales_collection_tender WHERE collection_id = ? ORDER BY id', [
+            $collectionId,
+        ]);
+
+        return array_map(static fn(array $r): array => [
+            'id' => (string) $r['id'],
+            'paymentMethodId' => (int) $r['payment_method_id'],
+            'amount' => (string) $r['amount'],
+        ], $rows);
+    }
+
+    /**
+     * What the collection booked on the legacy side: one application per sale_payments row it created.
+     *
+     * @return list<array{saleId: string, salePaymentId: int, paymentMethodId: int, amount: string}>
+     */
+    public function legacyApplications(string $collectionId): array
+    {
+        $rows = $this->connection->fetchAllAssociative("SELECT a.sale_id, a.sale_payment_id, p.payment_method_id, a.applied_amount
+             FROM customer_payment_applications a
+             JOIN customer_account_entries e ON e.id = a.customer_account_entry_id
+             JOIN sale_payments p ON p.id = a.sale_payment_id
+             WHERE e.source = 'collection' AND e.source_id = ?
+             ORDER BY a.id", [$collectionId]);
+
+        return array_map(static fn(array $r): array => [
+            'saleId' => (string) $r['sale_id'],
+            'salePaymentId' => (int) $r['sale_payment_id'],
+            'paymentMethodId' => (int) $r['payment_method_id'],
+            'amount' => (string) $r['applied_amount'],
+        ], $rows);
+    }
+
+    /**
+     * Whether any of these sales has credit notes applied to it; a reversal would double count the excess.
+     *
+     * @param list<string> $saleIds
+     */
+    public function saleHasCreditNote(array $saleIds): bool
+    {
+        if ($saleIds === []) {
+            return false;
+        }
+
+        return (int) $this->connection->fetchOne(
+            "SELECT COUNT(*) FROM customer_account_entries WHERE entry_type = 'credit_note' AND sale_id IN (?)",
+            [$saleIds],
+            [ArrayParameterType::STRING],
+        ) > 0;
+    }
+
+    /** Marks an allocation reversed and gives its amount back to the instalment. */
+    public function reverseAllocation(string $id, string $installmentId, string $amount, DateTimeImmutable $at): void
+    {
+        $this->connection->executeStatement('UPDATE sales_collection_allocation SET status = ?, reversed_at = ? WHERE id = ? AND status = ?', [
+            'reversed',
+            $at->format('Y-m-d H:i:s'),
+            $id,
+            'active',
+        ]);
+        $this->connection->executeStatement('UPDATE sales_receivable_installment SET settled_amount = settled_amount - ? WHERE id = ?', [
+            $amount,
+            $installmentId,
+        ]);
+    }
+
+    public function markReversed(string $id, DateTimeImmutable $at, ?int $by): void
+    {
+        $this->connection->executeStatement('UPDATE sales_collection SET status = ?, reversed_at = ?, reversed_by = ? WHERE id = ? AND status = ?', [
+            'reversed',
+            $at->format('Y-m-d H:i:s'),
+            $by,
+            $id,
+            'confirmed',
+        ]);
+    }
+
     /** The result of a collection already registered under this key, or null. */
     public function resultFor(string $idempotencyKey, int $customerId): ?CollectionResult
     {

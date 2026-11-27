@@ -29,6 +29,7 @@ final class PermissionCatalog
                     'sales.void' => 'Anular comprobantes',
                     'sales.export' => 'Exportar ventas',
                     'sales.collect' => 'Registrar cobros',
+                    'sales.collect_reverse' => 'Revertir cobros',
                 ],
             ],
             'pos' => [

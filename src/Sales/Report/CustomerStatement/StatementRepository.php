@@ -109,11 +109,11 @@ final readonly class StatementRepository
             <<<'SQL'
                 SELECT
                     e.occurred_on AS date,
-                    CASE WHEN e.source = 'on_account_collect'
+                    CASE WHEN e.source IN ('on_account_collect', 'collection')
                         THEN 'Cobro a cuenta'
                         ELSE COALESCE(NULLIF(TRIM(BOTH '-' FROM CONCAT(COALESCE(s.series, ''), '-', COALESCE(s.number, ''))), ''), 'Documento interno')
                     END AS document,
-                    CASE WHEN e.source = 'on_account_collect'
+                    CASE WHEN e.source IN ('on_account_collect', 'collection')
                         THEN (
                             SELECT SUM(a.applied_amount)
                             FROM customer_payment_applications a
@@ -137,19 +137,19 @@ final readonly class StatementRepository
                 LEFT JOIN sales s ON s.id = e.sale_id
                 WHERE e.customer_id = :customer
                   AND (
-                      (e.entry_type = 'payment' AND e.source = 'on_account_collect' AND EXISTS (
+                      (e.entry_type = 'payment' AND e.source IN ('on_account_collect', 'collection') AND EXISTS (
                           SELECT 1 FROM customer_payment_applications a
                           JOIN sales applied_sale ON applied_sale.id = a.sale_id
                           JOIN customer_account_entries collection_entry ON collection_entry.id = a.customer_account_entry_id
                           WHERE collection_entry.source = e.source AND collection_entry.source_id = e.source_id
                             AND applied_sale.branch_id = :collect_branch
                       ))
-                      OR (e.entry_type = 'payment' AND (e.source IS NULL OR e.source <> 'on_account_collect') AND s.branch_id = :branch)
+                      OR (e.entry_type = 'payment' AND (e.source IS NULL OR e.source NOT IN ('on_account_collect', 'collection')) AND s.branch_id = :branch)
                       OR (e.entry_type = 'credit_note' AND s.branch_id = :branch)
                       OR (e.entry_type = 'advance' AND e.branch_id = :advance_branch)
                   )
                   AND (
-                      e.source <> 'on_account_collect'
+                      e.source NOT IN ('on_account_collect', 'collection')
                       OR NOT EXISTS (
                           SELECT 1 FROM customer_account_entries prior
                           WHERE prior.source = e.source AND prior.source_id = e.source_id
@@ -157,6 +157,11 @@ final readonly class StatementRepository
                       )
                   )
                   AND e.occurred_on <= :date_to
+                  AND NOT (e.source = 'collection' AND EXISTS (
+                      SELECT 1 FROM customer_account_entries reversal
+                      WHERE reversal.entry_type = 'payment_reversal' AND reversal.source = 'collection_reversal'
+                        AND reversal.source_id = e.source_id AND reversal.occurred_on <= :date_to
+                  ))
                 ORDER BY e.id
                 SQL,
             [
