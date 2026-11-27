@@ -161,6 +161,41 @@ readonly class CollectionStore
     }
 
     /**
+     * The customer's latest collections with how each was received, newest first, for the history and the undo action.
+     *
+     * @return list<array{id: string, receivedOn: string, currency: string, total: string, unapplied: string, status: string, tenders: list<array{method: string, amount: string}>}>
+     */
+    public function recentFor(int $customerId, int $limit): array
+    {
+        $rows = $this->connection->fetchAllAssociative(
+            'SELECT id, received_on, currency, total, unapplied, status FROM sales_collection
+             WHERE customer_id = ? ORDER BY created_at DESC, id DESC LIMIT ' . max(1, min(100, $limit)),
+            [$customerId],
+        );
+
+        return array_map(function (array $row): array {
+            $tenders = $this->connection->fetchAllAssociative(
+                'SELECT m.name AS method, t.amount FROM sales_collection_tender t
+                 JOIN payment_method m ON m.id = t.payment_method_id WHERE t.collection_id = ? ORDER BY t.id',
+                [$row['id']],
+            );
+
+            return [
+                'id' => (string) $row['id'],
+                'receivedOn' => (string) $row['received_on'],
+                'currency' => (string) $row['currency'],
+                'total' => (string) $row['total'],
+                'unapplied' => (string) $row['unapplied'],
+                'status' => (string) $row['status'],
+                'tenders' => array_map(static fn(array $t): array => [
+                    'method' => (string) $t['method'],
+                    'amount' => (string) $t['amount'],
+                ], $tenders),
+            ];
+        }, $rows);
+    }
+
+    /**
      * The collection row, locked until the transaction ends; null when there is none.
      *
      * @return array<string, mixed>|null
@@ -284,12 +319,14 @@ readonly class CollectionStore
         }
 
         $id = (string) $collection['id'];
-        $allocations = $this->connection->fetchAllAssociative('SELECT a.installment_id, r.sale_id, a.amount
+        $allocations = $this->connection->fetchAllAssociative("SELECT a.installment_id, r.sale_id, a.amount, s.balance_due,
+                    COALESCE(NULLIF(TRIM(BOTH '-' FROM CONCAT(COALESCE(s.series, ''), '-', COALESCE(s.number, ''))), ''), 'Documento interno') AS document
              FROM sales_collection_allocation a
              JOIN sales_receivable_installment i ON i.id = a.installment_id
              JOIN sales_receivable r ON r.id = i.receivable_id
+             JOIN sales s ON s.id = r.sale_id
              WHERE a.collection_id = ? AND a.status = ?
-             ORDER BY a.id', [$id, 'active']);
+             ORDER BY a.id", [$id, 'active']);
         $tenders = $this->connection->fetchAllAssociative('SELECT id, payment_method_id, amount FROM sales_collection_tender WHERE collection_id = ? ORDER BY id', [
             $id,
         ]);
@@ -303,7 +340,9 @@ readonly class CollectionStore
             allocations: array_map(static fn(array $a): array => [
                 'installmentId' => (string) $a['installment_id'],
                 'saleId' => (string) $a['sale_id'],
+                'document' => (string) $a['document'],
                 'amount' => (string) $a['amount'],
+                'balanceDueAfter' => (string) $a['balance_due'],
             ], $allocations),
             tenders: array_map(static fn(array $t): array => [
                 'tenderId' => (string) $t['id'],

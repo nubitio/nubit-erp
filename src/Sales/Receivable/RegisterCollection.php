@@ -7,6 +7,7 @@ namespace App\Sales\Receivable;
 use App\Efact\Domain\Finance\AllocationPlanner;
 use App\Efact\Domain\Finance\AllocationResult;
 use App\Efact\Domain\Finance\ManualAllocationPlanner;
+use App\Efact\Domain\Finance\OpenItem;
 use App\Efact\Domain\Money;
 use App\Efact\Observability\OperationLog;
 use App\Sales\Entity\SaleRecord;
@@ -86,7 +87,7 @@ readonly class RegisterCollection
 
         $items = $this->loader->load($bySale);
         $total = CollectionGuard::total($request);
-        $plan = $this->plan($request, array_column($items, 'item'), $total);
+        $plan = $this->plan($request, $items, $total);
 
         $saleOf = [];
         foreach ($items as $row) {
@@ -115,16 +116,17 @@ readonly class RegisterCollection
         return CollectionResult::booked($collectionId, $request, $total, $plan, $allocationSales, $tenderIds);
     }
 
-    /** @param list<\App\Efact\Domain\Finance\OpenItem> $items */
+    /** @param list<array{item: OpenItem, saleId: string}> $items */
     private function plan(CollectionRequest $request, array $items, BigDecimal $total): AllocationResult
     {
         try {
             return $request->allocations === []
-                ? $this->planner->plan($items, $total)
-                : $this->manualPlanner->plan($items, $total, array_map(static fn(array $line): array => [
-                    'itemId' => $line['installmentId'],
-                    'amount' => Money::money($line['amount']),
-                ], $request->allocations));
+                ? $this->planner->plan(array_column($items, 'item'), $total)
+                : $this->manualPlanner->plan(
+                    array_column($items, 'item'),
+                    $total,
+                    CollectionGuard::resolveLines($request, $items),
+                );
         } catch (InvalidArgumentException $e) {
             throw new UnprocessableEntityHttpException($e->getMessage(), $e);
         }

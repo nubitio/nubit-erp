@@ -7,6 +7,7 @@ namespace App\Sales\MessageHandler;
 use App\Sales\Event\SaleConfirmed;
 use App\Sales\Receivable\ReceivableOpener;
 use App\Sales\Repository\SaleRecordRepository;
+use App\Settings\Capability\CapabilityCatalog;
 use App\Settings\Capability\CapabilityKey;
 use App\Settings\Repository\TenantCapabilityRepository;
 use Psr\Log\LoggerInterface;
@@ -31,7 +32,11 @@ final readonly class OpenReceivableOnSaleConfirmed
     public function __invoke(SaleConfirmed $event): void
     {
         // Read the row directly: the shared resolver memoises, and a stale answer would outlive a later switch.
-        if ($this->capabilities->findByKey(CapabilityKey::FinanceReceivablesV2->value)?->isEnabled() !== true) {
+        // No row means the catalogue default (on).
+        $row = $this->capabilities->findByKey(CapabilityKey::FinanceReceivablesV2->value);
+        if (
+            !($row?->isEnabled() ?? CapabilityCatalog::get(CapabilityKey::FinanceReceivablesV2->value)?->defaultEnabled)
+        ) {
             return;
         }
 

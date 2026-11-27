@@ -1,16 +1,20 @@
-import { AppDialog, Button, FormField, TextField } from '@nubitio/ui';
-import { EntityDropdown } from '@nubitio/crud';
-import { getCoreApiBaseUrl } from '@nubitio/core';
-import { useRef, useState } from 'react';
-import customerAccountService, {
-  type CollectOnAccountApplication,
-} from './services/customerAccountService';
+import { Alert, AppDialog, Button, FormField, TextField } from '@nubitio/ui';
+import { useEffect, useMemo, useState } from 'react';
+import collectionService, { type CollectionResult } from './services/collectionService';
+import { listOpenInvoices, type ReceivableInvoice } from './services/receivableService';
+import { CollectionTenderRows, type TenderRow } from './CollectionTenderRows';
+import { CollectionDistribution, centsOf, fromCents } from './CollectionDistribution';
+import {
+  manualPlan,
+  planByDueDate,
+  tenderDifference,
+  toCents,
+  validateManual,
+  type OpenInvoice,
+} from './lib/collectionPlan';
 import toast from '@shared/lib/SharedUtils';
-import { MoneyAccountPicker } from '../treasury/MoneyAccountPicker';
 import NumberUtils from '@shared/lib/NumberUtils';
 import { useIdempotencyKey } from '@shared/lib/idempotency';
-
-const API = getCoreApiBaseUrl();
 
 interface Props {
   customerId: number;
@@ -26,10 +30,18 @@ function initialAmount(balanceDue?: string): string {
   return Number.isFinite(balance) && balance > 0 ? balance.toFixed(2) : '';
 }
 
+const FIRST_TENDER: TenderRow = {
+  key: 1,
+  methodId: null,
+  accountId: '',
+  amount: '',
+  reference: '',
+};
+
 /**
- * Single collection flow for Cuentas por cobrar: registers the money once in
- * cash/bank and applies it to the customer's open invoices by oldest due date. The
- * per-invoice and advance flows were folded into this one for SMB use.
+ * The collection flow of Cuentas por cobrar: the money received (in one or several ways) and where it goes.
+ * The distribution is automatic, oldest due date first, until the user edits it; whatever the invoices cannot
+ * absorb stays as the customer's advance. The server decides and answers with the receipt shown at the end.
  */
 export const CollectPaymentDialog = ({
   customerId,
@@ -40,46 +52,105 @@ export const CollectPaymentDialog = ({
   onDone,
 }: Props) => {
   const [amountValue, setAmountValue] = useState(() => initialAmount(balanceDue));
-  const referenceRef = useRef<HTMLInputElement>(null);
-  const [paymentMethodId, setPaymentMethodId] = useState<string | null>(null);
-  const [moneyAccountId, setMoneyAccountId] = useState('');
+  const [tenders, setTenders] = useState<TenderRow[]>([FIRST_TENDER]);
+  const [invoices, setInvoices] = useState<ReceivableInvoice[]>([]);
+  const [manual, setManual] = useState<Record<string, string> | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [applied, setApplied] = useState<CollectOnAccountApplication[] | null>(null);
-  // Same key while the form is unchanged: a retry after a timeout cannot collect twice.
-  const idempotency = useIdempotencyKey(
-    `${customerId}|${amountValue}|${paymentMethodId}|${moneyAccountId}`,
+  const [receipt, setReceipt] = useState<CollectionResult | null>(null);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    listOpenInvoices(customerId, controller.signal)
+      .then((rows) => {
+        if (!controller.signal.aborted)
+          setInvoices(rows.filter((row) => row.currency === currency));
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setLoadError(true);
+      });
+    return () => controller.abort();
+  }, [customerId, currency]);
+
+  const amountCents = centsOf(amountValue);
+  const open = useMemo<OpenInvoice[]>(
+    () =>
+      invoices.map((invoice) => ({
+        id: invoice.id,
+        dueDate: invoice.dueDate,
+        issuedDate: invoice.issuedDate,
+        balanceDue: invoice.balanceDue,
+      })),
+    [invoices],
   );
-  const balance = Number(balanceDue ?? 0);
+
+  const manualLines = useMemo(
+    () =>
+      Object.entries(manual ?? {}).map(([invoiceId, value]) => ({
+        invoiceId,
+        cents: centsOf(value),
+      })),
+    [manual],
+  );
+  const manualError = manual === null ? null : validateManual(open, amountCents, manualLines);
+  const plan =
+    manual === null ? planByDueDate(open, amountCents) : manualPlan(amountCents, manualLines);
+
+  const several = tenders.length > 1;
+  const tenderCents = several ? tenders.map((t) => centsOf(t.amount)) : [amountCents];
+  const difference = several ? tenderDifference(amountCents, tenderCents) : 0;
+
+  // One key per distinct request: a retry after a timeout cannot collect twice.
+  const idempotency = useIdempotencyKey(JSON.stringify([customerId, amountValue, tenders, manual]));
+
+  const startManual = () =>
+    setManual(
+      Object.fromEntries(plan.lines.map((line) => [line.invoiceId, fromCents(line.cents)])),
+    );
 
   const submit = () => {
     if (isProcessing) return;
-    const amount = amountValue !== '' ? parseFloat(amountValue) : NaN;
-    if (!Number.isFinite(amount) || amount <= 0 || paymentMethodId === null) {
-      toast('Completa el monto y el método de pago', 'error');
+    if (amountCents <= 0) {
+      toast('Ingresa un monto mayor a 0', 'error');
       return;
     }
-    if (balance > 0 && amount > balance + 0.004) {
-      toast(
-        `El monto supera el saldo pendiente (${NumberUtils.formatCurrency(balance, currency)}).`,
-        'error',
-      );
+    if (tenders.some((t) => t.methodId === null)) {
+      toast('Selecciona el medio de pago', 'error');
+      return;
+    }
+    if (difference !== 0) {
+      toast('Los importes de los medios deben sumar el monto recibido', 'error');
+      return;
+    }
+    if (manualError) {
+      toast(manualError, 'error');
       return;
     }
 
     setIsProcessing(true);
-    customerAccountService
-      .collectOnAccount({
+    collectionService
+      .register({
         customerId,
-        amount,
-        paymentMethodId: parseInt(paymentMethodId, 10),
-        reference: referenceRef.current?.value || undefined,
-        moneyAccountId,
+        currency,
         idempotencyKey: idempotency.current(),
+        tenders: tenders.map((t, index) => ({
+          paymentMethodId: parseInt(String(t.methodId), 10),
+          amount: fromCents(tenderCents[index]),
+          moneyAccountId: t.accountId,
+          reference: t.reference.trim(),
+        })),
+        allocations:
+          manual === null
+            ? []
+            : plan.lines.map((line) => ({ saleId: line.invoiceId, amount: fromCents(line.cents) })),
       })
       .then(({ data }) => {
         idempotency.renew();
-        toast(`Pago aplicado a ${data.applications.length} comprobante(s)`, 'success');
-        setApplied(data.applications);
+        toast(
+          `Cobranza registrada: ${NumberUtils.formatCurrency(Number(data.total), currency)}`,
+          'success',
+        );
+        setReceipt(data);
       })
       .catch(() => {
         /* HttpClient surfaces the API error; keep the form open for correction. */
@@ -94,10 +165,10 @@ export const CollectPaymentDialog = ({
       onClose={() => {
         if (!isProcessing) onClose();
       }}
-      width={560}
+      width={620}
       closeOnOutsideClick={false}
       footer={
-        applied ? (
+        receipt ? (
           <Button type="button" variant="primary" onClick={onDone}>
             Listo
           </Button>
@@ -125,29 +196,34 @@ export const CollectPaymentDialog = ({
           {balanceDue
             ? `Saldo pendiente: ${NumberUtils.formatCurrency(Number(balanceDue), currency)}. `
             : ''}
-          El pago se aplica primero a los comprobantes que vencen antes y se registra una sola vez
-          en caja o banco.
+          El pago se aplica primero a los comprobantes que vencen antes y se registra una sola vez.
         </p>
       </div>
 
-      {applied ? (
-        <div>
+      {receipt ? (
+        <div data-testid="receivable-receipt">
           <strong>Aplicación</strong>
           <ul style={{ marginTop: 6 }}>
-            {applied.map((line) => (
-              <li key={line.saleId}>
-                {line.document} · {NumberUtils.formatCurrency(Number(line.applied), currency)} ·
+            {receipt.allocations.map((line) => (
+              <li key={line.installmentId}>
+                {line.document} · {NumberUtils.formatCurrency(Number(line.amount), currency)} ·
                 saldo {NumberUtils.formatCurrency(Number(line.balanceDueAfter), currency)}
               </li>
             ))}
           </ul>
+          {toCents(receipt.unapplied) > 0 && (
+            <Alert tone="info">
+              {NumberUtils.formatCurrency(Number(receipt.unapplied), currency)} quedaron como saldo
+              a favor del cliente.
+            </Alert>
+          )}
         </div>
       ) : (
         <form
           id="receivable-payment-form"
           style={{ width: '100%' }}
-          onSubmit={(e) => {
-            e.preventDefault();
+          onSubmit={(event) => {
+            event.preventDefault();
             submit();
           }}
         >
@@ -167,42 +243,39 @@ export const CollectPaymentDialog = ({
             </FormField>
           </div>
 
-          <div className="mb-3">
-            <FormField label="Método de pago" required htmlFor="receivable-payment-method">
-              <EntityDropdown
-                url={API + 'payment-methods'}
-                filters={[
-                  { field: 'settlementBehavior', operator: '=', value: 'COLLECTED' },
-                  { field: 'isActive', operator: '=', value: 1 },
-                ]}
-                value={paymentMethodId}
-                onChange={(value) => {
-                  setPaymentMethodId(value);
-                  setMoneyAccountId('');
-                }}
-                placeholder="Selecciona un método de pago"
-                searchExpr={['name']}
-              />
-            </FormField>
-            <MoneyAccountPicker
-              direction="in"
-              currency={currency}
-              paymentMethodId={paymentMethodId}
-              value={moneyAccountId}
-              onChange={setMoneyAccountId}
-              disabled={isProcessing}
-            />
-          </div>
+          <CollectionTenderRows
+            rows={tenders}
+            currency={currency}
+            disabled={isProcessing}
+            onChange={setTenders}
+          />
+          {several && difference !== 0 && (
+            <Alert tone="warning">
+              {difference > 0
+                ? `Faltan ${NumberUtils.formatCurrency(difference / 100, currency)} por asignar a un medio.`
+                : `Los medios superan el monto en ${NumberUtils.formatCurrency(-difference / 100, currency)}.`}
+            </Alert>
+          )}
 
-          <div className="mb-3">
-            <FormField label="Referencia" htmlFor="receivable-payment-reference">
-              <TextField
-                ref={referenceRef}
-                id="receivable-payment-reference"
-                placeholder="N° de operación"
-              />
-            </FormField>
-          </div>
+          {loadError ? (
+            <Alert tone="warning">
+              No se pudieron cargar los comprobantes; el servidor repartirá el pago por vencimiento.
+            </Alert>
+          ) : (
+            <CollectionDistribution
+              invoices={invoices}
+              currency={currency}
+              plan={plan}
+              manual={manual}
+              disabled={isProcessing}
+              error={manualError}
+              onEdit={startManual}
+              onReset={() => setManual(null)}
+              onManualChange={(invoiceId, value) =>
+                setManual((current) => ({ ...(current ?? {}), [invoiceId]: value }))
+              }
+            />
+          )}
         </form>
       )}
     </AppDialog>

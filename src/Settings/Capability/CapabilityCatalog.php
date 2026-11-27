@@ -153,6 +153,7 @@ final class CapabilityCatalog
                 key: CapabilityKey::FinanceReceivablesV2,
                 label: 'Cuentas por cobrar con cuotas y cobranzas multimedio',
                 ownerContext: 'Sales',
+                defaultEnabled: true,
             ),
             new CapabilityDefinition(
                 key: CapabilityKey::FixedAssetsTracking,

@@ -10,6 +10,7 @@ use App\Identity\Entity\User;
 use App\Integration\Entity\ApiClient;
 use App\Sales\Port\ConfirmIntegrationCredit;
 use App\Sales\Receivable\CollectionRequest;
+use App\Sales\Receivable\CollectionStore;
 use App\Sales\Receivable\RegisterCollection;
 use App\Sales\Receivable\ReverseCollection;
 use App\Sales\Receivable\TenderInput;
@@ -98,6 +99,15 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
         self::assertSame('0.00', $result->unapplied);
         self::assertSame(['80.00', '120.00', '50.00'], array_column($result->allocations, 'amount'));
         self::assertCount(2, $result->tenders);
+        self::assertSame(['0.00', '0.00', '190.00'], array_column($result->allocations, 'balanceDueAfter'));
+        self::assertNotContains('', array_column($result->allocations, 'document'));
+
+        $store = self::getContainer()->get(CollectionStore::class);
+        self::assertInstanceOf(CollectionStore::class, $store);
+        $history = $store->recentFor((int) $this->world->customer->getId(), 10);
+        self::assertSame($result->collectionId, $history[0]['id']);
+        self::assertSame('confirmed', $history[0]['status']);
+        self::assertSame(['100.00', '150.00'], array_column($history[0]['tenders'], 'amount'));
 
         // New tables.
         self::assertSame(1, $this->rows('sales_collection'));
@@ -137,6 +147,7 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
         self::assertFalse($first->replayed);
         self::assertTrue($again->replayed);
         self::assertSame($first->collectionId, $again->collectionId);
+        self::assertSame($first->allocations, $again->allocations);
         self::assertSame(1, $this->rows('sales_collection'));
         self::assertSame(2, $this->rows('sales_collection_allocation'));
         self::assertSame(
@@ -165,21 +176,19 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
     {
         // Receivables are opened by the first collection; open them with a tiny one and then split by hand.
         $this->register->register($this->request($this->key('4a'), '10'));
-        $items = $this->db->fetchAllAssociative('SELECT i.id FROM sales_receivable_installment i JOIN sales_receivable r ON r.id = i.receivable_id WHERE r.sale_id = ?', [
-            $this->saleIds[2],
-        ]);
 
         $result = $this->register->register(new CollectionRequest(
             customerId: (int) $this->world->customer->getId(),
             currency: 'PEN',
             receivedOn: new DateTimeImmutable('2026-11-27'),
             tenders: [new TenderInput($this->methodA, '100')],
-            allocations: [['installmentId' => (string) $items[0]['id'], 'amount' => '100']],
+            allocations: [['installmentId' => '', 'saleId' => $this->saleIds[2], 'amount' => '100']],
             idempotencyKey: $this->key('4b'),
             createdBy: new User(),
         ));
 
-        self::assertSame([(string) $items[0]['id']], array_column($result->allocations, 'installmentId'));
+        self::assertSame([$this->saleIds[2]], array_column($result->allocations, 'saleId'));
+        self::assertSame(['140.00'], array_column($result->allocations, 'balanceDueAfter'));
         self::assertSame(
             '140.00',
             (string) $this->db->fetchOne('SELECT balance_due FROM sales WHERE id = ?', [$this->saleIds[2]]),
