@@ -140,7 +140,11 @@ final class AllocationPlannerTest extends TestCase
         new AllocationPlanner()->plan([], BigDecimal::of('0'));
     }
 
-    /** @param list<Allocation> $allocations @return list<string> */
+    /**
+     * @param list<Allocation> $allocations
+     *
+     * @return list<string>
+     */
     private function describe(array $allocations): array
     {
         return array_map(static fn(Allocation $a): string => $a->itemId . ':' . $a->amount->toScale(2), $allocations);
