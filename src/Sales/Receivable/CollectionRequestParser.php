@@ -37,6 +37,7 @@ readonly class CollectionRequestParser
             tenders: $tenders,
             allocations: array_map(static fn(mixed $line): array => [
                 'installmentId' => (string) (((array) $line)['installmentId'] ?? ''),
+                'saleId' => (string) (((array) $line)['saleId'] ?? ''),
                 'amount' => (string) (((array) $line)['amount'] ?? ''),
             ], array_values((array) ($body['allocations'] ?? []))),
             idempotencyKey: $this->idempotencyKey($request, $userId),

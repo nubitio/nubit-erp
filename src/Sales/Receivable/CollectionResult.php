@@ -8,13 +8,14 @@ use App\Efact\Domain\Finance\Allocation;
 use App\Efact\Domain\Finance\AllocationResult;
 use App\Efact\Domain\Money;
 use App\Sales\Entity\SaleRecord;
+use App\Sales\Service\CollectOnAccountPlanner;
 use Brick\Math\BigDecimal;
 
 /** What a registered collection did, in the shape the receipt (constancia) needs. */
 final readonly class CollectionResult
 {
     /**
-     * @param list<array{installmentId: string, saleId: string, amount: string}> $allocations
+     * @param list<array{installmentId: string, saleId: string, document: string, amount: string, balanceDueAfter: string}> $allocations
      * @param list<array{tenderId: string, paymentMethodId: int, amount: string}> $tenders
      */
     public function __construct(
@@ -50,7 +51,9 @@ final readonly class CollectionResult
                 static fn(Allocation $a, SaleRecord $sale): array => [
                     'installmentId' => $a->itemId,
                     'saleId' => (string) $sale->getId(),
+                    'document' => CollectOnAccountPlanner::documentLabel($sale),
                     'amount' => Money::toString($a->amount),
+                    'balanceDueAfter' => $sale->getBalanceDue(),
                 ],
                 $plan->allocations,
                 $allocationSales,

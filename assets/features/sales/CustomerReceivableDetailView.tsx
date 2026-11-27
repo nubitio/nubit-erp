@@ -11,6 +11,7 @@ import {
 import { hasPermission } from '@shared/permissions';
 import { listOpenInvoices, type ReceivableInvoice } from './services/receivableService';
 import { CollectionReminderDialog } from './reminders/CollectionReminderDialog';
+import { CollectionHistory } from './CollectionHistory';
 import './CustomerReceivableDetailView.scss';
 
 export interface ReceivableCustomer {
@@ -132,6 +133,7 @@ export const CustomerReceivableDetailView = ({
   const [reminding, setReminding] = useState<ReceivableInvoice | null>(null);
   const canCollect = !branchId && hasPermission('sales.collect');
   const canRemind = !branchId && hasPermission('receivables.remind');
+  const canReverse = !branchId && hasPermission('sales.collect_reverse');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -274,6 +276,15 @@ export const CustomerReceivableDetailView = ({
                 : `${invoices.length} documento${invoices.length === 1 ? '' : 's'} abiertos`}
             </small>
           </section>
+
+          <CollectionHistory
+            customerId={customer.id}
+            canReverse={canReverse}
+            onChanged={() => {
+              setIsLoading(true);
+              setAttempt((value) => value + 1);
+            }}
+          />
 
           <section className="receivable-detail__panel" aria-labelledby="receivable-payments-title">
             <div className="receivable-detail__panel-heading">

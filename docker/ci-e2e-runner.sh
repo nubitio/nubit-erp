@@ -109,5 +109,6 @@ yarn test:e2e \
   e2e/pos-credit-sale.spec.ts \
   e2e/pos-offline.spec.ts \
   e2e/accounts-receivable.spec.ts \
+  e2e/collection-multitender.spec.ts \
   e2e/catalog-create-permissions.spec.ts \
   e2e/treasury.spec.ts

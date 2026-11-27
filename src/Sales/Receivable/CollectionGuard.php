@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Sales\Receivable;
 
 use App\Catalog\Entity\PaymentMethod;
+use App\Efact\Domain\Finance\OpenItem;
 use App\Efact\Domain\Money;
 use App\Sales\Service\CollectionPlanGuard;
 use Brick\Math\BigDecimal;
@@ -35,6 +36,39 @@ final readonly class CollectionGuard
             static fn(BigDecimal $carry, TenderInput $t): BigDecimal => $carry->plus(Money::money($t->amount)),
             BigDecimal::zero(),
         );
+    }
+
+    /**
+     * Names every manual line by instalment. A line that names a sale gets that sale's only open instalment.
+     *
+     * @param list<array{item: OpenItem, saleId: string}> $items
+     *
+     * @return list<array{itemId: string, amount: BigDecimal}>
+     */
+    public static function resolveLines(CollectionRequest $request, array $items): array
+    {
+        $lines = [];
+        foreach ($request->allocations as $line) {
+            $lines[] = [
+                'itemId' => $line['installmentId'] !== ''
+                    ? $line['installmentId']
+                    : self::instalmentOf($line['saleId'], $items),
+                'amount' => Money::money($line['amount']),
+            ];
+        }
+
+        return $lines;
+    }
+
+    /** @param list<array{item: OpenItem, saleId: string}> $items */
+    private static function instalmentOf(string $saleId, array $items): string
+    {
+        $ids = array_column(array_filter($items, static fn(array $row): bool => $row['saleId'] === $saleId), 'item');
+        if (count($ids) !== 1) {
+            throw new UnprocessableEntityHttpException(sprintf('La factura %s no está pendiente de cobro.', $saleId));
+        }
+
+        return $ids[0]->id;
     }
 
     public static function hasCash(CollectionRequest $request): bool

@@ -17,6 +17,21 @@ use Psr\Log\LoggerInterface;
 
 final class OpenReceivableOnSaleConfirmedTest extends TestCase
 {
+    public function testAFreshTenantWithNoRowUsesTheCatalogueDefaultWhichIsOn(): void
+    {
+        $sale = new SaleRecord()->setReceivableAccount(true);
+        $sales = $this->createStub(SaleRecordRepository::class);
+        $sales->method('findByAnyId')->willReturn($sale);
+        $repository = $this->createStub(TenantCapabilityRepository::class);
+        $repository->method('findByKey')->willReturn(null);
+        $opener = $this->createMock(ReceivableOpener::class);
+        $opener->expects(self::once())->method('open')->with($sale);
+
+        (new OpenReceivableOnSaleConfirmed($sales, $opener, $repository, $this->createStub(LoggerInterface::class)))(
+            new SaleConfirmed('s1', 'w1', []),
+        );
+    }
+
     public function testNothingHappensWhileTheCapabilityIsOff(): void
     {
         $opener = $this->createMock(ReceivableOpener::class);
