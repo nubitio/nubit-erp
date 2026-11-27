@@ -36,7 +36,7 @@ class SaleRecordRepository extends ServiceEntityRepository
     }
 
     /**
-     * A customer's sales that still owe money, oldest first — the FIFO order a
+     * A customer's sales that still owe money, oldest due date first (D-08) — the order a
      * "cobro a cuenta" (#381) applies a payment in. `balance_due > 0` and
      * `receivable_account = 1` match the population the statement (#366) reads.
      *
@@ -81,7 +81,10 @@ class SaleRecordRepository extends ServiceEntityRepository
             ->andWhere("s.status <> 'VOIDED'")
             ->andWhere('s.deletedAt IS NULL')
             ->setParameter('customer', $customerId)
-            ->orderBy('s.issuedDate', 'ASC')
+            // D-08: oldest due date first; a sale without one counts as due on its issue date.
+            ->addSelect('COALESCE(s.dueDate, s.issuedDate) AS HIDDEN effectiveDue')
+            ->orderBy('effectiveDue', 'ASC')
+            ->addOrderBy('s.issuedDate', 'ASC')
             ->addOrderBy('s.issuedAt', 'ASC')
             ->addOrderBy('s.id', 'ASC')
             ->getQuery();
