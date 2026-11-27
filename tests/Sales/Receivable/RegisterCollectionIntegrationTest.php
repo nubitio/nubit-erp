@@ -11,6 +11,7 @@ use App\Integration\Entity\ApiClient;
 use App\Sales\Port\ConfirmIntegrationCredit;
 use App\Sales\Receivable\CollectionRequest;
 use App\Sales\Receivable\RegisterCollection;
+use App\Sales\Receivable\ReverseCollection;
 use App\Sales\Receivable\TenderInput;
 use App\Settings\Service\TenantSettingsService;
 use App\Tests\ReleaseCritical\Support\CoreSaleFixture;
@@ -29,6 +30,7 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
     private EntityManagerInterface $em;
     private Connection $db;
     private RegisterCollection $register;
+    private ReverseCollection $reverse;
     private CoreSaleWorld $world;
     private PaymentMethod $methodA;
     private PaymentMethod $methodB;
@@ -44,6 +46,9 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
         $em = $container->get(EntityManagerInterface::class);
         $settings = $container->get(TenantSettingsService::class);
         $register = $container->get(RegisterCollection::class);
+        $reverse = $container->get(ReverseCollection::class);
+        self::assertInstanceOf(ReverseCollection::class, $reverse);
+        $this->reverse = $reverse;
         $confirm = $container->get(ConfirmIntegrationCredit::class);
         self::assertInstanceOf(EntityManagerInterface::class, $em);
         self::assertInstanceOf(TenantSettingsService::class, $settings);
@@ -179,6 +184,96 @@ final class RegisterCollectionIntegrationTest extends KernelTestCase
             '140.00',
             (string) $this->db->fetchOne('SELECT balance_due FROM sales WHERE id = ?', [$this->saleIds[2]]),
         );
+    }
+
+    public function testReversingACollectionGivesTheDebtBackAndLeavesTheTrailIntact(): void
+    {
+        $collection = $this->register->register($this->request($this->key('rev'), '100', '150'));
+        $customer = (int) $this->world->customer->getId();
+
+        $result = $this->reverse->reverse($collection->collectionId, new User());
+
+        self::assertFalse($result->alreadyReversed);
+        self::assertSame(3, $result->allocationsReversed);
+        // The debt is back, to the cent.
+        self::assertSame(
+            ['80.00', '120.00', '240.00'],
+            array_map(
+                fn(string $id) => (string) $this->db->fetchOne('SELECT balance_due FROM sales WHERE id = ?', [$id]),
+                $this->saleIds,
+            ),
+        );
+        self::assertSame(
+            '0.00',
+            (string) $this->db->fetchOne('SELECT SUM(paid_total) FROM sales WHERE id IN (?, ?, ?)', $this->saleIds),
+        );
+        // Nothing was deleted: 4 payments, then 4 opposite ones, netting to zero.
+        self::assertSame(
+            8,
+            (int) $this->db->fetchOne('SELECT COUNT(*) FROM sale_payments WHERE sale_id IN (?, ?, ?)', $this->saleIds),
+        );
+        self::assertSame(
+            '0.00',
+            (string) $this->db->fetchOne(
+                'SELECT SUM(amount) FROM sale_payments WHERE sale_id IN (?, ?, ?)',
+                $this->saleIds,
+            ),
+        );
+        // New tables: allocations reversed, instalments free again, collection marked.
+        self::assertSame(
+            3,
+            (int) $this->db->fetchOne("SELECT COUNT(*) FROM sales_collection_allocation WHERE collection_id = ? AND status = 'reversed'", [
+                $collection->collectionId,
+            ]),
+        );
+        self::assertSame(
+            '0.00',
+            (string) $this->db->fetchOne(
+                'SELECT SUM(i.settled_amount) FROM sales_receivable_installment i JOIN sales_receivable r ON r.id = i.receivable_id WHERE r.customer_id = ?',
+                [$customer],
+            ),
+        );
+        self::assertSame('reversed', $this->db->fetchOne('SELECT status FROM sales_collection WHERE id = ?', [
+            $collection->collectionId,
+        ]));
+        self::assertSame(
+            '250.00',
+            (string) $this->db->fetchOne("SELECT debit FROM customer_account_entries WHERE entry_type = 'payment_reversal' AND customer_id = ?", [
+                $customer,
+            ]),
+        );
+    }
+
+    public function testReversingTwiceChangesNothingTheSecondTime(): void
+    {
+        $collection = $this->register->register($this->request($this->key('rev2'), '100'));
+        $this->reverse->reverse($collection->collectionId, new User());
+        $payments = (int) $this->db->fetchOne(
+            'SELECT COUNT(*) FROM sale_payments WHERE sale_id IN (?, ?, ?)',
+            $this->saleIds,
+        );
+
+        $again = $this->reverse->reverse($collection->collectionId, new User());
+
+        self::assertTrue($again->alreadyReversed);
+        self::assertSame(
+            $payments,
+            (int) $this->db->fetchOne('SELECT COUNT(*) FROM sale_payments WHERE sale_id IN (?, ?, ?)', $this->saleIds),
+        );
+        self::assertSame(
+            '440.00',
+            (string) $this->db->fetchOne('SELECT SUM(balance_due) FROM sales WHERE id IN (?, ?, ?)', $this->saleIds),
+        );
+    }
+
+    public function testACollectionThatLeftAnAdvanceCannotBeReversedYet(): void
+    {
+        $collection = $this->register->register($this->request($this->key('rev3'), '500'));
+
+        $this->expectException(\Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException::class);
+        $this->expectExceptionMessage('saldo a favor');
+
+        $this->reverse->reverse($collection->collectionId, new User());
     }
 
     /** Unique per run: the coverage run keeps what tests write, so fixed keys would collide on a second run. */

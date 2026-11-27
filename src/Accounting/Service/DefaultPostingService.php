@@ -158,6 +158,22 @@ readonly class DefaultPostingService
                     'memo' => 'Aplicación a cuenta por cobrar',
                 ],
             ],
+            EconomicEvent::RECEIVABLE_COLLECT_REVERSE_CASH => [
+                [
+                    'code' => self::RECEIVABLE,
+                    'debit' => Money::toString($total),
+                    'memo' => 'Reversión de cobranza (efectivo)',
+                ],
+                ['code' => self::CASH, 'credit' => Money::toString($total), 'memo' => 'Devolución de cobranza'],
+            ],
+            EconomicEvent::RECEIVABLE_COLLECT_REVERSE_BANK => [
+                [
+                    'code' => self::RECEIVABLE,
+                    'debit' => Money::toString($total),
+                    'memo' => 'Reversión de cobranza (banco)',
+                ],
+                ['code' => self::BANK, 'credit' => Money::toString($total), 'memo' => 'Devolución de cobranza'],
+            ],
             EconomicEvent::CUSTOMER_ADVANCE_RECEIVED_CASH => [
                 ['code' => self::CASH, 'debit' => Money::toString($total), 'memo' => 'Anticipo de cliente (efectivo)'],
                 [

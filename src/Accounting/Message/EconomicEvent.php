@@ -18,6 +18,8 @@ final readonly class EconomicEvent
 
     public const string SOURCE_RECEIVABLE_COLLECT = 'receivable_collect';
 
+    public const string SOURCE_RECEIVABLE_COLLECT_REVERSAL = 'receivable_collect_reversal';
+
     public const string SOURCE_CUSTOMER_ADVANCE = 'customer_advance';
 
     public const string SOURCE_OPENING_RECEIVABLE = 'opening_receivable';
@@ -45,6 +47,12 @@ final readonly class EconomicEvent
 
     /** Collection of a receivable paid by transfer/POS/deposit: debit Banco, credit Facturas por cobrar. */
     public const string RECEIVABLE_COLLECT_BANK = 'RECEIVABLE_COLLECT_BANK';
+
+    /** A cash collection is undone: debit Facturas por cobrar, credit Caja. */
+    public const string RECEIVABLE_COLLECT_REVERSE_CASH = 'RECEIVABLE_COLLECT_REVERSE_CASH';
+
+    /** A transfer/POS/deposit collection is undone: debit Facturas por cobrar, credit Banco. */
+    public const string RECEIVABLE_COLLECT_REVERSE_BANK = 'RECEIVABLE_COLLECT_REVERSE_BANK';
 
     /** Customer advance received in cash: debit Caja, credit Anticipos de clientes (122). */
     public const string CUSTOMER_ADVANCE_RECEIVED_CASH = 'CUSTOMER_ADVANCE_RECEIVED_CASH';

@@ -10,6 +10,7 @@ enum MovementSource: string
     case SalePayment = 'sale_payment';
     case SalePaymentReversal = 'sale_payment_reversal';
     case ReceivableCollection = 'receivable_collection';
+    case ReceivableCollectionReversal = 'receivable_collection_reversal';
     case CustomerAdvance = 'customer_advance';
     case SupplierPayment = 'supplier_payment';
     case SupplierPaymentReversal = 'supplier_payment_reversal';

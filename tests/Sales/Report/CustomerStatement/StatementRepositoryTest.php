@@ -40,13 +40,14 @@ final class StatementRepositoryTest extends TestCase
             ->with(
                 self::callback(
                     static fn(string $sql): bool => (
-                        str_contains($sql, "e.source = 'on_account_collect'")
+                        str_contains($sql, "e.source IN ('on_account_collect', 'collection')")
                         && str_contains($sql, 'SUM(a.applied_amount)')
                         && str_contains($sql, 'customer_payment_applications')
                         && str_contains($sql, 'applied_sale.branch_id = :collect_branch')
                         && str_contains($sql, "e.entry_type = 'credit_note' AND s.branch_id = :branch")
                         && str_contains($sql, "e.entry_type = 'advance' AND e.branch_id = :advance_branch")
                         && str_contains($sql, 'prior.source_id = e.source_id')
+                        && str_contains($sql, "reversal.entry_type = 'payment_reversal'")
                         && !str_contains($sql, "'charge_reversal'")
                     ),
                 ),

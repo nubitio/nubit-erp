@@ -70,14 +70,38 @@ class SaleRecordRepository extends ServiceEntityRepository
         return $rows;
     }
 
+    /**
+     * Every credit sale of the customer, paid or not, locked and re-read in the same order as
+     * {@see lockOpenReceivablesForCustomer()} so a reversal and a collection never wait on each other crosswise.
+     *
+     * @return list<SaleRecord>
+     */
+    public function lockReceivablesForCustomer(int $customerId): array
+    {
+        $query = $this->customerReceivablesQuery($customerId, openOnly: false);
+        $query->setLockMode(LockMode::PESSIMISTIC_WRITE);
+        $query->setHint(Query::HINT_REFRESH, true);
+
+        /** @var list<SaleRecord> $rows */
+        $rows = $query->getResult();
+
+        return $rows;
+    }
+
     /** @return Query<null, mixed> */
     private function openReceivablesQuery(int $customerId): Query
+    {
+        return $this->customerReceivablesQuery($customerId, openOnly: true);
+    }
+
+    /** @return Query<null, mixed> */
+    private function customerReceivablesQuery(int $customerId, bool $openOnly): Query
     {
         return $this
             ->createQueryBuilder('s')
             ->where('s.customer = :customer')
             ->andWhere('s.receivableAccount = true')
-            ->andWhere('s.balanceDue > 0')
+            ->andWhere($openOnly ? 's.balanceDue > 0' : 's.balanceDue >= 0')
             ->andWhere("s.status <> 'VOIDED'")
             ->andWhere('s.deletedAt IS NULL')
             ->setParameter('customer', $customerId)

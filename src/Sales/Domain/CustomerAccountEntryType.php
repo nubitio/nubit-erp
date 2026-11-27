@@ -22,6 +22,8 @@ namespace App\Sales\Domain;
  *                 that had no collections applied to it (credit; see
  *                 SaleException::hasAppliedPayments(), which blocks voiding
  *                 once a collection exists).
+ *  - PAYMENT_REVERSAL a registered collection is undone: what it settled is owed
+ *                 again (debit). The original PAYMENT stays; nothing is deleted.
  */
 enum CustomerAccountEntryType: string
 {
@@ -30,4 +32,5 @@ enum CustomerAccountEntryType: string
     case ADVANCE = 'advance';
     case CREDIT_NOTE = 'credit_note';
     case CHARGE_REVERSAL = 'charge_reversal';
+    case PAYMENT_REVERSAL = 'payment_reversal';
 }

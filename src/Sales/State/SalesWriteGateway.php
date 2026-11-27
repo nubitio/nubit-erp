@@ -784,6 +784,34 @@ readonly class SalesWriteGateway
     }
 
     /**
+     * The cash that leaves the drawer when a registered collection is reversed: one REFUND_OUT in the reverser's
+     * open session (the drawer where the money was received may already be closed), keyed by the collection.
+     *
+     * @throws Exception
+     */
+    public function writeCollectionReversalMovement(
+        string $collectionId,
+        int $cashSessionId,
+        int $createdBy,
+        string $amount,
+        int $paymentMethodId,
+        \DateTimeImmutable $createdAt,
+        ?string $description = null,
+    ): void {
+        $this->writeCustomerCashInMovement(
+            sprintf('collection-reversal:%s', $collectionId),
+            $cashSessionId,
+            $createdBy,
+            $amount,
+            $paymentMethodId,
+            $createdAt,
+            $description ?? 'Reversión de cobranza',
+            'REFUND_OUT',
+            'customer_refund',
+        );
+    }
+
+    /**
      * One CASH_IN for a customer advance received with no target sale (#382):
      * same shape as writeOnAccountCollectionMovement(), keyed by the advance id.
      *
@@ -824,6 +852,8 @@ readonly class SalesWriteGateway
         int $paymentMethodId,
         \DateTimeImmutable $createdAt,
         string $description,
+        string $movementType = 'CASH_IN',
+        string $categoryCode = 'credit_payment',
     ): void {
         $offline = $this->buildOfflineMeta($seed, $createdAt, 1);
 
@@ -834,9 +864,9 @@ readonly class SalesWriteGateway
             return;
         }
 
-        $categoryId = $this->connection->fetchOne(
-            "SELECT id FROM cash_movement_category WHERE code = 'credit_payment'",
-        );
+        $categoryId = $this->connection->fetchOne('SELECT id FROM cash_movement_category WHERE code = :code', [
+            'code' => $categoryCode,
+        ]);
 
         $this->connection->executeStatement(
             <<<'SQL'
@@ -860,7 +890,7 @@ readonly class SalesWriteGateway
                     last_modified_at
                 ) VALUES (
                     :cash_session_id,
-                    'CASH_IN',
+                    :movement_type,
                     :category_id,
                     NULL,
                     NULL,
@@ -880,6 +910,7 @@ readonly class SalesWriteGateway
                 SQL,
             [
                 'cash_session_id' => $cashSessionId,
+                'movement_type' => $movementType,
                 'category_id' => $categoryId === false || $categoryId === null ? null : (int) $categoryId,
                 'payment_method_id' => $paymentMethodId,
                 'amount' => Money::toString(Money::money($amount)),
